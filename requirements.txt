@@ -43,6 +43,7 @@ resize-right
 rich
 safetensors
 scikit-image
+shared
 timm
 toml
 torch
