@@ -1710,7 +1710,9 @@ def javascript_html():
 
     # inline = f"{localization.localization_js(shared.opts.localization)};"
     inline = ''
-    if cmd_opts.theme is not None:
+    if opts.load_light_theme:
+        inline += f"set_theme('light');"
+    elif cmd_opts.theme is not None:
         inline += f"set_theme('{cmd_opts.theme}');"
 
     for script in modules.scripts.list_scripts("javascript", ".js"):
@@ -1736,7 +1738,7 @@ def css_html():
 
         head += stylesheet(cssfile)
 
-    if os.path.exists(os.path.join(data_path, "user.css")):
+    if  opts.load_usercss and os.path.exists(os.path.join(data_path, "user.css")):
         head += stylesheet(os.path.join(data_path, "user.css"))
 
     return head

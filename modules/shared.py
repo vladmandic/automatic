@@ -363,6 +363,8 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
 }))
 
 options_templates.update(options_section(('ui', "User interface"), {
+    "load_usercss": OptionInfo(True, "Use a custom style (user.css) instead of default Gradio style"),
+    "load_light_theme": OptionInfo(True, "Use a light theme. Not recommended with a custom style enabled"),
     "return_grid": OptionInfo(True, "Show grid in results for web"),
     "return_mask": OptionInfo(False, "For inpainting, include the greyscale mask in results for web"),
     "return_mask_composite": OptionInfo(False, "For inpainting, include masked composite in results for web"),
