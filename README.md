@@ -154,6 +154,9 @@ This repository comes with a large collection of scripts that can be used to pro
 As well as number of auxiliary scripts that do not rely on **WebUI**, but can be used for end-to-end solutions such as extract frames from videos, etc.  
 For full details see [Docs](cli/README.md)
 
+### Troubleshoot
+If you're using a cpu only or you encountered this error `RuntimeError: "LayerNormKernelImpl" not implemented for 'Half'` using an AMD GPU , you should head on to `webui.bat` and add the following line `set COMMANDLINE_ARGS=--skip-torch-cuda-test --precision full --no-half` , directly under the line `set ERROR_REPORTING=FALSE`
+
 <br>
 
 ### Docs
