@@ -155,7 +155,7 @@ As well as number of auxiliary scripts that do not rely on **WebUI**, but can be
 For full details see [Docs](cli/README.md)
 
 ### Troubleshoot
-If you're using a cpu only or you encountered this error `RuntimeError: "LayerNormKernelImpl" not implemented for 'Half'` using an AMD GPU , you should head on to `webui.bat` and add the following line `set COMMANDLINE_ARGS=--skip-torch-cuda-test --precision full --no-half` , directly under the line `set ERROR_REPORTING=FALSE`
+If you're using a cpu only or you encountered this error `RuntimeError: "LayerNormKernelImpl" not implemented for 'Half'` using an AMD GPU , you should head on to `webui.bat` and add the following line `set COMMANDLINE_ARGS=--no-half` , directly under the line `set ERROR_REPORTING=FALSE`
 
 <br>
 
