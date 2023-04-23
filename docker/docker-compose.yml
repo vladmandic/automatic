@@ -1,0 +1,29 @@
+version: "3.9"
+name: sd-automatic
+services:
+  nvidia:
+    build:
+      context: .
+      args:
+        UID: "0"
+        COMMIT: "master"
+    user: "0:0"
+    volumes:
+      - ./data:/webui/repo/data
+      - ./outputs:/webui/repo/outputs
+    command: |
+      --data-dir=/webui/repo/data
+      --listen
+      --noupdate
+    ports:
+      - "7860:7860"
+    tmpfs:
+      - /tmp
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
