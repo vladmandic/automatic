@@ -8,6 +8,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
     if [[ -f webui-macos-env.sh ]]
         then
+        printf "Running on macOS, loading defaults from webui-macos-env.sh"
         source ./webui-macos-env.sh
     fi
 fi
