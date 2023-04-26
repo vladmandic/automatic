@@ -10,17 +10,21 @@ try:
     from modules.cmd_args import parser
 except:
     import argparse
-    parser = argparse.ArgumentParser(description="Stable Diffusion", formatter_class=lambda prog: argparse.HelpFormatter(prog,max_help_position=55,indent_increment=2,width=200))
+
+    parser = argparse.ArgumentParser(description="Stable Diffusion",
+                                     formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=55,
+                                                                                         indent_increment=2, width=200))
 
 
-class Dot(dict): # dot notation access to dictionary attributes
+class Dot(dict):  # dot notation access to dictionary attributes
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
 
 log = logging.getLogger("sd")
-args = Dot({ 'debug': False, 'upgrade': False, 'noupdate': False, 'skip-extensions': False, 'skip-requirements': False, 'reset': False })
+args = Dot({'debug': False, 'upgrade': False, 'noupdate': False, 'skip-extensions': False, 'skip-requirements': False,
+            'reset': False})
 quick_allowed = True
 errors = 0
 opts = {}
@@ -31,10 +35,11 @@ def setup_logging(clean=False):
     try:
         if clean and os.path.isfile('setup.log'):
             os.remove('setup.log')
-        time.sleep(0.1) # prevent race condition
+        time.sleep(0.1)  # prevent race condition
     except:
         pass
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s | %(levelname)s | %(pathname)s | %(message)s', filename='setup.log', filemode='a', encoding='utf-8', force=True)
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s | %(levelname)s | %(pathname)s | %(message)s',
+                        filename='setup.log', filemode='a', encoding='utf-8', force=True)
     from rich.theme import Theme
     from rich.logging import RichHandler
     from rich.console import Console
@@ -46,10 +51,14 @@ def setup_logging(clean=False):
         "inspect.value.border": "black",
     }))
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=[])
-    rh = RichHandler(show_time=True, omit_repeated_times=False, show_level=True, show_path=False, markup=False, rich_tracebacks=True, log_time_format='%H:%M:%S-%f', level=logging.DEBUG if args.debug else logging.INFO, console=console)
+    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False,
+                      suppress=[])
+    rh = RichHandler(show_time=True, omit_repeated_times=False, show_level=True, show_path=False, markup=False,
+                     rich_tracebacks=True, log_time_format='%H:%M:%S-%f',
+                     level=logging.DEBUG if args.debug else logging.INFO, console=console)
     rh.set_name(logging.DEBUG if args.debug else logging.INFO)
     log.addHandler(rh)
+
 
 # check if package is installed
 def installed(package, friendly: str = None):
@@ -60,17 +69,17 @@ def installed(package, friendly: str = None):
             pkgs = friendly.split()
         else:
             pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=')]
-            pkgs = [p.split('/')[-1] for p in pkgs] # get only package name if installing from url
+            pkgs = [p.split('/')[-1] for p in pkgs]  # get only package name if installing from url
         for pkg in pkgs:
             if '>=' in pkg:
                 p = pkg.split('>=')
             else:
                 p = pkg.split('==')
-            spec = pkg_resources.working_set.by_key.get(p[0], None) # more reliable than importlib
+            spec = pkg_resources.working_set.by_key.get(p[0], None)  # more reliable than importlib
             if spec is None:
-                spec = pkg_resources.working_set.by_key.get(p[0].lower(), None) # check name variations
+                spec = pkg_resources.working_set.by_key.get(p[0].lower(), None)  # check name variations
             if spec is None:
-                spec = pkg_resources.working_set.by_key.get(p[0].replace('_', '-'), None) # check name variations
+                spec = pkg_resources.working_set.by_key.get(p[0].replace('_', '-'), None)  # check name variations
             ok = ok and spec is not None
             if ok:
                 version = pkg_resources.get_distribution(p[0]).version
@@ -91,15 +100,17 @@ def installed(package, friendly: str = None):
 def install(package, friendly: str = None, ignore: bool = False):
     def pip(arg: str):
         arg = arg.replace('>=', '==')
-        log.info(f'Installing package: {arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("  ", " ").strip()}')
+        log.info(
+            f'Installing package: {arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("  ", " ").strip()}')
         log.debug(f"Running pip: {arg}")
-        result = subprocess.run(f'"{sys.executable}" -m pip {arg}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(f'"{sys.executable}" -m pip {arg}', shell=True, check=False, env=os.environ,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         txt = result.stdout.decode(encoding="utf8", errors="ignore")
         if len(result.stderr) > 0:
             txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
         txt = txt.strip()
         if result.returncode != 0 and not ignore:
-            global errors # pylint: disable=global-statement
+            global errors  # pylint: disable=global-statement
             errors += 1
             log.error(f'Error running pip: {arg}')
             log.debug(f'Pip output: {txt}')
@@ -114,13 +125,14 @@ def git(arg: str, folder: str = None, ignore: bool = False):
     if args.skip_git:
         return ''
     git_cmd = os.environ.get('GIT', "git")
-    result = subprocess.run(f'"{git_cmd}" {arg}', check=False, shell=True, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder or '.')
+    result = subprocess.run(f'"{git_cmd}" {arg}', check=False, shell=True, env=os.environ, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, cwd=folder or '.')
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
     txt = txt.strip()
     if result.returncode != 0 and not ignore:
-        global errors # pylint: disable=global-statement
+        global errors  # pylint: disable=global-statement
         errors += 1
         log.error(f'Error running git: {folder} / {arg}')
         if 'or stash them' in txt:
@@ -173,7 +185,8 @@ def check_python():
         supported_minors.append(11)
     log.info(f'Python {platform.python_version()} on {platform.system()}')
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
-        log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
+        log.error(
+            f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
         exit(1)
     git_cmd = os.environ.get('GIT', "git")
     if shutil.which(git_cmd) is None:
@@ -186,14 +199,19 @@ def check_python():
 
 # check torch version
 def check_torch():
-    if shutil.which('nvidia-smi') is not None or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe')):
+    if shutil.which('nvidia-smi') is not None or os.path.exists(
+            os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe')):
         log.info('nVidia toolkit detected')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu118')
-        xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.17' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
+        torch_command = os.environ.get('TORCH_COMMAND',
+                                       'torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu118')
+        xformers_package = os.environ.get('XFORMERS_PACKAGE',
+                                          'xformers==0.0.17' if opts.get('cross_attention_optimization',
+                                                                         '') == 'xFormers' else 'none')
     elif shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo'):
         log.info('AMD toolkit detected')
         os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.4.2')
+        torch_command = os.environ.get('TORCH_COMMAND',
+                                       'torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.4.2')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     else:
         log.info('Using CPU-only Torch')
@@ -208,13 +226,15 @@ def check_torch():
             log.warning("Torch repoorts CUDA not available")
         else:
             if torch.version.cuda:
-                log.info(f'Torch backend: nVidia CUDA {torch.version.cuda} cuDNN {torch.backends.cudnn.version() if torch.backends.cudnn.is_available() else "N/A"}')
+                log.info(
+                    f'Torch backend: nVidia CUDA {torch.version.cuda} cuDNN {torch.backends.cudnn.version() if torch.backends.cudnn.is_available() else "N/A"}')
             elif torch.version.hip:
                 log.info(f'Torch backend: AMD ROCm HIP {torch.version.hip}')
             else:
                 log.warning('Unknown Torch backend')
             for device in [torch.cuda.device(i) for i in range(torch.cuda.device_count())]:
-                log.info(f'Torch detected GPU: {torch.cuda.get_device_name(device)} VRAM {round(torch.cuda.get_device_properties(device).total_memory / 1024 / 1024)} Arch {torch.cuda.get_device_capability(device)} Cores {torch.cuda.get_device_properties(device).multi_processor_count}')
+                log.info(
+                    f'Torch detected GPU: {torch.cuda.get_device_name(device)} VRAM {round(torch.cuda.get_device_properties(device).total_memory / 1024 / 1024)} Arch {torch.cuda.get_device_capability(device)} Cores {torch.cuda.get_device_properties(device).multi_processor_count}')
     except Exception as e:
         log.error(f'Could not load torch: {e}')
         exit(1)
@@ -237,7 +257,8 @@ def install_packages():
     # openclip_package = os.environ.get('OPENCLIP_PACKAGE', "git+https://github.com/mlfoundations/open_clip.git@bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b")
     # install(gfpgan_package, 'gfpgan')
     # install(openclip_package, 'open-clip-torch')
-    clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git@d50d76daa670286dd6cacf3bcd80b5e4823fc8e1")
+    clip_package = os.environ.get('CLIP_PACKAGE',
+                                  "git+https://github.com/openai/CLIP.git@d50d76daa670286dd6cacf3bcd80b5e4823fc8e1")
     install(clip_package, 'clip')
 
 
@@ -245,13 +266,17 @@ def install_packages():
 def install_repositories():
     def d(name):
         return os.path.join(os.path.dirname(__file__), 'repositories', name)
+
     log.info('Installing repositories')
     os.makedirs(os.path.join(os.path.dirname(__file__), 'repositories'), exist_ok=True)
-    stable_diffusion_repo = os.environ.get('STABLE_DIFFUSION_REPO', "https://github.com/Stability-AI/stablediffusion.git")
+    stable_diffusion_repo = os.environ.get('STABLE_DIFFUSION_REPO',
+                                           "https://github.com/Stability-AI/stablediffusion.git")
     stable_diffusion_commit = os.environ.get('STABLE_DIFFUSION_COMMIT_HASH', "cf1d67a6fd5ea1aa600c4df58e5b47da45f6bdbf")
     clone(stable_diffusion_repo, d('stable-diffusion-stability-ai'), stable_diffusion_commit)
-    taming_transformers_repo = os.environ.get('TAMING_TRANSFORMERS_REPO', "https://github.com/CompVis/taming-transformers.git")
-    taming_transformers_commit = os.environ.get('TAMING_TRANSFORMERS_COMMIT_HASH', "3ba01b241669f5ade541ce990f7650a3b8f65318")
+    taming_transformers_repo = os.environ.get('TAMING_TRANSFORMERS_REPO',
+                                              "https://github.com/CompVis/taming-transformers.git")
+    taming_transformers_commit = os.environ.get('TAMING_TRANSFORMERS_COMMIT_HASH',
+                                                "3ba01b241669f5ade541ce990f7650a3b8f65318")
     clone(taming_transformers_repo, d('taming-transformers'), taming_transformers_commit)
     k_diffusion_repo = os.environ.get('K_DIFFUSION_REPO', 'https://github.com/crowsonkb/k-diffusion.git')
     k_diffusion_commit = os.environ.get('K_DIFFUSION_COMMIT_HASH', "b43db16749d51055f813255eea2fdf1def801919")
@@ -273,9 +298,10 @@ def run_extension_installer(folder):
         log.debug(f"Running extension installer: {folder} / {path_installer}")
         env = os.environ.copy()
         env['PYTHONPATH'] = os.path.abspath(".")
-        result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+        result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
         if result.returncode != 0:
-            global errors # pylint: disable=global-statement
+            global errors  # pylint: disable=global-statement
             errors += 1
             txt = result.stdout.decode(encoding="utf8", errors="ignore")
             if len(result.stderr) > 0:
@@ -284,6 +310,7 @@ def run_extension_installer(folder):
             log.debug(txt)
     except Exception as e:
         log.error(f'Exception running extension installer: {e}')
+
 
 # get list of all enabled extensions
 def list_extensions(folder):
@@ -342,7 +369,7 @@ def install_submodules():
 
 def ensure_package(pkg):
     try:
-        import pkg # type: ignore
+        import pkg  # type: ignore
     except ImportError:
         install(pkg)
 
@@ -356,13 +383,20 @@ def install_requirements():
         return
     log.info('Verifying requirements')
     with open('requirements.txt', 'r', encoding='utf8') as f:
-        lines = [line.strip() for line in f.readlines() if line.strip() != '' and not line.startswith('#') and line is not None]
+        lines = [line.strip() for line in f.readlines() if
+                 line.strip() != '' and not line.startswith('#') and line is not None]
         for line in lines:
             install(line)
 
 
 # set environment variables controling the behavior of various libraries
 def set_environment():
+    def set_macos_environment():
+        if sys.platform != 'darwin':
+            return
+        os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
+
+
     log.info('Setting environment tuning')
     os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '2')
     os.environ.setdefault('ACCELERATE', 'True')
@@ -377,7 +411,7 @@ def set_environment():
     os.environ.setdefault('GRADIO_ANALYTICS_ENABLED', 'False')
     os.environ.setdefault('SAFETENSORS_FAST_GPU', '1')
     os.environ.setdefault('NUMEXPR_MAX_THREADS', '16')
-    os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
+    set_macos_environment()
 
 
 def check_extensions():
@@ -422,7 +456,7 @@ def check_version():
         commits = requests.get('https://api.github.com/repos/vladmandic/automatic/branches/master', timeout=10).json()
         if commits['commit']['sha'] != commit:
             if args.upgrade:
-                global quick_allowed # pylint: disable=global-statement
+                global quick_allowed  # pylint: disable=global-statement
                 quick_allowed = False
                 try:
                     git('add .')
@@ -434,7 +468,8 @@ def check_version():
                 except:
                     log.error('Error upgrading repository')
             else:
-                log.info(f'Latest published version: {commits["commit"]["sha"]} {commits["commit"]["commit"]["author"]["date"]}')
+                log.info(
+                    f'Latest published version: {commits["commit"]["sha"]} {commits["commit"]["commit"]["author"]["date"]}')
     except Exception as e:
         log.error(f'Failed to check version: {e} {commits}')
 
@@ -486,19 +521,27 @@ def parse_args():
     # parser = argparse.ArgumentParser(description = 'Setup for SD WebUI')
     if vars(parser)['_option_string_actions'].get('--debug', None) is not None:
         return
-    parser.add_argument('--debug', default = False, action='store_true', help = "Run installer with debug logging, default: %(default)s")
-    parser.add_argument('--reset', default = False, action='store_true', help = "Reset main repository to latest version, default: %(default)s")
-    parser.add_argument('--upgrade', default = False, action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
-    parser.add_argument('--noupdate', default = False, action='store_true', help = "Skip update of extensions and submodules, default: %(default)s")
-    parser.add_argument('--skip-requirements', default = False, action='store_true', help = "Skips checking and installing requirements, default: %(default)s")
-    parser.add_argument('--skip-extensions', default = False, action='store_true', help = "Skips running individual extension installers, default: %(default)s")
-    parser.add_argument('--skip-git', default = False, action='store_true', help = "Skips running all GIT operations, default: %(default)s")
-    parser.add_argument('--experimental', default = False, action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
-    global args # pylint: disable=global-statement
+    parser.add_argument('--debug', default=False, action='store_true',
+                        help="Run installer with debug logging, default: %(default)s")
+    parser.add_argument('--reset', default=False, action='store_true',
+                        help="Reset main repository to latest version, default: %(default)s")
+    parser.add_argument('--upgrade', default=False, action='store_true',
+                        help="Upgrade main repository to latest version, default: %(default)s")
+    parser.add_argument('--noupdate', default=False, action='store_true',
+                        help="Skip update of extensions and submodules, default: %(default)s")
+    parser.add_argument('--skip-requirements', default=False, action='store_true',
+                        help="Skips checking and installing requirements, default: %(default)s")
+    parser.add_argument('--skip-extensions', default=False, action='store_true',
+                        help="Skips running individual extension installers, default: %(default)s")
+    parser.add_argument('--skip-git', default=False, action='store_true',
+                        help="Skips running all GIT operations, default: %(default)s")
+    parser.add_argument('--experimental', default=False, action='store_true',
+                        help="Allow unsupported versions of libraries, default: %(default)s")
+    global args  # pylint: disable=global-statement
     args = parser.parse_args()
 
 
-def extensions_preload(force = False):
+def extensions_preload(force=False):
     setup_time = 0
     if os.path.isfile('setup.log'):
         with open('setup.log', 'r', encoding='utf8') as f:
@@ -516,7 +559,7 @@ def extensions_preload(force = False):
 
 def git_reset():
     log.warning('Running GIT reset')
-    global quick_allowed # pylint: disable=global-statement
+    global quick_allowed  # pylint: disable=global-statement
     quick_allowed = False
     git('merge --abort')
     git('fetch --all')
@@ -526,7 +569,7 @@ def git_reset():
 
 
 def read_options():
-    global opts # pylint: disable=global-statement
+    global opts  # pylint: disable=global-statement
     if os.path.isfile(args.ui_settings_file):
         with open(args.ui_settings_file, "r", encoding="utf8") as file:
             opts = json.load(file)
