@@ -2,6 +2,7 @@ import open_clip.tokenizer
 import torch
 
 from modules import sd_hijack_clip, devices
+from modules.shared import opts
 
 tokenizer = open_clip.tokenizer._tokenizer
 
@@ -16,6 +17,8 @@ class FrozenOpenCLIPEmbedderWithCustomWords(sd_hijack_clip.FrozenCLIPEmbedderWit
         self.id_pad = 0
 
     def tokenize(self, texts):
+        assert not opts.use_old_emphasis_implementation, 'Old emphasis implementation not supported for Open Clip'
+
         tokenized = [tokenizer.encode(text) for text in texts]
 
         return tokenized

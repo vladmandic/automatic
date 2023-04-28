@@ -1,5 +1,6 @@
 import json
 import os
+
 from modules import shared, ui_extra_networks
 
 
@@ -13,6 +14,7 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
     def list_items(self):
         for name, path in shared.hypernetworks.items():
             path, ext = os.path.splitext(path)
+
             yield {
                 "name": name,
                 "filename": path,
@@ -24,4 +26,5 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
             }
 
     def allowed_directories_for_previews(self):
-        return [shared.opts.hypernetwork_dir]
+        return [shared.cmd_opts.hypernetwork_dir]
+

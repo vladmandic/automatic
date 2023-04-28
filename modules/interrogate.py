@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from collections import namedtuple
 from pathlib import Path
 import re
@@ -10,6 +11,7 @@ import torch.hub
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 
+import modules.shared as shared
 from modules import devices, paths, shared, lowvram, modelloader, errors
 
 blip_image_eval_size = 384
@@ -27,11 +29,11 @@ def download_default_clip_interrogate_categories(content_dir):
     print("Downloading CLIP categories...")
 
     tmpdir = content_dir + "_tmp"
-    cat_types = ["artists", "flavors", "mediums", "movements"]
+    category_types = ["artists", "flavors", "mediums", "movements"]
 
     try:
         os.makedirs(tmpdir)
-        for category_type in cat_types:
+        for category_type in category_types:
             torch.hub.download_url_to_file(f"https://raw.githubusercontent.com/pharmapsychotic/clip-interrogator/main/clip_interrogator/data/{category_type}.txt", os.path.join(tmpdir, f"{category_type}.txt"))
         os.rename(tmpdir, content_dir)
 
@@ -60,21 +62,22 @@ class InterrogateModels:
             download_default_clip_interrogate_categories(self.content_dir)
 
         if self.loaded_categories is not None and self.skip_categories == shared.opts.interrogate_clip_skip_categories:
-            return self.loaded_categories
+           return self.loaded_categories
 
         self.loaded_categories = []
 
         if os.path.exists(self.content_dir):
             self.skip_categories = shared.opts.interrogate_clip_skip_categories
-            cat_types = []
+            category_types = []
             for filename in Path(self.content_dir).glob('*.txt'):
-                cat_types.append(filename.stem)
+                category_types.append(filename.stem)
                 if filename.stem in self.skip_categories:
                     continue
                 m = re_topn.search(filename.stem)
                 topn = 1 if m is None else int(m.group(1))
                 with open(filename, "r", encoding="utf8") as file:
                     lines = [x.strip() for x in file.readlines()]
+
                 self.loaded_categories.append(Category(name=filename.stem, topn=topn, items=lines))
 
         return self.loaded_categories
@@ -106,9 +109,9 @@ class InterrogateModels:
         import clip
 
         if self.running_on_cpu:
-            model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.opts.clip_models_path)
+            model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.cmd_opts.clip_models_path)
         else:
-            model, preprocess = clip.load(clip_model_name, download_root=shared.opts.clip_models_path)
+            model, preprocess = clip.load(clip_model_name, download_root=shared.cmd_opts.clip_models_path)
 
         model.eval()
         model = model.to(devices.device_interrogate)
@@ -205,7 +208,7 @@ class InterrogateModels:
 
                 image_features /= image_features.norm(dim=-1, keepdim=True)
 
-                for _name, topn, items in self.categories():
+                for name, topn, items in self.categories():
                     matches = self.rank(image_features, items, top_count=topn)
                     for match, score in matches:
                         if shared.opts.interrogate_return_ranks:
@@ -213,8 +216,9 @@ class InterrogateModels:
                         else:
                             res += ", " + match
 
-        except Exception as e:
-            errors.display(e, 'interrogate')
+        except Exception:
+            print("Error interrogating", file=sys.stderr)
+            print(traceback.format_exc(), file=sys.stderr)
             res += "<error>"
 
         self.unload()

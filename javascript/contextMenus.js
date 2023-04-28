@@ -132,14 +132,13 @@ addContextMenuEventListener = initResponse[2];
   //Start example Context Menu Items
   let generateOnRepeat = function(genbuttonid,interruptbuttonid){
     let genbutton = gradioApp().querySelector(genbuttonid);
-    const busy = document.getElementById('progressbar')?.style.display == "block"
-    if(!busy){
+    let interruptbutton = gradioApp().querySelector(interruptbuttonid);
+    if(!interruptbutton.offsetParent){
       genbutton.click();
     }
     clearInterval(window.generateOnRepeatInterval)
     window.generateOnRepeatInterval = setInterval(function(){
-      const busy = document.getElementById('progressbar')?.style.display == "block"
-      if(!busy){
+      if(!interruptbutton.offsetParent){
         genbutton.click();
       }
     },

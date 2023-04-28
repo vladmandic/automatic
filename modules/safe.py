@@ -1,13 +1,17 @@
 # this code is adapted from the script contributed by anon from /h/
 
+import io
 import pickle
 import collections
-import zipfile
-import re
+import sys
+import traceback
 
 import torch
 import numpy
 import _codecs
+import zipfile
+import re
+
 
 # PyTorch 1.13 and later have _TypedStorage renamed to TypedStorage
 TypedStorage = torch.storage.TypedStorage if hasattr(torch.storage, 'TypedStorage') else torch.storage._TypedStorage
@@ -124,13 +128,24 @@ def load_with_extra(filename, extra_handler=None, *args, **kwargs):
     definitely unsafe.
     """
 
-    from modules import shared, errors
+    from modules import shared
 
     try:
         if not shared.cmd_opts.disable_safe_unpickle:
             check_pt(filename, extra_handler)
-    except Exception as e:
-        errors.display(e, f'verifying pickled file {filename}')
+
+    except pickle.UnpicklingError:
+        print(f"Error verifying pickled file from {filename}:", file=sys.stderr)
+        print(traceback.format_exc(), file=sys.stderr)
+        print("-----> !!!! The file is most likely corrupted !!!! <-----", file=sys.stderr)
+        print("You can skip this check with --disable-safe-unpickle commandline argument, but that is not going to help you.\n\n", file=sys.stderr)
+        return None
+
+    except Exception:
+        print(f"Error verifying pickled file from {filename}:", file=sys.stderr)
+        print(traceback.format_exc(), file=sys.stderr)
+        print("\nThe file may be malicious, so the program is not going to read it.", file=sys.stderr)
+        print("You can skip this check with --disable-safe-unpickle commandline argument.\n\n", file=sys.stderr)
         return None
 
     return unsafe_torch_load(filename, *args, **kwargs)

@@ -1,7 +1,6 @@
 window.onload = (function(){
     window.addEventListener('drop', e => {
         const target = e.composedPath()[0];
-        if (!target.placeholder) return;
         const idx = selected_gallery_index();
         if (target.placeholder.indexOf("Prompt") == -1) return;
 

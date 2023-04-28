@@ -8,14 +8,20 @@ function showModal(event) {
     const modalImage = gradioApp().getElementById("modalImage")
     const lb = gradioApp().getElementById("lightboxModal")
     modalImage.src = source.src
-    if (modalImage.style.display === 'none') lb.style.setProperty('background-image', 'url(' + source.src + ')');
+    if (modalImage.style.display === 'none') {
+        lb.style.setProperty('background-image', 'url(' + source.src + ')');
+    }
     lb.style.display = "flex";
     lb.focus()
+
     const tabTxt2Img = gradioApp().getElementById("tab_txt2img")
     const tabImg2Img = gradioApp().getElementById("tab_img2img")
     // show the save button in modal only on txt2img or img2img tabs
-    if (tabTxt2Img.style.display != "none" || tabImg2Img.style.display != "none") gradioApp().getElementById("modal_save").style.display = "inline"
-    else gradioApp().getElementById("modal_save").style.display = "none"
+    if (tabTxt2Img.style.display != "none" || tabImg2Img.style.display != "none") {
+        gradioApp().getElementById("modal_save").style.display = "inline"
+    } else {
+        gradioApp().getElementById("modal_save").style.display = "none"
+    }
     event.stopPropagation()
 }
 
@@ -27,29 +33,41 @@ function updateOnBackgroundChange() {
     const modalImage = gradioApp().getElementById("modalImage")
     if (modalImage && modalImage.offsetParent) {
         let currentButton = selected_gallery_button();
+
         if (currentButton?.children?.length > 0 && modalImage.src != currentButton.children[0].src) {
             modalImage.src = currentButton.children[0].src;
-            if (modalImage.style.display === 'none') modal.style.setProperty('background-image', `url(${modalImage.src})`)
+            if (modalImage.style.display === 'none') {
+                modal.style.setProperty('background-image', `url(${modalImage.src})`)
+            }
         }
     }
 }
 
 function modalImageSwitch(offset) {
     var galleryButtons = all_gallery_buttons();
+
     if (galleryButtons.length > 1) {
         var currentButton = selected_gallery_button();
+
         var result = -1
         galleryButtons.forEach(function(v, i) {
-            if (v == currentButton) result = i
+            if (v == currentButton) {
+                result = i
+            }
         })
+
         if (result != -1) {
             nextButton = galleryButtons[negmod((result + offset), galleryButtons.length)]
             nextButton.click()
             const modalImage = gradioApp().getElementById("modalImage");
             const modal = gradioApp().getElementById("lightboxModal");
             modalImage.src = nextButton.children[0].src;
-            if (modalImage.style.display === 'none') modal.style.setProperty('background-image', `url(${modalImage.src})`)
-            setTimeout(() => modal.focus(), 10)
+            if (modalImage.style.display === 'none') {
+                modal.style.setProperty('background-image', `url(${modalImage.src})`)
+            }
+            setTimeout(function() {
+                modal.focus()
+            }, 10)
         }
     }
 }
@@ -59,9 +77,13 @@ function saveImage(){
     const tabImg2Img = gradioApp().getElementById("tab_img2img")
     const saveTxt2Img = "save_txt2img"
     const saveImg2Img = "save_img2img"
-    if (tabTxt2Img.style.display != "none") gradioApp().getElementById(saveTxt2Img).click()
-    else if (tabImg2Img.style.display != "none") gradioApp().getElementById(saveImg2Img).click()
-    else console.error("missing implementation for saving modal of this type")
+    if (tabTxt2Img.style.display != "none") {
+        gradioApp().getElementById(saveTxt2Img).click()
+    } else if (tabImg2Img.style.display != "none") {
+        gradioApp().getElementById(saveImg2Img).click()
+    } else {
+        console.error("missing implementation for saving modal of this type")
+    }
 }
 
 function modalSaveImage(event) {
@@ -97,24 +119,36 @@ function modalKeyHandler(event) {
 }
 
 function setupImageForLightbox(e) {
-	if (e.dataset.modded)	return;
+	if (e.dataset.modded)
+		return;
+
 	e.dataset.modded = true;
 	e.style.cursor='pointer'
 	e.style.userSelect='none'
 
 	var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+
+	// For Firefox, listening on click first switched to next image then shows the lightbox.
+	// If you know how to fix this without switching to mousedown event, please.
+	// For other browsers the event is click to make it possiblr to drag picture.
 	var event = isFirefox ? 'mousedown' : 'click'
+
 	e.addEventListener(event, function (evt) {
 		if(!opts.js_modal_lightbox || evt.button != 0) return;
+
 		modalZoomSet(gradioApp().getElementById('modalImage'), opts.js_modal_lightbox_initially_zoomed)
 		evt.preventDefault()
 		showModal(evt)
 	}, true);
+
 }
 
 function modalZoomSet(modalImage, enable) {
-    if (enable) modalImage.classList.add('modalImageFullscreen');
-    else modalImage.classList.remove('modalImageFullscreen');
+    if (enable) {
+        modalImage.classList.add('modalImageFullscreen');
+    } else {
+        modalImage.classList.remove('modalImageFullscreen');
+    }
 }
 
 function modalZoomToggle(event) {
@@ -134,16 +168,21 @@ function modalTileImageToggle(event) {
         modalImage.style.display = 'none';
         modal.style.setProperty('background-image', `url(${modalImage.src})`)
     }
+
     event.stopPropagation()
 }
 
 function galleryImageHandler(e) {
-    e.onclick = showGalleryImage;
+    //if (e && e.parentElement.tagName == 'BUTTON') {
+        e.onclick = showGalleryImage;
+    //}
 }
 
 onUiUpdate(function() {
     fullImg_preview = gradioApp().querySelectorAll('.gradio-gallery > div > img')
-    if (fullImg_preview != null) fullImg_preview.forEach(setupImageForLightbox);
+    if (fullImg_preview != null) {
+        fullImg_preview.forEach(setupImageForLightbox);
+    }
     updateOnBackgroundChange();
 })
 
@@ -212,6 +251,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     modal.appendChild(modalNext)
 
-    try { gradioApp().appendChild(modal); }
-    catch (e) { gradioApp().body.appendChild(modal); }
+    gradioApp().appendChild(modal)
+
+
+    document.body.appendChild(modal);
+
 });

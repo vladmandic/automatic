@@ -2,6 +2,7 @@ import os
 import re
 
 import torch
+from PIL import Image
 import numpy as np
 
 from modules import modelloader, paths, deepbooru_model, devices, images, shared

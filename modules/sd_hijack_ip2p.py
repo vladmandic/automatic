@@ -1,4 +1,8 @@
+import collections
 import os.path
+import sys
+import gc
+import time
 
 def should_hijack_ip2p(checkpoint_info):
     from modules import sd_models_config

@@ -19,6 +19,6 @@ def save_settings_to_file(log_directory, all_params):
 
     params.update({k: v for k, v in all_params.items() if k in keys})
 
-    filename = f'settings.json'
+    filename = f'settings-{now.strftime("%Y-%m-%d-%H-%M-%S")}.json'
     with open(os.path.join(log_directory, filename), "w") as file:
-        json.dump(params, file, indent=2)
+        json.dump(params, file, indent=4)

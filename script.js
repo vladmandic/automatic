@@ -1,12 +1,13 @@
 function gradioApp() {
     const elems = document.getElementsByTagName('gradio-app')
     const elem = elems.length == 0 ? document : elems[0]
+
     if (elem !== document) elem.getElementById = function(id){ return document.getElementById(id) }
     return elem.shadowRoot ? elem.shadowRoot : elem
 }
 
 function get_uiCurrentTab() {
-    return gradioApp().querySelector('#tabs button.selected')
+    return gradioApp().querySelector('#tabs button:not(.border-transparent)')
 }
 
 function get_uiCurrentTabContent() {
@@ -33,10 +34,12 @@ function onOptionsChanged(callback){
 }
 
 function runCallback(x, m){
-    try { x(m)
-    } catch (e) { (console.error || console.log).call(console, e.message, e); }
+    try {
+        x(m)
+    } catch (e) {
+        (console.error || console.log).call(console, e.message, e);
+    }
 }
-
 function executeCallbacks(queue, m) {
     queue.forEach(function(x){runCallback(x, m)})
 }
@@ -49,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
             executedOnLoaded = true;
             executeCallbacks(uiLoadedCallbacks);
         }
+
         executeCallbacks(uiUpdateCallbacks, m);
         const newTab = get_uiCurrentTab();
         if ( newTab && ( newTab !== uiCurrentTab ) ) {
@@ -71,7 +75,9 @@ document.addEventListener('keydown', function(e) {
     }
     if (handled) {
         button = get_uiCurrentTabContent().querySelector('button[id$=_generate]');
-        if (button) button.click();
+        if (button) {
+            button.click();
+        }
         e.preventDefault();
     }
 })
@@ -81,11 +87,18 @@ document.addEventListener('keydown', function(e) {
  */
 function uiElementIsVisible(el) {
     let isVisible = !el.closest('.\\!hidden');
-    if (!isVisible) return false;
+    if ( ! isVisible ) {
+        return false;
+    }
+
     while( isVisible = el.closest('.tabitem')?.style.display !== 'none' ) {
-        if ( ! isVisible ) return false;
-        else if ( el.parentElement ) el = el.parentElement
-        else break;
+        if ( ! isVisible ) {
+            return false;
+        } else if ( el.parentElement ) {
+            el = el.parentElement
+        } else {
+            break;
+        }
     }
     return isVisible;
 }

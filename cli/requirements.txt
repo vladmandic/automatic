@@ -1,3 +1,0 @@
-mediapipe
-colormap
-invisible-watermark

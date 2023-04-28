@@ -1,6 +1,8 @@
 # this file is adapted from https://github.com/victorca25/iNNfer
 
+from collections import OrderedDict
 import math
+import functools
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -413,7 +415,6 @@ class ShortcutBlock(nn.Module):
 def sequential(*args):
     """ Flatten Sequential. It unwraps nn.Sequential. """
     if len(args) == 1:
-        from collections import OrderedDict
         if isinstance(args[0], OrderedDict):
             raise NotImplementedError('sequential does not support OrderedDict input.')
         return args[0]  # No sequential is needed.

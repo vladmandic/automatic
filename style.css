@@ -72,11 +72,11 @@ div.compact{
     padding: 0.05em 0;
 }
 
-.gradio-dropdown ul.options li.item:not(:has(.hide)) {
+.gradio-dropdown ul.options li.item.selected {
     background-color: var(--neutral-100);
 }
 
-.dark .gradio-dropdown ul.options li.item:not(:has(.hide)) {
+.dark .gradio-dropdown ul.options li.item.selected {
     background-color: var(--neutral-900);
 }
 
@@ -233,6 +233,9 @@ button.custom-button{
     margin-right: 0;
 }
 
+.performance .vram {
+}
+
 #txt2img_generate, #img2img_generate {
     min-height: 4.5em;
 }
@@ -307,10 +310,6 @@ div.dimensions-tools{
     max-width: fit-content;
     flex-direction: row;
     align-content: center;
-}
-
-div#extras_scale_to_tab div.form{
-    flex-direction: row;
 }
 
 #mode_img2img .gradio-image > div.fixed-height, #mode_img2img .gradio-image > div.fixed-height img{
@@ -830,18 +829,4 @@ footer {
 
 .extra-network-cards .card ul a:hover{
     color: red;
-}
-
-.theme-preview {
-    display: none;
-    position: fixed;
-    border: 4px solid var(--neutral-600);
-    box-shadow: 2px 2px 2px 2px var(--neutral-700);
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    max-width: 75vw;
-    z-index: 999;
 }

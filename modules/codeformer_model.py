@@ -1,11 +1,13 @@
 import os
 import sys
+import traceback
 
 import cv2
 import torch
 
 import modules.face_restoration
-from modules import shared, devices, modelloader, errors
+import modules.shared
+from modules import shared, devices, modelloader
 from modules.paths import models_path
 
 # codeformer people made a choice to include modified basicsr library to their project which makes
@@ -31,6 +33,7 @@ def setup_model(dirname):
     try:
         from torchvision.transforms.functional import normalize
         from modules.codeformer.codeformer_arch import CodeFormer
+        from basicsr.utils.download_util import load_file_from_url
         from basicsr.utils import imwrite, img2tensor, tensor2img
         from facelib.utils.face_restoration_helper import FaceRestoreHelper
         from facelib.detection.retinaface import retinaface
@@ -133,7 +136,8 @@ def setup_model(dirname):
         codeformer = FaceRestorerCodeFormer(dirname)
         shared.face_restorers.append(codeformer)
 
-    except Exception as e:
-        errors.display(e, 'codeformer')
+    except Exception:
+        print("Error setting up CodeFormer:", file=sys.stderr)
+        print(traceback.format_exc(), file=sys.stderr)
 
    # sys.path = stored_sys_path

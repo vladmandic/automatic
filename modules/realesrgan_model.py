@@ -1,19 +1,20 @@
 import os
 import sys
+import traceback
 
 import numpy as np
 from PIL import Image
 from basicsr.utils.download_util import load_file_from_url
+from realesrgan import RealESRGANer
 
 from modules.upscaler import Upscaler, UpscalerData
 from modules.shared import cmd_opts, opts
-import modules.errors as errors
 
 
 class UpscalerRealESRGAN(Upscaler):
     def __init__(self, path):
         self.name = "RealESRGAN"
-        self.model_path = path
+        self.user_path = path
         super().__init__()
         try:
             from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -26,31 +27,26 @@ class UpscalerRealESRGAN(Upscaler):
                 if scaler.name in opts.realesrgan_enabled_models:
                     self.scalers.append(scaler)
 
-        except Exception as e:
-            errors.display(e, 'real-esrgan')
+        except Exception:
+            print("Error importing Real-ESRGAN:", file=sys.stderr)
+            print(traceback.format_exc(), file=sys.stderr)
             self.enable = False
             self.scalers = []
 
-    def do_upscale(self, img, selected_model):
+    def do_upscale(self, img, path):
         if not self.enable:
             return img
 
-        try:
-            from realesrgan import RealESRGANer
-        except:
-            print("Error importing Real-ESRGAN:", file=sys.stderr)
-            return img
-
-        info = self.load_model(selected_model)
+        info = self.load_model(path)
         if not os.path.exists(info.local_data_path):
-            print(f"Unable to load RealESRGAN model: {info.name}")
+            print("Unable to load RealESRGAN model: %s" % info.name)
             return img
 
         upsampler = RealESRGANer(
             scale=info.scale,
             model_path=info.local_data_path,
             model=info.model(),
-            half=not cmd_opts.no_half and not opts.upcast_sampling,
+            half=not cmd_opts.no_half and not cmd_opts.upcast_sampling,
             tile=opts.ESRGAN_tile,
             tile_pad=opts.ESRGAN_tile_overlap,
         )
@@ -67,10 +63,12 @@ class UpscalerRealESRGAN(Upscaler):
             if info is None:
                 print(f"Unable to find model info: {path}")
                 return None
+
             info.local_data_path = load_file_from_url(url=info.data_path, model_dir=self.model_path, progress=True)
             return info
         except Exception as e:
-            errors.display(e, 'real-esrgan model list')
+            print(f"Error making Real-ESRGAN models list: {e}", file=sys.stderr)
+            print(traceback.format_exc(), file=sys.stderr)
         return None
 
     def load_models(self, _):
@@ -126,6 +124,6 @@ def get_realesrgan_models(scaler):
             ),
         ]
         return models
-    except Exception:
-        print("Error creating Real-ESRGAN models list", file=sys.stderr)
-        return []
+    except Exception as e:
+        print("Error making Real-ESRGAN models list:", file=sys.stderr)
+        print(traceback.format_exc(), file=sys.stderr)

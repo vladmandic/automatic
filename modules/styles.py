@@ -49,8 +49,7 @@ class StyleDatabase:
         self.styles.clear()
 
         if not os.path.exists(self.path):
-            print(f'Creating styles database: {self.path}')
-            self.save_styles(self.path)
+            return
 
         with open(self.path, "r", encoding="utf-8-sig", newline='') as file:
             reader = csv.DictReader(file)
@@ -80,5 +79,9 @@ class StyleDatabase:
             # and collections.NamedTuple has explicit documentation for accessing _fields. Same goes for _asdict()
             writer = csv.DictWriter(file, fieldnames=PromptStyle._fields)
             writer.writeheader()
-            writer.writerows(style._asdict() for k, style in self.styles.items())
+            writer.writerows(style._asdict() for k,     style in self.styles.items())
+
+        # Always keep a backup file around
+        if os.path.exists(path):
+            shutil.move(path, path + ".bak")
         shutil.move(temp_path, path)
