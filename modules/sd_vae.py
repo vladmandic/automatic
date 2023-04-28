@@ -1,22 +1,18 @@
-import torch
-import safetensors.torch
 import os
 import collections
-from collections import namedtuple
-from modules import paths, shared, devices, script_callbacks, sd_models
 import glob
 from copy import deepcopy
+from rich import print # pylint: disable=redefined-builtin
+import torch
+from modules import paths, shared, devices, script_callbacks, sd_models
 
 
-vae_path = os.path.abspath(os.path.join(paths.models_path, "VAE"))
 vae_ignore_keys = {"model_ema.decay", "model_ema.num_updates"}
 vae_dict = {}
-
-
 base_vae = None
 loaded_vae_file = None
 checkpoint_info = None
-
+vae_path = os.path.abspath(os.path.join(paths.models_path, 'VAE'))
 checkpoints_loaded = collections.OrderedDict()
 
 def get_base_vae(model):
@@ -26,7 +22,7 @@ def get_base_vae(model):
 
 
 def store_base_vae(model):
-    global base_vae, checkpoint_info
+    global base_vae, checkpoint_info # pylint: disable=global-statement
     if checkpoint_info != model.sd_checkpoint_info:
         assert not loaded_vae_file, "Trying to store non-base VAE!"
         base_vae = deepcopy(model.first_stage_model.state_dict())
@@ -34,13 +30,13 @@ def store_base_vae(model):
 
 
 def delete_base_vae():
-    global base_vae, checkpoint_info
+    global base_vae, checkpoint_info # pylint: disable=global-statement
     base_vae = None
     checkpoint_info = None
 
 
 def restore_base_vae(model):
-    global loaded_vae_file
+    global loaded_vae_file # pylint: disable=global-statement
     if base_vae is not None and checkpoint_info == model.sd_checkpoint_info:
         print("Restoring base VAE")
         _load_vae_dict(model, base_vae)
@@ -53,33 +49,32 @@ def get_filename(filepath):
 
 
 def refresh_vae_list():
+    global vae_path # pylint: disable=global-statement
+    vae_path = shared.opts.vae_dir
     vae_dict.clear()
 
-    paths = [
+    vae_paths = [
         os.path.join(sd_models.model_path, '**/*.vae.ckpt'),
         os.path.join(sd_models.model_path, '**/*.vae.pt'),
         os.path.join(sd_models.model_path, '**/*.vae.safetensors'),
-        os.path.join(vae_path, '**/*.ckpt'),
-        os.path.join(vae_path, '**/*.pt'),
-        os.path.join(vae_path, '**/*.safetensors'),
+        os.path.join(shared.opts.vae_dir, '**/*.ckpt'),
+        os.path.join(shared.opts.vae_dir, '**/*.pt'),
+        os.path.join(shared.opts.vae_dir, '**/*.safetensors'),
     ]
-
-    if shared.cmd_opts.ckpt_dir is not None and os.path.isdir(shared.cmd_opts.ckpt_dir):
-        paths += [
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.ckpt'),
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.pt'),
-            os.path.join(shared.cmd_opts.ckpt_dir, '**/*.vae.safetensors'),
+    if shared.opts.ckpt_dir is not None and os.path.isdir(shared.opts.ckpt_dir):
+        vae_paths += [
+            os.path.join(shared.opts.ckpt_dir, '**/*.vae.ckpt'),
+            os.path.join(shared.opts.ckpt_dir, '**/*.vae.pt'),
+            os.path.join(shared.opts.ckpt_dir, '**/*.vae.safetensors'),
         ]
-
-    if shared.cmd_opts.vae_dir is not None and os.path.isdir(shared.cmd_opts.vae_dir):
-        paths += [
-            os.path.join(shared.cmd_opts.vae_dir, '**/*.ckpt'),
-            os.path.join(shared.cmd_opts.vae_dir, '**/*.pt'),
-            os.path.join(shared.cmd_opts.vae_dir, '**/*.safetensors'),
+    if shared.opts.vae_dir is not None and os.path.isdir(shared.opts.vae_dir):
+        vae_paths += [
+            os.path.join(shared.opts.vae_dir, '**/*.ckpt'),
+            os.path.join(shared.opts.vae_dir, '**/*.pt'),
+            os.path.join(shared.opts.vae_dir, '**/*.safetensors'),
         ]
-
     candidates = []
-    for path in paths:
+    for path in vae_paths:
         candidates += glob.iglob(path, recursive=True)
 
     for filepath in candidates:
@@ -97,14 +92,19 @@ def find_vae_near_checkpoint(checkpoint_file):
 
 
 def resolve_vae(checkpoint_file):
-    if shared.cmd_opts.vae_path is not None:
-        return shared.cmd_opts.vae_path, 'from commandline argument'
+    if shared.cmd_opts.vae is not None:
+        return shared.cmd_opts.vae, 'forced'
 
     is_automatic = shared.opts.sd_vae in {"Automatic", "auto"}  # "auto" for people with old config
 
     vae_near_checkpoint = find_vae_near_checkpoint(checkpoint_file)
-    if vae_near_checkpoint is not None and (shared.opts.sd_vae_as_default or is_automatic):
-        return vae_near_checkpoint, 'found near the checkpoint'
+    if vae_near_checkpoint is not None and (shared.opts.sd_vae_as_default):
+        return vae_near_checkpoint, 'near checkpoint'
+
+    if is_automatic:
+        for named_vae_location in [os.path.join(vae_path, os.path.splitext(os.path.basename(checkpoint_file))[0] + ".vae.pt"), os.path.join(vae_path, os.path.splitext(os.path.basename(checkpoint_file))[0] + ".vae.ckpt"), os.path.join(vae_path, os.path.splitext(os.path.basename(checkpoint_file))[0] + ".vae.safetensors")]:
+            if os.path.isfile(named_vae_location):
+                return named_vae_location, 'in VAE dir'
 
     if shared.opts.sd_vae == "None":
         return None, None
@@ -114,19 +114,19 @@ def resolve_vae(checkpoint_file):
         return vae_from_options, 'specified in settings'
 
     if not is_automatic:
-        print(f"Couldn't find VAE named {shared.opts.sd_vae}; using None instead")
+        print(f"VAE not found: {shared.opts.sd_vae}")
 
     return None, None
 
 
-def load_vae_dict(filename, map_location):
-    vae_ckpt = sd_models.read_state_dict(filename, map_location=map_location)
+def load_vae_dict(filename):
+    vae_ckpt = sd_models.read_state_dict(filename)
     vae_dict_1 = {k: v for k, v in vae_ckpt.items() if k[0:4] != "loss" and k not in vae_ignore_keys}
     return vae_dict_1
 
 
 def load_vae(model, vae_file=None, vae_source="from unknown source"):
-    global vae_dict, loaded_vae_file
+    global loaded_vae_file # pylint: disable=global-statement
     # save_settings = False
 
     cache_enabled = shared.opts.sd_vae_checkpoint_cache > 0
@@ -139,10 +139,9 @@ def load_vae(model, vae_file=None, vae_source="from unknown source"):
             _load_vae_dict(model, checkpoints_loaded[vae_file])
         else:
             assert os.path.isfile(vae_file), f"VAE {vae_source} doesn't exist: {vae_file}"
-            print(f"Loading VAE weights {vae_source}: {vae_file}")
             store_base_vae(model)
 
-            vae_dict_1 = load_vae_dict(vae_file, map_location=shared.weight_load_location)
+            vae_dict_1 = load_vae_dict(vae_file)
             _load_vae_dict(model, vae_dict_1)
 
             if cache_enabled:
@@ -173,7 +172,7 @@ def _load_vae_dict(model, vae_dict_1):
 
 
 def clear_loaded_vae():
-    global loaded_vae_file
+    global loaded_vae_file # pylint: disable=global-statement
     loaded_vae_file = None
 
 
@@ -181,11 +180,12 @@ unspecified = object()
 
 
 def reload_vae_weights(sd_model=None, vae_file=unspecified):
-    from modules import lowvram, devices, sd_hijack
+    from modules import lowvram, sd_hijack
 
     if not sd_model:
         sd_model = shared.sd_model
 
+    global checkpoint_info # pylint: disable=global-statement
     checkpoint_info = sd_model.sd_checkpoint_info
     checkpoint_file = checkpoint_info.filename
 
@@ -203,6 +203,8 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         sd_model.to(devices.cpu)
 
     sd_hijack.model_hijack.undo_hijack(sd_model)
+    if shared.cmd_opts.rollback_vae and devices.dtype_vae == torch.bfloat16:
+        devices.dtype_vae = torch.float16
 
     load_vae(sd_model, vae_file, vae_source)
 

@@ -3,7 +3,6 @@ import json
 import numpy as np
 import zlib
 from PIL import Image, PngImagePlugin, ImageDraw, ImageFont
-from fonts.ttf import Roboto
 import torch
 from modules.shared import opts
 
@@ -132,15 +131,10 @@ def extract_image_data_embed(image):
 
 def caption_image_overlay(srcimage, title, footerLeft, footerMid, footerRight, textfont=None):
     from math import cos
-
     image = srcimage.copy()
     fontsize = 32
     if textfont is None:
-        try:
-            textfont = ImageFont.truetype(opts.font or Roboto, fontsize)
-            textfont = opts.font or Roboto
-        except Exception:
-            textfont = Roboto
+        textfont = opts.font or 'javascript/roboto.ttf'
 
     factor = 1.5
     gradient = Image.new('RGBA', (1, image.size[1]), color=(0, 0, 0, 0))

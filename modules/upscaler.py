@@ -2,11 +2,8 @@ import os
 from abc import abstractmethod
 
 import PIL
-import numpy as np
-import torch
 from PIL import Image
 
-import modules.shared
 from modules import modelloader, shared
 
 LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
@@ -22,18 +19,18 @@ class Upscaler:
     filter = None
     model = None
     user_path = None
-    scalers: []
+    scalers = []
     tile = True
 
     def __init__(self, create_dirs=False):
         self.mod_pad_h = None
-        self.tile_size = modules.shared.opts.ESRGAN_tile
-        self.tile_pad = modules.shared.opts.ESRGAN_tile_overlap
-        self.device = modules.shared.device
+        self.tile_size = shared.opts.ESRGAN_tile
+        self.tile_pad = shared.opts.ESRGAN_tile_overlap
+        self.device = shared.device
         self.img = None
         self.output = None
         self.scale = 1
-        self.half = not modules.shared.cmd_opts.no_half
+        self.half = not shared.cmd_opts.no_half
         self.pre_pad = 0
         self.mod_scale = None
 
@@ -57,7 +54,7 @@ class Upscaler:
         dest_w = int(img.width * scale)
         dest_h = int(img.height * scale)
 
-        for i in range(3):
+        for _i in range(3):
             shape = (img.width, img.height)
 
             img = self.do_upscale(img, selected_model)
@@ -77,7 +74,7 @@ class Upscaler:
     def load_model(self, path: str):
         pass
 
-    def find_models(self, ext_filter=None) -> list:
+    def find_models(self, ext_filter=None) -> list: # pylint: disable=unused-argument
         return modelloader.load_models(model_path=self.model_path, model_url=self.model_url, command_path=self.user_path)
 
     def update_status(self, prompt):
@@ -110,7 +107,7 @@ class UpscalerNone(Upscaler):
     def do_upscale(self, img, selected_model=None):
         return img
 
-    def __init__(self, dirname=None):
+    def __init__(self, dirname=None): # pylint: disable=unused-argument
         super().__init__(False)
         self.scalers = [UpscalerData("None", None, self)]
 
@@ -124,7 +121,7 @@ class UpscalerLanczos(Upscaler):
     def load_model(self, _):
         pass
 
-    def __init__(self, dirname=None):
+    def __init__(self, dirname=None): # pylint: disable=unused-argument
         super().__init__(False)
         self.name = "Lanczos"
         self.scalers = [UpscalerData("Lanczos", None, self)]
@@ -139,7 +136,7 @@ class UpscalerNearest(Upscaler):
     def load_model(self, _):
         pass
 
-    def __init__(self, dirname=None):
+    def __init__(self, dirname=None): # pylint: disable=unused-argument
         super().__init__(False)
         self.name = "Nearest"
         self.scalers = [UpscalerData("Nearest", None, self)]
