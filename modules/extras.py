@@ -1,15 +1,14 @@
 import os
 import re
+import html
 import shutil
-
 
 import torch
 import tqdm
-
-from modules import shared, images, sd_models, sd_vae, sd_models_config
-from modules.ui_common import plaintext_to_html
 import gradio as gr
 import safetensors.torch
+
+from modules import shared, images, sd_models, sd_vae, sd_models_config
 
 
 def run_pnginfo(image):
@@ -21,12 +20,7 @@ def run_pnginfo(image):
 
     info = ''
     for key, text in items.items():
-        info += f"""
-<div>
-<p><b>{plaintext_to_html(str(key))}</b></p>
-<p>{plaintext_to_html(str(text))}</p>
-</div>
-""".strip()+"\n"
+        info += f"<div><b>{html.escape(str(key))}</b>: {html.escape(str(text))}</div>"
 
     if len(info) == 0:
         message = "Nothing found in the image."
@@ -135,16 +129,16 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     result_is_instruct_pix2pix_model = False
 
     if theta_func2:
-        shared.state.textinfo = f"Loading B"
+        shared.state.textinfo = "Loading B"
         print(f"Loading {secondary_model_info.filename}...")
-        theta_1 = sd_models.read_state_dict(secondary_model_info.filename, map_location='cpu')
+        theta_1 = sd_models.read_state_dict(secondary_model_info.filename)
     else:
         theta_1 = None
 
     if theta_func1:
-        shared.state.textinfo = f"Loading C"
+        shared.state.textinfo = "Loading C"
         print(f"Loading {tertiary_model_info.filename}...")
-        theta_2 = sd_models.read_state_dict(tertiary_model_info.filename, map_location='cpu')
+        theta_2 = sd_models.read_state_dict(tertiary_model_info.filename)
 
         shared.state.textinfo = 'Merging B and C'
         shared.state.sampling_steps = len(theta_1.keys())
@@ -166,7 +160,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
 
     shared.state.textinfo = f"Loading {primary_model_info.filename}..."
     print(f"Loading {primary_model_info.filename}...")
-    theta_0 = sd_models.read_state_dict(primary_model_info.filename, map_location='cpu')
+    theta_0 = sd_models.read_state_dict(primary_model_info.filename)
 
     print("Merging...")
     shared.state.textinfo = 'Merging A and B'
@@ -198,7 +192,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
                     result_is_inpainting_model = True
             else:
                 theta_0[key] = theta_func2(a, b, multiplier)
-            
+
             theta_0[key] = to_half(theta_0[key], save_as_half)
 
         shared.state.sampling_step += 1
@@ -209,7 +203,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     if bake_in_vae_filename is not None:
         print(f"Baking in VAE from {bake_in_vae_filename}")
         shared.state.textinfo = 'Baking in VAE'
-        vae_dict = sd_vae.load_vae_dict(bake_in_vae_filename, map_location='cpu')
+        vae_dict = sd_vae.load_vae_dict(bake_in_vae_filename)
 
         for key in vae_dict.keys():
             theta_0_key = 'first_stage_model.' + key
@@ -228,7 +222,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
             if re.search(regex, key):
                 theta_0.pop(key, None)
 
-    ckpt_dir = shared.cmd_opts.ckpt_dir or sd_models.model_path
+    ckpt_dir = shared.opts.ckpt_dir or sd_models.model_path
 
     filename = filename_generator() if custom_name == '' else custom_name
     filename += ".inpainting" if result_is_inpainting_model else ""
