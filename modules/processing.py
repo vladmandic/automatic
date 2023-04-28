@@ -751,10 +751,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     if opts.save and not p.do_not_save_samples and opts.save_images_before_face_restoration:
                         images.save_image(Image.fromarray(x_sample), p.outpath_samples, "", seeds[i], prompts[i], opts.samples_format, info=infotext(n, i), p=p, suffix="-before-face-restoration")
 
-                        devices.torch_gc()
+                    devices.torch_gc()
 
-                        x_sample = modules.face_restoration.restore_faces(x_sample)
-                        devices.torch_gc()
+
+                    x_sample = modules.face_restoration.restore_faces(x_sample)
+
+                    devices.torch_gc()
+
 
                 image = Image.fromarray(x_sample)
 
@@ -796,11 +799,14 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     if opts.return_mask_composite:
                         output_images.append(image_mask_composite)
 
-                del x_samples_ddim
+            del x_samples_ddim
 
-                devices.torch_gc()
 
-                state.nextjob()
+            devices.torch_gc()
+
+
+            state.nextjob()
+
 
         p.color_corrections = None
 

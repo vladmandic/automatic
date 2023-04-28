@@ -13,7 +13,6 @@ from diffusers import DiffusionPipeline, UniPCMultistepScheduler
 
 startup_timer = timer.Timer()
 
-
 import torch # pylint: disable=C0411
 import torchvision # pylint: disable=W0611,C0411
 import pytorch_lightning # pytorch_lightning should be imported after torch, but it re-enables warnings on import so import once to disable them # pylint: disable=W0611,C0411

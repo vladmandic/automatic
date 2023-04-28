@@ -1,5 +1,4 @@
 import modules.scripts
-from typing import List
 from modules import sd_samplers
 from modules.generation_parameters_copypaste import create_override_settings_dict
 from modules.processing import StableDiffusionProcessingTxt2Img, process_images
@@ -43,11 +42,9 @@ def txt2img(id_task: str, prompt: str, negative_prompt: str, prompt_styles, step
     )
     p.scripts = modules.scripts.scripts_txt2img
     p.script_args = args
-
     processed = modules.scripts.scripts_txt2img.run(p, *args)
     if processed is None:
         processed = process_images(p)
-
     p.close()
     shared.total_tqdm.clear()
     generation_info_js = processed.js()
