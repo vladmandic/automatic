@@ -753,11 +753,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
                     devices.torch_gc()
 
-
                     x_sample = modules.face_restoration.restore_faces(x_sample)
-
                     devices.torch_gc()
-
 
                 image = Image.fromarray(x_sample)
 
@@ -801,12 +798,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             del x_samples_ddim
 
-
             devices.torch_gc()
 
-
             state.nextjob()
-
 
         p.color_corrections = None
 
