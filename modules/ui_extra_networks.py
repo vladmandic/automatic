@@ -56,6 +56,7 @@ class ExtraNetworksPage:
         self.name = title.lower()
         self.card_long = shared.html("extra-networks-card-long.html")
         self.card_short = shared.html("extra-networks-card-short.html")
+        self.card_page_advanced = shared.html("extra-networks-card-advanced.html")
         self.allow_negative_prompt = False
         self.metadata = {}
 
@@ -113,6 +114,7 @@ class ExtraNetworksPage:
 {items_html}
 </div>
 """
+ 
         return res
 
     def list_items(self):
@@ -128,25 +130,45 @@ class ExtraNetworksPage:
             onclick = '"' + html.escape(f"""return cardClicked({json.dumps(tabname)}, {item["prompt"]}, {"true" if self.allow_negative_prompt else "false"})""") + '"'
         height = f"height: {shared.opts.extra_networks_card_height}px;" if shared.opts.extra_networks_card_height else ''
         width = f"width: {shared.opts.extra_networks_card_width}px;" if shared.opts.extra_networks_card_width else ''
+        height_advanced_view = f"height: {shared.opts.extra_networks_advanced_card_height}px;" if shared.opts.extra_networks_advanced_card_height else ''
+        width_advanced_view = f"width: {shared.opts.extra_networks_advanced_card_width}px;" if shared.opts.extra_networks_advanced_card_width else ''
+        image_w_advanced_view = f"flex-basis: {shared.opts.extra_networks_advanced_card_image_width}px;" if shared.opts.extra_networks_advanced_card_image_width else ''
+        current_view = shared.opts.extra_networks_default_view 
+
         background_image = f"background-image: url(\"{html.escape(preview)}\");" if preview else ''
+        metadata_button = ""
+        metadata = item.get("metadata")
+        if metadata:
+            metadata_button = f"<div class='metadata-button' title='Show metadata' onclick='extraNetworksRequestMetadata(event, {json.dumps(self.name)}, {json.dumps(item['name'])})'></div>"
+
         args = {
             "style": f"'{height}{width}{background_image}'",
+            "style_advanced_size": f"'{height_advanced_view}{width_advanced_view}'",
+            "style_advanced_image_w": f"'{image_w_advanced_view}{background_image}'",
             "prompt": item.get("prompt", None),
             "tabname": json.dumps(tabname),
             "local_preview": json.dumps(item["local_preview"]),
             "name": item["name"],
             "description": (item.get("description") or ""),
             "card_clicked": onclick,
-            "save_card_description": '"' + html.escape(f"""return saveCardDescription(event, {json.dumps(tabname)}, {json.dumps(item["local_preview"])})""") + '"',
+            "current_view": current_view,
             "save_card_preview": '"' + html.escape(f"""return saveCardPreview(event, {json.dumps(tabname)}, {json.dumps(item["local_preview"])})""") + '"',
-            "read_card_description": '"' + html.escape(f"""return readCardDescription(event, {json.dumps(tabname)}, {json.dumps(item["local_preview"])}, {json.dumps(item["description"])}, {json.dumps(self.name)}, {json.dumps(item["name"])})""") + '"',
             "search_term": item.get("search_term", ""),
             "read_card_metadata": '"' + html.escape(f"""return readCardMetadata(event, {json.dumps(self.name)}, {json.dumps(item["name"])})""") + '"',
+                    "save_card_description": '"' + html.escape(f"""return saveCardDescription(event, {json.dumps(tabname)}, {json.dumps(item["local_preview"])}, {json.dumps(current_view)}, {json.dumps(item["name"])}, {json.dumps(item["description"])})""") + '"',
+            "read_card_description": '"' + html.escape(f"""return readCardDescription(event, {json.dumps(tabname)}, {json.dumps(item["local_preview"])}, {json.dumps(current_view)}, {json.dumps(item["name"])}, {json.dumps(item["description"])})""") + '"',
+            "toggle_read_edit": '"' + html.escape(f"""return toggleEditSwitch(event, {json.dumps(tabname)}, {json.dumps(current_view)}, {json.dumps(item["name"])})""") + '"',
+            "metadata_button": metadata_button,
         }
+        if current_view == "advanced":
+            return self.card_page_advanced.format(**args)
         if item.get("metadata"):
             return self.card_long.format(**args)
         else:
             return self.card_short.format(**args)
+
+ 
+
 
     def find_preview(self, path):
         """
@@ -188,7 +210,13 @@ class ExtraNetworksUi:
         self.button_read_description = None
         self.description_target_filename = None
         self.description_input = None
+        self.description_target_input = None
+
         self.tabname = None
+        self.current_view = None
+        self.view_choices_in_setting = None
+        self.control_change_view = None
+        # self.btns_change_view = None
 
 
 def pages_in_preferred_order(pages):
@@ -208,21 +236,39 @@ def create_ui(container, button, tabname):
     ui.pages = []
     ui.stored_extra_pages = pages_in_preferred_order(extra_pages.copy())
     ui.tabname = tabname
-    with gr.Tabs(elem_id=tabname+"_extra_tabs"):
+    ui.current_view = shared.opts.extra_networks_default_view
+    ui.view_choices_in_setting = shared.opts.data_labels["extra_networks_default_view"].component_args["choices"]
+
+    with gr.Tabs(elem_id=tabname+"_extra_tabs") as tabs:
         for page in ui.stored_extra_pages:
             with gr.Tab(page.title):
                 page_elem = gr.HTML(page.create_html(ui.tabname))
                 ui.pages.append(page_elem)
-    _filter = gr.Textbox('', show_label=False, elem_id=tabname+"_extra_search", placeholder="Search...", visible=False)
-    ui.description_input = gr.TextArea('', show_label=False, elem_id=tabname+"_description_input", placeholder="Save/Replace Extra Network Description...", lines=2)
-    button_refresh = ToolButton(refresh_symbol, elem_id=tabname+"_extra_refresh")
+
+    filter = gr.Textbox('', show_label=False, elem_id=tabname+"_extra_search", placeholder="Search...", visible=False)
+    button_refresh = gr.Button('Refresh', elem_id=tabname+"_extra_refresh")
     button_close = ToolButton(close_symbol, elem_id=tabname+"_extra_close")
+
+    if ui.current_view == "advanced" :
+        ui.description_input = gr.TextArea('', show_label=False, elem_id=tabname+"_description_input", visible=False)
+    else:
+        ui.description_input = gr.TextArea('', show_label=False, elem_id=tabname+"_description_input", placeholder="Save/Replace Extra Network Description...", lines=2)
+
     ui.button_save_preview = gr.Button('Save preview', elem_id=tabname+"_save_preview", visible=False)
     ui.preview_target_filename = gr.Textbox('Preview save filename', elem_id=tabname+"_preview_filename", visible=False)
     ui.button_save_description = gr.Button('Save description', elem_id=tabname+"_save_description", visible=False)
     ui.button_read_description = gr.Button('Read description', elem_id=tabname+"_read_description", visible=False)
     ui.description_target_filename = gr.Textbox('Description save filename', elem_id=tabname+"_description_filename", visible=False)
 
+    # change view control (dropdown) - *if value set = ui.current_view, unknow bug in JS appendChild, JS will reset the value wrong.
+    ui.control_change_view = gr.Dropdown(ui.view_choices_in_setting, 
+                                         value = "Change View",
+                                         label="*Will Force Reload UI", 
+                                         elem_id=tabname+"_control_change_view", 
+                                         elem_classes='extra-view-dropdown-control',
+                                         show_label=True, 
+                                         visible=True)
+    
     def toggle_visibility(is_visible):
         is_visible = not is_visible
         return is_visible, gr.update(visible=is_visible), gr.update(variant=("secondary-down" if is_visible else "secondary"))
@@ -239,6 +285,27 @@ def create_ui(container, button, tabname):
         return res
 
     button_refresh.click(fn=refresh, inputs=[], outputs=ui.pages)
+
+    # view changer function
+    def handle_view_change(view):
+        view = view.split(" ")[0].lower()
+        if view in ui.view_choices_in_setting and view != ui.current_view:
+            shared.opts.set('extra_networks_default_view', f"{view}")
+            shared.state.interrupt()
+            shared.state.need_restart = True
+            print(f'previous view {ui.current_view}, set new view {view}, restarting')
+        elif view == ui.current_view:
+            print(f'You are trying to set: ({view}) = current view: ({ui.current_view}), nothing changes')
+        elif view not in ui.view_choices_in_setting:
+            raise ValueError(f"Invalid view: ({view}), in type ({type(view)})")
+
+    ui.control_change_view.change(
+        fn=handle_view_change,
+        _js='function(x){restart_by_press_btn(); return x}',
+        inputs=[ui.control_change_view],
+        outputs=[]
+    )
+
     return ui
 
 
@@ -283,7 +350,12 @@ def setup_ui(ui, gallery):
     # write description to a file
     def save_description(filename,descrip):
         lastDotIndex = filename.rindex('.')
-        filename = filename[0:lastDotIndex]+".description.txt"
+        filename = filename[0:lastDotIndex]
+        if filename.endswith(".preview"):
+            filename = filename[:-8] + ".description.txt"
+        else:
+            filename = filename + ".description.txt"
+
         if descrip != "":
             try:
                 f = open(filename,'w', encoding='utf-8')

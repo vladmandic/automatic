@@ -284,6 +284,10 @@ function restart_reload(){
     setTimeout(function(){location.reload()},8000)
     return []
 }
+// click the pre-existing restart btn to reload
+function restart_by_press_btn(){
+    gradioApp().getElementById('restart_submit').click()
+}
 
 // Simulate an `input` DOM event for Gradio Textbox component. Needed after you edit its contents in javascript, otherwise your edits
 // will only visible on web page and not sent to python.
