@@ -2,7 +2,7 @@ import argparse
 import os
 from modules.paths_internal import data_path, sd_default_config, sd_model_file
 
-parser = argparse.ArgumentParser(description="Stable Diffusion", formatter_class=lambda prog: argparse.HelpFormatter(prog,max_help_position=55,indent_increment=2,width=200))
+parser = argparse.ArgumentParser(description="Stable Diffusion", conflict_handler='resolve', formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=55, indent_increment=2, width=200))
 
 parser.add_argument("-f", action='store_true', help=argparse.SUPPRESS)  # allows running as root; implemented outside of webui
 parser.add_argument("--ui-settings-file", type=str, help=argparse.SUPPRESS, default=os.path.join(data_path, 'config.json'))
@@ -79,7 +79,7 @@ def compatibility_args(opts, args):
     opts.use_old_emphasis_implementation = False
     opts.use_old_karras_scheduler_sigmas = False
     opts.no_dpmpp_sde_batch_determinism = False
-    opts.use_old_hires_fix_width_height = False
+    opts.lora_apply_to_outputs = False
 
     parser.add_argument("--lora-dir", help=argparse.SUPPRESS, default=opts.lora_dir)
     args = parser.parse_args()

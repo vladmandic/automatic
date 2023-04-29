@@ -10,7 +10,7 @@ try:
     from modules.cmd_args import parser
 except:
     import argparse
-    parser = argparse.ArgumentParser(description="Stable Diffusion", formatter_class=lambda prog: argparse.HelpFormatter(prog,max_help_position=55,indent_increment=2,width=200))
+    parser = argparse.ArgumentParser(description="Stable Diffusion", conflict_handler='resolve', formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=55, indent_increment=2, width=200))
 
 
 class Dot(dict): # dot notation access to dictionary attributes
@@ -50,6 +50,7 @@ def setup_logging(clean=False):
     rh = RichHandler(show_time=True, omit_repeated_times=False, show_level=True, show_path=False, markup=False, rich_tracebacks=True, log_time_format='%H:%M:%S-%f', level=logging.DEBUG if args.debug else logging.INFO, console=console)
     rh.set_name(logging.DEBUG if args.debug else logging.INFO)
     log.addHandler(rh)
+
 
 # check if package is installed
 def installed(package, friendly: str = None):
@@ -391,6 +392,9 @@ def check_extensions():
         for ext in extensions:
             newest = 0
             extension_dir = os.path.join(folder, ext)
+            if not os.path.isdir(extension_dir):
+                log.debug(f'Extension listed as installed but folder missing: {extension_dir}')
+                continue
             for f in os.listdir(extension_dir):
                 if '.json' in f or '.csv' in f or '__pycache__' in f:
                     continue
@@ -482,12 +486,9 @@ def check_timestamp():
     return ok
 
 
-def parse_args():
-    # command line args
-    # parser = argparse.ArgumentParser(description = 'Setup for SD WebUI')
-    if vars(parser)['_option_string_actions'].get('--debug', None) is not None:
-        return
-    parser.add_argument('--debug', default = False, action='store_true', help = "Run installer with debug logging, default: %(default)s")
+def add_args():
+    if vars(parser)['_option_string_actions'].get('--debug', None) is None:
+        parser.add_argument('--debug', default = False, action='store_true', help = "Run installer with debug logging, default: %(default)s")
     parser.add_argument('--reset', default = False, action='store_true', help = "Reset main repository to latest version, default: %(default)s")
     parser.add_argument('--upgrade', default = False, action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     parser.add_argument('--noupdate', default = False, action='store_true', help = "Skip update of extensions and submodules, default: %(default)s")
@@ -495,6 +496,10 @@ def parse_args():
     parser.add_argument('--skip-extensions', default = False, action='store_true', help = "Skips running individual extension installers, default: %(default)s")
     parser.add_argument('--skip-git', default = False, action='store_true', help = "Skips running all GIT operations, default: %(default)s")
     parser.add_argument('--experimental', default = False, action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
+
+
+def parse_args():
+    # command line args
     global args # pylint: disable=global-statement
     args = parser.parse_args()
 
