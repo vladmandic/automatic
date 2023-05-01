@@ -75,11 +75,24 @@ def compatibility_args(opts, args):
     parser.add_argument("--sub-quad-q-chunk-size", help=argparse.SUPPRESS, default=opts.sub_quad_q_chunk_size)
     parser.add_argument("--sub-quad-kv-chunk-size", help=argparse.SUPPRESS, default=opts.sub_quad_kv_chunk_size)
     parser.add_argument("--sub-quad-chunk-threshold", help=argparse.SUPPRESS, default=opts.sub_quad_chunk_threshold)
+    parser.add_argument('--debug', default = False, action='store_true', help = "Run installer with debug logging, default: %(default)s")
 
     opts.use_old_emphasis_implementation = False
     opts.use_old_karras_scheduler_sigmas = False
     opts.no_dpmpp_sde_batch_determinism = False
     opts.lora_apply_to_outputs = False
+    opts.do_not_show_images = False
+    opts.add_model_hash_to_info = True
+    opts.add_model_name_to_info = True
+    opts.js_modal_lightbox = True
+    opts.js_modal_lightbox_initially_zoomed = True
+    opts.show_progress_in_title = False
+    opts.sd_vae_as_default = True
+    opts.enable_emphasis = True
+    opts.enable_batch_seeds = True
+    opts.multiple_tqdm = False
+    opts.print_hypernet_extra = False
+    opts.dimensions_and_batch_together = True
 
     parser.add_argument("--lora-dir", help=argparse.SUPPRESS, default=opts.lora_dir)
     args = parser.parse_args()
