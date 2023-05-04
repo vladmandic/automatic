@@ -154,3 +154,6 @@ if __name__ == "__main__":
                 installer.log.info('Exiting...')
                 break
         time.sleep(1)
+    else:
+        import webui
+        webui.webui()
