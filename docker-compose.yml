@@ -6,8 +6,8 @@ services:
       context: .
       args:
         UID: "1000"
+        INSTALLDIR: "/webui"
     command: |
-      --data-dir=/webui/repo/data
       --listen
     ports:
       - "7860:7860"

@@ -148,6 +148,43 @@ The launcher can perform automatic update of main repository, requirements, exte
 
 ## Other
 
+### Docker Image
+
+The Dockerfile currently supports only NVIDIA GPUs and is made as simple as possible to work with HuggingFace Integrations.
+
+#### Requirement
+
+* [Docker](https://docs.docker.com/engine/install/)
+* [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+
+#### Setup
+
+- ARGS
+    - UID is the user ID for the Docker Container (default 1000 for hugging face)
+    - INSTALLDIR is the directory to install the container on the file system (default "/webui")
+
+- RUNNING
+
+      docker compose build
+
+#### Usage
+
+    docker compose up
+
+After startup, you can access to http://localhost:7860.
+
+#### Configure
+
+Create `docker-compose.override.yml` to change the command arguments or data location.
+
+```yaml
+services:
+  nvidia:
+    command: |
+      --data-dir=/webui/data
+      --listen
+```
+
 ### Scripts
 
 This repository comes with a large collection of scripts that can be used to process inputs, train, generate, and benchmark models  
