@@ -1,0 +1,23 @@
+version: "3.9"
+name: sd-automatic
+services:
+  nvidia:
+    build:
+      context: .
+      args:
+        UID: "1000"
+    command: |
+      --data-dir=/webui/repo/data
+      --listen
+    ports:
+      - "7860:7860"
+    tmpfs:
+      - /tmp
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

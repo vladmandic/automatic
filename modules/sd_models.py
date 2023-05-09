@@ -116,13 +116,11 @@ def list_models():
     shared.log.info(f'Available models: {shared.opts.ckpt_dir} {len(checkpoints_list)}')
     if len(checkpoints_list) == 0:
         if not shared.cmd_opts.no_download:
-            key = input('Download the default model? (y/N) ')
-            if key.lower().startswith('y'):
-                model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
-                model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="v1-5-pruned-emaonly.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
-                for filename in sorted(model_list, key=str.lower):
-                    checkpoint_info = CheckpointInfo(filename)
-                    checkpoint_info.register()
+            model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+            model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="v1-5-pruned-emaonly.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
+            for filename in sorted(model_list, key=str.lower):
+                checkpoint_info = CheckpointInfo(filename)
+                checkpoint_info.register()
 
 
 def get_closet_checkpoint_match(search_string):
