@@ -27,6 +27,7 @@ group.add_argument("--authfile", type=str, help='Set access authentication using
 group.add_argument("--autolaunch", action='store_true', help="Open the UI URL in the system's default browser upon launch", default=False)
 group.add_argument("--api-auth", type=str, help='Set API authentication, default: %(default)s', default=None)
 group.add_argument("--api-log", default=False, action='store_true', help="Enable logging of all API requests, default: %(default)s")
+group.add_argument("--api-only", action='store_true', help="Run in API-Only Mode.", default=False)
 group.add_argument("--device-id", type=str, help="Select the default CUDA device to use, default: %(default)s", default=None)
 group.add_argument("--cors-origins", type=str, help="Allowed CORS origins as comma-separated list, default: %(default)s", default=None)
 group.add_argument("--cors-regex", type=str, help="Allowed CORS origins as regular expression, default: %(default)s", default=None)
