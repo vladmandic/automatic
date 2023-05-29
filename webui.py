@@ -51,6 +51,7 @@ import modules.scripts
 import modules.sd_hijack
 import modules.sd_models
 import modules.sd_vae
+import modules.sd_unet
 import modules.txt2img
 import modules.script_callbacks
 import modules.textual_inversion.textual_inversion
@@ -114,6 +115,9 @@ def initialize():
     shared.opts.onchange("temp_dir", ui_tempdir.on_tmpdir_changed)
     shared.opts.onchange("gradio_theme", shared.reload_gradio_theme)
     startup_timer.record("onchange")
+
+    modules.sd_unet.list_unets()
+    startup_timer.record("scripts list_unets")
 
     modules.textual_inversion.textual_inversion.list_textual_inversion_templates()
     shared.reload_hypernetworks()

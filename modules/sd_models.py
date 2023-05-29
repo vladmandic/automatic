@@ -13,7 +13,7 @@ import tomesd
 from transformers import logging as transformers_logging
 import ldm.modules.midas as midas
 from ldm.util import instantiate_from_config
-from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config
+from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config, sd_unet
 from modules.sd_hijack_inpainting import do_inpainting_hijack
 from modules.timer import Timer
 from modules.memstats import memory_stats
@@ -559,6 +559,9 @@ def reload_model_weights(sd_model=None, info=None):
         current_checkpoint_info = sd_model.sd_checkpoint_info
         if checkpoint_info is not None and sd_model.sd_model_checkpoint == checkpoint_info.filename:
             return
+
+        sd_unet.apply_unet("None")
+
         if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
             lowvram.send_everything_to_cpu()
         else:

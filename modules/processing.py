@@ -17,7 +17,7 @@ from einops import repeat, rearrange
 from blendmodes.blend import blendLayers, BlendType
 from installer import git_commit
 import modules.sd_hijack
-from modules import devices, prompt_parser, masking, sd_samplers, lowvram, generation_parameters_copypaste, script_callbacks, extra_networks, sd_vae_approx, scripts, sd_samplers_common # pylint: disable=unused-import
+from modules import devices, prompt_parser, masking, sd_samplers, lowvram, generation_parameters_copypaste, script_callbacks, extra_networks, sd_vae_approx, scripts, sd_samplers_common, sd_unet # pylint: disable=unused-import
 from modules.sd_hijack import model_hijack
 from modules.shared import opts, cmd_opts, state, log, backend, Backend
 import modules.shared as shared
@@ -610,6 +610,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
             if shared.opts.live_previews_enable and opts.show_progress_type == "Approx NN" and backend == Backend.ORIGINAL:
                 sd_vae_approx.model()
+
+            sd_unet.apply_unet()
+
         if state.job_count == -1:
             state.job_count = p.n_iter
         extra_network_data = None

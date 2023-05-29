@@ -9,7 +9,7 @@ import ldm.models.diffusion.plms
 import ldm.modules.encoders.modules
 
 import modules.textual_inversion.textual_inversion
-from modules import devices, sd_hijack_optimizations, shared
+from modules import devices, sd_hijack_optimizations, shared, sd_unet
 from modules.hypernetworks import hypernetwork
 from modules.shared import opts
 from modules import sd_hijack_clip, sd_hijack_open_clip, sd_hijack_unet, sd_hijack_xlmr, xlmr
@@ -154,6 +154,14 @@ class StableDiffusionModelHijack:
     def __init__(self):
         self.embedding_db.add_embedding_dir(opts.embeddings_dir)
 
+    def apply_optimizations(self, *args):
+        if args and args[0] == 'None':
+            shared.log.info(f'Removing optimizations')
+            undo_optimizations()
+        else:
+            shared.log.info(f'Restoring optimizations')
+            self.optimization_method = apply_optimizations()
+
     def hijack(self, m):
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:
             model_embeddings = m.cond_stage_model.roberta.embeddings
@@ -203,6 +211,11 @@ class StableDiffusionModelHijack:
 
         self.layers = flatten(m)
 
+        if not hasattr(ldm.modules.diffusionmodules.openaimodel, 'copy_of_UNetModel_forward_for_webui'):
+            ldm.modules.diffusionmodules.openaimodel.copy_of_UNetModel_forward_for_webui = ldm.modules.diffusionmodules.openaimodel.UNetModel.forward
+
+        ldm.modules.diffusionmodules.openaimodel.UNetModel.forward = sd_unet.UNetModel_forward
+
     def undo_hijack(self, m):
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:
             m.cond_stage_model = m.cond_stage_model.wrapped
@@ -223,6 +236,8 @@ class StableDiffusionModelHijack:
         self.apply_circular(False)
         self.layers = None
         self.clip = None
+
+        ldm.modules.diffusionmodules.openaimodel.UNetModel.forward = ldm.modules.diffusionmodules.openaimodel.copy_of_UNetModel_forward_for_webui
 
     def apply_circular(self, enable):
         if self.circular_enabled == enable:
