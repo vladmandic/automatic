@@ -1,0 +1,29 @@
+version: "3.9"
+name: sd-automatic
+services:
+  nvidia:
+    build:
+      context: .
+      args:
+        INSTALLDIR: "/webui"
+        RUN_UID: 1000
+        USE_TCMALLOC: 1
+    volumes:
+      - ./data:/webui/data
+    command: |
+      --data-dir=./data
+      --listen
+      --skip-update
+    ports:
+      - "7860:7860"
+    tmpfs:
+      - /tmp
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

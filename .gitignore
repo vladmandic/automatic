@@ -55,3 +55,7 @@ venv
 !/repositories/.placeholder
 !/models/VAE-approx
 !/models/VAE-approx/model.pt
+
+# docker-specific
+/data
+docker-compose.override.yml
