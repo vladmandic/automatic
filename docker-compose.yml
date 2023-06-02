@@ -7,7 +7,6 @@ services:
       args:
         INSTALLDIR: "/webui"
         RUN_UID: 1000
-        USE_TCMALLOC: 1
     volumes:
       - ./data:/webui/data
     command: |

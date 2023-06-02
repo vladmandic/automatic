@@ -1,7 +1,6 @@
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 # ARGS
-ARG USE_TCMALLOC=1 \
-    INSTALLDIR="/webui" \
+ARG INSTALLDIR="/webui" \
     RUN_UID=1000
 ENV INSTALLDIR=$INSTALLDIR \
     RUN_UID=$RUN_UID
@@ -11,14 +10,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     wget git python3 python3-venv \
     libgl1 libglib2.0-0 \
-    libgoogle-perftools-dev \
     # necessary for extensions
     ffmpeg libglfw3-dev libgles2-mesa-dev pkg-config libcairo2 libcairo2-dev \ 
     && \
     rm -rf /var/lib/apt/lists/*
-
-# Workaround: https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850
-ENV LD_PRELOAD=${USE_TCMALLOC:+libtcmalloc.so}
 
 # Workaround: https://gitlab.com/nvidia/container-images/cuda/-/issues/192
 RUN ln -sv /usr/local/cuda/targets/x86_64-linux/lib/libnvrtc.so.12 \

@@ -59,60 +59,6 @@ Below is partial list of all available parameters, run `webui --help` for the fu
 
 <br>![screenshot](javascript/black-orange.jpg)<br>
 
-### Using Docker
-
-For security benefits and easier deployment, it is also possible to run the UI in an isolated docker container. Note: the docker image currently only supports NVIDIA GPUs.
-
-#### Requirements
-
-- [Docker](https://docs.docker.com/engine/install/)
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
-
-It is recommended to run docker in [rootless mode](https://docs.docker.com/engine/security/rootless/)
-
-#### Build
-
-The easiest way to build the docker image is using docker compose:
-
-```
-docker compose build
-```
-
-It is also possible to manually build the image:
-
-```
-docker build -t sd-automatic-nvidia
-```
-
-##### Build arguments
-
-- INSTALLDIR: The installation directory inside the image.
-- RUN_UID: The user used to run the UI process (for security reasons, specify a user other than 0).
-- USE_TCMALLOC: Whether to use the `libtcmalloc` library (see https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850).
-
-#### Run
-
-Using docker compose:
-
-```
-docker compose up
-```
-
-The UI can now be accessed on the host at http://localhost:7860.
-
-The configuration can be viewed in `docker-compose.yml` and changed by creating a `docker-compose.override.yml` file.
-
-Run manually: 
-
-```
-docker run --gpus all -p 7860:7860 -v ./data:$INSTALLDIR/data --rm -t sd-automatic-nvidia \
---listen --skip-update --data-dir=./data/ 
-```
-
-It is recommended to store the application state (i.e. models, outputs, etc) in the dedicated `data` directory using the `--data-dir` argument.
-This way, the application state can be preserved by bind-mounting a host directory using the `volume` entry in `docker-compose.yml` or the  `-v` flag of `docker build`.
-Since the UI process is run using a non-root user, `entrypoint.sh` will automatically ensure that the bind-mount is owned by the run user.
-
 ## Notes
 
 ### **Collab**
