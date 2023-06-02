@@ -59,3 +59,4 @@ venv
 # docker-specific
 /data
 docker-compose.override.yml
+!entrypoint.sh

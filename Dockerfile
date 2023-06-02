@@ -3,7 +3,8 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 ARG INSTALLDIR="/webui" \
     RUN_UID=1000
 ENV INSTALLDIR=$INSTALLDIR \
-    RUN_UID=$RUN_UID
+    RUN_UID=$RUN_UID \
+    DATA_DIR=$INSTALLDIR/data
 
 # Install apt packages
 RUN apt-get update && \
