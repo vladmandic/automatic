@@ -35,6 +35,7 @@ venv
 /*.lnk
 !webui.bat
 !webui.sh
+!requirements.txt
 
 # all dynamic stuff
 /repositories/**/*
