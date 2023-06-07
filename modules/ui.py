@@ -1429,9 +1429,15 @@ def create_ui():
 
     with gr.Blocks(theme=modules.shared.gradio_theme, analytics_enabled=False, title="SD.Next", allowed_paths=[cmd_opts.data_dir]) as demo:
         with gr.Row(elem_id="quicksettings", variant="compact"):
-            for i, k, item in sorted(quicksettings_list + diffusers_download_list, key=lambda x: quicksettings_names.get(x[1], x[0])):
+            for i, k, item in sorted(quicksettings_list, key=lambda x: quicksettings_names.get(x[1], x[0])):
                 component = create_setting_component(k, is_quicksettings=True)
                 component_dict[k] = component
+
+        with gr.Row(elem_id="hub_downloads"):
+            if backend == Backend.DIFFUSERS:
+                for i, k, item in sorted(diffusers_download_list, key=lambda x: x[0]):
+                    component = create_setting_component(k)
+                    component_dict[k] = component
 
         parameters_copypaste.connect_paste_params_buttons()
 
