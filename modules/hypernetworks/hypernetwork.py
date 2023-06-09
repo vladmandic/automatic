@@ -8,6 +8,10 @@ from statistics import stdev, mean
 from rich import progress
 import tqdm
 import torch
+try:
+    import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
+except:
+    pass
 from torch import einsum
 from torch.nn.init import normal_, xavier_normal_, xavier_uniform_, kaiming_normal_, kaiming_uniform_, zeros_
 from einops import rearrange, repeat
@@ -590,7 +594,10 @@ def train_hypernetwork(id_task, hypernetwork_name, learn_rate, batch_size, gradi
             print(e)
 
     if shared.cmd_opts.use_ipex:
-        scaler = torch.xpu.amp.GradScaler()
+        scaler = ipex.cpu.autocast._grad_scaler.GradScaler() #scaler.step(optimizer): PI_ERROR_INVALID_ARG_VALUE
+        shared.sd_model = shared.sd_model.to(dtype=torch.float32)
+        shared.sd_model.train()
+        shared.sd_model, optimizer = ipex.optimize(shared.sd_model, optimizer=optimizer, dtype=devices.dtype)           
     else:
         scaler = torch.cuda.amp.GradScaler()
 

@@ -87,6 +87,12 @@ def parse_args():
     global args # pylint: disable=global-statement
     parser = argparse.ArgumentParser(description = 'SD.Next Train')
 
+
+    group_server = parser.add_argument_group('Server')
+    group_server.add_argument('--server', type=str, default='http://127.0.0.1:7860', required=False, help='server url, default: %(default)s')
+    group_server.add_argument('--user', type=str, default=None, required=False, help='server url, default: %(default)s')
+    group_server.add_argument('--password', type=str, default=None, required=False, help='server url, default: %(default)s')
+
     group_main = parser.add_argument_group('Main')
     group_main.add_argument('--type', type=str, choices=['embedding', 'ti', 'lora', 'lyco', 'dreambooth', 'hypernetwork'], default=None, required=True, help='training type')
     group_main.add_argument('--model', type=str, default='', required=False, help='base model to use for training, default: current loaded model')
@@ -95,7 +101,7 @@ def parse_args():
 
     group_data = parser.add_argument_group('Dataset')
     group_data.add_argument('--input', type=str, default=None, required=True, help='input folder with training images')
-    group_data.add_argument('--output', type=str, default='', required=False, help='where to store processed images, default is system temp/train')
+    group_data.add_argument('--interim', type=str, default='', required=False, help='where to store processed images, default is system temp/train')
     group_data.add_argument('--process', type=str, default='original,interrogate,resize,square', required=False, help=f'list of possible processing steps: {valid_steps}, default: %(default)s')
 
     group_train = parser.add_argument_group('Train')
@@ -120,7 +126,7 @@ def parse_args():
 
 def prepare_server():
     try:
-        server_status = util.Map(sdapi.progress())
+        server_status = util.Map(sdapi.progresssync())
         server_state = server_status['state']
     except:
         log.error(f'server error: {server_status}')
@@ -164,9 +170,9 @@ def verify_args():
     if not os.path.isfile(args.model):
         log.error(f'cannot find loaded model: {args.model}')
         exit(1)
-    if not os.path.exists(args.ckpt_dir) or not os.path.isdir(args.ckpt_dir):
-        log.error(f'cannot find models folder: {args.ckpt_dir}')
-        exit(1)
+    # if not os.path.exists(args.ckpt_dir) or not os.path.isdir(args.ckpt_dir):
+    #     log.error(f'cannot find models folder: {args.ckpt_dir}')
+    #     exit(1)
     if not os.path.exists(args.input) or not os.path.isdir(args.input):
         log.error(f'cannot find training folder: {args.input}')
         exit(1)
@@ -176,8 +182,8 @@ def verify_args():
     if not os.path.exists(args.lyco_dir) or not os.path.isdir(args.lyco_dir):
         log.error(f'cannot find lyco folder: {args.lyco_dir}')
         exit(1)
-    if args.output != '':
-        args.process_dir = args.output
+    if args.interim != '':
+        args.process_dir = args.interim
     else:
         args.process_dir = os.path.join(tempfile.gettempdir(), 'train', args.name)
     log.debug(f'args: {vars(args)}')
@@ -376,6 +382,11 @@ def process_inputs():
 if __name__ == '__main__':
     log.info('SD.Next train script')
     parse_args()
+    sdapi.sd_url = args.server
+    if args.user is not None:
+        sdapi.sd_username = args.user
+    if args.password is not None:
+        sdapi.sd_password = args.password
     setup_logging()
     prepare_server()
     verify_args()

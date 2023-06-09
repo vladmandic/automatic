@@ -1,3 +1,4 @@
+import time
 import inspect
 from collections import namedtuple
 from typing import Optional, Dict, Any
@@ -115,6 +116,13 @@ callback_map = dict(
 )
 
 
+def timer(t0: float, script, callback: str):
+    t1 = time.time()
+    s = round(t1 - t0, 2)
+    if s > 0.1:
+        errors.log.debug(f'Script: {s}s {callback} {script}')
+
+
 def clear_callbacks():
     for callback_list in callback_map.values():
         callback_list.clear()
@@ -123,7 +131,9 @@ def clear_callbacks():
 def app_started_callback(demo: Optional[Blocks], app: FastAPI):
     for c in callback_map['callbacks_app_started']:
         try:
+            t0 = time.time()
             c.callback(demo, app)
+            timer(t0, c.script, 'app_started')
         except Exception as e:
             report_exception(e, c, 'app_started_callback')
 
@@ -131,7 +141,9 @@ def app_started_callback(demo: Optional[Blocks], app: FastAPI):
 def app_reload_callback():
     for c in callback_map['callbacks_on_reload']:
         try:
+            t0 = time.time()
             c.callback()
+            timer(t0, c.script, 'on_reload')
         except Exception as e:
             report_exception(e, c, 'callbacks_on_reload')
 
@@ -139,27 +151,31 @@ def app_reload_callback():
 def model_loaded_callback(sd_model):
     for c in callback_map['callbacks_model_loaded']:
         try:
+            t0 = time.time()
             c.callback(sd_model)
+            timer(t0, c.script, 'model_loaded')
         except Exception as e:
             report_exception(e, c, 'model_loaded_callback')
 
 
 def ui_tabs_callback():
     res = []
-
     for c in callback_map['callbacks_ui_tabs']:
         try:
+            t0 = time.time()
             res += c.callback() or []
+            timer(t0, c.script, 'ui_tabs')
         except Exception as e:
             report_exception(e, c, 'ui_tabs_callback')
-
     return res
 
 
 def ui_train_tabs_callback(params: UiTrainTabParams):
     for c in callback_map['callbacks_ui_train_tabs']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'ui_train_tabs')
         except Exception as e:
             report_exception(e, c, 'callbacks_ui_train_tabs')
 
@@ -167,7 +183,9 @@ def ui_train_tabs_callback(params: UiTrainTabParams):
 def ui_settings_callback():
     for c in callback_map['callbacks_ui_settings']:
         try:
+            t0 = time.time()
             c.callback()
+            timer(t0, c.script, 'ui_settings')
         except Exception as e:
             report_exception(e, c, 'ui_settings_callback')
 
@@ -175,7 +193,9 @@ def ui_settings_callback():
 def before_image_saved_callback(params: ImageSaveParams):
     for c in callback_map['callbacks_before_image_saved']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'before_image_saved')
         except Exception as e:
             report_exception(e, c, 'before_image_saved_callback')
 
@@ -183,7 +203,9 @@ def before_image_saved_callback(params: ImageSaveParams):
 def image_saved_callback(params: ImageSaveParams):
     for c in callback_map['callbacks_image_saved']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'image_saved')
         except Exception as e:
             report_exception(e, c, 'image_saved_callback')
 
@@ -191,7 +213,9 @@ def image_saved_callback(params: ImageSaveParams):
 def cfg_denoiser_callback(params: CFGDenoiserParams):
     for c in callback_map['callbacks_cfg_denoiser']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'cfg_denoiser')
         except Exception as e:
             report_exception(e, c, 'cfg_denoiser_callback')
 
@@ -199,7 +223,9 @@ def cfg_denoiser_callback(params: CFGDenoiserParams):
 def cfg_denoised_callback(params: CFGDenoisedParams):
     for c in callback_map['callbacks_cfg_denoised']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'cfg_denoised')
         except Exception as e:
             report_exception(e, c, 'cfg_denoised_callback')
 
@@ -207,7 +233,9 @@ def cfg_denoised_callback(params: CFGDenoisedParams):
 def cfg_after_cfg_callback(params: AfterCFGCallbackParams):
     for c in callback_map['callbacks_cfg_after_cfg']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'cfg_after_cfg')
         except Exception as e:
             report_exception(e, c, 'cfg_after_cfg_callback')
 
@@ -215,7 +243,9 @@ def cfg_after_cfg_callback(params: AfterCFGCallbackParams):
 def before_component_callback(component, **kwargs):
     for c in callback_map['callbacks_before_component']:
         try:
+            t0 = time.time()
             c.callback(component, **kwargs)
+            timer(t0, c.script, 'before_component')
         except Exception as e:
             report_exception(e, c, 'before_component_callback')
 
@@ -223,7 +253,9 @@ def before_component_callback(component, **kwargs):
 def after_component_callback(component, **kwargs):
     for c in callback_map['callbacks_after_component']:
         try:
+            t0 = time.time()
             c.callback(component, **kwargs)
+            timer(t0, c.script, 'after_component')
         except Exception as e:
             report_exception(e, c, 'after_component_callback')
 
@@ -231,7 +263,9 @@ def after_component_callback(component, **kwargs):
 def image_grid_callback(params: ImageGridLoopParams):
     for c in callback_map['callbacks_image_grid']:
         try:
+            t0 = time.time()
             c.callback(params)
+            timer(t0, c.script, 'image_grid')
         except Exception as e:
             report_exception(e, c, 'image_grid')
 
@@ -239,7 +273,9 @@ def image_grid_callback(params: ImageGridLoopParams):
 def infotext_pasted_callback(infotext: str, params: Dict[str, Any]):
     for c in callback_map['callbacks_infotext_pasted']:
         try:
+            t0 = time.time()
             c.callback(infotext, params)
+            timer(t0, c.script, 'infotext_pasted')
         except Exception as e:
             report_exception(e, c, 'infotext_pasted')
 
@@ -247,7 +283,9 @@ def infotext_pasted_callback(infotext: str, params: Dict[str, Any]):
 def script_unloaded_callback():
     for c in reversed(callback_map['callbacks_script_unloaded']):
         try:
+            t0 = time.time()
             c.callback()
+            timer(t0, c.script, 'script_unloaded')
         except Exception as e:
             report_exception(e, c, 'script_unloaded')
 
@@ -255,7 +293,9 @@ def script_unloaded_callback():
 def before_ui_callback():
     for c in reversed(callback_map['callbacks_before_ui']):
         try:
+            t0 = time.time()
             c.callback()
+            timer(t0, c.script, 'before_ui')
         except Exception as e:
             report_exception(e, c, 'before_ui')
 
@@ -275,7 +315,6 @@ def list_unets_callback():
 def add_callback(callbacks, fun):
     stack = [x for x in inspect.stack() if x.filename != __file__]
     filename = stack[0].filename if len(stack) > 0 else 'unknown file'
-
     callbacks.append(ScriptCallback(filename, fun))
 
 

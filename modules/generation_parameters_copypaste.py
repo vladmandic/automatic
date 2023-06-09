@@ -237,6 +237,8 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     returns a dict with field values
     """
+    if x is None:
+        return {}
     res = {}
     prompt = ""
     negative_prompt = ""
@@ -352,7 +354,6 @@ def create_override_settings_dict(text_pairs):
 def connect_paste(button, local_paste_fields, input_comp, override_settings_component, tabname):
 
     def paste_func(prompt):
-        shared.log.debug(f'paste prompt: {prompt}')
         if prompt is not None and 'Negative prompt' not in prompt and 'Steps' not in prompt:
             prompt = None
         if not prompt and not shared.cmd_opts.hide_ui_dir_config:
@@ -362,6 +363,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                     prompt = file.read()
             else:
                 prompt = ''
+        shared.log.debug(f'paste prompt: {prompt}')
         params = parse_generation_parameters(prompt)
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []

@@ -24,6 +24,8 @@ def extract_device_id(args, name): # pylint: disable=redefined-outer-name
 
 def get_cuda_device_string():
     if shared.cmd_opts.use_ipex:
+        if shared.cmd_opts.device_id is not None:
+            return f"xpu:{shared.cmd_opts.device_id}"
         return "xpu"
     else:
         if shared.cmd_opts.device_id is not None:
@@ -33,7 +35,7 @@ def get_cuda_device_string():
 
 def get_optimal_device_name():
     if shared.cmd_opts.use_ipex:
-        return "xpu"
+        return get_cuda_device_string()
     elif cuda_ok and not shared.cmd_opts.use_directml:
         return get_cuda_device_string()
     if has_mps():
@@ -66,7 +68,7 @@ def torch_gc(force=False):
     collected = gc.collect()
     if shared.cmd_opts.use_ipex:
         try:
-            with torch.xpu.device("xpu"):
+            with torch.xpu.device(get_cuda_device_string()):
                 torch.xpu.empty_cache()
         except:
             pass
@@ -96,6 +98,18 @@ def test_fp16():
         shared.opts.no_half_vae = True
         return False
 
+def test_bf16():
+    if shared.cmd_opts.experimental:
+        return True
+    try:
+        import torch.nn.functional as F
+        image = torch.randn(1, 4, 32, 32).to(device=device, dtype=torch.bfloat16)
+        _out = F.interpolate(image, size=(64, 64), mode="nearest")
+        return True
+    except:
+        shared.log.warning('Torch BF16 test failed: Fallback to FP16 operations')
+        return False
+
 
 def set_cuda_params():
     shared.log.debug('Verifying Torch settings')
@@ -115,25 +129,32 @@ def set_cuda_params():
             except:
                 pass
     global dtype, dtype_vae, dtype_unet, unet_needs_upcast # pylint: disable=global-statement
-    ok = test_fp16()
     if shared.cmd_opts.use_directml and not shared.cmd_opts.experimental: # TODO DirectML does not have full autocast capabilities
         shared.opts.no_half = True
         shared.opts.no_half_vae = True
-    if ok and shared.opts.cuda_dtype == 'FP32':
-        shared.log.info('CUDA FP16 test passed but desired mode is set to FP32')
-    if shared.opts.cuda_dtype == 'FP16' and ok:
-        dtype = torch.float16
-        dtype_vae = torch.float16
-        dtype_unet = torch.float16
-    if shared.opts.cuda_dtype == 'BP16' and ok:
-        dtype = torch.bfloat16
-        dtype_vae = torch.bfloat16
-        dtype_unet = torch.bfloat16
-    if shared.opts.cuda_dtype == 'FP32' or shared.opts.no_half or not ok:
+    if shared.opts.cuda_dtype == 'FP32':
+        dtype = torch.float32
+        dtype_vae = torch.float32
+        dtype_unet = torch.float32
+    if shared.opts.cuda_dtype == 'BF16' or dtype == torch.bfloat16:
+        bf16_ok = test_bf16()
+        dtype = torch.bfloat16 if bf16_ok else torch.float16
+        dtype_vae = torch.bfloat16 if bf16_ok else torch.float16
+        dtype_unet = torch.bfloat16 if bf16_ok else torch.float16
+    if shared.opts.cuda_dtype == 'FP16' or dtype == torch.float16:
+        fp16_ok = test_fp16()
+        dtype = torch.float16 if fp16_ok else torch.float32
+        dtype_vae = torch.float16 if fp16_ok else torch.float32
+        dtype_unet = torch.float16 if fp16_ok else torch.float32
+    else:
+        pass
+    if shared.opts.no_half:
+        shared.log.info('Torch override dtype: no-half set')
         dtype = torch.float32
         dtype_vae = torch.float32
         dtype_unet = torch.float32
     if shared.opts.no_half_vae: # set dtype again as no-half-vae options take priority
+        shared.log.info('Torch override VAE dtype: no-half set')
         dtype_vae = torch.float32
     unet_needs_upcast = shared.opts.upcast_sampling
     shared.log.debug(f'Desired Torch parameters: dtype={shared.opts.cuda_dtype} no-half={shared.opts.no_half} no-half-vae={shared.opts.no_half_vae} upscast={shared.opts.upcast_sampling}')
@@ -143,7 +164,20 @@ def set_cuda_params():
 
 args = cmd_args.parser.parse_args()
 if args.use_ipex:
-    cpu = torch.device("xpu") #Use XPU instead of CPU. %20 Perf improvement on weak CPUs.
+    #Fix broken function in ipex 1.13.120+xpu
+    from modules.sd_hijack_utils import CondFunc
+    CondFunc('torch.nn.modules.GroupNorm.forward',
+        lambda orig_func, *args, **kwargs: orig_func(args[0], args[1].to(args[0].weight.data.dtype)),
+        lambda *args, **kwargs: args[2].dtype != args[1].weight.data.dtype)
+    CondFunc('torch.nn.modules.Linear.forward',
+        lambda orig_func, *args, **kwargs: orig_func(args[0], args[1].to(args[0].weight.data.dtype)),
+        lambda *args, **kwargs: args[2].dtype != args[1].weight.data.dtype)
+
+    #Use XPU instead of CPU. %20 Perf improvement on weak CPUs.
+    if args.device_id is not None:
+        cpu = torch.device(f"xpu:{args.device_id}")
+    else:
+        cpu = torch.device("xpu")
 else:
     cpu = torch.device("cpu")
 device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer = None
@@ -197,7 +231,7 @@ def autocast(disable=False):
     if shared.cmd_opts.use_directml:
         return torch.dml.amp.autocast(dtype)
     if shared.cmd_opts.use_ipex:
-        return torch.xpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)
+        return torch.xpu.amp.autocast(enabled=True, dtype=dtype)
     if cuda_ok:
         return torch.autocast("cuda")
     else:

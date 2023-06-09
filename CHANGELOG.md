@@ -1,10 +1,51 @@
 # Change Log for SD.Next
 
-## Update for 05/31/2023
+## Update for 06/07/2023
 
-- redesign action box to be uniform accross all themes
-- add pause option next to stop/skip
-- redesign progress bar
+- reworked **installer** sequence  
+  as some extensions are loading packages directly from their preload sequence  
+  which was preventing some optimizations to take effect  
+  i hope this does not cause regressions, but if it does, please report  
+- experimental `sd_model_dict` setting which allows you to load model dictionary  
+  from one model and apply weights from another model specified in `sd_model_checkpoint`  
+  results? who am i to judge :)
+
+## Update for 06/05/2023
+
+Few new features and extra handling for broken extensions  
+that caused my phone to go crazy with notifications over the weekend...
+
+- added extra networks to **xyz grid** options  
+  now you can have more fun with all your embeddings and loras :)  
+- new **vae decode** method to help with larger batch sizes, thanks @bigdog  
+- new setting -> lora -> **use lycoris to handle all lora types**  
+  this is still experimental, but the goal is to obsolete old built-in lora module  
+  as it doesn't understand many new loras and built-in lyco module can handle it all  
+- somewhat optimize browser page loading  
+  still slower than i'd want, but gradio is pretty bad at this  
+- profiling of scripts/extensions callbacks  
+  you can now see how much or pre/post processing is done, not just how long generate takes  
+- additional exception handling so bad exception does not crash main app  
+- additional background removal models  
+- some work on bfloat16 which nobody really should be using, but why not 🙂
+
+
+## Update for 06/02/2023
+
+Some quality-of-life improvements while working on larger stuff in the background...
+
+- redesign action box to be uniform accross all themes  
+- add **pause** option next to stop/skip  
+- redesigned progress bar  
+- add new built-in extension: **agent-scheduler**  
+  very elegant way to getting full queing capabilies, thank @artventurdev  
+- enable more image formats  
+  note: not all are understood by browser so previews and images may appear as blank  
+  unless you have some browser extensions that can handle them  
+  but they are saved correctly. and cant beat raw quality of 32-bit `tiff` or `psd` :)  
+- change in behavior: `xformers` will be uninstalled on startup if they are not active  
+  if you do have `xformers` selected as your desired cross-optimization method, then they will be used  
+  reason is that a lot of libaries try to blindy import xformers even if they are not selected or not functional  
 
 ## Update for 05/30/2023
 

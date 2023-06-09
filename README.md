@@ -31,13 +31,13 @@ Individual features are not listed here, instead check [Changelog](CHANGELOG.md)
 3. Run launcher  
   `webui.bat` or `webui.sh`:  
     - Platform specific wrapper scripts For Windows, Linux and OSX  
-    - Starts `launch.py` in a Python virtual environment (`venv`)  
+    - Starts `sdnext.py` in a Python virtual environment (`venv`)  
     - Uses `install.py` to handle all actual requirements and dependencies  
     - *Note*: Server can run without virtual environment, but it is recommended to use it to avoid library version conflicts with other applications  
 
 *Note*: **nVidia/CUDA** and **AMD/ROCm** are auto-detected is present and available, but for any other use case specify required parameter explicitly or wrong packages may be installed as installer will assume CPU-only environment
 
-Full startup sequence is logged in `webui.log`, so if you encounter any issues, please check it first  
+Full startup sequence is logged in `sdnext.log`, so if you encounter any issues, please check it first  
 
 Below is partial list of all available parameters, run `webui --help` for the full list:
 
@@ -57,7 +57,7 @@ Below is partial list of all available parameters, run `webui --help` for the fu
       --upgrade                        Upgrade main repository to latest version, default: False
       --safe                           Run in safe mode with no user extensions
 
-<br>![screenshot](javascript/black-orange.jpg)<br>
+<br>![screenshot](html/black-orange.jpg)<br>
 
 ## Notes
 

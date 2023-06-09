@@ -12,7 +12,8 @@ Stuff to be added...
 - Update `Wiki`
 - Create new `GitHub` hooks/actions for CI/CD  
 - Import core repos
-- Improve core `Stability-AI` code: <https://github.com/vladmandic/automatic/discussions/795>
+- Update `train.py` to use `interrogator`
+- Update `train.py` to use `rembg`
 
 ## Investigate
 
@@ -41,6 +42,8 @@ Tech that can be integrated as part of the core workflow...
 - [Custom diffusion](https://github.com/guaneec/custom-diffusion-webui), [Custom diffusion](https://www.cs.cmu.edu/~custom-diffusion/)
 - [Dream artist](https://github.com/7eu7d7/DreamArtist-sd-webui-extension)
 - [QuickEmbedding](https://github.com/ethansmith2000/QuickEmbedding)
+- [DataComp CLiP](https://github.com/mlfoundations/open_clip/blob/main/docs/datacomp_models.md)
+- [ClipSeg](https://github.com/timojl/clipseg)
 - `TensorRT`
 
 ## Random
@@ -48,3 +51,13 @@ Tech that can be integrated as part of the core workflow...
 - Bunch of stuff: <https://pharmapsychotic.com/tools.html>
 - <https://towardsdatascience.com/mastering-memoization-in-python-dcdd8b435189>
 - <https://github.com/AUTOMATIC1111/stable-diffusion-webui/compare/89f9faa...20ae71f>
+- <https://github.com/vladmandic/automatic/discussions/1246>
+- shared.info
+- hints
+- localization
+- docker
+- port `p.all_hr_prompts`
+- test `lyco_patch_lora`
+- fix `lyco` logging
+- save `ui-settings.json`
+- `data-dir` security issues

@@ -1,3 +1,4 @@
+import sys
 from types import MethodType
 import torch
 from torch.nn.functional import silu
@@ -181,7 +182,10 @@ class StableDiffusionModelHijack:
         if m.cond_stage_key == "edit":
             sd_hijack_unet.hijack_ddpm_edit()
 
-        if opts.cuda_compile and opts.cuda_compile_mode != 'none':
+        if opts.cuda_compile and opts.cuda_compile_mode == 'ipex':
+            import logging
+            shared.log.info("Model compile enabled: Using IPEX Optimize Graph Mode")
+        elif opts.cuda_compile and opts.cuda_compile_mode != 'none':
             try:
                 import logging
                 import torch._dynamo as dynamo # pylint: disable=unused-import

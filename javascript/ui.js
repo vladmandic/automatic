@@ -1,5 +1,3 @@
-/* global gradioApp, onUiUpdate, opts */
-
 window.opts = {};
 window.localization = {};
 let tabSelected = '';
@@ -118,21 +116,23 @@ function create_submit_args(args) {
   return res;
 }
 
+function showSubmitButtons(tabname, show) {}
+
 function submit(...args) {
-  console.log('submit txt2img:', args);
+  console.log('Submit txt2img:', args);
   rememberGallerySelection('txt2img_gallery');
   const id = randomId();
-  requestProgress(id, gradioApp().getElementById('txt2img_gallery'));
+  requestProgress(id, null, gradioApp().getElementById('txt2img_gallery'));
   const res = create_submit_args(args);
   res[0] = id;
   return res;
 }
 
 function submit_img2img(...args) {
-  console.log('submit img2img:', args);
+  console.log('Submit img2img:', args);
   rememberGallerySelection('img2img_gallery');
   const id = randomId();
-  requestProgress(id, gradioApp().getElementById('img2img_gallery'));
+  requestProgress(id, null, gradioApp().getElementById('img2img_gallery'));
   const res = create_submit_args(args);
   res[0] = id;
   res[1] = get_tab_index('mode_img2img');
@@ -199,7 +199,7 @@ function register_drag_drop() {
   });
 }
 
-onUiUpdate(() => {
+onAfterUiUpdate(() => {
   sort_ui_elements();
   if (Object.keys(opts).length !== 0) return;
   const json_elem = gradioApp().getElementById('settings_json');
@@ -401,10 +401,10 @@ function preview_theme() {
   if (name === 'black-orange' || name.startsWith('gradio/')) {
     const el = document.getElementById('theme-preview') || create_theme_element();
     el.style.display = el.style.display === 'block' ? 'none' : 'block';
-    if (name === 'black-orange') el.src = '/file=javascript/black-orange.jpg';
-    else el.src = `/file=javascript/${name.replace('/', '-')}.jpg`;
+    if (name === 'black-orange') el.src = '/file=html/black-orange.jpg';
+    else el.src = `/file=html/${name.replace('/', '-')}.jpg`;
   } else {
-    fetch('/file=javascript/themes.json')
+    fetch('/file=html/themes.json')
       .then((r) => r.json())
       .then((themes) => {
         const theme = themes.find((t) => t.id === name);
@@ -412,6 +412,8 @@ function preview_theme() {
       });
   }
 }
+
+let uiLoaded = false;
 
 function reconnect_ui() {
   const api_logo = Array.from(gradioApp().querySelectorAll('img')).filter((el) => el?.src?.endsWith('api-logo.svg'));
@@ -424,8 +426,9 @@ function reconnect_ui() {
   if (task_id) {
     console.debug('task check:', task_id);
     rememberGallerySelection('txt2img_gallery');
-    requestProgress(task_id, gallery, null, null, true);
+    requestProgress(task_id, null, gallery, null, null, true);
   }
+  uiLoaded = true;
 
   const sd_model = gradioApp().getElementById('setting_sd_model_checkpoint');
   let loadingStarted = 0;

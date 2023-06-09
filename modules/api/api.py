@@ -89,8 +89,6 @@ def save_image(image, fn, ext):
 
 
 def encode_pil_to_base64(image):
-    # TODO jpeg
-    print('HERE1', vars(image))
     with io.BytesIO() as output_bytes:
         save_image(image, output_bytes, shared.opts.samples_format)
         bytes_data = output_bytes.getvalue()
@@ -594,8 +592,8 @@ class Api:
         try:
             import torch
             if shared.cmd_opts.use_ipex:
-                system = { 'free': (torch.xpu.get_device_properties("xpu").total_memory - torch.xpu.memory_allocated()), 'used': torch.xpu.memory_allocated(), 'total': torch.xpu.get_device_properties("xpu").total_memory }
-                s = dict(torch.xpu.memory_stats("xpu"))
+                system = { 'free': (torch.xpu.get_device_properties(shared.device).total_memory - torch.xpu.memory_allocated()), 'used': torch.xpu.memory_allocated(), 'total': torch.xpu.get_device_properties(shared.device).total_memory }
+                s = dict(torch.xpu.memory_stats())
                 allocated = { 'current': s['allocated_bytes.all.current'], 'peak': s['allocated_bytes.all.peak'] }
                 reserved = { 'current': s['reserved_bytes.all.current'], 'peak': s['reserved_bytes.all.peak'] }
                 active = { 'current': s['active_bytes.all.current'], 'peak': s['active_bytes.all.peak'] }
