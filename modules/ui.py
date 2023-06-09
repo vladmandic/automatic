@@ -1336,6 +1336,9 @@ def create_ui():
         quicksettings_names = opts.quicksettings_list
         quicksettings_names = {x: i for i, x in enumerate(quicksettings_names) if x != 'quicksettings'}
         quicksettings_list = []
+        diffusers_downloads = opts.diffusers_download_list
+        diffusers_download_list = []
+
         previous_section = None
         current_tab = None
         current_row = None
@@ -1355,6 +1358,9 @@ def create_ui():
                     previous_section = item.section
                 if k in quicksettings_names and not modules.shared.cmd_opts.freeze:
                     quicksettings_list.append((i, k, item))
+                    components.append(dummy_component)
+                if k in diffusers_downloads and not modules.shared.cmd_opts.freeze and backend == Backend.DIFFUSERS:
+                    diffusers_download_list.append((i, k, item))
                     components.append(dummy_component)
                 elif section_must_be_skipped:
                     components.append(dummy_component)
@@ -1427,6 +1433,12 @@ def create_ui():
                 component = create_setting_component(k, is_quicksettings=True)
                 component_dict[k] = component
 
+        with gr.Row(elem_id="hub_downloads"):
+            if backend == Backend.DIFFUSERS:
+                for i, k, item in sorted(diffusers_download_list, key=lambda x: x[0]):
+                    component = create_setting_component(k)
+                    component_dict[k] = component
+
         parameters_copypaste.connect_paste_params_buttons()
 
         with gr.Tabs(elem_id="tabs") as tabs:
@@ -1459,6 +1471,17 @@ def create_ui():
                 inputs=[component],
                 outputs=[component, text_settings],
                 show_progress=info.refresh is not None,
+            )
+
+        for i, k, item in diffusers_download_list:
+            component = component_dict[k]
+            info = opts.data_labels[k]
+
+            component.submit(
+                fn=info.submit,
+                inputs=[component],
+                outputs=[component],
+                show_progress=True
             )
 
         image_cfg_scale_visibility = (modules.shared.sd_model is not None) and hasattr(modules.shared.sd_model, 'cond_stage_key') and (modules.shared.sd_model.cond_stage_key == "edit") # pix2pix

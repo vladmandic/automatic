@@ -15,6 +15,7 @@ import modules.memmon
 import modules.styles
 import modules.devices as devices
 import modules.paths_internal as paths
+from diffusers import DiffusionPipeline 
 from installer import log as central_logger # pylint: disable=E0611
 
 
@@ -185,7 +186,7 @@ state.server_start = time.time()
 
 
 class OptionInfo:
-    def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, comment_before='', comment_after=''):
+    def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, submit=None, comment_before='', comment_after=''):
         self.default = default
         self.label = label
         self.component = component
@@ -195,6 +196,7 @@ class OptionInfo:
         self.refresh = refresh
         self.comment_before = comment_before # HTML text that will be added after label in UI
         self.comment_after = comment_after # HTML text that will be added before label in UI
+        self.submit = submit
 
     def link(self, label, uri):
         self.comment_before += f"[<a href='{uri}' target='_blank'>{label}</a>]"
@@ -223,9 +225,12 @@ def list_checkpoint_tiles():
     import modules.sd_models # pylint: disable=W0621
     return modules.sd_models.checkpoint_tiles()
 
-
 default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.ckpt"
 
+def load_diffusers_ckpt(model_repo: str):
+    cached_dir = DiffusionPipeline.download(model_repo, cache_dir=opts.data["diffusers_dir"])
+    print(f"Downloaded {cached_dir}")
+    return ""
 
 def refresh_checkpoints():
     import modules.sd_models # pylint: disable=W0621
@@ -419,6 +424,8 @@ options_templates.update(options_section(('ui', "User interface"), {
     "keyedit_precision_extra": OptionInfo(0.05, "Ctrl+up/down precision when editing <extra networks:0.9>", gr.Slider, {"minimum": 0.01, "maximum": 0.2, "step": 0.001}),
     "keyedit_delimiters": OptionInfo(".,\/!?%^*;:{}=`~()", "Ctrl+up/down word delimiters"), # pylint: disable=anomalous-backslash-in-string
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
+    "diffusers_ckpt_download": OptionInfo("", "🤗 Hub Checkpoint Download", gr.Textbox, {"placeholder": "e.g. runwayml/stable-diffusion-v1-5"}, submit=load_diffusers_ckpt),
+    "diffusers_download_list": OptionInfo(["diffusers_ckpt_download"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "hidden_tabs": OptionInfo([], "Hidden UI tabs", ui_components.DropdownMulti, lambda: {"choices": [x for x in tab_names]}),
     "ui_tab_reorder": OptionInfo("From Text, From Image, Process Image", "UI tabs order"),
     "ui_scripts_reorder": OptionInfo("Enable Dynamic Thresholding, ControlNet", "UI scripts order"),
