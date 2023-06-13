@@ -29,10 +29,10 @@ class UniPCSampler(object):
         # first time we have all the info to get the real parameters from the ui
         # value from the hires steps slider:
         num_inference_steps = t[0] + 1
-        approx_denoise_strength = num_inference_steps / self.inflated_steps
+        num_inference_steps / self.inflated_steps
         self.denoise_steps = max(num_inference_steps, shared.opts.uni_pc_order)
 
-        init_timestep = max(self.inflated_steps - self.denoise_steps, 0)
+        max(self.inflated_steps - self.denoise_steps, 0)
 
         # actual number of steps we'll run
 
@@ -147,7 +147,8 @@ class UniPCSampler(object):
         if conditioning is not None:
             if isinstance(conditioning, dict):
                 ctmp = conditioning[list(conditioning.keys())[0]]
-                while isinstance(ctmp, list): ctmp = ctmp[0]
+                while isinstance(ctmp, list):
+                    ctmp = ctmp[0]
                 cbs = ctmp.shape[0]
                 if cbs != batch_size:
                     print(f"Warning: Got {cbs} conditionings but batch-size is {batch_size}")

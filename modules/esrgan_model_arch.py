@@ -104,7 +104,7 @@ class ResidualDenseBlock_5C(nn.Module):
     Modified options that can be used:
         - "Partial Convolution based Padding" arXiv:1811.11718
         - "Spectral normalization" arXiv:1802.05957
-        - "ICASSP 2020 - ESRGAN+ : Further Improving ESRGAN" N. C. 
+        - "ICASSP 2020 - ESRGAN+ : Further Improving ESRGAN" N. C.
             {Rakotonirina} and A. {Rasoanaivo}
     """
 
@@ -437,9 +437,11 @@ def conv_block(in_nc, out_nc, kernel_size, stride=1, dilation=1, groups=1, bias=
     padding = padding if pad_type == 'zero' else 0
 
     if convtype=='PartialConv2D':
+        from torchvision.ops import PartialConv2d
         c = PartialConv2d(in_nc, out_nc, kernel_size=kernel_size, stride=stride, padding=padding,
                dilation=dilation, bias=bias, groups=groups)
     elif convtype=='DeformConv2D':
+        from torchvision.ops import DeformConv2d
         c = DeformConv2d(in_nc, out_nc, kernel_size=kernel_size, stride=stride, padding=padding,
                dilation=dilation, bias=bias, groups=groups)
     elif convtype=='Conv3D':

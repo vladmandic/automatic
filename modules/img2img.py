@@ -2,11 +2,9 @@ import os
 import numpy as np
 from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageChops, UnidentifiedImageError
 import modules.scripts
-from modules import sd_samplers, shared
+from modules import sd_samplers, shared, processing
 from modules.generation_parameters_copypaste import create_override_settings_dict
-from modules.processing import Processed, StableDiffusionProcessingImg2Img, process_images
 from modules.ui import plaintext_to_html, infotext_to_html
-import modules.processing as processing
 from modules.memstats import memory_stats
 
 
@@ -44,14 +42,14 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args):
             # try to find corresponding mask for an image using simple filename matching
             mask_image_path = os.path.join(inpaint_mask_dir, os.path.basename(image))
             # if not found use first one ("same mask for all images" use-case)
-            if not mask_image_path in inpaint_masks:
+            if mask_image_path not in inpaint_masks:
                 mask_image_path = inpaint_masks[0]
             mask_image = Image.open(mask_image_path)
             p.image_mask = mask_image
 
         proc = modules.scripts.scripts_img2img.run(p, *args)
         if proc is None:
-            proc = process_images(p)
+            proc = processing.process_images(p)
         for n, processed_image in enumerate(proc.images):
             filename = os.path.basename(image)
             if n > 0:
@@ -126,7 +124,7 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
 
     assert 0. <= denoising_strength <= 1., 'can only work with strength in [0.0, 1.0]'
 
-    p = StableDiffusionProcessingImg2Img(
+    p = processing.StableDiffusionProcessingImg2Img(
         sd_model=shared.sd_model,
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_img2img_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_img2img_grids,
@@ -167,11 +165,11 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
         p.extra_generation_params["Mask blur"] = mask_blur
     if is_batch:
         process_batch(p, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir, args)
-        processed = Processed(p, [], p.seed, "")
+        processed = processing.Processed(p, [], p.seed, "")
     else:
         processed = modules.scripts.scripts_img2img.run(p, *args)
         if processed is None:
-            processed = process_images(p)
+            processed = processing.process_images(p)
     p.close()
     generation_info_js = processed.js()
     shared.log.debug(f'Processed: {len(processed.images)} Memory: {memory_stats()} img')

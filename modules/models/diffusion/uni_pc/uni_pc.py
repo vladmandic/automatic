@@ -181,13 +181,13 @@ def model_wrapper(
     model,
     noise_schedule,
     model_type="noise",
-    model_kwargs={},
+    model_kwargs=None,
     guidance_type="uncond",
     #condition=None,
     #unconditional_condition=None,
     guidance_scale=1.,
     classifier_fn=None,
-    classifier_kwargs={},
+    classifier_kwargs=None,
 ):
     """Create a wrapper function for the noise prediction model.
 
@@ -277,6 +277,8 @@ def model_wrapper(
     Returns:
         A noise prediction model that accepts the noised data and the continuous time as the inputs.
     """
+    model_kwargs = model_kwargs or {}
+    classifier_kwargs = classifier_kwargs or {}
 
     def get_model_input_time(t_continuous):
         """
@@ -344,7 +346,7 @@ def model_wrapper(
                 t_in = torch.cat([t_continuous] * 2)
                 if isinstance(condition, dict):
                     assert isinstance(unconditional_condition, dict)
-                    c_in = dict()
+                    c_in = {}
                     for k in condition:
                         if isinstance(condition[k], list):
                             c_in[k] = [torch.cat([
@@ -355,7 +357,7 @@ def model_wrapper(
                                 unconditional_condition[k],
                                 condition[k]])
                 elif isinstance(condition, list):
-                    c_in = list()
+                    c_in = []
                     assert isinstance(unconditional_condition, list)
                     for i in range(len(condition)):
                         c_in.append(torch.cat([unconditional_condition[i], condition[i]]))
@@ -685,12 +687,7 @@ class UniPC:
                 if order == 2:
                     rhos_p = torch.tensor([0.5], device=b.device)
                 else:
-                    if shared.cmd_opts.use_ipex:
-                        #Running torch.linalg.solve on XPU crashes the GPU.
-                        rhos_p = torch.linalg.solve(R[:-1, :-1].to("cpu"), b[:-1].to("cpu"))
-                        rhos_p = rhos_p.to(b.device)
-                    else:
-                        rhos_p = torch.linalg.solve(R[:-1, :-1], b[:-1])
+                    rhos_p = torch.linalg.solve(R[:-1, :-1], b[:-1])
         else:
             D1s = None
 
@@ -700,12 +697,7 @@ class UniPC:
             if order == 1:
                 rhos_c = torch.tensor([0.5], device=b.device)
             else:
-                if shared.cmd_opts.use_ipex:
-                    #Running torch.linalg.solve on XPU crashes the GPU.
-                    rhos_c = torch.linalg.solve(R.to("cpu"), b.to("cpu"))
-                    rhos_c = rhos_c.to(b.device)
-                else:
-                    rhos_c = torch.linalg.solve(R, b)
+                rhos_c = torch.linalg.solve(R, b)
 
         model_t = None
         if self.predict_x0:
@@ -760,7 +752,7 @@ class UniPC:
         t_T = self.noise_schedule.T if t_start is None else t_start
         device = x.device
         if method == 'multistep':
-            if timesteps == None:
+            if timesteps is None:
                 timesteps = get_time_steps(self.noise_schedule, skip_type=skip_type, t_T=t_T, t_0=t_0, N=steps, device=device)
             #print(f"Running UniPC Sampling with {timesteps.shape[0]} timesteps, order {order}")
             assert steps >= order, "UniPC order must be < sampling steps"
@@ -781,7 +773,7 @@ class UniPC:
                         if self.after_update is not None:
                             self.after_update(x, model_x)
                         model_prev_list.append(model_x)
-                        t_prev_list.append(vec_t)                      
+                        t_prev_list.append(vec_t)
                         progress.update(task, advance=1, description=f"Progress {round(len(vec_t) * init_order / (time.time() - t), 2)}it/s")
                     # for step in trange(order, steps + 1):
                     for step in range(order, steps + 1):

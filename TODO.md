@@ -23,14 +23,8 @@ Stuff to be investigated...
 
 Pick & merge PRs from main repo...
 
-- Compare commits: <https://github.com/vladmandic/automatic/compare/e59ebe25..b6289d5>
-
-## Models
-
-StabilityAI is working on new stuff...
-
-- SD XL
-- SD ReImagined
+- TODO: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/compare/89f9faa...baf6946>
+- STATUS: up-to-date 05/13/2023
 
 ## Integration
 
@@ -50,14 +44,9 @@ Tech that can be integrated as part of the core workflow...
 
 - Bunch of stuff: <https://pharmapsychotic.com/tools.html>
 - <https://towardsdatascience.com/mastering-memoization-in-python-dcdd8b435189>
-- <https://github.com/AUTOMATIC1111/stable-diffusion-webui/compare/89f9faa...20ae71f>
-- <https://github.com/vladmandic/automatic/discussions/1246>
 - shared.info
-- hints
-- localization
 - docker
 - port `p.all_hr_prompts`
 - test `lyco_patch_lora`
 - fix `lyco` logging
 - save `ui-settings.json`
-- `data-dir` security issues

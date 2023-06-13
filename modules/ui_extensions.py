@@ -34,7 +34,7 @@ def update_extension_list():
         with open(os.path.join(paths.script_path, "html", "extensions.json"), "r", encoding="utf-8") as f:
             extensions_list = json.loads(f.read())
             shared.log.debug(f'Extensions list loaded: {os.path.join(paths.script_path, "html", "extensions.json")}')
-    except:
+    except Exception:
         shared.log.debug(f'Extensions list failed to load: {os.path.join(paths.script_path, "html", "extensions.json")}')
     found = []
     for ext in extensions.extensions:
@@ -152,12 +152,12 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
         shutil.rmtree(tmpdir, True)
         if not branch_name:
             # if no branch is specified, use the default branch
-            with git.Repo.clone_from(url, tmpdir) as repo:
+            with git.Repo.clone_from(url, tmpdir, filter=['blob:none']) as repo:
                 repo.remote().fetch()
                 for submodule in repo.submodules:
                     submodule.update()
         else:
-            with git.Repo.clone_from(url, tmpdir, branch=branch_name) as repo:
+            with git.Repo.clone_from(url, tmpdir, filter=['blob:none'], branch=branch_name) as repo:
                 repo.remote().fetch()
                 for submodule in repo.submodules:
                     submodule.update()

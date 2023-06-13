@@ -472,7 +472,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts, all_seeds, all_su
 def print_profile(profile, msg: str):
     try:
         from rich import print # pylint: disable=redefined-builtin
-    except:
+    except Exception:
         pass
     lines = profile.key_averages().table(sort_by="cuda_time_total", row_limit=20)
     lines = lines.split('\n')
@@ -486,7 +486,7 @@ def print_profile(profile, msg: str):
     import pstats
     try:
         from rich import print # pylint: disable=redefined-builtin
-    except:
+    except Exception:
         pass
     profile.disable()
     stream = io.StringIO()
@@ -494,7 +494,7 @@ def print_profile(profile, msg: str):
     ps.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(15)
     profile = None
     lines = stream.getvalue().split('\n')
-    lines = [l for l in lines if '<frozen' not in l and '{built-in' not in l and '/logging' not in l and '/rich' not in l]
+    lines = [line for line in lines if '<frozen' not in line and '{built-in' not in line and '/logging' not in line and '/rich' not in line]
     print(f'Profile {msg}:', '\n'.join(lines))
 
 
@@ -647,7 +647,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if not shared.opts.dont_fix_second_order_samplers_schedule:
                 try:
                     step_multiplier = 2 if sd_samplers.all_samplers_map.get(p.sampler_name).aliases[0] in ['k_dpmpp_2s_a', 'k_dpmpp_2s_a_ka', 'k_dpmpp_sde', 'k_dpmpp_sde_ka', 'k_dpm_2', 'k_dpm_2_a', 'k_heun'] else 1
-                except:
+                except Exception:
                     pass
             if p.n_iter > 1:
                 shared.state.job = f"Batch {n+1} out of {p.n_iter}"

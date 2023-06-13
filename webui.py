@@ -15,7 +15,7 @@ errors.log.debug('Loading Torch')
 import torch # pylint: disable=C0411
 try:
     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-except:
+except Exception:
     pass
 import torchvision # pylint: disable=W0611,C0411
 import pytorch_lightning # pytorch_lightning should be imported after torch, but it re-enables warnings on import so import once to disable them # pylint: disable=W0611,C0411
@@ -36,7 +36,7 @@ startup_timer.record("gradio")
 errors.install([gradio])
 
 errors.log.debug('Loading Modules')
-import ldm.modules.encoders.modules # pylint: disable=W0611,C0411
+import ldm.modules.encoders.modules # pylint: disable=W0611,C0411,E0401
 from modules import extra_networks, ui_extra_networks_checkpoints # pylint: disable=C0411,C0412
 from modules import extra_networks_hypernet, ui_extra_networks_hypernets, ui_extra_networks_textual_inversion
 from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=W0611,C0411
@@ -153,15 +153,12 @@ def initialize():
 def load_model():
     shared.state.begin()
     shared.state.job = 'load model'
-    Thread(target=lambda: shared.sd_model).start()
-    if shared.sd_model is None:
-        log.warning("No stable diffusion model loaded")
-        # exit(1)
-    else:
-        shared.opts.data["sd_model_checkpoint"] = shared.sd_model.sd_checkpoint_info.title
+    thread = Thread(target=lambda: shared.sd_model)
+    thread.start()
     shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights()), call=False)
     shared.opts.onchange("sd_model_dict", wrap_queued_call(lambda: modules.sd_models.reload_model_weights()), call=False)
     shared.state.end()
+    thread.join()
     startup_timer.record("checkpoint")
 
 
@@ -176,13 +173,23 @@ def async_policy():
     _BasePolicy = asyncio.WindowsSelectorEventLoopPolicy if sys.platform == "win32" and hasattr(asyncio, "WindowsSelectorEventLoopPolicy") else asyncio.DefaultEventLoopPolicy
 
     class AnyThreadEventLoopPolicy(_BasePolicy):
+        def handle_exception(self, context):
+            msg = context.get("exception", context["message"])
+            log.error(f"AsyncIO loop: {msg}")
+
         def get_event_loop(self) -> asyncio.AbstractEventLoop:
             try:
-                return super().get_event_loop()
+                self.loop = super().get_event_loop()
             except (RuntimeError, AssertionError):
-                loop = self.new_event_loop()
-                self.set_event_loop(loop)
-                return loop
+                self.loop = self.new_event_loop()
+                self.set_event_loop(self.loop)
+            return self.loop
+
+        def __init__(self):
+            super().__init__()
+            self.loop = self.get_event_loop()
+            self.loop.set_exception_handler(self.handle_exception)
+            log.debug(f"Event loop: {self.loop}")
 
     asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
 
@@ -205,7 +212,7 @@ def start_common():
 def start_ui():
     log.debug('Creating UI')
     modules.script_callbacks.before_ui_callback()
-    startup_timer.record("scripts before_ui_callback")
+    startup_timer.record("before-ui")
     shared.demo = modules.ui.create_ui()
     startup_timer.record("ui")
     if cmd_opts.disable_queue:
@@ -271,7 +278,7 @@ def start_ui():
     setup_middleware(app, cmd_opts)
 
     if cmd_opts.subpath:
-        _mounted_app = gradio.mount_gradio_app(app, shared.demo, path=f"/{cmd_opts.subpath}")
+        gradio.mount_gradio_app(app, shared.demo, path=f"/{cmd_opts.subpath}")
         shared.log.info(f'Redirector mounted: /{cmd_opts.subpath}')
 
     startup_timer.record("launch")
@@ -281,18 +288,23 @@ def start_ui():
     ui_extra_networks.add_pages_to_demo(app)
 
     modules.script_callbacks.app_started_callback(shared.demo, app)
-    startup_timer.record("scripts app_started_callback")
+    startup_timer.record("app-started")
 
-    time_setup = [f'{k}:{round(v,3)}s' for (k,v) in modules.scripts.time_setup.items() if v > 0.001]
-    shared.log.debug(f'Scripts setup: {time_setup}s')
-    time_component = [f'{k}:{round(v,3)}s' for (k,v) in modules.scripts.time_component.items() if v > 0.001]
-    shared.log.debug(f'Scripts components: {time_component}s')
+    time_setup = [f'{k}:{round(v,3)}s' for (k,v) in modules.scripts.time_setup.items() if v > 0.005]
+    shared.log.debug(f'Scripts setup: {time_setup}')
+    time_component = [f'{k}:{round(v,3)}s' for (k,v) in modules.scripts.time_component.items() if v > 0.005]
+    shared.log.debug(f'Scripts components: {time_component}')
 
 
 def webui():
     start_common()
     start_ui()
-    load_model()
+    modules.sd_models.write_metadata()
+    if opts.sd_checkpoint_autoload:
+        load_model()
+    else:
+        log.debug('Model auto load disabled')
+
     log.info(f"Startup time: {startup_timer.summary()}")
 
     # override all loggers to use the same handlers as the main logger
@@ -316,6 +328,7 @@ def api_only():
     api = create_api(app)
     api.wants_restart = False
     modules.script_callbacks.app_started_callback(None, app)
+    modules.sd_models.write_metadata()
     log.info(f"Startup time: {startup_timer.summary()}")
     api.launch(server_name="0.0.0.0" if cmd_opts.listen else "127.0.0.1", port=cmd_opts.port if cmd_opts.port else 7861)
     return api

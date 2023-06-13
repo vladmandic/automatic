@@ -1,14 +1,44 @@
 # Change Log for SD.Next
 
-## Update for 06/07/2023
+## Update for 06/13/2023
 
+One bigger update...
+Both some **new functionality** as well as **massive merges** from upstream  
+
+- new cache for models/lora/lyco metadata: `metadata.json`  
+  drastically reduces disk access on app startup  
+- allow saving of **ui default values**  
+  settings -> ui defaults
+- ability to run server without loaded model  
+  default is to auto-load model on startup, can be changed in settings -> stable diffusion  
+  if disabled, model will be loaded on first request, e.g. when you click generate  
+  this is useful when you want to start server to perform other tasks like upscaling which do not rely on model  
+- updated `accelerate` and `xformers`
+- huge nubmer of changes ported from **A1111** upstream  
+  this was a massive merge
+  hopefully this does not cause any regressions  
+
+
+## Update for 06/12/2023
+
+- updated ui labels and hints to improve clarity and provide some extra info  
+  this is 1st stage of the process, more to come...  
+  if you want to join the effort, see <https://github.com/vladmandic/automatic/discussions/1246>
+- new localization and hints engine  
+  how hints are displayed can be selected in settings -> ui  
 - reworked **installer** sequence  
   as some extensions are loading packages directly from their preload sequence  
   which was preventing some optimizations to take effect  
-  i hope this does not cause regressions, but if it does, please report  
+- updated **settings** tab functionality, thanks @gegell  
+  with real-time monitor for all new and/or updated settings  
+- **launcher** will now warn if application owned files are modified  
+  you are free to add any user files, but do not modify app files unless you're sure in what you're doing  
+- add more profiling for scripts/extensions so you can see what takes time  
+  this applies both to initial load as well as execution  
 - experimental `sd_model_dict` setting which allows you to load model dictionary  
   from one model and apply weights from another model specified in `sd_model_checkpoint`  
   results? who am i to judge :)
+
 
 ## Update for 06/05/2023
 

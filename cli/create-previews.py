@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# pylint: disable=no-member
 import os
 import json
 import time
@@ -12,7 +13,7 @@ from generate import generate # pylint: disable=import-error
 grid = importlib.import_module('image-grid').grid
 
 
-default = 'sd-v15-runwayml.ckpt [cc6cb27103]'
+default = 'best/icbinp-icantbelieveIts-final.safetensors [73f48afbdc]'
 exclude = ['sd-v20', 'sd-v21', 'inpainting', 'pix2pix']
 # used by lora
 prompt = "photo of <keyword> <embedding>, photograph, posing, pose, high detailed, intricate, elegant, sharp focus, skin texture, looking forward, facing camera, 135mm, shot on dslr, canon 5d, 4k, modelshoot style, cinematic lighting"
@@ -70,6 +71,15 @@ options = Map({
 })
 
 
+def preview_exists(folder, model):
+    for suffix in ['', '.preview']:
+        for ext in ['.jpg', '.png', '.webp']:
+            fn = os.path.join(folder, f'{model}{suffix}{ext}')
+            if os.path.exists(fn):
+                return True
+    return False
+
+
 async def preview_models(params):
     data = await get('/sdapi/v1/sd-models')
     allmodels = [m['title'] for m in data]
@@ -106,10 +116,10 @@ async def preview_models(params):
     log.info({ 'total jobs': len(models) * options.generate.batch_size, 'per-model': options.generate.batch_size })
     log.info(json.dumps(options, indent=2))
     for model in models:
-        fn = os.path.join(folder, os.path.basename(model) + options.format)
-        if os.path.exists(fn) and len(params.input) == 0: # if model preview exists and not manually included
+        if preview_exists(folder, model) and len(params.input) == 0: # if model preview exists and not manually included
             log.info({ 'model preview exists': model })
             continue
+        fn = os.path.join(folder, os.path.basename(model) + options.format)
         log.info({ 'model load': model })
 
         opt['sd_model_checkpoint'] = model
@@ -153,15 +163,15 @@ async def lora(params):
     if not os.path.exists(folder):
         log.error({ 'lora directory not found': folder })
         return
-    models1 = [f for f in Path(folder).glob('*.safetensors')]
-    models2 = [f for f in Path(folder).glob('*.ckpt')]
+    models1 = list(Path(folder).glob('*.safetensors'))
+    models2 = list(Path(folder).glob('*.ckpt'))
     models = [f.stem for f in models1 + models2]
     log.info({ 'loras': len(models) })
     for model in models:
-        fn = os.path.join(folder, model + options.format)
-        if os.path.exists(fn) and len(params.input) == 0: # if model preview exists and not manually included
+        if preview_exists(folder, model) and len(params.input) == 0: # if model preview exists and not manually included
             log.info({ 'lora preview exists': model })
             continue
+        fn = os.path.join(folder, model + options.format)
         images = []
         labels = []
         t0 = time.time()
@@ -194,15 +204,15 @@ async def lyco(params):
     if not os.path.exists(folder):
         log.error({ 'lyco directory not found': folder })
         return
-    models1 = [f for f in Path(folder).glob('*.safetensors')]
-    models2 = [f for f in Path(folder).glob('*.ckpt')]
+    models1 = list(Path(folder).glob('*.safetensors'))
+    models2 = list(Path(folder).glob('*.ckpt'))
     models = [f.stem for f in models1 + models2]
     log.info({ 'lycos': len(models) })
     for model in models:
-        fn = os.path.join(folder, model + options.format)
-        if os.path.exists(fn) and len(params.input) == 0: # if model preview exists and not manually included
+        if preview_exists(folder, model) and len(params.input) == 0: # if model preview exists and not manually included
             log.info({ 'lyco preview exists': model })
             continue
+        fn = os.path.join(folder, model + options.format)
         images = []
         labels = []
         t0 = time.time()
@@ -238,10 +248,10 @@ async def hypernetwork(params):
     models = [f.stem for f in Path(folder).glob('*.pt')]
     log.info({ 'hypernetworks': len(models) })
     for model in models:
-        fn = os.path.join(folder, model + options.format)
-        if os.path.exists(fn) and len(params.input) == 0: # if model preview exists and not manually included
+        if preview_exists(folder, model) and len(params.input) == 0: # if model preview exists and not manually included
             log.info({ 'hypernetwork preview exists': model })
             continue
+        fn = os.path.join(folder, model + options.format)
         images = []
         labels = []
         t0 = time.time()
@@ -274,10 +284,10 @@ async def embedding(params):
     models = [f.stem for f in Path(folder).glob('*.pt')]
     log.info({ 'embeddings': len(models) })
     for model in models:
-        fn = os.path.join(folder, model + '.preview' + options.format)
-        if os.path.exists(fn) and len(params.input) == 0: # if model preview exists and not manually included
+        if preview_exists(folder, model) and len(params.input) == 0: # if model preview exists and not manually included
             log.info({ 'embedding preview exists': model })
             continue
+        fn = os.path.join(folder, model + '.preview' + options.format)
         images = []
         labels = []
         t0 = time.time()

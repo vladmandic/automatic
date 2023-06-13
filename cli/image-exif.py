@@ -16,8 +16,8 @@ class Exif: # pylint: disable=single-string-used-for-slots
     def __init__(self, image = None):
         super(Exif, self).__setattr__('exif', Image.Exif())
         self.pnginfo = PngImagePlugin.PngInfo()
-        self.tags = {**dict(((k, v) for k, v in ExifTags.TAGS.items())), **dict(((k, v) for k, v in ExifTags.GPSTAGS.items()))}
-        self.ids = {**dict(((v, k) for k, v in ExifTags.TAGS.items())), **dict(((v, k) for k, v in ExifTags.GPSTAGS.items()))}
+        self.tags = {**dict(ExifTags.TAGS.items()), **dict(ExifTags.GPSTAGS.items())}
+        self.ids = {**{v: k for k, v in ExifTags.TAGS.items()}, **{v: k for k, v in ExifTags.GPSTAGS.items()}}
         if image is not None:
             self.load(image)
 
@@ -31,7 +31,7 @@ class Exif: # pylint: disable=single-string-used-for-slots
         exif_dict = {}
         try:
             exif_dict = dict(img._getexif().items()) # pylint: disable=protected-access
-        except:
+        except Exception:
             exif_dict = dict(img.info.items())
         for key, val in exif_dict.items():
             if isinstance(val, bytes): # decode bytestring
@@ -65,7 +65,7 @@ class Exif: # pylint: disable=single-string-used-for-slots
                 if len(val) == 0: # remove empty strings
                     val = None
                 return val
-            except:
+            except Exception:
                 pass
         return None
 
@@ -101,6 +101,6 @@ if __name__ == '__main__':
         if os.path.isfile(fn):
             read_exif(fn)
         elif os.path.isdir(fn):
-            for root, dirs, files in os.walk(fn):
+            for root, _dirs, files in os.walk(fn):
                 for file in files:
                     read_exif(os.path.join(root, file))

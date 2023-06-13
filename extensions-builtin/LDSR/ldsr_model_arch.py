@@ -110,10 +110,11 @@ class LDSR:
         diffusion_steps = int(steps)
         eta = 1.0
 
-
         gc.collect()
         if torch.cuda.is_available:
             torch.cuda.empty_cache()
+        if shared.cmd_opts.use_ipex:
+            torch.xpu.empty_cache()
 
         im_og = image
         width_og, height_og = im_og.size

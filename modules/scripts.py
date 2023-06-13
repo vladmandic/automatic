@@ -219,9 +219,10 @@ def load_scripts():
     script_callbacks.clear_callbacks()
     scripts_list = list_scripts("scripts", ".py")
     syspath = sys.path
+    time_load = {}
 
-    def register_scripts_from_module(module):
-        for _key, script_class in module.__dict__.items():
+    def register_scripts_from_module(module, scriptfile):
+        for script_class in module.__dict__.values():
             if type(script_class) != type:
                 continue
             # log.debug(f'Registering script: {scriptfile.path}')
@@ -231,17 +232,22 @@ def load_scripts():
                 postprocessing_scripts_data.append(ScriptClassData(script_class, scriptfile.path, scriptfile.basedir, module))
 
     for scriptfile in scripts_list:
+        t0 = time.time()
         try:
             if scriptfile.basedir != paths.script_path:
                 sys.path = [scriptfile.basedir] + sys.path
             current_basedir = scriptfile.basedir
             script_module = script_loading.load_module(scriptfile.path)
-            register_scripts_from_module(script_module)
+            register_scripts_from_module(script_module, scriptfile)
         except Exception as e:
             errors.display(e, f'Loading script: {scriptfile.filename}')
         finally:
-            sys.path = syspath
             current_basedir = paths.script_path
+            time_load[scriptfile.basedir] = time_load.get(scriptfile.basedir, 0) + (time.time()-t0)
+            sys.path = syspath
+
+    time_summary = [f'{os.path.basename(k)}:{round(v,3)}s' for (k,v) in time_load.items() if v > 0.05]
+    log.debug(f'Scripts load: {time_summary}')
 
 
 def wrap_call(func, filename, funcname, *args, default=None, **kwargs):
@@ -319,7 +325,6 @@ class ScriptRunner:
             inputs_alwayson += [script.alwayson for _ in controls]
             script.args_to = len(inputs)
 
-        s = []
         with gr.Group(elem_id='scripts_alwayson_img2img' if self.is_img2img else 'scripts_alwayson_txt2img'):
             for script in self.alwayson_scripts:
                 t0 = time.time()
@@ -331,7 +336,6 @@ class ScriptRunner:
 
         dropdown = gr.Dropdown(label="Script", elem_id="script_list", choices=["None"] + self.titles, value="None", type="index")
         inputs[0] = dropdown
-        s = []
         for script in self.selectable_scripts:
             with gr.Group(visible=False) as group:
                 t0 = time.time()
@@ -481,7 +485,7 @@ class ScriptRunner:
             if module is None:
                 module = script_loading.load_module(script.filename)
                 cache[filename] = module
-            for _key, script_class in module.__dict__.items():
+            for script_class in module.__dict__.values():
                 if type(script_class) == type and issubclass(script_class, Script):
                     self.scripts[si] = script_class()
                     self.scripts[si].filename = filename

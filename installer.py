@@ -53,7 +53,7 @@ def setup_logging(clean=False):
         if clean and os.path.isfile(log_file):
             os.remove(log_file)
         time.sleep(0.1) # prevent race condition
-    except:
+    except Exception:
         pass
     from rich.theme import Theme
     from rich.logging import RichHandler
@@ -83,7 +83,7 @@ def setup_logging(clean=False):
 def print_profile(profile: cProfile.Profile, msg: str):
     try:
         from rich import print # pylint: disable=redefined-builtin
-    except:
+    except Exception:
         pass
     profile.disable()
     stream = io.StringIO()
@@ -91,7 +91,7 @@ def print_profile(profile: cProfile.Profile, msg: str):
     ps.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(15)
     profile = None
     lines = stream.getvalue().split('\n')
-    lines = [l for l in lines if '<frozen' not in l and '{built-in' not in l and '/logging' not in l and '/rich' not in l]
+    lines = [line for line in lines if '<frozen' not in line and '{built-in' not in line and '/logging' not in line and '/rich' not in line]
     print(f'Profile {msg}:', '\n'.join(lines))
 
 
@@ -222,6 +222,8 @@ def clone(url, folder, commithash=None):
 # check python version
 def check_python():
     supported_minors = [9, 10]
+    if args.quick:
+        return
     if args.experimental:
         supported_minors.append(11)
     log.info(f'Python {platform.python_version()} on {platform.system()}')
@@ -242,6 +244,8 @@ def check_python():
 
 # check torch version
 def check_torch():
+    if args.quick:
+        return
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
@@ -257,7 +261,7 @@ def check_torch():
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
         log.info('nVidia CUDA toolkit detected')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
-        xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.17' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
+        xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.20' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
     elif allow_rocm and (shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')):
         log.info('AMD ROCm toolkit detected')
         os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
@@ -314,7 +318,7 @@ def check_torch():
                         log.info(f'Torch backend: DirectML ({version})')
                         for i in range(0, torch_directml.device_count()):
                             log.info(f'Torch detected GPU: {torch_directml.device_name(i)}')
-                except:
+                except Exception:
                     log.warning("Torch reports CUDA not available")
         except Exception as e:
             log.error(f'Could not load torch: {e}')
@@ -345,15 +349,17 @@ def check_torch():
 
 # check modified files
 def check_modified_files():
+    if args.quick:
+        return
     if args.skip_git:
         return
     try:
         res = git('status --porcelain')
         files = [x[2:].strip() for x in res.split('\n')]
-        files = [x for x in files if len(x) > 0 and not x.startswith('extensions') and not x.startswith('wiki')]
+        files = [x for x in files if len(x) > 0 and not x.startswith('extensions') and not x.startswith('wiki') and not x.endswith('.json')]
         if len(files) > 0:
             log.warning(f'Modified files: {files}')
-    except:
+    except Exception:
         pass
 
 
@@ -473,7 +479,7 @@ def install_extensions():
             if not args.skip_update:
                 try:
                     update(os.path.join(folder, ext))
-                except:
+                except Exception:
                     log.error(f'Error updating extension: {os.path.join(folder, ext)}')
             if not args.skip_extensions:
                 run_extension_installer(os.path.join(folder, ext))
@@ -516,7 +522,7 @@ def install_submodules():
             try:
                 name = submodule.split()[1].strip()
                 update(name)
-            except:
+            except Exception:
                 log.error(f'Error updating submodule: {submodule}')
     if args.profile:
         print_profile(pr, 'Submodule')
@@ -546,7 +552,7 @@ def install_requirements():
 
 # set environment variables controling the behavior of various libraries
 def set_environment():
-    log.info('Setting environment tuning')
+    log.debug('Setting environment tuning')
     os.environ.setdefault('USE_TORCH', '1')
     os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '2')
     os.environ.setdefault('ACCELERATE', 'True')
@@ -568,6 +574,8 @@ def set_environment():
 
 
 def check_extensions():
+    if args.quick:
+        return 0
     newest_all = os.path.getmtime('requirements.txt')
     from modules.paths_internal import extensions_builtin_dir, extensions_dir
     extension_folders = [extensions_builtin_dir] if args.safe else [extensions_builtin_dir, extensions_dir]
@@ -601,9 +609,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
             sys.exit(1)
     ver = git('log -1 --pretty=format:"%h %ad"')
     log.info(f'Version: {ver}')
-    if args.version:
-        return
-    if args.skip_git:
+    if args.quick or args.version or args.skip_git:
         return
     commit = git('rev-parse HEAD')
     global git_commit # pylint: disable=global-statement
@@ -646,7 +652,7 @@ def update_wiki():
         try:
             update(os.path.join(os.path.dirname(__file__), "wiki"))
             update(os.path.join(os.path.dirname(__file__), "wiki", "origin-wiki"))
-        except:
+        except Exception:
             log.error('Error updating wiki')
 
 
@@ -654,6 +660,8 @@ def update_wiki():
 def check_timestamp():
     if not quick_allowed or not os.path.isfile(log_file):
         return False
+    if args.quick:
+        return True
     if args.skip_git:
         return True
     ok = True
@@ -690,6 +698,7 @@ def add_args(parser):
     group.add_argument('--debug', default = False, action='store_true', help = "Run installer with debug logging, default: %(default)s")
     group.add_argument('--reset', default = False, action='store_true', help = "Reset main repository to latest version, default: %(default)s")
     group.add_argument('--upgrade', default = False, action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
+    group.add_argument('--quick', default = False, action='store_true', help = "Run with startup sequence only, default: %(default)s")
     group.add_argument("--use-ipex", default = False, action='store_true', help="Use Intel OneAPI XPU backend, default: %(default)s")
     group.add_argument('--use-directml', default = False, action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
     group.add_argument("--use-cuda", default=False, action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
@@ -732,7 +741,7 @@ def extensions_preload(parser):
             preload_extensions(ext_dir, parser)
             t1 = time.time()
             log.info(f'Extension preload: {round(t1 - t0, 1)}s {ext_dir}')
-    except:
+    except Exception:
         log.error('Error running extension preloading')
     if args.profile:
         print_profile(pr, 'Preload')

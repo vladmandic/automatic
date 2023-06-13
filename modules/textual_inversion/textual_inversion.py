@@ -3,10 +3,6 @@ import html
 import csv
 from collections import namedtuple
 import torch
-try:
-    import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-except:
-    pass
 from tqdm import tqdm
 import safetensors.torch
 import numpy as np
@@ -165,8 +161,7 @@ class EmbeddingDatabase:
         # textual inversion embeddings
         if 'string_to_param' in data:
             param_dict = data['string_to_param']
-            if hasattr(param_dict, '_parameters'):
-                param_dict = getattr(param_dict, '_parameters')  # fix for torch 1.12.1 loading saved file from torch 1.11
+            param_dict = getattr(param_dict, '_parameters', param_dict)  # fix for torch 1.12.1 loading saved file from torch 1.11
             assert len(param_dict) == 1, 'embedding file has multiple terms in it'
             emb = next(iter(param_dict.items()))[1]
         # diffuser concepts
@@ -215,7 +210,7 @@ class EmbeddingDatabase:
             return
         if not force_reload:
             need_reload = False
-            for _path, embdir in self.embedding_dirs.items():
+            for embdir in self.embedding_dirs.values():
                 if embdir.has_changed():
                     need_reload = True
                     break
@@ -228,7 +223,7 @@ class EmbeddingDatabase:
         self.skipped_embeddings.clear()
         self.expected_shape = self.get_expected_shape()
 
-        for _path, embdir in self.embedding_dirs.items():
+        for embdir in self.embedding_dirs.values():
             self.load_from_dir(embdir)
             embdir.update()
 
@@ -241,9 +236,7 @@ class EmbeddingDatabase:
         displayed_embeddings = (tuple(self.word_embeddings.keys()), tuple(self.skipped_embeddings.keys()))
         if self.previously_displayed_embeddings != displayed_embeddings:
             self.previously_displayed_embeddings = displayed_embeddings
-            shared.log.info(f"Embeddings loaded: {len(self.word_embeddings)} {[k for k in self.word_embeddings.keys()]}")
-            if len(self.skipped_embeddings) > 0:
-                shared.log.info(f"Embeddings skipped: {len(self.skipped_embeddings)} {[k for k in self.skipped_embeddings.keys()]}")
+            shared.log.info(f"Embeddings: loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)}")
 
     def find_embedding_at_position(self, tokens, offset):
         token = tokens[offset]
@@ -437,10 +430,7 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
             shared.log.info("No saved optimizer exists in checkpoint")
 
     if shared.cmd_opts.use_ipex:
-        scaler = ipex.cpu.autocast._grad_scaler.GradScaler() #scaler.step(optimizer): PI_ERROR_INVALID_ARG_VALUE
-        shared.sd_model = shared.sd_model.to(dtype=torch.float32)
-        shared.sd_model.train()
-        shared.sd_model, optimizer = ipex.optimize(shared.sd_model, optimizer=optimizer, dtype=devices.dtype)
+        pass
     else:
         scaler = torch.cuda.amp.GradScaler()
 
@@ -498,14 +488,20 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
                     del x
                     _loss_step += loss.item()
 
-                scaler.scale(loss).backward()
+                if shared.cmd_opts.use_ipex:
+                    loss.backward()
+                else:
+                    scaler.scale(loss).backward()
                 # go back until we reach gradient accumulation steps
                 if (j + 1) % gradient_step != 0:
                     continue
                 if clip_grad:
                     clip_grad(embedding.vec, clip_grad_sched.learn_rate)
-                scaler.step(optimizer)
-                scaler.update()
+                if shared.cmd_opts.use_ipex:
+                    optimizer.step()
+                else:
+                    scaler.step(optimizer)
+                    scaler.update()
                 embedding.step += 1
                 pbar.update()
                 optimizer.zero_grad(set_to_none=True)
@@ -624,7 +620,7 @@ def save_embedding(embedding, optimizer, checkpoint, embedding_name, filename, r
         embedding.name = embedding_name
         embedding.optimizer_state_dict = optimizer.state_dict()
         embedding.save(filename)
-    except:
+    except Exception:
         embedding.sd_checkpoint = old_sd_checkpoint
         embedding.sd_checkpoint_name = old_sd_checkpoint_name
         embedding.name = old_embedding_name

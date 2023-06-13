@@ -1,8 +1,8 @@
 [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/vladmandic)
-![Last Commit](https://img.shields.io/github/last-commit/vladmandic/human?style=flat-square&svg=true)
-![License](https://img.shields.io/github/license/vladmandic/human?style=flat-square&svg=true)
-![GitHub Status Checks](https://img.shields.io/github/checks-status/vladmandic/human/main?style=flat-square&svg=true)
-
+![Last Commit](https://img.shields.io/github/last-commit/vladmandic/automatic?style=flat-square&svg=true)
+![License](https://img.shields.io/github/license/vladmandic/automatic?style=flat-square&svg=true)
+![GitHub Status Checks](https://img.shields.io/github/checks-status/vladmandic/automatic/main?style=flat-square&svg=true)
+![Discord](https://img.shields.io/discord/1101998836328697867)
 
 # SD.Next
 
@@ -65,7 +65,7 @@ Below is partial list of all available parameters, run `webui --help` for the fu
 
 - To avoid having this repo rely just on me, I'd love to have additional maintainers with full admin rights. If you're interested, ping me!  
 - In addition to general cross-platform code, desire is to have a lead for each of the main platforms
-This should be fully cross-platform, but I would really love to have additional contibutors and/or maintainers to join and help lead the effords on different platforms  
+This should be fully cross-platform, but I would really love to have additional contibutors and/or maintainers to join and help lead the efforts on different platforms  
 
 ### **Goals**
 
@@ -95,7 +95,7 @@ General goals:
 
 ### **Docs**
 
-- [Radme](README.md)
+- [ReadMe](README.md)
 - [ToDo](TODO.md)  
 - [Changelog](CHANGELOG.md)
 - [CLI Tools](cli/README.md)
