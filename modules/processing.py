@@ -27,7 +27,7 @@ import modules.images as images
 import modules.styles
 import modules.sd_models as sd_models
 import modules.sd_vae as sd_vae
-from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionPipeline
+from diffusers import StableDiffusionImg2ImgPipeline, StableDiffusionPipeline, StableDiffusionInpaintPipeline
 
 
 opt_C = 4
@@ -694,8 +694,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
                 if shared.sd_model.__class__ == StableDiffusionPipeline:
                     task_specific_kwargs = {"height": p.height, "width": p.width}
-                else:
+                elif shared.sd_model.__class__ == StableDiffusionImg2ImgPipeline:
                     task_specific_kwargs = {"image": p.init_latent, "strength": p.denoising_strength}
+                elif shared.sd_model.__class__ == StableDiffusionInpaintPipeline:
+                    # TODO(PVP): change out to latents once possible with `diffusers`
+                    task_specific_kwargs = {"image": p.init_images[0], "mask_image": p.image_mask, "strength": p.denoising_strength}
 
                 output = shared.sd_model(
                     prompt=prompts,
@@ -994,15 +997,18 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.image_conditioning = None
 
     def init(self, all_prompts, all_seeds, all_subseeds):
-        if backend == Backend.DIFFUSERS:
+        image_mask = self.image_mask
+        if backend == Backend.DIFFUSERS and image_mask is None:
             sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionImg2ImgPipeline)
+        elif backend == Backend.DIFFUSERS and image_mask is not None:
+            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionInpaintPipeline)
+            self.sd_model.dtype = self.sd_model.unet.dtype
 
         force_latent_upscaler = shared.opts.data.get('force_latent_sampler')
         if self.sampler_name in ['PLMS']:
             self.sampler_name = force_latent_upscaler if force_latent_upscaler != 'None' else shared.opts.fallback_sampler # PLMS does not support img2img, use fallback instead
         self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
         crop_region = None
-        image_mask = self.image_mask
         if image_mask is not None:
             image_mask = image_mask.convert('L')
             if self.inpainting_mask_invert:
@@ -1092,8 +1098,11 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.image_conditioning = self.img2img_image_conditioning(image, self.init_latent, image_mask)
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
-        if backend == Backend.DIFFUSERS:
+        if backend == Backend.DIFFUSERS and self.init_mask is None:
             sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionImg2ImgPipeline)
+        elif backend == Backend.DIFFUSERS and self.init_mask is not None:
+            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionInpaintPipeline)
+            self.sd_model.dtype = self.sd_model.unet.dtype
 
         x = create_random_tensors([opt_C, self.height // opt_f, self.width // opt_f], seeds=seeds, subseeds=subseeds, subseed_strength=self.subseed_strength, seed_resize_from_h=self.seed_resize_from_h, seed_resize_from_w=self.seed_resize_from_w, p=self)
         if self.initial_noise_multiplier != 1.0:
