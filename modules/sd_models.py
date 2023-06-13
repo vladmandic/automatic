@@ -439,7 +439,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "safety_checker": None,
         "resume_download": True,
         "low_cpu_mem_usage": True,
-        "use_safetensors": True,
+        # "use_safetensors": True,  # TODO(PVP) - we can't enable this for all checkpoints just yet
         "cache_dir": shared.opts.diffusers_dir,
         "torch_dtype": devices.dtype,
     }
