@@ -480,7 +480,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     devices.torch_gc(force=True)
     shared.log.info(f'Model load finished: {memory_stats()}')
 
+def set_diffuser_pipe(pipe, new_pipe_class):
+    if pipe.__class__ == new_pipe_class:
+        return
 
+    new_pipe = new_pipe_class(**pipe.components)
+    new_pipe.sd_checkpoint_info = pipe.sd_checkpoint_info
+    new_pipe.sd_model_checkpoint = pipe.sd_model_checkpoint 
+    new_pipe.sd_model_hash = pipe.sd_model_hash
+
+    shared.sd_model = new_pipe
+    shared.log.info(f"Pipeline class changed from {pipe.__class__.__name__} to {new_pipe_class.__name__}")
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None):
     from modules import lowvram, sd_hijack
