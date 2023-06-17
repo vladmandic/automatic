@@ -375,7 +375,7 @@ def install_packages():
     # install(openclip_package, 'open-clip-torch')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip')
-    install('onnxruntime==1.14.0', 'onnxruntime', ignore=True)
+    install('onnxruntime==1.15.0', 'onnxruntime', ignore=True)
     if args.profile:
         print_profile(pr, 'Packages')
 
