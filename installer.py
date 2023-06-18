@@ -58,7 +58,9 @@ def setup_logging():
             self.formatter = logging.Formatter('{ "asctime":"%(asctime)s", "created":%(created)f, "facility":"%(name)s", "pid":%(process)d, "tid":%(thread)d, "level":"%(levelname)s", "module":"%(module)s", "func":"%(funcName)s", "msg":"%(message)s" }')
 
         def emit(self, record):
-            msg = self.format(record)
+            # Replace '\\' with '\\\\' so that json decoder can correctly receive
+            # the unescaped value '\'.
+            msg = self.format(record).replace('\\', '\\\\')
             self.buffer.append(json.loads(msg))
             if len(self.buffer) > self.capacity:
                 self.buffer.pop(0)
