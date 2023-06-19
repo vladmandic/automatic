@@ -151,7 +151,7 @@ if __name__ == "__main__":
     installer.ensure_base_requirements()
     init_modules() # setup argparser and default folders
     installer.args = args
-    installer.setup_logging(False)
+    installer.setup_logging()
     installer.log.info('Starting SD.Next')
     installer.read_options()
     installer.check_python()
@@ -186,15 +186,16 @@ if __name__ == "__main__":
     # installer.log.debug(f"Args: {vars(args)}")
     logging.disable(logging.NOTSET if args.debug else logging.DEBUG)
 
-
     instance = start_server(immediate=True, server=None)
     while True:
         try:
             alive = instance.thread.is_alive()
+            requests = instance.server_state.total_requests if hasattr(instance, 'server_state') else 0
         except Exception:
             alive = False
+            requests = 0
         if round(time.time()) % 120 == 0:
-            installer.log.debug(f'Server alive: {alive} Memory {get_memory_stats()}')
+            installer.log.debug(f'Server alive={alive} Requests={requests} memory {get_memory_stats()} ')
         if not alive:
             if instance.wants_restart:
                 installer.log.info('Server restarting...')

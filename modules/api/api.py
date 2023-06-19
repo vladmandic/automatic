@@ -1,7 +1,6 @@
 import io
 import time
 import base64
-import logging
 from io import BytesIO
 from typing import List, Dict, Any
 from threading import Lock
@@ -143,6 +142,7 @@ class Api:
         self.add_api_route("/sdapi/v1/reload-checkpoint", self.reloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/scripts", self.get_scripts_list, methods=["GET"], response_model=models.ScriptsList)
         self.add_api_route("/sdapi/v1/script-info", self.get_script_info, methods=["GET"], response_model=List[models.ScriptInfo])
+        self.add_api_route("/sdapi/v1/log", self.get_log_buffer, methods=["GET"], response_model=List)
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
 
@@ -156,6 +156,9 @@ class Api:
             if compare_digest(credentials.password, self.credentials[credentials.username]):
                 return True
         raise HTTPException(status_code=401, detail="Unauthorized", headers={"WWW-Authenticate": "Basic"})
+
+    def get_log_buffer(self):
+        return shared.log.buffer
 
     def get_selectable_script(self, script_name, script_runner):
         if script_name is None or script_name == "":
@@ -637,40 +640,19 @@ class Api:
             cuda = { 'error': f'{err}' }
         return models.MemoryResponse(ram = ram, cuda = cuda)
 
-    def launch_uvicorn(self):
-        self.app.include_router(self.router)
-        import uvicorn
-        config: uvicorn.Config = {
-            "host": "0.0.0.0" if shared.cmd_opts.listen else "127.0.0.1",
-            "port": shared.cmd_opts.port if shared.cmd_opts.port else 7861,
-            "loop": "auto", # auto, asyncio, uvloop
-            "http": "auto", # auto, h11, httptools 
-            "interface": "auto", # auto, asgi3, asgi2, wsgi
-            "ws": "auto", # auto, websockets, wsproto
-            "log_level": logging.WARNING,
-            "backlog": 4096, # default=2048
-            "timeout_keep_alive": 60, # default=5
-            "ssl_keyfile": shared.cmd_opts.tls_keyfile,
-            "ssl_certfile": shared.cmd_opts.tls_certfile,
-        }
-        shared.log.info(f'API server: Uvicorn options={config}')
-        uvicorn.run(self.app, **config)
-
-    def launch_hypercorn(self):
-        import asyncio
-        import hypercorn
-        import hypercorn.asyncio
-        config = hypercorn.config.Config()
-        config.bind = [f'{"0.0.0.0" if shared.cmd_opts.listen else "127.0.0.1"}:{shared.cmd_opts.port if shared.cmd_opts.port else 7861}']
-        config.keyfile = shared.cmd_opts.tls_keyfile
-        config.certfile = shared.cmd_opts.tls_certfile
-        config.keep_alive_timeout = 60 # default=5
-        config.backlog = 4096 # default=100
-        config.loglevel = "WARNING"
-        config.max_app_queue_size = 64 # default=10
-        shared.log.info(f'API server: Hypercorn options={vars(config)}')
-        instance = hypercorn.asyncio.serve(self.app, config)
-        asyncio.run(instance)
-
     def launch(self):
-        self.launch_uvicorn()
+        config = {
+            "listen": shared.cmd_opts.listen,
+            "port": shared.cmd_opts.port,
+            "keyfile": shared.cmd_opts.tls_keyfile,
+            "certfile": shared.cmd_opts.tls_certfile,
+            "loop": "auto",
+            "http": "auto",
+        }
+        from modules.server import UvicornServer
+        server = UvicornServer(self.app, **config)
+        # from modules.server import HypercornServer
+        # server = HypercornServer(self.app, **config)
+        server.start()
+        shared.log.info(f'API server: Uvicorn options={config}')
+        return server

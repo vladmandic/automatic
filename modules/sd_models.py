@@ -332,7 +332,6 @@ def read_state_dict(checkpoint_file, map_location=None): # pylint: disable=unuse
 
 def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
     if checkpoint_info in checkpoints_loaded:
-        # use checkpoint cache
         shared.log.info("Model weights loading: from cache")
         return checkpoints_loaded[checkpoint_info]
     res = read_state_dict(checkpoint_info.filename)
@@ -618,7 +617,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False):
         current_checkpoint_info = None
     else:
         current_checkpoint_info = sd_model.sd_checkpoint_info
-        if checkpoint_info is not None and sd_model.sd_model_checkpoint == checkpoint_info.filename:
+        if checkpoint_info is not None and current_checkpoint_info.filename == checkpoint_info.filename:
             return
         if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
             lowvram.send_everything_to_cpu()
@@ -668,14 +667,6 @@ def unload_model_weights(sd_model=None, _info=None):
         if shared.backend == shared.Backend.ORIGINAL:
             sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
         sd_model = None
-        """
-        if hasattr(model_data.sd_model, 'model'):
-            del model_data.sd_model.model
-        if hasattr(model_data.sd_model, 'first_stage_model'):
-            del model_data.sd_model.first_stage_model
-        if hasattr(model_data.sd_model, 'cond_stage_model'):
-            del model_data.sd_model.cond_stage_model           
-        """
         model_data.sd_model = None
         devices.torch_gc(force=True)
         shared.log.debug(f'Model weights unloaded: {memory_stats()}')
@@ -683,11 +674,8 @@ def unload_model_weights(sd_model=None, _info=None):
 
 
 def apply_token_merging(sd_model, token_merging_ratio):
-    """
-    Applies speed and memory optimizations from tomesd.
-    """
     current_token_merging_ratio = getattr(sd_model, 'applied_token_merged_ratio', 0)
-    shared.log.debug(f'Appplying token merging: current={current_token_merging_ratio} target={token_merging_ratio}')
+    # shared.log.debug(f'Appplying token merging: current={current_token_merging_ratio} target={token_merging_ratio}')
     if current_token_merging_ratio == token_merging_ratio:
         return
     if current_token_merging_ratio > 0:
