@@ -197,7 +197,7 @@ def model_hash(filename):
 
 def select_checkpoint(model=True):
     model_checkpoint = shared.opts.sd_model_checkpoint if model else shared.opts.sd_model_dict
-    checkpoint_info = checkpoint_aliases.get(model_checkpoint, None)
+    checkpoint_info = get_closet_checkpoint_match(model_checkpoint)
     if checkpoint_info is not None:
         shared.log.debug(f'Select checkpoint: {checkpoint_info.title if checkpoint_info is not None else None}')
         return checkpoint_info
@@ -332,7 +332,6 @@ def read_state_dict(checkpoint_file, map_location=None): # pylint: disable=unuse
 
 def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
     if checkpoint_info in checkpoints_loaded:
-        # use checkpoint cache
         shared.log.info("Model weights loading: from cache")
         return checkpoints_loaded[checkpoint_info]
     res = read_state_dict(checkpoint_info.filename)
@@ -551,7 +550,6 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None)
         sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
         current_checkpoint_info = model_data.sd_model.sd_checkpoint_info
         unload_model_weights()
-        model_data.sd_model = None
     do_inpainting_hijack()
     devices.set_cuda_params()
     if already_loaded_state_dict is not None:
@@ -605,7 +603,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None)
     shared.log.info(f"Model loaded in {timer.summary()}")
     current_checkpoint_info = None
     devices.torch_gc(force=True)
-    shared.log.info(f'Model load finished: {memory_stats()}')
+    shared.log.info(f'Model load finished: {memory_stats()} cached={len(checkpoints_loaded.keys())}')
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False):
@@ -629,7 +627,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False):
         current_checkpoint_info = None
     else:
         current_checkpoint_info = sd_model.sd_checkpoint_info
-        if checkpoint_info is not None and sd_model.sd_model_checkpoint == checkpoint_info.filename:
+        if checkpoint_info is not None and current_checkpoint_info.filename == checkpoint_info.filename:
             return
         if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
             lowvram.send_everything_to_cpu()
@@ -647,7 +645,6 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False):
     timer.record("config")
     if sd_model is None or checkpoint_config != sd_model.used_config:
         del sd_model
-        checkpoints_loaded.clear()
         if shared.backend == shared.Backend.ORIGINAL:
             load_model(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer)
         else:
@@ -679,33 +676,27 @@ def unload_model_weights(sd_model=None, _info=None):
         model_data.sd_model.to(devices.cpu)
         if shared.backend == shared.Backend.ORIGINAL:
             sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
-        model_data.sd_model = None
         sd_model = None
+        model_data.sd_model = None
         devices.torch_gc(force=True)
         shared.log.debug(f'Model weights unloaded: {memory_stats()}')
     return sd_model
 
 
-def apply_token_merging(sd_model, hr: bool):
-    """
-    Applies speed and memory optimizations from tomesd.
-
-    Args:
-        hr (bool): True if called in the context of a high-res pass
-    """
-
-    ratio = shared.opts.token_merging_ratio
-    if hr:
-        ratio = shared.opts.token_merging_ratio_hr
-
-    tomesd.apply_patch(
-        sd_model,
-        ratio=ratio,
-        max_downsample=shared.opts.token_merging_maximum_down_sampling,
-        sx=shared.opts.token_merging_stride_x,
-        sy=shared.opts.token_merging_stride_y,
-        use_rand=shared.opts.token_merging_random,
-        merge_attn=shared.opts.token_merging_merge_attention,
-        merge_crossattn=shared.opts.token_merging_merge_cross_attention,
-        merge_mlp=shared.opts.token_merging_merge_mlp
-    )
+def apply_token_merging(sd_model, token_merging_ratio):
+    current_token_merging_ratio = getattr(sd_model, 'applied_token_merged_ratio', 0)
+    # shared.log.debug(f'Appplying token merging: current={current_token_merging_ratio} target={token_merging_ratio}')
+    if current_token_merging_ratio == token_merging_ratio:
+        return
+    if current_token_merging_ratio > 0:
+        tomesd.remove_patch(sd_model)
+    if token_merging_ratio > 0:
+        tomesd.apply_patch(
+            sd_model,
+            ratio=token_merging_ratio,
+            use_rand=False,  # can cause issues with some samplers
+            merge_attn=True,
+            merge_crossattn=False,
+            merge_mlp=False
+        )
+    sd_model.applied_token_merged_ratio = token_merging_ratio

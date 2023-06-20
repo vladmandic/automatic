@@ -19,11 +19,11 @@ def update_generation_info(generation_info, html_info, img_index):
         if img_index < 0 or img_index >= len(generation_info["infotexts"]):
             return html_info, generation_info
         infotext = generation_info["infotexts"][img_index]
-        html_text = infotext_to_html(infotext)
-        return html_text, infotext
+        html_info_formatted = infotext_to_html(infotext)
+        return html_info, html_info_formatted
     except Exception:
         pass
-    return html_info, generation_info
+    return html_info, html_info
 
 
 def plaintext_to_html(text):
@@ -69,7 +69,7 @@ def delete_files(js_data, images, _html_info, _do_make_zip, index):
 def save_files(js_data, images, html_info, do_make_zip, index):
     os.makedirs(shared.opts.outdir_save, exist_ok=True)
 
-    class PObject: #quick dictionary to class object conversion. Its necessary due apply_filename_pattern requiring it
+    class PObject: # pylint: disable=too-few-public-methods
         def __init__(self, d=None):
             if d is not None:
                 for key, value in d.items():
@@ -99,7 +99,7 @@ def save_files(js_data, images, html_info, do_make_zip, index):
             p.all_seeds.append(p.seed)
         while len(p.all_prompts) <= i:
             p.all_prompts.append(p.prompt)
-        while len(p.infotexts) <= i:
+        while len(p.infotexts) <= i + 1:
             p.infotexts.append(p.infotext)
         if 'name' in filedata and ('tmp' not in filedata['name']) and os.path.isfile(filedata['name']):
             fullfn = filedata['name']
@@ -115,7 +115,8 @@ def save_files(js_data, images, html_info, do_make_zip, index):
             shared.log.info(f"Copying image: {fullfn} -> {destination}")
         else:
             image = image_from_url_text(filedata)
-            fullfn, txt_fullfn = modules.images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=p.infotexts[i], extension=shared.opts.samples_format, grid=is_grid, p=p, save_to_dirs=shared.opts.use_save_to_dirs_for_ui)
+            # infotext is offset by 1 because the first image is the grid
+            fullfn, txt_fullfn = modules.images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=p.infotexts[i + 1], extension=shared.opts.samples_format, grid=is_grid, p=p, save_to_dirs=shared.opts.use_save_to_dirs_for_ui)
             if fullfn is None:
                 continue
             filename = os.path.relpath(fullfn, shared.opts.outdir_save)
@@ -151,11 +152,11 @@ def create_output_panel(tabname, outdir):
             if platform.system() == "Windows":
                 os.startfile(path) # pylint: disable=no-member
             elif platform.system() == "Darwin":
-                subprocess.Popen(["open", path])
+                subprocess.Popen(["open", path]) # pylint: disable=consider-using-with
             elif "microsoft-standard-WSL2" in platform.uname().release:
-                subprocess.Popen(["wsl-open", path])
+                subprocess.Popen(["wsl-open", path]) # pylint: disable=consider-using-with
             else:
-                subprocess.Popen(["xdg-open", path])
+                subprocess.Popen(["xdg-open", path]) # pylint: disable=consider-using-with
 
     with gr.Column(variant='panel', elem_id=f"{tabname}_results"):
         with gr.Group(elem_id=f"{tabname}_gallery_container"):
@@ -172,14 +173,15 @@ def create_output_panel(tabname, outdir):
             open_folder_button.click(fn=lambda: open_folder(shared.opts.outdir_samples or outdir), inputs=[], outputs=[])
             download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False, elem_id=f'download_files_{tabname}')
             with gr.Group():
-                html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext")
-                html_info_raw = gr.Text(elem_id=f'html_info_raw_{tabname}', visible=False)
+                html_info = gr.HTML(elem_id=f'html_info_{tabname}', elem_classes="infotext", visible=False) # contains raw infotext as returned by wrapped call
+                html_info_formatted = gr.HTML(elem_id=f'html_info_formatted_{tabname}', elem_classes="infotext", visible=True) # contains html formatted infotext
+                html_info.change(fn=infotext_to_html, inputs=[html_info], outputs=[html_info_formatted], show_progress=False)
                 html_log = gr.HTML(elem_id=f'html_log_{tabname}')
                 generation_info = gr.Textbox(visible=False, elem_id=f'generation_info_{tabname}')
                 generation_info_button = gr.Button(visible=False, elem_id=f"{tabname}_generation_info_button")
-                generation_info_button.click(fn=update_generation_info, _js="(x, y, z) => [x, y, selected_gallery_index()]", show_progress=False,
+                generation_info_button.click(fn=update_generation_info, _js="(x, y, z) => [x, y, selected_gallery_index()]", show_progress=False, # triggered on gallery change from js
                     inputs=[generation_info, html_info, html_info],
-                    outputs=[html_info, html_info_raw],
+                    outputs=[html_info, html_info_formatted],
                 )
                 save.click(fn=call_queue.wrap_gradio_call(save_files), _js="(x, y, z, q1, q2) => [x, y, z, false, selected_gallery_index()]", show_progress=False,
                     inputs=[generation_info, result_gallery, html_info, html_info, html_info],
@@ -204,4 +206,4 @@ def create_output_panel(tabname, outdir):
                 parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(
                     paste_button=paste_button, tabname=paste_tabname, source_tabname=("txt2img" if tabname == "txt2img" else None), source_image_component=result_gallery, paste_field_names=paste_field_names
                 ))
-            return result_gallery, generation_info, html_info, html_log
+            return result_gallery, generation_info, html_info, html_info_formatted, html_log

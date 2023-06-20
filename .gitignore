@@ -1,5 +1,6 @@
 # defaults
 __pycache__
+.ruff_cache
 /cache.json
 /metadata.json
 /config.json
@@ -18,6 +19,7 @@ venv
 
 # all models and temp files
 *.log
+*.log.*
 *.bak
 *.ckpt
 *.safetensors

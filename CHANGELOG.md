@@ -1,23 +1,51 @@
 # Change Log for SD.Next
 
+## Update for 06/19/2023
+
+This one is less relevant for standard users, but pretty major if you're running an actual server  
+But even if not, it still includes bunch of cumulative fixes since last release...
+
+- minor improvements to extra networks ui  
+- more hints/tooltips integrated into ui  
+- decidated api server  
+  - still in developent, but highly promising for high throughput server  
+- improve server logging and monitoring with  
+  - server log file rotation  
+  - ring buffer with api endpoint `/sdapi/v1/log`  
+  - real-time status and load endpoint `/sdapi/v1/system-info/status`
+
+## Update for 06/14/2023
+
+Second stage of a jumbo merge from upstream plus few minor changes...
+
+- simplify token merging  
+- reorganize some settings  
+- all updates from upstream: **A1111** v1.3.2 [df004be] *(latest release)*  
+  pretty much nothing major that i haven't released in previous versions, but its still a long list of tiny changes  
+  - skipped/did-not-port:  
+    add separate hires prompt: unnecessarily complicated and spread over large number of commits due to many regressions  
+    allow external scripts to add cross-optimization methods: dangerous and i don't see a use case for it so far  
+    load extension info in threads: unnecessary as other optimizations ive already put place perform equally good  
+  - broken/reverted:  
+    sub-quadratic optimization changes  
+
 ## Update for 06/13/2023
 
-One bigger update...
+Just a day later and one *bigger update*...
 Both some **new functionality** as well as **massive merges** from upstream  
 
 - new cache for models/lora/lyco metadata: `metadata.json`  
   drastically reduces disk access on app startup  
-- allow saving of **ui default values**  
+- allow saving/resetting of **ui default values**  
   settings -> ui defaults
 - ability to run server without loaded model  
   default is to auto-load model on startup, can be changed in settings -> stable diffusion  
   if disabled, model will be loaded on first request, e.g. when you click generate  
-  this is useful when you want to start server to perform other tasks like upscaling which do not rely on model  
+  useful when you want to start server to perform other tasks like upscaling which do not rely on model  
 - updated `accelerate` and `xformers`
 - huge nubmer of changes ported from **A1111** upstream  
-  this was a massive merge
-  hopefully this does not cause any regressions  
-
+  this was a massive merge, hopefully this does not cause any regressions  
+  and still a bit more pending...
 
 ## Update for 06/12/2023
 
@@ -84,7 +112,7 @@ Another bigger one...And more to come in the next few days...
 - new live preview mode: taesd  
   i really like this one, so its enabled as default for new installs  
 - settings search feature  
-- new sampler: sde++ 2m sde  
+- new sampler: dpm++ 2m sde  
 - fully common save/zip/delete (new) options in all tabs  
   which (again) meant rework of process image tab  
 - system info tab: live gpu utilization/memory graphs for nvidia gpus  

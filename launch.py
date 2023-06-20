@@ -4,6 +4,7 @@ import time
 import shlex
 import logging
 import subprocess
+from functools import lru_cache
 import installer
 
 
@@ -32,6 +33,7 @@ def init_modules():
     extensions_dir = modules.paths_internal.extensions_dir
 
 
+@lru_cache()
 def commit_hash(): # compatbility function
     global stored_commit_hash # pylint: disable=global-statement
     if stored_commit_hash is not None:
@@ -43,6 +45,7 @@ def commit_hash(): # compatbility function
     return stored_commit_hash
 
 
+@lru_cache()
 def run(command, desc=None, errdesc=None, custom_env=None, live=False): # compatbility function
     if desc is not None:
         installer.log.info(desc)
@@ -65,18 +68,22 @@ def check_run(command): # compatbility function
     return result.returncode == 0
 
 
+@lru_cache()
 def is_installed(package): # compatbility function
     return installer.installed(package)
 
 
+@lru_cache()
 def repo_dir(name): # compatbility function
     return os.path.join(script_path, dir_repos, name)
 
 
+@lru_cache()
 def run_python(code, desc=None, errdesc=None): # compatbility function
     return run(f'"{sys.executable}" -c "{code}"', desc, errdesc)
 
 
+@lru_cache()
 def run_pip(pkg, desc=None): # compatbility function
     if desc is None:
         desc = pkg
@@ -84,6 +91,7 @@ def run_pip(pkg, desc=None): # compatbility function
     return run(f'"{sys.executable}" -m pip {pkg} --prefer-binary{index_url_line}', desc=f"Installing {desc}", errdesc=f"Couldn't install {desc}")
 
 
+@lru_cache()
 def check_run_python(code): # compatbility function
     return check_run(f'"{sys.executable}" -c "{code}"')
 
@@ -133,7 +141,7 @@ def start_server(immediate=True, server=None):
         if args.api_only:
             server = server.api_only()
         else:
-            server = server.webui()
+            server = server.webui(restart=not immediate)
     if args.profile:
         installer.print_profile(pr, 'WebUI')
     return server
@@ -143,7 +151,7 @@ if __name__ == "__main__":
     installer.ensure_base_requirements()
     init_modules() # setup argparser and default folders
     installer.args = args
-    installer.setup_logging(False)
+    installer.setup_logging()
     installer.log.info('Starting SD.Next')
     installer.read_options()
     installer.check_python()
@@ -178,15 +186,16 @@ if __name__ == "__main__":
     # installer.log.debug(f"Args: {vars(args)}")
     logging.disable(logging.NOTSET if args.debug else logging.DEBUG)
 
-
     instance = start_server(immediate=True, server=None)
     while True:
         try:
             alive = instance.thread.is_alive()
+            requests = instance.server_state.total_requests if hasattr(instance, 'server_state') else 0
         except Exception:
             alive = False
+            requests = 0
         if round(time.time()) % 120 == 0:
-            installer.log.debug(f'Server alive: {alive} Memory {get_memory_stats()}')
+            installer.log.debug(f'Server alive={alive} Requests={requests} memory {get_memory_stats()} ')
         if not alive:
             if instance.wants_restart:
                 installer.log.info('Server restarting...')

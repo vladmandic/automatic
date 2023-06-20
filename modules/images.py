@@ -289,6 +289,7 @@ def sanitize_filename_part(text, replace_spaces=True):
     text = os.path.basename(text)
     if replace_spaces:
         text = text.replace(' ', '_')
+    text = text.replace('#', '_')
     text = text.translate({ord(x): '_' for x in invalid_filename_chars})
     text = text.lstrip(invalid_filename_prefix)[:max_filename_part_length]
     text = text.rstrip(invalid_filename_postfix)
@@ -441,23 +442,24 @@ def atomically_save_image():
             image_format = 'JPEG'
         shared.log.debug(f'Saving image: {image_format} {fn} {image.size}')
         # actual save
+        exifinfo_data = (exifinfo_data or "") if shared.opts.image_metadata else ""
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
             for k, v in params.pnginfo.items():
                 pnginfo_data.add_text(k, str(v))
-            image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, pnginfo=pnginfo_data)
+            image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, pnginfo=pnginfo_data if shared.opts.image_metadata else None)
         elif image_format == 'JPEG':
             if image.mode == 'RGBA':
                 shared.log.warning('Saving RGBA image as JPEG: Alpha channel will be lost')
                 image = image.convert("RGB")
             elif image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("L")
-            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo_data or "", encoding="unicode") } })
+            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo_data, encoding="unicode") } })
             image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, exif=exif_bytes)
         elif image_format == 'WEBP':
             if image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
-            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo_data or "", encoding="unicode") } })
+            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo_data, encoding="unicode") } })
             try:
                 image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, lossless=shared.opts.webp_lossless, exif=exif_bytes)
             except Exception as e:

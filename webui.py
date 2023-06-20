@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import re
 import sys
@@ -5,6 +6,7 @@ import signal
 import asyncio
 import logging
 import warnings
+import importlib
 from threading import Thread
 from modules import timer, errors, paths # pylint: disable=unused-import
 
@@ -36,12 +38,11 @@ startup_timer.record("gradio")
 errors.install([gradio])
 
 errors.log.debug('Loading Modules')
+from installer import log, setup_logging, git_commit
 import ldm.modules.encoders.modules # pylint: disable=W0611,C0411,E0401
-from modules import extra_networks, ui_extra_networks_checkpoints # pylint: disable=C0411,C0412
-from modules import extra_networks_hypernet, ui_extra_networks_hypernets, ui_extra_networks_textual_inversion
-from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=W0611,C0411
+from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=W0611,C0411,C0412
 from modules.paths import create_paths
-from modules import shared, extensions, ui_tempdir, ui_extra_networks, modelloader
+from modules import shared, extensions, extra_networks, ui_tempdir, ui_extra_networks, modelloader
 import modules.devices
 import modules.sd_samplers
 import modules.upscaler
@@ -59,11 +60,10 @@ import modules.script_callbacks
 import modules.textual_inversion.textual_inversion
 import modules.progress
 import modules.ui
-from modules.shared import cmd_opts, opts, log
+from modules.shared import cmd_opts, opts
 import modules.hypernetworks.hypernetwork
 from modules.middleware import setup_middleware
 startup_timer.record("libraries")
-
 log.info('Libraries loaded')
 log.setLevel(logging.DEBUG if cmd_opts.debug else logging.INFO)
 logging.disable(logging.NOTSET if cmd_opts.debug else logging.DEBUG)
@@ -71,6 +71,19 @@ if cmd_opts.server_name:
     server_name = cmd_opts.server_name
 else:
     server_name = "0.0.0.0" if cmd_opts.listen else None
+
+fastapi_args = {
+    "version": f'0.0.{git_commit}',
+    "title": "SD.Next",
+    "description": "SD.Next",
+    "docs_url": "/docs" if cmd_opts.docs else None,
+    "redocs_url": "/redocs" if cmd_opts.docs else None,
+    "swagger_ui_parameters": {
+        "displayOperationId": True,
+        "showCommonExtensions": True,
+        "deepLinking": False,
+    }
+}
 
 
 def check_rollback_vae():
@@ -113,6 +126,8 @@ def initialize():
     modelloader.load_upscalers()
     startup_timer.record("upscalers")
 
+    setup_logging() # needs a reset since scripts can hijaack logging
+
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
     shared.opts.onchange("temp_dir", ui_tempdir.on_tmpdir_changed)
     shared.opts.onchange("gradio_theme", shared.reload_gradio_theme)
@@ -121,15 +136,13 @@ def initialize():
     modules.textual_inversion.textual_inversion.list_textual_inversion_templates()
     shared.reload_hypernetworks()
 
-    ui_extra_networks.intialize()
-    ui_extra_networks.register_page(ui_extra_networks_hypernets.ExtraNetworksPageHypernetworks())
-    ui_extra_networks.register_page(ui_extra_networks_checkpoints.ExtraNetworksPageCheckpoints())
-    ui_extra_networks.register_page(ui_extra_networks_textual_inversion.ExtraNetworksPageTextualInversion())
+    ui_extra_networks.initialize()
+    ui_extra_networks.register_default_pages()
     extra_networks.initialize()
-    extra_networks.register_extra_network(extra_networks_hypernet.ExtraNetworkHypernet())
+    extra_networks.register_default_extra_networks()
     startup_timer.record("extra-networks")
 
-    if cmd_opts.tls_keyfile is not None and cmd_opts.tls_keyfile is not None:
+    if cmd_opts.tls_keyfile is not None and cmd_opts.tls_certfile is not None:
         try:
             if not os.path.exists(cmd_opts.tls_keyfile):
                 log.error("Invalid path to TLS keyfile given")
@@ -232,24 +245,8 @@ def start_ui():
                 for line in file.readlines():
                     gradio_auth_creds += [x.strip() for x in line.split(',') if x.strip()]
 
-    import installer
     global local_url # pylint: disable=global-statement
-    gradio_kwargs = {
-            "version": f'0.0.{installer.git_commit}',
-            "title": "SD.Next",
-            "description": "SD.Next",
-    }
-    if cmd_opts.docs:
-        gradio_kwargs.update({
-            "docs_url": "/docs",
-            "redocs_url": "/redocs",
-            "swagger_ui_parameters": {
-                "displayOperationId": True,
-                "showCommonExtensions": True,
-                "deepLinking": False,
-            }
-        })
-    app, local_url, share_url = shared.demo.launch(
+    app, local_url, share_url = shared.demo.launch( # app is FastAPI(Starlette) instance
         share=cmd_opts.share,
         server_name=server_name,
         server_port=cmd_opts.port if cmd_opts.port != 7860 else None,
@@ -258,13 +255,13 @@ def start_ui():
         ssl_verify=not cmd_opts.tls_selfsign,
         debug=False,
         auth=[tuple(cred.split(':')) for cred in gradio_auth_creds] if gradio_auth_creds else None,
-        # inbrowser=cmd_opts.autolaunch,
         prevent_thread_lock=True,
         max_threads=64,
         show_api=True,
+        quiet=True,
         favicon_path='html/logo.ico',
         allowed_paths=[os.path.dirname(__file__), cmd_opts.data_dir],
-        app_kwargs=gradio_kwargs,
+        app_kwargs=fastapi_args,
     )
     if cmd_opts.data_dir is not None:
         ui_tempdir.register_tmp_file(shared.demo, os.path.join(cmd_opts.data_dir, 'x'))
@@ -296,7 +293,11 @@ def start_ui():
     shared.log.debug(f'Scripts components: {time_component}')
 
 
-def webui():
+def webui(restart=False):
+    if restart:
+        modules.script_callbacks.app_reload_callback()
+        modules.script_callbacks.script_unloaded_callback()
+
     start_common()
     start_ui()
     modules.sd_models.write_metadata()
@@ -307,31 +308,36 @@ def webui():
 
     log.info(f"Startup time: {startup_timer.summary()}")
 
-    # override all loggers to use the same handlers as the main logger
-    for logger in [logging.getLogger(name) for name in logging.root.manager.loggerDict]: # pylint: disable=no-member
-        if logger.name.startswith('uvicorn'):
-            continue
-        logger.handlers = log.handlers
+    if not restart:
+        # override all loggers to use the same handlers as the main logger
+        for logger in [logging.getLogger(name) for name in logging.root.manager.loggerDict]: # pylint: disable=no-member
+            if logger.name.startswith('uvicorn') or logger.name.startswith('sd'):
+                continue
+            logger.handlers = log.handlers
+        # autolaunch only on initial start
+        if cmd_opts.autolaunch and local_url is not None:
+            cmd_opts.autolaunch = False
+            shared.log.info('Launching browser')
+            import webbrowser
+            webbrowser.open(local_url, new=2, autoraise=True)
+    else:
+        for module in [module for name, module in sys.modules.items() if name.startswith("modules.ui")]:
+            importlib.reload(module)
 
-    if cmd_opts.autolaunch and local_url is not None:
-        cmd_opts.autolaunch = False
-        shared.log.info('Launching browser')
-        import webbrowser
-        webbrowser.open(local_url, new=2, autoraise=True)
     return shared.demo.server
 
 
 def api_only():
     start_common()
-    app = FastAPI()
+    app = FastAPI(**fastapi_args)
     setup_middleware(app, cmd_opts)
     api = create_api(app)
     api.wants_restart = False
     modules.script_callbacks.app_started_callback(None, app)
     modules.sd_models.write_metadata()
     log.info(f"Startup time: {startup_timer.summary()}")
-    api.launch(server_name="0.0.0.0" if cmd_opts.listen else "127.0.0.1", port=cmd_opts.port if cmd_opts.port else 7861)
-    return api
+    server = api.launch()
+    return server
 
 
 if __name__ == "__main__":

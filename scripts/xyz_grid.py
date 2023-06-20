@@ -70,16 +70,23 @@ def apply_checkpoint(p, x, xs):
         return
     info = sd_models.get_closet_checkpoint_match(x)
     if info is None:
-        shared.log.warning(f"XYZ grid: unknown checkpoint: {x}")
+        shared.log.warning(f"XYZ grid: apply checkpoint unknown checkpoint: {x}")
     else:
         sd_models.reload_model_weights(shared.sd_model, info)
         p.override_settings['sd_model_checkpoint'] = info.name
 
 
-def confirm_checkpoints(p, xs):
-    for x in xs:
-        if sd_models.get_closet_checkpoint_match(x) is None:
-            shared.log.warning(f"XYZ grid: Unknown checkpoint: {x}")
+def apply_dict(p, x, xs):
+    if x == shared.opts.sd_model_dict:
+        return
+    info_dict = sd_models.get_closet_checkpoint_match(x)
+    info_ckpt = sd_models.get_closet_checkpoint_match(shared.opts.sd_model_checkpoint)
+    if info_dict is None or info_ckpt is None:
+        shared.log.warning(f"XYZ grid: apply dict unknown checkpoint: {x}")
+    else:
+        shared.opts.sd_model_dict = info_dict.name # this will trigger reload_model_weights via onchange handler
+        p.override_settings['sd_model_checkpoint'] = info_ckpt.name
+        p.override_settings['sd_model_dict'] = info_dict.name
 
 
 def apply_clip_skip(p, x, xs):
@@ -141,17 +148,10 @@ def apply_face_restore(p, opt, x):
     p.restore_faces = is_active
 
 
-def apply_token_merging_ratio_hr(p, x, xs):
-    shared.opts.data["token_merging_ratio_hr"] = x
-
-
-def apply_token_merging_ratio(p, x, xs):
-    shared.opts.data["token_merging_ratio"] = x
-
-
-def apply_token_merging_random(p, x, xs):
-    is_active = x.lower() in ('true', 'yes', 'y', '1')
-    shared.opts.data["token_merging_random"] = is_active
+def apply_override(field):
+    def fun(p, x, xs):
+        p.override_settings[field] = x
+    return fun
 
 
 def format_value_add_label(p, opt, x):
@@ -207,9 +207,9 @@ class AxisOptionTxt2Img(AxisOption):
 
 axis_options = [
     AxisOption("Nothing", str, do_nothing, fmt=format_nothing),
-    AxisOption("Checkpoint name", str, apply_checkpoint, fmt=format_value, confirm=confirm_checkpoints, cost=1.0, choices=lambda: list(sd_models.checkpoints_list)),
+    AxisOption("Checkpoint name", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: list(sd_models.checkpoints_list)),
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
-    AxisOption("Dict name", str, apply_checkpoint, fmt=format_value, confirm=confirm_checkpoints, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
+    AxisOption("Dict name", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
     AxisOption("Prompt S/R", str, apply_prompt, fmt=format_value),
     AxisOption("Styles", str, apply_styles, choices=lambda: list(shared.prompt_styles.styles)),
     AxisOptionTxt2Img("Sampler", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
@@ -233,9 +233,8 @@ axis_options = [
     AxisOptionImg2Img("Image Mask Weight", float, apply_field("inpainting_mask_weight")),
     AxisOption("UniPC Order", int, apply_uni_pc_order, cost=0.5),
     AxisOption("Face restore", str, apply_face_restore, fmt=format_value),
-    AxisOption("ToMe ratio",float, apply_token_merging_ratio),
-    AxisOption("ToMe ratio for Hires fix",float, apply_token_merging_ratio_hr),
-    AxisOption("ToMe random pertubations",str, apply_token_merging_random, choices = lambda: ["Yes","No"])
+    AxisOption("Token merging ratio", float, apply_override('token_merging_ratio')),
+    AxisOption("Token merging ratio high-res", float, apply_override('token_merging_ratio_hr')),
 ]
 
 
@@ -349,7 +348,6 @@ class SharedSettingsStackHelper(object):
         self.uni_pc_order = shared.opts.uni_pc_order
         self.token_merging_ratio_hr = shared.opts.token_merging_ratio_hr
         self.token_merging_ratio = shared.opts.token_merging_ratio
-        self.token_merging_random = shared.opts.token_merging_random
         self.sd_model_checkpoint = shared.opts.sd_model_checkpoint
         self.sd_model_dict = shared.opts.sd_model_dict
         self.sd_vae_checkpoint = shared.opts.sd_vae
@@ -361,11 +359,10 @@ class SharedSettingsStackHelper(object):
         shared.opts.data["uni_pc_order"] = self.uni_pc_order
         shared.opts.data["token_merging_ratio_hr"] = self.token_merging_ratio_hr
         shared.opts.data["token_merging_ratio"] = self.token_merging_ratio
-        shared.opts.data["token_merging_random"] = self.token_merging_random
         shared.opts.data["force_latent_sampler"] = self.force_latent_sampler
-        if (self.sd_model_dict != shared.opts.sd_model_dict):
+        if self.sd_model_dict != shared.opts.sd_model_dict:
             shared.opts.data["sd_model_dict"] = self.sd_model_dict
-        if (self.sd_model_checkpoint != shared.opts.sd_model_checkpoint):
+        if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:
             shared.opts.data["sd_model_checkpoint"] = self.sd_model_checkpoint
             sd_models.reload_model_weights()
         if self.sd_vae_checkpoint != shared.opts.sd_vae:
@@ -388,7 +385,7 @@ class Script(scripts.Script):
         with gr.Row():
             with gr.Column(scale=19):
                 with gr.Row():
-                    x_type = gr.Dropdown(label="X type", choices=[x.label for x in self.current_axis_options], value=self.current_axis_options[1].label, type="index", elem_id=self.elem_id("x_type"))
+                    x_type = gr.Dropdown(label="X type", choices=[x.label for x in self.current_axis_options], value=self.current_axis_options[0].label, type="index", elem_id=self.elem_id("x_type"))
                     x_values = gr.Textbox(label="X values", lines=1, elem_id=self.elem_id("x_values"))
                     x_values_dropdown = gr.Dropdown(label="X values",visible=False,multiselect=True,interactive=True)
                     fill_x_button = ToolButton(value=fill_values_symbol, elem_id="xyz_grid_fill_x_tool_button", visible=False)

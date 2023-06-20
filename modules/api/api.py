@@ -11,7 +11,6 @@ from fastapi.exceptions import HTTPException
 from PIL import PngImagePlugin,Image
 import piexif
 import piexif.helper
-import uvicorn
 import gradio as gr
 from modules import errors, shared, sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing
 from modules.api import models
@@ -142,6 +141,8 @@ class Api:
         self.add_api_route("/sdapi/v1/unload-checkpoint", self.unloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", self.reloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/scripts", self.get_scripts_list, methods=["GET"], response_model=models.ScriptsList)
+        self.add_api_route("/sdapi/v1/script-info", self.get_script_info, methods=["GET"], response_model=List[models.ScriptInfo])
+        self.add_api_route("/sdapi/v1/log", self.get_log_buffer, methods=["GET"], response_model=List)
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
 
@@ -156,6 +157,9 @@ class Api:
                 return True
         raise HTTPException(status_code=401, detail="Unauthorized", headers={"WWW-Authenticate": "Basic"})
 
+    def get_log_buffer(self):
+        return shared.log.buffer
+
     def get_selectable_script(self, script_name, script_runner):
         if script_name is None or script_name == "":
             return None, None
@@ -164,9 +168,15 @@ class Api:
         return script, script_idx
 
     def get_scripts_list(self):
-        t2ilist = [str(title.lower()) for title in scripts.scripts_txt2img.titles]
-        i2ilist = [str(title.lower()) for title in scripts.scripts_img2img.titles]
+        t2ilist = [script.name for script in scripts.scripts_txt2img.scripts if script.name is not None]
+        i2ilist = [script.name for script in scripts.scripts_img2img.scripts if script.name is not None]
         return models.ScriptsList(txt2img = t2ilist, img2img = i2ilist)
+
+    def get_script_info(self):
+        res = []
+        for script_list in [scripts.scripts_txt2img.scripts, scripts.scripts_img2img.scripts]:
+            res += [script.api_info for script in script_list if script.api_info is not None]
+        return res
 
     def get_script(self, script_name, script_runner):
         if script_name is None or script_name == "":
@@ -630,7 +640,19 @@ class Api:
             cuda = { 'error': f'{err}' }
         return models.MemoryResponse(ram = ram, cuda = cuda)
 
-    def launch(self, server_name, port):
-        self.app.include_router(self.router)
-        server_name = "0.0.0.0" if shared.cmd_opts.listen else None
-        uvicorn.run(self.app, host=server_name, port=port)
+    def launch(self):
+        config = {
+            "listen": shared.cmd_opts.listen,
+            "port": shared.cmd_opts.port,
+            "keyfile": shared.cmd_opts.tls_keyfile,
+            "certfile": shared.cmd_opts.tls_certfile,
+            "loop": "auto",
+            "http": "auto",
+        }
+        from modules.server import UvicornServer
+        server = UvicornServer(self.app, **config)
+        # from modules.server import HypercornServer
+        # server = HypercornServer(self.app, **config)
+        server.start()
+        shared.log.info(f'API server: Uvicorn options={config}')
+        return server

@@ -62,7 +62,7 @@ async def result(req):
         return Map({ 'error': req.status, 'reason': req.reason, 'url': req.url })
     else:
         json = await req.json()
-        if type(json) == list:
+        if isinstance(json, list):
             res = json
         elif json is None:
             res = {}
@@ -79,7 +79,7 @@ def resultsync(req: requests.Response):
         return Map({ 'error': req.status_code, 'reason': req.reason, 'url': req.url })
     else:
         json = req.json()
-        if type(json) == list:
+        if isinstance(json, list):
             res = json
         elif json is None:
             res = {}
@@ -167,6 +167,22 @@ def progresssync():
     return res
 
 
+def get_log():
+    res = getsync('/sdapi/v1/log')
+    for line in res:
+        log.debug(line)
+    return res
+
+
+def get_info():
+    import time
+    t0 = time.time()
+    res = getsync('/sdapi/v1/system-info/status')
+    t1 = time.time()
+    print({ 'duration': 1000 * round(t1-t0, 3), **res })
+    return res
+
+
 def options():
     opts = getsync('/sdapi/v1/options')
     flags = getsync('/sdapi/v1/cmd-flags')
@@ -223,6 +239,10 @@ if __name__ == "__main__":
         print(json.dumps(opt['options'], indent = 2))
         log.debug({ 'cmd-flags' })
         print(json.dumps(opt['flags'], indent = 2))
+    if 'log' in sys.argv:
+        get_log()
+    if 'info' in sys.argv:
+        get_info()
     if 'shutdown' in sys.argv:
         shutdown()
     asyncio.run(close(), debug=True)

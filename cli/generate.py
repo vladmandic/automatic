@@ -57,6 +57,7 @@ def grid(data):
         log.info({ 'grid': { 'name': f, 'size': image.size, 'images': len(data.image) } })
         image.save(f, 'JPEG', exif = exif(data.info, None, 'grid'), optimize = True, quality = 70)
         return image
+    return data.image
 
 
 def exif(info, i = None, op = 'generate'):
@@ -127,6 +128,8 @@ async def generate(prompt = None, options = None, quiet = False): # pylint: disa
         sd.generate.prompt = prompt
     if not quiet:
         log.info({ 'generate': sd.generate })
+    if sd.get('options', None) is None:
+        sd['options'] = await get('/sdapi/v1/options')
     names = []
     b64s = []
     images = []
@@ -368,10 +371,3 @@ if __name__ == '__main__':
         log.info({ 'sampler performance': avg })
         log.info({ 'stats' : stats })
         asyncio.run(close())
-'''
-    except Exception as e:
-        log.info({ 'sampler performance': avg })
-        log.info({ 'stats': stats })
-        log.critical({ 'exception': e })
-        exit()
-'''
