@@ -250,7 +250,7 @@ def load_diffusers_lora(lora_repo: str):
         proc_cls_name = next(iter(pipe.unet.attn_processors.values())).__class__.__name__
         non_lora_proc_cls = getattr(diffusers.models.attention_processor, proc_cls_name[len("LORA"):])
         pipe.unet.set_attn_processor(non_lora_proc_cls())
-        print(f"Removed LoRA.")
+        print("Removed LoRA.")
         return ""
     elif is_url(lora_repo):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -261,15 +261,44 @@ def load_diffusers_lora(lora_repo: str):
             lora_repo = '/'.join(lora_repo.split('/')[-2:])
 
         print(f"Loaded Civit.ai LoRA: {lora_repo}")
-        return f"{lora_repo} is loaded! Pass empty text field to remove LoRA or pass new LoRA id."
+        return f"{lora_repo} is loaded. Pass empty text field to remove LoRA or pass new LoRA id."
     elif len(lora_repo.split('/')) == 2:
         lora_dir = os.path.dirname(opts.data["diffusers_dir"])
         cache_dir = os.path.join(lora_dir, "Diffusers_LoRA")
         pipe.load_lora_weights(lora_repo, cache_dir=cache_dir)
-        return f"{lora_repo} is loaded! Pass empty text field to remove LoRA or pass new LoRA id."
+        print(f"Loaded {lora_repo}")
+        return f"{lora_repo} is loaded. Pass empty text field to remove LoRA or pass new LoRA id."
     else:
         print(f"{lora_repo} is not a valid LoRA identifier.")
         return ""
+
+def load_diffusers_text_inv(text_inv_repo: str):
+    pipe = sys.modules[__name__].sd_model
+
+    if text_inv_repo == "":
+        pipe.tokenizer = pipe.tokenizer.__class__.from_pretrained(pipe.tokenizer.name_or_path)
+        pipe.text_encoder.resize_token_embeddings(len(pipe.tokenizer))
+        print("Removed all textual inversions.")
+        return ""
+    elif is_url(text_inv_repo):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.system(f"wget -P {temp_dir} {text_inv_repo}")
+            temp_file_path = os.path.join(temp_dir, text_inv_repo.split('/')[-1])
+            pipe.load_textual_inversion(temp_file_path)
+
+            text_inv_repo = '/'.join(text_inv_repo.split('/')[-2:])
+
+        print(f"Loaded Civit.ai Textual Inv: {text_inv_repo}")
+    elif len(text_inv_repo.split('/')) == 2:
+        text_inv_dir = os.path.dirname(opts.data["diffusers_dir"])
+        cache_dir = os.path.join(text_inv_dir, "Diffusers_Text_Inv")
+        pipe.load_textual_inversion(text_inv_repo, cache_dir=cache_dir)
+        print(f"Loaded {text_inv_repo}")
+
+    text_inv_tokens = pipe.tokenizer.added_tokens_encoder.keys()
+    text_inv_tokens = [t for t in text_inv_tokens if not (len(t.split("_")) > 1 and t.split("_")[-1].isdigit())]
+
+    return f"{', '.join(text_inv_tokens)} loaded. Pass empty text field to remove all or add new textual inversion id."
 
 def refresh_checkpoints():
     import modules.sd_models # pylint: disable=W0621
@@ -472,7 +501,8 @@ options_templates.update(options_section(('ui', "User interface"), {
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "diffusers_ckpt_download": OptionInfo("", "🤗 Hub Checkpoint Download", gr.Textbox, {"placeholder": "e.g. runwayml/stable-diffusion-v1-5"}, submit=load_diffusers_ckpt),
     "diffusers_lora_download": OptionInfo("", "🤗 Hub LoRA Download", gr.Textbox, {"placeholder": "e.g. pcuenq/pokemon-lora"}, submit=load_diffusers_lora),
-    "diffusers_download_list": OptionInfo(["diffusers_ckpt_download", "diffusers_lora_download"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
+    "diffusers_text_inv_download": OptionInfo("", "🤗 Hub Textual Inversion Download", gr.Textbox, {"placeholder": "e.g. sd-concepts-library/midjourney-style"}, submit=load_diffusers_text_inv),
+    "diffusers_download_list": OptionInfo(["diffusers_ckpt_download", "diffusers_lora_download", "load_diffusers_text_inv"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "hidden_tabs": OptionInfo([], "Hidden UI tabs", ui_components.DropdownMulti, lambda: {"choices": list(tab_names)}),
     "ui_tab_reorder": OptionInfo("From Text, From Image, Process Image", "UI tabs order"),
     "ui_scripts_reorder": OptionInfo("Enable Dynamic Thresholding, ControlNet", "UI scripts order"),
