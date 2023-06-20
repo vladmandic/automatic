@@ -16,7 +16,12 @@ import modules.styles
 import modules.devices as devices # pylint: disable=R0402
 import modules.paths_internal as paths
 from diffusers import DiffusionPipeline 
+import diffusers
 from installer import log as central_logger # pylint: disable=E0611
+from urllib.parse import urlparse
+import urllib.request
+import tempfile
+import shutil
 
 
 errors.install(gr)
@@ -71,6 +76,11 @@ ui_reorder_categories = [
     "override_settings",
     "scripts",
 ]
+
+
+def is_url(string):
+    parsed_url = urlparse(string)
+    return all([parsed_url.scheme, parsed_url.netloc])
 
 
 class Backend(Enum):
@@ -231,6 +241,35 @@ def load_diffusers_ckpt(model_repo: str):
     cached_dir = DiffusionPipeline.download(model_repo, cache_dir=opts.data["diffusers_dir"])
     print(f"Downloaded {cached_dir}")
     return ""
+
+def load_diffusers_lora(lora_repo: str):
+    pipe = sys.modules[__name__].sd_model
+
+    if lora_repo == "":
+        pipe._remove_text_encoder_monkey_patch()
+        proc_cls_name = next(iter(pipe.unet.attn_processors.values())).__class__.__name__
+        non_lora_proc_cls = getattr(diffusers.models.attention_processor, proc_cls_name[len("LORA"):])
+        pipe.unet.set_attn_processor(non_lora_proc_cls())
+        print(f"Removed LoRA.")
+        return ""
+    elif is_url(lora_repo):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.system(f"wget -P {temp_dir} {lora_repo}")
+            temp_file_path = os.path.join(temp_dir, lora_repo.split('/')[-1])
+            pipe.load_lora_weights(temp_file_path)
+
+            lora_repo = '/'.join(lora_repo.split('/')[-2:])
+
+        print(f"Loaded Civit.ai LoRA: {lora_repo}")
+        return f"{lora_repo} is loaded! Pass empty text field to remove LoRA or pass new LoRA id."
+    elif len(lora_repo.split('/')) == 2:
+        lora_dir = os.path.dirname(opts.data["diffusers_dir"])
+        cache_dir = os.path.join(lora_dir, "Diffusers_LoRA")
+        pipe.load_lora_weights(lora_repo, cache_dir=cache_dir)
+        return f"{lora_repo} is loaded! Pass empty text field to remove LoRA or pass new LoRA id."
+    else:
+        print(f"{lora_repo} is not a valid LoRA identifier.")
+        return ""
 
 def refresh_checkpoints():
     import modules.sd_models # pylint: disable=W0621
@@ -432,7 +471,8 @@ options_templates.update(options_section(('ui', "User interface"), {
     "keyedit_delimiters": OptionInfo(".,\/!?%^*;:{}=`~()", "Ctrl+up/down word delimiters"), # pylint: disable=anomalous-backslash-in-string
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "diffusers_ckpt_download": OptionInfo("", "🤗 Hub Checkpoint Download", gr.Textbox, {"placeholder": "e.g. runwayml/stable-diffusion-v1-5"}, submit=load_diffusers_ckpt),
-    "diffusers_download_list": OptionInfo(["diffusers_ckpt_download"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
+    "diffusers_lora_download": OptionInfo("", "🤗 Hub LoRA Download", gr.Textbox, {"placeholder": "e.g. pcuenq/pokemon-lora"}, submit=load_diffusers_lora),
+    "diffusers_download_list": OptionInfo(["diffusers_ckpt_download", "diffusers_lora_download"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "hidden_tabs": OptionInfo([], "Hidden UI tabs", ui_components.DropdownMulti, lambda: {"choices": list(tab_names)}),
     "ui_tab_reorder": OptionInfo("From Text, From Image, Process Image", "UI tabs order"),
     "ui_scripts_reorder": OptionInfo("Enable Dynamic Thresholding, ControlNet", "UI scripts order"),
