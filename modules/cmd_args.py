@@ -11,7 +11,6 @@ group.add_argument("--config", type=str, default=os.path.join(data_path, 'config
 group.add_argument("--ui-config", type=str, default=os.path.join(data_path, 'ui-config.json'), help="Use specific UI configuration file, default: %(default)s")
 group.add_argument("--medvram", action='store_true', help="Split model stages and keep only active part in VRAM, default: %(default)s")
 group.add_argument("--lowvram", action='store_true', help="Split model components and keep only active part in VRAM, default: %(default)s")
-group.add_argument("--torch_compile", action='store_true', help="Enable torch 2.0 compilation for UNet.")
 group.add_argument("--ckpt", type=str, default=None, help="Path to model checkpoint to load immediately, default: %(default)s")
 group.add_argument('--vae', type=str, default=None, help='Path to VAE checkpoint to load immediately, default: %(default)s')
 group.add_argument("--data-dir", type=str, default=os.path.dirname(os.path.dirname(os.path.realpath(__file__))), help="Base path where all user data is stored, default: %(default)s")

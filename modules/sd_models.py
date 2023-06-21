@@ -509,7 +509,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             sd_model.enable_sequential_cpu_offload()
         if shared.opts.cross_attention_optimization == "xFormers":
             sd_model.enable_xformers_memory_efficient_attention()
-        if shared.cmd_opts.torch_compile:
+        if shared.opts.cuda_compile:
             if not torch.cuda.is_available():
                 raise ValueError("Cannot use `torch.compile` if CUDA is not available.")
 
