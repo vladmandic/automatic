@@ -509,6 +509,18 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             sd_model.enable_sequential_cpu_offload()
         if shared.opts.cross_attention_optimization == "xFormers":
             sd_model.enable_xformers_memory_efficient_attention()
+        if shared.opts.cuda_compile:
+            if not torch.cuda.is_available():
+                raise ValueError("Cannot use `torch.compile` if CUDA is not available.")
+
+            sd_model.to("cuda")
+            sd_model.unet.to(memory_format=torch.channels_last)
+            sd_model.unet = torch.compile(sd_model.unet, mode="reduce-overhead", fullgraph=True)
+
+            print(f"Compiling {sd_model.__class__.__name__} for default shape {8 * sd_model.unet.config.sample_size}. This might take up to a minute...")
+            sd_model("dummy prompt")
+            print("Complilation done.")
+
         sd_model.sd_checkpoint_info = checkpoint_info
         sd_model.sd_model_checkpoint = checkpoint_info.filename
         sd_model.sd_model_hash = checkpoint_info.hash
