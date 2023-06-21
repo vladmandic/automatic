@@ -521,7 +521,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             if k == 'sd_vae':
                 sd_vae.reload_vae_weights()
 
-        if not cmd_opts.torch_compile:
+        if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
 
         if cmd_opts.profile:
@@ -540,7 +540,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         else:
             res = process_images_inner(p)
     finally:
-        if not cmd_opts.torch_compile:
+        if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, 0)
         if p.override_settings_restore_afterwards: # restore opts to original state
             for k, v in stored_opts.items():
