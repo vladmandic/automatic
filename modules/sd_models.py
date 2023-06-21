@@ -61,6 +61,14 @@ class CheckpointInfo:
             self.name = repo[0]['name']
             self.hash = repo[0]['hash'][:8]
             self.sha256 = repo[0]['hash']
+
+            
+            if if os.path.isfile(repo[0]['model_info']):
+                file_path = repo[0]['model_info']
+                with open(file_path, "r") as json_file:
+                    self.model_info = json.load(json_file)
+            else:
+                self.model_info = None
         self.name_for_extra = os.path.splitext(os.path.basename(filename))[0]
         self.model_name = os.path.splitext(name.replace("/", "_").replace("\\", "_"))[0]
         self.shorthash = self.sha256[0:10] if self.sha256 else None
@@ -494,15 +502,26 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             model_name = modelloader.find_diffuser(shared.cmd_opts.ckpt)
             if model_name is not None:
                 shared.log.info(f'Loading diffuser model: {model_name}')
-                scheduler = diffusers.UniPCMultistepScheduler.from_pretrained(model_name, subfolder="scheduler")
-                sd_model = diffusers.DiffusionPipeline.from_pretrained(model_name, scheduler=scheduler, **diffusor_config)
+                sd_model = diffusers.DiffusionPipeline.from_pretrained(model_name, **diffusor_config)
+                if "StableDiffusion" in sd_model.__class__.__name__:
+                    sd_model.scheduler = diffusers.UniPCMultistepScheduler.from_config(sd_model.scheduler.config)
+
                 list_models() # rescan for downloaded model
                 checkpoint_info = CheckpointInfo(model_name)
         if sd_model is None:
             checkpoint_info = checkpoint_info or select_checkpoint()
             shared.log.info(f'Loading diffuser model: {checkpoint_info.filename}')
-            scheduler = diffusers.UniPCMultistepScheduler.from_pretrained(checkpoint_info.filename, subfolder="scheduler")
-            sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.filename, scheduler=scheduler, **diffusor_config)
+            sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.filename, **diffusor_config)
+
+            if "StableDiffusion" in sd_model.__class__.__name__:
+                sd_model.scheduler = diffusers.UniPCMultistepScheduler.from_config(sd_model.scheduler.config)
+
+        if checkpoint_info.model_info is not None and "prior" in checkpoint_info.model_info:
+            required_prior_model = checkpoint_info.model_info["prior"]
+            print(f"Loading prior for {sd_model.__class__.__name__}...")
+            prior = diffusers.DiffusionPipeline.from_pretrained(required_prior_model, **diffusers_config)
+            # sd_model.prior_pipe = prior
+
         if shared.cmd_opts.medvram:
             sd_model.enable_model_cpu_offload()
         if shared.cmd_opts.lowvram:
@@ -524,7 +543,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.sd_checkpoint_info = checkpoint_info
         sd_model.sd_model_checkpoint = checkpoint_info.filename
         sd_model.sd_model_hash = checkpoint_info.hash
-        scheduler.name = 'UniPC'
+        sd_model.scheduler.name = 'UniPC'
         sd_model.to(devices.device)
     except Exception as e:
         shared.log.error("Failed to load diffusers model")

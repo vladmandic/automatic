@@ -1,6 +1,8 @@
 import os
 import shutil
 import importlib
+import json
+from huggingface_hub import model_info
 from urllib.parse import urlparse
 
 from modules import shared
@@ -17,7 +19,10 @@ def load_diffusers(model_path: str, hub_url: str = None, command_path: str = Non
 
     # download repo
     if hub_url is not None:
-        DiffusionPipeline.download(hub_url, cache_dir=model_path)
+        pipeline_dir = DiffusionPipeline.download(hub_url, cache_dir=model_path)
+        model_info = model_info(hub_url).cardData
+        with open(os.path.join(pipeline_dir, "model_info.json"), "w") as json_file:
+            json.dump(model_info, json_file)
 
     places.append(model_path)
     if command_path is not None and command_path != model_path and os.path.isdir(command_path):
@@ -28,7 +33,7 @@ def load_diffusers(model_path: str, hub_url: str = None, command_path: str = Non
         for place in places:
             res = hf.scan_cache_dir(cache_dir=place)
             for r in list(res.repos):
-                diffuser_repos.append({ 'name': r.repo_id, 'filename': r.repo_id, 'path': str(r.repo_path), 'size': r.size_on_disk, 'mtime': r.last_modified, 'hash': list(r.revisions)[-1].commit_hash })
+                diffuser_repos.append({ 'name': r.repo_id, 'filename': r.repo_id, 'path': str(r.repo_path), 'size': r.size_on_disk, 'mtime': r.last_modified, 'hash': list(r.revisions)[-1].commit_hash, 'model_info': str(os.path.join(r.repo_path, "model_info.json")) })
                 output.append(str(r.repo_id))
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
