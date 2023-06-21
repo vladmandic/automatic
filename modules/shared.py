@@ -499,9 +499,9 @@ options_templates.update(options_section(('ui', "User interface"), {
     "keyedit_precision_extra": OptionInfo(0.05, "Ctrl+up/down precision when editing <extra networks:0.9>", gr.Slider, {"minimum": 0.01, "maximum": 0.2, "step": 0.001}),
     "keyedit_delimiters": OptionInfo(".,\/!?%^*;:{}=`~()", "Ctrl+up/down word delimiters"), # pylint: disable=anomalous-backslash-in-string
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
-    "diffusers_ckpt_download": OptionInfo("", "🤗 Hub Checkpoint Download", gr.Textbox, {"placeholder": "e.g. runwayml/stable-diffusion-v1-5"}, submit=load_diffusers_ckpt),
-    "diffusers_lora_download": OptionInfo("", "🤗 Hub LoRA Download", gr.Textbox, {"placeholder": "e.g. pcuenq/pokemon-lora"}, submit=load_diffusers_lora),
-    "diffusers_text_inv_download": OptionInfo("", "🤗 Hub Textual Inversion Download", gr.Textbox, {"placeholder": "e.g. sd-concepts-library/midjourney-style"}, submit=load_diffusers_text_inv),
+    "diffusers_ckpt_download": OptionInfo("", "HF Hub Checkpoint Download", gr.Textbox, {"placeholder": "e.g. runwayml/stable-diffusion-v1-5"}, submit=load_diffusers_ckpt),
+    "diffusers_lora_download": OptionInfo("", "HF Hub LoRA Download", gr.Textbox, {"placeholder": "e.g. pcuenq/pokemon-lora"}, submit=load_diffusers_lora),
+    "diffusers_text_inv_download": OptionInfo("", "HF Hub Textual Inversion Download", gr.Textbox, {"placeholder": "e.g. sd-concepts-library/midjourney-style"}, submit=load_diffusers_text_inv),
     "diffusers_download_list": OptionInfo(["diffusers_ckpt_download", "diffusers_lora_download", "load_diffusers_text_inv"], "Diffusers Download list", ui_components.DropdownMulti, lambda: {"choices": list(opts.data_labels.keys())}),
     "hidden_tabs": OptionInfo([], "Hidden UI tabs", ui_components.DropdownMulti, lambda: {"choices": list(tab_names)}),
     "ui_tab_reorder": OptionInfo("From Text, From Image, Process Image", "UI tabs order"),
