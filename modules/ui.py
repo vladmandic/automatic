@@ -1379,7 +1379,7 @@ def create_ui():
                 if k in quicksettings_names and not modules.shared.cmd_opts.freeze:
                     quicksettings_list.append((i, k, item))
                     components.append(dummy_component)
-                if k in diffusers_downloads and not modules.shared.cmd_opts.freeze and backend == Backend.DIFFUSERS:
+                elif k in diffusers_downloads and not modules.shared.cmd_opts.freeze and backend == Backend.DIFFUSERS:
                     diffusers_download_list.append((i, k, item))
                     components.append(dummy_component)
                 elif section_must_be_skipped:
