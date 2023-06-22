@@ -224,7 +224,7 @@ class StableDiffusionProcessing:
         # HACK: Using introspection as the Depth2Image model doesn't appear to uniquely
         # identify itself with a field common to all models. The conditioning_key is also hybrid.
         if backend == Backend.DIFFUSERS: # TODO: Diffusers img2img_image_conditioning
-            return latent_image.new_zeros(latent_image.shape[0], 5, 1, 1)
+            return None
         if isinstance(self.sd_model, LatentDepth2ImageDiffusion):
             return self.depth2img_image_conditioning(source_image)
         if self.sd_model.cond_stage_key == "edit":
@@ -694,13 +694,14 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     if sampler is None:
                         sampler = sd_samplers.all_samplers_map.get("UniPC")
                     scheduler = sampler.constructor(shared.sd_model.sd_checkpoint_info.filename)
+                    # TODO(Patrick): For wrapped pipelines this is currently a no-op
                     shared.sd_model.scheduler = scheduler.sampler
 
-                if shared.sd_model.__class__ == StableDiffusionPipeline:
+                if sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
                     task_specific_kwargs = {"height": p.height, "width": p.width}
-                elif shared.sd_model.__class__ == StableDiffusionImg2ImgPipeline:
-                    task_specific_kwargs = {"image": p.init_latent, "strength": p.denoising_strength}
-                elif shared.sd_model.__class__ == StableDiffusionInpaintPipeline:
+                elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE:
+                    task_specific_kwargs = {"image": p.init_images[0], "strength": p.denoising_strength}
+                elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.INPAINTING:
                     # TODO(PVP): change out to latents once possible with `diffusers`
                     task_specific_kwargs = {"image": p.init_images[0], "mask_image": p.image_mask, "strength": p.denoising_strength}
 
@@ -833,7 +834,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
     def init(self, all_prompts, all_seeds, all_subseeds):
         if backend == Backend.DIFFUSERS:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
 
         self.width = self.width or 512
         self.height = self.height or 512
@@ -890,7 +891,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # TODO this is majority of processing time
         if backend == Backend.DIFFUSERS:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
 
         self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
         latent_scale_mode = shared.latent_upscale_modes.get(self.hr_upscaler, None) if self.hr_upscaler is not None else shared.latent_upscale_modes.get(shared.latent_upscale_default_mode, "nearest")
@@ -999,9 +1000,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
     def init(self, all_prompts, all_seeds, all_subseeds):
         image_mask = self.image_mask
         if backend == Backend.DIFFUSERS and image_mask is None:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionImg2ImgPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
         elif backend == Backend.DIFFUSERS and image_mask is not None:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionInpaintPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
             self.sd_model.dtype = self.sd_model.unet.dtype
 
         force_latent_upscaler = shared.opts.data.get('force_latent_sampler')
@@ -1077,7 +1078,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         if backend == Backend.ORIGINAL:
             self.init_latent = self.sd_model.get_first_stage_encoding(self.sd_model.encode_first_stage(image))
         else:
-            self.init_latent = self.sd_model.vae.encode(image).latent_dist.sample() * self.sd_model.vae.config.scaling_factor
+            # we don't pre-encode the latents for diffusers to allow the UI to stay general for different model types
+            self.init_latent = None
 
         if self.resize_mode == 3:
             self.init_latent = torch.nn.functional.interpolate(self.init_latent, size=(self.height // opt_f, self.width // opt_f), mode="bilinear")
@@ -1099,9 +1101,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
         if backend == Backend.DIFFUSERS and self.init_mask is None:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionImg2ImgPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
         elif backend == Backend.DIFFUSERS and self.init_mask is not None:
-            sd_models.set_diffuser_pipe(self.sd_model, StableDiffusionInpaintPipeline)
+            sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
             self.sd_model.dtype = self.sd_model.unet.dtype
 
         x = create_random_tensors([opt_C, self.height // opt_f, self.width // opt_f], seeds=seeds, subseeds=subseeds, subseed_strength=self.subseed_strength, seed_resize_from_h=self.seed_resize_from_h, seed_resize_from_w=self.seed_resize_from_w, p=self)

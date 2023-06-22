@@ -8,7 +8,7 @@ from enum import Enum
 import gradio as gr
 import tqdm
 import requests
-from modules import errors, ui_components, shared_items, cmd_args
+from modules import errors, ui_components, shared_items, cmd_args, modelloader
 from modules.paths_internal import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 import modules.interrogate
 import modules.memmon
@@ -238,7 +238,7 @@ def list_checkpoint_tiles():
 default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.ckpt"
 
 def load_diffusers_ckpt(model_repo: str):
-    cached_dir = DiffusionPipeline.download(model_repo, cache_dir=opts.data["diffusers_dir"])
+    cached_dir = modelloader.download_diffusers_model(model_repo)
     print(f"Downloaded {cached_dir}")
     return ""
 

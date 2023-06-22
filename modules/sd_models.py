@@ -9,10 +9,12 @@ from urllib import request
 import filelock
 from rich import progress # pylint: disable=redefined-builtin
 import torch
+from enum import Enum
 import safetensors.torch
 from omegaconf import OmegaConf
 import tomesd
 from transformers import logging as transformers_logging
+from diffusers import DiffusionPipeline
 import ldm.modules.midas as midas
 from ldm.util import instantiate_from_config
 from modules import paths, shared, modelloader, devices, script_callbacks, sd_vae, sd_disable_initialization, errors, hashes, sd_models_config
@@ -20,6 +22,7 @@ from modules.sd_hijack_inpainting import do_inpainting_hijack
 from modules.timer import Timer
 from modules.memstats import memory_stats
 from modules.paths_internal import models_path
+import diffusers
 
 transformers_logging.set_verbosity_error()
 model_dir = "Stable-diffusion"
@@ -61,14 +64,15 @@ class CheckpointInfo:
             self.name = repo[0]['name']
             self.hash = repo[0]['hash'][:8]
             self.sha256 = repo[0]['hash']
+            self.path = repo[0]['path']
 
-            
-            if if os.path.isfile(repo[0]['model_info']):
+            if os.path.isfile(repo[0]['model_info']):
                 file_path = repo[0]['model_info']
                 with open(file_path, "r") as json_file:
                     self.model_info = json.load(json_file)
             else:
                 self.model_info = None
+
         self.name_for_extra = os.path.splitext(os.path.basename(filename))[0]
         self.model_name = os.path.splitext(name.replace("/", "_").replace("\\", "_"))[0]
         self.shorthash = self.sha256[0:10] if self.sha256 else None
@@ -123,7 +127,8 @@ def list_models():
     else:
         global model_path # pylint: disable=global-statement
         model_path = os.path.join(models_path, 'Diffusers')
-        model_list = modelloader.load_diffusers(model_path=model_path, command_path=shared.opts.diffusers_dir)
+        model_list = modelloader.load_diffusers_models(model_path=model_path, command_path=shared.opts.diffusers_dir)
+
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
         if checkpoint_info.name is not None:
@@ -150,8 +155,9 @@ def list_models():
                     shared.opts.data['sd_model_checkpoint'] = "v1-5-pruned-emaonly.safetensors"
                     model_list = modelloader.load_models(model_path=model_path, model_url=model_url, command_path=shared.opts.ckpt_dir, ext_filter=[".ckpt", ".safetensors"], download_name="v1-5-pruned-emaonly.safetensors", ext_blacklist=[".vae.ckpt", ".vae.safetensors"])
                 else:
-                    hub_url = "runwayml/stable-diffusion-v1-5"
-                    model_list = modelloader.load_diffusers(model_path=model_path, hub_url=hub_url, command_path=shared.opts.diffusers_dir)
+                    default_model_id = "runwayml/stable-diffusion-v1-5"
+                    modelloader.download_diffusers_model(default_model_id, model_path)
+                    model_list = modelloader.load_diffusers_models(model_path=model_path, command_path=shared.opts.diffusers_dir)
 
                 for filename in sorted(model_list, key=str.lower):
                     checkpoint_info = CheckpointInfo(filename)
@@ -478,6 +484,48 @@ class SdModelData:
 model_data = SdModelData()
 
 
+class PriorPipeline:
+    def __init__(self, prior, main):
+        self.prior = prior
+        self.main = main
+        self.scheduler = main.scheduler
+        self.tokenizer = self.prior.tokenizer
+
+    def to(self, *args, **kwargs):
+        # only the prior is moved to CUDA in a first step
+        self.prior.to(*args, **kwargs)
+
+    def enable_model_cpu_offload(self, *args, **kwargs):
+        self.prior.enable_model_cpu_offload(*args, **kwargs)
+        self.main.enable_model_cpu_offload(*args, **kwargs)
+
+    def enable_sequential_cpu_offload(self, *args, **kwargs):
+        self.prior.enable_sequential_cpu_offload(*args, **kwargs)
+        self.main.enable_sequential_cpu_offload(*args, **kwargs)
+
+    def enable_xformers_memory_efficient_attention(self, *args, **kwargs):
+        self.prior.enable_xformers_memory_efficient_attention(*args, **kwargs)
+        self.main.enable_xformers_memory_efficient_attention(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        unclip_outputs = self.prior(prompt=kwargs.get("prompt"), negative_prompt=kwargs.get("negative_prompt"))
+
+        if self.prior.device.type == "cuda":
+            prior_device = self.prior.device
+            self.prior.to("cpu")
+            self.main.to(prior_device)
+
+        kwargs = {**kwargs, **unclip_outputs}
+        result = self.main(*args, **kwargs)
+
+        if self.main.device.type == "cuda":
+            main_device = self.main.device
+            self.main.to("cpu")
+            self.prior.to(main_device)
+
+        return result
+
+
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None): # pylint: disable=unused-argument
     if timer is None:
         timer = Timer()
@@ -485,42 +533,48 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     import logging
     logging.getLogger("diffusers").setLevel(logging.ERROR)
     timer.record("diffusers")
-    diffusor_config = {
-        "force_download": False,
-        "safety_checker": None,
-        "resume_download": True,
+    diffusers_load_config = {
         "low_cpu_mem_usage": True,
-        # "use_safetensors": True,  # TODO(PVP) - we can't enable this for all checkpoints just yet
-        "cache_dir": shared.opts.diffusers_dir,
         "torch_dtype": devices.dtype,
+        "safety_checker": None,
+        # "use_safetensors": True,  # TODO(PVP) - we can't enable this for all checkpoints just yet
     }
+
     if shared.opts.data['sd_model_checkpoint'] == 'model.ckpt':
         shared.opts.data['sd_model_checkpoint'] = "runwayml/stable-diffusion-v1-5"
     sd_model = None
     try:
         if shared.cmd_opts.ckpt is not None and model_data.initial: # initial load
             model_name = modelloader.find_diffuser(shared.cmd_opts.ckpt)
+
             if model_name is not None:
                 shared.log.info(f'Loading diffuser model: {model_name}')
-                sd_model = diffusers.DiffusionPipeline.from_pretrained(model_name, **diffusor_config)
-                if "StableDiffusion" in sd_model.__class__.__name__:
-                    sd_model.scheduler = diffusers.UniPCMultistepScheduler.from_config(sd_model.scheduler.config)
+                model_path = modelloader.download_diffusers_model(hub_id=model_name)
+                sd_model = diffusers.DiffusionPipeline.from_pretrained(model_path, **diffusers_load_config)
 
                 list_models() # rescan for downloaded model
                 checkpoint_info = CheckpointInfo(model_name)
+
         if sd_model is None:
             checkpoint_info = checkpoint_info or select_checkpoint()
             shared.log.info(f'Loading diffuser model: {checkpoint_info.filename}')
-            sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.filename, **diffusor_config)
+            sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.path, **diffusers_load_config)
 
-            if "StableDiffusion" in sd_model.__class__.__name__:
-                sd_model.scheduler = diffusers.UniPCMultistepScheduler.from_config(sd_model.scheduler.config)
+        if "StableDiffusion" in sd_model.__class__.__name__:
+            sd_model.scheduler = diffusers.UniPCMultistepScheduler.from_config(sd_model.scheduler.config)
+            sd_model.scheduler.name = 'UniPC'
+        elif "Kandinsky" in sd_model.__class__.__name__:
+            sd_model.scheduler.name = 'DDIM'
 
+        # Prior pipelines
         if checkpoint_info.model_info is not None and "prior" in checkpoint_info.model_info:
-            required_prior_model = checkpoint_info.model_info["prior"]
-            print(f"Loading prior for {sd_model.__class__.__name__}...")
-            prior = diffusers.DiffusionPipeline.from_pretrained(required_prior_model, **diffusers_config)
-            # sd_model.prior_pipe = prior
+            prior_id = checkpoint_info.model_info["prior"]
+            shared.log.info(f"Loading prior {prior_id} for {checkpoint_info.filename}")
+
+            prior = diffusers.DiffusionPipeline.from_pretrained(prior_id, **diffusers_load_config)
+
+            # wrap sd_model
+            sd_model = PriorPipeline(prior=prior, main=sd_model)
 
         if shared.cmd_opts.medvram:
             sd_model.enable_model_cpu_offload()
@@ -536,14 +590,13 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             sd_model.unet.to(memory_format=torch.channels_last)
             sd_model.unet = torch.compile(sd_model.unet, mode="reduce-overhead", fullgraph=True)
 
-            print(f"Compiling {sd_model.__class__.__name__} for default shape {8 * sd_model.unet.config.sample_size}. This might take up to a minute...")
+            shared.log.info(f"Compiling {sd_model.__class__.__name__} for default shape {8 * sd_model.unet.config.sample_size}. This might take up to a minute...")
             sd_model("dummy prompt")
-            print("Complilation done.")
+            shared.log.info("Complilation done.")
 
         sd_model.sd_checkpoint_info = checkpoint_info
         sd_model.sd_model_checkpoint = checkpoint_info.filename
         sd_model.sd_model_hash = checkpoint_info.hash
-        sd_model.scheduler.name = 'UniPC'
         sd_model.to(devices.device)
     except Exception as e:
         shared.log.error("Failed to load diffusers model")
@@ -554,17 +607,61 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     devices.torch_gc(force=True)
     shared.log.info(f'Model load finished: {memory_stats()}')
 
-def set_diffuser_pipe(pipe, new_pipe_class):
-    if pipe.__class__ == new_pipe_class:
+
+class DiffusersTaskType(Enum):
+    TEXT_2_IMAGE = 1
+    IMAGE_2_IMAGE = 2
+    INPAINTING = 3
+
+def set_diffuser_pipe(pipe, new_pipe_type):
+    wrapper_pipe = None
+
+    sd_checkpoint_info = pipe.sd_checkpoint_info
+    sd_model_checkpoint = pipe.sd_model_checkpoint
+    sd_model_hash = pipe.sd_model_hash
+
+    if pipe.__class__ == PriorPipeline:
+        wrapper_pipe = pipe
+        pipe = pipe.main
+
+    pipe_name = pipe.__class__.__name__
+    pipe_name = pipe_name.replace("Img2Img", "").replace("Inpaint", "")
+    if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
+        new_pipe_cls_str = pipe_name
+    elif new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
+        new_pipe_cls_str = pipe_name.replace("Pipeline", "Img2ImgPipeline")
+    elif new_pipe_type == DiffusersTaskType.INPAINTING:
+        new_pipe_cls_str = pipe_name.replace("Pipeline", "InpaintPipeline")
+
+    new_pipe_cls = getattr(diffusers, new_pipe_cls_str)
+
+    if pipe.__class__ == new_pipe_cls:
         return
 
-    new_pipe = new_pipe_class(**pipe.components)
-    new_pipe.sd_checkpoint_info = pipe.sd_checkpoint_info
-    new_pipe.sd_model_checkpoint = pipe.sd_model_checkpoint 
-    new_pipe.sd_model_hash = pipe.sd_model_hash
+    new_pipe = new_pipe_cls(**pipe.components)
+
+    if wrapper_pipe is not None:
+        wrapper_pipe.main = new_pipe
+        new_pipe = wrapper_pipe
+
+    new_pipe.sd_checkpoint_info = sd_checkpoint_info
+    new_pipe.sd_model_checkpoint = sd_model_checkpoint
+    new_pipe.sd_model_hash = sd_model_hash
 
     shared.sd_model = new_pipe
-    shared.log.info(f"Pipeline class changed from {pipe.__class__.__name__} to {new_pipe_class.__name__}")
+    shared.log.info(f"Pipeline class changed from {pipe.__class__.__name__} to {new_pipe_cls.__name__}")
+
+
+def get_diffusers_task(pipe: DiffusionPipeline) -> DiffusersTaskType:
+    if pipe.__class__ == PriorPipeline:
+        pipe = pipe.main
+
+    if "Img2Img" in pipe.__class__.__name__:
+        return DiffusersTaskType.IMAGE_2_IMAGE
+    elif "Inpaint" in pipe.__class__.__name__:
+        return DiffusersTaskType.INPAINTING
+    return DiffusersTaskType.TEXT_2_IMAGE
+
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None):
     from modules import lowvram, sd_hijack
@@ -721,6 +818,11 @@ def apply_token_merging(sd_model, token_merging_ratio):
         return
     if current_token_merging_ratio > 0:
         tomesd.remove_patch(sd_model)
+
+    if sd_model.__class__ == PriorPipeline:
+        # token merging is not supported for PriorPipelines currently
+        return
+
     if token_merging_ratio > 0:
         tomesd.apply_patch(
             sd_model,
