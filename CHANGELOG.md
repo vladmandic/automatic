@@ -1,14 +1,58 @@
 # Change Log for SD.Next
 
-## Update for 06/19/2023
+## Update for 07/01/2023
+
+Small quality-of-life updates and bugfixes:
+
+- add option to disallow usage of ckpt checkpoints
+- change lora and lyco dir without server restart
+- additional filename template fields: `uuid`, `seq`, `image_hash`  
+- image toolbar is now shown only when image is present
+- image `Zip` button gone and its not optional setting that applies to standard `Save` button
+- folder `Show` button is present only when working on localhost,  
+  otherwise its replaced with `Copy` that places image URLs on clipboard so they can be used in other apps
+
+## Update for 06/30/2023
+
+A bit bigger update this time, but contained to specific areas...
+
+- change in behavior  
+  extensions no longer auto-update on startup  
+  using `--upgrade` flag upgrades core app as well as all submodules and extensions  
+- **live server log monitoring** in ui  
+  configurable via settings -> live preview  
+- new **extra networks interface**  
+  *note: if you're using a 3rd party ui extension for extra networks, it will likely need to be updated to work with new interface*
+  - display in front of main ui, inline with main ui or as a sidebar  
+  - lazy load thumbnails  
+    drastically reduces load times for large number of extra networks  
+  - auto-create thumbnails from preview images in extra networks in a background thread  
+    significant load time saving on subsequent restarts  
+  - support for info files in addition to description files  
+  - support for variable aspect-ratio thumbnails  
+  - new folder view  
+- **extensions sort** by trending  
+- add requirements check for training  
+
+## Update for 06/26/2023
+
+- new training tab interface  
+  - redesigned preprocess, train embedding, train hypernetwork  
+- new models tab interface  
+  - new model convert functionality, thanks @akegarasu  
+  - new model verify functionality  
+- lot of ipex specific fixes/optimizations, thanks @disty0  
+
+## Update for 06/20/2023
 
 This one is less relevant for standard users, but pretty major if you're running an actual server  
-But even if not, it still includes bunch of cumulative fixes since last release...
+But even if not, it still includes bunch of cumulative fixes since last release - and going by number of new issues, this is probably the most stable release so far...
+(next one is not going to be as stable, but it will be fun :) )
 
 - minor improvements to extra networks ui  
 - more hints/tooltips integrated into ui  
-- decidated api server  
-  - still in developent, but highly promising for high throughput server  
+- new decidated api server  
+  - but highly promising for high throughput server  
 - improve server logging and monitoring with  
   - server log file rotation  
   - ring buffer with api endpoint `/sdapi/v1/log`  

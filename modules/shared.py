@@ -351,7 +351,7 @@ if devices.backend == "cpu":
 elif devices.backend == "mps":
     cross_attention_optimization_default = "Doggettx's"
 elif devices.backend == "ipex":
-    cross_attention_optimization_default = "InvokeAI's"
+    cross_attention_optimization_default = "Sub-quadratic"
 elif devices.backend == "directml":
     cross_attention_optimization_default = "Sub-quadratic"
 elif devices.backend == "rocm":
@@ -371,6 +371,7 @@ options_templates.update(options_section(('sd', "Stable Diffusion"), {
     "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, lambda: {"choices": ["Full parser", "Compel parser", "A1111 parser", "Fixed attention"] }),
     "prompt_mean_norm": OptionInfo(True, "Prompt attention mean normalization"),
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding for long prompts", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1 }),
+    "sd_disable_ckpt": OptionInfo(False, "Disallow usage of checkpoints in ckpt format"),
     "sd_backend": OptionInfo("Original", "Stable Diffusion backend (experimental)", gr.Radio, lambda: {"choices": ["Original", "Diffusers"] }),
 }))
 
@@ -433,8 +434,10 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "samples_save": OptionInfo(True, "Always save all generated images"),
     "samples_format": OptionInfo('jpg', 'File format for generated images', gr.Dropdown, lambda: {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "image_metadata": OptionInfo(True, "Include metadata in saved images"),
-    "samples_filename_pattern": OptionInfo("[seed]-[prompt_spaces]", "Images filename pattern", component_args=hide_dirs),
+    "samples_filename_pattern": OptionInfo("[seq]-[prompt_words]", "Images filename pattern", component_args=hide_dirs),
+    "directories_max_prompt_words": OptionInfo(8, "Max prompt words for [prompt_words] pattern", gr.Slider, {"minimum": 1, "maximum": 99, "step": 1, **hide_dirs}),
     "save_images_add_number": OptionInfo(True, "Add number to filename when saving", component_args=hide_dirs),
+    "samples_save_zip": OptionInfo(True, "Create zip archive when downloading multiple images"),
     "grid_save": OptionInfo(True, "Always save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format for grids', gr.Dropdown, lambda: {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "grid_extended_filename": OptionInfo(True, "Add extended info (seed, prompt) to filename when saving grid"),
@@ -459,7 +462,6 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "grid_save_to_dirs": OptionInfo(False, "Save grids to a subdirectory"),
     "use_save_to_dirs_for_ui": OptionInfo(False, "Save images to a subdirectory when using Save button"),
     "directories_filename_pattern": OptionInfo("[date]", "Directory name pattern", component_args=hide_dirs),
-    "directories_max_prompt_words": OptionInfo(8, "Max prompt words for [prompt_words] pattern", gr.Slider, {"minimum": 1, "maximum": 20, "step": 1, **hide_dirs}),
 }))
 
 options_templates.update(options_section(('image-processing', "Image Processing"), {
@@ -484,7 +486,7 @@ options_templates.update(options_section(('saving-paths', "Output Paths"), {
     "outdir_init_images": OptionInfo("outputs/init-images", "Directory for saving init images when using img2img", component_args=hide_dirs),
 }))
 
-options_templates.update(options_section(('ui', "User interface"), {
+options_templates.update(options_section(('ui', "User Interface"), {
     "gradio_theme": OptionInfo("black-orange", "UI theme", gr.Dropdown, lambda: {"choices": list_themes()}, refresh=refresh_themes),
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "tooltips": OptionInfo("UI Tooltips", "UI tooltips", gr.Radio, {"choices": ["None", "Browser default", "UI tooltips"]}),
@@ -510,16 +512,18 @@ options_templates.update(options_section(('ui', "User interface"), {
     "ui_extra_networks_tab_reorder": OptionInfo("Checkpoints, Lora, LyCORIS, Textual Inversion, Hypernetworks", "Extra networks tab order"),
 }))
 
-options_templates.update(options_section(('live-preview', "Live previews"), {
+options_templates.update(options_section(('live-preview', "Live Previews"), {
     "show_progressbar": OptionInfo(True, "Show progressbar"),
     "live_previews_enable": OptionInfo(True, "Show live previews of the created image"),
     "show_progress_grid": OptionInfo(True, "Show previews of all images generated in a batch as a grid"),
     "notification_audio_enable": OptionInfo(False, "Play a sound when images are finished generating"),
     "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound", component_args=hide_dirs),
     "show_progress_every_n_steps": OptionInfo(1, "Live preview display period", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
-    "show_progress_type": OptionInfo("TAESD", "Live preview method", gr.Radio, {"choices": ["Full VAE", "Approximate NN", "Approximate simple", "TAESD"]}),
+    "show_progress_type": OptionInfo("Approximate NN", "Live preview method", gr.Radio, {"choices": ["Full VAE", "Approximate NN", "Approximate simple", "TAESD"]}),
     "live_preview_content": OptionInfo("Combined", "Live preview subject", gr.Radio, {"choices": ["Combined", "Prompt", "Negative prompt"]}),
-    "live_preview_refresh_period": OptionInfo(250, "Progressbar/preview update period, in milliseconds")
+    "live_preview_refresh_period": OptionInfo(250, "Progressbar/preview update period, in milliseconds", gr.Slider, {"minimum": 0, "maximum": 5000, "step": 25}),
+    "logmonitor_show": OptionInfo(True, "Show log view"),
+    "logmonitor_refresh_period": OptionInfo(5000, "Log view update period, in milliseconds", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
 }))
 
 options_templates.update(options_section(('sampler-params', "Sampler Settings"), {
@@ -588,20 +592,22 @@ options_templates.update(options_section(('upscaling', "Upscaling"), {
     "ESRGAN_tile": OptionInfo(192, "Tile size for ESRGAN upscalers", gr.Slider, {"minimum": 0, "maximum": 512, "step": 16}),
     "ESRGAN_tile_overlap": OptionInfo(8, "Tile overlap in pixels for ESRGAN upscalers", gr.Slider, {"minimum": 0, "maximum": 48, "step": 1}),
     "SCUNET_tile": OptionInfo(256, "Tile size for SCUNET upscalers", gr.Slider, {"minimum": 0, "maximum": 512, "step": 16}),
-    "SCUNET_tile_overlap": OptionInfo(8, "Tile overlap, in pixels for SCUNET upscalers", gr.Slider, {"minimum": 0, "maximum": 64, "step": 1}),
+    "SCUNET_tile_overlap": OptionInfo(8, "Tile overlap for SCUNET upscalers", gr.Slider, {"minimum": 0, "maximum": 64, "step": 1}),
     "use_old_hires_fix_width_height": OptionInfo(False, "Hires fix uses width & height to set final resolution"),
     "dont_fix_second_order_samplers_schedule": OptionInfo(False, "Do not fix prompt schedule for second order samplers"),
 }))
 
 options_templates.update(options_section(('extra_networks', "Extra Networks"), {
+    "extra_networks_card_cover": OptionInfo("inline", "UI position", gr.Radio, lambda: {"choices": ["cover", "inline", "sidebar"]}),
+    "extra_networks_sidebar_width": OptionInfo(35, "UI sidebar width (%)", gr.Slider, {"minimum": 10, "maximum": 80, "step": 1}),
+    "extra_networks_card_size": OptionInfo(200, "UI card size (px)", gr.Slider, {"minimum": 20, "maximum": 2000, "step": 1}),
+    "extra_networks_card_square": OptionInfo(False, "UI disable variable aspect ratio"),
+    "extra_networks_card_fit": OptionInfo("cover", "UI image contain method", gr.Radio, lambda: {"choices": ["contain", "cover", "fill"]}),
     "lyco_patch_lora": OptionInfo(False, "Use LyCoris handler for all Lora types", gr.Checkbox),
     "lora_disable": OptionInfo(False, "Disable built-in Lora handler", gr.Checkbox, { "visible": True }, onchange=lora_disable),
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple Loras", gr.Checkbox),
-    "extra_networks_default_view": OptionInfo("cards", "Default view for Extra Networks", gr.Dropdown, {"choices": ["cards", "thumbs"]}),
-    "extra_networks_default_multiplier": OptionInfo(1.0, "Multiplier for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
-    "extra_networks_card_width": OptionInfo(0, "Card width for Extra Networks (px)"),
-    "extra_networks_card_height": OptionInfo(0, "Card height for Extra Networks (px)"),
     "extra_networks_add_text_separator": OptionInfo(" ", "Extra text to add before <...> when adding extra network to prompt", gr.Text, { "visible": False }),
+    "extra_networks_default_multiplier": OptionInfo(1.0, "Multiplier for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, lambda: {"choices": ["None"] + list(hypernetworks.keys())}, refresh=reload_hypernetworks),
 }))
 

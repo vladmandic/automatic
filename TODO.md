@@ -40,6 +40,7 @@ Tech that can be integrated as part of the core workflow...
 - [QuickEmbedding](https://github.com/ethansmith2000/QuickEmbedding)
 - [DataComp CLiP](https://github.com/mlfoundations/open_clip/blob/main/docs/datacomp_models.md)
 - [ClipSeg](https://github.com/timojl/clipseg)
+- [DragGAN](https://github.com/XingangPan/DragGAN)
 - `TensorRT`
 
 ## Random
@@ -51,4 +52,10 @@ Tech that can be integrated as part of the core workflow...
 - port `p.all_hr_prompts`
 - test `lyco_patch_lora`
 - fix `lyco` logging
-- save `ui-settings.json`
+- string template to exif keywords
+- image watermark
+- image `imagehash` phash and hdash
+- custom exif tags
+- replace lightbox with iv-viewer
+- git-rebasin
+- additional upscalers

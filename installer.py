@@ -9,7 +9,6 @@ import subprocess
 import io
 import pstats
 import cProfile
-import argparse
 import pkg_resources
 
 
@@ -28,7 +27,6 @@ args = Dot({
     'debug': False,
     'reset': False,
     'upgrade': False,
-    'skip_update': False,
     'skip_extensions': False,
     'skip_requirements': False,
     'skip_git': False,
@@ -81,10 +79,7 @@ def setup_logging():
         "traceback.border.syntax_error": "black",
         "inspect.value.border": "black",
     }))
-    try:
-        logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', filename=log_file, filemode='a', encoding='utf-8', force=True)
-    except Exception:
-        logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s') # to be able to report unsupported python version
+    logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
     traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=[])
     while log.hasHandlers() and len(log.handlers) > 0:
@@ -109,6 +104,7 @@ def setup_logging():
     logging.getLogger("urllib3").setLevel(logging.ERROR)
     logging.getLogger("httpx").setLevel(logging.ERROR)
     logging.getLogger("ControlNet").handlers = log.handlers
+    logging.getLogger("lycoris").handlers = log.handlers
 
 
 def print_profile(profile: cProfile.Profile, msg: str):
@@ -195,6 +191,8 @@ def git(arg: str, folder: str = None, ignore: bool = False):
     if args.skip_git:
         return ''
     git_cmd = os.environ.get('GIT', "git")
+    if git_cmd != "git":
+        git_cmd = os.path.abspath(git_cmd)
     result = subprocess.run(f'"{git_cmd}" {arg}', check=False, shell=True, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder or '.')
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
@@ -233,8 +231,6 @@ def update(folder):
 # clone git repository
 def clone(url, folder, commithash=None):
     if os.path.exists(folder):
-        if args.skip_update:
-            return
         if commithash is None:
             update(folder)
         else:
@@ -387,7 +383,7 @@ def check_modified_files():
     try:
         res = git('status --porcelain')
         files = [x[2:].strip() for x in res.split('\n')]
-        files = [x for x in files if len(x) > 0 and not x.startswith('extensions') and not x.startswith('wiki') and not x.endswith('.json')]
+        files = [x for x in files if len(x) > 0 and (not x.startswith('extensions')) and (not x.startswith('wiki')) and (not x.endswith('.json')) and ('.log' not in x)]
         if len(files) > 0:
             log.warning(f'Modified files: {files}')
     except Exception:
@@ -406,7 +402,7 @@ def install_packages():
     # install(openclip_package, 'open-clip-torch')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip')
-    install('onnxruntime==1.14.0', 'onnxruntime', ignore=True)
+    install('onnxruntime==1.15.1', 'onnxruntime', ignore=True)
     if args.profile:
         print_profile(pr, 'Packages')
 
@@ -446,7 +442,7 @@ def install_repositories():
 
 # run extension installer
 def run_extension_installer(folder):
-    path_installer = os.path.join(folder, "install.py")
+    path_installer = os.path.realpath(os.path.join(folder, "install.py"))
     if not os.path.isfile(path_installer):
         return
     try:
@@ -495,8 +491,6 @@ def install_extensions():
     extensions_duplicates = []
     extensions_enabled = []
     extension_folders = [extensions_builtin_dir] if args.safe else [extensions_builtin_dir, extensions_dir]
-    if args.base:
-        extension_folders = []
     for folder in extension_folders:
         if not os.path.isdir(folder):
             continue
@@ -507,7 +501,7 @@ def install_extensions():
                 extensions_duplicates.append(ext)
                 continue
             extensions_enabled.append(ext)
-            if not args.skip_update:
+            if args.upgrade:
                 try:
                     update(os.path.join(folder, ext))
                 except Exception:
@@ -546,7 +540,7 @@ def install_submodules():
         txt = git('submodule')
         log.info('Continuing setup')
     git('submodule --quiet update --init --recursive')
-    if not args.skip_update:
+    if args.upgrade:
         log.info('Updating submodules')
         submodules = txt.splitlines()
         for submodule in submodules:
@@ -600,6 +594,7 @@ def set_environment():
     os.environ.setdefault('NUMEXPR_MAX_THREADS', '16')
     os.environ.setdefault('PYTHONHTTPSVERIFY', '0')
     os.environ.setdefault('HF_HUB_DISABLE_TELEMETRY', '1')
+    os.environ.setdefault('UVICORN_TIMEOUT_KEEP_ALIVE', '60')
     if sys.platform == 'darwin':
         os.environ.setdefault('PYTORCH_ENABLE_MPS_FALLBACK', '1')
 
@@ -610,8 +605,6 @@ def check_extensions():
     newest_all = os.path.getmtime('requirements.txt')
     from modules.paths_internal import extensions_builtin_dir, extensions_dir
     extension_folders = [extensions_builtin_dir] if args.safe else [extensions_builtin_dir, extensions_dir]
-    if args.base:
-        extension_folders = []
     for folder in extension_folders:
         if not os.path.isdir(folder):
             continue
@@ -678,7 +671,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
 
 
 def update_wiki():
-    if not args.skip_update:
+    if args.upgrade:
         log.info('Updating Wiki')
         try:
             update(os.path.join(os.path.dirname(__file__), "wiki"))
@@ -734,7 +727,6 @@ def add_args(parser):
     group.add_argument('--use-directml', default = False, action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
     group.add_argument("--use-cuda", default=False, action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
     group.add_argument("--use-rocm", default=False, action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
-    group.add_argument('--skip-update', default = False, action='store_true', help = "Skip update of extensions and submodules, default: %(default)s")
     group.add_argument('--skip-requirements', default = False, action='store_true', help = "Skips checking and installing requirements, default: %(default)s")
     group.add_argument('--skip-extensions', default = False, action='store_true', help = "Skips running individual extension installers, default: %(default)s")
     group.add_argument('--skip-git', default = False, action='store_true', help = "Skips running all GIT operations, default: %(default)s")
@@ -745,7 +737,6 @@ def add_args(parser):
     group.add_argument('--version', default = False, action='store_true', help = "Print version information")
     group.add_argument('--ignore', default = False, action='store_true', help = "Ignore any errors and attempt to continue")
     group.add_argument('--safe', default = False, action='store_true', help = "Run in safe mode with no user extensions")
-    group.add_argument('--base', default = False, action='store_true', help = argparse.SUPPRESS)
 
 
 def parse_args(parser):
@@ -765,8 +756,6 @@ def extensions_preload(parser):
         from modules.script_loading import preload_extensions
         from modules.paths_internal import extensions_builtin_dir, extensions_dir
         extension_folders = [extensions_builtin_dir] if args.safe else [extensions_builtin_dir, extensions_dir]
-        if args.base:
-            extension_folders = []
         for ext_dir in extension_folders:
             t0 = time.time()
             preload_extensions(ext_dir, parser)

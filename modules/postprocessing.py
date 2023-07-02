@@ -16,6 +16,7 @@ def run_postprocessing(extras_mode, image, image_folder: List[tempfile.NamedTemp
     image_names = []
     image_ext = []
     outputs = []
+    params = {}
     if extras_mode == 1:
         for img in image_folder:
             if isinstance(img, Image.Image):
@@ -35,7 +36,8 @@ def run_postprocessing(extras_mode, image, image_folder: List[tempfile.NamedTemp
         for filename in image_list:
             try:
                 image = Image.open(filename)
-            except Exception:
+            except Exception as e:
+                shared.log.error(f'Failed to open image: {filename} {e}')
                 continue
             image_data.append(image)
             image_names.append(filename)
