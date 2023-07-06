@@ -12,4 +12,4 @@ fi
 chown -R $RUN_UID:$RUN_UID $DATA_DIR
 
 # Run service as specified (non-root) user
-exec runuser -u $(id -un $RUN_UID) -- python $INSTALLDIR/launch.py --data-dir=$DATA_DIR $@
+exec runuser -u $(id -un $RUN_UID) -- python "$INSTALLDIR"/launch.py --data-dir="$DATA_DIR" "$@"
