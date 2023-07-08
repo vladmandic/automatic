@@ -2,11 +2,13 @@ import os
 import numpy as np
 from PIL import Image, ImageOps, ImageFilter, ImageEnhance, ImageChops, UnidentifiedImageError
 import modules.scripts
-from modules import sd_samplers, shared, processing
+from modules import sd_samplers, shared, processing, script_callbacks
 from modules.generation_parameters_copypaste import create_override_settings_dict
 from modules.ui import plaintext_to_html
 from modules.memstats import memory_stats
-
+from modules.processing import create_infotext
+import piexif
+import piexif.helper
 
 def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args):
     shared.log.debug(f'batch: {input_dir}|{output_dir}|{inpaint_mask_dir}')
@@ -59,7 +61,15 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args):
                 os.makedirs(output_dir, exist_ok=True)
                 if processed_image.mode == 'RGBA':
                     processed_image = processed_image.convert("RGB")
-                processed_image.save(os.path.join(output_dir, filename))
+                fn = os.path.join(output_dir, filename)
+                infotext = create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, comments=[], position_in_batch=0, iteration=p.iteration)
+                pnginfo = {'parameters': infotext}
+                params = script_callbacks.ImageSaveParams(image, p, fn, pnginfo)
+                script_callbacks.before_image_saved_callback(params)
+                exifinfo = params.pnginfo.get('parameters', '')
+                exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
+                processed_image.save(fn, format="JPEG", quality=shared.opts.jpeg_quality, exif=exif_bytes)
+
         shared.log.debug(f'Processed: {len(images)} Memory: {memory_stats()} batch')
 
 
