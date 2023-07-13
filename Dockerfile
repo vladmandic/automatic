@@ -1,4 +1,8 @@
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+ARG UBUNTU_VERSION=22.04 \
+    CUDA_VERSION=11.8.0 \
+    BASE_CUDA_CONTAINER=nvidia/cuda:${CUDA_VERSION}-cudnn8-runtime-ubuntu${UBUNTU_VERSION}
+FROM ${BASE_CUDA_CONTAINER}
+
 # ARGS
 ARG INSTALLDIR="/webui" \
     RUN_UID=1000
