@@ -57,5 +57,3 @@ venv
 !/repositories/.placeholder
 !/models/VAE-approx
 !/models/VAE-approx/model.pt
-
-./history/**/*
