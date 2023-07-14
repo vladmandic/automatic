@@ -123,16 +123,8 @@ def apply_styles(p: StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
 
 
-def apply_fallback(p, x, xs):
-    sampler_name = sd_samplers.samplers_map.get(x.lower(), None)
-    if sampler_name is None:
-        shared.log.warning(f"XYZ grid: unknown sampler: {x}")
-    else:
-        shared.opts.data["force_latent_sampler"] = sampler_name
-
-
-def apply_uni_pc_order(p, x, xs):
-    shared.opts.data["uni_pc_order"] = min(x, p.steps - 1)
+def apply_schedulers_solver_order(p, x, xs):
+    shared.opts.data["schedulers_solver_order"] = min(x, p.steps - 1)
 
 
 def apply_face_restore(p, opt, x):
@@ -231,7 +223,7 @@ axis_options = [
     AxisOption("Sampler Eta", float, apply_field("eta")),
     AxisOptionTxt2Img("Hires upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
     AxisOptionImg2Img("Image Mask Weight", float, apply_field("inpainting_mask_weight")),
-    AxisOption("UniPC Order", int, apply_uni_pc_order, cost=0.5),
+    AxisOption("Sampler Solver Order", int, apply_schedulers_solver_order, cost=0.5),
     AxisOption("Face restore", str, apply_face_restore, fmt=format_value),
     AxisOption("Token merging ratio", float, apply_override('token_merging_ratio')),
     AxisOption("Token merging ratio high-res", float, apply_override('token_merging_ratio_hr')),
@@ -345,21 +337,19 @@ class SharedSettingsStackHelper(object):
     def __enter__(self):
         #Save overridden settings so they can be restored later.
         self.vae = shared.opts.sd_vae
-        self.uni_pc_order = shared.opts.uni_pc_order
+        self.schedulers_solver_order = shared.opts.schedulers_solver_order
         self.token_merging_ratio_hr = shared.opts.token_merging_ratio_hr
         self.token_merging_ratio = shared.opts.token_merging_ratio
         self.sd_model_checkpoint = shared.opts.sd_model_checkpoint
         self.sd_model_dict = shared.opts.sd_model_dict
         self.sd_vae_checkpoint = shared.opts.sd_vae
-        self.force_latent_sampler = shared.opts.force_latent_sampler
 
     def __exit__(self, exc_type, exc_value, tb):
         #Restore overriden settings after plot generation.
         shared.opts.data["sd_vae"] = self.vae
-        shared.opts.data["uni_pc_order"] = self.uni_pc_order
+        shared.opts.data["schedulers_solver_order"] = self.schedulers_solver_order
         shared.opts.data["token_merging_ratio_hr"] = self.token_merging_ratio_hr
         shared.opts.data["token_merging_ratio"] = self.token_merging_ratio
-        shared.opts.data["force_latent_sampler"] = self.force_latent_sampler
         if self.sd_model_dict != shared.opts.sd_model_dict:
             shared.opts.data["sd_model_dict"] = self.sd_model_dict
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:
