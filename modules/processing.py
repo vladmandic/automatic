@@ -754,7 +754,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     eta=shared.opts.eta_ddim,
                     guidance_rescale=p.diffusers_guidance_rescale,
                     # aesthetic_score=shared.opts.diffusers_aesthetics_score,
-                    output_type='np' if (shared.sd_refiner is None or p.enable_hr is False) else 'latent',
+                    output_type='np',
                     **task_specific_kwargs
                 )
                 output = shared.sd_model(**pipe_args) # pylint: disable=not-callable
