@@ -110,11 +110,6 @@ class CheckpointInfo:
         return self.shorthash
 
 
-class NoWatermark:
-    def apply_watermark(self, img):
-        return img
-
-
 def setup_model():
     if not os.path.exists(model_path):
         os.makedirs(model_path)
@@ -688,9 +683,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             pass # scheduler is created on first use
         elif "Kandinsky" in sd_model.__class__.__name__:
             sd_model.scheduler.name = 'DDIM'
-
-        if hasattr(sd_model, "watermark"):
-            sd_model.watermark = NoWatermark()
 
         # Prior pipelines
         if hasattr(checkpoint_info, 'model_info') and checkpoint_info.model_info is not None and "prior" in checkpoint_info.model_info:
