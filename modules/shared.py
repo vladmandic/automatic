@@ -9,6 +9,7 @@ from enum import Enum
 import gradio as gr
 import tqdm
 import requests
+import fasteners
 from modules import errors, ui_components, shared_items, cmd_args
 from modules.paths_internal import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import directml_hijack_init, directml_override_opts
@@ -296,6 +297,38 @@ def refresh_themes():
             log.error('Error refreshing UI themes')
     except Exception:
         log.error('Exception refreshing UI themes')
+
+
+def readfile(filename, silent=False):
+    data = {}
+    try:
+        if not os.path.exists(filename):
+            return {}
+        with fasteners.InterProcessLock(f"{filename}.lock"):
+            with open(filename, "r", encoding="utf8") as file:
+                data = json.load(file)
+            if not silent:
+                log.debug(f'Reading: {filename} len={len(data)}')
+    except Exception as e:
+        log.error(f'Reading failed: {filename} {e}')
+    return data
+
+
+def writefile(data, filename, mode='w'):
+
+    def default(obj):
+        log.error(f"Saving: {filename} not a valid object: {obj}")
+        return str(obj)
+
+    try:
+        with fasteners.InterProcessLock(f"{filename}.lock"):
+            # skipkeys=True, ensure_ascii=True, check_circular=True, allow_nan=True
+            output = json.dumps(data, indent=2, default=default)
+            log.debug(f'Saving: {filename} len={len(output)}')
+            with open(filename, mode, encoding="utf8") as file:
+                file.write(output)
+    except Exception as e:
+        log.error(f'Saving failed: {filename} {e}')
 
 
 if devices.backend == "cpu":
@@ -662,8 +695,13 @@ class Options:
         if cmd_opts.freeze:
             log.warning(f'Settings saving is disabled: {filename}')
             return
-        with open(filename, "w", encoding="utf8") as file:
-            json.dump(self.data, file, indent=4)
+        try:
+            output = json.dumps(self.data, indent=2)
+            log.debug(f'Saving settings: {filename} len={len(output)}')
+            with open(filename, "w", encoding="utf8") as file:
+                file.write(output)
+        except Exception as e:
+            log.error(f'Saving settings failed: {filename} {e}')
 
     def same_type(self, x, y):
         if x is None or y is None:
@@ -677,8 +715,7 @@ class Options:
             log.debug(f'Created default config: {filename}')
             self.save(filename)
             return
-        with open(filename, "r", encoding="utf8") as file:
-            self.data = json.load(file)
+        self.data = readfile(filename)
         if self.data.get('quicksettings') is not None and self.data.get('quicksettings_list') is None:
             self.data['quicksettings_list'] = [i.strip() for i in self.data.get('quicksettings').split(',')]
         bad_settings = 0

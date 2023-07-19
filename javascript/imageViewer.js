@@ -1,12 +1,10 @@
 // A full size 'lightbox' preview modal shown when left clicking on gallery previews
-let previewTimestamp = Date.now();
 let previewDrag = false;
 let modalPreviewZone;
 
 function closeModal(force = false) {
   if (force) gradioApp().getElementById('lightboxModal').style.display = 'none';
   if (previewDrag) return;
-  if ((Date.now() - previewTimestamp) < 250) return;
   gradioApp().getElementById('lightboxModal').style.display = 'none';
 }
 
@@ -64,7 +62,6 @@ function showModal(event) {
   if (modalImage.style.display === 'none') lb.style.setProperty('background-image', `url(${source.src})`);
   lb.style.display = 'flex';
   lb.onkeydown = modalKeyHandler;
-  previewTimestamp = Date.now();
   event.stopPropagation();
 }
 
@@ -91,7 +88,7 @@ function setupImageForLightbox(e) {
   e.dataset.modded = true;
   e.style.cursor = 'pointer';
   e.style.userSelect = 'none';
-  e.addEventListener('mousedown', (evt) => {
+  e.addEventListener('click', (evt) => {
     if (evt.button !== 0) return;
     const initialZoom = (localStorage.getItem('modalZoom') || true) === 'yes';
     modalZoomSet(gradioApp().getElementById('modalImage'), initialZoom);
@@ -140,9 +137,7 @@ function initImageViewer() {
   modalImage.id = 'modalImage';
   // modalImage.addEventListener('keydown', modalKeyHandler, true);
   modalPreviewZone.appendChild(modalImage);
-  panzoom(modalImage, {
-    zoomSpeed: 0.05, minZoom: 0.25, maxZoom: 4.0, filterKey: (/* e, dx, dy, dz */) => true,
-  });
+  panzoom(modalImage, { zoomSpeed: 0.05, minZoom: 0.1, maxZoom: 5.0, filterKey: (/* e, dx, dy, dz */) => true });
 
   // toolbar
   const modalZoom = document.createElement('span');

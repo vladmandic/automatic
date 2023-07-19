@@ -1,7 +1,6 @@
 import os
 import shutil
 import importlib
-import json
 from typing import Dict
 from urllib.parse import urlparse
 
@@ -37,7 +36,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         hf.login(token)
     pipeline_dir = DiffusionPipeline.download(hub_id, **download_config)
     try:
-        model_info_dict = hf.model_info(hub_id).cardData # TODO HF-Hub cardData invalid property
+        model_info_dict = hf.model_info(hub_id).cardData # pylint: disable=no-member # TODO Diffusers is this real error?
     except Exception:
         model_info_dict = None
     # some checkpoints need to be downloaded as "hidden" as they just serve as pre- or post-pipelines of other pipelines
@@ -47,8 +46,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         # mark prior as hidden
         with open(os.path.join(download_dir, "hidden"), "w", encoding="utf-8") as f:
             f.write("True")
-    with open(os.path.join(pipeline_dir, "model_info.json"), "w", encoding="utf-8") as json_file:
-        json.dump(model_info_dict, json_file)
+    shared.writefile(model_info_dict, os.path.join(pipeline_dir, "model_info.json"))
     return pipeline_dir
 
 
@@ -83,13 +81,13 @@ def find_diffuser(name: str):
         return name
     if shared.cmd_opts.no_download:
         return None
-    api = hf.HfApi()
-    filt = hf.ModelFilter(
+    hf_api = hf.HfApi()
+    hf_filter = hf.ModelFilter(
         model_name=name,
         task='text-to-image',
         library=['diffusers'],
     )
-    models = list(api.list_models(filter=filt, full=True, limit=5, sort="downloads", direction=-1))
+    models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
         return models[0].modelId

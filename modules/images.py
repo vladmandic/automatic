@@ -483,14 +483,8 @@ def atomically_save_image():
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
             file.write(exifinfo)
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
-            try:
-                with open(os.path.join(paths.data_path, shared.opts.save_log_fn), mode='a+', encoding='utf-8') as f:
-                    entry = { 'filename': filename, 'time': datetime.datetime.now().isoformat(), 'info': exifinfo }
-                    json.dump(entry, f)
-                    f.write(os.linesep)
-                    shared.log.debug(f'Log file updated: {os.path.join(paths.data_path, shared.opts.save_log_fn)}')
-            except Exception as e:
-                shared.log.warning(f'Failed to save log file: {shared.opts.save_log_fn} {e}')
+            entry = { 'filename': filename, 'time': datetime.datetime.now().isoformat(), 'info': exifinfo }
+            shared.writefile(entry, os.path.join(paths.data_path, shared.opts.save_log_fn), mode='a+')
         save_queue.task_done()
 
 
