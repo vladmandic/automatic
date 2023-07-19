@@ -637,7 +637,7 @@ def read_info_from_image(image):
                             items[ExifTags.TAGS[key]] = val
                     elif val is not None and key in ExifTags.GPSTAGS:
                         items[ExifTags.GPSTAGS[key]] = val
-    
+
     for key, val in items.items():
         if isinstance(val, bytes): # decode bytestring
             items[key] = safe_decode_string(val)
