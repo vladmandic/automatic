@@ -443,8 +443,6 @@ def atomically_save_image():
         except Exception:
             shared.log.warning(f'Unknown image format: {extension}')
             image_format = 'JPEG'
-        if shared.opts.image_watermark_enabled:
-            image = set_watermark(image, shared.opts.image_watermark)
         shared.log.debug(f'Saving image: {image_format} {fn} {image.size}')
         # actual save
         exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
@@ -639,11 +637,7 @@ def read_info_from_image(image):
                             items[ExifTags.TAGS[key]] = val
                     elif val is not None and key in ExifTags.GPSTAGS:
                         items[ExifTags.GPSTAGS[key]] = val
-    wm = get_watermark(image)
-    if wm != '':
-        # geninfo += f' Watermark: {wm}'
-        items['watermark'] = wm
-
+    
     for key, val in items.items():
         if isinstance(val, bytes): # decode bytestring
             items[key] = safe_decode_string(val)
@@ -696,40 +690,3 @@ def flatten(img, bgcolor):
         background.paste(img, mask=img)
         img = background
     return img.convert('RGB')
-
-
-def set_watermark(image, watermark):
-    from imwatermark import WatermarkEncoder
-    wm_type = 'bytes'
-    wm_method = 'dwtDctSvd'
-    wm_length = 32
-    length = wm_length // 8
-    info = image.info
-    data = np.asarray(image)
-    encoder = WatermarkEncoder()
-    text = f"{watermark:<{length}}"[:length]
-    bytearr = text.encode(encoding='ascii', errors='ignore')
-    try:
-        encoder.set_watermark(wm_type, bytearr)
-        encoded = encoder.encode(data, wm_method)
-        image = Image.fromarray(encoded)
-        image.info = info
-        shared.log.debug(f'Set watermark: {watermark} method={wm_method} bits={wm_length}')
-    except Exception as e:
-        shared.log.warning(f'Set watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
-    return image
-
-
-def get_watermark(image):
-    from imwatermark import WatermarkDecoder
-    wm_type = 'bytes'
-    wm_method = 'dwtDctSvd'
-    wm_length = 32
-    data = np.asarray(image)
-    decoder = WatermarkDecoder(wm_type, wm_length)
-    try:
-        decoded = decoder.decode(data, wm_method)
-        wm = decoded.decode(encoding='ascii', errors='ignore')
-    except Exception:
-        wm = ''
-    return wm
