@@ -438,8 +438,6 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "samples_save": OptionInfo(True, "Always save all generated images"),
     "samples_format": OptionInfo('jpg', 'File format for generated images', gr.Dropdown, lambda: {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "image_metadata": OptionInfo(True, "Include metadata in saved images"),
-    "image_watermark_enabled": OptionInfo(False, "Include watermark in saved images"),
-    "image_watermark": OptionInfo('', "Image watermark string"),
     "samples_filename_pattern": OptionInfo("[seq]-[prompt_words]", "Images filename pattern", component_args=hide_dirs),
     "directories_max_prompt_words": OptionInfo(8, "Max prompt words for [prompt_words] pattern", gr.Slider, {"minimum": 1, "maximum": 99, "step": 1, **hide_dirs}),
     "save_images_add_number": OptionInfo(True, "Add number to filename when saving", component_args=hide_dirs),
