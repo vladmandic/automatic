@@ -4,7 +4,7 @@ async function createSplash() {
   const splash = `
     <div id="splash" class="splash" style="background: ${dark ? 'black' : 'white'}">
       <div class="loading"><div class="loader"></div></div>
-      <div class="splash-img" alt="logo" style="background-image: url(file=html/logo-bg-${dark ? 'dark' : 'light'}.jpg), url(file=html/logo-bg-${num}.jpg); background-blend-mode: ${dark ? 'color-burn' : 'color-dodge'}"></div>
+      <div class="splash-img" alt="logo" style="background-image: url(file=html/logo-bg-${dark ? 'dark' : 'light'}.jpg), url(file=html/logo-bg-${num}.jpg); background-blend-mode: multiply;"></div>
     </div>`;
   document.body.insertAdjacentHTML('beforeend', splash);
   console.log('createSplash', dark);
