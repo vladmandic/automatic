@@ -331,43 +331,12 @@ div#extras_scale_to_tab div.form{
 .livePreview { position: absolute; z-index: 300; background-color: transparent; width: -webkit-fill-available; }
 .livePreview img { position: absolute; object-fit: contain; width: 100%; height: 100%; }
 .dark .livePreview { background-color: rgb(17 24 39 / var(--tw-bg-opacity)); }
-.popup-metadata { color: black; background: white; display: inline-block; padding: 1em; white-space: pre-wrap; font-size: 0.8em; opacity: 80%; }
-
-.global-popup{
-    display: flex;
-    position: fixed;
-    z-index: 10001;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(20, 20, 20, 0.95);
-}
-
-
-.global-popup-close:before {
-    content: "×";
-}
-
-.global-popup-close{
-    position: fixed;
-    right: 0.25em;
-    top: 0;
-    cursor: pointer;
-    color: white;
-    font-size: 32pt;
-}
-
-.global-popup-inner{
-    display: inline-block;
-    margin: auto;
-    padding: 2em;
-}
-
-.ui-defaults-none{
-  color: #aaa !important;
-}
+.popup-metadata { color: white; background: #0000; display: inline-block; white-space: pre-wrap; font-size: 0.75em; }
+.global-popup{ display: flex; position: fixed; z-index: 10001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(20, 20, 20, 0.95);}
+.global-popup-close:before { content: "×"; }
+.global-popup-close{ position: fixed; right: 0.5em; top: 0; cursor: pointer; color: white; font-size: 32pt; }
+.global-popup-inner{ display: inline-block; margin: auto; padding: 2em; }
+.ui-defaults-none{ color: #aaa !important; }
 
 /* fullpage image viewer */
 
@@ -495,7 +464,7 @@ table.settings-value-table td{
 .extra-networks .description { flex: 3; }
 .extra-networks .tab-nav > button { margin-right: 0; height: 24px; padding: 2px 4px 2px 4px; }
 .extra-networks-tab { padding: 0 !important; }
-.extra-network-subdirs { background: var(--input-background-fill); overflow-x: hidden; overflow-y: auto; min-width: 120px; }
+.extra-network-subdirs { background: var(--input-background-fill); overflow-x: hidden; overflow-y: auto; min-width: 120px; padding-top: 0.5em; }
 .extra-networks-page { display: flex }
 .extra-networks .custom-button { width: 120px; width: 100%; background: none; justify-content: left; text-align: left; padding: 2px 8px 2px 16px; text-indent: -8px; box-shadow: none; line-break: auto; }
 .extra-networks .custom-button:hover { background: var(--button-primary-background-fill) }
@@ -504,7 +473,7 @@ table.settings-value-table td{
 .extra-network-cards .card .overlay { position: absolute; bottom: 0; padding: 0.2em; z-index: 10; width: 100%; background: none; }
 .extra-network-cards .card:hover .overlay { background: rgba(0, 0, 0, 0.40); }
 .extra-network-cards .card .overlay .name { font-size: 1.2em; font-weight: bold; line-break: anywhere; text-shadow: 1px 1px black; color: white; }
-.extra-network-cards .card .overlay .actions { font-size: 1.8em; display: none; text-align-last: justify; cursor: pointer; word-spacing: -6px; }
+.extra-network-cards .card .overlay .actions { font-size: 2.2em; display: none; text-align-last: justify; cursor: pointer; word-spacing: -6px; font-variant: unicase; letter-spacing: 4px; }
 .extra-network-cards .card:hover .overlay .actions { display: block; }
 .extra-network-cards .card .overlay .description { line-break: anywhere; display: none; color: white; }
 .extra-network-cards .card:hover .overlay .description { display: block; }
@@ -532,19 +501,22 @@ div.controlnet_main_options { display: grid; grid-template-columns: 1fr 1fr; gri
 #train_tab { flex-flow: row-reverse; }
 #models_tab { flex-flow: row-reverse; }
 
-.log-monitor { 
-  display: none;
-  justify-content: unset !important;
-  overflow: hidden;
-  padding: 0;
-  margin-top: auto;
-  font-family: monospace;
-  font-size: 0.85em;
-}
+.log-monitor { display: none; justify-content: unset !important; overflow: hidden; padding: 0; margin-top: auto; font-family: monospace; font-size: 0.85em; }
 .log-monitor td, .log-monitor th { padding-left: 1em; }
-.logo { background-image: url("logo.png") !important; background-repeat: no-repeat !important; background-position: center !important; background-size: contain !important; }
 
 /* Workaround for Gradio dropdowns capturing clicks during and after fadeout */
 .gradio-dropdown > label > div > div:first-child:not(.showOptions) ~ ul.options {
   pointer-events: none;
 }
+
+.splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100; display: block; text-align: center; }
+.splash-img { margin: 10% auto 0 auto; width: 512px; background-repeat: no-repeat; height: 512px; animation: move 5s infinite alternate; }
+@keyframes move {
+  from { background-position-x: 0, -40px; }
+  to { background-position-x: 0, 40px; }
+}
+.loading { color: white; position: absolute; top: 20%; left: 50%; transform: translateX(-50%); }
+.loader { width: 300px; height: 300px; border: var(--spacing-md) solid transparent; border-radius: 50%; border-top: var(--spacing-md) solid var(--primary-600); animation: spin 4s linear infinite; position: relative; }
+.loader::before, .loader::after { content: ""; position: absolute; top: 6px; bottom: 6px; left: 6px; right: 6px; border-radius: 50%; border: var(--spacing-md) solid transparent; }
+.loader::before { border-top-color: var(--primary-900); animation: 3s spin linear infinite; }
+.loader::after { border-top-color: var(--primary-300); animation: spin 1.5s linear infinite; }
