@@ -181,7 +181,7 @@ else:
 
 if backend == 'ipex':
     import os
-    def ipex_no_cuda(orig_func, *args, **kwargs):
+    def ipex_no_cuda(orig_func, *args, **kwargs): # pylint: disable=redefined-outer-name
         torch.cuda.is_available = lambda: False
         orig_func(*args, **kwargs)
         torch.cuda.is_available = torch.xpu.is_available
@@ -193,8 +193,9 @@ if backend == 'ipex':
     torch.cuda.current_device = torch.xpu.current_device
     torch.cuda.get_device_name = torch.xpu.get_device_name
     torch.cuda.get_device_properties = torch.xpu.get_device_properties
-    torch._utils._get_available_device_type = lambda: "xpu"
+    torch._utils._get_available_device_type = lambda: "xpu" # pylint: disable=protected-access
     torch.cuda.set_device = torch.xpu.set_device
+    torch.Tensor.cuda = torch.Tensor.xpu
 
     torch.cuda.empty_cache = torch.xpu.empty_cache if "WSL2" not in os.popen("uname -a").read() else lambda: None
     torch.cuda.ipc_collect = lambda: None
@@ -320,7 +321,7 @@ def without_autocast(disable=False):
     if disable:
         return contextlib.nullcontext()
     if shared.cmd_opts.use_directml:
-        return torch.dml.amp.autocast(enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext()
+        return torch.dml.amp.autocast(enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext() # pylint: disable=unexpected-keyword-arg
     if backend == 'ipex':
         return torch.xpu.amp.autocast(enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext()
     if cuda_ok:

@@ -1,5 +1,5 @@
 name: Issue Report
-description: Something is broken
+description: Something is broken in the core app
 title: "[Issue]: "
 labels: []
 
@@ -22,8 +22,8 @@ body:
         Any issues without version information will be closed  
         Provide any relevant platorm information:  
         - Application version, OS details, GPU information, browser used  
-        Easiest is to include top part of console log  
-        Example:  
+        
+        Easiest is to include top part of console log, for example:  
         ```log
         Starting SD.Next
         Python 3.10.6 on Linux
@@ -39,11 +39,6 @@ body:
     attributes:
       value: |
         If issue is setup, installation or startup related, please check `sdnext.log` before reporting  
-        And when posting console logs, please use code blocks ( \`\`\` ) to format them insead of uploading screenshots  
-  - type: markdown
-    attributes:
-      value: |
-        If issue is with extension compatibility or functionality, stop here and use extension template instead  
   - type: markdown
     attributes:
       value: |
@@ -55,10 +50,23 @@ body:
       value: |
         If possible update to latest version before reporting the issue as older versions cannot be properly supported  
         And search existing **issues** and **discussions** before creating a new one  
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks
+      render: shell
+  - type: markdown
+    attributes:
+      value: |
+        If unsure if this is a right place to ask your question, perhaps post on [Discussions](https://github.com/vladmandic/automatic/discussions)
+        Or reach-out to us on [Discord](https://discord.gg/WqMzTUDC)
   - type: checkboxes
     attributes:
       label: Acknowledgements
       description: 
       options:
         - label: I have read the above and searched for existing issues
+          required: true
+        - label: I confirm that this is classified correctly and its not an extension or diffusers-specific issue
           required: true
