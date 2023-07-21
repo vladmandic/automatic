@@ -1,3 +1,4 @@
+import re
 import json
 import html
 import os.path
@@ -69,6 +70,7 @@ class ExtraNetworksPage:
         self.html = ''
         self.items = []
         self.missing_thumbs = []
+        # class additional is to keep old extensions happy
         self.card = '''
             <div class='card' onclick={card_click} title='{title}'>
                 <div class='overlay'>
@@ -76,6 +78,7 @@ class ExtraNetworksPage:
                     <div class='name'>{name}</div>
                     <div class='description'>{description}</div>
                     <div class='actions'>
+                        <div class='additional'><ul></ul></div>
                         <span title="Save current image as preview image" onclick={card_save_preview}>💙</span>
                         <span title="Read description" onclick={card_read_desc}>📖</span>
                         <span title="Save current description" onclick={card_save_desc}>🛅</span>
@@ -247,7 +250,9 @@ class ExtraNetworksPage:
         for file in [f"{path}.txt", f"{path}.description.txt"]:
             try:
                 with open(file, "r", encoding="utf-8", errors="replace") as f:
-                    return f.read()
+                    txt = f.read()
+                    txt = re.sub('[<>]', '', txt)
+                    return txt
             except OSError:
                 pass
         return None
@@ -257,7 +262,9 @@ class ExtraNetworksPage:
         for file in [f"{path}.info", f"{path}.civitai.info", f"{basename}.info", f"{basename}.civitai.info"]:
             try:
                 with open(file, "r", encoding="utf-8", errors="replace") as f:
-                    return f.read()
+                    txt = f.read()
+                    txt = re.sub('[<>]', '', txt)
+                    return txt
             except OSError:
                 pass
         return None

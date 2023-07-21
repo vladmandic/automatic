@@ -381,6 +381,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "no_half_vae": OptionInfo(False, "Use full precision for VAE (--no-half-vae)"),
     "upcast_sampling": OptionInfo(True if sys.platform == "darwin" else False, "Enable upcast sampling"),
     "upcast_attn": OptionInfo(False, "Enable upcast cross attention layer"),
+    "cuda_cast_unet": OptionInfo(False, "Use fixed UNet precision"),
     "disable_nan_check": OptionInfo(True, "Disable NaN check in produced images/latent spaces"),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back when produced NaN values (experimental)"),
     "opt_channelslast": OptionInfo(False, "Use channels last as torch memory format "),
@@ -405,6 +406,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_generator_device": OptionInfo("default", "Generator device", gr.Radio, lambda: {"choices": ["default", "cpu"]}),
     "diffusers_seq_cpu_offload": OptionInfo(False, "Enable sequential CPU offload"),
     "diffusers_model_cpu_offload": OptionInfo(False, "Enable model CPU offload"),
+    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, lambda: {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "Enable VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(False, "Enable VAE tiling"),
     "diffusers_attention_slicing": OptionInfo(False, "Enable attention slicing"),
@@ -889,6 +891,7 @@ def restart_server(restart=True):
         demo.close(verbose=False)
         demo.server.close()
         demo.fns = []
+        # os._exit(0)
     except Exception:
         pass
     if restart:
