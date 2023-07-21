@@ -1,6 +1,10 @@
 [submodule "wiki"]
   path = wiki
   url = https://github.com/vladmandic/automatic.wiki
+[submodule "extensions-builtin/0_Civitai-Helper"]
+  path = extensions-builtin/0_Civitai-Helper
+  url = https://github.com/aleph23/0_Civitai-Helper
+  ignore = dirty
 [submodule "extensions-builtin/sd-extension-system-info"]
   path = extensions-builtin/sd-extension-system-info
   url = https://github.com/vladmandic/sd-extension-system-info

@@ -462,10 +462,12 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts, all_seeds, all_su
         "Variation seed strength": None if p.subseed_strength == 0 else p.subseed_strength,
         # seed resize
         "Seed resize from": None if p.seed_resize_from_w == 0 or p.seed_resize_from_h == 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}",
+
         "Init image hash": getattr(p, 'init_img_hash', None),
         "Conditional mask weight": getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) if p.is_using_inpainting_conditioning else None,
         # clip skip
         "Clip skip": p.clip_skip if p.clip_skip > 1 else None,
+
         # ensd
         "ENSD": shared.opts.eta_noise_seed_delta if shared.opts.eta_noise_seed_delta != 0 and sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p) else None,
         # enable_hr
