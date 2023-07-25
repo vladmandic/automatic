@@ -1,4 +1,5 @@
-@echo off
+@echo on
+call act.bat
 
 if not defined PYTHON (set PYTHON=python)
 if not defined VENV_DIR (set "VENV_DIR=%~dp0%venv")
@@ -11,7 +12,7 @@ echo Couldn't launch python
 goto :show_stdout_stderr
 
 :check_pip
-%PYTHON% -mpip --help >tmp/stdout.txt 2>tmp/stderr.txt
+%PYTHON% -m pip --help >tmp/stdout.txt 2>tmp/stderr.txt
 if %ERRORLEVEL% == 0 goto :start_venv
 if "%PIP_INSTALLER_LOCATION%" == "" goto :show_stdout_stderr
 %PYTHON% "%PIP_INSTALLER_LOCATION%" >tmp/stdout.txt 2>tmp/stderr.txt

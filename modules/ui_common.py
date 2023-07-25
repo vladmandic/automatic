@@ -40,7 +40,7 @@ def infotext_to_html(text):
     return res
 
 
-def delete_files(js_data, images, _html_info, _do_make_zip, index):
+def delete_files(js_data, images, _html_info, index):
     try:
         data = json.loads(js_data)
     except Exception:
@@ -58,6 +58,10 @@ def delete_files(js_data, images, _html_info, _do_make_zip, index):
             filenames.append(os.path.basename(fullfn))
             try:
                 os.remove(fullfn)
+                base, _ext = os.path.splitext(fullfn)
+                desc = f'{base}.txt'
+                if os.path.exists(desc):
+                    os.remove(desc)
                 fullfns.append(fullfn)
                 shared.log.info(f"Deleting image: {fullfn}")
             except Exception as e:
