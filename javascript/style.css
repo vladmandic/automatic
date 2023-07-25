@@ -103,9 +103,9 @@ button.custom-button{
 #txt2img_gallery img, #img2img_gallery img, #extras_gallery img { object-fit: scale-down; width: -webkit-fill-available !important; }
 #txt2img_footer, #img2img_footer, #extras_footer { height: fit-content; }
 #txt2img_footer, #img2img_footer { height: fit-content; display: none; }
-#txt2img_generate_box, #img2img_generate_box { gap: 0.5em; flex-wrap: wrap-reverse; }
-#txt2img_actions_column, #img2img_actions_column { gap: 0.5em; }
-#txt2img_generate_box > button, #img2img_generate_box > button { height: 2.2em; line-height: 0; }
+#txt2img_generate_box, #img2img_generate_box { gap: 0.5em; flex-wrap: wrap-reverse; height: fit-content; }
+#txt2img_actions_column, #img2img_actions_column { gap: 0.5em; height: fit-content; }
+#txt2img_generate_box > button, #img2img_generate_box > button { min-height: 42px; max-height: 42px; }
 #txt2img_generate_line2, #img2img_generate_line2 { display: flex; }
 #txt2img_generate_line2 > button, #img2img_generate_line2 > button, #extras_generate_box > button { height: 2.2em; line-height: 0; min-width: unset; display: block !important; }
 #txt2img_tools > div, #img2img_tools > div { justify-content: space-around; margin-top: 0.5em; margin-bottom: 0em; }
@@ -355,7 +355,7 @@ div#extras_scale_to_tab div.form{
     flex-direction: row;
 }
 
-.modalControls { display: flex; justify-content: space-evenly; background-color: transparent; position: absolute; width: -webkit-fill-available; z-index: 1; }
+.modalControls { display: flex; justify-content: space-evenly; background-color: transparent; position: absolute; width: 99%; z-index: 1; }
 .modalControls:hover { background-color: #50505050; }
 .modalControls span { color: white; font-size: 2em; font-weight: bold; cursor: pointer; filter: grayscale(100%); }
 .modalControls span:hover, .modalControls span:focus { color: var(--highlight-color); filter: none; }
@@ -379,6 +379,8 @@ table.settings-value-table td{
 
 .modalPrev, .modalNext {
   cursor: pointer;
+  position: relative;
+  z-index: 1;
   top: 0;
   width: auto;
   height: 100vh;
@@ -511,12 +513,17 @@ div.controlnet_main_options { display: grid; grid-template-columns: 1fr 1fr; gri
 
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100; display: block; text-align: center; }
 .splash-img { margin: 10% auto 0 auto; width: 512px; background-repeat: no-repeat; height: 512px; animation: move 5s infinite alternate; }
-@keyframes move {
-  from { background-position-x: 0, -40px; }
-  to { background-position-x: 0, 40px; }
-}
 .loading { color: white; position: absolute; top: 20%; left: 50%; transform: translateX(-50%); }
 .loader { width: 300px; height: 300px; border: var(--spacing-md) solid transparent; border-radius: 50%; border-top: var(--spacing-md) solid var(--primary-600); animation: spin 4s linear infinite; position: relative; }
 .loader::before, .loader::after { content: ""; position: absolute; top: 6px; bottom: 6px; left: 6px; right: 6px; border-radius: 50%; border: var(--spacing-md) solid transparent; }
 .loader::before { border-top-color: var(--primary-900); animation: 3s spin linear infinite; }
 .loader::after { border-top-color: var(--primary-300); animation: spin 1.5s linear infinite; }
+
+@keyframes move {
+  from { background-position-x: 0, -40px; }
+  to { background-position-x: 0, 40px; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

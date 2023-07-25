@@ -311,8 +311,8 @@ def check_torch():
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.20' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
     elif allow_rocm and (shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')):
         log.info('AMD ROCm toolkit detected')
-        os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
         os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
+        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/rocm5.4.2')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi')):
@@ -322,6 +322,7 @@ def check_torch():
             log.error('Intel OneAPI Toolkit is not activated! Start the WebUI with --use-ipex or activate OneAPI manually')
         os.environ.setdefault('NEOReadDebugKeys', '1')
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.12.0 intel-extension-for-tensorflow[gpu]')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==1.13.0a0+git6c9b55e torchvision==0.14.1a0 intel_extension_for_pytorch==1.13.120+xpu -f https://developer.intel.com/ipex-whl-stable-xpu')
     else:
         machine = platform.machine()
