@@ -9,6 +9,12 @@ from modules.lora_diffusers import lora_state, unload_diffusers_lora
 from modules.processing import StableDiffusionProcessing
 
 
+try:
+    import diffusers
+except Exception as ex:
+    shared.log.error(f'Failed to import diffusers: {ex}')
+
+
 def encode_prompt(encoder, prompt):
     cfg = encoder.config
     # TODO implement similar hijack for diffusers text encoder but following diffusers pipeline.encode_prompt concepts
@@ -30,9 +36,16 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
     def vae_decode(latents, model, output_type='np'):
         if hasattr(model, 'vae') and torch.is_tensor(latents):
             shared.log.debug(f'Diffusers VAE decode: name={model.vae.config.get("_name_or_path", "default")} dtype={model.vae.dtype} upcast={model.vae.config.get("force_upcast", None)}')
+            if shared.opts.diffusers_move_unet and not model.has_accelerate:
+                shared.log.debug('Diffusers: Moving UNet to CPU')
+                unet_device = model.unet.device
+                model.unet.to(devices.cpu)
+                devices.torch_gc()
             latents.to(model.vae.device)
             decoded = model.vae.decode(latents / model.vae.config.scaling_factor, return_dict=False)[0]
             imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+            if shared.opts.diffusers_move_unet and not model.has_accelerate:
+                model.unet.to(unet_device)
             return imgs
         else:
             return latents
@@ -40,10 +53,10 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
 
     def set_pipeline_args(model, prompt, negative_prompt, **kwargs):
         args = {}
-        pipeline = model.main if model.__class__.__name__ == 'PriorPipeline' else model
+        pipeline = model
         signature = inspect.signature(type(pipeline).__call__)
         possible = signature.parameters.keys()
-        generator_device = 'cpu' if shared.opts.diffusers_generator_device == "cpu" else shared.device
+        generator_device = devices.cpu if shared.opts.diffusers_generator_device == "cpu" else shared.device
         generator = [torch.Generator(generator_device).manual_seed(s) for s in seeds]
         if 'prompt' in possible:
             if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible:
@@ -93,7 +106,8 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
         shared.log.debug(f'Diffuser pipeline: {pipeline.__class__.__name__} task={sd_models.get_diffusers_task(model)} set={clean}')
         return args
 
-    if (not hasattr(shared.sd_model.scheduler, 'name')) or (shared.sd_model.scheduler.name != p.sampler_name) and (p.sampler_name != 'Default'):
+    is_karras_compatible = shared.sd_model.__class__.__init__.__annotations__.get("scheduler", None) == diffusers.schedulers.scheduling_utils.KarrasDiffusionSchedulers
+    if (not hasattr(shared.sd_model.scheduler, 'name')) or (shared.sd_model.scheduler.name != p.sampler_name) and (p.sampler_name != 'Default') and is_karras_compatible:
         sampler = sd_samplers.all_samplers_map.get(p.sampler_name, None)
         if sampler is None:
             sampler = sd_samplers.all_samplers_map.get("UniPC")
@@ -104,11 +118,14 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
         cross_attention_kwargs['scale'] = lora_state['multiplier']
     task_specific_kwargs={}
     if sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
+        p.ops.append('txt2img')
         task_specific_kwargs = {"height": p.height, "width": p.width}
     elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE:
+        p.ops.append('img2img')
         task_specific_kwargs = {"image": p.init_images, "strength": p.denoising_strength}
     elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.INPAINTING:
-        task_specific_kwargs = {"image": p.init_images, "mask_image": p.mask, "strength": p.denoising_strength}
+        p.ops.append('inpaint')
+        task_specific_kwargs = {"image": p.init_images, "mask_image": p.mask, "strength": p.denoising_strength, "height": p.height, "width": p.width}
 
     # TODO diffusers use transformers for prompt parsing
     # from modules.prompt_parser import parse_prompt_attention
@@ -117,9 +134,10 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
     if shared.state.interrupted or shared.state.skipped:
         return results
 
-    if shared.opts.diffusers_move_base:
+    if shared.opts.diffusers_move_base and not shared.sd_model.has_accelerate:
         shared.sd_model.to(devices.device)
 
+    refiner_enabled = shared.sd_refiner is not None and p.enable_hr
     pipe_args = set_pipeline_args(
         model=shared.sd_model,
         prompt=prompts,
@@ -128,9 +146,8 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
         negative_prompt_2=[p.refiner_negative] if len(p.refiner_negative) > 0 else negative_prompts,
         eta=shared.opts.eta_ddim,
         guidance_rescale=p.diffusers_guidance_rescale,
-        denoising_start=p.refiner_denoise_start,
-        denoising_end=p.refiner_denoise_end,
-        # aesthetic_score=shared.opts.diffusers_aesthetics_score,
+        denoising_start=0 if refiner_enabled and p.refiner_start > 0 and p.refiner_start < 1 else None,
+        denoising_end=p.refiner_start if refiner_enabled and p.refiner_start > 0 and p.refiner_start < 1 else None,
         output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
         **task_specific_kwargs
     )
@@ -142,7 +159,10 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
     if shared.sd_refiner is None or not p.enable_hr:
         output.images = vae_decode(output.images, shared.sd_model)
 
-    if shared.sd_refiner is not None and p.enable_hr:
+    if lora_state['active']:
+        unload_diffusers_lora()
+
+    if refiner_enabled:
         for i in range(len(output.images)):
             if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):
                 from modules.processing import create_infotext
@@ -151,9 +171,9 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
                 for i in range(len(decoded)):
                     images.save_image(decoded[i], path=p.outpath_samples, basename="", seed=seeds[i], prompt=prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-refiner")
 
-        if shared.opts.diffusers_move_base:
+        if (shared.opts.diffusers_move_base or shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload) and not (shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload):
             shared.log.debug('Diffusers: Moving base model to CPU')
-            shared.sd_model.to('cpu')
+            shared.sd_model.to(devices.cpu)
             devices.torch_gc()
 
         if (not hasattr(shared.sd_refiner.scheduler, 'name')) or (shared.sd_refiner.scheduler.name != p.latent_sampler) and (p.sampler_name != 'Default'):
@@ -165,9 +185,9 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
         if shared.state.interrupted or shared.state.skipped:
             return results
 
-        if shared.opts.diffusers_move_refiner:
+        if shared.opts.diffusers_move_refiner and not shared.sd_refiner.has_accelerate:
             shared.sd_refiner.to(devices.device)
-
+        p.ops.append('refine')
         for i in range(len(output.images)):
             pipe_args = set_pipeline_args(
                 model=shared.sd_refiner,
@@ -178,9 +198,8 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
                 strength=p.denoising_strength,
                 guidance_scale=p.image_cfg_scale if p.image_cfg_scale is not None else p.cfg_scale,
                 guidance_rescale=p.diffusers_guidance_rescale,
-                # aesthetic_score=shared.opts.diffusers_aesthetics_score,
-                denoising_start=p.refiner_denoise_start,
-                denoising_end=p.refiner_denoise_end,
+                denoising_start=p.refiner_start if p.refiner_start > 0 and p.refiner_start < 1 else None,
+                denoising_end=1 if p.refiner_start > 0 and p.refiner_start < 1 else None,
                 image=output.images[i],
                 output_type='latent' if hasattr(shared.sd_refiner, 'vae') else 'np',
             )
@@ -189,16 +208,14 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
                 refiner_images = vae_decode(refiner_output.images, shared.sd_refiner)
                 results.append(refiner_images[0])
 
-        if shared.opts.diffusers_move_refiner:
+        if shared.opts.diffusers_move_refiner and not shared.sd_refiner.has_accelerate:
             shared.log.debug('Diffusers: Moving refiner model to CPU')
-            shared.sd_refiner.to('cpu')
+            shared.sd_refiner.to(devices.cpu)
+            devices.torch_gc()
     else:
         results = output.images
 
     if p.is_hr_pass:
         shared.log.warning('Diffusers not implemented: hires fix')
-
-    if lora_state['active']:
-        unload_diffusers_lora()
 
     return results

@@ -12,7 +12,7 @@ import requests
 import fasteners
 from modules import errors, ui_components, shared_items, cmd_args
 from modules.paths_internal import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
-from modules.dml import directml_do_hijack, directml_override_opts
+from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 import modules.interrogate
 import modules.memmon
 import modules.styles
@@ -65,18 +65,6 @@ restricted_opts = {
     "outdir_save",
     "outdir_init_images"
 }
-ui_reorder_categories = [
-    "inpaint",
-    "sampler",
-    "dimensions",
-    "cfg",
-    "seed",
-    "batch",
-    "checkboxes",
-    "second_pass",
-    "override_settings",
-    "scripts",
-]
 
 
 def is_url(string):
@@ -183,13 +171,11 @@ class State:
             return
         import modules.sd_samplers # pylint: disable=W0621
         try:
-            if opts.show_progress_grid:
-                self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
-            else:
-                self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
-        except Exception:
-            pass
-        self.current_image_sampling_step = self.sampling_step
+            image = modules.sd_samplers.samples_to_image_grid(self.current_latent) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(self.current_latent)
+            self.assign_current_image(image)
+            self.current_image_sampling_step = self.sampling_step
+        except Exception as e:
+            log.error(f'Error setting current image: step={self.sampling_step} {e}')
 
     def assign_current_image(self, image):
         self.current_image = image
@@ -252,11 +238,18 @@ def refresh_checkpoints():
     import modules.sd_models # pylint: disable=W0621
     return modules.sd_models.list_models()
 
+def refresh_vaes():
+    import modules.sd_vae # pylint: disable=W0621
+    modules.sd_vae.refresh_vae_list()
 
 def list_samplers():
     import modules.sd_samplers # pylint: disable=W0621
     modules.sd_samplers.set_samplers()
     return modules.sd_samplers.all_samplers
+
+def list_builtin_themes():
+    files = [os.path.splitext(f)[0] for f in os.listdir('javascript') if f.endswith('.css')]
+    return files
 
 def list_themes():
     fn = os.path.join('html', 'themes.json')
@@ -267,8 +260,9 @@ def list_themes():
             res = json.loads(f.read())
     else:
         res = []
-    builtin = ["black-orange", "gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
-    themes = sorted(set(builtin + [x['id'] for x in res if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()]), key=str.casefold)
+    list_builtin_themes()
+    builtin = list_builtin_themes() + ["gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
+    themes = sorted(builtin) + sorted({x['id'] for x in res if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()}, key=str.casefold)
     return themes
 
 
@@ -386,22 +380,25 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back when produced NaN values (experimental)"),
     "opt_channelslast": OptionInfo(False, "Use channels last as torch memory format "),
     "cudnn_benchmark": OptionInfo(False, "Enable full-depth cuDNN benchmark feature"),
-    "cuda_allow_tf32": OptionInfo(True, "Allow TF32 math ops"),
-    "cuda_allow_tf16_reduced": OptionInfo(True, "Allow TF16 reduced precision math ops"),
+    # "cuda_allow_tf32": OptionInfo(True, "Allow TF32 math ops"),
+    # "cuda_allow_tf16_reduced": OptionInfo(True, "Allow TF16 reduced precision math ops"),
     "cuda_compile": OptionInfo(False, "Enable model compile (experimental)"),
-    "cuda_compile_mode": OptionInfo("none", "Model compile mode (experimental)", gr.Radio, lambda: {"choices": ['none', 'inductor', 'reduce-overhead', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'ipex']}),
+    "cuda_compile_backend": OptionInfo("none", "Model compile backend (experimental)", gr.Radio, lambda: {"choices": ['none', 'inductor', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'ipex']}),
+    "cuda_compile_mode": OptionInfo("default", "Model compile mode (experimental)", gr.Radio, lambda: {"choices": ['default', 'reduce-overhead', 'max-autotune']}),
     "cuda_compile_fullgraph": OptionInfo(False, "Model compile fullgraph"),
     "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
     "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
     "disable_gc": OptionInfo(True, "Disable Torch memory garbage collection"),
+    "ipex_optimize": OptionInfo(True if devices.backend == "ipex" else False, "Enable IPEX Optimize for Intel GPUs"),
+    "directml_memory_provider": OptionInfo(default_memory_provider, '[DirectML] Memory stats provider', gr.Dropdown, lambda: {"choices": memory_providers}),
 }))
 
 options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_allow_safetensors": OptionInfo(True, 'Diffusers allow loading from safetensors files'),
     "diffusers_pipeline": OptionInfo(pipelines[0], 'Diffusers pipeline', gr.Dropdown, lambda: {"choices": pipelines}),
-    "diffusers_refiner_latents": OptionInfo(True, "Use latents when using refiner"),
     "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
     "diffusers_move_refiner": OptionInfo(True, "Move refiner model to CPU when not in use"),
+    "diffusers_move_unet": OptionInfo(False, "Move UNet to CPU while VAE decoding"),
     "diffusers_extract_ema": OptionInfo(True, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("default", "Generator device", gr.Radio, lambda: {"choices": ["default", "cpu"]}),
     "diffusers_seq_cpu_offload": OptionInfo(False, "Enable sequential CPU offload"),
@@ -409,7 +406,9 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, lambda: {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "Enable VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(False, "Enable VAE tiling"),
-    "diffusers_attention_slicing": OptionInfo(False, "Enable attention slicing"),
+    "diffusers_attention_slicing": OptionInfo(True if devices.backend == "ipex" else False, "Enable attention slicing"),
+    "diffusers_model_load_variant": OptionInfo("default", "Diffusers model loading variant", gr.Radio, lambda: {"choices": ['default', 'fp32', 'fp16']}),
+    "diffusers_vae_load_variant": OptionInfo("default", "Diffusers VAE loading variant", gr.Radio, lambda: {"choices": ['default', 'fp32', 'fp16']}),
     # "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty"),
     # "diffusers_aesthetics_score": OptionInfo(6.0, "Require aesthetic score", gr.Slider, {"minimum": 0, "maximum": 10, "step": 0.1}),
 }))
@@ -511,7 +510,6 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "hidden_tabs": OptionInfo([], "Hidden UI tabs", ui_components.DropdownMulti, lambda: {"choices": list(tab_names)}),
     "ui_tab_reorder": OptionInfo("From Text, From Image, Process Image", "UI tabs order"),
     "ui_scripts_reorder": OptionInfo("Enable Dynamic Thresholding, ControlNet", "UI scripts order"),
-    "ui_reorder": OptionInfo(", ".join(ui_reorder_categories), "txt2img/img2img UI item order"),
 }))
 
 options_templates.update(options_section(('live-preview', "Live Previews"), {
@@ -802,7 +800,6 @@ mem_mon = modules.memmon.MemUsageMonitor("MemMon", device, opts)
 mem_mon.start()
 if devices.backend == "directml":
     directml_do_hijack()
-    directml_override_opts()
 
 
 def reload_gradio_theme(theme_name=None):
@@ -822,7 +819,7 @@ def reload_gradio_theme(theme_name=None):
             'font':['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],
             'font_mono':['IBM Plex Mono', 'ui-monospace', 'Consolas', 'monospace']
         }
-    if theme_name == "black-orange":
+    if theme_name in list_builtin_themes():
         gradio_theme = gr.themes.Default(**default_font_params)
     elif theme_name.startswith("gradio/"):
         if theme_name == "gradio/default":
@@ -982,7 +979,24 @@ class Shared(sys.modules[__name__].__class__): # this class is here to provide s
     def backend(self):
         return Backend.ORIGINAL if opts.data['sd_backend'] == 'original' else Backend.DIFFUSERS
 
+    @property
+    def sd_model_type(self):
+        try:
+            if backend == Backend.ORIGINAL:
+                model_type = 'ldm'
+            elif "StableDiffusionXL" in self.sd_model.__class__.__name__:
+                model_type = 'sdxl'
+            elif "StableDiffusion" in self.sd_model.__class__.__name__:
+                model_type = 'sd'
+            elif "Kandinsky" in self.sd_model.__class__.__name__:
+                model_type = 'kandinsky'
+            else:
+                model_type = self.sd_model.__class__.__name__
+        except Exception:
+            model_type = 'unknown'
+        return model_type
 
 sd_model = None
 sd_refiner = None
+sd_model_type = ''
 sys.modules[__name__].__class__ = Shared

@@ -236,8 +236,10 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None):
         return im
 
     if resize_mode == 0:
-        res = resize(im, width, height)
+        res = im.copy()
     elif resize_mode == 1:
+        res = resize(im, width, height)
+    elif resize_mode == 2:
         ratio = width / height
         src_ratio = im.width / im.height
         src_w = width if ratio > src_ratio else im.width * height // im.height
@@ -583,7 +585,7 @@ def save_image(image, path, basename, seed=None, prompt=None, extension='jpg', i
         params.filename = filename + extension
     txt_fullfn = f"{filename}.txt" if shared.opts.save_txt and len(exifinfo) > 0 else None
 
-    save_queue.put((params.image, filename, extension, params, exifinfo, txt_fullfn))
+    save_queue.put((params.image, filename, extension, params, exifinfo, txt_fullfn)) # actual save is executed in a thread that polls data from queue
     save_queue.join()
     # atomically_save_image(params.image, filename, extension, params, exifinfo, txt_fullfn)
 

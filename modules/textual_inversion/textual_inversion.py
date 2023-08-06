@@ -338,7 +338,7 @@ def tensorboard_add_image(tensorboard_writer, tag, pil_image, step):
     tensorboard_writer.add_image(tag, img_tensor, global_step=step)
 
 
-def validate_train_inputs(model_name, learn_rate, batch_size, gradient_step, data_root, template_file, template_filename, steps, save_model_every, create_image_every, log_directory, name="embedding"):
+def validate_train_inputs(model_name, learn_rate, batch_size, gradient_step, data_root, template_file, template_filename, steps, save_model_every, create_image_every, name="embedding"):
     assert model_name, f"{name} not selected"
     assert learn_rate, "Learning rate is empty or 0"
     assert isinstance(batch_size, int), "Batch size must be integer"
@@ -358,8 +358,6 @@ def validate_train_inputs(model_name, learn_rate, batch_size, gradient_step, dat
     assert save_model_every >= 0, "Save {name} must be positive or 0"
     assert isinstance(create_image_every, int), "Create image must be integer"
     assert create_image_every >= 0, "Create image must be positive or 0"
-    if save_model_every or create_image_every:
-        assert log_directory, "Log directory is empty"
 
 
 def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_step, data_root, log_directory, training_width, training_height, varsize, steps, clip_grad_mode, clip_grad_value, shuffle_tags, tag_drop_out, latent_sampling_method, use_weight, create_image_every, save_embedding_every, template_filename, save_image_with_stored_embedding, preview_from_txt2img, preview_prompt, preview_negative_prompt, preview_steps, preview_sampler_index, preview_cfg_scale, preview_seed, preview_width, preview_height): # pylint: disable=unused-argument
@@ -368,7 +366,9 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
     save_embedding_every = save_embedding_every or 0
     create_image_every = create_image_every or 0
     template_file = textual_inversion_templates.get(template_filename, None)
-    validate_train_inputs(embedding_name, learn_rate, batch_size, gradient_step, data_root, template_file, template_filename, steps, save_embedding_every, create_image_every, log_directory, name="embedding")
+    validate_train_inputs(embedding_name, learn_rate, batch_size, gradient_step, data_root, template_file, template_filename, steps, save_embedding_every, create_image_every, name="embedding")
+    if log_directory is None or log_directory == '':
+        log_directory = f"{os.path.join(shared.cmd_opts.data_dir, 'train/log/embeddings')}"
     template_file = template_file.path
 
     shared.state.job = "train-embedding"
@@ -421,10 +421,13 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
         tensorboard_writer = tensorboard_setup(log_directory)
 
     pin_memory = shared.opts.pin_memory
+    # init dataset
     ds = modules.textual_inversion.dataset.PersonalizedBase(data_root=data_root, width=training_width, height=training_height, repeats=shared.opts.training_image_repeats_per_epoch, placeholder_token=embedding_name, model=shared.sd_model, cond_model=shared.sd_model.cond_stage_model, device=devices.device, template_file=template_file, batch_size=batch_size, gradient_step=gradient_step, shuffle_tags=shuffle_tags, tag_drop_out=tag_drop_out, latent_sampling_method=latent_sampling_method, varsize=varsize, use_weight=use_weight)
+
     if shared.opts.save_training_settings_to_txt:
         save_settings_to_file(log_directory, {**dict(model_name=checkpoint.model_name, model_hash=checkpoint.shorthash, num_of_dataset_images=len(ds), num_vectors_per_token=len(embedding.vec)), **locals()})
     latent_sampling_method = ds.latent_sampling_method
+    # init dataloader
     dl = modules.textual_inversion.dataset.PersonalizedDataLoader(ds, latent_sampling_method=latent_sampling_method, batch_size=ds.batch_size, pin_memory=pin_memory)
     if unload:
         shared.parallel_processing_allowed = False
@@ -463,7 +466,6 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
     pbar = tqdm(total=steps - initial_step)
     try:
         sd_hijack_checkpoint.add()
-
         for _i in range((steps-initial_step) * gradient_step):
             if scheduler.finished:
                 break
@@ -480,7 +482,6 @@ def train_embedding(id_task, embedding_name, learn_rate, batch_size, gradient_st
                     break
                 if clip_grad:
                     clip_grad_sched.step(embedding.step)
-
                 with devices.autocast():
                     x = batch.latent_sample.to(devices.device, non_blocking=pin_memory)
                     if use_weight:

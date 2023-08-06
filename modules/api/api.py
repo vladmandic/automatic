@@ -5,14 +5,16 @@ from io import BytesIO
 from typing import List, Dict, Any
 from threading import Lock
 from secrets import compare_digest
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import FastAPI, APIRouter, Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from PIL import PngImagePlugin,Image
+
 import piexif
 import piexif.helper
 import gradio as gr
 from modules import errors, shared, sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing
+from modules.sd_vae import vae_dict
 from modules.api import models
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
@@ -132,6 +134,8 @@ class Api:
         self.add_api_route("/sdapi/v1/prompt-styles", self.get_prompt_styles, methods=["GET"], response_model=List[models.PromptStyleItem])
         self.add_api_route("/sdapi/v1/embeddings", self.get_embeddings, methods=["GET"], response_model=models.EmbeddingsResponse)
         self.add_api_route("/sdapi/v1/refresh-checkpoints", self.refresh_checkpoints, methods=["POST"])
+        self.add_api_route("/sdapi/v1/sd-vae", self.get_sd_vaes, methods=["GET"], response_model=List[models.SDVaeItem])
+        self.add_api_route("/sdapi/v1/refresh-vaes", self.refresh_vaes, methods=["POST"])
         self.add_api_route("/sdapi/v1/create/embedding", self.create_embedding, methods=["POST"], response_model=models.CreateResponse)
         self.add_api_route("/sdapi/v1/create/hypernetwork", self.create_hypernetwork, methods=["POST"], response_model=models.CreateResponse)
         self.add_api_route("/sdapi/v1/preprocess", self.preprocess, methods=["POST"], response_model=models.PreprocessResponse)
@@ -143,7 +147,7 @@ class Api:
         self.add_api_route("/sdapi/v1/reload-checkpoint", self.reloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/scripts", self.get_scripts_list, methods=["GET"], response_model=models.ScriptsList)
         self.add_api_route("/sdapi/v1/script-info", self.get_script_info, methods=["GET"], response_model=List[models.ScriptInfo])
-        self.app.add_api_route("/sdapi/v1/log", self.get_log_buffer, methods=["GET"], response_model=List) # bypass auth
+        self.add_api_route("/sdapi/v1/log", self.get_log_buffer, methods=["GET"], response_model=List) # bypass auth
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
 
@@ -157,7 +161,6 @@ class Api:
             if compare_digest(credentials.password, self.credentials[credentials.username]):
                 return True
         raise HTTPException(status_code=401, detail="Unauthorized", headers={"WWW-Authenticate": "Basic"})
-
 
     def get_log_buffer(self, req: models.LogRequest = Depends()):
         lines = shared.log.buffer[:req.lines] if req.lines > 0 else shared.log.buffer.copy()
@@ -446,6 +449,10 @@ class Api:
     def get_samplers(self):
         return [{"name": sampler[0], "aliases":sampler[2], "options":sampler[3]} for sampler in sd_samplers.all_samplers]
 
+    def get_sd_vaes(self):
+        return [{"model_name": x, "filename": vae_dict[x]} for x in vae_dict.keys()]
+
+
     def get_upscalers(self):
         return [
             {
@@ -499,7 +506,10 @@ class Api:
         }
 
     def refresh_checkpoints(self):
-        shared.refresh_checkpoints()
+        return shared.refresh_checkpoints()
+
+    def refresh_vaes(self):
+        return shared.refresh_vaes()
 
     def create_embedding(self, args: dict):
         try:
