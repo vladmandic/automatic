@@ -33,14 +33,14 @@ args = Dot({
     'skip_torch': False,
     'use_directml': False,
     'use_ipex': False,
-    'use_cuda': False,
+    'use_cuda': True,
     'use_rocm': False,
     'experimental': False,
     'test': False,
     'tls_selfsign': False,
     'reinstall': False,
     'version': False,
-    'ignore': False,
+    'ignore': True,
 })
 git_commit = "unknown"
 
@@ -81,12 +81,12 @@ def setup_logging():
     }))
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=[])
+    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=True, indent_guides=False, suppress=[])
     while log.hasHandlers() and len(log.handlers) > 0:
         log.removeHandler(log.handlers[0])
 
     # handlers
-    rh = RichHandler(show_time=True, omit_repeated_times=False, show_level=True, show_path=False, markup=False, rich_tracebacks=True, log_time_format='%H:%M:%S-%f', level=level, console=console)
+    rh = RichHandler(show_time=True, omit_repeated_times=False, show_level=True, show_path=True, markup=False, rich_tracebacks=True, log_time_format='%H:%M:%S-%f', level=level, console=console)
     rh.setLevel(level)
     log.addHandler(rh)
 
@@ -101,8 +101,8 @@ def setup_logging():
     log.buffer = rb.buffer
 
     # overrides
-    logging.getLogger("urllib3").setLevel(logging.ERROR)
-    logging.getLogger("httpx").setLevel(logging.ERROR)
+    logging.getLogger("urllib3").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(logging.INFO)
     logging.getLogger("ControlNet").handlers = log.handlers
     logging.getLogger("lycoris").handlers = log.handlers
     # logging.getLogger("DeepSpeed").handlers = log.handlers
@@ -225,6 +225,8 @@ def branch(folder):
         b = 'main'
     elif 'master' in b:
         b = 'master'
+    elif 'prime' in b:
+        b = 'prime'
     else:
         b = b.split('\n')[0].replace('*', '').strip()
     log.debug(f'Submodule: {folder} / {b}')
@@ -643,7 +645,7 @@ def check_extensions():
                 ts = os.path.getmtime(os.path.join(extension_dir, f))
                 newest = max(newest, ts)
             newest_all = max(newest_all, newest)
-            # log.debug(f'Extension version: {time.ctime(newest)} {folder}{os.pathsep}{ext}')
+            log.debug(f'Extension version: {time.ctime(newest)} {folder}{os.pathsep}{ext}')
     return round(newest_all)
 
 
@@ -668,7 +670,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
         return
     commits = None
     try:
-        commits = requests.get('https://api.github.com/repos/vladmandic/automatic/branches/master', timeout=10).json()
+        commits = requests.get('https://api.github.com/repos/aleph23/autovlad/branches/prime', timeout=10).json()
         if commits['commit']['sha'] != commit:
             if args.upgrade:
                 global quick_allowed # pylint: disable=global-statement

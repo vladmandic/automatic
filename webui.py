@@ -13,6 +13,7 @@ from modules import timer, errors, paths # pylint: disable=unused-import
 
 startup_timer = timer.Timer()
 local_url = None
+startup_timer.record("torch")
 
 errors.log.debug('Loading Torch')
 import torch # pylint: disable=C0411
@@ -30,15 +31,15 @@ logging.getLogger("pytorch_lightning").disabled = True
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 warnings.filterwarnings(action="ignore", category=FutureWarning)
 warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
-startup_timer.record("torch")
 
+startup_timer.record("gradio")
 errors.log.debug('Loading Gradio')
 from fastapi import FastAPI # pylint: disable=W0611,C0411
 import gradio # pylint: disable=W0611,C0411
-startup_timer.record("gradio")
 errors.install([gradio])
 
 errors.log.debug('Loading Modules')
+startup_timer.record("libraries")
 from installer import log, setup_logging, git_commit
 import ldm.modules.encoders.modules # pylint: disable=W0611,C0411,E0401
 from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=W0611,C0411,C0412
@@ -64,14 +65,13 @@ import modules.ui
 from modules.shared import cmd_opts, opts
 import modules.hypernetworks.hypernetwork
 from modules.middleware import setup_middleware
-startup_timer.record("libraries")
 log.info('Libraries loaded')
 log.setLevel(logging.DEBUG if cmd_opts.debug else logging.INFO)
 logging.disable(logging.NOTSET if cmd_opts.debug else logging.DEBUG)
 if cmd_opts.server_name:
     server_name = cmd_opts.server_name
 else:
-    server_name = "0.0.0.0" if cmd_opts.listen else None
+    server_name = "0.0.0.0"
 
 fastapi_args = {
     "version": f'0.0.{git_commit}',
@@ -102,39 +102,40 @@ def check_rollback_vae():
 
 def initialize():
     log.debug('Entering initialize')
+    startup_timer.record("vae")
     shared.disable_extensions()
     check_rollback_vae()
 
     modules.sd_vae.refresh_vae_list()
-    startup_timer.record("vae")
 
-    extensions.list_extensions()
     startup_timer.record("extensions")
+    extensions.list_extensions()
 
+    startup_timer.record("models")
     modelloader.cleanup_models()
     modules.sd_models.setup_model()
-    startup_timer.record("models")
 
-    codeformer.setup_model(opts.codeformer_models_path)
     startup_timer.record("codeformer")
+    codeformer.setup_model(opts.codeformer_models_path)
 
-    gfpgan.setup_model(opts.gfpgan_models_path)
     startup_timer.record("gfpgan")
+    gfpgan.setup_model(opts.gfpgan_models_path)
 
     log.debug('Loading scripts')
-    modules.scripts.load_scripts()
     startup_timer.record("scripts")
+    modules.scripts.load_scripts()
 
-    modelloader.load_upscalers()
     startup_timer.record("upscalers")
+    modelloader.load_upscalers()
 
     setup_logging() # needs a reset since scripts can hijaack logging
 
+    startup_timer.record("onchange")
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
     shared.opts.onchange("temp_dir", ui_tempdir.on_tmpdir_changed)
     shared.opts.onchange("gradio_theme", shared.reload_gradio_theme)
-    startup_timer.record("onchange")
 
+    startup_timer.record("extra-networks")
     modules.textual_inversion.textual_inversion.list_textual_inversion_templates()
     shared.reload_hypernetworks()
 
@@ -142,9 +143,9 @@ def initialize():
     ui_extra_networks.register_default_pages()
     extra_networks.initialize()
     extra_networks.register_default_extra_networks()
-    startup_timer.record("extra-networks")
 
     if cmd_opts.tls_keyfile is not None and cmd_opts.tls_certfile is not None:
+        startup_timer.record("tls")
         try:
             if not os.path.exists(cmd_opts.tls_keyfile):
                 log.error("Invalid path to TLS keyfile given")
@@ -155,7 +156,6 @@ def initialize():
             log.error("TLS setup invalid, running webui without TLS")
         else:
             log.info("Running with TLS")
-        startup_timer.record("tls")
 
     # make the program just exit at ctrl+c without waiting for anything
     def sigint_handler(_sig, _frame):
@@ -171,6 +171,7 @@ def initialize():
 
 
 def load_model():
+    startup_timer.record("checkpoint")
     if opts.sd_checkpoint_autoload:
         shared.state.begin()
         shared.state.job = 'load model'
@@ -187,7 +188,6 @@ def load_model():
     shared.opts.onchange("sd_model_refiner", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='refiner')), call=False)
     shared.opts.onchange("sd_model_dict", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='dict')), call=False)
     shared.opts.onchange("sd_backend", wrap_queued_call(lambda: modules.sd_models.change_backend()), call=False)
-    startup_timer.record("checkpoint")
 
 
 def create_api(app):
@@ -233,8 +233,8 @@ def start_common():
     async_policy()
     initialize()
     if shared.opts.clean_temp_dir_at_start:
-        ui_tempdir.cleanup_tmpdr()
         startup_timer.record("cleanup")
+        ui_tempdir.cleanup_tmpdr()
 
 
 def start_ui():
@@ -261,6 +261,7 @@ def start_ui():
                     gradio_auth_creds += [x.strip() for x in line.split(',') if x.strip()]
 
     global local_url # pylint: disable=global-statement
+    startup_timer.record("launch")
     app, local_url, share_url = shared.demo.launch( # app is FastAPI(Starlette) instance
         share=cmd_opts.share,
         server_name=server_name,
@@ -292,8 +293,6 @@ def start_ui():
     if cmd_opts.subpath:
         gradio.mount_gradio_app(app, shared.demo, path=f"/{cmd_opts.subpath}")
         shared.log.info(f'Redirector mounted: /{cmd_opts.subpath}')
-
-    startup_timer.record("launch")
 
     modules.progress.setup_progress_api(app)
     create_api(app)

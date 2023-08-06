@@ -103,7 +103,7 @@ def compatibility_args(opts, args):
     opts.no_dpmpp_sde_batch_determinism = False
     opts.lora_apply_to_outputs = False
     opts.do_not_show_images = False
-    opts.add_model_hash_to_info = True
+    opts.add_model_hash_to_info = False
     opts.add_model_name_to_info = True
     opts.js_modal_lightbox = True
     opts.js_modal_lightbox_initially_zoomed = True

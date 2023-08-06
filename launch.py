@@ -197,7 +197,7 @@ if __name__ == "__main__":
         except Exception:
             alive = False
             requests = 0
-        if round(time.time()) % 120 == 0:
+        if round(time.time()) % 180 == 0:
             installer.log.debug(f'Server alive={alive} Requests={requests} memory {get_memory_stats()} ')
         if not alive:
             if instance.wants_restart:
