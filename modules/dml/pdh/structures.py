@@ -4,6 +4,7 @@ from ctypes.wintypes import *
 PDH_HQUERY = HANDLE
 PDH_HCOUNTER = HANDLE
 
+
 class PDH_FMT_COUNTERVALUE_U(Union):
     _fields_ = [
         ("longValue", LONG),
@@ -19,6 +20,7 @@ class PDH_FMT_COUNTERVALUE_U(Union):
     AnsiStringValue: LPCSTR
     WideStringValue: LPCWSTR
 
+
 class PDH_FMT_COUNTERVALUE(Structure):
     _anonymous_ = ("u",)
     _fields_ = [
@@ -28,7 +30,10 @@ class PDH_FMT_COUNTERVALUE(Structure):
 
     CStatus: DWORD
     u: PDH_FMT_COUNTERVALUE_U
+
+
 PPDH_FMT_COUNTERVALUE = POINTER(PDH_FMT_COUNTERVALUE)
+
 
 class PDH_FMT_COUNTERVALUE_ITEM_W(Structure):
     _fields_ = [
@@ -38,4 +43,6 @@ class PDH_FMT_COUNTERVALUE_ITEM_W(Structure):
 
     szName: str
     FmtValue: PDH_FMT_COUNTERVALUE
+
+
 PPDH_FMT_COUNTERVALUE_ITEM_W = POINTER(PDH_FMT_COUNTERVALUE_ITEM_W)

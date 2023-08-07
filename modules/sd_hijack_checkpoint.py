@@ -5,15 +5,15 @@ import ldm.modules.diffusionmodules.openaimodel
 
 
 def BasicTransformerBlock_forward(self, x, context=None):
-    return checkpoint(self._forward, x, context) # pylint: disable=protected-access
+    return checkpoint(self._forward, x, context)  # pylint: disable=protected-access
 
 
 def AttentionBlock_forward(self, x):
-    return checkpoint(self._forward, x) # pylint: disable=protected-access
+    return checkpoint(self._forward, x)  # pylint: disable=protected-access
 
 
 def ResBlock_forward(self, x, emb):
-    return checkpoint(self._forward, x, emb) # pylint: disable=protected-access
+    return checkpoint(self._forward, x, emb)  # pylint: disable=protected-access
 
 
 stored = []
@@ -23,15 +23,19 @@ def add():
     if len(stored) != 0:
         return
 
-    stored.extend([
-        ldm.modules.attention.BasicTransformerBlock.forward,
-        ldm.modules.diffusionmodules.openaimodel.ResBlock.forward,
-        ldm.modules.diffusionmodules.openaimodel.AttentionBlock.forward
-    ])
+    stored.extend(
+        [
+            ldm.modules.attention.BasicTransformerBlock.forward,
+            ldm.modules.diffusionmodules.openaimodel.ResBlock.forward,
+            ldm.modules.diffusionmodules.openaimodel.AttentionBlock.forward,
+        ]
+    )
 
     ldm.modules.attention.BasicTransformerBlock.forward = BasicTransformerBlock_forward
     ldm.modules.diffusionmodules.openaimodel.ResBlock.forward = ResBlock_forward
-    ldm.modules.diffusionmodules.openaimodel.AttentionBlock.forward = AttentionBlock_forward
+    ldm.modules.diffusionmodules.openaimodel.AttentionBlock.forward = (
+        AttentionBlock_forward
+    )
 
 
 def remove():

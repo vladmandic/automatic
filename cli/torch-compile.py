@@ -5,27 +5,32 @@ Test Torch Dynamo functionality and backends
 """
 import json
 import warnings
+from functools import partial
 
 import numpy as np
 import torch
 from torchvision.models import resnet18
 
 
-print('torch:', torch.__version__)
+print("torch:", torch.__version__)
 try:
     # must be imported explicitly or namespace is not found
-    import torch._dynamo as dynamo # pylint: disable=ungrouped-imports
+    import torch._dynamo as dynamo  # pylint: disable=ungrouped-imports
 except Exception as err:
-    print('torch without dynamo support', err)
+    print("torch without dynamo support", err)
 
 
 N_ITERS = 20
-torch._dynamo.config.verbose=True # pylint: disable=protected-access
-warnings.filterwarnings('ignore', category=UserWarning) # disable those for now as many backends reports tons
+torch._dynamo.config.verbose = True  # pylint: disable=protected-access
+warnings.filterwarnings(
+    "ignore", category=UserWarning
+)  # disable those for now as many backends reports tons
 # torch.set_float32_matmul_precision('high') # enable to test in fp32
 
 
-def timed(fn): # returns the result of running `fn()` and the time it took for `fn()` to run in ms using CUDA events
+def timed(
+    fn,
+):  # returns the result of running `fn()` and the time it took for `fn()` to run in ms using CUDA events
     start = torch.cuda.Event(enable_timing=True)
     end = torch.cuda.Event(enable_timing=True)
     start.record()
@@ -50,7 +55,7 @@ def evaluate(mod, val):
     return mod(val)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # first pass, dynamo is going to be slower as it compiles
     model = init_model()
     inp = generate_data(16)[0]
@@ -58,33 +63,35 @@ if __name__ == '__main__':
     # repeat test
     results = {}
     times = []
-    print('eager initial eval:', timed(lambda: evaluate(model, inp))[1])
+    print("eager initial eval:", timed(lambda: evaluate(model, inp))[1])
     for _i in range(N_ITERS):
         inp = generate_data(16)[0]
-        _res, time = timed(lambda: evaluate(model, inp)) # noqa: B023
+        _res, time = timed(lambda: evaluate(model, inp))  # noqa: B023
         times.append(time)
-    results['default'] = np.median(times)
+    results["default"] = np.median(times)
 
-    print('dynamo available backends:', dynamo.list_backends())
+    print("dynamo available backends:", dynamo.list_backends())
     for backend in dynamo.list_backends():
         try:
             # required before changing backends
-            torch._dynamo.reset() # pylint: disable=protected-access
-            eval_dyn = dynamo.optimize(backend)(evaluate)
-            print('dynamo initial eval:', backend, timed(lambda: eval_dyn(model, inp))[1]) # noqa: B023
+            torch._dynamo.reset()  # pylint: disable=protected-access
+            eval_dyn = partial(dynamo.optimize(backend)(evaluate), model, inp)
+            print("dynamo initial eval:", backend, timed(eval_dyn)[1])
             times = []
             for _i in range(N_ITERS):
                 inp = generate_data(16)[0]
-                _res, time = timed(lambda: eval_dyn(model, inp)) # noqa: B023
+                _res, time = timed(eval_dyn)
                 times.append(time)
             results[backend] = np.median(times)
         except Exception as err:
-            lines = str(err).split('\n')
-            print('dyanmo backend failed:', backend, lines[0]) # print just first error line as backtraces can be quite long
-            results[backend] = 'error'
+            lines = str(err).split("\n")
+            print(
+                "dyanmo backend failed:", backend, lines[0]
+            )  # print just first error line as backtraces can be quite long
+            results[backend] = "error"
 
     # print stats
-    print(json.dumps(results, indent = 4))
+    print(json.dumps(results, indent=4))
 
 """
 Reference: <https://github.com/pytorch/pytorch/blob/4f4b62e4a255708e928445b6502139d5962974fa/docs/source/dynamo/get-started.rst>

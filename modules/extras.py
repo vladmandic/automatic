@@ -12,25 +12,30 @@ import safetensors.torch
 from modules import shared, images, sd_models, sd_vae, sd_models_config
 
 
-checkpoint_dict_skip_on_merge = ["cond_stage_model.transformer.text_model.embeddings.position_ids"]
+checkpoint_dict_skip_on_merge = [
+    "cond_stage_model.transformer.text_model.embeddings.position_ids"
+]
 
 
 def run_pnginfo(image):
     if image is None:
-        return '', '', ''
+        return "", "", ""
     geninfo, items = images.read_info_from_image(image)
-    items = {**{'parameters': geninfo}, **items}
-    info = ''
+    items = {**{"parameters": geninfo}, **items}
+    info = ""
     for key, text in items.items():
-        if key != 'UserComment':
-            info += f"<div><b>{html.escape(str(key))}</b>: {html.escape(str(text))}</div>"
-    return '', geninfo, info
+        if key != "UserComment":
+            info += (
+                f"<div><b>{html.escape(str(key))}</b>: {html.escape(str(text))}</div>"
+            )
+    return "", geninfo, info
 
 
 def create_config(ckpt_result, config_source, a, b, c):
     def config(x):
         res = sd_models_config.find_checkpoint_config_near_filename(x) if x else None
         return res if res != shared.sd_default_config else None
+
     if config_source == 0:
         cfg = config(a) or config(b) or config(c)
     elif config_source == 1:
@@ -53,9 +58,23 @@ def to_half(tensor, enable):
     return tensor
 
 
-def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_model_name, interp_method, multiplier, save_as_half, custom_name, checkpoint_format, config_source, bake_in_vae, discard_weights, save_metadata): # pylint: disable=unused-argument
+def run_modelmerger(
+    id_task,
+    primary_model_name,
+    secondary_model_name,
+    tertiary_model_name,
+    interp_method,
+    multiplier,
+    save_as_half,
+    custom_name,
+    checkpoint_format,
+    config_source,
+    bake_in_vae,
+    discard_weights,
+    save_metadata,
+):  # pylint: disable=unused-argument
     shared.state.begin()
-    shared.state.job = 'model-merge'
+    shared.state.job = "model-merge"
 
     save_as_half = save_as_half == 0
 
@@ -97,33 +116,43 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     }
     filename_generator, theta_func1, theta_func2 = theta_funcs[interp_method]
     shared.state.job_count = (1 if theta_func1 else 0) + (1 if theta_func2 else 0)
-    if not primary_model_name or primary_model_name == 'None':
+    if not primary_model_name or primary_model_name == "None":
         return fail("Failed: Merging requires a primary model.")
     primary_model_info = sd_models.checkpoints_list[primary_model_name]
-    if theta_func2 and (not secondary_model_name or secondary_model_name == 'None'):
+    if theta_func2 and (not secondary_model_name or secondary_model_name == "None"):
         return fail("Failed: Merging requires a secondary model.")
-    secondary_model_info = sd_models.checkpoints_list[secondary_model_name] if theta_func2 else None
-    if theta_func1 and (not tertiary_model_name or tertiary_model_name == 'None'):
-        return fail(f"Failed: Interpolation method ({interp_method}) requires a tertiary model.")
-    tertiary_model_info = sd_models.checkpoints_list[tertiary_model_name] if theta_func1 else None
+    secondary_model_info = (
+        sd_models.checkpoints_list[secondary_model_name] if theta_func2 else None
+    )
+    if theta_func1 and (not tertiary_model_name or tertiary_model_name == "None"):
+        return fail(
+            f"Failed: Interpolation method ({interp_method}) requires a tertiary model."
+        )
+    tertiary_model_info = (
+        sd_models.checkpoints_list[tertiary_model_name] if theta_func1 else None
+    )
     result_is_inpainting_model = False
     result_is_instruct_pix2pix_model = False
     if theta_func2:
         shared.state.textinfo = "Loading B"
-        shared.log.info(f"Model merge loading secondary model: {secondary_model_info.filename}")
+        shared.log.info(
+            f"Model merge loading secondary model: {secondary_model_info.filename}"
+        )
         theta_1 = sd_models.read_state_dict(secondary_model_info.filename)
     else:
         theta_1 = None
     if theta_func1:
         shared.state.textinfo = "Loading C"
-        shared.log.info(f"Model merge loading tertiary model: {tertiary_model_info.filename}")
+        shared.log.info(
+            f"Model merge loading tertiary model: {tertiary_model_info.filename}"
+        )
         theta_2 = sd_models.read_state_dict(tertiary_model_info.filename)
-        shared.state.textinfo = 'Merging B and C'
+        shared.state.textinfo = "Merging B and C"
         shared.state.sampling_steps = len(theta_1.keys())
         for key in tqdm.tqdm(theta_1.keys()):
             if key in checkpoint_dict_skip_on_merge:
                 continue
-            if 'model' in key:
+            if "model" in key:
                 if key in theta_2:
                     t2 = theta_2.get(key, torch.zeros_like(theta_1[key]))
                     theta_1[key] = theta_func1(theta_1[key], t2)
@@ -136,10 +165,10 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     shared.log.info(f"Model merge loading primary model: {primary_model_info.filename}")
     theta_0 = sd_models.read_state_dict(primary_model_info.filename)
     shared.log.info("Model merge: running")
-    shared.state.textinfo = 'Merging A and B'
+    shared.state.textinfo = "Merging A and B"
     shared.state.sampling_steps = len(theta_0.keys())
     for key in tqdm.tqdm(theta_0.keys()):
-        if theta_1 and 'model' in key and key in theta_1:
+        if theta_1 and "model" in key and key in theta_1:
             if key in checkpoint_dict_skip_on_merge:
                 continue
             a = theta_0[key]
@@ -147,17 +176,32 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
             # this enables merging an inpainting model (A) with another one (B);
             # where normal model would have 4 channels, for latenst space, inpainting model would
             # have another 4 channels for unmasked picture's latent space, plus one channel for mask, for a total of 9
-            if a.shape != b.shape and a.shape[0:1] + a.shape[2:] == b.shape[0:1] + b.shape[2:]:
+            if (
+                a.shape != b.shape
+                and a.shape[0:1] + a.shape[2:] == b.shape[0:1] + b.shape[2:]
+            ):
                 if a.shape[1] == 4 and b.shape[1] == 9:
-                    raise RuntimeError("When merging inpainting model with a normal one, A must be the inpainting model.")
+                    raise RuntimeError(
+                        "When merging inpainting model with a normal one, A must be the inpainting model."
+                    )
                 if a.shape[1] == 4 and b.shape[1] == 8:
-                    raise RuntimeError("When merging instruct-pix2pix model with a normal one, A must be the instruct-pix2pix model.")
-                if a.shape[1] == 8 and b.shape[1] == 4:#If we have an Instruct-Pix2Pix model...
-                    theta_0[key][:, 0:4, :, :] = theta_func2(a[:, 0:4, :, :], b, multiplier)#Merge only the vectors the models have in common.  Otherwise we get an error due to dimension mismatch.
+                    raise RuntimeError(
+                        "When merging instruct-pix2pix model with a normal one, A must be the instruct-pix2pix model."
+                    )
+                if (
+                    a.shape[1] == 8 and b.shape[1] == 4
+                ):  # If we have an Instruct-Pix2Pix model...
+                    theta_0[key][:, 0:4, :, :] = theta_func2(
+                        a[:, 0:4, :, :], b, multiplier
+                    )  # Merge only the vectors the models have in common.  Otherwise we get an error due to dimension mismatch.
                     result_is_instruct_pix2pix_model = True
                 else:
-                    assert a.shape[1] == 9 and b.shape[1] == 4, f"Bad dimensions for merged layer {key}: A={a.shape}, B={b.shape}"
-                    theta_0[key][:, 0:4, :, :] = theta_func2(a[:, 0:4, :, :], b, multiplier)
+                    assert (
+                        a.shape[1] == 9 and b.shape[1] == 4
+                    ), f"Bad dimensions for merged layer {key}: A={a.shape}, B={b.shape}"
+                    theta_0[key][:, 0:4, :, :] = theta_func2(
+                        a[:, 0:4, :, :], b, multiplier
+                    )
                     result_is_inpainting_model = True
             else:
                 theta_0[key] = theta_func2(a, b, multiplier)
@@ -167,10 +211,10 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     bake_in_vae_filename = sd_vae.vae_dict.get(bake_in_vae, None)
     if bake_in_vae_filename is not None:
         shared.log.info(f"Model merge: baking in VAE: {bake_in_vae_filename}")
-        shared.state.textinfo = 'Baking in VAE'
+        shared.state.textinfo = "Baking in VAE"
         vae_dict = sd_vae.load_vae_dict(bake_in_vae_filename)
         for key in vae_dict.keys():
-            theta_0_key = 'first_stage_model.' + key
+            theta_0_key = "first_stage_model." + key
             if theta_0_key in theta_0:
                 theta_0[theta_0_key] = to_half(vae_dict[key], save_as_half)
         del vae_dict
@@ -183,7 +227,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
             if re.search(regex, key):
                 theta_0.pop(key, None)
     ckpt_dir = shared.opts.ckpt_dir or sd_models.model_path
-    filename = filename_generator() if custom_name == '' else custom_name
+    filename = filename_generator() if custom_name == "" else custom_name
     filename += ".inpainting" if result_is_inpainting_model else ""
     filename += ".instruct-pix2pix" if result_is_instruct_pix2pix_model else ""
     filename += "." + checkpoint_format
@@ -194,10 +238,14 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     if save_metadata:
         metadata = {"format": "pt", "sd_merge_models": {}}
         merge_recipe = {
-            "type": "webui", # indicate this model was merged with webui's built-in merger
+            "type": "webui",  # indicate this model was merged with webui's built-in merger
             "primary_model_hash": primary_model_info.sha256,
-            "secondary_model_hash": secondary_model_info.sha256 if secondary_model_info else None,
-            "tertiary_model_hash": tertiary_model_info.sha256 if tertiary_model_info else None,
+            "secondary_model_hash": secondary_model_info.sha256
+            if secondary_model_info
+            else None,
+            "tertiary_model_hash": tertiary_model_info.sha256
+            if tertiary_model_info
+            else None,
             "interp_method": interp_method,
             "multiplier": multiplier,
             "save_as_half": save_as_half,
@@ -206,7 +254,7 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
             "bake_in_vae": bake_in_vae,
             "discard_weights": discard_weights,
             "is_inpainting": result_is_inpainting_model,
-            "is_instruct_pix2pix": result_is_instruct_pix2pix_model
+            "is_instruct_pix2pix": result_is_instruct_pix2pix_model,
         }
         metadata["sd_merge_recipe"] = json.dumps(merge_recipe)
 
@@ -215,9 +263,13 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
             metadata["sd_merge_models"][checkpoint_info.sha256] = {
                 "name": checkpoint_info.name,
                 "legacy_hash": checkpoint_info.hash,
-                "sd_merge_recipe": checkpoint_info.metadata.get("sd_merge_recipe", None)
+                "sd_merge_recipe": checkpoint_info.metadata.get(
+                    "sd_merge_recipe", None
+                ),
             }
-            metadata["sd_merge_models"].update(checkpoint_info.metadata.get("sd_merge_models", {}))
+            metadata["sd_merge_models"].update(
+                checkpoint_info.metadata.get("sd_merge_models", {})
+            )
 
         add_model_metadata(primary_model_info)
         if secondary_model_info:
@@ -232,17 +284,40 @@ def run_modelmerger(id_task, primary_model_name, secondary_model_name, tertiary_
     else:
         torch.save(theta_0, output_modelname)
     sd_models.list_models()
-    created_model = next((ckpt for ckpt in sd_models.checkpoints_list.values() if ckpt.name == filename), None)
+    created_model = next(
+        (ckpt for ckpt in sd_models.checkpoints_list.values() if ckpt.name == filename),
+        None,
+    )
     if created_model:
         created_model.calculate_shorthash()
-    create_config(output_modelname, config_source, primary_model_info, secondary_model_info, tertiary_model_info)
+    create_config(
+        output_modelname,
+        config_source,
+        primary_model_info,
+        secondary_model_info,
+        tertiary_model_info,
+    )
     shared.log.info(f"Model merge saved: {output_modelname}.")
     shared.state.textinfo = "Checkpoint saved"
     shared.state.end()
-    return [*[gr.Dropdown.update(choices=sd_models.checkpoint_tiles()) for _ in range(4)], "Checkpoint saved to " + output_modelname]
+    return [
+        *[gr.Dropdown.update(choices=sd_models.checkpoint_tiles()) for _ in range(4)],
+        "Checkpoint saved to " + output_modelname,
+    ]
 
-def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_name, unet_conv, text_encoder_conv, vae_conv, others_conv, fix_clip):
 
+def run_modelconvert(
+    model,
+    checkpoint_formats,
+    precision,
+    conv_type,
+    custom_name,
+    unet_conv,
+    text_encoder_conv,
+    vae_conv,
+    others_conv,
+    fix_clip,
+):
     # position_ids in clip is int64. model_ema.num_updates is int32
     dtypes_to_fp16 = {torch.float32, torch.float64, torch.bfloat16}
     dtypes_to_bf16 = {torch.float32, torch.float64, torch.float16}
@@ -280,13 +355,12 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
         state_dict = m["state_dict"] if "state_dict" in m else m
         return state_dict
 
-
     def fix_model(model, fix_clip=False):
         # code from model-toolkit
         nai_keys = {
-            'cond_stage_model.transformer.embeddings.': 'cond_stage_model.transformer.text_model.embeddings.',
-            'cond_stage_model.transformer.encoder.': 'cond_stage_model.transformer.text_model.encoder.',
-            'cond_stage_model.transformer.final_layer_norm.': 'cond_stage_model.transformer.text_model.final_layer_norm.'
+            "cond_stage_model.transformer.embeddings.": "cond_stage_model.transformer.text_model.embeddings.",
+            "cond_stage_model.transformer.encoder.": "cond_stage_model.transformer.text_model.encoder.",
+            "cond_stage_model.transformer.final_layer_norm.": "cond_stage_model.transformer.text_model.final_layer_norm.",
         }
         for k in list(model.keys()):
             for r in nai_keys:
@@ -319,10 +393,10 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
         "unet": unet_conv,
         "clip": text_encoder_conv,
         "vae": vae_conv,
-        "other": others_conv
+        "other": others_conv,
     }
     shared.state.begin()
-    shared.state.job = 'model-convert'
+    shared.state.job = "model-convert"
 
     model_info = sd_models.checkpoints_list[model]
     shared.state.textinfo = f"Loading {model_info.filename}..."
@@ -344,6 +418,7 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
             ok[wk] = t
         elif conv_t == "delete":
             return
+
     shared.log.info("Model convert: running")
     if conv_type == "ema-only":
         for k in tqdm.tqdm(state_dict):
@@ -354,7 +429,10 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
                 pass
             if ema_k in state_dict:
                 _hf(k, state_dict[ema_k])
-            elif not k.startswith("model_ema.") or k in ["model_ema.num_updates", "model_ema.decay"]:
+            elif not k.startswith("model_ema.") or k in [
+                "model_ema.num_updates",
+                "model_ema.decay",
+            ]:
                 _hf(k, state_dict[k])
     elif conv_type == "no-ema":
         for k, v in tqdm.tqdm(state_dict.items()):

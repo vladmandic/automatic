@@ -30,7 +30,11 @@ class MemUsageMonitor(threading.Thread):
                 self.disabled = True
 
     def cuda_mem_get_info(self):
-        index = self.device.index if self.device.index is not None else torch.cuda.current_device()
+        index = (
+            self.device.index
+            if self.device.index is not None
+            else torch.cuda.current_device()
+        )
         return torch.cuda.mem_get_info(index)
 
     def run(self):

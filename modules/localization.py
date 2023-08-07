@@ -6,7 +6,7 @@ import modules.errors as errors
 localizations = {}
 
 
-def list_localizations(dirname): # pylint: disable=unused-argument
+def list_localizations(dirname):  # pylint: disable=unused-argument
     localizations.clear()
     """
     for file in os.listdir(dirname):
@@ -33,6 +33,6 @@ def localization_js(current_localization_name):
                 data = json.load(file)
         except Exception as e:
             print(f"Error loading localization from {fn}:", file=sys.stderr)
-            errors.display(e, 'localization')
+            errors.display(e, "localization")
 
     return f"var localization = {json.dumps(data)}\n"

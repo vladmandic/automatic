@@ -11,18 +11,41 @@ import modules.models.diffusion.uni_pc
 
 
 samplers_data_compvis = [
-    sd_samplers_common.SamplerData('UniPC', lambda model: VanillaStableDiffusionSampler(modules.models.diffusion.uni_pc.UniPCSampler, model), [], {}),
-    sd_samplers_common.SamplerData('DDIM', lambda model: VanillaStableDiffusionSampler(ldm.models.diffusion.ddim.DDIMSampler, model), [], {"default_eta_is_0": True, "uses_ensd": True}),
-    sd_samplers_common.SamplerData('PLMS', lambda model: VanillaStableDiffusionSampler(ldm.models.diffusion.plms.PLMSSampler, model), [], {}),
+    sd_samplers_common.SamplerData(
+        "UniPC",
+        lambda model: VanillaStableDiffusionSampler(
+            modules.models.diffusion.uni_pc.UniPCSampler, model
+        ),
+        [],
+        {},
+    ),
+    sd_samplers_common.SamplerData(
+        "DDIM",
+        lambda model: VanillaStableDiffusionSampler(
+            ldm.models.diffusion.ddim.DDIMSampler, model
+        ),
+        [],
+        {"default_eta_is_0": True, "uses_ensd": True},
+    ),
+    sd_samplers_common.SamplerData(
+        "PLMS",
+        lambda model: VanillaStableDiffusionSampler(
+            ldm.models.diffusion.plms.PLMSSampler, model
+        ),
+        [],
+        {},
+    ),
 ]
 
 
 class VanillaStableDiffusionSampler:
     def __init__(self, constructor, sd_model):
         self.sampler = constructor(sd_model)
-        self.is_ddim = hasattr(self.sampler, 'p_sample_ddim')
-        self.is_plms = hasattr(self.sampler, 'p_sample_plms')
-        self.is_unipc = isinstance(self.sampler, modules.models.diffusion.uni_pc.UniPCSampler)
+        self.is_ddim = hasattr(self.sampler, "p_sample_ddim")
+        self.is_plms = hasattr(self.sampler, "p_sample_plms")
+        self.is_unipc = isinstance(
+            self.sampler, modules.models.diffusion.uni_pc.UniPCSampler
+        )
         self.orig_p_sample_ddim = None
         if self.is_plms:
             self.orig_p_sample_ddim = self.sampler.p_sample_plms
@@ -39,7 +62,7 @@ class VanillaStableDiffusionSampler:
         self.last_latent = None
         self.conditioning_key = sd_model.model.conditioning_key
 
-    def number_of_needed_noises(self, p): # pylint: disable=unused-argument
+    def number_of_needed_noises(self, p):  # pylint: disable=unused-argument
         return 0
 
     def launch_sampling(self, steps, func):
@@ -51,12 +74,25 @@ class VanillaStableDiffusionSampler:
         except sd_samplers_common.InterruptedException:
             return self.last_latent
 
-    def p_sample_ddim_hook(self, x_dec, cond, ts, unconditional_conditioning, *args, **kwargs):
-        x_dec, ts, cond, unconditional_conditioning = self.before_sample(x_dec, ts, cond, unconditional_conditioning)
+    def p_sample_ddim_hook(
+        self, x_dec, cond, ts, unconditional_conditioning, *args, **kwargs
+    ):
+        x_dec, ts, cond, unconditional_conditioning = self.before_sample(
+            x_dec, ts, cond, unconditional_conditioning
+        )
 
-        res = self.orig_p_sample_ddim(x_dec, cond, ts, *args, unconditional_conditioning=unconditional_conditioning, **kwargs)
+        res = self.orig_p_sample_ddim(
+            x_dec,
+            cond,
+            ts,
+            *args,
+            unconditional_conditioning=unconditional_conditioning,
+            **kwargs
+        )
 
-        x_dec, ts, cond, unconditional_conditioning, res = self.after_sample(x_dec, ts, cond, unconditional_conditioning, res)
+        x_dec, ts, cond, unconditional_conditioning, res = self.after_sample(
+            x_dec, ts, cond, unconditional_conditioning, res
+        )
 
         return res
 
@@ -64,11 +100,12 @@ class VanillaStableDiffusionSampler:
         if state.interrupted or state.skipped:
             raise sd_samplers_common.InterruptedException
         if state.paused:
-            shared.log.debug('Sampling paused')
+            shared.log.debug("Sampling paused")
             while state.paused:
                 if state.interrupted or state.skipped:
                     raise sd_samplers_common.InterruptedException
                 import time
+
                 time.sleep(0.1)
 
         if self.stop_at is not None and self.step > self.stop_at:
@@ -87,9 +124,13 @@ class VanillaStableDiffusionSampler:
             unconditional_conditioning = unconditional_conditioning["c_crossattn"][0]
 
         conds_list, tensor = prompt_parser.reconstruct_multicond_batch(cond, self.step)
-        unconditional_conditioning = prompt_parser.reconstruct_cond_batch(unconditional_conditioning, self.step)
+        unconditional_conditioning = prompt_parser.reconstruct_cond_batch(
+            unconditional_conditioning, self.step
+        )
 
-        assert all(len(conds) == 1 for conds in conds_list), 'composition via AND is not supported for DDIM/PLMS samplers'
+        assert all(
+            len(conds) == 1 for conds in conds_list
+        ), "composition via AND is not supported for DDIM/PLMS samplers"
         cond = tensor
 
         # for DDIM, shapes must match, we can't just process cond and uncond independently;
@@ -97,10 +138,14 @@ class VanillaStableDiffusionSampler:
         # not 100% correct but should work well enough
         if unconditional_conditioning.shape[1] < cond.shape[1]:
             last_vector = unconditional_conditioning[:, -1:]
-            last_vector_repeated = last_vector.repeat([1, cond.shape[1] - unconditional_conditioning.shape[1], 1])
-            unconditional_conditioning = torch.hstack([unconditional_conditioning, last_vector_repeated])
+            last_vector_repeated = last_vector.repeat(
+                [1, cond.shape[1] - unconditional_conditioning.shape[1], 1]
+            )
+            unconditional_conditioning = torch.hstack(
+                [unconditional_conditioning, last_vector_repeated]
+            )
         elif unconditional_conditioning.shape[1] > cond.shape[1]:
-            unconditional_conditioning = unconditional_conditioning[:, :cond.shape[1]]
+            unconditional_conditioning = unconditional_conditioning[:, : cond.shape[1]]
 
         if self.mask is not None:
             encode_fn = self.sampler.model.q_sample
@@ -114,10 +159,16 @@ class VanillaStableDiffusionSampler:
         if image_conditioning is not None:
             if self.conditioning_key == "crossattn-adm":
                 cond = {"c_adm": image_conditioning, "c_crossattn": [cond]}
-                unconditional_conditioning = {"c_adm": uc_image_conditioning, "c_crossattn": [unconditional_conditioning]}
+                unconditional_conditioning = {
+                    "c_adm": uc_image_conditioning,
+                    "c_crossattn": [unconditional_conditioning],
+                }
             else:
                 cond = {"c_concat": [image_conditioning], "c_crossattn": [cond]}
-                unconditional_conditioning = {"c_concat": [image_conditioning], "c_crossattn": [unconditional_conditioning]}
+                unconditional_conditioning = {
+                    "c_concat": [image_conditioning],
+                    "c_crossattn": [unconditional_conditioning],
+                }
         return x, ts, cond, unconditional_conditioning
 
     def update_step(self, last_latent):
@@ -134,7 +185,7 @@ class VanillaStableDiffusionSampler:
             self.update_step(res[1])
         return x, ts, cond, uncond, res
 
-    def unipc_after_update(self, x, model_x): # pylint: disable=unused-argument
+    def unipc_after_update(self, x, model_x):  # pylint: disable=unused-argument
         self.update_step(x)
 
     def initialize(self, p):
@@ -147,10 +198,10 @@ class VanillaStableDiffusionSampler:
 
         if self.is_unipc:
             keys = [
-                ('UniPC variant', 'uni_pc_variant'),
-                ('UniPC skip type', 'uni_pc_skip_type'),
-                ('UniPC order', 'schedulers_solver_order'),
-                ('UniPC lower order final', 'schedulers_use_loworder'),
+                ("UniPC variant", "uni_pc_variant"),
+                ("UniPC skip type", "uni_pc_skip_type"),
+                ("UniPC order", "schedulers_solver_order"),
+                ("UniPC lower order final", "schedulers_use_loworder"),
             ]
 
             for name, key in keys:
@@ -158,19 +209,29 @@ class VanillaStableDiffusionSampler:
                 if v != shared.opts.get_default(key):
                     p.extra_generation_params[name] = v
 
-        for fieldname in ['p_sample_ddim', 'p_sample_plms']:
+        for fieldname in ["p_sample_ddim", "p_sample_plms"]:
             if hasattr(self.sampler, fieldname):
                 setattr(self.sampler, fieldname, self.p_sample_ddim_hook)
         if self.is_unipc:
-            self.sampler.set_hooks(lambda x, t, c, u: self.before_sample(x, t, c, u), lambda x, t, c, u, r: self.after_sample(x, t, c, u, r), lambda x, mx: self.unipc_after_update(x, mx))
+            self.sampler.set_hooks(
+                lambda x, t, c, u: self.before_sample(x, t, c, u),
+                lambda x, t, c, u, r: self.after_sample(x, t, c, u, r),
+                lambda x, mx: self.unipc_after_update(x, mx),
+            )
 
-        self.mask = p.mask if hasattr(p, 'mask') else None
-        self.nmask = p.nmask if hasattr(p, 'nmask') else None
-
+        self.mask = p.mask if hasattr(p, "mask") else None
+        self.nmask = p.nmask if hasattr(p, "nmask") else None
 
     def adjust_steps_if_invalid(self, p, num_steps):
-        if ((self.config.name == 'DDIM') and p.ddim_discretize == 'uniform') or (self.config.name == 'PLMS') or (self.config.name == 'UniPC'):
-            if self.config.name == 'UniPC' and num_steps < shared.opts.schedulers_solver_order:
+        if (
+            ((self.config.name == "DDIM") and p.ddim_discretize == "uniform")
+            or (self.config.name == "PLMS")
+            or (self.config.name == "UniPC")
+        ):
+            if (
+                self.config.name == "UniPC"
+                and num_steps < shared.opts.schedulers_solver_order
+            ):
                 num_steps = shared.opts.schedulers_solver_order
             valid_step = 999 / (1000 // num_steps)
             if valid_step == math.floor(valid_step):
@@ -178,13 +239,29 @@ class VanillaStableDiffusionSampler:
 
         return num_steps
 
-    def sample_img2img(self, p, x, noise, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+    def sample_img2img(
+        self,
+        p,
+        x,
+        noise,
+        conditioning,
+        unconditional_conditioning,
+        steps=None,
+        image_conditioning=None,
+    ):
         steps, t_enc = sd_samplers_common.setup_img2img_steps(p, steps)
         steps = self.adjust_steps_if_invalid(p, steps)
         self.initialize(p)
 
-        self.sampler.make_schedule(ddim_num_steps=steps, ddim_eta=self.eta, ddim_discretize=p.ddim_discretize, verbose=False)
-        x1 = self.sampler.stochastic_encode(x, torch.tensor([t_enc] * int(x.shape[0])).to(shared.device), noise=noise)
+        self.sampler.make_schedule(
+            ddim_num_steps=steps,
+            ddim_eta=self.eta,
+            ddim_discretize=p.ddim_discretize,
+            verbose=False,
+        )
+        x1 = self.sampler.stochastic_encode(
+            x, torch.tensor([t_enc] * int(x.shape[0])).to(shared.device), noise=noise
+        )
 
         self.init_latent = x
         self.last_latent = x
@@ -193,17 +270,46 @@ class VanillaStableDiffusionSampler:
         # Wrap the conditioning models with additional image conditioning for inpainting model
         if image_conditioning is not None:
             if self.conditioning_key == "crossattn-adm":
-                conditioning = {"c_adm": image_conditioning, "c_crossattn": [conditioning]}
-                unconditional_conditioning = {"c_adm": torch.zeros_like(image_conditioning), "c_crossattn": [unconditional_conditioning]}
+                conditioning = {
+                    "c_adm": image_conditioning,
+                    "c_crossattn": [conditioning],
+                }
+                unconditional_conditioning = {
+                    "c_adm": torch.zeros_like(image_conditioning),
+                    "c_crossattn": [unconditional_conditioning],
+                }
             else:
-                conditioning = {"c_concat": [image_conditioning], "c_crossattn": [conditioning]}
-                unconditional_conditioning = {"c_concat": [image_conditioning], "c_crossattn": [unconditional_conditioning]}
+                conditioning = {
+                    "c_concat": [image_conditioning],
+                    "c_crossattn": [conditioning],
+                }
+                unconditional_conditioning = {
+                    "c_concat": [image_conditioning],
+                    "c_crossattn": [unconditional_conditioning],
+                }
 
-        samples = self.launch_sampling(t_enc + 1, lambda: self.sampler.decode(x1, conditioning, t_enc, unconditional_guidance_scale=p.cfg_scale, unconditional_conditioning=unconditional_conditioning))
+        samples = self.launch_sampling(
+            t_enc + 1,
+            lambda: self.sampler.decode(
+                x1,
+                conditioning,
+                t_enc,
+                unconditional_guidance_scale=p.cfg_scale,
+                unconditional_conditioning=unconditional_conditioning,
+            ),
+        )
 
         return samples
 
-    def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
+    def sample(
+        self,
+        p,
+        x,
+        conditioning,
+        unconditional_conditioning,
+        steps=None,
+        image_conditioning=None,
+    ):
         self.initialize(p)
 
         self.init_latent = None
@@ -216,12 +322,39 @@ class VanillaStableDiffusionSampler:
         # dummy_for_plms is needed because PLMS code checks the first item in the dict to have the right shape
         if image_conditioning is not None:
             if self.conditioning_key == "crossattn-adm":
-                conditioning = {"dummy_for_plms": np.zeros((conditioning.shape[0],)), "c_crossattn": [conditioning], "c_adm": image_conditioning}
-                unconditional_conditioning = {"c_crossattn": [unconditional_conditioning], "c_adm": torch.zeros_like(image_conditioning)}
+                conditioning = {
+                    "dummy_for_plms": np.zeros((conditioning.shape[0],)),
+                    "c_crossattn": [conditioning],
+                    "c_adm": image_conditioning,
+                }
+                unconditional_conditioning = {
+                    "c_crossattn": [unconditional_conditioning],
+                    "c_adm": torch.zeros_like(image_conditioning),
+                }
             else:
-                conditioning = {"dummy_for_plms": np.zeros((conditioning.shape[0],)), "c_crossattn": [conditioning], "c_concat": [image_conditioning]}
-                unconditional_conditioning = {"c_crossattn": [unconditional_conditioning], "c_concat": [image_conditioning]}
+                conditioning = {
+                    "dummy_for_plms": np.zeros((conditioning.shape[0],)),
+                    "c_crossattn": [conditioning],
+                    "c_concat": [image_conditioning],
+                }
+                unconditional_conditioning = {
+                    "c_crossattn": [unconditional_conditioning],
+                    "c_concat": [image_conditioning],
+                }
 
-        samples_ddim = self.launch_sampling(steps, lambda: self.sampler.sample(S=steps, conditioning=conditioning, batch_size=int(x.shape[0]), shape=x[0].shape, verbose=False, unconditional_guidance_scale=p.cfg_scale, unconditional_conditioning=unconditional_conditioning, x_T=x, eta=self.eta)[0])
+        samples_ddim = self.launch_sampling(
+            steps,
+            lambda: self.sampler.sample(
+                S=steps,
+                conditioning=conditioning,
+                batch_size=int(x.shape[0]),
+                shape=x[0].shape,
+                verbose=False,
+                unconditional_guidance_scale=p.cfg_scale,
+                unconditional_conditioning=unconditional_conditioning,
+                x_T=x,
+                eta=self.eta,
+            )[0],
+        )
 
         return samples_ddim

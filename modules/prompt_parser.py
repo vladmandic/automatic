@@ -29,8 +29,11 @@ square_bracket_multiplier = 1.0 / 1.1
 re_AND = re.compile(r"\bAND\b")
 # re_weight = re.compile(r"^(.*?)(?:\s*:\s*([-+]?(?:\d+\.?|\d*\.\d+)))?\s*$")
 re_weight = re.compile(r"^((?:\s|.)*?)(?:\s*:\s*([-+]?(?:\d+\.?|\d*\.\d+)))?\s*$")
-ScheduledPromptConditioning = namedtuple("ScheduledPromptConditioning", ["end_at_step", "cond"])
-schedule_parser = lark.Lark(r"""
+ScheduledPromptConditioning = namedtuple(
+    "ScheduledPromptConditioning", ["end_at_step", "cond"]
+)
+schedule_parser = lark.Lark(
+    r"""
 !start: (prompt | /[][():]/+)*
 prompt: (emphasized | scheduled | alternate | plain | WHITESPACE)*
 !emphasized: "(" prompt ")"
@@ -41,18 +44,23 @@ alternate: "[" prompt ("|" prompt)+ "]"
 WHITESPACE: /\s+/
 plain: /([^\\\[\]():|]|\\.)+/
 %import common.SIGNED_NUMBER -> NUMBER
-""")
+"""
+)
 re_clean = re.compile(r"^\W+", re.S)
 re_whitespace = re.compile(r"\s+", re.S)
 re_break = re.compile(r"\s*\bBREAK\b|##\s*", re.S)
-re_attention_v2 = re.compile(r"""
+re_attention_v2 = re.compile(
+    r"""
 \(|\[|\\\(|\\\[|\\|\\\\|
 :([+-]?[.\d]+)|
 \)|\]|\\\)|\\\]|
 [^\(\)\[\]:]+|
 :
-""", re.X)
-re_attention_v1 = re.compile(r"""
+""",
+    re.X,
+)
+re_attention_v1 = re.compile(
+    r"""
 \\\(|
 \\\)|
 \\\[|
@@ -66,10 +74,12 @@ re_attention_v1 = re.compile(r"""
 ]|
 [^\\()\[\]:]+|
 :
-""", re.X)
+""",
+    re.X,
+)
 
 
-debug_output = os.environ.get('SD_PROMPT_DEBUG', None)
+debug_output = os.environ.get("SD_PROMPT_DEBUG", None)
 debug = log.info if debug_output is not None else lambda *args, **kwargs: None
 
 
@@ -104,6 +114,7 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
 
     def collect_steps(steps, tree):
         res = [steps]
+
         class CollectSteps(lark.Visitor):
             def scheduled(self, tree):
                 tree.children[-1] = float(tree.children[-1])
@@ -111,8 +122,10 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
                     tree.children[-1] *= steps
                 tree.children[-1] = min(steps, int(tree.children[-1]))
                 res.append(tree.children[-1])
-            def alternate(self, tree): # pylint: disable=unused-argument
-                res.extend(range(1, steps+1))
+
+            def alternate(self, tree):  # pylint: disable=unused-argument
+                res.extend(range(1, steps + 1))
+
         CollectSteps().visit(tree)
         return sorted(set(res))
 
@@ -121,8 +134,10 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
             def scheduled(self, args):
                 before, after, _, when = args
                 yield before or () if step <= when else after
+
             def alternate(self, args):
-                yield next(args[(step - 1)%len(args)])
+                yield next(args[(step - 1) % len(args)])
+
             def start(self, args):
                 def flatten(x):
                     if type(x) == str:
@@ -130,12 +145,16 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
                     else:
                         for gen in x:
                             yield from flatten(gen)
-                return ''.join(flatten(args))
+
+                return "".join(flatten(args))
+
             def plain(self, args):
                 yield args[0].value
+
             def __default__(self, data, children, meta):
                 for child in children:
                     yield child
+
         return AtStep().transform(tree)
 
     def get_schedule(prompt):
@@ -166,7 +185,7 @@ def get_learned_conditioning(model, prompts, steps):
     prompt_schedules = get_learned_conditioning_prompt_schedules(prompts, steps)
     cache = {}
     for prompt, prompt_schedule in zip(prompts, prompt_schedules):
-        debug(f'Prompt schedule: {prompt_schedule}')
+        debug(f"Prompt schedule: {prompt_schedule}")
         cached = cache.get(prompt, None)
         if cached is not None:
             res.append(cached)
@@ -210,11 +229,15 @@ class ComposableScheduledPromptConditioning:
 
 class MulticondLearnedConditioning:
     def __init__(self, shape, batch):
-        self.shape: tuple = shape  # the shape field is needed to send this object to DDIM/PLMS
+        self.shape: tuple = (
+            shape  # the shape field is needed to send this object to DDIM/PLMS
+        )
         self.batch: List[List[ComposableScheduledPromptConditioning]] = batch
 
 
-def get_multicond_learned_conditioning(model, prompts, steps) -> MulticondLearnedConditioning:
+def get_multicond_learned_conditioning(
+    model, prompts, steps
+) -> MulticondLearnedConditioning:
     """same as get_learned_conditioning, but returns a list of ScheduledPromptConditioning along with the weight objects for each prompt.
     For each prompt, the list is obtained by splitting the prompt using the AND separator.
     https://energy-based-model.github.io/Compositional-Visual-Generation-with-Composable-Diffusion-Models/
@@ -223,7 +246,12 @@ def get_multicond_learned_conditioning(model, prompts, steps) -> MulticondLearne
     learned_conditioning = get_learned_conditioning(model, prompt_flat_list, steps)
     res = []
     for indexes in res_indexes:
-        res.append([ComposableScheduledPromptConditioning(learned_conditioning[i], weight) for i, weight in indexes])
+        res.append(
+            [
+                ComposableScheduledPromptConditioning(learned_conditioning[i], weight)
+                for i, weight in indexes
+            ]
+        )
     return MulticondLearnedConditioning(shape=(len(prompts),), batch=res)
 
 
@@ -260,7 +288,9 @@ def reconstruct_multicond_batch(c: MulticondLearnedConditioning, current_step):
     for i in range(len(tensors)):
         if tensors[i].shape[0] != token_count:
             last_vector = tensors[i][-1:]
-            last_vector_repeated = last_vector.repeat([token_count - tensors[i].shape[0], 1])
+            last_vector_repeated = last_vector.repeat(
+                [token_count - tensors[i].shape[0], 1]
+            )
             tensors[i] = torch.vstack([tensors[i], last_vector_repeated])
     return conds_list, torch.stack(tensors).to(device=param.device, dtype=param.dtype)
 
@@ -302,26 +332,31 @@ def parse_prompt_attention(text):
     res = []
     round_brackets = []
     square_brackets = []
-    if opts.prompt_attention == 'Fixed attention':
+    if opts.prompt_attention == "Fixed attention":
         res = [[text, 1.0]]
-        debug(f'Prompt parse-attention: {opts.prompt_attention} {res}')
+        debug(f"Prompt parse-attention: {opts.prompt_attention} {res}")
         return res
-    elif opts.prompt_attention == 'Compel parser':
+    elif opts.prompt_attention == "Compel parser":
         conjunction = Compel.parse_prompt_string(text)
-        if conjunction is None or conjunction.prompts is None or conjunction.prompts is None or len(conjunction.prompts[0].children) == 0:
+        if (
+            conjunction is None
+            or conjunction.prompts is None
+            or conjunction.prompts is None
+            or len(conjunction.prompts[0].children) == 0
+        ):
             return [["", 1.0]]
         res = []
         for frag in conjunction.prompts[0].children:
             res.append([frag.text, frag.weight])
-        debug(f'Prompt parse-attention: {opts.prompt_attention} {res}')
+        debug(f"Prompt parse-attention: {opts.prompt_attention} {res}")
         return res
-    elif opts.prompt_attention == 'A1111 parser':
+    elif opts.prompt_attention == "A1111 parser":
         re_attention = re_attention_v1
-        whitespace = ''
+        whitespace = ""
     else:
         re_attention = re_attention_v1
-        text = text.replace('\\n', ' ')
-        whitespace = ' '
+        text = text.replace("\\n", " ")
+        whitespace = " "
 
     def multiply_range(start_position, multiplier):
         for p in range(start_position, len(res)):
@@ -331,24 +366,24 @@ def parse_prompt_attention(text):
         text = m.group(0)
         weight = m.group(1)
 
-        if text.startswith('\\'):
+        if text.startswith("\\"):
             res.append([text[1:], 1.0])
-        elif text == '(':
+        elif text == "(":
             round_brackets.append(len(res))
-        elif text == '[':
+        elif text == "[":
             square_brackets.append(len(res))
         elif weight is not None and len(round_brackets) > 0:
             multiply_range(round_brackets.pop(), float(weight))
-        elif text == ')' and len(round_brackets) > 0:
+        elif text == ")" and len(round_brackets) > 0:
             multiply_range(round_brackets.pop(), round_bracket_multiplier)
-        elif text == ']' and len(square_brackets) > 0:
+        elif text == "]" and len(square_brackets) > 0:
             multiply_range(square_brackets.pop(), square_bracket_multiplier)
         else:
             parts = re.split(re_break, text)
             for i, part in enumerate(parts):
                 if i > 0:
                     res.append(["BREAK", -1])
-                if opts.prompt_attention == 'Full parser':
+                if opts.prompt_attention == "Full parser":
                     part = re_clean.sub("", part)
                     part = re_whitespace.sub(" ", part).strip()
                     if len(part) == 0:
@@ -368,25 +403,26 @@ def parse_prompt_attention(text):
             res.pop(i + 1)
         else:
             i += 1
-    debug(f'Prompt parse-attention: {opts.prompt_attention} {res}')
+    debug(f"Prompt parse-attention: {opts.prompt_attention} {res}")
     return res
 
+
 if __name__ == "__main__":
-    input_text = '[black] [[grey]] (white) ((gray)) ((orange:1.1) yellow) ((purple) and [dark] red:1.1) [mouse:0.2] [(cat:1.1):0.5]'
-    print(f'Prompt: {input_text}')
+    input_text = "[black] [[grey]] (white) ((gray)) ((orange:1.1) yellow) ((purple) and [dark] red:1.1) [mouse:0.2] [(cat:1.1):0.5]"
+    print(f"Prompt: {input_text}")
     all_schedules = get_learned_conditioning_prompt_schedules([input_text], 100)[0]
-    print('Schedules', all_schedules)
+    print("Schedules", all_schedules)
     for schedule in all_schedules:
-        print('Schedule', schedule[0])
-        opts.data['prompt_attention'] = 'Fixed attention'
+        print("Schedule", schedule[0])
+        opts.data["prompt_attention"] = "Fixed attention"
         output_list = parse_prompt_attention(schedule[1])
-        print('  Fixed:', output_list)
-        opts.data['prompt_attention'] = 'Compel parser'
+        print("  Fixed:", output_list)
+        opts.data["prompt_attention"] = "Compel parser"
         output_list = parse_prompt_attention(schedule[1])
-        print('  Compel:', output_list)
-        opts.data['prompt_attention'] = 'A1111 parser'
+        print("  Compel:", output_list)
+        opts.data["prompt_attention"] = "A1111 parser"
         output_list = parse_prompt_attention(schedule[1])
-        print('  A1111:', output_list)
-        opts.data['prompt_attention'] = 'Full parser'
+        print("  A1111:", output_list)
+        opts.data["prompt_attention"] = "Full parser"
         output_list = parse_prompt_attention(schedule[1])
-        print('  Full :', output_list)
+        print("  Full :", output_list)

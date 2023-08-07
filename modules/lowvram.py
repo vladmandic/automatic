@@ -6,7 +6,7 @@ cpu = torch.device("cpu")
 
 
 def send_everything_to_cpu():
-    global module_in_gpu # pylint: disable=global-statement
+    global module_in_gpu  # pylint: disable=global-statement
 
     if module_in_gpu is not None:
         module_in_gpu.to(cpu)
@@ -22,7 +22,7 @@ def setup_for_low_vram(sd_model, use_medvram):
         we add this as forward_pre_hook to a lot of modules and this way all but one of them will
         be in CPU
         """
-        global module_in_gpu # pylint: disable=global-statement
+        global module_in_gpu  # pylint: disable=global-statement
 
         module = parents.get(module, module)
 
@@ -52,15 +52,33 @@ def setup_for_low_vram(sd_model, use_medvram):
         return first_stage_model_decode(z)
 
     # for SD1, cond_stage_model is CLIP and its NN is in the tranformer frield, but for SD2, it's open clip, and it's in model field
-    if hasattr(sd_model.cond_stage_model, 'model'):
+    if hasattr(sd_model.cond_stage_model, "model"):
         sd_model.cond_stage_model.transformer = sd_model.cond_stage_model.model
 
     # remove several big modules: cond, first_stage, depth/embedder (if applicable), and unet from the model and then
     # send the model to GPU. Then put modules back. the modules will be in CPU.
-    stored = sd_model.cond_stage_model.transformer, sd_model.first_stage_model, getattr(sd_model, 'depth_model', None), getattr(sd_model, 'embedder', None), sd_model.model
-    sd_model.cond_stage_model.transformer, sd_model.first_stage_model, sd_model.depth_model, sd_model.embedder, sd_model.model = None, None, None, None, None
+    stored = (
+        sd_model.cond_stage_model.transformer,
+        sd_model.first_stage_model,
+        getattr(sd_model, "depth_model", None),
+        getattr(sd_model, "embedder", None),
+        sd_model.model,
+    )
+    (
+        sd_model.cond_stage_model.transformer,
+        sd_model.first_stage_model,
+        sd_model.depth_model,
+        sd_model.embedder,
+        sd_model.model,
+    ) = (None, None, None, None, None)
     sd_model.to(devices.device)
-    sd_model.cond_stage_model.transformer, sd_model.first_stage_model, sd_model.depth_model, sd_model.embedder, sd_model.model = stored
+    (
+        sd_model.cond_stage_model.transformer,
+        sd_model.first_stage_model,
+        sd_model.depth_model,
+        sd_model.embedder,
+        sd_model.model,
+    ) = stored
 
     # register hooks for those the first three models
     sd_model.cond_stage_model.transformer.register_forward_pre_hook(send_me_to_gpu)
@@ -73,7 +91,7 @@ def setup_for_low_vram(sd_model, use_medvram):
         sd_model.embedder.register_forward_pre_hook(send_me_to_gpu)
     parents[sd_model.cond_stage_model.transformer] = sd_model.cond_stage_model
 
-    if hasattr(sd_model.cond_stage_model, 'model'):
+    if hasattr(sd_model.cond_stage_model, "model"):
         sd_model.cond_stage_model.model = sd_model.cond_stage_model.transformer
         del sd_model.cond_stage_model.transformer
 
@@ -84,10 +102,25 @@ def setup_for_low_vram(sd_model, use_medvram):
 
         # the third remaining model is still too big for 4 GB, so we also do the same for its submodules
         # so that only one of them is in GPU at a time
-        stored = diff_model.input_blocks, diff_model.middle_block, diff_model.output_blocks, diff_model.time_embed
-        diff_model.input_blocks, diff_model.middle_block, diff_model.output_blocks, diff_model.time_embed = None, None, None, None
+        stored = (
+            diff_model.input_blocks,
+            diff_model.middle_block,
+            diff_model.output_blocks,
+            diff_model.time_embed,
+        )
+        (
+            diff_model.input_blocks,
+            diff_model.middle_block,
+            diff_model.output_blocks,
+            diff_model.time_embed,
+        ) = (None, None, None, None)
         sd_model.model.to(devices.device)
-        diff_model.input_blocks, diff_model.middle_block, diff_model.output_blocks, diff_model.time_embed = stored
+        (
+            diff_model.input_blocks,
+            diff_model.middle_block,
+            diff_model.output_blocks,
+            diff_model.time_embed,
+        ) = stored
 
         # install hooks for bits of third model
         diff_model.time_embed.register_forward_pre_hook(send_me_to_gpu)

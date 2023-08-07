@@ -35,25 +35,43 @@ class DisableInitialization:
         return original
 
     def __enter__(self):
-        def do_nothing(*args, **kwargs): # pylint: disable=unused-argument
+        def do_nothing(*args, **kwargs):  # pylint: disable=unused-argument
             pass
 
-        def create_model_and_transforms_without_pretrained(*args, pretrained=None, **kwargs): # pylint: disable=unused-argument
+        def create_model_and_transforms_without_pretrained(
+            *args, pretrained=None, **kwargs
+        ):  # pylint: disable=unused-argument
             return self.create_model_and_transforms(*args, pretrained=None, **kwargs)
 
-        def CLIPTextModel_from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs):
-            res = self.CLIPTextModel_from_pretrained(None, *model_args, config=pretrained_model_name_or_path, state_dict={}, **kwargs)
+        def CLIPTextModel_from_pretrained(
+            pretrained_model_name_or_path, *model_args, **kwargs
+        ):
+            res = self.CLIPTextModel_from_pretrained(
+                None,
+                *model_args,
+                config=pretrained_model_name_or_path,
+                state_dict={},
+                **kwargs
+            )
             res.name_or_path = pretrained_model_name_or_path
             return res
 
         def transformers_modeling_utils_load_pretrained_model(*args, **kwargs):
-            args = args[0:3] + ('/', ) + args[4:]  # resolved_archive_file; must set it to something to prevent what seems to be a bug
-            return self.transformers_modeling_utils_load_pretrained_model(*args, **kwargs)
+            args = (
+                args[0:3] + ("/",) + args[4:]
+            )  # resolved_archive_file; must set it to something to prevent what seems to be a bug
+            return self.transformers_modeling_utils_load_pretrained_model(
+                *args, **kwargs
+            )
 
         def transformers_utils_hub_get_file_from_cache(original, url, *args, **kwargs):
-
             # this file is always 404, prevent making request
-            if url == 'https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/added_tokens.json' or url == 'openai/clip-vit-large-patch14' and args[0] == 'added_tokens.json':
+            if (
+                url
+                == "https://huggingface.co/openai/clip-vit-large-patch14/resolve/main/added_tokens.json"
+                or url == "openai/clip-vit-large-patch14"
+                and args[0] == "added_tokens.json"
+            ):
                 return None
 
             try:
@@ -64,26 +82,65 @@ class DisableInitialization:
             except Exception:
                 return original(url, *args, local_files_only=False, **kwargs)
 
-        def transformers_utils_hub_get_from_cache(url, *args, local_files_only=False, **kwargs): # pylint: disable=unused-argument
-            return transformers_utils_hub_get_file_from_cache(self.transformers_utils_hub_get_from_cache, url, *args, **kwargs)
+        def transformers_utils_hub_get_from_cache(
+            url, *args, local_files_only=False, **kwargs
+        ):  # pylint: disable=unused-argument
+            return transformers_utils_hub_get_file_from_cache(
+                self.transformers_utils_hub_get_from_cache, url, *args, **kwargs
+            )
 
-        def transformers_tokenization_utils_base_cached_file(url, *args, local_files_only=False, **kwargs): # pylint: disable=unused-argument
-            return transformers_utils_hub_get_file_from_cache(self.transformers_tokenization_utils_base_cached_file, url, *args, **kwargs)
+        def transformers_tokenization_utils_base_cached_file(
+            url, *args, local_files_only=False, **kwargs
+        ):  # pylint: disable=unused-argument
+            return transformers_utils_hub_get_file_from_cache(
+                self.transformers_tokenization_utils_base_cached_file,
+                url,
+                *args,
+                **kwargs
+            )
 
-        def transformers_configuration_utils_cached_file(url, *args, local_files_only=False, **kwargs): # pylint: disable=unused-argument
-            return transformers_utils_hub_get_file_from_cache(self.transformers_configuration_utils_cached_file, url, *args, **kwargs)
+        def transformers_configuration_utils_cached_file(
+            url, *args, local_files_only=False, **kwargs
+        ):  # pylint: disable=unused-argument
+            return transformers_utils_hub_get_file_from_cache(
+                self.transformers_configuration_utils_cached_file, url, *args, **kwargs
+            )
 
-        self.replace(torch.nn.init, 'kaiming_uniform_', do_nothing)
-        self.replace(torch.nn.init, '_no_grad_normal_', do_nothing)
-        self.replace(torch.nn.init, '_no_grad_uniform_', do_nothing)
+        self.replace(torch.nn.init, "kaiming_uniform_", do_nothing)
+        self.replace(torch.nn.init, "_no_grad_normal_", do_nothing)
+        self.replace(torch.nn.init, "_no_grad_uniform_", do_nothing)
 
         if self.disable_clip:
-            self.create_model_and_transforms = self.replace(open_clip, 'create_model_and_transforms', create_model_and_transforms_without_pretrained) # pylint: disable=attribute-defined-outside-init
-            self.CLIPTextModel_from_pretrained = self.replace(ldm.modules.encoders.modules.CLIPTextModel, 'from_pretrained', CLIPTextModel_from_pretrained) # pylint: disable=attribute-defined-outside-init
-            self.transformers_modeling_utils_load_pretrained_model = self.replace(transformers.modeling_utils.PreTrainedModel, '_load_pretrained_model', transformers_modeling_utils_load_pretrained_model) # pylint: disable=attribute-defined-outside-init
-            self.transformers_tokenization_utils_base_cached_file = self.replace(transformers.tokenization_utils_base, 'cached_file', transformers_tokenization_utils_base_cached_file) # pylint: disable=attribute-defined-outside-init
-            self.transformers_configuration_utils_cached_file = self.replace(transformers.configuration_utils, 'cached_file', transformers_configuration_utils_cached_file) # pylint: disable=attribute-defined-outside-init
-            self.transformers_utils_hub_get_from_cache = self.replace(transformers.utils.hub, 'get_from_cache', transformers_utils_hub_get_from_cache) # pylint: disable=attribute-defined-outside-init
+            self.create_model_and_transforms = self.replace(
+                open_clip,
+                "create_model_and_transforms",
+                create_model_and_transforms_without_pretrained,
+            )  # pylint: disable=attribute-defined-outside-init
+            self.CLIPTextModel_from_pretrained = self.replace(
+                ldm.modules.encoders.modules.CLIPTextModel,
+                "from_pretrained",
+                CLIPTextModel_from_pretrained,
+            )  # pylint: disable=attribute-defined-outside-init
+            self.transformers_modeling_utils_load_pretrained_model = self.replace(
+                transformers.modeling_utils.PreTrainedModel,
+                "_load_pretrained_model",
+                transformers_modeling_utils_load_pretrained_model,
+            )  # pylint: disable=attribute-defined-outside-init
+            self.transformers_tokenization_utils_base_cached_file = self.replace(
+                transformers.tokenization_utils_base,
+                "cached_file",
+                transformers_tokenization_utils_base_cached_file,
+            )  # pylint: disable=attribute-defined-outside-init
+            self.transformers_configuration_utils_cached_file = self.replace(
+                transformers.configuration_utils,
+                "cached_file",
+                transformers_configuration_utils_cached_file,
+            )  # pylint: disable=attribute-defined-outside-init
+            self.transformers_utils_hub_get_from_cache = self.replace(
+                transformers.utils.hub,
+                "get_from_cache",
+                transformers_utils_hub_get_from_cache,
+            )  # pylint: disable=attribute-defined-outside-init
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for obj, field, original in self.replaced:

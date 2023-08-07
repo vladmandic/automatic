@@ -51,16 +51,18 @@ class StyleDatabase:
         self.styles.clear()
         if not os.path.exists(self.path):
             self.save_styles(self.path)
-        with open(self.path, "r", encoding="utf-8-sig", newline='') as file:
+        with open(self.path, "r", encoding="utf-8-sig", newline="") as file:
             reader = csv.DictReader(file, skipinitialspace=True)
             for row in reader:
                 try:
                     prompt = row["prompt"] if "prompt" in row else row["text"]
                     negative_prompt = row.get("negative_prompt", "")
-                    self.styles[row["name"]] = PromptStyle(row["name"], prompt, negative_prompt)
+                    self.styles[row["name"]] = PromptStyle(
+                        row["name"], prompt, negative_prompt
+                    )
                 except Exception:
-                    log.error(f'Styles error: {self.path} {row}')
-            log.debug(f'Loaded styles: {self.path} {len(self.styles.keys())}')
+                    log.error(f"Styles error: {self.path} {row}")
+            log.debug(f"Loaded styles: {self.path} {len(self.styles.keys())}")
 
     def get_style_prompts(self, styles):
         return [self.styles.get(x, self.no_style).prompt for x in styles]
@@ -69,19 +71,23 @@ class StyleDatabase:
         return [self.styles.get(x, self.no_style).negative_prompt for x in styles]
 
     def apply_styles_to_prompt(self, prompt, styles):
-        return apply_styles_to_prompt(prompt, [self.styles.get(x, self.no_style).prompt for x in styles])
+        return apply_styles_to_prompt(
+            prompt, [self.styles.get(x, self.no_style).prompt for x in styles]
+        )
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
-        return apply_styles_to_prompt(prompt, [self.styles.get(x, self.no_style).negative_prompt for x in styles])
+        return apply_styles_to_prompt(
+            prompt, [self.styles.get(x, self.no_style).negative_prompt for x in styles]
+        )
 
     def save_styles(self, path: str) -> None:
         basedir = os.path.dirname(path)
         if basedir is not None and len(basedir) > 0:
             os.makedirs(basedir, exist_ok=True)
         fd, temp_path = tempfile.mkstemp(".csv")
-        with os.fdopen(fd, "w", encoding="utf-8-sig", newline='') as file:
+        with os.fdopen(fd, "w", encoding="utf-8-sig", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=PromptStyle._fields)
             writer.writeheader()
             writer.writerows(style._asdict() for k, style in self.styles.items())
-            log.debug(f'Saved styles: {path} {len(self.styles.keys())}')
+            log.debug(f"Saved styles: {path} {len(self.styles.keys())}")
         shutil.move(temp_path, path)

@@ -24,7 +24,16 @@ class VAEApprox(nn.Module):
         try:
             x = nn.functional.interpolate(x, (x.shape[2] * 2, x.shape[3] * 2))
             x = nn.functional.pad(x, (extra, extra, extra, extra))
-            for layer in [self.conv1, self.conv2, self.conv3, self.conv4, self.conv5, self.conv6, self.conv7, self.conv8, ]:
+            for layer in [
+                self.conv1,
+                self.conv2,
+                self.conv3,
+                self.conv4,
+                self.conv5,
+                self.conv6,
+                self.conv7,
+                self.conv8,
+            ]:
                 x = layer(x)
                 x = nn.functional.leaky_relu(x, 0.1)
         except Exception:
@@ -33,14 +42,21 @@ class VAEApprox(nn.Module):
 
 
 def model():
-    global sd_vae_approx_model # pylint: disable=global-statement
+    global sd_vae_approx_model  # pylint: disable=global-statement
 
     if sd_vae_approx_model is None:
         model_path = os.path.join(paths.models_path, "VAE-approx", "model.pt")
         sd_vae_approx_model = VAEApprox()
         if not os.path.exists(model_path):
-            model_path = os.path.join(paths.script_path, "models", "VAE-approx", "model.pt")
-        sd_vae_approx_model.load_state_dict(torch.load(model_path, map_location='cpu' if devices.device.type != 'cuda' else None))
+            model_path = os.path.join(
+                paths.script_path, "models", "VAE-approx", "model.pt"
+            )
+        sd_vae_approx_model.load_state_dict(
+            torch.load(
+                model_path,
+                map_location="cpu" if devices.device.type != "cuda" else None,
+            )
+        )
         sd_vae_approx_model.eval()
         sd_vae_approx_model.to(devices.device, devices.dtype)
 
@@ -50,12 +66,14 @@ def model():
 def cheap_approximation(sample):
     # https://discuss.huggingface.co/t/decoding-latents-to-rgb-without-upscaling/23204/2
 
-    coefs = torch.tensor([
-        [0.298, 0.207, 0.208],
-        [0.187, 0.286, 0.173],
-        [-0.158, 0.189, 0.264],
-        [-0.184, -0.271, -0.473],
-    ]).to(sample.device)
+    coefs = torch.tensor(
+        [
+            [0.298, 0.207, 0.208],
+            [0.187, 0.286, 0.173],
+            [-0.158, 0.189, 0.264],
+            [-0.184, -0.271, -0.473],
+        ]
+    ).to(sample.device)
     try:
         x_sample = torch.einsum("lxy,lr -> rxy", sample, coefs)
         return x_sample

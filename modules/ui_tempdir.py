@@ -11,31 +11,70 @@ Savedfile = namedtuple("Savedfile", ["name"])
 
 
 def register_tmp_file(gradio, filename):
-    if hasattr(gradio, 'temp_file_sets'):
-        gradio.temp_file_sets[0] = gradio.temp_file_sets[0] | {os.path.abspath(filename)}
+    if hasattr(gradio, "temp_file_sets"):
+        gradio.temp_file_sets[0] = gradio.temp_file_sets[0] | {
+            os.path.abspath(filename)
+        }
 
 
 def check_tmp_file(gradio, filename):
     ok = False
-    if hasattr(gradio, 'temp_file_sets'):
+    if hasattr(gradio, "temp_file_sets"):
         ok = ok or any(filename in fileset for fileset in gradio.temp_file_sets)
-    if shared.opts.outdir_samples != '':
-        ok = ok or Path(shared.opts.outdir_samples).resolve() in Path(filename).resolve().parents
+    if shared.opts.outdir_samples != "":
+        ok = (
+            ok
+            or Path(shared.opts.outdir_samples).resolve()
+            in Path(filename).resolve().parents
+        )
     else:
-        ok = ok or Path(shared.opts.outdir_txt2img_samples).resolve() in Path(filename).resolve().parents
-        ok = ok or Path(shared.opts.outdir_img2img_samples).resolve() in Path(filename).resolve().parents
-        ok = ok or Path(shared.opts.outdir_extras_samples).resolve() in Path(filename).resolve().parents
-    if shared.opts.outdir_grids != '':
-        ok = ok or Path(shared.opts.outdir_grids).resolve() in Path(filename).resolve().parents
+        ok = (
+            ok
+            or Path(shared.opts.outdir_txt2img_samples).resolve()
+            in Path(filename).resolve().parents
+        )
+        ok = (
+            ok
+            or Path(shared.opts.outdir_img2img_samples).resolve()
+            in Path(filename).resolve().parents
+        )
+        ok = (
+            ok
+            or Path(shared.opts.outdir_extras_samples).resolve()
+            in Path(filename).resolve().parents
+        )
+    if shared.opts.outdir_grids != "":
+        ok = (
+            ok
+            or Path(shared.opts.outdir_grids).resolve()
+            in Path(filename).resolve().parents
+        )
     else:
-        ok = ok or Path(shared.opts.outdir_txt2img_grids).resolve() in Path(filename).resolve().parents
-        ok = ok or Path(shared.opts.outdir_img2img_grids).resolve() in Path(filename).resolve().parents
-    ok = ok or Path(shared.opts.outdir_save).resolve() in Path(filename).resolve().parents
-    ok = ok or Path(shared.opts.outdir_init_images).resolve() in Path(filename).resolve().parents
+        ok = (
+            ok
+            or Path(shared.opts.outdir_txt2img_grids).resolve()
+            in Path(filename).resolve().parents
+        )
+        ok = (
+            ok
+            or Path(shared.opts.outdir_img2img_grids).resolve()
+            in Path(filename).resolve().parents
+        )
+    ok = (
+        ok
+        or Path(shared.opts.outdir_save).resolve() in Path(filename).resolve().parents
+    )
+    ok = (
+        ok
+        or Path(shared.opts.outdir_init_images).resolve()
+        in Path(filename).resolve().parents
+    )
     return ok
 
 
-def pil_to_temp_file(self, img, dir: str, format="png") -> str: # pylint: disable=redefined-builtin,unused-argument
+def pil_to_temp_file(
+    self, img, dir: str, format="png"
+) -> str:  # pylint: disable=redefined-builtin,unused-argument
     """
     # original gradio implementation
     bytes_data = gr.processing_utils.encode_pil_to_bytes(img, format)
@@ -44,7 +83,7 @@ def pil_to_temp_file(self, img, dir: str, format="png") -> str: # pylint: disabl
     filename = str(temp_dir / f"image.{format}")
     img.save(filename, pnginfo=gr.processing_utils.get_pil_metadata(img))
     """
-    already_saved_as = getattr(img, 'already_saved_as', None)
+    already_saved_as = getattr(img, "already_saved_as", None)
     if already_saved_as and os.path.isfile(already_saved_as):
         register_tmp_file(shared.demo, already_saved_as)
         file_obj = Savedfile(already_saved_as)
@@ -61,13 +100,14 @@ def pil_to_temp_file(self, img, dir: str, format="png") -> str: # pylint: disabl
     file_obj = tempfile.NamedTemporaryFile(delete=False, suffix=".png", dir=dir)
     img.save(file_obj, pnginfo=(metadata if use_metadata else None))
     name = file_obj.name
-    shared.log.debug(f'Saving temp image: {name}')
+    shared.log.debug(f"Saving temp image: {name}")
     return name
 
 
 # override save to file function so that it also writes PNG info
 # gr.processing_utils.save_pil_to_file = save_pil_to_file # gradio <=3.31.0
-gr.components.IOComponent.pil_to_temp_file = pil_to_temp_file      # gradio >=3.32.0
+gr.components.IOComponent.pil_to_temp_file = pil_to_temp_file  # gradio >=3.32.0
+
 
 def on_tmpdir_changed():
     if shared.opts.temp_dir == "":

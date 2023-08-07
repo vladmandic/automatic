@@ -29,7 +29,9 @@ class Timer:
             return res
 
         res += " ("
-        res += " ".join([f"{category}={time_taken:.1f}s" for category, time_taken in additions])
+        res += " ".join(
+            [f"{category}={time_taken:.1f}s" for category, time_taken in additions]
+        )
         res += ")"
 
         return res

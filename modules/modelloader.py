@@ -11,7 +11,15 @@ from modules.paths import script_path, models_path
 diffuser_repos = []
 
 
-def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config: Dict[str, str] = None, token = None, variant = None, revision = None, mirror = None):
+def download_diffusers_model(
+    hub_id: str,
+    cache_dir: str = None,
+    download_config: Dict[str, str] = None,
+    token=None,
+    variant=None,
+    revision=None,
+    mirror=None,
+):
     from diffusers import DiffusionPipeline
     import huggingface_hub as hf
 
@@ -36,12 +44,16 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         hf.login(token)
     pipeline_dir = DiffusionPipeline.download(hub_id, **download_config)
     try:
-        model_info_dict = hf.model_info(hub_id).cardData # pylint: disable=no-member # TODO Diffusers is this real error?
+        model_info_dict = hf.model_info(
+            hub_id
+        ).cardData  # pylint: disable=no-member # TODO Diffusers is this real error?
     except Exception:
         model_info_dict = None
     # some checkpoints need to be downloaded as "hidden" as they just serve as pre- or post-pipelines of other pipelines
     if model_info_dict is not None and "prior" in model_info_dict:
-        download_dir = DiffusionPipeline.download(model_info_dict["prior"][0], **download_config)
+        download_dir = DiffusionPipeline.download(
+            model_info_dict["prior"][0], **download_config
+        )
         model_info_dict["prior"] = download_dir
         # mark prior as hidden
         with open(os.path.join(download_dir, "hidden"), "w", encoding="utf-8") as f:
@@ -52,6 +64,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 def load_diffusers_models(model_path: str, command_path: str = None):
     import huggingface_hub as hf
+
     places = []
     places.append(model_path)
     if command_path is not None and command_path != model_path:
@@ -64,13 +77,27 @@ def load_diffusers_models(model_path: str, command_path: str = None):
         try:
             res = hf.scan_cache_dir(cache_dir=place)
             for r in list(res.repos):
-                cache_path = os.path.join(r.repo_path, "snapshots", list(r.revisions)[-1].commit_hash)
-                diffuser_repos.append({ 'name': r.repo_id, 'filename': r.repo_id, 'path': cache_path, 'size': r.size_on_disk, 'mtime': r.last_modified, 'hash': list(r.revisions)[-1].commit_hash, 'model_info': str(os.path.join(cache_path, "model_info.json")) })
+                cache_path = os.path.join(
+                    r.repo_path, "snapshots", list(r.revisions)[-1].commit_hash
+                )
+                diffuser_repos.append(
+                    {
+                        "name": r.repo_id,
+                        "filename": r.repo_id,
+                        "path": cache_path,
+                        "size": r.size_on_disk,
+                        "mtime": r.last_modified,
+                        "hash": list(r.revisions)[-1].commit_hash,
+                        "model_info": str(os.path.join(cache_path, "model_info.json")),
+                    }
+                )
                 if not os.path.isfile(os.path.join(cache_path, "hidden")):
                     output.append(str(r.repo_id))
         except Exception as e:
             shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: {model_path} {command_path} {len(output)}')
+    shared.log.debug(
+        f"Scanning diffusers cache: {model_path} {command_path} {len(output)}"
+    )
     return output
 
 
@@ -84,17 +111,28 @@ def find_diffuser(name: str):
     hf_api = hf.HfApi()
     hf_filter = hf.ModelFilter(
         model_name=name,
-        task='text-to-image',
-        library=['diffusers'],
+        task="text-to-image",
+        library=["diffusers"],
     )
-    models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
-    shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
+    models = list(
+        hf_api.list_models(
+            filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1
+        )
+    )
+    shared.log.debug(f"Searching diffusers models: {name} {len(models) > 0}")
     if len(models) > 0:
         return models[0].modelId
     return None
 
 
-def load_models(model_path: str, model_url: str = None, command_path: str = None, ext_filter=None, download_name=None, ext_blacklist=None) -> list:
+def load_models(
+    model_path: str,
+    model_url: str = None,
+    command_path: str = None,
+    ext_filter=None,
+    download_name=None,
+    ext_blacklist=None,
+) -> list:
     """
     A one-and done loader to try finding the desired models in specified directories.
 
@@ -107,7 +145,11 @@ def load_models(model_path: str, model_url: str = None, command_path: str = None
     """
     places = []
     places.append(model_path)
-    if command_path is not None and command_path != model_path and os.path.isdir(command_path):
+    if (
+        command_path is not None
+        and command_path != model_path
+        and os.path.isdir(command_path)
+    ):
         places.append(command_path)
     output = []
     try:
@@ -116,13 +158,16 @@ def load_models(model_path: str, model_url: str = None, command_path: str = None
                 if os.path.islink(full_path) and not os.path.exists(full_path):
                     shared.log.error(f"Skipping broken symlink: {full_path}")
                     continue
-                if ext_blacklist is not None and any(full_path.endswith(x) for x in ext_blacklist):
+                if ext_blacklist is not None and any(
+                    full_path.endswith(x) for x in ext_blacklist
+                ):
                     continue
                 if full_path not in output:
                     output.append(full_path)
         if model_url is not None and len(output) == 0:
             if download_name is not None:
                 from basicsr.utils.download_util import load_file_from_url
+
                 dl = load_file_from_url(model_url, places[0], True, download_name)
                 output.append(dl)
             else:
@@ -162,7 +207,9 @@ def cleanup_models():
     src_path = os.path.join(root_path, "SwinIR")
     dest_path = os.path.join(models_path, "SwinIR")
     move_files(src_path, dest_path)
-    src_path = os.path.join(root_path, "repositories/latent-diffusion/experiments/pretrained_models/")
+    src_path = os.path.join(
+        root_path, "repositories/latent-diffusion/experiments/pretrained_models/"
+    )
     dest_path = os.path.join(models_path, "LDSR")
     move_files(src_path, dest_path)
     src_path = os.path.join(root_path, "ScuNET")
@@ -191,7 +238,6 @@ def move_files(src_path: str, dest_path: str, ext_filter: str = None):
                 shutil.rmtree(src_path, True)
     except Exception:
         pass
-
 
 
 def load_upscalers():
@@ -227,5 +273,7 @@ def load_upscalers():
     shared.sd_upscalers = sorted(
         datas,
         # Special case for UpscalerNone keeps it at the beginning of the list.
-        key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else ""
+        key=lambda x: x.name.lower()
+        if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest))
+        else "",
     )

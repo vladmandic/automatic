@@ -1,7 +1,10 @@
 import torch
 import diffusers
 
-def PNDMScheduler__get_prev_sample(self, sample: torch.FloatTensor, timestep, prev_timestep, model_output):
+
+def PNDMScheduler__get_prev_sample(
+    self, sample: torch.FloatTensor, timestep, prev_timestep, model_output
+):
     # See formula (9) of PNDM paper https://arxiv.org/pdf/2202.09778.pdf
     # this function computes x_(t−δ) using the formula of (9)
     # Note that x_t needs to be added to both sides of the equation
@@ -14,14 +17,20 @@ def PNDMScheduler__get_prev_sample(self, sample: torch.FloatTensor, timestep, pr
     # sample -> x_t
     # model_output -> e_θ(x_t, t)
     # prev_sample -> x_(t−δ)
-    sample.__str__() # PNDM Sampling does not work without 'stringify'. (because it depends on PLMS)
+    sample.__str__()  # PNDM Sampling does not work without 'stringify'. (because it depends on PLMS)
     alpha_prod_t = self.alphas_cumprod[timestep]
-    alpha_prod_t_prev = self.alphas_cumprod[prev_timestep] if prev_timestep >= 0 else self.final_alpha_cumprod
+    alpha_prod_t_prev = (
+        self.alphas_cumprod[prev_timestep]
+        if prev_timestep >= 0
+        else self.final_alpha_cumprod
+    )
     beta_prod_t = 1 - alpha_prod_t
     beta_prod_t_prev = 1 - alpha_prod_t_prev
 
     if self.config.prediction_type == "v_prediction":
-        model_output = (alpha_prod_t**0.5) * model_output + (beta_prod_t**0.5) * sample
+        model_output = (alpha_prod_t**0.5) * model_output + (
+            beta_prod_t**0.5
+        ) * sample
     elif self.config.prediction_type != "epsilon":
         raise ValueError(
             f"prediction_type given as {self.config.prediction_type} must be one of `epsilon` or `v_prediction`"
@@ -40,12 +49,15 @@ def PNDMScheduler__get_prev_sample(self, sample: torch.FloatTensor, timestep, pr
 
     # full formula (9)
     prev_sample = (
-        sample_coeff * sample - (alpha_prod_t_prev - alpha_prod_t) * model_output / model_output_denom_coeff
+        sample_coeff * sample
+        - (alpha_prod_t_prev - alpha_prod_t) * model_output / model_output_denom_coeff
     )
 
     return prev_sample
 
+
 diffusers.PNDMScheduler._get_prev_sample = PNDMScheduler__get_prev_sample
+
 
 def UniPCMultistepScheduler_multistep_uni_p_bh_update(
     self: diffusers.UniPCMultistepScheduler,
@@ -79,7 +91,7 @@ def UniPCMultistepScheduler_multistep_uni_p_bh_update(
         x_t = self.solver_p.step(model_output, s0, x).prev_sample
         return x_t
 
-    sample.__str__() # UniPC Sampling does not work without 'stringify'.
+    sample.__str__()  # UniPC Sampling does not work without 'stringify'.
     lambda_t, lambda_s0 = self.lambda_t[t], self.lambda_t[s0]
     alpha_t, alpha_s0 = self.alpha_t[t], self.alpha_t[s0]
     sigma_t, sigma_s0 = self.sigma_t[t], self.sigma_t[s0]
@@ -153,4 +165,7 @@ def UniPCMultistepScheduler_multistep_uni_p_bh_update(
     x_t = x_t.to(x.dtype)
     return x_t
 
-diffusers.UniPCMultistepScheduler.multistep_uni_p_bh_update = UniPCMultistepScheduler_multistep_uni_p_bh_update
+
+diffusers.UniPCMultistepScheduler.multistep_uni_p_bh_update = (
+    UniPCMultistepScheduler_multistep_uni_p_bh_update
+)

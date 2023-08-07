@@ -22,7 +22,7 @@ div.gradio-html.min{ min-height: 0; }
 .gradio-dropdown ul.options{ z-index: 3000; min-width: fit-content; max-width: inherit; white-space: nowrap; }
 .gradio-dropdown:not(.multiselect) .wrap-inner.wrap-inner.wrap-inner{ flex-wrap: unset; }
 .gradio-dropdown.multiselect .token-remove.remove-all.remove-all{ display: flex; }
-.gradio-dropdown.multiselect div.wrap-inner {	overflow-x: hidden; overflow-y: auto; max-height: 50vh; overflow-wrap: anywhere; }
+.gradio-dropdown.multiselect div.wrap-inner {   overflow-x: hidden; overflow-y: auto; max-height: 50vh; overflow-wrap: anywhere; }
 .gradio-html div.wrap{ height: 100%; }
 .gradio-slider input[type="number"]{ width: 6em; }
 .hidden { display: none; }

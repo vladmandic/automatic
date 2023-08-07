@@ -6,14 +6,23 @@ from modules import devices, processing, images, sd_vae_approx, sd_samplers
 import modules.shared as shared
 import modules.taesd.sd_vae_taesd as sd_vae_taesd
 
-SamplerData = namedtuple('SamplerData', ['name', 'constructor', 'aliases', 'options'])
-approximation_indexes = {"Full VAE": 0, "Approximate NN": 1, "Approximate simple": 2, "TAESD": 3}
+SamplerData = namedtuple("SamplerData", ["name", "constructor", "aliases", "options"])
+approximation_indexes = {
+    "Full VAE": 0,
+    "Approximate NN": 1,
+    "Approximate simple": 2,
+    "TAESD": 3,
+}
 
 
 def setup_img2img_steps(p, steps=None):
     if shared.opts.img2img_fix_steps or steps is not None:
-        requested_steps = (steps or p.steps)
-        steps = int(requested_steps / min(p.denoising_strength, 0.999)) if p.denoising_strength > 0 else 0
+        requested_steps = steps or p.steps
+        steps = (
+            int(requested_steps / min(p.denoising_strength, 0.999))
+            if p.denoising_strength > 0
+            else 0
+        )
         t_enc = requested_steps - 1
     else:
         steps = p.steps
@@ -26,9 +35,18 @@ def single_sample_to_image(sample, approximation=None):
     if approximation is None:
         approximation = approximation_indexes.get(shared.opts.show_progress_type, 0)
     if approximation == 0:
-        x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0] * 0.5 + 0.5
+        x_sample = (
+            processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0] * 0.5
+            + 0.5
+        )
     elif approximation == 1:
-        x_sample = sd_vae_approx.model()(sample.to(devices.device, devices.dtype).unsqueeze(0))[0].detach() * 0.5 + 0.5
+        x_sample = (
+            sd_vae_approx.model()(
+                sample.to(devices.device, devices.dtype).unsqueeze(0)
+            )[0].detach()
+            * 0.5
+            + 0.5
+        )
     elif approximation == 2:
         x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
     elif approximation == 3:
@@ -48,12 +66,18 @@ def sample_to_image(samples, index=0, approximation=None):
 
 
 def samples_to_image_grid(samples, approximation=None):
-    return images.image_grid([single_sample_to_image(sample, approximation) for sample in samples])
+    return images.image_grid(
+        [single_sample_to_image(sample, approximation) for sample in samples]
+    )
 
 
 def store_latent(decoded):
     shared.state.current_latent = decoded
-    if shared.opts.live_previews_enable and shared.opts.show_progress_every_n_steps > 0 and shared.state.sampling_step % shared.opts.show_progress_every_n_steps == 0:
+    if (
+        shared.opts.live_previews_enable
+        and shared.opts.show_progress_every_n_steps > 0
+        and shared.state.sampling_step % shared.opts.show_progress_every_n_steps == 0
+    ):
         if not shared.parallel_processing_allowed:
             image = sample_to_image(decoded)
             shared.state.assign_current_image(image)

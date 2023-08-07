@@ -9,13 +9,13 @@ body:
     attributes:
       label: Feature description
       description: Describe the feature in a clear and simple way
-      value: 
+      value:
   - type: textarea
     id: platform
     attributes:
       label: Version Platform Description
       description: Describe your platform (program version, OS, browser)
-      value: 
+      value:
   - type: markdown
     attributes:
       value: |

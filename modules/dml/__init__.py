@@ -11,12 +11,14 @@ if system() == "Windows":
     default_memory_provider = "Performance Counter"
 do_nothing = lambda: None
 
+
 def _set_memory_provider():
     from modules.shared import opts, cmd_opts, log
 
     if opts.directml_memory_provider == "Performance Counter":
         from .backend import pdh_mem_get_info
         from .memory import MemoryProvider
+
         torch.dml.mem_get_info = pdh_mem_get_info
         if torch.dml.memory_provider is not None:
             del torch.dml.memory_provider
@@ -24,19 +26,25 @@ def _set_memory_provider():
     elif opts.directml_memory_provider == "atiadlxx (AMD only)":
         device_name = torch.dml.get_device_name(cmd_opts.device_id)
         if "AMD" not in device_name and "Radeon" not in device_name:
-            log.warning(f"Memory stats provider is changed to None because the current device is not AMDGPU. Current Device: {device_name}")
+            log.warning(
+                f"Memory stats provider is changed to None because the current device is not AMDGPU. Current Device: {device_name}"
+            )
             opts.directml_memory_provider = "None"
             _set_memory_provider()
             return
         from .backend import amd_mem_get_info
+
         torch.dml.mem_get_info = amd_mem_get_info
     else:
         from .backend import mem_get_info
+
         torch.dml.mem_get_info = mem_get_info
     torch.cuda.mem_get_info = torch.dml.mem_get_info
 
+
 def directml_init():
-    from modules.dml.backend import DirectML # pylint: disable=ungrouped-imports
+    from modules.dml.backend import DirectML  # pylint: disable=ungrouped-imports
+
     # Alternative of torch.cuda for DirectML.
     torch.dml = DirectML
 
@@ -58,27 +66,43 @@ def directml_init():
 
     torch.Tensor.directml = lambda self: self.to(torch.dml.current_device())
 
+
 def directml_do_hijack():
     import modules.dml.hijack
     from modules.devices import device
 
     if not torch.dml.has_float64_support(device):
-        CondFunc('torch.from_numpy',
-            lambda orig_func, *args, **kwargs: orig_func(args[0].astype('float32')),
-            lambda *args, **kwargs: args[1].dtype == float)
+        CondFunc(
+            "torch.from_numpy",
+            lambda orig_func, *args, **kwargs: orig_func(args[0].astype("float32")),
+            lambda *args, **kwargs: args[1].dtype == float,
+        )
 
     _set_memory_provider()
+
 
 class OverrideItem(NamedTuple):
     value: str
     condition: Optional[Callable]
     message: Optional[str]
 
+
 opts_override_table = {
-    "diffusers_generator_device": OverrideItem("cpu", None, "DirectML does not support torch Generator API."),
-    "diffusers_model_cpu_offload": OverrideItem(False, None, "Diffusers' model CPU offloading does not support DirectML devices."),
-    "diffusers_seq_cpu_offload": OverrideItem(False, lambda opts: opts.diffusers_pipeline != "Stable Diffusion XL", "Diffusers' sequential CPU offloading is available only on StableDiffusionXLPipeline with DirectML devices."),
+    "diffusers_generator_device": OverrideItem(
+        "cpu", None, "DirectML does not support torch Generator API."
+    ),
+    "diffusers_model_cpu_offload": OverrideItem(
+        False,
+        None,
+        "Diffusers' model CPU offloading does not support DirectML devices.",
+    ),
+    "diffusers_seq_cpu_offload": OverrideItem(
+        False,
+        lambda opts: opts.diffusers_pipeline != "Stable Diffusion XL",
+        "Diffusers' sequential CPU offloading is available only on StableDiffusionXLPipeline with DirectML devices.",
+    ),
 }
+
 
 def directml_override_opts():
     from modules import shared
@@ -89,14 +113,18 @@ def directml_override_opts():
     count = 0
     for key in opts_override_table:
         item = opts_override_table[key]
-        if getattr(shared.opts, key) != item.value and (item.condition is None or item.condition(shared.opts)):
+        if getattr(shared.opts, key) != item.value and (
+            item.condition is None or item.condition(shared.opts)
+        ):
             count += 1
             setattr(shared.opts, key, item.value)
             if item.message is not None:
                 shared.log.warning(item.message)
-            shared.log.warning(f'{key} is automatically overriden to {item.value}.')
-    
+            shared.log.warning(f"{key} is automatically overriden to {item.value}.")
+
     if count > 0:
-        shared.log.info(f'{count} options are automatically overriden. If you want to keep them from overriding, run with --experimental argument.')
+        shared.log.info(
+            f"{count} options are automatically overriden. If you want to keep them from overriding, run with --experimental argument."
+        )
 
     _set_memory_provider()

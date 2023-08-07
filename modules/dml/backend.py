@@ -1,7 +1,7 @@
 # pylint: disable=no-member,no-self-argument,no-method-argument
 from typing import Optional, Callable
 import torch
-import torch_directml # pylint: disable=import-error
+import torch_directml  # pylint: disable=import-error
 import modules.dml.amp as amp
 
 from .utils import rDevice, get_device
@@ -9,16 +9,24 @@ from .device import device
 from .device_properties import DeviceProperties
 from .memory import MemoryProvider
 
-def amd_mem_get_info(device: Optional[rDevice]=None) -> tuple[int, int]:
+
+def amd_mem_get_info(device: Optional[rDevice] = None) -> tuple[int, int]:
     from .memory_amd import AMDMemoryProvider
+
     return AMDMemoryProvider.mem_get_info(get_device(device).index)
 
-def pdh_mem_get_info(device: Optional[rDevice]=None) -> tuple[int, int]:
-    mem_info = DirectML.memory_provider.get_memory(get_device(device).index)
-    return (mem_info["total_committed"] - mem_info["dedicated_usage"], mem_info["total_committed"])
 
-def mem_get_info(device: Optional[rDevice]=None) -> tuple[int, int]:
+def pdh_mem_get_info(device: Optional[rDevice] = None) -> tuple[int, int]:
+    mem_info = DirectML.memory_provider.get_memory(get_device(device).index)
+    return (
+        mem_info["total_committed"] - mem_info["dedicated_usage"],
+        mem_info["total_committed"],
+    )
+
+
+def mem_get_info(device: Optional[rDevice] = None) -> tuple[int, int]:
     return (8589934592, 8589934592)
+
 
 class DirectML:
     amp = amp
@@ -37,7 +45,7 @@ class DirectML:
     def is_directml_device(device: torch.device) -> bool:
         return device.type == "privateuseone"
 
-    def has_float64_support(device: Optional[rDevice]=None) -> bool:
+    def has_float64_support(device: Optional[rDevice] = None) -> bool:
         return torch_directml.has_float64_support(get_device(device).index)
 
     def device_count() -> int:
@@ -49,16 +57,16 @@ class DirectML:
     def default_device() -> torch.device:
         return torch_directml.device(torch_directml.default_device())
 
-    def get_device_string(device: Optional[rDevice]=None) -> str:
+    def get_device_string(device: Optional[rDevice] = None) -> str:
         return f"privateuseone:{get_device(device).index}"
 
-    def get_device_name(device: Optional[rDevice]=None) -> str:
+    def get_device_name(device: Optional[rDevice] = None) -> str:
         return torch_directml.device_name(get_device(device).index)
 
-    def get_device_properties(device: Optional[rDevice]=None) -> DeviceProperties:
+    def get_device_properties(device: Optional[rDevice] = None) -> DeviceProperties:
         return DeviceProperties(get_device(device))
 
-    def memory_stats(device: Optional[rDevice]=None):
+    def memory_stats(device: Optional[rDevice] = None):
         mem_stat_fill = "DirectMLDevice"
         return {
             "num_ooms": 0,
@@ -67,11 +75,11 @@ class DirectML:
 
     mem_get_info: Callable = mem_get_info
 
-    def memory_allocated(device: Optional[rDevice]=None) -> int:
+    def memory_allocated(device: Optional[rDevice] = None) -> int:
         return sum(torch_directml.gpu_memory(get_device(device).index)) * (1 << 20)
 
-    def max_memory_allocated(device: Optional[rDevice]=None):
-        return DirectML.memory_allocated(device) # DirectML does not empty GPU memory
+    def max_memory_allocated(device: Optional[rDevice] = None):
+        return DirectML.memory_allocated(device)  # DirectML does not empty GPU memory
 
-    def reset_peak_memory_stats(device: Optional[rDevice]=None):
+    def reset_peak_memory_stats(device: Optional[rDevice] = None):
         return

@@ -1,5 +1,6 @@
 import torch
 
+
 class DeviceProperties:
     type: str = "directml"
     name: str
@@ -13,7 +14,11 @@ class DeviceProperties:
         self.total_memory = torch.dml.mem_get_info(device)[0]
 
     def __str__(self):
-        return f"DeviceProperties(name='{self.name}', total_memory='{self.total_memory}')"
+        return (
+            f"DeviceProperties(name='{self.name}', total_memory='{self.total_memory}')"
+        )
 
     def __repr__(self):
-        return f"DeviceProperties(name='{self.name}', total_memory='{self.total_memory}')"
+        return (
+            f"DeviceProperties(name='{self.name}', total_memory='{self.total_memory}')"
+        )

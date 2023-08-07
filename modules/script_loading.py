@@ -12,9 +12,8 @@ def load_module(path):
     try:
         module_spec.loader.exec_module(module)
     except Exception as e:
-        errors.display(e, f'Module load: {path}')
+        errors.display(e, f"Module load: {path}")
     return module
-
 
 
 def preload_extensions(extensions_dir, parser):
@@ -31,7 +30,7 @@ def preload_extensions(extensions_dir, parser):
             continue
         try:
             module = load_module(preload_script)
-            if hasattr(module, 'preload'):
+            if hasattr(module, "preload"):
                 module.preload(parser)
         except Exception as e:
-            errors.display(e, f'Extension preload: {preload_script}')
+            errors.display(e, f"Extension preload: {preload_script}")

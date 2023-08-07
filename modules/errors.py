@@ -8,22 +8,44 @@ from installer import log as installer_log
 
 
 log = installer_log
-console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
-    "traceback.border": "black",
-    "traceback.border.syntax_error": "black",
-    "inspect.value.border": "black",
-}))
+console = Console(
+    log_time=True,
+    log_time_format="%H:%M:%S-%f",
+    theme=Theme(
+        {
+            "traceback.border": "black",
+            "traceback.border.syntax_error": "black",
+            "inspect.value.border": "black",
+        }
+    ),
+)
 
 pretty_install(console=console)
-traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False)
+traceback_install(
+    console=console,
+    extra_lines=1,
+    width=console.width,
+    word_wrap=False,
+    indent_guides=False,
+)
 already_displayed = {}
 
 
-def install(suppress=[]): # noqa: B006
+def install(suppress=[]):  # noqa: B006
     warnings.filterwarnings("ignore", category=UserWarning)
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=suppress)
-    logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(levelname)s | %(pathname)s | %(message)s')
+    traceback_install(
+        console=console,
+        extra_lines=1,
+        width=console.width,
+        word_wrap=False,
+        indent_guides=False,
+        suppress=suppress,
+    )
+    logging.basicConfig(
+        level=logging.ERROR,
+        format="%(asctime)s | %(levelname)s | %(pathname)s | %(message)s",
+    )
     # for handler in logging.getLogger().handlers:
     #    handler.setLevel(logging.INFO)
 
@@ -34,9 +56,17 @@ def print_error_explanation(message):
         log.error(line)
 
 
-def display(e: Exception, task, suppress=[]): # noqa: B006
+def display(e: Exception, task, suppress=[]):  # noqa: B006
     log.error(f"{task or 'error'}: {type(e).__name__}")
-    console.print_exception(show_locals=False, max_frames=5, extra_lines=1, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
+    console.print_exception(
+        show_locals=False,
+        max_frames=5,
+        extra_lines=1,
+        suppress=suppress,
+        theme="ansi_dark",
+        word_wrap=False,
+        width=min([console.width, 200]),
+    )
 
 
 def display_once(e: Exception, task):
@@ -53,5 +83,13 @@ def run(code, task):
         display(e, task)
 
 
-def exception(suppress=[]): # noqa: B006
-    console.print_exception(show_locals=False, max_frames=10, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
+def exception(suppress=[]):  # noqa: B006
+    console.print_exception(
+        show_locals=False,
+        max_frames=10,
+        extra_lines=2,
+        suppress=suppress,
+        theme="ansi_dark",
+        word_wrap=False,
+        width=min([console.width, 200]),
+    )

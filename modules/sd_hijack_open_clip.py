@@ -3,14 +3,16 @@ import torch
 
 from modules import sd_hijack_clip, devices
 
-tokenizer = open_clip.tokenizer._tokenizer # pylint: disable=protected-access
+tokenizer = open_clip.tokenizer._tokenizer  # pylint: disable=protected-access
 
 
-class FrozenOpenCLIPEmbedderWithCustomWords(sd_hijack_clip.FrozenCLIPEmbedderWithCustomWordsBase):
+class FrozenOpenCLIPEmbedderWithCustomWords(
+    sd_hijack_clip.FrozenCLIPEmbedderWithCustomWordsBase
+):
     def __init__(self, wrapped, hijack):
         super().__init__(wrapped, hijack)
 
-        self.comma_token = [v for k, v in tokenizer.encoder.items() if k == ',</w>'][0]
+        self.comma_token = [v for k, v in tokenizer.encoder.items() if k == ",</w>"][0]
         self.id_start = tokenizer.encoder["<start_of_text>"]
         self.id_end = tokenizer.encoder["<end_of_text>"]
         self.id_pad = 0

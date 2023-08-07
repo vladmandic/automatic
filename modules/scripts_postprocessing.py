@@ -31,14 +31,14 @@ class ScriptPostprocessing:
         The return value should be a dictionary that maps parameter names to components used in processing.
         Values of those components will be passed to process() function.
         """
-        pass # pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
     def process(self, pp: PostprocessedImage, **args):
         """
         This function is called to postprocess the image.
         args contains a dictionary with all values returned by components from ui()
         """
-        pass # pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
     def image_changed(self):
         pass
@@ -86,6 +86,7 @@ class ScriptPostprocessingRunner:
     def scripts_in_preferred_order(self):
         if self.scripts is None:
             import modules.scripts
+
             self.initialize_scripts(modules.scripts.postprocessing_scripts_data)
 
         scripts_order = shared.opts.postprocessing_operation_order
@@ -97,7 +98,15 @@ class ScriptPostprocessingRunner:
 
             return len(self.scripts)
 
-        script_scores = {script.name: (script_score(script.name), script.order, script.name, original_index) for original_index, script in enumerate(self.scripts)}
+        script_scores = {
+            script.name: (
+                script_score(script.name),
+                script.order,
+                script.name,
+                original_index,
+            )
+            for original_index, script in enumerate(self.scripts)
+        }
 
         return sorted(self.scripts, key=lambda x: script_scores[x.name])
 
@@ -117,7 +126,7 @@ class ScriptPostprocessingRunner:
         for script in self.scripts_in_preferred_order():
             shared.state.job = script.name
 
-            script_args = args[script.args_from:script.args_to]
+            script_args = args[script.args_from : script.args_to]
 
             process_args = {}
             for (name, _component), value in zip(script.controls.items(), script_args):
@@ -136,7 +145,6 @@ class ScriptPostprocessingRunner:
         for script in scripts:
             script_args_dict = scripts_args.get(script.name, None)
             if script_args_dict is not None:
-
                 for i, name in enumerate(script.controls):
                     args[script.args_from + i] = script_args_dict.get(name, None)
 

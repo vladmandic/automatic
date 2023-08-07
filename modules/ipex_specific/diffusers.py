@@ -2,7 +2,8 @@ import torch
 import intel_extension_for_pytorch as ipex
 import diffusers
 
-#ARC GPUs can't allocate more than 4GB to a single block:
+
+# ARC GPUs can't allocate more than 4GB to a single block:
 class SlicedAttnProcessor:
     r"""
     Processor for implementing sliced attention.
@@ -16,22 +17,36 @@ class SlicedAttnProcessor:
     def __init__(self, slice_size):
         self.slice_size = slice_size
 
-    def __call__(self, attn: diffusers.models.attention_processor.Attention, hidden_states, encoder_hidden_states=None, attention_mask=None):
+    def __call__(
+        self,
+        attn: diffusers.models.attention_processor.Attention,
+        hidden_states,
+        encoder_hidden_states=None,
+        attention_mask=None,
+    ):
         residual = hidden_states
 
         input_ndim = hidden_states.ndim
 
         if input_ndim == 4:
             batch_size, channel, height, width = hidden_states.shape
-            hidden_states = hidden_states.view(batch_size, channel, height * width).transpose(1, 2)
+            hidden_states = hidden_states.view(
+                batch_size, channel, height * width
+            ).transpose(1, 2)
 
         batch_size, sequence_length, _ = (
-            hidden_states.shape if encoder_hidden_states is None else encoder_hidden_states.shape
+            hidden_states.shape
+            if encoder_hidden_states is None
+            else encoder_hidden_states.shape
         )
-        attention_mask = attn.prepare_attention_mask(attention_mask, sequence_length, batch_size)
+        attention_mask = attn.prepare_attention_mask(
+            attention_mask, sequence_length, batch_size
+        )
 
         if attn.group_norm is not None:
-            hidden_states = attn.group_norm(hidden_states.transpose(1, 2)).transpose(1, 2)
+            hidden_states = attn.group_norm(hidden_states.transpose(1, 2)).transpose(
+                1, 2
+            )
 
         query = attn.to_q(hidden_states)
         dim = query.shape[-1]
@@ -40,7 +55,9 @@ class SlicedAttnProcessor:
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
         elif attn.norm_cross:
-            encoder_hidden_states = attn.norm_encoder_hidden_states(encoder_hidden_states)
+            encoder_hidden_states = attn.norm_encoder_hidden_states(
+                encoder_hidden_states
+            )
 
         key = attn.to_k(encoder_hidden_states)
         value = attn.to_v(encoder_hidden_states)
@@ -49,17 +66,25 @@ class SlicedAttnProcessor:
 
         batch_size_attention, query_tokens, shape_three = query.shape
         hidden_states = torch.zeros(
-            (batch_size_attention, query_tokens, dim // attn.heads), device=query.device, dtype=query.dtype
+            (batch_size_attention, query_tokens, dim // attn.heads),
+            device=query.device,
+            dtype=query.dtype,
         )
 
         block_multiply = 2.4 if query.dtype == torch.float32 else 1.2
-        block_size = (batch_size_attention * query_tokens * shape_three) / 1024 * block_multiply #MB
+        block_size = (
+            (batch_size_attention * query_tokens * shape_three) / 1024 * block_multiply
+        )  # MB
         split_2_slice_size = query_tokens
         if block_size >= 4000:
             do_split_2 = True
-            #Find something divisible with the query_tokens
+            # Find something divisible with the query_tokens
             sanity_check = 0
-            while ((self.slice_size * split_2_slice_size * shape_three) / 1024 * block_multiply) > 4000:
+            while (
+                (self.slice_size * split_2_slice_size * shape_three)
+                / 1024
+                * block_multiply
+            ) > 4000:
                 split_2_slice_size = split_2_slice_size // 2
                 sanity_check = sanity_check + 1
                 if sanity_check >= 128:
@@ -78,18 +103,32 @@ class SlicedAttnProcessor:
 
                     query_slice = query[start_idx:end_idx, start_idx_2:end_idx_2]
                     key_slice = key[start_idx:end_idx, start_idx_2:end_idx_2]
-                    attn_mask_slice = attention_mask[start_idx:end_idx, start_idx_2:end_idx_2] if attention_mask is not None else None
+                    attn_mask_slice = (
+                        attention_mask[start_idx:end_idx, start_idx_2:end_idx_2]
+                        if attention_mask is not None
+                        else None
+                    )
 
-                    attn_slice = attn.get_attention_scores(query_slice, key_slice, attn_mask_slice)
-                    attn_slice = torch.bmm(attn_slice, value[start_idx:end_idx, start_idx_2:end_idx_2])
+                    attn_slice = attn.get_attention_scores(
+                        query_slice, key_slice, attn_mask_slice
+                    )
+                    attn_slice = torch.bmm(
+                        attn_slice, value[start_idx:end_idx, start_idx_2:end_idx_2]
+                    )
 
                     hidden_states[start_idx:end_idx, start_idx_2:end_idx_2] = attn_slice
             else:
                 query_slice = query[start_idx:end_idx]
                 key_slice = key[start_idx:end_idx]
-                attn_mask_slice = attention_mask[start_idx:end_idx] if attention_mask is not None else None
+                attn_mask_slice = (
+                    attention_mask[start_idx:end_idx]
+                    if attention_mask is not None
+                    else None
+                )
 
-                attn_slice = attn.get_attention_scores(query_slice, key_slice, attn_mask_slice)
+                attn_slice = attn.get_attention_scores(
+                    query_slice, key_slice, attn_mask_slice
+                )
 
                 attn_slice = torch.bmm(attn_slice, value[start_idx:end_idx])
 
@@ -103,7 +142,9 @@ class SlicedAttnProcessor:
         hidden_states = attn.to_out[1](hidden_states)
 
         if input_ndim == 4:
-            hidden_states = hidden_states.transpose(-1, -2).reshape(batch_size, channel, height, width)
+            hidden_states = hidden_states.transpose(-1, -2).reshape(
+                batch_size, channel, height, width
+            )
 
         if attn.residual_connection:
             hidden_states = hidden_states + residual
@@ -111,6 +152,7 @@ class SlicedAttnProcessor:
         hidden_states = hidden_states / attn.rescale_output_factor
 
         return hidden_states
+
 
 def ipex_diffusers():
     diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor

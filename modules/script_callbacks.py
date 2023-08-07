@@ -8,7 +8,7 @@ import modules.errors as errors
 
 
 def report_exception(e, c, job):
-    errors.display(e, f'executing callback: {c.script} {job}')
+    errors.display(e, f"executing callback: {c.script} {job}")
 
 
 class ImageSaveParams:
@@ -27,7 +27,16 @@ class ImageSaveParams:
 
 
 class CFGDenoiserParams:
-    def __init__(self, x, image_cond, sigma, sampling_step, total_sampling_steps, text_cond, text_uncond):
+    def __init__(
+        self,
+        x,
+        image_cond,
+        sigma,
+        sampling_step,
+        total_sampling_steps,
+        text_cond,
+        text_uncond,
+    ):
         self.x = x
         """Latent image representation in the process of being denoised"""
 
@@ -115,7 +124,7 @@ def timer(t0: float, script, callback: str):
     t1 = time.time()
     s = round(t1 - t0, 2)
     if s > 0.1:
-        errors.log.debug(f'Script: {s}s {callback} {script}')
+        errors.log.debug(f"Script: {s}s {callback} {script}")
 
 
 def clear_callbacks():
@@ -124,187 +133,187 @@ def clear_callbacks():
 
 
 def app_started_callback(demo: Optional[Blocks], app: FastAPI):
-    for c in callback_map['callbacks_app_started']:
+    for c in callback_map["callbacks_app_started"]:
         try:
             t0 = time.time()
             c.callback(demo, app)
-            timer(t0, c.script, 'app_started')
+            timer(t0, c.script, "app_started")
         except Exception as e:
-            report_exception(e, c, 'app_started_callback')
+            report_exception(e, c, "app_started_callback")
 
 
 def app_reload_callback():
-    for c in callback_map['callbacks_on_reload']:
+    for c in callback_map["callbacks_on_reload"]:
         try:
             t0 = time.time()
             c.callback()
-            timer(t0, c.script, 'on_reload')
+            timer(t0, c.script, "on_reload")
         except Exception as e:
-            report_exception(e, c, 'callbacks_on_reload')
+            report_exception(e, c, "callbacks_on_reload")
 
 
 def model_loaded_callback(sd_model):
-    for c in callback_map['callbacks_model_loaded']:
+    for c in callback_map["callbacks_model_loaded"]:
         try:
             t0 = time.time()
             c.callback(sd_model)
-            timer(t0, c.script, 'model_loaded')
+            timer(t0, c.script, "model_loaded")
         except Exception as e:
-            report_exception(e, c, 'model_loaded_callback')
+            report_exception(e, c, "model_loaded_callback")
 
 
 def ui_tabs_callback():
     res = []
-    for c in callback_map['callbacks_ui_tabs']:
+    for c in callback_map["callbacks_ui_tabs"]:
         try:
             t0 = time.time()
             res += c.callback() or []
-            timer(t0, c.script, 'ui_tabs')
+            timer(t0, c.script, "ui_tabs")
         except Exception as e:
-            report_exception(e, c, 'ui_tabs_callback')
+            report_exception(e, c, "ui_tabs_callback")
     return res
 
 
 def ui_train_tabs_callback(params: UiTrainTabParams):
-    for c in callback_map['callbacks_ui_train_tabs']:
+    for c in callback_map["callbacks_ui_train_tabs"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'ui_train_tabs')
+            timer(t0, c.script, "ui_train_tabs")
         except Exception as e:
-            report_exception(e, c, 'callbacks_ui_train_tabs')
+            report_exception(e, c, "callbacks_ui_train_tabs")
 
 
 def ui_settings_callback():
-    for c in callback_map['callbacks_ui_settings']:
+    for c in callback_map["callbacks_ui_settings"]:
         try:
             t0 = time.time()
             c.callback()
-            timer(t0, c.script, 'ui_settings')
+            timer(t0, c.script, "ui_settings")
         except Exception as e:
-            report_exception(e, c, 'ui_settings_callback')
+            report_exception(e, c, "ui_settings_callback")
 
 
 def before_image_saved_callback(params: ImageSaveParams):
-    for c in callback_map['callbacks_before_image_saved']:
+    for c in callback_map["callbacks_before_image_saved"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'before_image_saved')
+            timer(t0, c.script, "before_image_saved")
         except Exception as e:
-            report_exception(e, c, 'before_image_saved_callback')
+            report_exception(e, c, "before_image_saved_callback")
 
 
 def image_saved_callback(params: ImageSaveParams):
-    for c in callback_map['callbacks_image_saved']:
+    for c in callback_map["callbacks_image_saved"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'image_saved')
+            timer(t0, c.script, "image_saved")
         except Exception as e:
-            report_exception(e, c, 'image_saved_callback')
+            report_exception(e, c, "image_saved_callback")
 
 
 def cfg_denoiser_callback(params: CFGDenoiserParams):
-    for c in callback_map['callbacks_cfg_denoiser']:
+    for c in callback_map["callbacks_cfg_denoiser"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'cfg_denoiser')
+            timer(t0, c.script, "cfg_denoiser")
         except Exception as e:
-            report_exception(e, c, 'cfg_denoiser_callback')
+            report_exception(e, c, "cfg_denoiser_callback")
 
 
 def cfg_denoised_callback(params: CFGDenoisedParams):
-    for c in callback_map['callbacks_cfg_denoised']:
+    for c in callback_map["callbacks_cfg_denoised"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'cfg_denoised')
+            timer(t0, c.script, "cfg_denoised")
         except Exception as e:
-            report_exception(e, c, 'cfg_denoised_callback')
+            report_exception(e, c, "cfg_denoised_callback")
 
 
 def cfg_after_cfg_callback(params: AfterCFGCallbackParams):
-    for c in callback_map['callbacks_cfg_after_cfg']:
+    for c in callback_map["callbacks_cfg_after_cfg"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'cfg_after_cfg')
+            timer(t0, c.script, "cfg_after_cfg")
         except Exception as e:
-            report_exception(e, c, 'cfg_after_cfg_callback')
+            report_exception(e, c, "cfg_after_cfg_callback")
 
 
 def before_component_callback(component, **kwargs):
-    for c in callback_map['callbacks_before_component']:
+    for c in callback_map["callbacks_before_component"]:
         try:
             t0 = time.time()
             c.callback(component, **kwargs)
-            timer(t0, c.script, 'before_component')
+            timer(t0, c.script, "before_component")
         except Exception as e:
-            report_exception(e, c, 'before_component_callback')
+            report_exception(e, c, "before_component_callback")
 
 
 def after_component_callback(component, **kwargs):
-    for c in callback_map['callbacks_after_component']:
+    for c in callback_map["callbacks_after_component"]:
         try:
             t0 = time.time()
             c.callback(component, **kwargs)
-            timer(t0, c.script, 'after_component')
+            timer(t0, c.script, "after_component")
         except Exception as e:
-            report_exception(e, c, 'after_component_callback')
+            report_exception(e, c, "after_component_callback")
 
 
 def image_grid_callback(params: ImageGridLoopParams):
-    for c in callback_map['callbacks_image_grid']:
+    for c in callback_map["callbacks_image_grid"]:
         try:
             t0 = time.time()
             c.callback(params)
-            timer(t0, c.script, 'image_grid')
+            timer(t0, c.script, "image_grid")
         except Exception as e:
-            report_exception(e, c, 'image_grid')
+            report_exception(e, c, "image_grid")
 
 
 def infotext_pasted_callback(infotext: str, params: Dict[str, Any]):
-    for c in callback_map['callbacks_infotext_pasted']:
+    for c in callback_map["callbacks_infotext_pasted"]:
         try:
             t0 = time.time()
             c.callback(infotext, params)
-            timer(t0, c.script, 'infotext_pasted')
+            timer(t0, c.script, "infotext_pasted")
         except Exception as e:
-            report_exception(e, c, 'infotext_pasted')
+            report_exception(e, c, "infotext_pasted")
 
 
 def script_unloaded_callback():
-    for c in reversed(callback_map['callbacks_script_unloaded']):
+    for c in reversed(callback_map["callbacks_script_unloaded"]):
         try:
             t0 = time.time()
             c.callback()
-            timer(t0, c.script, 'script_unloaded')
+            timer(t0, c.script, "script_unloaded")
         except Exception as e:
-            report_exception(e, c, 'script_unloaded')
+            report_exception(e, c, "script_unloaded")
 
 
 def before_ui_callback():
-    for c in reversed(callback_map['callbacks_before_ui']):
+    for c in reversed(callback_map["callbacks_before_ui"]):
         try:
             t0 = time.time()
             c.callback()
-            timer(t0, c.script, 'before_ui')
+            timer(t0, c.script, "before_ui")
         except Exception as e:
-            report_exception(e, c, 'before_ui')
+            report_exception(e, c, "before_ui")
 
 
 def add_callback(callbacks, fun):
     stack = [x for x in inspect.stack() if x.filename != __file__]
-    filename = stack[0].filename if len(stack) > 0 else 'unknown file'
+    filename = stack[0].filename if len(stack) > 0 else "unknown file"
     callbacks.append(ScriptCallback(filename, fun))
 
 
 def remove_current_script_callbacks():
     stack = [x for x in inspect.stack() if x.filename != __file__]
-    filename = stack[0].filename if len(stack) > 0 else 'unknown file'
-    if filename == 'unknown file':
+    filename = stack[0].filename if len(stack) > 0 else "unknown file"
+    if filename == "unknown file":
         return
     for callback_list in callback_map.values():
         for callback_to_remove in [cb for cb in callback_list if cb.script == filename]:
@@ -313,25 +322,27 @@ def remove_current_script_callbacks():
 
 def remove_callbacks_for_function(callback_func):
     for callback_list in callback_map.values():
-        for callback_to_remove in [cb for cb in callback_list if cb.callback == callback_func]:
+        for callback_to_remove in [
+            cb for cb in callback_list if cb.callback == callback_func
+        ]:
             callback_list.remove(callback_to_remove)
 
 
 def on_app_started(callback):
     """register a function to be called when the webui started, the gradio `Block` component and
     fastapi `FastAPI` object are passed as the arguments"""
-    add_callback(callback_map['callbacks_app_started'], callback)
+    add_callback(callback_map["callbacks_app_started"], callback)
 
 
 def on_before_reload(callback):
     """register a function to be called just before the server reloads."""
-    add_callback(callback_map['callbacks_on_reload'], callback)
+    add_callback(callback_map["callbacks_on_reload"], callback)
 
 
 def on_model_loaded(callback):
     """register a function to be called when the stable diffusion model is created; the model is
-    passed as an argument; this function is also called when the script is reloaded. """
-    add_callback(callback_map['callbacks_model_loaded'], callback)
+    passed as an argument; this function is also called when the script is reloaded."""
+    add_callback(callback_map["callbacks_model_loaded"], callback)
 
 
 def on_ui_tabs(callback):
@@ -344,20 +355,20 @@ def on_ui_tabs(callback):
     title is tab text displayed to user in the UI
     elem_id is HTML id for the tab
     """
-    add_callback(callback_map['callbacks_ui_tabs'], callback)
+    add_callback(callback_map["callbacks_ui_tabs"], callback)
 
 
 def on_ui_train_tabs(callback):
     """register a function to be called when the UI is creating new tabs for the train tab.
     Create your new tabs with gr.Tab.
     """
-    add_callback(callback_map['callbacks_ui_train_tabs'], callback)
+    add_callback(callback_map["callbacks_ui_train_tabs"], callback)
 
 
 def on_ui_settings(callback):
     """register a function to be called before UI settings are populated; add your settings
-    by using shared.opts.add_option(shared.OptionInfo(...)) """
-    add_callback(callback_map['callbacks_ui_settings'], callback)
+    by using shared.opts.add_option(shared.OptionInfo(...))"""
+    add_callback(callback_map["callbacks_ui_settings"], callback)
 
 
 def on_before_image_saved(callback):
@@ -365,7 +376,7 @@ def on_before_image_saved(callback):
     The callback is called with one argument:
         - params: ImageSaveParams - parameters the image is to be saved with. You can change fields in this object.
     """
-    add_callback(callback_map['callbacks_before_image_saved'], callback)
+    add_callback(callback_map["callbacks_before_image_saved"], callback)
 
 
 def on_image_saved(callback):
@@ -373,7 +384,7 @@ def on_image_saved(callback):
     The callback is called with one argument:
         - params: ImageSaveParams - parameters the image was saved with. Changing fields in this object does nothing.
     """
-    add_callback(callback_map['callbacks_image_saved'], callback)
+    add_callback(callback_map["callbacks_image_saved"], callback)
 
 
 def on_cfg_denoiser(callback):
@@ -381,7 +392,7 @@ def on_cfg_denoiser(callback):
     The callback is called with one argument:
         - params: CFGDenoiserParams - parameters to be passed to the inner model and sampling state details.
     """
-    add_callback(callback_map['callbacks_cfg_denoiser'], callback)
+    add_callback(callback_map["callbacks_cfg_denoiser"], callback)
 
 
 def on_cfg_denoised(callback):
@@ -389,7 +400,7 @@ def on_cfg_denoised(callback):
     The callback is called with one argument:
         - params: CFGDenoisedParams - parameters to be passed to the inner model and sampling state details.
     """
-    add_callback(callback_map['callbacks_cfg_denoised'], callback)
+    add_callback(callback_map["callbacks_cfg_denoised"], callback)
 
 
 def on_cfg_after_cfg(callback):
@@ -397,7 +408,7 @@ def on_cfg_after_cfg(callback):
     The callback is called with one argument:
         - params: AfterCFGCallbackParams - parameters to be passed to the script for post-processing after cfg calculation.
     """
-    add_callback(callback_map['callbacks_cfg_after_cfg'], callback)
+    add_callback(callback_map["callbacks_cfg_after_cfg"], callback)
 
 
 def on_before_component(callback):
@@ -409,12 +420,12 @@ def on_before_component(callback):
     Use elem_id/label fields of kwargs to figure out which component it is.
     This can be useful to inject your own components somewhere in the middle of vanilla UI.
     """
-    add_callback(callback_map['callbacks_before_component'], callback)
+    add_callback(callback_map["callbacks_before_component"], callback)
 
 
 def on_after_component(callback):
     """register a function to be called after a component is created. See on_before_component for more."""
-    add_callback(callback_map['callbacks_after_component'], callback)
+    add_callback(callback_map["callbacks_after_component"], callback)
 
 
 def on_image_grid(callback):
@@ -422,7 +433,7 @@ def on_image_grid(callback):
     The callback is called with one argument:
        - params: ImageGridLoopParams - parameters to be used for grid creation. Can be modified.
     """
-    add_callback(callback_map['callbacks_image_grid'], callback)
+    add_callback(callback_map["callbacks_image_grid"], callback)
 
 
 def on_infotext_pasted(callback):
@@ -431,17 +442,17 @@ def on_infotext_pasted(callback):
        - infotext: str - raw infotext.
        - result: Dict[str, any] - parsed infotext parameters.
     """
-    add_callback(callback_map['callbacks_infotext_pasted'], callback)
+    add_callback(callback_map["callbacks_infotext_pasted"], callback)
 
 
 def on_script_unloaded(callback):
     """register a function to be called before the script is unloaded. Any hooks/hijacks/monkeying about that
     the script did should be reverted here"""
 
-    add_callback(callback_map['callbacks_script_unloaded'], callback)
+    add_callback(callback_map["callbacks_script_unloaded"], callback)
 
 
 def on_before_ui(callback):
     """register a function to be called before the UI is created."""
 
-    add_callback(callback_map['callbacks_before_ui'], callback)
+    add_callback(callback_map["callbacks_before_ui"], callback)

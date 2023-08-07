@@ -30,7 +30,7 @@ select = [
 ]
 exclude = [
   "/usr/lib",
-	"extensions",
+    "extensions",
   "extensions-builtin",
   "modules/lora",
   "modules/lycoris",
@@ -38,12 +38,12 @@ exclude = [
   "modules/models/diffusion",
 ]
 ignore = [
-	"A003", # Class attirbute shadowing builtin
-	"C901", # Function is too complex
-	"E501", # Line too long
-	"E731", # Do not assign a `lambda` expression, use a `def`
-	"I001", # Import block is un-sorted or un-formatted
-	"W605", # Invalid escape sequence, messes with some docstrings
+    "A003", # Class attirbute shadowing builtin
+    "C901", # Function is too complex
+    "E501", # Line too long
+    "E731", # Do not assign a `lambda` expression, use a `def`
+    "I001", # Import block is un-sorted or un-formatted
+    "W605", # Invalid escape sequence, messes with some docstrings
   "B905", # Without explicit scrict
   "C408", # Rewrite as a literal
   "E402", # Module level import not at top of file

@@ -16,6 +16,7 @@ def register_extra_network(extra_network):
 
 def register_default_extra_networks():
     from modules.extra_networks_hypernet import ExtraNetworkHypernet
+
     register_extra_network(ExtraNetworkHypernet())
 
 
@@ -25,7 +26,7 @@ class ExtraNetworkParams:
         self.positional = []
         self.named = {}
         for item in self.items:
-            parts = item.split('=', 2) if isinstance(item, str) else [item]
+            parts = item.split("=", 2) if isinstance(item, str) else [item]
             if len(parts) == 2:
                 self.named[parts[0]] = parts[1]
             else:
@@ -70,7 +71,10 @@ def activate(p, extra_network_data):
         try:
             extra_network.activate(p, extra_network_args)
         except Exception as e:
-            errors.display(e, f"activating extra network {extra_network_name} with arguments {extra_network_args}")
+            errors.display(
+                e,
+                f"activating extra network {extra_network_name} with arguments {extra_network_args}",
+            )
 
     for extra_network_name, extra_network in extra_network_registry.items():
         args = extra_network_data.get(extra_network_name, None)
@@ -100,7 +104,9 @@ def deactivate(p, extra_network_data):
         try:
             extra_network.deactivate(p)
         except Exception as e:
-            errors.display(e, f"deactivating unmentioned extra network {extra_network_name}")
+            errors.display(
+                e, f"deactivating unmentioned extra network {extra_network_name}"
+            )
 
 
 re_extra_net = re.compile(r"<(\w+):([^>]+)>")
@@ -114,6 +120,7 @@ def parse_prompt(prompt):
         args = m.group(2)
         res[name].append(ExtraNetworkParams(items=args.split(":")))
         return ""
+
     prompt = re.sub(re_extra_net, found, prompt)
     return prompt, res
 

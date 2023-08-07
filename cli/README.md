@@ -8,8 +8,8 @@ Note: All scripts have built-in `--help` parameter that can be used to get more 
 
 ### Generate
 
-Text-to-image with all of the possible parameters  
-Supports upsampling, face restoration and grid creation  
+Text-to-image with all of the possible parameters
+Supports upsampling, face restoration and grid creation
 > python generate.py
 
 By default uses parameters from  `generate.json`
@@ -22,7 +22,7 @@ Parameters that are not specified will be randomized:
 
 ### Train
 
-Combined pipeline for **embeddings**, **lora**, **lycoris**, **dreambooth** and **hypernetwork**  
+Combined pipeline for **embeddings**, **lora**, **lycoris**, **dreambooth** and **hypernetwork**
 Optionally runs several image processing steps before training:
 
 - keep original image
@@ -59,19 +59,19 @@ Create previews for **embeddings**, **lora**, **lycoris**, **dreambooth** and **
 
 ### Image Watermark
 
-Create invisible image watermark and remove existing EXIF tags  
+Create invisible image watermark and remove existing EXIF tags
 
 > python image-watermark.py
 
 ### Image Interrogate
 
-Runs CLiP and Booru image interrogation  
+Runs CLiP and Booru image interrogation
 
 > python image-interrogate.py
 
 ### Palette Extract
 
-Extract color palette from image(s)  
+Extract color palette from image(s)
 
 > python image-palette.py
 
@@ -83,13 +83,13 @@ Generate complex prompt ideas
 
 ### Prompt Promptist
 
-Attempts to beautify the provided prompt  
+Attempts to beautify the provided prompt
 
 > python prompt-promptist.py
 
 ### Video Extract
 
-Extract frames from video files  
+Extract frames from video files
 
 > python video-extract.py
 
@@ -99,10 +99,10 @@ Extract frames from video files
 
 ### SDAPI
 
-Utility module that handles async communication to Automatic API endpoints  
-Note: Requires SD API  
+Utility module that handles async communication to Automatic API endpoints
+Note: Requires SD API
 
 Can be used to manually execute specific commands:
-> python sdapi.py progress  
+> python sdapi.py progress
 > python sdapi.py interrupt
 > python sdapi.py shutdown

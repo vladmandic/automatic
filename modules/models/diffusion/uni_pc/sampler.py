@@ -13,11 +13,15 @@ class UniPCSampler(object):
         to_torch = lambda x: x.clone().detach().to(torch.float32).to(model.device)
         self.before_sample = None
         self.after_sample = None
-        self.register_buffer('alphas_cumprod', to_torch(model.alphas_cumprod))
+        self.register_buffer("alphas_cumprod", to_torch(model.alphas_cumprod))
 
-        self.noise_schedule = NoiseScheduleVP("discrete", alphas_cumprod=self.alphas_cumprod)
+        self.noise_schedule = NoiseScheduleVP(
+            "discrete", alphas_cumprod=self.alphas_cumprod
+        )
 
-    def make_schedule(self, ddim_num_steps, ddim_discretize="uniform", ddim_eta=0., verbose=True):
+    def make_schedule(
+        self, ddim_num_steps, ddim_discretize="uniform", ddim_eta=0.0, verbose=True
+    ):
         # persist steps so we can eventually find denoising strength
         self.inflated_steps = ddim_num_steps
 
@@ -30,7 +34,9 @@ class UniPCSampler(object):
         # value from the hires steps slider:
         num_inference_steps = t[0] + 1
         num_inference_steps / self.inflated_steps
-        self.denoise_steps = max(num_inference_steps, shared.opts.schedulers_solver_order)
+        self.denoise_steps = max(
+            num_inference_steps, shared.opts.schedulers_solver_order
+        )
 
         max(self.inflated_steps - self.denoise_steps, 0)
 
@@ -40,20 +46,21 @@ class UniPCSampler(object):
             self.noise_schedule,
             shared.opts.uni_pc_skip_type,
             self.noise_schedule.T,
-            1./self.noise_schedule.total_N,
-            self.inflated_steps+1,
+            1.0 / self.noise_schedule.total_N,
+            self.inflated_steps + 1,
             t.device,
         )
 
         # the rest of the timesteps will be used for denoising
-        self.timesteps = all_timesteps[-(self.denoise_steps+1):]
+        self.timesteps = all_timesteps[-(self.denoise_steps + 1) :]
 
         latent_timestep = (
-            (   # get the timestep of our first denoise step
+            (  # get the timestep of our first denoise step
                 self.timesteps[:1]
                 # multiply by number of alphas to get int index
                 * self.noise_schedule.total_N
-            ).int() - 1 # minus one for 0-indexed
+            ).int()
+            - 1  # minus one for 0-indexed
         ).repeat(x0.shape[0])
 
         alphas_cumprod = self.alphas_cumprod
@@ -67,10 +74,18 @@ class UniPCSampler(object):
         while len(sqrt_one_minus_alpha_prod.shape) < len(x0.shape):
             sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(-1)
 
-        return (sqrt_alpha_prod * x0 + sqrt_one_minus_alpha_prod * noise)
+        return sqrt_alpha_prod * x0 + sqrt_one_minus_alpha_prod * noise
 
-    def decode(self, x_latent, conditioning, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
-               use_original_steps=False, callback=None):
+    def decode(
+        self,
+        x_latent,
+        conditioning,
+        t_start,
+        unconditional_guidance_scale=1.0,
+        unconditional_conditioning=None,
+        use_original_steps=False,
+        callback=None,
+    ):
         # same as in .sample(), i guess
         model_type = "v" if self.model.parameterization == "v" else "noise"
 
@@ -79,34 +94,34 @@ class UniPCSampler(object):
             self.noise_schedule,
             model_type=model_type,
             guidance_type="classifier-free",
-            #condition=conditioning,
-            #unconditional_condition=unconditional_conditioning,
+            # condition=conditioning,
+            # unconditional_condition=unconditional_conditioning,
             guidance_scale=unconditional_guidance_scale,
         )
 
         self.uni_pc = UniPC(
-                model_fn,
-                self.noise_schedule,
-                predict_x0=True,
-                thresholding=False,
-                variant=shared.opts.uni_pc_variant,
-                condition=conditioning,
-                unconditional_condition=unconditional_conditioning,
-                before_sample=self.before_sample,
-                after_sample=self.after_sample,
-                after_update=self.after_update,
-            )
+            model_fn,
+            self.noise_schedule,
+            predict_x0=True,
+            thresholding=False,
+            variant=shared.opts.uni_pc_variant,
+            condition=conditioning,
+            unconditional_condition=unconditional_conditioning,
+            before_sample=self.before_sample,
+            after_sample=self.after_sample,
+            after_update=self.after_update,
+        )
 
         return self.uni_pc.sample(
-                x_latent,
-                steps=self.denoise_steps,
-                skip_type=shared.opts.uni_pc_skip_type,
-                method="multistep",
-                order=shared.opts.schedulers_solver_order,
-                lower_order_final=shared.opts.schedulers_use_loworder,
-                denoise_to_zero=True,
-                timesteps=self.timesteps,
-            )
+            x_latent,
+            steps=self.denoise_steps,
+            skip_type=shared.opts.uni_pc_skip_type,
+            method="multistep",
+            order=shared.opts.schedulers_solver_order,
+            lower_order_final=shared.opts.schedulers_use_loworder,
+            denoise_to_zero=True,
+            timesteps=self.timesteps,
+        )
 
     def register_buffer(self, name, attr):
         if type(attr) == torch.Tensor:
@@ -120,30 +135,31 @@ class UniPCSampler(object):
         self.after_update = after_update
 
     @torch.no_grad()
-    def sample(self,
-               S,
-               batch_size,
-               shape,
-               conditioning=None,
-               callback=None,
-               normals_sequence=None,
-               img_callback=None,
-               quantize_x0=False,
-               eta=0.,
-               mask=None,
-               x0=None,
-               temperature=1.,
-               noise_dropout=0.,
-               score_corrector=None,
-               corrector_kwargs=None,
-               verbose=True,
-               x_T=None,
-               log_every_t=100,
-               unconditional_guidance_scale=1.,
-               unconditional_conditioning=None,
-               # this has to come in the same format as the conditioning, # e.g. as encoded tokens, ...
-               **kwargs
-               ):
+    def sample(
+        self,
+        S,
+        batch_size,
+        shape,
+        conditioning=None,
+        callback=None,
+        normals_sequence=None,
+        img_callback=None,
+        quantize_x0=False,
+        eta=0.0,
+        mask=None,
+        x0=None,
+        temperature=1.0,
+        noise_dropout=0.0,
+        score_corrector=None,
+        corrector_kwargs=None,
+        verbose=True,
+        x_T=None,
+        log_every_t=100,
+        unconditional_guidance_scale=1.0,
+        unconditional_conditioning=None,
+        # this has to come in the same format as the conditioning, # e.g. as encoded tokens, ...
+        **kwargs,
+    ):
         if conditioning is not None:
             if isinstance(conditioning, dict):
                 ctmp = conditioning[list(conditioning.keys())[0]]
@@ -151,16 +167,22 @@ class UniPCSampler(object):
                     ctmp = ctmp[0]
                 cbs = ctmp.shape[0]
                 if cbs != batch_size:
-                    print(f"Warning: Got {cbs} conditionings but batch-size is {batch_size}")
+                    print(
+                        f"Warning: Got {cbs} conditionings but batch-size is {batch_size}"
+                    )
 
             elif isinstance(conditioning, list):
                 for ctmp in conditioning:
                     if ctmp.shape[0] != batch_size:
-                        print(f"Warning: Got {cbs} conditionings but batch-size is {batch_size}")
+                        print(
+                            f"Warning: Got {cbs} conditionings but batch-size is {batch_size}"
+                        )
 
             else:
                 if conditioning.shape[0] != batch_size:
-                    print(f"Warning: Got {conditioning.shape[0]} conditionings but batch-size is {batch_size}")
+                    print(
+                        f"Warning: Got {conditioning.shape[0]} conditionings but batch-size is {batch_size}"
+                    )
 
         # sampling
         C, H, W = shape
@@ -181,12 +203,30 @@ class UniPCSampler(object):
             self.noise_schedule,
             model_type=model_type,
             guidance_type="classifier-free",
-            #condition=conditioning,
-            #unconditional_condition=unconditional_conditioning,
+            # condition=conditioning,
+            # unconditional_condition=unconditional_conditioning,
             guidance_scale=unconditional_guidance_scale,
         )
 
-        uni_pc = UniPC(model_fn, self.noise_schedule, predict_x0=True, thresholding=False, variant=shared.opts.uni_pc_variant, condition=conditioning, unconditional_condition=unconditional_conditioning, before_sample=self.before_sample, after_sample=self.after_sample, after_update=self.after_update)
-        x = uni_pc.sample(img, steps=S, skip_type=shared.opts.uni_pc_skip_type, method="multistep", order=shared.opts.schedulers_solver_order, lower_order_final=shared.opts.schedulers_use_loworder)
+        uni_pc = UniPC(
+            model_fn,
+            self.noise_schedule,
+            predict_x0=True,
+            thresholding=False,
+            variant=shared.opts.uni_pc_variant,
+            condition=conditioning,
+            unconditional_condition=unconditional_conditioning,
+            before_sample=self.before_sample,
+            after_sample=self.after_sample,
+            after_update=self.after_update,
+        )
+        x = uni_pc.sample(
+            img,
+            steps=S,
+            skip_type=shared.opts.uni_pc_skip_type,
+            method="multistep",
+            order=shared.opts.schedulers_solver_order,
+            lower_order_final=shared.opts.schedulers_use_loworder,
+        )
 
         return x.to(device), None

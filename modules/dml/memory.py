@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from modules.dml.pdh import HQuery, HCounter, expand_wildcard_path
 
+
 class MemoryProvider:
     hQuery: HQuery
     hCounters: defaultdict[str, list[HCounter]]
@@ -14,8 +15,12 @@ class MemoryProvider:
     def get_memory(self, device_id: int) -> dict[str, int]:
         if len(self.hCounters) == 0:
             pid = getpid()
-            paths_dedicated = expand_wildcard_path(f"\\GPU Process Memory(pid_{pid}_*_phys_{device_id})\\Dedicated Usage")
-            paths_committed = expand_wildcard_path(f"\\GPU Process Memory(pid_{pid}_*_phys_{device_id})\\Total Committed")
+            paths_dedicated = expand_wildcard_path(
+                f"\\GPU Process Memory(pid_{pid}_*_phys_{device_id})\\Dedicated Usage"
+            )
+            paths_committed = expand_wildcard_path(
+                f"\\GPU Process Memory(pid_{pid}_*_phys_{device_id})\\Total Committed"
+            )
             for path in paths_dedicated:
                 self.hCounters["dedicated_usage"].append(self.hQuery.add_counter(path))
             for path in paths_committed:

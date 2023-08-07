@@ -7,8 +7,8 @@ from PIL import Image
 import modules.shared
 from modules import modelloader
 
-LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.LANCZOS)
-NEAREST = (Image.Resampling.NEAREST if hasattr(Image, 'Resampling') else Image.NEAREST)
+LANCZOS = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
+NEAREST = Image.Resampling.NEAREST if hasattr(Image, "Resampling") else Image.NEAREST
 
 
 class Upscaler:
@@ -43,6 +43,7 @@ class Upscaler:
 
         try:
             import cv2  # pylint: disable=unused-import
+
             self.can_tile = True
         except Exception:
             pass
@@ -70,8 +71,12 @@ class Upscaler:
     def load_model(self, path: str):
         pass
 
-    def find_models(self, ext_filter=None) -> list: # pylint: disable=unused-argument
-        return modelloader.load_models(model_path=self.model_path, model_url=self.model_url, command_path=self.user_path)
+    def find_models(self, ext_filter=None) -> list:  # pylint: disable=unused-argument
+        return modelloader.load_models(
+            model_path=self.model_path,
+            model_url=self.model_url,
+            command_path=self.user_path,
+        )
 
     def update_status(self, prompt):
         print(f"\nextras: {prompt}", file=modules.shared.progress_print_out)
@@ -84,7 +89,14 @@ class UpscalerData:
     scaler: Upscaler = None
     model: None
 
-    def __init__(self, name: str, path: str, upscaler: Upscaler = None, scale: int = 4, model=None):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        upscaler: Upscaler = None,
+        scale: int = 4,
+        model=None,
+    ):
         self.name = name
         self.data_path = path
         self.local_data_path = path
@@ -103,7 +115,7 @@ class UpscalerNone(Upscaler):
     def do_upscale(self, img, selected_model=None):
         return img
 
-    def __init__(self, dirname=None): # pylint: disable=unused-argument
+    def __init__(self, dirname=None):  # pylint: disable=unused-argument
         super().__init__(False)
         self.scalers = [UpscalerData("None", None, self)]
 
@@ -112,12 +124,15 @@ class UpscalerLanczos(Upscaler):
     scalers = []
 
     def do_upscale(self, img, selected_model=None):
-        return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=LANCZOS)
+        return img.resize(
+            (int(img.width * self.scale), int(img.height * self.scale)),
+            resample=LANCZOS,
+        )
 
     def load_model(self, _):
         pass
 
-    def __init__(self, dirname=None): # pylint: disable=unused-argument
+    def __init__(self, dirname=None):  # pylint: disable=unused-argument
         super().__init__(False)
         self.name = "Lanczos"
         self.scalers = [UpscalerData("Lanczos", None, self)]
@@ -127,12 +142,15 @@ class UpscalerNearest(Upscaler):
     scalers = []
 
     def do_upscale(self, img, selected_model=None):
-        return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=NEAREST)
+        return img.resize(
+            (int(img.width * self.scale), int(img.height * self.scale)),
+            resample=NEAREST,
+        )
 
     def load_model(self, _):
         pass
 
-    def __init__(self, dirname=None): # pylint: disable=unused-argument
+    def __init__(self, dirname=None):  # pylint: disable=unused-argument
         super().__init__(False)
         self.name = "Nearest"
         self.scalers = [UpscalerData("Nearest", None, self)]

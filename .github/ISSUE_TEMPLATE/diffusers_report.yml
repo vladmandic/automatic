@@ -15,21 +15,21 @@ body:
     attributes:
       label: Diffusers pipeline used
       description: Enter Diffusers pipeline and model used
-      value: 
+      value:
   - type: textarea
     id: platform
     attributes:
       label: Version Platform Description
       description: Describe your platform (program version, OS, browser)
-      value: 
+      value:
   - type: markdown
     attributes:
       value: |
-        Any issues without version information will be closed  
-        Provide any relevant platorm information:  
-        - Application version, OS details, GPU information, browser used  
-        
-        Easiest is to include top part of console log, for example:  
+        Any issues without version information will be closed
+        Provide any relevant platorm information:
+        - Application version, OS details, GPU information, browser used
+
+        Easiest is to include top part of console log, for example:
         ```log
         Starting SD.Next
         Python 3.10.6 on Linux
@@ -44,18 +44,18 @@ body:
   - type: markdown
     attributes:
       value: |
-        If issue is setup, installation or startup related, please check `sdnext.log` before reporting  
+        If issue is setup, installation or startup related, please check `sdnext.log` before reporting
   - type: markdown
     attributes:
       value: |
-        If you have additional extensions installed, try to reproduce the issue with user extensions disabled  
-        And if the issue is with compatibility with specific extension, mark it as such when creating the issue  
-        Try running with `--safe` command line flag with disables loading of user-installed extensions  
+        If you have additional extensions installed, try to reproduce the issue with user extensions disabled
+        And if the issue is with compatibility with specific extension, mark it as such when creating the issue
+        Try running with `--safe` command line flag with disables loading of user-installed extensions
   - type: markdown
     attributes:
       value: |
-        If possible update to latest version before reporting the issue as older versions cannot be properly supported  
-        And search existing **issues** and **discussions** before creating a new one  
+        If possible update to latest version before reporting the issue as older versions cannot be properly supported
+        And search existing **issues** and **discussions** before creating a new one
   - type: textarea
     id: logs
     attributes:
@@ -70,7 +70,7 @@ body:
   - type: checkboxes
     attributes:
       label: Acknowledgements
-      description: 
+      description:
       options:
         - label: I have read the above and searched for existing issues
           required: true

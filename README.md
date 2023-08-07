@@ -1,10 +1,10 @@
 <div align="center">
-  
+
 # SD.Next
 
 **Stable Diffusion implementation with advanced features**
 
-<br>  
+<br>
 
 [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/vladmandic)
 ![Last Commit](https://img.shields.io/github/last-commit/vladmandic/automatic?svg=true)
@@ -15,41 +15,41 @@
 
 </div>
 
-This project started as a fork from [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and it grew significantly since then,  
+This project started as a fork from [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and it grew significantly since then,
 but although it diverged considerably, any substantial features to original work is ported to this repository as well.
 
 ## Top-13 Features (10 wasn't enough)
 
 All Individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes.
 
-- Optimized processing with latest **torch** developments  
+- Optimized processing with latest **torch** developments
   Including built-in support for `torch.compile`
-- Support for multiple backends!  
+- Support for multiple backends!
   **original** and **diffusers**
-- Support for multiple diffusion models!  
-  Stable Diffusion, SD-XL, Kandinsky, DeepFloyd IF, etc.  
-- Fully multiplatform with platform specific autodetection and tuning performed on install  
+- Support for multiple diffusion models!
+  Stable Diffusion, SD-XL, Kandinsky, DeepFloyd IF, etc.
+- Fully multiplatform with platform specific autodetection and tuning performed on install
   Windows / Linux / MacOS with CPU / nVidia / AMD / IntelArc / DirectML
-- Improved prompt parser  
-- Enhanced *Lora*/*Locon*/*Lyco* code supporting latest trends in training  
-- Built-in queue management  
-- Advanced metadata caching and handling to speed up operations  
-- Enterprise level logging and hardened API  
-- Modern localization and hints engine  
-- Broad compatibility with existing extensions ecosystem and new extensions manager  
-- Built in installer with automatic updates and dependency management  
-- Modernized UI (still based on Gradio) with theme support  
+- Improved prompt parser
+- Enhanced *Lora*/*Locon*/*Lyco* code supporting latest trends in training
+- Built-in queue management
+- Advanced metadata caching and handling to speed up operations
+- Enterprise level logging and hardened API
+- Modern localization and hints engine
+- Broad compatibility with existing extensions ecosystem and new extensions manager
+- Built in installer with automatic updates and dependency management
+- Modernized UI (still based on Gradio) with theme support
 
 ## Backend support
 
 **SD.Next** supports two main backends: *Original* and *Diffusers* which can be switched on-the-fly:
 
-- **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
-  This is the default backend and it is fully compatible with all existing functionality and extensions  
-- **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
-  It is also the only backend that supports **Stable Diffusion XL** model  
-  Support for legacy workflows and extensions is limited, but it's being expanded  
-  See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information  
+- **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+  This is the default backend and it is fully compatible with all existing functionality and extensions
+- **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation
+  It is also the only backend that supports **Stable Diffusion XL** model
+  Support for legacy workflows and extensions is limited, but it's being expanded
+  See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information
 
 ## Model support
 
@@ -64,11 +64,11 @@ Additional models will be added as they become available and there is public int
 ## Platform support
 
 - *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*
-- *AMD* GPUs using **ROCm** libraries on *Linux*.  
+- *AMD* GPUs using **ROCm** libraries on *Linux*.
   Support will be extended to *Windows* once AMD releases ROCm for Windows
-- Any GPU compatibile with *DirectX* on *Windows* using **DirectML** libraries.  
+- Any GPU compatibile with *DirectX* on *Windows* using **DirectML** libraries.
   This includes support for AMD GPUs that are not supported by native ROCm libraries
-- *Intel Arc* GPUs using *Intel OneAPI* **Ipex/XPU** libraries  
+- *Intel Arc* GPUs using *Intel OneAPI* **Ipex/XPU** libraries
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations
 
 ## Install & Run
@@ -78,14 +78,14 @@ Additional models will be added as they become available and there is public int
 
 ### Installation Notes
 
-- [Common installation errors](https://github.com/vladmandic/automatic/discussions/1627)  
+- [Common installation errors](https://github.com/vladmandic/automatic/discussions/1627)
 - [FAQ](https://github.com/vladmandic/automatic/discussions/1011)
-- Server can run without virtual environment,  
-  but it is recommended to use it to avoid library version conflicts with other applications  
-- **nVidia/CUDA** and **AMD/ROCm** are auto-detected if present and available,  
-   but for any other use case specify required parameter explicitly or wrong packages may be installed  
-  as installer will assume CPU-only environment  
-- Full startup sequence is logged in `sdnext.log`, so if you encounter any issues, please check it first  
+- Server can run without virtual environment,
+  but it is recommended to use it to avoid library version conflicts with other applications
+- **nVidia/CUDA** and **AMD/ROCm** are auto-detected if present and available,
+   but for any other use case specify required parameter explicitly or wrong packages may be installed
+  as installer will assume CPU-only environment
+- Full startup sequence is logged in `sdnext.log`, so if you encounter any issues, please check it first
 
 ### Run
 
@@ -128,7 +128,7 @@ SD.Next comes with several extensions pre-installed:
 
 ### **Collab**
 
-- To avoid having this repo rely just on me, I'd love to have additional maintainers with full admin rights. If you're interested, ping me!  
+- To avoid having this repo rely just on me, I'd love to have additional maintainers with full admin rights. If you're interested, ping me!
 - In addition to general cross-platform code, desire is to have a lead for each of the main platforms.
 This should be fully cross-platform, but I would really love to have additional contributors and/or maintainers to join and help lead the efforts on different platforms.
 
@@ -138,7 +138,7 @@ The idea behind the fork is to enable latest technologies and advances in text-t
 
 > *Sometimes this is not the same as "as simple as possible to use".*
 
-If you are looking an amazing simple-to-use Stable Diffusion tool, I'd suggest [InvokeAI](https://invoke-ai.github.io/InvokeAI/) specifically due to its automated installer and ease of use.  
+If you are looking an amazing simple-to-use Stable Diffusion tool, I'd suggest [InvokeAI](https://invoke-ai.github.io/InvokeAI/) specifically due to its automated installer and ease of use.
 
 General goals:
 
@@ -164,7 +164,7 @@ General goals:
 
 - [Wiki](https://github.com/vladmandic/automatic/wiki)
 - [ReadMe](README.md)
-- [ToDo](TODO.md)  
+- [ToDo](TODO.md)
 - [ChangeLog](CHANGELOG.md)
 - [CLI Tools](cli/README.md)
 

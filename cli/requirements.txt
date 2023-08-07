@@ -1,6 +1,6 @@
-mediapipe
-colormap
-filetype
-albumentations
 accelerate==0.19.0
+albumentations
+colormap
 diffusers==0.10.2
+filetype
+mediapipe

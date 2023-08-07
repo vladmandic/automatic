@@ -5,7 +5,7 @@ from modules import shared, ui_extra_networks
 
 class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
     def __init__(self):
-        super().__init__('Hypernetworks')
+        super().__init__("Hypernetworks")
 
     def refresh(self):
         shared.reload_hypernetworks()
@@ -19,7 +19,9 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
                 "preview": self.find_preview(path),
                 "description": self.find_description(path),
                 "search_term": self.search_terms_from_path(path),
-                "prompt": json.dumps(f"<hypernet:{name}:{shared.opts.extra_networks_default_multiplier}>"),
+                "prompt": json.dumps(
+                    f"<hypernet:{name}:{shared.opts.extra_networks_default_multiplier}>"
+                ),
                 "local_preview": f"{path}.preview.{shared.opts.samples_format}",
             }
 

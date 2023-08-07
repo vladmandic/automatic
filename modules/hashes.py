@@ -13,7 +13,7 @@ def dump_cache():
 
 
 def cache(subsection):
-    global cache_data # pylint: disable=global-statement
+    global cache_data  # pylint: disable=global-statement
     if cache_data is None:
         if not os.path.isfile(cache_filename):
             cache_data = {}
@@ -27,7 +27,12 @@ def cache(subsection):
 def calculate_sha256(filename):
     hash_sha256 = hashlib.sha256()
     blksize = 1024 * 1024
-    with progress.open(filename, 'rb', description=f'Calculating model hash: [cyan]{filename}', auto_refresh=True) as f:
+    with progress.open(
+        filename,
+        "rb",
+        description=f"Calculating model hash: [cyan]{filename}",
+        auto_refresh=True,
+    ) as f:
         for chunk in iter(lambda: f.read(blksize), b""):
             hash_sha256.update(chunk)
     return hash_sha256.hexdigest()
@@ -53,7 +58,12 @@ def sha256(filename, title, use_addnet_hash=False):
     if shared.cmd_opts.no_hashing:
         return None
     if use_addnet_hash:
-        with progress.open(filename, 'rb', description=f'Calculating model hash: [cyan]{filename}', auto_refresh=True) as f:
+        with progress.open(
+            filename,
+            "rb",
+            description=f"Calculating model hash: [cyan]{filename}",
+            auto_refresh=True,
+        ) as f:
             sha256_value = addnet_hash_safetensors(f)
     else:
         sha256_value = calculate_sha256(filename)

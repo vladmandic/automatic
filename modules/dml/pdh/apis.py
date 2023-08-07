@@ -25,11 +25,22 @@ PdhCollectQueryData.argtypes = [PDH_HQUERY]
 
 PdhGetFormattedCounterValue: Callable = pdh.PdhGetFormattedCounterValue
 PdhGetFormattedCounterValue.restype = PDH_FUNCTION
-PdhGetFormattedCounterValue.argtypes = [PDH_HCOUNTER, DWORD, LPDWORD, PPDH_FMT_COUNTERVALUE]
+PdhGetFormattedCounterValue.argtypes = [
+    PDH_HCOUNTER,
+    DWORD,
+    LPDWORD,
+    PPDH_FMT_COUNTERVALUE,
+]
 
 PdhGetFormattedCounterArrayW: Callable = pdh.PdhGetFormattedCounterArrayW
 PdhGetFormattedCounterArrayW.restype = PDH_FUNCTION
-PdhGetFormattedCounterArrayW.argtypes = [PDH_HCOUNTER, DWORD, LPDWORD, LPDWORD, PPDH_FMT_COUNTERVALUE_ITEM_W]
+PdhGetFormattedCounterArrayW.argtypes = [
+    PDH_HCOUNTER,
+    DWORD,
+    LPDWORD,
+    LPDWORD,
+    PPDH_FMT_COUNTERVALUE_ITEM_W,
+]
 
 PdhCloseQuery: Callable = pdh.PdhCloseQuery
 PdhCloseQuery.restype = PDH_FUNCTION
