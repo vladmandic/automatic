@@ -92,6 +92,24 @@ then
     source $ONEAPI_ROOT/setvars.sh
 fi
 
+#Check for AMD/ROCm and try to set appropriate export
+if [[ -z "${HSA_OVERRIDE_GFX_VERSION}" ]]; then
+    if command -v rocminfo &> /dev/null; then
+        case "$(rocminfo | grep -o 'gfx[0-9]\+' | head -n 1)" in
+            gfx906) HSA_OVERRIDE_GFX_VERSION="9.1.0" ;;
+            gfx1010) HSA_OVERRIDE_GFX_VERSION="10.1.0" ;;
+            gfx1012) HSA_OVERRIDE_GFX_VERSION="10.1.0" ;;
+            gfx1030) HSA_OVERRIDE_GFX_VERSION="10.3.0" ;;
+            gfx1032) HSA_OVERRIDE_GFX_VERSION="10.3.0" ;;
+            gfx1100) HSA_OVERRIDE_GFX_VERSION="11.0.0" ;;
+            gfx1101) HSA_OVERRIDE_GFX_VERSION="11.0.1" ;;
+            gfx1102) HSA_OVERRIDE_GFX_VERSION="11.0.2" ;;
+            *)       HSA_OVERRIDE_GFX_VERSION="10.3.0" ;;  # Handle other cases gracefully
+        esac
+    fi
+    export HSA_OVERRIDE_GFX_VERSION
+fi
+
 if [[ ! -z "${ACCELERATE}" ]] && [ ${ACCELERATE}="True" ] && [ -x "$(command -v accelerate)" ]
 then
     echo "Launching accelerate launch.py..."
