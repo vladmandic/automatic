@@ -39,10 +39,17 @@ if not cmd_opts.share and not cmd_opts.listen:
     gradio.utils.version_check = lambda: None
     gradio.utils.get_local_ip_address = lambda: '127.0.0.1'
 
+if cmd_opts.ngrok is not None:
+    import modules.ngrok as ngrok
+    print('ngrok authtoken detected, trying to connect...')
+    ngrok.connect(
+        cmd_opts.ngrok,
+        cmd_opts.port if cmd_opts.port is not None else 7860,
+        cmd_opts.ngrok_options
+        )
 
 def gr_show(visible=True):
     return {"visible": visible, "__type__": "update"}
-
 
 sample_img2img = "assets/stable-samples/img2img/sketch-mountains-input.jpg"
 sample_img2img = sample_img2img if os.path.exists(sample_img2img) else None
