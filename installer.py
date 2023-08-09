@@ -417,6 +417,9 @@ def install_packages():
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
+    if args.ngrok:
+        ngrok_package = os.environ.get('NGROK_PACKAGE', "git+https://github.com/ngrok/ngrok-python.git")
+        install(ngrok_package, 'ngrok')
     log.info('Verifying packages')
     # gfpgan_package = os.environ.get('GFPGAN_PACKAGE', "git+https://github.com/TencentARC/GFPGAN.git@8d2447a2d918f8eba5a4a01463fd48e45126a379")
     # openclip_package = os.environ.get('OPENCLIP_PACKAGE', "git+https://github.com/mlfoundations/open_clip.git@bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b")
