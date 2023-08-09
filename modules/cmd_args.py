@@ -17,6 +17,8 @@ group.add_argument("--data-dir", type=str, default=os.path.dirname(os.path.dirna
 group.add_argument("--models-dir", type=str, default="models", help="Base path where all models are stored, default: %(default)s",)
 group.add_argument("--allow-code", action='store_true', help="Allow custom script execution, default: %(default)s")
 group.add_argument("--share", action='store_true', help="Enable UI accessible through Gradio site, default: %(default)s")
+group.add_argument("--ngrok", type=str, help="ngrok authtoken, alternative to gradio --share", default=None)
+group.add_argument("--ngrok-options", type=json.loads, help='The options to pass to ngrok in JSON format, e.g.: \'{"authtoken_from_env":true, "basic_auth":"user:password", "oauth_provider":"google", "oauth_allow_emails":"user@asdf.com"}\'', default=dict())
 group.add_argument("--insecure", action='store_true', help="Enable extensions tab regardless of other options, default: %(default)s")
 group.add_argument("--use-cpu", nargs='+', default=[], type=str.lower, help="Force use CPU for specified modules, default: %(default)s")
 group.add_argument("--listen", action='store_true', help="Launch web server using public IP address, default: %(default)s")
