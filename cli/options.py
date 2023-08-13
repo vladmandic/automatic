@@ -106,6 +106,7 @@ lora = Map({
     "v2": False,
     "vae": None,
     "xformers": False,
+    "vae_batch_size": 1,
 })
 
 process = Map({

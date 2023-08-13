@@ -243,7 +243,8 @@ def train_lora():
         sys.path.append(lycoris_path)
     log.debug('importing lora lib')
     import train_network
-    train_network.train(options.lora)
+    trainer = train_network.NetworkTrainer()
+    trainer.train(options.lora)
     if args.type == 'lyco':
         log.debug('importing lycoris lib')
         import importlib
@@ -273,12 +274,12 @@ def prepare_options():
     options.lora.max_train_steps = args.steps
     options.lora.network_dim = args.dim
     options.lora.network_alpha = args.dim // 2 if args.alpha == 0 else args.alpha
-    options.lora.netwoork_args = []
+    options.lora.network_args = []
     if args.algo is not None:
-        options.lora.netwoork_args.append(f'algo={args.algo}')
+        options.lora.network_args.append(f'algo={args.algo}')
     if args.args is not None:
         for net_arg in args.args:
-            options.lora.netwoork_args.append(net_arg)
+            options.lora.network_args.append(net_arg)
     options.lora.gradient_accumulation_steps = args.gradient
     options.lora.learning_rate = args.lr
     options.lora.train_batch_size = args.batch
@@ -355,10 +356,13 @@ def process_inputs():
     if options.lora.in_json is not None:
         with open(options.lora.in_json, "w", encoding='utf-8') as outfile: # write json at the end only
             outfile.write(json.dumps(metadata, indent=2))
-        for folder in folders: # create latents
-            import latents
-            latents.create_vae_latents(util.Map({ 'input': folder, 'json': options.lora.in_json }))
-            latents.unload_vae()
+        # create_vae_latents will produce "old format" of npz files
+        # it seems like train() will store latents in image info by default now
+        # the code is kept here in case anything is missed
+        # for folder in folders: # create latents
+        #     import latents
+        #     latents.create_vae_latents(util.Map({ 'input': folder, 'json': options.lora.in_json }))
+        #     latents.unload_vae()
     r = { 'inputs': len(files), 'outputs': results, 'metadata': options.lora.in_json }
     log.info(f'processing steps result: {r}')
     if args.gradient < 0:
@@ -392,7 +396,8 @@ if __name__ == '__main__':
     log.info('SD.Next train script')
     parse_args()
     setup_logging()
-    check_versions()
+    # version check is not needed now
+    # check_versions()
     sdapi.sd_url = args.server
     if args.user is not None:
         sdapi.sd_username = args.user
