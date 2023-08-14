@@ -104,6 +104,7 @@ def parse_args():
     group_other.add_argument('--overwrite', default = False, action='store_true', help = "overwrite existing training, default: %(default)s")
     group_other.add_argument('--experimental', default = False, action='store_true', help = "enable experimental options, default: %(default)s")
     group_other.add_argument('--debug', default = False, action='store_true', help = "enable debug level logging, default: %(default)s")
+    group_other.add_argument('--sdxl', default = False, action='store_true', help = "train for sd-xl, lora/lyco only, default: %(default)s")
 
     args = parser.parse_args()
 
@@ -141,6 +142,8 @@ def verify_args():
         sdapi.postsync('/sdapi/v1/options', server_options.options)
     else:
         args.model = server_options.options.sd_model_checkpoint.split(' [')[0]
+        if args.sdxl and (server_options.sd_backend != 'diffusers' or server_options.diffusers_pipeline != 'Stable Diffusion XL'):
+            log.warning('sd-xl is enabled, but the checkpoint read from webui might not be a sd-xl variant')
     args.lora_dir = server_options.options.lora_dir
     args.lyco_dir = server_options.options.lyco_dir
     args.ckpt_dir = server_options.options.ckpt_dir
@@ -242,8 +245,19 @@ def train_lora():
     if args.type == 'lyco':
         sys.path.append(lycoris_path)
     log.debug('importing lora lib')
-    import train_network
-    trainer = train_network.NetworkTrainer()
+    if args.sdxl:
+        # no_half_vae is required to avoid bugs of the original sd-xl vae
+        # at the cost of half performance and double vram requirement
+        # or you can use the fixed vae with:
+        # options.lora.vae = 'PATH/TO/FIXED/VAE'
+        options.lora.no_half_vae = True
+        options.lora.cache_latents_to_disk = True
+        options.lora.optimizer_type = 'Adafactor'
+        import sdxl_train_network
+        trainer = sdxl_train_network.SdxlNetworkTrainer()
+    else:
+        import train_network
+        trainer = train_network.NetworkTrainer()
     trainer.train(options.lora)
     if args.type == 'lyco':
         log.debug('importing lycoris lib')
