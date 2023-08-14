@@ -90,7 +90,7 @@ lora = Map({
     "save_every_n_epochs": None,
     "save_last_n_epochs_state": None,
     "save_last_n_epochs": None,
-    "save_model_as": "ckpt",
+    "save_model_as": "safetensors",
     "save_n_epoch_ratio": None,
     "save_precision": "fp16",
     "save_state": False,
