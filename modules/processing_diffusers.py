@@ -245,10 +245,12 @@ def process_diffusers(p: StableDiffusionProcessing, seeds, prompts, negative_pro
         task_specific_kwargs = {"height": p.height, "width": p.width}
     elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE:
         p.ops.append('img2img')
-        task_specific_kwargs = {"image": p.init_images, "strength": p.denoising_strength}
+        image = p.init_latent if "StableDiffusion" in shared.sd_model.__class__.__name__ else p.init_images
+        task_specific_kwargs = {"image": image, "strength": p.denoising_strength}
     elif sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.INPAINTING:
         p.ops.append('inpaint')
-        task_specific_kwargs = {"image": p.init_images, "mask_image": p.mask, "strength": p.denoising_strength, "height": p.height, "width": p.width}
+        image = p.init_latent if "StableDiffusion" in shared.sd_model.__class__.__name__ else p.init_images
+        task_specific_kwargs = {"image": image, "mask_image": p.mask, "strength": p.denoising_strength, "height": p.height, "width": p.width}
 
     if shared.state.interrupted or shared.state.skipped:
         unload_diffusers_lora()

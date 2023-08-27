@@ -1122,14 +1122,24 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             batch_images = np.array(imgs)
         else:
             raise RuntimeError(f"bad number of images passed: {len(imgs)}; expecting {self.batch_size} or less")
+
         if shared.backend == shared.Backend.DIFFUSERS:
             # we've already set self.init_images and self.mask and we dont need any more processing
-            return
+            if "StableDiffusion" not in self.sd_model.__class__.__name__:
+                return 
 
-        image = torch.from_numpy(batch_images)
-        image = 2. * image - 1.
-        image = image.to(device=shared.device, dtype=devices.dtype_vae)
-        self.init_latent = self.sd_model.get_first_stage_encoding(self.sd_model.encode_first_stage(image))
+            batch_images = batch_images.transpose(0, 2, 3, 1)
+            image = self.sd_model.image_processor.preprocess(batch_images, height=self.height, width=self.width)
+
+            image = image.to(device=shared.device, dtype=devices.dtype_vae)
+            self.init_latent = self.sd_model.vae.encode(image).latent_dist.sample()
+            self.init_latent = self.sd_model.vae.config.scaling_factor * self.init_latent
+        else:
+            image = torch.from_numpy(batch_images)
+            image = 2. * image - 1.
+            image = image.to(device=shared.device, dtype=devices.dtype_vae)
+            self.init_latent = self.sd_model.get_first_stage_encoding(self.sd_model.encode_first_stage(image))
+
         if self.resize_mode == 4:
             self.init_latent = torch.nn.functional.interpolate(self.init_latent, size=(self.height // opt_f, self.width // opt_f), mode="bilinear")
         if image_mask is not None:
