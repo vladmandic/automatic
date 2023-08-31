@@ -33,6 +33,16 @@ def init_modules():
     extensions_dir = modules.paths_internal.extensions_dir
 
 
+def get_custom_args():
+    custom = {}
+    for arg in vars(args):
+        default = parser.get_default(arg)
+        current = getattr(args, arg)
+        if current != default:
+            custom[arg] = getattr(args, arg)
+    installer.log.info(f'Command line args: {custom}')
+
+
 @lru_cache()
 def commit_hash(): # compatbility function
     global stored_commit_hash # pylint: disable=global-statement
@@ -133,6 +143,7 @@ def start_server(immediate=True, server=None):
     server = importlib.util.module_from_spec(module_spec)
     installer.log.debug(f'Starting module: {server}')
     installer.log.info(f"Server arguments: {sys.argv[1:]}")
+    get_custom_args()
     module_spec.loader.exec_module(server)
     if args.test:
         installer.log.info("Test only")
@@ -154,6 +165,8 @@ if __name__ == "__main__":
     installer.setup_logging()
     installer.log.info('Starting SD.Next')
     installer.read_options()
+    if args.skip_all:
+        args.quick = True
     installer.check_python()
     if args.reset:
         installer.git_reset()
@@ -166,7 +179,10 @@ if __name__ == "__main__":
     if args.reinstall:
         installer.log.info('Forcing reinstall of all packages')
         installer.quick_allowed = False
-    if installer.check_timestamp():
+    if args.skip_all:
+        installer.log.info('Skipping all checks')
+        installer.quick_allowed = True
+    elif installer.check_timestamp():
         installer.log.info('No changes detected: Quick launch active')
         installer.install_requirements()
         installer.install_packages()
@@ -185,6 +201,7 @@ if __name__ == "__main__":
             installer.log.warning(f'Setup complete with errors: {installer.errors}')
             installer.log.warning(f'See log file for more details: {installer.log_file}')
     installer.extensions_preload(parser) # adds additional args from extensions
+    installer.fix_ipex_win_torch() # redo ipex win torch fix since extensions may scan the deps of torchvision
     args = installer.parse_args(parser)
     # installer.run_setup()
     # installer.log.debug(f"Args: {vars(args)}")

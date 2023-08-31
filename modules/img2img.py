@@ -41,6 +41,9 @@ def process_batch(p, input_files, input_dir, output_dir, inpaint_mask_dir, args)
             shared.log.error(f"Image error: {e}")
             continue
         img = ImageOps.exif_transpose(img)
+        if p.scale_by != 1:
+            p.width = int(img.width * p.scale_by)
+            p.height = int(img.height * p.scale_by)
         p.init_images = [img] * p.batch_size
 
         if is_inpaint_batch:
@@ -74,7 +77,7 @@ def process_batch(p, input_files, input_dir, output_dir, inpaint_mask_dir, args)
         shared.log.debug(f'Processed: {len(image_files)} Memory: {memory_stats()} batch')
 
 
-def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_styles, init_img, sketch, init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig, init_img_inpaint, init_mask_inpaint, steps: int, sampler_index: int, latent_index: int, mask_blur: int, mask_alpha: float, inpainting_fill: int, full_quality: bool, restore_faces: bool, tiling: bool, n_iter: int, batch_size: int, cfg_scale: float, image_cfg_scale: float, diffusers_guidance_rescale: float, refiner_start: float, clip_skip: int, denoising_strength: float, seed: int, subseed: int, subseed_strength: float, seed_resize_from_h: int, seed_resize_from_w: int, selected_scale_tab: int, height: int, width: int, scale_by: float, resize_mode: int, inpaint_full_res: bool, inpaint_full_res_padding: int, inpainting_mask_invert: int, img2img_batch_files: list, img2img_batch_input_dir: str, img2img_batch_output_dir: str, img2img_batch_inpaint_mask_dir: str, override_settings_texts, *args): # pylint: disable=unused-argument
+def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_styles, init_img, sketch, init_img_with_mask, inpaint_color_sketch, inpaint_color_sketch_orig, init_img_inpaint, init_mask_inpaint, steps: int, sampler_index: int, latent_index: int, mask_blur: int, mask_alpha: float, inpainting_fill: int, full_quality: bool, restore_faces: bool, tiling: bool, n_iter: int, batch_size: int, cfg_scale: float, image_cfg_scale: float, diffusers_guidance_rescale: float, refiner_steps: int, refiner_start: float, clip_skip: int, denoising_strength: float, seed: int, subseed: int, subseed_strength: float, seed_resize_from_h: int, seed_resize_from_w: int, selected_scale_tab: int, height: int, width: int, scale_by: float, resize_mode: int, inpaint_full_res: bool, inpaint_full_res_padding: int, inpainting_mask_invert: int, img2img_batch_files: list, img2img_batch_input_dir: str, img2img_batch_output_dir: str, img2img_batch_inpaint_mask_dir: str, override_settings_texts, *args): # pylint: disable=unused-argument
 
     if shared.sd_model is None:
         shared.log.warning('Model not loaded')
@@ -92,7 +95,6 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
 
     override_settings = create_override_settings_dict(override_settings_texts)
 
-    is_batch = mode == 5
     if mode == 0:  # img2img
         if init_img is None:
             return
@@ -169,18 +171,22 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
         denoising_strength=denoising_strength,
         image_cfg_scale=image_cfg_scale,
         diffusers_guidance_rescale=diffusers_guidance_rescale,
+        refiner_steps=refiner_steps,
         refiner_start=refiner_start,
         inpaint_full_res=inpaint_full_res,
         inpaint_full_res_padding=inpaint_full_res_padding,
         inpainting_mask_invert=inpainting_mask_invert,
         override_settings=override_settings,
     )
+    p.is_batch = mode == 5
+    if selected_scale_tab == 1 and resize_mode != 0:
+        p.scale_by = scale_by
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
     p.extra_generation_params['Resize mode'] = resize_mode
     if mask:
         p.extra_generation_params["Mask blur"] = mask_blur
-    if is_batch:
+    if p.is_batch:
         process_batch(p, img2img_batch_files, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir, args)
         processed = processing.Processed(p, [], p.seed, "")
     else:

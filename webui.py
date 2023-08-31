@@ -15,12 +15,13 @@ from modules import timer, errors, paths # pylint: disable=unused-import
 startup_timer = timer.Timer()
 local_url = None
 
-errors.log.debug('Loading Torch')
+logging.getLogger("DeepSpeed").disabled = True
 import torch # pylint: disable=C0411
 try:
     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
 except Exception:
     pass
+errors.log.debug(f'Loaded Torch=={torch.__version__}')
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import torchvision # pylint: disable=W0611,C0411
 import pytorch_lightning # pytorch_lightning should be imported after torch, but it re-enables warnings on import so import once to disable them # pylint: disable=W0611,C0411
@@ -34,11 +35,15 @@ warnings.filterwarnings(action="ignore", category=FutureWarning)
 warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
 startup_timer.record("torch")
 
-errors.log.debug('Loading Gradio')
 from fastapi import FastAPI # pylint: disable=W0611,C0411
 import gradio # pylint: disable=W0611,C0411
+errors.log.debug(f'Loaded Gradio=={gradio.__version__}')
 startup_timer.record("gradio")
 errors.install([gradio])
+
+import diffusers # pylint: disable=W0611,C0411
+errors.log.debug(f'Loaded Diffusers=={diffusers.__version__}')
+startup_timer.record("diffusers")
 
 errors.log.debug('Loading Modules')
 from installer import log, setup_logging, git_commit
@@ -191,6 +196,7 @@ def load_model():
     shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='model')), call=False)
     shared.opts.onchange("sd_model_refiner", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='refiner')), call=False)
     shared.opts.onchange("sd_model_dict", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='dict')), call=False)
+    shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
     shared.opts.onchange("sd_backend", wrap_queued_call(lambda: modules.sd_models.change_backend()), call=False)
     startup_timer.record("checkpoint")
 
@@ -232,8 +238,10 @@ def start_common():
     if cmd_opts.debug and hasattr(shared, 'get_version'):
         log.debug(f'Version: {shared.get_version()}')
     logging.disable(logging.NOTSET if cmd_opts.debug else logging.DEBUG)
-    if shared.cmd_opts.data_dir is not None or len(shared.cmd_opts.data_dir) > 0:
+    if shared.cmd_opts.data_dir is not None and len(shared.cmd_opts.data_dir) > 0:
         log.info(f'Using data path: {shared.cmd_opts.data_dir}')
+    if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0:
+        log.info(f'Using models path: {shared.cmd_opts.data_dir}')
     create_paths(opts)
     async_policy()
     initialize()
@@ -277,7 +285,7 @@ def start_ui():
         auth=[tuple(cred.split(':')) for cred in gradio_auth_creds] if gradio_auth_creds else None,
         prevent_thread_lock=True,
         max_threads=64,
-        show_api=True,
+        show_api=False,
         quiet=True,
         favicon_path='html/logo.ico',
         allowed_paths=[os.path.dirname(__file__), cmd_opts.data_dir],
@@ -302,6 +310,8 @@ def start_ui():
 
     modules.progress.setup_progress_api(app)
     create_api(app)
+    startup_timer.record("api")
+
     ui_extra_networks.add_pages_to_demo(app)
 
     modules.script_callbacks.app_started_callback(shared.demo, app)
@@ -322,6 +332,7 @@ def webui(restart=False):
     start_ui()
     modules.sd_models.write_metadata()
     load_model()
+    shared.opts.save(shared.config_filename)
     log.info(f"Startup time: {startup_timer.summary()}")
 
     if not restart:

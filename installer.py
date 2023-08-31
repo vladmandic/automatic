@@ -288,6 +288,27 @@ def check_python():
         log.debug(f'Git {git_version.replace("git version", "").strip()}')
 
 
+# Intel hasn't released a corresponding torchvision wheel along with torch and ipex wheels, so we have to install official pytorch torchvision as a W/A.
+# However, the latest torchvision explicitly requires torch version == 2.0.1, which is incompatible with the Intel torch version 2.0.0a0. This will cause
+# intel torch to be uninstalled when pip scans the dependencies of torchvision. This function will check the torch version and force installing Intel torch
+# 2.0.0a0 to avoid the underlying dll version error.
+# TODO(Disty or Nuullll) remove this W/A when Intel releases torchvision wheel for windows.
+def fix_ipex_win_torch():
+    if not args.use_ipex or 'win' not in sys.platform:
+        return
+    try:
+        ipex_torch_ver = '2.0.0a0'
+        installed_torch_ver = pkg_resources.get_distribution('torch').version
+        if not installed_torch_ver.startswith(ipex_torch_ver):
+            log.warning(f'Incompatible torch version {installed_torch_ver} for ipex windows, reinstalling to {ipex_torch_ver}')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0a0 intel_extension_for_pytorch==2.0.110+gitba7f6c1 -f https://developer.intel.com/ipex-whl-stable-xpu')
+            install(torch_command)
+            import torch # pylint: disable=unused-import
+            import intel_extension_for_pytorch as ipex # pylint: disable=unused-import
+    except Exception as e:
+        log.warning(e)
+
+
 # check torch version
 def check_torch():
     if args.quick:
@@ -298,12 +319,13 @@ def check_torch():
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
-    allow_cuda = not (args.use_rocm or args.use_directml or args.use_ipex)
-    allow_rocm = not (args.use_cuda or args.use_directml or args.use_ipex)
-    allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml)
-    allow_directml = not (args.use_cuda or args.use_rocm or args.use_ipex)
-    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml}')
-    log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml}')
+    allow_cuda = not (args.use_rocm or args.use_directml or args.use_ipex or args.use_openvino)
+    allow_rocm = not (args.use_cuda or args.use_directml or args.use_ipex or args.use_openvino)
+    allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml or args.use_openvino)
+    allow_directml = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_openvino)
+    allow_openvino = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_directml)
+    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino}')
+    log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     if torch_command != '':
@@ -316,7 +338,6 @@ def check_torch():
         log.info('AMD ROCm toolkit detected')
         os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
         os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
-
         try:
             command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
@@ -326,31 +347,26 @@ def check_torch():
             log.debug(f'Run rocm_agent_enumerator failed: {e}')
             amd_gpus = []
 
-        # use the first available amd gpu by default
-        hip_visible_devices = []
+        hip_visible_devices = [] # use the first available amd gpu by default
         for idx, gpu in enumerate(amd_gpus):
             if gpu in ['gfx1100', 'gfx1101', 'gfx1102']:
                 hip_visible_devices.append((idx, gpu, 'navi3x'))
                 break
-            # experimental navi 2x support
-            if gpu in ['gfx1030', 'gfx1031', 'gfx1032', 'gfx1034']:
+            if gpu in ['gfx1030', 'gfx1031', 'gfx1032', 'gfx1034']: # experimental navi 2x support
                 hip_visible_devices.append((idx, gpu, 'navi2x'))
                 break
         if len(hip_visible_devices) > 0:
             idx, gpu, arch = hip_visible_devices[0]
             log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu} arch={arch}')
-
             os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
             if arch == 'navi3x':
                 os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '11.0.0')
-                # do not use tensorflow-rocm for navi 3x
-                if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm':
+                if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
                     os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
             elif arch == 'navi2x':
                 os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
             else:
                 log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
-
         try:
             command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             major_ver, minor_ver, *_ = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
@@ -359,13 +375,11 @@ def check_torch():
         except Exception as e:
             log.debug(f'Run hipconfig failed: {e}')
             rocm_ver = None
-
         if rocm_ver in ['5.5', '5.6']:
             # install torch nightly via torchvision to avoid wasting bandwidth when torchvision depends on torch from yesterday
             torch_command = os.environ.get('TORCH_COMMAND', f'torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
         else:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/rocm5.4.2')
-
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
@@ -375,10 +389,14 @@ def check_torch():
         os.environ.setdefault('NEOReadDebugKeys', '1')
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
         if "linux" in sys.platform:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.1a0 torchvision==0.15.2a0 intel_extension_for_pytorch==2.0.110+xpu openvino==2023.1.0.dev20230728 -f https://developer.intel.com/ipex-whl-stable-xpu')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.1a0 torchvision==0.15.2a0 intel_extension_for_pytorch==2.0.110+xpu -f https://developer.intel.com/ipex-whl-stable-xpu')
             os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0 intel-extension-for-tensorflow[gpu]')
         else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0a0 torchvision==0.15.1 intel_extension_for_pytorch==2.0.110+gitba7f6c1 openvino==2023.1.0.dev20230728 -f https://developer.intel.com/ipex-whl-stable-xpu')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0a0 intel_extension_for_pytorch==2.0.110+gitba7f6c1 -f https://developer.intel.com/ipex-whl-stable-xpu')
+    elif allow_openvino and args.use_openvino:
+        #Remove this after 2.1.0 releases
+        log.info('Using OpenVINO with Torch Nightly CPU')
+        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch==2.1.0.dev20230713+cpu torchvision==0.16.0.dev20230713+cpu -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html')
     else:
         machine = platform.machine()
         if sys.platform == 'darwin':
@@ -398,6 +416,7 @@ def check_torch():
             import torch
             log.info(f'Torch {torch.__version__}')
             if args.use_ipex and allow_ipex:
+                fix_ipex_win_torch()
                 import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
                 log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
                 if shutil.which('icpx') is not None:
@@ -442,6 +461,9 @@ def check_torch():
         log.debug(f'Cannot install xformers package: {e}')
     if opts.get('cuda_compile_backend', '') == 'hidet':
         install('hidet', 'hidet')
+    if args.use_openvino or opts.get('cuda_compile_backend', '') == 'openvino_fx':
+        install('openvino==2023.1.0.dev20230811', 'openvino')
+        os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if args.profile:
         print_profile(pr, 'Torch')
 
@@ -481,9 +503,9 @@ def install_packages():
     install(invisiblewatermark_package, 'invisible-watermark')
     install('onnxruntime==1.15.1', 'onnxruntime', ignore=True)
     install('pi-heif', 'pi_heif', ignore=True)
-    install('git+https://github.com/damian0815/compel', 'compel', ignore=True)
     tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0')
     install(tensorflow_package, 'tensorflow', ignore=True)
+    install('git+https://github.com/google-research/torchsde', 'torchsde', ignore=True)
     bitsandbytes_package = os.environ.get('BITSANDBYTES_PACKAGE', None)
     if bitsandbytes_package is not None:
         install(bitsandbytes_package, 'bitsandbytes', ignore=True)
@@ -717,6 +739,8 @@ def check_extensions():
 
 # check version of the main repo and optionally upgrade it
 def check_version(offline=False, reset=True): # pylint: disable=unused-argument
+    if args.skip_all:
+        return
     if not os.path.exists('.git'):
         log.error('Not a git repository')
         if not args.ignore:
@@ -815,14 +839,16 @@ def add_args(parser):
     group.add_argument('--upgrade', default = False, action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     group.add_argument('--requirements', default = False, action='store_true', help = "Force re-check of requirements, default: %(default)s")
     group.add_argument('--quick', default = False, action='store_true', help = "Run with startup sequence only, default: %(default)s")
-    group.add_argument("--use-ipex", default = False, action='store_true', help="Use Intel OneAPI XPU backend, default: %(default)s")
     group.add_argument('--use-directml', default = False, action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
+    group.add_argument("--use-openvino", default = False, action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
+    group.add_argument("--use-ipex", default = False, action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
     group.add_argument("--use-cuda", default=False, action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
     group.add_argument("--use-rocm", default=False, action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
     group.add_argument('--skip-requirements', default = False, action='store_true', help = "Skips checking and installing requirements, default: %(default)s")
     group.add_argument('--skip-extensions', default = False, action='store_true', help = "Skips running individual extension installers, default: %(default)s")
     group.add_argument('--skip-git', default = False, action='store_true', help = "Skips running all GIT operations, default: %(default)s")
     group.add_argument('--skip-torch', default = False, action='store_true', help = "Skips running Torch checks, default: %(default)s")
+    group.add_argument('--skip-all', default = False, action='store_true', help = "Skips running all checks, default: %(default)s")
     group.add_argument('--experimental', default = False, action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
     group.add_argument('--reinstall', default = False, action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
     group.add_argument('--test', default = False, action='store_true', help = "Run test only and exit")
@@ -876,5 +902,7 @@ def read_options():
         with open(args.config, "r", encoding="utf8") as file:
             try:
                 opts = json.load(file)
+                if type(opts) is str:
+                    opts = json.loads(opts)
             except Exception as e:
                 log.error(f'Error reading options file: {file} {e}')

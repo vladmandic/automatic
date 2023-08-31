@@ -97,15 +97,14 @@ function setupExtraNetworks() {
   function registerPrompt(tabname, id) {
     const textarea = gradioApp().querySelector(`#${id} > label > textarea`);
     if (!activePromptTextarea[tabname]) activePromptTextarea[tabname] = textarea;
-    textarea.addEventListener('focus', () => {
-      activePromptTextarea[tabname] = textarea;
-    });
+    textarea.addEventListener('focus', () => { activePromptTextarea[tabname] = textarea; });
   }
 
   registerPrompt('txt2img', 'txt2img_prompt');
   registerPrompt('txt2img', 'txt2img_neg_prompt');
   registerPrompt('img2img', 'img2img_prompt');
   registerPrompt('img2img', 'img2img_neg_prompt');
+  log('initExtraNetworks');
 }
 
 onUiLoaded(setupExtraNetworks);
@@ -223,7 +222,8 @@ function popup(contents) {
 
 function readCardMetadata(event, extraPage, cardName) {
   requestGet('./sd_extra_networks/metadata', { page: extraPage, item: cardName }, (data) => {
-    if (data?.metadata && (typeof (data?.metadata) === 'string')) {
+    if (data?.metadata) {
+      if (typeof (data?.metadata) !== 'string') data.metadata = JSON.stringify(data.metadata, null, 2);
       const elem = document.createElement('pre');
       elem.classList.add('popup-metadata');
       elem.textContent = data.metadata;

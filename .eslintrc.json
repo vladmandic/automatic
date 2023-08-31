@@ -32,12 +32,15 @@
     "no-useless-escape":"off",
     "object-curly-newline":"off",
     "prefer-rest-params":"off",
+    "prefer-destructuring":"off",
     "radix":"off"
   },
   "globals": {
     // asssets
     "panzoom": "readonly",
     //script.js
+    "log": "readonly",
+    "debug": "readonly",
     "gradioApp": "readonly",
     "executeCallbacks": "readonly",
     "onAfterUiUpdate": "readonly",
@@ -51,6 +54,7 @@
     "getUICurrentTabContent": "readonly",
     //ui.js
     "opts": "writable",
+    "sortUIElements": "readonly",
     "all_gallery_buttons": "readonly",
     "selected_gallery_button": "readonly",
     "selected_gallery_index": "readonly",
@@ -65,7 +69,9 @@
     "create_submit_args": "readonly",
     "restart_reload": "readonly",
     "updateInput": "readonly",
-      //extraNetworks.js
+    // settings.js
+    "register_drag_drop": "readonly",
+    //extraNetworks.js
     "requestGet": "readonly",
     "popup": "readonly",
     // from python

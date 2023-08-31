@@ -35,11 +35,11 @@ scipy
 tb_nightly
 toml
 torchdiffeq
-torchsde
 voluptuous
 yapf
 scikit-image
 basicsr
+compel==2.0.2
 fasteners
 typing-extensions==4.7.1
 antlr4-python3-runtime==4.9.3
@@ -47,9 +47,9 @@ requests==2.31.0
 tqdm==4.65.0
 accelerate==0.20.3
 opencv-python-headless==4.7.0.72
-diffusers==0.19.3
+diffusers==0.20.1
 einops==0.4.1
-gradio==3.32.0
+gradio==3.41.2
 huggingface_hub==0.16.4
 numexpr==2.8.4
 numpy==1.24.4

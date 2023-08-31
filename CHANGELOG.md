@@ -1,19 +1,100 @@
 # Change Log for SD.Next
 
-## Update for 2023-08-14
+## Update for 2023-08-31
+
+- diffusers:
+  - ability to interrupt (stop/skip) model generate  
+  - add `diffusers_force_zeros` setting  
+    create zero-tensor for prompt if prompt is empty (positive or negative)  
+  - add `diffusers_aesthetics_score` setting  
+    automatically guide unet towards higher pleasing images  
+
+## Update for 2023-08-30
+
+Time for a quite a large update that has been leaking bit-by-bit over the past week or so...  
+*Note*: due to large changes, it is recommended to reset (delete) your `ui-config.json`  
+
+- diffusers:  
+  - support for **distilled** sd models  
+    just go to models/huggingface and download a model, for example:  
+    `segmind/tiny-sd`, `segmind/small-sd`, `segmind/portrait-finetuned`  
+    those are lower quality, but extremely small and fast  
+    up to 50% faster than sd 1.5 and execute in as little as 2.1gb of vram  
+- general:  
+  - redesigned **settings**  
+    - new layout with separated sections:  
+      *settings, ui config, licenses, system info, benchmark, models*  
+    - **system info** tab is now part of settings  
+      when running outside of sdnext, system info is shown in main ui  
+    - all system and image paths are now relative by default  
+    - add settings validation when performing load/save  
+    - settings tab in ui now shows settings that are changed from default values  
+    - settings tab switch to compact view  
+  - update **gradio** major version  
+    this may result in some smaller layout changes since its a major version change  
+    however, browser page load is now much faster  
+  - optimizations:
+    - optimize model hashing  
+    - add cli param `--skip-all` that skips all installer checks  
+      use at personal discretion, but it can be useful for bulk deployments  
+    - add model **precompile** option (when model compile is enabled)  
+    - **extra network** folder info caching  
+      results in much faster startup when you have large number of extra networks  
+    - faster **xyz grid** switching  
+      especially when using different checkpoints  
+  - update **second pass** options for clarity
+  - models:
+    - civitai download missing model previews
+  - add **openvino** (experimental) cpu optimized model compile and inference  
+    enable with `--use-openvino`  
+    thanks @disty0  
+  - enable batch **img2img** scale-by workflows  
+    now you can batch process with rescaling based on each individual original image size  
+  - fixes:
+    - fix extra networks previews  
+    - css fixes  
+    - improved extensions compatibility (e.g. *sd-cn-animation*)  
+    - allow changing **vae** on-the-fly for both original and diffusers backend
+
+## Update for 2023-08-20
+
+Another release thats been baking in dev branch for a while...
+
+- general:
+  - caching of extra network information to enable much faster create/refresh operations  
+    thanks @midcoastal
+- diffusers:
+  - add **hires** support (*experimental*)  
+    applies to all model types that support img2img, including **sd** and **sd-xl**  
+    also supports all hires upscaler types as well as standard params like steps and denoising strength  
+    when used with **sd-xl**, it can be used with or without refiner loaded  
+    how to enable - there are no explicit checkboxes other than second pass itself:
+    - hires: upscaler is set and target resolution is not at default  
+    - refiner: if refiner model is loaded  
+  - images save options: *before hires*, *before refiner*
+  - redo `move model to cpu` logic in settings -> diffusers to be more reliable  
+    note that system defaults have also changed, so you may need to tweak to your liking  
+  - update dependencies
+
+## Update for 2023-08-17
+
+Smaller update, but with some breaking changes (to prepare for future larger functionality)...
 
 - general:
   - update all metadata saved with images  
     see <https://github.com/vladmandic/automatic/wiki/Metadata> for details  
-    (work-in-progress)
   - improved **amd** installer with support for **navi 2x & 3x** and **rocm 5.4/5.5/5.6**  
     thanks @evshiron  
-  - fix img2img resizing (applies to original, diffusers, hires)  
+  - fix **img2img** resizing (applies to *original, diffusers, hires*)  
+  - config change: main `config.json` no longer contains entire configuration  
+    but only differences from defaults (simmilar to recent change performed to `ui-config.json`)  
 - diffusers:
-  - enable batch img2img workflows
-- original:
+  - enable **batch img2img** workflows  
+- original:  
   - new samplers: **dpm++ 3M sde** (standard and karras variations)  
     enable in *settings -> samplers -> show samplers*
+  - expose always/never discard penultimage sigma  
+    enable in *settings -> samplers*  
 
 ## Update for 2023-08-11
 

@@ -245,7 +245,8 @@ def create_ui():
                 def civit_search(name, tag, model_type):
                     import requests
                     headers = { 'Content-type': 'application/json' }
-                    url = 'https://civitai.com/api/v1/models?limit=25&types=Checkpoint&Sort=Newest'
+                    types = 'LORA' if model_type == 'LoRA' else 'Checkpoint'
+                    url = f'https://civitai.com/api/v1/models?limit=25&types={types}&Sort=Newest'
                     if name is not None and len(name) > 0:
                         url += f'&query={name}'
                     if tag is not None and len(tag) > 0:
@@ -321,12 +322,12 @@ def create_ui():
                     log.debug(f'CivitAI select: variant={in_data[evt.index[0]]}')
                     return in_data[evt.index[0]][3], in_data[evt.index[0]][0], gr.update(interactive=True)
 
-                def civit_download_model(model_url: str, model_name: str, model_path: str, image_url: str):
+                def civit_download_model(model_url: str, model_name: str, model_path: str, model_type: str, image_url: str):
                     if model_url is None or len(model_url) == 0:
                         return 'No model selected'
                     try:
                         from modules.modelloader import download_civit_model
-                        res = download_civit_model(model_url, model_name, model_path, image_url)
+                        res = download_civit_model(model_url, model_name, model_path, model_type, image_url)
                     except Exception as e:
                         res = f"CivitAI model downloaded error: model={model_url} {e}"
                         log.error(res)
@@ -335,9 +336,33 @@ def create_ui():
                     list_models()
                     return res
 
+                def civit_download_previews():
+                    import requests
+                    from modules.ui_extra_networks import extra_pages
+                    from modules.modelloader import download_civit_preview
+                    headers = { 'Content-type': 'application/json' }
+                    res = ''
+                    for page in extra_pages:
+                        for item in page.list_items():
+                            if item.get('fullname', None) is None:
+                                continue
+                            if 'card-no-preview.png' in item['preview'] and os.path.isfile(item['fullname']):
+                                if item.get('hash', None) is None:
+                                    log.debug(f'CivitAI skipping item without hash: name={item["name"]}')
+                                    continue
+                                url = f'https://civitai.com/api/v1/model-versions/by-hash/{item["hash"]}'
+                                r = requests.get(url, timeout=5, headers=headers)
+                                log.debug(f'CivitAI search: name={item["name"]} hash={item["hash"]} status={r.status_code}')
+                                if r.status_code == 200:
+                                    d = r.json()
+                                    if d.get('images') is not None and len(d['images']) > 0 and len(d['images'][0]['url']) > 0:
+                                        preview_url = d['images'][0]['url']
+                                        res += download_civit_preview(item['filename'], preview_url) + '<br>'
+                    return res
+
                 with gr.Row():
                     with gr.Column(scale=1):
-                        civit_model_type = gr.Dropdown(label='Model type', choices=['SD 1.5', 'SD XL', 'Other'], value='SD 1.5')
+                        civit_model_type = gr.Dropdown(label='Model type', choices=['SD 1.5', 'SD XL', 'LoRA', 'Other'], value='LoRA')
                     with gr.Column(scale=15):
                         with gr.Row():
                             civit_search_text = gr.Textbox('', label = 'Seach models', placeholder='keyword')
@@ -353,15 +378,17 @@ def create_ui():
                     with gr.Column():
                         civit_headers2 = ['ID', 'ModelID', 'Name', 'Base', 'Created', 'Preview']
                         civit_types2 = ['number', 'number', 'str', 'str', 'date', 'str']
-                        civit_results2 = gr.DataFrame([], label = 'Model versions', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers2, datatype = civit_types2, type='array')
+                        civit_results2 = gr.DataFrame(value = None, label = 'Model versions', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers2, datatype = civit_types2, type='array')
                     with gr.Column():
                         civit_headers3 = ['Name', 'Size', 'Metadata', 'URL']
                         civit_types3 = ['str', 'number', 'str', 'str']
-                        civit_results3 = gr.DataFrame([], label = 'Model variants', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers3, datatype = civit_types3, type='array')
+                        civit_results3 = gr.DataFrame(value = None, label = 'Model variants', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers3, datatype = civit_types3, type='array')
                 with gr.Row():
                     civit_headers1 = ['ID', 'Name', 'Tags', 'Downloads', 'Rating']
                     civit_types1 = ['number', 'str', 'str', 'number', 'number']
-                    civit_results1 = gr.DataFrame([], label = 'Search results', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers1, datatype = civit_types1, type='array')
+                    civit_results1 = gr.DataFrame(value = None, label = 'Search results', show_label = True, interactive = False, wrap = True, overflow_row_behaviour = 'paginate', max_rows = 10, headers = civit_headers1, datatype = civit_types1, type='array')
+                with gr.Row():
+                    civit_previews_btn = gr.Button(value="Fetch previews for existing models", variant='primary')
 
                 civit_search_text.submit(fn=civit_search, inputs=[civit_search_text, civit_search_tag, civit_model_type], outputs=[civit_results1, civit_results2, civit_results3])
                 civit_search_tag.submit(fn=civit_search, inputs=[civit_search_text, civit_search_tag, civit_model_type], outputs=[civit_results1, civit_results2, civit_results3])
@@ -369,4 +396,5 @@ def create_ui():
                 civit_results1.select(fn=civit_select1, inputs=[civit_results1], outputs=[civit_results2, models_image])
                 civit_results2.select(fn=civit_select2, inputs=[civit_results2], outputs=[civit_results3])
                 civit_results3.select(fn=civit_select3, inputs=[civit_results3], outputs=[civit_selected, civit_name, civit_search_btn])
-                civit_download_model_btn.click(fn=civit_download_model, inputs=[civit_selected, civit_name, civit_path, models_image], outputs=[models_outcome])
+                civit_download_model_btn.click(fn=civit_download_model, inputs=[civit_selected, civit_name, civit_path, civit_model_type, models_image], outputs=[models_outcome])
+                civit_previews_btn.click(fn=civit_download_previews, inputs=[], outputs=[models_outcome])

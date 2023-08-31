@@ -40,7 +40,7 @@ def get_cuda_device_string():
 
 
 def get_optimal_device_name():
-    if cuda_ok or backend == 'ipex' or backend == 'directml':
+    if cuda_ok or backend == 'directml':
         return get_cuda_device_string()
     if has_mps():
         return "mps"
@@ -53,6 +53,7 @@ def get_optimal_device():
 
 def get_device_for(task):
     if task in shared.cmd_opts.use_cpu:
+        shared.log.debug(f'Forcing CPU for task: {task}')
         return cpu
     return get_optimal_device()
 
@@ -61,7 +62,10 @@ def torch_gc(force=False):
     mem = memstats.memory_stats()
     gpu = mem.get('gpu', {})
     oom = gpu.get('oom', 0)
-    used = round(100 * gpu.get('used', 0) / gpu.get('total', 1))
+    if backend == "directml":
+        used = round(100 * torch.cuda.memory_allocated() / (1 << 30) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
+    else:
+        used = round(100 * gpu.get('used', 0) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
     global previous_oom # pylint: disable=global-statement
     if oom > previous_oom:
         previous_oom = oom
@@ -69,14 +73,10 @@ def torch_gc(force=False):
     if used > 95:
         shared.log.info(f'GPU high memory utilization: {used}% {mem}')
         force = True
-        if backend == "directml":
-            practical_used = round(100 * torch.cuda.memory_allocated() / (1 << 30) / gpu.get('total', 1))
-            shared.log.info(f'Practical GPU memory utilization: {practical_used}%')
-
-    if shared.opts.disable_gc and not force:
+    if not force:
         return
     collected = gc.collect()
-    if cuda_ok or backend == 'ipex':
+    if cuda_ok:
         try:
             with torch.cuda.device(get_cuda_device_string()):
                 torch.cuda.empty_cache()
@@ -167,7 +167,7 @@ def set_cuda_params():
 args = cmd_args.parser.parse_args()
 if args.use_ipex or (hasattr(torch, 'xpu') and torch.xpu.is_available()):
     backend = 'ipex'
-    from modules.ipex_specific import ipex_init
+    from modules.intel.ipex import ipex_init
     ipex_init()
 elif args.use_directml:
     backend = 'directml'
@@ -182,7 +182,7 @@ elif sys.platform == 'darwin':
 else:
     backend = 'cpu'
 
-cuda_ok = torch.cuda.is_available() and not backend == 'ipex'
+cuda_ok = torch.cuda.is_available()
 cpu = torch.device("cpu")
 device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer = None
 dtype = torch.float16
@@ -221,8 +221,6 @@ def autocast(disable=False):
         return contextlib.nullcontext()
     if shared.cmd_opts.use_directml:
         return torch.dml.amp.autocast(dtype)
-    if backend == 'ipex':
-        return torch.xpu.amp.autocast(enabled=True, dtype=dtype)
     if cuda_ok:
         return torch.autocast("cuda")
     else:
@@ -234,8 +232,6 @@ def without_autocast(disable=False):
         return contextlib.nullcontext()
     if shared.cmd_opts.use_directml:
         return torch.dml.amp.autocast(enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext() # pylint: disable=unexpected-keyword-arg
-    if backend == 'ipex':
-        return torch.xpu.amp.autocast(enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext()
     if cuda_ok:
         return torch.autocast("cuda", enabled=False) if torch.is_autocast_enabled() else contextlib.nullcontext()
     else:

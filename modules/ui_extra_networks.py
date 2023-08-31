@@ -1,4 +1,5 @@
 import re
+import time
 import json
 import html
 import os.path
@@ -8,15 +9,32 @@ from pathlib import Path
 from collections import OrderedDict
 import gradio as gr
 from PIL import Image
-from modules import shared, scripts
+from starlette.responses import FileResponse, JSONResponse
+from modules import shared, scripts, modelloader
 from modules.generation_parameters_copypaste import image_from_url_text
 from modules.ui_components import ToolButton
 
+
 extra_pages = []
 allowed_dirs = set()
+dir_cache = {} # key=path, value=(mtime, listdir(path))
 
 refresh_symbol = '\U0001f504'  # 🔄
 close_symbol = '\U0000274C'  # ❌
+
+
+def listdir(path):
+    if not os.path.exists(path):
+        return []
+    if path in dir_cache and os.path.getmtime(path) == dir_cache[path][0]:
+        return dir_cache[path][1]
+    else:
+        dir_cache[path] = (
+            os.path.getmtime(path),
+            [os.path.join(path, f) for f in os.listdir(path)]
+        )
+        return dir_cache[path][1]
+
 
 def register_page(page):
     """registers extra networks page for the UI; recommend doing it in on_before_ui() callback for extensions"""
@@ -26,31 +44,34 @@ def register_page(page):
 
 
 def fetch_file(filename: str = ""):
-    from starlette.responses import FileResponse, JSONResponse
     if filename.startswith('html/'):
         return FileResponse(filename, headers={"Accept-Ranges": "bytes"})
     if not any(Path(x).absolute() in Path(filename).absolute().parents for x in allowed_dirs):
         return JSONResponse({"error": f"File cannot be fetched: {filename}. Must be in one of directories registered by extra pages."})
-    if os.path.splitext(filename)[1].lower() not in (".png", ".jpg", ".webp"):
+    if os.path.splitext(filename)[1].lower() not in (".png", ".jpg", ".jpeg", ".webp"):
         return JSONResponse({"error": f"File cannot be fetched: {filename}. Only png and jpg and webp."})
     return FileResponse(filename, headers={"Accept-Ranges": "bytes"})
 
 
 def get_metadata(page: str = "", item: str = ""):
-    from starlette.responses import JSONResponse
     page = next(iter([x for x in extra_pages if x.name == page]), None)
     if page is None:
         return JSONResponse({ 'metadata': 'none' })
     metadata = page.metadata.get(item, 'none')
+    if metadata is None:
+        metadata = ''
+    shared.log.debug(f'Extra networks metadata: page={page} item={item} len={len(metadata)}')
     return JSONResponse({"metadata": metadata})
 
 
 def get_info(page: str = "", item: str = ""):
-    from starlette.responses import JSONResponse
     page = next(iter([x for x in extra_pages if x.name == page]), None)
     if page is None:
         return JSONResponse({ 'info': 'none' })
     info = page.info.get(item, 'none')
+    if info is None:
+        info = ''
+    shared.log.debug(f'Extra networks info: page={page} item={item} len={len(info)}')
     return JSONResponse({"info": info})
 
 
@@ -113,7 +134,8 @@ class ExtraNetworksPage:
     def link_preview(self, filename):
         quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
         mtime = os.path.getmtime(filename)
-        return f"./sd_extra_networks/thumb?filename={quoted_filename}&mtime={mtime}"
+        preview = f"./sd_extra_networks/thumb?filename={quoted_filename}&mtime={mtime}"
+        return preview
 
     def search_terms_from_path(self, filename, possible_directories=None):
         abspath = os.path.abspath(filename)
@@ -124,7 +146,7 @@ class ExtraNetworksPage:
         return ""
 
     def is_empty(self, folder):
-        for f in os.listdir(folder):
+        for f in listdir(folder):
             _fn, ext = os.path.splitext(f)
             if ext.lower() in ['.ckpt', '.safetensors', '.pt'] or os.path.isdir(os.path.join(folder, f)):
                 return False
@@ -153,24 +175,23 @@ class ExtraNetworksPage:
             self.missing_thumbs.clear()
 
     def create_html(self, tabname, skip = False):
+        t0 = time.time()
         self_name_id = self.name.replace(" ", "_")
         if skip:
             return f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'></div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>Extra network page not ready<br>Click refresh to try again</div>"
         subdirs = {}
         allowed_folders = [os.path.abspath(x) for x in self.allowed_directories_for_previews()]
-        for parentdir in [*set(allowed_folders)]:
-            for root, dirs, _files in os.walk(parentdir, followlinks=True):
-                for dirname in dirs:
-                    x = os.path.join(root, dirname)
-                    if shared.opts.diffusers_dir in x:
-                        subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
-                    if (not os.path.isdir(x)) or ('models--' in x):
-                        continue
-                    subdir = os.path.abspath(x)[len(parentdir):].replace("\\", "/")
-                    while subdir.startswith("/"):
-                        subdir = subdir[1:]
-                    if not self.is_empty(x):
-                        subdirs[subdir] = 1
+        for parentdir, dirs in {d: modelloader.directory_directories(d) for d in allowed_folders}.items():
+            for tgt in dirs.keys():
+                if shared.opts.diffusers_dir in tgt:
+                    subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
+                if 'models--' in tgt:
+                    continue
+                subdir = tgt[len(parentdir):].replace("\\", "/")
+                while subdir.startswith("/"):
+                    subdir = subdir[1:]
+                if not self.is_empty(tgt):
+                    subdirs[subdir] = 1
         if subdirs:
             subdirs = OrderedDict(sorted(subdirs.items()))
             subdirs = {"": 1, **subdirs}
@@ -185,23 +206,27 @@ class ExtraNetworksPage:
             self.html = ''
             try:
                 self.items = list(self.list_items())
-            except Exception:
+            except Exception as e:
                 self.items = []
-                shared.log.error(f'Extra networks error listing items: {self.__class__}')
+                shared.log.error(f'Extra networks error listing items: class={self.__class__} tab={tabname} {e}')
             self.create_xyz_grid()
-            for item in self.items:
+            htmls = []
+            items = self.items
+            for item in items:
                 self.metadata[item["name"]] = item.get("metadata", {})
                 self.info[item["name"]] = self.find_info(item['filename'])
-                self.html += self.create_html_for_item(item, tabname)
+                htmls.append(self.create_html_for_item(item, tabname))
+            self.html += ''.join(htmls)
             if len(subdirs_html) > 0 or len(self.html) > 0:
                 res = f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'>{subdirs_html}</div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>{self.html}</div>"
             else:
                 return ''
-            shared.log.debug(f'Extra networks: {self.name} items={len(self.items)} subdirs={len(subdirs)}')
+            t1 = time.time()
+            shared.log.debug(f'Extra networks: {self.name} items={len(self.items)} subdirs={len(subdirs)} time={round(t1-t0, 2)}')
             threading.Thread(target=self.create_thumb).start()
             return res
         except Exception as e:
-            shared.log.error(f'Extra networks page error: {e}')
+            shared.log.error(f'Extra networks page error: title={self.title} tab={tabname} class={e.__class__.__name__} {e}')
             return f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'></div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>Extra network error<br>{e}</div>"
 
     def list_items(self):
@@ -238,7 +263,6 @@ class ExtraNetworksPage:
                 args['title'] += f'\nAlias: {item["alias"]}'
             if item.get("tags", None) is not None:
                 args['title'] += f'\nTags: {", ".join(tags)}'
-            self.card.format(**args)
             return self.card.format(**args)
         except Exception as e:
             shared.log.error(f'Extra networks item error: page={tabname} item={item["name"]} {e}')
@@ -246,38 +270,40 @@ class ExtraNetworksPage:
 
     def find_preview(self, path):
         preview_extensions = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
-        for file in sum([[f'{path}.thumb.{ext}'] for ext in preview_extensions], []): # use thumbnail if exists
-            if os.path.isfile(file):
-                return self.link_preview(file)
-        for file in sum([[f'{path}.preview.{ext}', f'{path}.{ext}'] for ext in preview_extensions], []):
-            if os.path.isfile(file):
-                self.missing_thumbs.append(file)
+        files = listdir(os.path.dirname(path))
+        for file in [f'{path}{mid}{ext}' for ext in preview_extensions for mid in ['.thumb.', '.preview.', '.']]:
+            if file in files:
+                if '.thumb.' not in file:
+                    self.missing_thumbs.append(file)
                 return self.link_preview(file)
         return self.link_preview('html/card-no-preview.png')
 
     def find_description(self, path):
+        files = listdir(os.path.dirname(path))
         for file in [f"{path}.txt", f"{path}.description.txt"]:
-            try:
-                with open(file, "r", encoding="utf-8", errors="replace") as f:
-                    txt = f.read()
-                    txt = re.sub('[<>]', '', txt)
-                    return txt
-            except OSError:
-                pass
-        return None
+            if file in files:
+                try:
+                    with open(file, "r", encoding="utf-8", errors="replace") as f:
+                        txt = f.read()
+                        txt = re.sub('[<>]', '', txt)
+                        return txt
+                except OSError:
+                    pass
+        return ''
 
     def find_info(self, path):
         basename, _ext = os.path.splitext(path)
+        files = listdir(os.path.dirname(path))
         for file in [f"{path}.info", f"{path}.civitai.info", f"{basename}.info", f"{basename}.civitai.info"]:
-            try:
-                with open(file, "r", encoding="utf-8", errors="replace") as f:
-                    txt = f.read()
-                    txt = re.sub('[<>]', '', txt)
-                    return txt
-            except OSError:
-                pass
-        return None
-
+            if file in files:
+                try:
+                    with open(file, "r", encoding="utf-8", errors="replace") as f:
+                        txt = f.read()
+                        txt = re.sub('[<>]', '', txt)
+                        return txt
+                except OSError:
+                    pass
+        return ''
 
 
 def initialize():
@@ -339,6 +365,7 @@ def create_ui(container, button, tabname, skip_indexing = False):
         ui.description_target_filename = gr.Textbox('Description save filename', elem_id=tabname+"_description_filename", visible=False)
 
         for page in ui.stored_extra_pages:
+            shared.log.debug(f"Extra network page: {page.title} tab={tabname}")
             page_html = page.create_html(ui.tabname, skip_indexing)
             with gr.Tab(page.title, id=page.title.lower().replace(" ", "_"), elem_classes="extra-networks-tab"):
                 page_elem = gr.HTML(page_html, elem_id=tabname+page.name+"_extra_page", elem_classes="extra-networks-page")
@@ -354,6 +381,7 @@ def create_ui(container, button, tabname, skip_indexing = False):
     button_close.click(fn=toggle_visibility, inputs=[state_visible], outputs=[state_visible, container])
 
     def refresh():
+        shared.log.debug("Refreshing UI Extra Networks Pages")
         res = []
         for pg in ui.stored_extra_pages:
             pg.html = ''

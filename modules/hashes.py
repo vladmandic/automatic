@@ -15,10 +15,7 @@ def dump_cache():
 def cache(subsection):
     global cache_data # pylint: disable=global-statement
     if cache_data is None:
-        if not os.path.isfile(cache_filename):
-            cache_data = {}
-        else:
-            cache_data = shared.readfile(cache_filename)
+        cache_data = {} if not os.path.isfile(cache_filename) else shared.readfile(cache_filename)
     s = cache_data.get(subsection, {})
     cache_data[subsection] = s
     return s
@@ -35,11 +32,11 @@ def calculate_sha256(filename):
 
 def sha256_from_cache(filename, title, use_addnet_hash=False):
     hashes = cache("hashes-addnet") if use_addnet_hash else cache("hashes")
-    ondisk_mtime = os.path.getmtime(filename)
     if title not in hashes:
         return None
     cached_sha256 = hashes[title].get("sha256", None)
     cached_mtime = hashes[title].get("mtime", 0)
+    ondisk_mtime = os.path.getmtime(filename) if os.path.isfile(filename) else 0
     if ondisk_mtime > cached_mtime or cached_sha256 is None:
         return None
     return cached_sha256
@@ -52,6 +49,8 @@ def sha256(filename, title, use_addnet_hash=False):
         return sha256_value
     if shared.cmd_opts.no_hashing:
         return None
+    if not os.path.isfile(filename):
+        return None
     if use_addnet_hash:
         with progress.open(filename, 'rb', description=f'Calculating model hash: [cyan]{filename}', auto_refresh=True) as f:
             sha256_value = addnet_hash_safetensors(f)
@@ -59,7 +58,7 @@ def sha256(filename, title, use_addnet_hash=False):
         sha256_value = calculate_sha256(filename)
     hashes[title] = {
         "mtime": os.path.getmtime(filename),
-        "sha256": sha256_value,
+        "sha256": sha256_value
     }
     dump_cache()
     return sha256_value

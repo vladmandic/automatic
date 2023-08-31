@@ -48,7 +48,6 @@ All Individual features are not listed here, instead check [ChangeLog](CHANGELOG
   This is the default backend and it is fully compatible with all existing functionality and extensions  
 - **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
   It is also the only backend that supports **Stable Diffusion XL** model  
-  Support for legacy workflows and extensions is limited, but it's being expanded  
   See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information  
 
 ## Model support
@@ -57,18 +56,20 @@ Additional models will be added as they become available and there is public int
 
 - Stable Diffusion 1.x and 2.x including all variants
 - Stable Diffusion XL
-- Kandinsky 2.1
+- Kandinsky 2.1 and 2.2
 - DeepFloyd IF
 - UniDiffusion
+- SD-Distilled (all variants)
 
 ## Platform support
 
 - *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*
 - *AMD* GPUs using **ROCm** libraries on *Linux*.  
   Support will be extended to *Windows* once AMD releases ROCm for Windows
+- *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*
 - Any GPU compatibile with *DirectX* on *Windows* using **DirectML** libraries.  
   This includes support for AMD GPUs that are not supported by native ROCm libraries
-- *Intel Arc* GPUs using *Intel OneAPI* **Ipex/XPU** libraries  
+- *Intel* GPUs using **OpenVINO** libraries on both *Windows and Linux*
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations
 
 ## Install & Run
@@ -82,7 +83,7 @@ Additional models will be added as they become available and there is public int
 - [FAQ](https://github.com/vladmandic/automatic/discussions/1011)
 - Server can run without virtual environment,  
   but it is recommended to use it to avoid library version conflicts with other applications  
-- **nVidia/CUDA** and **AMD/ROCm** are auto-detected if present and available,  
+- **nVidia/CUDA** / **AMD/ROCm** / **Intel/OneAPI** are auto-detected if present and available,  
    but for any other use case specify required parameter explicitly or wrong packages may be installed  
   as installer will assume CPU-only environment  
 - Full startup sequence is logged in `sdnext.log`, so if you encounter any issues, please check it first  
@@ -94,8 +95,9 @@ Once SD.Next is installed, simply run `webui.bat` (*Windows*) or `webui.sh` (*Li
 Below is partial list of all available parameters, run `webui --help` for the full list:
 
     Setup options:
-      --use-ipex                       Use Intel OneAPI XPU backend, default: False
       --use-directml                   Use DirectML if no compatible GPU is detected, default: False
+      --use-openvino                   Use Intel OpenVINO backend, default: False
+      --use-ipex                       Force use Intel OneAPI XPU backend, default: False
       --use-cuda                       Force use nVidia CUDA backend, default: False
       --use-rocm                       Force use AMD ROCm backend, default: False
       --skip-update                    Skip update of extensions and submodules, default: False
@@ -117,7 +119,6 @@ Below is partial list of all available parameters, run `webui --help` for the fu
 
 SD.Next comes with several extensions pre-installed:
 
-- [Dynamic Thresholding](https://github.com/mcmonkeyprojects/sd-dynamic-thresholding)
 - [ControlNet](https://github.com/Mikubill/sd-webui-controlnet)
 - [Agent Scheduler](https://github.com/ArtVentureX/sd-webui-agent-scheduler)
 - [Multi-Diffusion Tiled Diffusion and VAE](https://github.com/pkuliyi2015/multidiffusion-upscaler-for-automatic1111)
@@ -171,7 +172,7 @@ General goals:
 ### **Sponsors**
 
 <div align="center">
-<!-- sponsors --><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/demib72"><img src="https://github.com/demib72.png" width="60px" alt="Michael Harris" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/AimwiseTonix"><img src="https://github.com/AimwiseTonix.png" width="60px" alt="ToniX" /></a><a href="https://github.com/inktomi"><img src="https://github.com/inktomi.png" width="60px" alt="Matthew Runo" /></a><a href="https://github.com/HELLO-WORLD-SAS"><img src="https://github.com/HELLO-WORLD-SAS.png" width="60px" alt="HELLO WORLD SAS" /></a><a href="https://github.com/4joeknight4"><img src="https://github.com/4joeknight4.png" width="60px" alt="" /></a><a href="https://github.com/SaladTechnologies"><img src="https://github.com/SaladTechnologies.png" width="60px" alt="Salad Technologies" /></a><a href="https://github.com/gymdreams8"><img src="https://github.com/gymdreams8.png" width="60px" alt="Gym Dreams • GymDreams8" /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/Tillerz"><img src="https://github.com/Tillerz.png" width="60px" alt="Tillerz" /></a><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/demib72"><img src="https://github.com/demib72.png" width="60px" alt="Michael Harris" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/AimwiseTonix"><img src="https://github.com/AimwiseTonix.png" width="60px" alt="ToniX" /></a><a href="https://github.com/inktomi"><img src="https://github.com/inktomi.png" width="60px" alt="Matthew Runo" /></a><a href="https://github.com/HELLO-WORLD-SAS"><img src="https://github.com/HELLO-WORLD-SAS.png" width="60px" alt="HELLO WORLD SAS" /></a><a href="https://github.com/4joeknight4"><img src="https://github.com/4joeknight4.png" width="60px" alt="" /></a><a href="https://github.com/SaladTechnologies"><img src="https://github.com/SaladTechnologies.png" width="60px" alt="Salad Technologies" /></a><a href="https://github.com/gymdreams8"><img src="https://github.com/gymdreams8.png" width="60px" alt="Gym Dreams • GymDreams8" /></a><!-- sponsors -->
 </div>
 
 <br>
