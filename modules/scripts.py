@@ -314,6 +314,7 @@ class ScriptRunner:
         self.scripts = []
         self.selectable_scripts = []
         self.alwayson_scripts = []
+        self.script_organiser = dict()
         self.titles = []
         self.infotext_fields = []
         self.paste_field_names = []
@@ -326,6 +327,7 @@ class ScriptRunner:
         self.scripts.clear()
         self.selectable_scripts.clear()
         self.alwayson_scripts.clear()
+        self.script_organiser.clear()  
         self.titles.clear()
         self.infotext_fields.clear()
         self.paste_field_names.clear()
@@ -347,6 +349,10 @@ class ScriptRunner:
                 if visibility == AlwaysVisible:
                     self.scripts.append(script)
                     self.alwayson_scripts.append(script)
+                    try:
+                        self.script_organiser[script] = script.CALLBACK_ORDER
+                    except AttributeError:
+                        self.script_organiser[script] = dict()
                     script.alwayson = True
                 elif visibility:
                     self.scripts.append(script)
@@ -464,7 +470,7 @@ class ScriptRunner:
 
     def process(self, p, **kwargs):
         s = ScriptSummary('process')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, 50).get("process", 50)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.process(p, *args, **kwargs)
