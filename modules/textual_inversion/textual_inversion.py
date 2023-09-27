@@ -136,7 +136,7 @@ class EmbeddingDatabase:
         embedding = Embedding(vec=None, name=name, filename=path)
         try:
             done = False
-            if hasattr(pipe,"load_textual_inversion"):
+            if hasattr(pipe,"load_textual_inversion") and 'XL' not in pipe.__class__.__name__:
                 try:
                     token_ids = pipe.tokenizer.convert_tokens_to_ids(name)
                     if token_ids > 49407: # already loaded
@@ -147,7 +147,7 @@ class EmbeddingDatabase:
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception:
                     pass
-            if not done and "safetensors" in path:
+            if not done and "safetensors" in path and 'XL' in pipe.__class__.__name__:
                 embeddings_dict = {}
                 from safetensors.torch import safe_open
                 with safe_open(path, framework="pt") as f:
@@ -165,16 +165,18 @@ class EmbeddingDatabase:
                     if clip_l is not None:
                         pipe.text_encoder.resize_token_embeddings(len(pipe.tokenizer))
                         for i in range(len(token_ids)):
-                            clip_l.data[token_ids[i]] = embeddings_dict["clip_l"][i]
+                            pipe.text_encoder.get_input_embeddings().weight.data[token_ids[i]] = embeddings_dict["clip_l"][i]
                     if clip_g is not None:
-                        pipe.text_encoder_2.resize_token_embeddings(len(pipe.tokenizer))
+                        pipe.tokenizer_2.add_tokens(tokens)
+                        pipe.text_encoder_2.resize_token_embeddings(len(pipe.tokenizer_2))
                         for i in range(len(token_ids)):
-                            clip_g.data[token_ids[i]] = embeddings_dict["clip_g"][i]
-                self.register_embedding(embedding, shared.sd_model)
+                            pipe.text_encoder_2.get_input_embeddings().weight.data[token_ids[i]] = embeddings_dict["clip_g"][i]
+                # self.register_embedding(embedding, shared.sd_model)
             else:
                 raise NotImplementedError
             # self.word_embeddings[name] = embedding
-        except Exception:
+        except Exception as e:
+            shared.log.debug(e)
             self.skipped_embeddings[name] = embedding
 
     def load_from_file(self, path, filename):
