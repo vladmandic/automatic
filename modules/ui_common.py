@@ -75,15 +75,21 @@ def save_files(js_data, images, html_info, index):
     class PObject: # pylint: disable=too-few-public-methods
         def __init__(self, d=None):
             if d is not None:
-                for key, value in d.items():
-                    setattr(self, key, value)
-            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None)
+                for k, v in d.items():
+                    setattr(self, k, v)
             self.prompt = getattr(self, 'prompt', None) or getattr(self, 'Prompt', None)
-            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
             self.all_prompts = getattr(self, 'all_prompts', [self.prompt])
+            self.negative_prompt = getattr(self, 'negative_prompt', None)
+            self.all_negative_prompt = getattr(self, 'all_negative_prompts', [self.negative_prompt])
+            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None)
+            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
+            self.subseed = getattr(self, 'subseed', None)
+            self.all_subseeds = getattr(self, 'all_subseeds', [self.subseed])
+            self.width = getattr(self, 'width', None)
+            self.height = getattr(self, 'height', None)
+            self.index_of_first_image = getattr(self, 'index_of_first_image', 0)
             self.infotexts = getattr(self, 'infotexts', [html_info])
             self.infotext = self.infotexts[0] if len(self.infotexts) > 0 else html_info
-            self.index_of_first_image = getattr(self, 'index_of_first_image', 0)
     try:
         data = json.loads(js_data)
     except Exception:
@@ -110,12 +116,12 @@ def save_files(js_data, images, html_info, index):
             fullfns.append(fullfn)
             destination = shared.opts.outdir_save
             if shared.opts.use_save_to_dirs_for_ui:
-                namegen = modules.images.FilenameGenerator(p, seed=p.all_seeds[i], prompt=p.all_prompts[i], image=None, index=image_index)  # pylint: disable=no-member
+                namegen = modules.images.FilenameGenerator(p, seed=p.all_seeds[i], prompt=p.all_prompts[i], image=None)  # pylint: disable=no-member
                 dirname = namegen.apply(shared.opts.directories_filename_pattern or "[prompt_words]").lstrip(' ').rstrip('\\ /')
                 destination = os.path.join(destination, dirname)
                 os.makedirs(destination, exist_ok = True)
             shutil.copy(fullfn, destination)
-            shared.log.info(f"Copying image: {fullfn} -> {destination}")
+            shared.log.info(f'Copying image: file="{fullfn}" folder="{destination}"')
             tgt_filename = os.path.join(destination, os.path.basename(fullfn))
             modules.script_callbacks.image_save_btn_callback(tgt_filename)
         else:
@@ -142,38 +148,44 @@ def save_files(js_data, images, html_info, index):
     return gr.File.update(value=fullfns, visible=True), plaintext_to_html(f"Saved: {filenames[0] if len(filenames) > 0 else 'none'}")
 
 
-def create_output_panel(tabname, outdir):
+def open_folder(result_gallery, gallery_index = 0):
+    try:
+        folder = os.path.dirname(result_gallery[gallery_index]['name'])
+    except Exception:
+        folder = shared.opts.outdir_samples
+    if not os.path.exists(folder):
+        shared.log.warning(f'Folder open: folder={folder} does not exist')
+        return
+    elif not os.path.isdir(folder):
+        shared.log.warning(f"Folder open: folder={folder} not a folder")
+        return
+
+    if not shared.cmd_opts.hide_ui_dir_config:
+        path = os.path.normpath(folder)
+        if platform.system() == "Windows":
+            os.startfile(path) # pylint: disable=no-member
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", path]) # pylint: disable=consider-using-with
+        elif "microsoft-standard-WSL2" in platform.uname().release:
+            subprocess.Popen(["wsl-open", path]) # pylint: disable=consider-using-with
+        else:
+            subprocess.Popen(["xdg-open", path]) # pylint: disable=consider-using-with
+
+
+def create_output_panel(tabname):
     import modules.generation_parameters_copypaste as parameters_copypaste
-
-    def open_folder(f):
-        if not os.path.exists(f):
-            shared.log.warning(f'Folder "{f}" does not exist. After you create an image, the folder will be created.')
-            return
-        elif not os.path.isdir(f):
-            shared.log.warning(f"An open_folder request was made with an argument that is not a folder: {f}")
-            return
-
-        if not shared.cmd_opts.hide_ui_dir_config:
-            path = os.path.normpath(f)
-            if platform.system() == "Windows":
-                os.startfile(path) # pylint: disable=no-member
-            elif platform.system() == "Darwin":
-                subprocess.Popen(["open", path]) # pylint: disable=consider-using-with
-            elif "microsoft-standard-WSL2" in platform.uname().release:
-                subprocess.Popen(["wsl-open", path]) # pylint: disable=consider-using-with
-            else:
-                subprocess.Popen(["xdg-open", path]) # pylint: disable=consider-using-with
 
     with gr.Column(variant='panel', elem_id=f"{tabname}_results"):
         with gr.Group(elem_id=f"{tabname}_gallery_container"):
             # columns are for <576px, <768px, <992px, <1200px, <1400px, >1400px
-            result_gallery = gr.Gallery(value=[], label='Output', show_label=False, show_download_button=True, elem_id=f"{tabname}_gallery", container=False, preview=True, columns=[1,2,3,4,5,6], object_fit='scale-down')
+            result_gallery = gr.Gallery(value=[], label='Output', show_label=False, show_download_button=True, allow_preview=True, elem_id=f"{tabname}_gallery", container=False, preview=True, columns=5, object_fit='scale-down')
 
         with gr.Column(elem_id=f"{tabname}_footer", elem_classes="gallery_footer"):
+            dummy_component = gr.Label(visible=False)
             with gr.Row(elem_id=f"image_buttons_{tabname}", elem_classes="image-buttons"):
                 if not shared.cmd_opts.listen:
                     open_folder_button = gr.Button('Show', visible=not shared.cmd_opts.hide_ui_dir_config, elem_id=f'open_folder_{tabname}')
-                    open_folder_button.click(fn=lambda: open_folder(shared.opts.outdir_samples or outdir), inputs=[], outputs=[])
+                    open_folder_button.click(open_folder, _js="(gallery, dummy) => [gallery, selected_gallery_index()]", inputs=[result_gallery, dummy_component], outputs=[])
                 else:
                     clip_files = gr.Button('Copy', elem_id=f'open_folder_{tabname}')
                     clip_files.click(fn=None, _js='clip_gallery_urls', inputs=[result_gallery], outputs=[])

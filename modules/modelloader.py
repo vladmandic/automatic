@@ -5,6 +5,7 @@ import importlib
 from typing import Dict
 from urllib.parse import urlparse
 import PIL.Image as Image
+import rich.progress as p
 from modules import shared
 from modules.upscaler import Upscaler, UpscalerLanczos, UpscalerNearest, UpscalerNone
 from modules.paths import script_path, models_path
@@ -55,15 +56,32 @@ def walk(top, onerror:callable=None):
     yield top, nondirs
 
 
+def download_civit_meta(model_path: str, model_id):
+    fn = os.path.splitext(model_path)[0] + '.json'
+    if os.path.exists(fn):
+        return ''
+    url = f'https://civitai.com/api/v1/models/{model_id}'
+    r = shared.req(url)
+    if r.status_code == 200:
+        try:
+            shared.writefile(r.json(), fn, silent=True)
+            msg = f'CivitAI download: id={model_id} url={url} file={fn}'
+            shared.log.info(msg)
+            return msg
+        except Exception as e:
+            msg = f'CivitAI download error: id={model_id} url={url} file={fn} {e}'
+            shared.log.error(msg)
+            return msg
+    return ''
+
 def download_civit_preview(model_path: str, preview_url: str):
-    import requests
-    import rich.progress as p
-    _, ext = os.path.splitext(preview_url)
-    model_name, _ = os.path.splitext(os.path.basename(model_path))
-    preview_file = f'{os.path.splitext(model_path)[0]}{ext}' if '.safetensors' in model_path.lower() else f'{model_path}{ext}'
-    res = f'CivitAI download: name={model_name} url={preview_url}'
-    req = requests.get(preview_url, stream=True, timeout=30)
-    total_size = int(req.headers.get('content-length', 0))
+    ext = os.path.splitext(preview_url)[1]
+    preview_file = os.path.splitext(model_path)[0] + ext
+    if os.path.exists(preview_file):
+        return ''
+    res = f'CivitAI download: url={preview_url} file={preview_file}'
+    r = shared.req(preview_url, stream=True)
+    total_size = int(r.headers.get('content-length', 0))
     block_size = 16384 # 16KB blocks
     written = 0
     img = None
@@ -72,7 +90,7 @@ def download_civit_preview(model_path: str, preview_url: str):
         with open(preview_file, 'wb') as f:
             with p.Progress(p.TextColumn('[cyan]{task.description}'), p.DownloadColumn(), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TransferSpeedColumn(), console=shared.console) as progress:
                 task = progress.add_task(description="Download starting", total=total_size)
-                for data in req.iter_content(block_size):
+                for data in r.iter_content(block_size):
                     written = written + len(data)
                     f.write(data)
                     progress.update(task, advance=block_size, description="Downloading")
@@ -81,7 +99,7 @@ def download_civit_preview(model_path: str, preview_url: str):
             raise ValueError(f'removed invalid download: bytes={written}')
         img = Image.open(preview_file)
     except Exception as e:
-        shared.log.error(f'CivitAI download error: name={model_name} url={preview_url} {e}')
+        shared.log.error(f'CivitAI download error: url={preview_url} file={preview_file} {e}')
     shared.state.end()
     if img is None:
         return res
@@ -100,11 +118,9 @@ def download_civit_model(model_url: str, model_name: str, model_path: str, model
         res += ' already exists'
         shared.log.warning(res)
         return res
-    import requests
-    import rich.progress as p
 
-    req = requests.get(model_url, stream=True, timeout=30)
-    total_size = int(req.headers.get('content-length', 0))
+    r = shared.req(model_url, stream=True)
+    total_size = int(r.headers.get('content-length', 0))
     block_size = 16384 # 16KB blocks
     written = 0
     shared.state.begin('civitai-download-model')
@@ -113,7 +129,7 @@ def download_civit_model(model_url: str, model_name: str, model_path: str, model
             with p.Progress(p.TextColumn('[cyan]{task.description}'), p.DownloadColumn(), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TransferSpeedColumn(), console=shared.console) as progress:
                 task = progress.add_task(description="Download starting", total=total_size)
                 # for data in tqdm(req.iter_content(block_size), total=total_size//1024, unit='KB', unit_scale=False):
-                for data in req.iter_content(block_size):
+                for data in r.iter_content(block_size):
                     written = written + len(data)
                     f.write(data)
                     progress.update(task, advance=block_size, description="Downloading")
@@ -135,6 +151,8 @@ def download_civit_model(model_url: str, model_name: str, model_path: str, model
 
 
 def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config: Dict[str, str] = None, token = None, variant = None, revision = None, mirror = None):
+    if hub_id is None or len(hub_id) == 0:
+        return
     from diffusers import DiffusionPipeline
     import huggingface_hub as hf
     shared.state.begin('huggingface-download-model')
@@ -158,10 +176,24 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         shared.log.debug(f"Diffusers authentication: {token}")
         hf.login(token)
     pipeline_dir = None
+
+    ok = True
     try:
         pipeline_dir = DiffusionPipeline.download(hub_id, **download_config)
     except Exception as e:
-        shared.log.error(f"Diffusers download error: {hub_id} {e}")
+        ok = False
+        shared.log.warning(f"Diffusers download error: {hub_id} {e}")
+    if not ok:
+        try:
+            download_config.pop('load_connected_pipeline')
+            download_config.pop('variant')
+            pipeline_dir = hf.snapshot_download(hub_id, **download_config)
+        except Exception as e:
+            shared.log.warning(f"Diffusers hub download error: {hub_id} {e}")
+
+    if pipeline_dir is None:
+        shared.log.error(f"Diffusers no pipeline folder: {hub_id}")
+        return
     try:
         model_info_dict = hf.model_info(hub_id).cardData if pipeline_dir is not None else None # pylint: disable=no-member # TODO Diffusers is this real error?
     except Exception:
@@ -233,7 +265,7 @@ def find_diffuser(name: str):
     hf_api = hf.HfApi()
     hf_filter = hf.ModelFilter(
         model_name=name,
-        task='text-to-image',
+        # task='text-to-image',
         library=['diffusers'],
     )
     models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
@@ -325,7 +357,53 @@ def extension_filter(ext_filter=None, ext_blacklist=None):
         return (not ext_filter or any(fp.upper().endswith(ew) for ew in ext_filter)) and (not ext_blacklist or not any(fp.upper().endswith(ew) for ew in ext_blacklist))
     return filter
 
-def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_name = None):
+
+def download_url_to_file(url: str, dst: str):
+    # based on torch.hub.download_url_to_file
+    import uuid
+    import tempfile
+    from urllib.request import urlopen, Request
+    from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
+
+    file_size = None
+    req = Request(url, headers={"User-Agent": "sdnext"})
+    u = urlopen(req)
+    meta = u.info()
+    if hasattr(meta, 'getheaders'):
+        content_length = meta.getheaders("Content-Length")
+    else:
+        content_length = meta.get_all("Content-Length")
+    if content_length is not None and len(content_length) > 0:
+        file_size = int(content_length[0])
+    dst = os.path.expanduser(dst)
+    for _seq in range(tempfile.TMP_MAX):
+        tmp_dst = dst + '.' + uuid.uuid4().hex + '.partial'
+        try:
+            f = open(tmp_dst, 'w+b')
+        except FileExistsError:
+            continue
+        break
+    else:
+        shared.log.error('Error downloading: url={url} no usable temporary filename found')
+        return
+    try:
+        with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=shared.console) as progress:
+            task = progress.add_task(description="Downloading", total=file_size)
+            while True:
+                buffer = u.read(8192)
+                if len(buffer) == 0:
+                    break
+                f.write(buffer)
+                progress.update(task, advance=len(buffer))
+        f.close()
+        shutil.move(f.name, dst)
+    finally:
+        f.close()
+        if os.path.exists(f.name):
+            os.remove(f.name)
+
+
+def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_name = None): # pylint: disable=unused-argument
     """Download a file from url into model_dir, using the file present if possible. Returns the path to the downloaded file."""
     os.makedirs(model_dir, exist_ok=True)
     if not file_name:
@@ -334,8 +412,7 @@ def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_
     cached_file = os.path.abspath(os.path.join(model_dir, file_name))
     if not os.path.exists(cached_file):
         shared.log.info(f'Downloading: url="{url}" file={cached_file}')
-        from torch.hub import download_url_to_file
-        download_url_to_file(url, cached_file, progress=progress)
+        download_url_to_file(url, cached_file)
     return cached_file
 
 
@@ -367,10 +444,16 @@ def load_models(model_path: str, model_url: str = None, command_path: str = None
 def friendly_name(file: str):
     if "http" in file:
         file = urlparse(file).path
-
     file = os.path.basename(file)
     model_name, _extension = os.path.splitext(file)
     return model_name
+
+
+def friendly_fullname(file: str):
+    if "http" in file:
+        file = urlparse(file).path
+    file = os.path.basename(file)
+    return file
 
 
 def cleanup_models():
@@ -397,8 +480,8 @@ def cleanup_models():
     src_path = os.path.join(root_path, "repositories/latent-diffusion/experiments/pretrained_models/")
     dest_path = os.path.join(models_path, "LDSR")
     move_files(src_path, dest_path)
-    src_path = os.path.join(root_path, "ScuNET")
-    dest_path = os.path.join(models_path, "ScuNET")
+    src_path = os.path.join(root_path, "SCUNet")
+    dest_path = os.path.join(models_path, "SCUNet")
     move_files(src_path, dest_path)
 
 
@@ -427,15 +510,15 @@ def move_files(src_path: str, dest_path: str, ext_filter: str = None):
 
 def load_upscalers():
     # We can only do this 'magic' method to dynamically load upscalers if they are referenced, so we'll try to import any _model.py files before looking in __subclasses__
-    modules_dir = os.path.join(shared.script_path, "modules")
+    modules_dir = os.path.join(shared.script_path, "modules", "postprocess")
     for file in os.listdir(modules_dir):
         if "_model.py" in file:
             model_name = file.replace("_model.py", "")
-            full_model = f"modules.{model_name}_model"
+            full_model = f"modules.postprocess.{model_name}_model"
             try:
                 importlib.import_module(full_model)
-            except Exception:
-                pass
+            except Exception as e:
+                shared.log.error(f'Error loading upscaler: {model_name} {e}')
     datas = []
     commandline_options = vars(shared.cmd_opts)
     # some of upscaler classes will not go away after reloading their modules, and we'll end up with two copies of those classes. The newest copy will always be the last in the list, so we go from end to beginning and ignore duplicates
@@ -444,6 +527,7 @@ def load_upscalers():
         classname = str(cls)
         if classname not in used_classes:
             used_classes[classname] = cls
+    names = []
     for cls in reversed(used_classes.values()):
         name = cls.__name__
         cmd_name = f"{name.lower().replace('upscaler', '')}_models_path"
@@ -452,8 +536,6 @@ def load_upscalers():
         scaler.user_path = commandline_model_path
         scaler.model_download_path = commandline_model_path or scaler.model_path
         datas += scaler.scalers
-    shared.sd_upscalers = sorted(
-        datas,
-        key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else "" # Special case for UpscalerNone keeps it at the beginning of the list.
-    )
-    shared.log.debug(f"Loaded upscalers: items={len(shared.sd_upscalers)}")
+        names.append(name[8:])
+    shared.sd_upscalers = sorted(datas, key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else "") # Special case for UpscalerNone keeps it at the beginning of the list.
+    shared.log.debug(f"Loaded upscalers: total={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} {names}")

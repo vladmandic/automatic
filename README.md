@@ -15,9 +15,6 @@
 
 </div>
 
-This project started as a fork from [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and it grew significantly since then,  
-but although it diverged considerably, any substantial features to original work is ported to this repository as well.
-
 ## Top-13 Features (10 wasn't enough)
 
 All Individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes.
@@ -69,10 +66,10 @@ Additional models will be added as they become available and there is public int
 - *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*
 - *AMD* GPUs using **ROCm** libraries on *Linux*.  
   Support will be extended to *Windows* once AMD releases ROCm for Windows
-- Any GPU compatibile with *DirectX* on *Windows* using **DirectML** libraries.  
-  This includes support for AMD GPUs that are not supported by native ROCm libraries
 - *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*
-- *Intel* GPUs using **OpenVINO** libraries on both *Windows and Linux*
+- Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries.  
+  This includes support for AMD GPUs that are not supported by native ROCm libraries
+- Any GPU compatible with **OpenVINO** libraries on both *Windows and Linux*
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations
 
 ## Install & Run
@@ -93,7 +90,7 @@ Additional models will be added as they become available and there is public int
 
 ### Run
 
-Once SD.Next is installed, simply run `webui.bat` (*Windows*) or `webui.sh` (*Linux or MacOS*)
+Once SD.Next is installed, simply run `webui.ps1` or `webui.bat` (*Windows*) or `webui.sh` (*Linux or MacOS*)
 
 Below is partial list of all available parameters, run `webui --help` for the full list:
 
@@ -138,6 +135,9 @@ This should be fully cross-platform, but I would really love to have additional 
 
 ### **Goals**
 
+This project started as a fork from [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and it grew significantly since then,  
+but although it diverged considerably, any substantial features to original work is ported to this repository as well.
+
 The idea behind the fork is to enable latest technologies and advances in text-to-image generation.
 
 > *Sometimes this is not the same as "as simple as possible to use".*
@@ -175,7 +175,7 @@ General goals:
 ### **Sponsors**
 
 <div align="center">
-<!-- sponsors --><a href="https://github.com/Tillerz"><img src="https://github.com/Tillerz.png" width="60px" alt="Tillerz" /></a><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/demib72"><img src="https://github.com/demib72.png" width="60px" alt="Michael Harris" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/AimwiseTonix"><img src="https://github.com/AimwiseTonix.png" width="60px" alt="ToniX" /></a><a href="https://github.com/inktomi"><img src="https://github.com/inktomi.png" width="60px" alt="Matthew Runo" /></a><a href="https://github.com/HELLO-WORLD-SAS"><img src="https://github.com/HELLO-WORLD-SAS.png" width="60px" alt="HELLO WORLD SAS" /></a><a href="https://github.com/4joeknight4"><img src="https://github.com/4joeknight4.png" width="60px" alt="" /></a><a href="https://github.com/SaladTechnologies"><img src="https://github.com/SaladTechnologies.png" width="60px" alt="Salad Technologies" /></a><a href="https://github.com/gymdreams8"><img src="https://github.com/gymdreams8.png" width="60px" alt="Gym Dreams • GymDreams8" /></a><!-- sponsors -->
+<!-- sponsors --><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/demib72"><img src="https://github.com/demib72.png" width="60px" alt="Michael Harris" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/AimwiseTonix"><img src="https://github.com/AimwiseTonix.png" width="60px" alt="ToniX" /></a><a href="https://github.com/inktomi"><img src="https://github.com/inktomi.png" width="60px" alt="Matthew Runo" /></a><a href="https://github.com/HELLO-WORLD-SAS"><img src="https://github.com/HELLO-WORLD-SAS.png" width="60px" alt="HELLO WORLD SAS" /></a><a href="https://github.com/4joeknight4"><img src="https://github.com/4joeknight4.png" width="60px" alt="" /></a><a href="https://github.com/SaladTechnologies"><img src="https://github.com/SaladTechnologies.png" width="60px" alt="Salad Technologies" /></a><a href="https://github.com/gymdreams8"><img src="https://github.com/gymdreams8.png" width="60px" alt="Gym Dreams • GymDreams8" /></a><!-- sponsors -->
 </div>
 
 <br>

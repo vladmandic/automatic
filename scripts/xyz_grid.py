@@ -24,6 +24,12 @@ def apply_field(field):
     return fun
 
 
+def apply_setting(field):
+    def fun(p, x, xs):
+        shared.opts.data[field] = x
+    return fun
+
+
 def apply_prompt(p, x, xs):
     if xs[0] not in p.prompt and xs[0] not in p.negative_prompt:
         shared.log.warning(f"XYZ grid: prompt S/R did not find {xs[0]} in prompt or negative prompt.")
@@ -98,13 +104,6 @@ def apply_clip_skip(p, x, xs):
     shared.opts.data["clip_skip"] = x
 
 
-def apply_upscale_latent_space(p, x, xs):
-    if x.lower().strip() != '0':
-        shared.opts.data["use_scale_latent_for_hires_fix"] = True
-    else:
-        shared.opts.data["use_scale_latent_for_hires_fix"] = False
-
-
 def find_vae(name: str):
     if name.lower() in ['auto', 'automatic']:
         return sd_vae.unspecified
@@ -127,8 +126,11 @@ def apply_styles(p: StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
 
 
-def apply_schedulers_solver_order(p, x, xs):
-    shared.opts.data["schedulers_solver_order"] = min(x, p.steps - 1)
+def apply_upscaler(p: StableDiffusionProcessingTxt2Img, opt, x):
+    p.enable_hr = True
+    p.hr_force = True
+    p.denoising_strength = 0.0
+    p.hr_upscaler = opt
 
 
 def apply_face_restore(p, opt, x):
@@ -203,41 +205,41 @@ class AxisOptionTxt2Img(AxisOption):
 
 axis_options = [
     AxisOption("Nothing", str, do_nothing, fmt=format_nothing),
-    AxisOption("Checkpoint name", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
-    AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
-    AxisOption("Dict name", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
     AxisOption("Prompt S/R", str, apply_prompt, fmt=format_value),
+    AxisOption("Model", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
+    AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
     AxisOption("Styles", str, apply_styles, choices=lambda: list(shared.prompt_styles.styles)),
     AxisOptionTxt2Img("Sampler", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
     AxisOptionImg2Img("Sampler", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers_for_img2img]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
     AxisOption("CFG Scale", float, apply_field("cfg_scale")),
-    AxisOption("Var. seed", int, apply_field("subseed")),
-    AxisOption("Var. strength", float, apply_field("subseed_strength")),
+    AxisOption("Variation seed", int, apply_field("subseed")),
+    AxisOption("Variation strength", float, apply_field("subseed_strength")),
     AxisOption("Clip skip", int, apply_clip_skip),
-    AxisOption("Denoising", float, apply_field("denoising_strength")),
-    AxisOptionTxt2Img("Hires steps", int, apply_field("hr_second_pass_steps")),
-    AxisOptionImg2Img("Image CFG scale", float, apply_field("image_cfg_scale")),
+    AxisOption("Denoising strength", float, apply_field("denoising_strength")),
     AxisOption("Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
-    AxisOption("Sampler Sigma Churn", float, apply_field("s_churn")),
-    AxisOption("Sampler Sigma min", float, apply_field("s_tmin")),
-    AxisOption("Sampler Sigma max", float, apply_field("s_tmax")),
-    AxisOption("Sampler Sigma noise", float, apply_field("s_noise")),
-    AxisOption("Sampler Eta", float, apply_field("eta")),
-    AxisOptionTxt2Img("Hires upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
-    AxisOptionImg2Img("Image Mask Weight", float, apply_field("inpainting_mask_weight")),
-    AxisOption("Sampler Solver Order", int, apply_schedulers_solver_order, cost=0.5),
+    AxisOption("Upscaler", str, apply_upscaler, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
     AxisOption("Face restore", str, apply_face_restore, fmt=format_value),
-    AxisOption("Token merging ratio", float, apply_override('token_merging_ratio')),
     AxisOption("Token merging ratio high-res", float, apply_override('token_merging_ratio_hr')),
-    #Second PASS
-    AxisOption("SecondPass Sampler", str, apply_latent_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
-    AxisOption("SecondPass Denoising Strength", float, apply_field("denoising_strength")),
-    AxisOption("SecondPass Steps", int, apply_field("hr_second_pass_steps")),
+    AxisOption("Token merging ratio", float, apply_override('token_merging_ratio')),
+    AxisOptionImg2Img("Image mask weight", float, apply_field("inpainting_mask_weight")),
+    AxisOption("Model dictionary", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
+    AxisOption("Sampler sigma min", float, apply_field("s_min")),
+    AxisOption("Sampler sigma max", float, apply_field("s_max")),
+    AxisOption("Sampler sigma tmin", float, apply_field("s_tmin")),
+    AxisOption("Sampler sigma tmax", float, apply_field("s_tmax")),
+    AxisOption("Sampler sigma Churn", float, apply_field("s_churn")),
+    AxisOption("Sampler sigma noise", float, apply_field("s_noise")),
+    AxisOption("Sampler eta", float, apply_field("eta")),
+    AxisOption("Sampler solver order", int, apply_setting("schedulers_solver_order")),
+    AxisOption("SecondPass upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
+    AxisOption("SecondPass sampler", str, apply_latent_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
+    AxisOption("SecondPass denoising Strength", float, apply_field("denoising_strength")),
+    AxisOption("SecondPass steps", int, apply_field("hr_second_pass_steps")),
     AxisOption("SecondPass CFG scale", float, apply_field("image_cfg_scale")),
-    AxisOption("SecondPass Guidance Rescale", float, apply_field("diffusers_guidance_rescale")),
-    AxisOption("SecondPass Refiner Start", float, apply_field("refiner_start")),
+    AxisOption("SecondPass guidance rescale", float, apply_field("diffusers_guidance_rescale")),
+    AxisOption("SecondPass refiner start", float, apply_field("refiner_start")),
 ]
 
 
@@ -310,10 +312,10 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
                         process_cell(x, y, z, ix, iy, iz)
 
     if not processed_result:
-        shared.log.error("XYZ grid: Processing could not begin, you may need to refresh the tab or restart the service")
+        shared.log.error("XYZ grid: Failed to initialize processing")
         return Processed(p, [])
     elif not any(processed_result.images):
-        shared.log.error("XYZ grid: Failed to return even a single processed image")
+        shared.log.error("XYZ grid: Failed to return processed image")
         return Processed(p, [])
 
     z_count = len(zs)

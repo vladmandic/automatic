@@ -1,4 +1,5 @@
 import os
+import sys
 import torch
 from openvino.frontend import FrontEndManager
 from openvino.frontend.pytorch.fx_decoder import TorchFXPythonDecoder
@@ -12,6 +13,25 @@ from types import MappingProxyType
 from hashlib import sha256
 import functools
 from modules import shared, devices
+
+def BUILD_MAP_UNPACK(self, inst):
+        items = self.popn(inst.argval)
+        # ensure everything is a dict
+        items = [BuiltinVariable(dict).call_function(self, [x], {}) for x in items] # noqa: F821
+        result = dict()
+        for x in items:
+            assert isinstance(x, ConstDictVariable) # noqa: F821
+        result.update(x.items)
+        self.push(
+            ConstDictVariable( # noqa: F821
+                result,
+                dict,
+                mutable_local=MutableLocal(), # noqa: F821
+                **VariableTracker.propagate(items), # noqa: F821
+            )
+        )
+tmp_torch = sys.modules["torch"]
+tmp_torch.BUILD_MAP_UNPACK_WITH_CALL = BUILD_MAP_UNPACK
 
 compiled_cache = {}
 max_openvino_partitions = 0
@@ -50,6 +70,15 @@ def get_device():
     core = Core()
     if os.getenv("OPENVINO_TORCH_BACKEND_DEVICE") is not None:
         device = os.getenv("OPENVINO_TORCH_BACKEND_DEVICE")
+    elif shared.opts.openvino_multi_gpu:
+        device = ""
+        available_devices = core.available_devices
+        available_devices.remove("CPU")
+        if shared.opts.openvino_remove_igpu_from_multi and "GPU.0" in available_devices:
+            available_devices.remove("GPU.0")
+        for gpu in available_devices:
+            device = f"{device},{gpu}"
+        device = f"MULTI:{device[1:]}"
     elif any(openvino_cpu in cpu_module.lower() for cpu_module in shared.cmd_opts.use_cpu for openvino_cpu in ["openvino", "all"]):
         device = "CPU"
     elif shared.cmd_opts.device_id is not None:
@@ -64,12 +93,14 @@ def get_device():
         device = "CPU"
         shared.log.warning("OpenVINO: No compatible GPU detected!")
     os.environ.setdefault('OPENVINO_TORCH_BACKEND_DEVICE', device)
-    shared.log.debug(f"OpenVINO Device: {device}")
-    if shared.opts.cuda_compile_errors and device not in core.available_devices:
-        shared.log.error(f"OpenVINO: Specified device {device} is not in the list of OpenVINO Available Devices")
-    assert device in core.available_devices, f"OpenVINO: Specified device {device} is not in the list of OpenVINO Available Devices"
-
     return device
+
+def get_openvino_device():
+    core = Core()
+    try:
+        return core.get_property(get_device(), "FULL_DEVICE_NAME")
+    except Exception:
+        return f"OpenVINO {get_device()}"
 
 def cache_root_path():
     cache_root = "./cache/"
