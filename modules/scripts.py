@@ -349,7 +349,7 @@ class ScriptRunner:
                 if visibility == AlwaysVisible:
                     self.scripts.append(script)
                     self.alwayson_scripts.append(script)
-                    self.script_organiser[script] = getattr(script, 'CALLBACK_ORDER', dict())
+                    self.script_organiser[script] = getattr(script, 'priority', dict())
                     script.alwayson = True
                 elif visibility:
                     self.scripts.append(script)
