@@ -320,6 +320,7 @@ class ScriptRunner:
         self.paste_field_names = []
         self.script_load_ctr = 0
         self.is_img2img = False
+        self.default_priority = 50
 
     def initialize_scripts(self, is_img2img):
         from modules import scripts_auto_postprocessing
@@ -349,11 +350,11 @@ class ScriptRunner:
                 if visibility == AlwaysVisible:
                     self.scripts.append(script)
                     self.alwayson_scripts.append(script)
-                    self.script_organiser[script] = getattr(script, 'priority', dict())
                     script.alwayson = True
                 elif visibility:
                     self.scripts.append(script)
                     self.selectable_scripts.append(script)
+                self.script_organiser[script] = getattr(script, 'priority', dict())
             except Exception as e:
                 log.error(f'Script initialize: {path} {e}')
 
@@ -456,7 +457,7 @@ class ScriptRunner:
 
     def before_process(self, p, **kwargs):
         s = ScriptSummary('before-process')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("before-process", self.default_priority)):
             try:
                 script_args = p.script_args[script.args_from:script.args_to]
                 script.before_process(p, *script_args, **kwargs)
@@ -467,7 +468,7 @@ class ScriptRunner:
 
     def process(self, p, **kwargs):
         s = ScriptSummary('process')
-        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, 50).get("process", 50)):
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("process", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.process(p, *args, **kwargs)
@@ -478,7 +479,7 @@ class ScriptRunner:
 
     def before_process_batch(self, p, **kwargs):
         s = ScriptSummary('before-process-batch')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("before-process-batch", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.before_process_batch(p, *args, **kwargs)
@@ -489,7 +490,7 @@ class ScriptRunner:
 
     def process_batch(self, p, **kwargs):
         s = ScriptSummary('process-batch')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("process-batch", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.process_batch(p, *args, **kwargs)
@@ -500,7 +501,7 @@ class ScriptRunner:
 
     def postprocess(self, p, processed):
         s = ScriptSummary('postprocess')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("postprocess", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.postprocess(p, processed, *args)
@@ -511,7 +512,7 @@ class ScriptRunner:
 
     def postprocess_batch(self, p, images, **kwargs):
         s = ScriptSummary('postprocess-batch')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("postprocess-batch", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.postprocess_batch(p, *args, images=images, **kwargs)
@@ -522,7 +523,7 @@ class ScriptRunner:
 
     def postprocess_batch_list(self, p, pp: PostprocessBatchListArgs, **kwargs):
         s = ScriptSummary('postprocess-batch-list')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("postprocess-batch-list", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.postprocess_batch_list(p, pp, *args, **kwargs)
@@ -533,7 +534,7 @@ class ScriptRunner:
 
     def postprocess_image(self, p, pp: PostprocessImageArgs):
         s = ScriptSummary('postprocess-image')
-        for script in self.alwayson_scripts:
+        for script in sorted(self.alwayson_scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("postprocess-image", self.default_priority)):
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
                 script.postprocess_image(p, pp, *args)
@@ -544,7 +545,7 @@ class ScriptRunner:
 
     def before_component(self, component, **kwargs):
         s = ScriptSummary('before-component')
-        for script in self.scripts:
+        for script in sorted(self.scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("before-component", self.default_priority)):
             try:
                 script.before_component(component, **kwargs)
             except Exception as e:
@@ -554,7 +555,7 @@ class ScriptRunner:
 
     def after_component(self, component, **kwargs):
         s = ScriptSummary('after-component')
-        for script in self.scripts:
+        for script in sorted(self.scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("after-component", self.default_priority)):
             try:
                 script.after_component(component, **kwargs)
             except Exception as e:
@@ -564,7 +565,7 @@ class ScriptRunner:
 
     def reload_sources(self, cache):
         s = ScriptSummary('reload-sources')
-        for si, script in list(enumerate(self.scripts)):
+        for si, script in list(enumerate(sorted(self.scripts, key = lambda x: self.script_organiser.get(x, self.default_priority).get("reload-sources", self.default_priority)))):
             args_from = script.args_from
             args_to = script.args_to
             filename = script.filename
