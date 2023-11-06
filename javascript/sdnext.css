@@ -281,12 +281,6 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 }
 
 
-  /* for ultrawide displays */
-@media (min-aspect-ratio: 21/9) {
-  :root, .light, .dark { --left-column: 40%; }
-  #scripts_alwayson_txt2img div { max-width: 99%; }
-}  
-
 /* Apply different styles for devices with coarse pointers dependant on screen resolution */
 @media (hover: none) and (pointer: coarse) {
 
@@ -306,4 +300,5 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
     #txt2img_results, #img2img_results, #extras_results { background-color: var(--background-color); padding: 0;}
     .gradio-slider input[type="number"] { width: 4em; font-size: 0.8rem; height: 16px; text-align: center; }
   }  
+  
 }
