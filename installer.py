@@ -47,6 +47,23 @@ args = Dot({
 })
 git_commit = "unknown"
 
+class PrefixedLogger(logging.LoggerAdapter):
+    def __init__(self, logger, extra = None, *, prefix:str):
+        self._prefix = prefix
+        logging.LoggerAdapter.__init__(self, logger, extra)
+    
+    def process(self, msg, kwargs):
+        return logging.LoggerAdapter.process(self, f'{self._prefix}{msg}', kwargs)
+
+class DissabledLoger(logging.LoggerAdapter):
+    def isEnabledFor(self, level):
+        return False
+
+logging.Logger.prefix = lambda self, prefix: PrefixedLogger(self, prefix=prefix)
+logging.Logger.env = lambda self, *env_flags: self if any([os.environ.get(f'{flag}', None) is not None for flag in env_flags]) else DissabledLoger(self)
+logging.LoggerAdapter.prefix = logging.Logger.prefix
+logging.LoggerAdapter.env = logging.Logger.env
+
 
 # setup console and file logging
 def setup_logging():
