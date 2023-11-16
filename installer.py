@@ -9,8 +9,8 @@ import cProfile
 import pkg_resources
 
 # Backward compat until existing referenced get cleaned
-import modules.logging as logging
-from modules.logging import print_dict, log
+import modules.sd_logging as logging
+from modules.sd_logging import print_dict, log
 from modules.profiling import print_profile
 
 

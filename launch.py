@@ -7,6 +7,9 @@ import shlex
 import logging
 import subprocess
 from functools import lru_cache
+from modules import sd_logging as logging
+from modules.sd_logging import print_dict
+from modules.profiling import new_profiler
 import installer
 
 

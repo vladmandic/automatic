@@ -4,6 +4,7 @@ import logging
 import warnings
 import urllib3
 from modules import timer, errors
+from modules.sd_logging import print_dict
 
 initialized = False
 logging.getLogger("DeepSpeed").disabled = True
@@ -41,4 +42,4 @@ errors.install([gradio])
 
 import diffusers # pylint: disable=W0611,C0411
 timer.startup.record("diffusers")
-errors.log.info(f'Load packages: torch={getattr(torch, "__long_version__", torch.__version__)} diffusers={diffusers.__version__} gradio={gradio.__version__}')
+errors.log.info(f'Load packages: {print_dict(torch=getattr(torch, "__long_version__", torch.__version__), diffusers=diffusers.__version__, gradio=gradio.__version__)}')
