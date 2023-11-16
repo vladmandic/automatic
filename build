@@ -1,0 +1,28 @@
+#! /usr/bin/env bash
+
+## Usage: ./build [--push]
+
+set -euo pipefail
+
+if [[ $# -gt 0 && $1 == "--push" ]]; then
+  push=true
+else
+  push=false
+fi
+
+git_sha=$(git rev-parse --short HEAD)
+
+docker buildx build \
+  -t saladtechnologies/sdnext:latest \
+  --platform linux/amd64 \
+  --output type=docker \
+  --provenance false \
+  --build-arg GIT_SHA=$git_sha \
+  .
+
+docker tag saladtechnologies/sdnext:latest saladtechnologies/sdnext:$git_sha
+
+if [[ $push == true ]]; then
+  docker push saladtechnologies/sdnext:latest
+  docker push saladtechnologies/sdnext:$git_sha
+fi

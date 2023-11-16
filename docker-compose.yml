@@ -1,0 +1,22 @@
+name: sdnext
+
+services:
+  api:
+    command: |
+      --listen
+      --docs
+      --no-download
+      --skip-requirements
+      --skip-extensions
+      --skip-git
+      --skip-torch
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    image: ${REGISTRY:-saladtechnologies}/sdnext:latest
+    ports:
+      - "7860:7860"
