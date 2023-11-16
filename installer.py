@@ -9,9 +9,9 @@ import cProfile
 import pkg_resources
 
 # Backward compat until existing referenced get cleaned
-import logging
-from logging import print_dict, log
-from profiling import print_profile
+import modules.logging as logging
+from modules.logging import print_dict, log
+from modules.profiling import print_profile
 
 
 class Dot(dict): # dot notation access to dictionary attributes
