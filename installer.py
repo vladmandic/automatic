@@ -3,13 +3,15 @@ import sys
 import json
 import time
 import shutil
-import logging
 import platform
 import subprocess
-import io
-import pstats
 import cProfile
 import pkg_resources
+
+# Backward compat until existing referenced get cleaned
+import logging
+from logging import print_dict, log
+from profiling import print_profile
 
 
 class Dot(dict): # dot notation access to dictionary attributes
@@ -19,7 +21,6 @@ class Dot(dict): # dot notation access to dictionary attributes
 
 
 version = None
-log = logging.getLogger("sd")
 log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
 log_rolled = False
 first_call = True
@@ -46,23 +47,6 @@ args = Dot({
     'ignore': False,
 })
 git_commit = "unknown"
-
-class PrefixedLogger(logging.LoggerAdapter):
-    def __init__(self, logger, extra = None, *, prefix:str):
-        self._prefix = prefix
-        logging.LoggerAdapter.__init__(self, logger, extra)
-    
-    def process(self, msg, kwargs):
-        return logging.LoggerAdapter.process(self, f'{self._prefix}{msg}', kwargs)
-
-class DissabledLoger(logging.LoggerAdapter):
-    def isEnabledFor(self, level):
-        return False
-
-logging.Logger.prefix = lambda self, prefix: PrefixedLogger(self, prefix=prefix)
-logging.Logger.env = lambda self, *env_flags: self if any([os.environ.get(f'{flag}', None) is not None for flag in env_flags]) else DissabledLoger(self)
-logging.LoggerAdapter.prefix = logging.Logger.prefix
-logging.LoggerAdapter.env = logging.Logger.env
 
 
 # setup console and file logging
@@ -153,25 +137,6 @@ def custom_excepthook(exc_type, exc_value, exc_traceback):
         format_exception = traceback.format_tb(exc_traceback)
         for line in format_exception:
             log.error(repr(line))
-
-
-def print_dict(d):
-    return ' '.join([f'{k}={v}' for k, v in d.items()])
-
-
-def print_profile(profile: cProfile.Profile, msg: str):
-    try:
-        from rich import print # pylint: disable=redefined-builtin
-    except Exception:
-        pass
-    profile.disable()
-    stream = io.StringIO()
-    ps = pstats.Stats(profile, stream=stream)
-    ps.sort_stats(pstats.SortKey.CUMULATIVE).print_stats(15)
-    profile = None
-    lines = stream.getvalue().split('\n')
-    lines = [line for line in lines if '<frozen' not in line and '{built-in' not in line and '/logging' not in line and '/rich' not in line]
-    print(f'Profile {msg}:', '\n'.join(lines))
 
 
 # check if package is installed
@@ -851,7 +816,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
         log.error('Not a git repository')
         if not args.ignore:
             sys.exit(1)
-    log.info(f'Version: {print_dict(get_version())}')
+    log.info(f'Version: {logging.print_dict(get_version())}')
     if args.version or args.skip_git:
         return
     commit = git('rev-parse HEAD')
