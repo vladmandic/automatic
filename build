@@ -23,6 +23,9 @@ docker buildx build \
 docker tag saladtechnologies/sdnext:latest saladtechnologies/sdnext:$git_sha
 
 if [[ $push == true ]]; then
+  echo "Pushing saladtechnologies/sdnext:latest"
   docker push saladtechnologies/sdnext:latest
+
+  echo "Pushing saladtechnologies/sdnext:$git_sha"
   docker push saladtechnologies/sdnext:$git_sha
 fi
