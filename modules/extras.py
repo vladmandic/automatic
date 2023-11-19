@@ -87,6 +87,9 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
                      "alpha_out_blocks"].split(",")]
         assert len(alpha) == 26 or len(alpha) == 20, "Alpha Block Weights are wrong length (26 or 20 for SDXL) falling back"
         kwargs["alpha"] = alpha
+    except KeyError as ke:
+        shared.log.warn(f"Merge: Malformed manual block weight at {ke} falling back")
+        kwargs["beta"] = kwargs.get("beta_preset", kwargs["beta"])
     except Exception as e:
         shared.log.warn(f"Merge: {e}")
         kwargs["alpha"] = kwargs.get("alpha_preset", kwargs["alpha"])
@@ -103,6 +106,9 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
                     [kwargs["beta_base"]] + kwargs["beta_in_blocks"].split(",") + [kwargs["beta_mid_block"]] + kwargs["beta_out_blocks"].split(",")]
             assert len(beta) == 26 or len(beta) == 20, "Beta Block Weights are wrong length (26 or 20 for SDXL) falling back"
             kwargs["beta"] = beta
+        except KeyError as ke:
+            shared.log.warn(f"Merge: Malformed manual block weight at {ke} falling back")
+            kwargs["beta"] = kwargs.get("beta_preset", kwargs["beta"])
         except Exception as e:
             shared.log.warn(f"Merge: {e}")
             kwargs["beta"] = kwargs.get("beta_preset", kwargs["beta"])
