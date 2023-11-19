@@ -89,7 +89,7 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
         kwargs["alpha"] = alpha
     except KeyError as ke:
         shared.log.warn(f"Merge: Malformed manual block weight at {ke} falling back")
-        kwargs["beta"] = kwargs.get("beta_preset", kwargs["beta"])
+        kwargs["alpha"] = kwargs.get("alpha_preset", kwargs["alpha"])
     except AssertionError as e:
         shared.log.warn(f"Merge: {e}")
         kwargs["alpha"] = kwargs.get("alpha_preset", kwargs["alpha"])
