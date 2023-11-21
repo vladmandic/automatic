@@ -4,7 +4,10 @@ from abc import abstractmethod
 import PIL
 from PIL import Image
 import modules.shared
-from modules import modelloader
+from modules import modelloader, sd_logging
+
+
+debug_log = sd_logging.log.envConditon('SD_UPSCALER_DEBUG')
 
 
 LANCZOS = (Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.Resampling.LANCZOS)
@@ -65,7 +68,7 @@ class Upscaler:
                 scaler.custom = True
                 scalers.append(scaler)
                 loaded.append(file_name)
-                modules.shared.log.debug(f'Upscaler type={self.name} folder="{folder}" model="{model_name}" path="{file_name}"')
+                debug_log.debug(f'Upscaler type={self.name} folder="{folder}" model="{model_name}" path="{file_name}"')
 
     def find_scalers(self):
         scalers = []
