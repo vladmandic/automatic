@@ -15,6 +15,9 @@ class CompiledModelState:
         self.partition_id = 0
         self.cn_model = []
         self.lora_model = []
+        self.lora_compile = False
+        self.compiled_cache = {}
+        self.partitioned_modules = {}
 
 
 def optimize_ipex(sd_model):
@@ -37,11 +40,16 @@ def optimize_ipex(sd_model):
 
 def optimize_openvino():
     try:
-        from modules.intel.openvino import openvino_fx, openvino_clear_caches # pylint: disable=unused-import
-        openvino_clear_caches()
+        from modules.intel.openvino import openvino_fx # pylint: disable=unused-import
         torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
         if shared.compiled_model_state is None:
             shared.compiled_model_state = CompiledModelState()
+        else:
+            if not shared.compiled_model_state.lora_compile:
+                shared.compiled_model_state.lora_compile = False
+                shared.compiled_model_state.lora_model = []
+            shared.compiled_model_state.compiled_cache.clear()
+            shared.compiled_model_state.partitioned_modules.clear()
         shared.compiled_model_state.first_pass = True if not shared.opts.cuda_compile_precompile else False
     except Exception as e:
         shared.log.warning(f"Model compile: task=OpenVINO: {e}")
@@ -68,6 +76,9 @@ def compile_stablefast(sd_model):
     warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
     config.enable_cuda_graph = shared.opts.cuda_compile_fullgraph
     config.enable_jit_freeze = shared.opts.diffusers_eval
+    config.memory_format = torch.channels_last if shared.opts.opt_channelslast else torch.contiguous_format
+    # config.enable_cnn_optimization
+    # config.prefer_lowp_gemm
     try:
         t0 = time.time()
         sd_model = sf.compile(sd_model, config)
@@ -85,6 +96,7 @@ def compile_torch(sd_model):
     try:
         import torch._dynamo # pylint: disable=unused-import,redefined-outer-name
         torch._dynamo.reset() # pylint: disable=protected-access
+        shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
         if shared.opts.ipex_optimize:
             optimize_ipex(sd_model)
         if shared.opts.cuda_compile_backend == "openvino_fx":
@@ -114,13 +126,13 @@ def compile_torch(sd_model):
 
 def compile_diffusers(sd_model):
     if not (shared.opts.cuda_compile or shared.opts.cuda_compile_vae or shared.opts.cuda_compile_upscaler):
-        return
+        return sd_model
     if not hasattr(sd_model, 'unet') or not hasattr(sd_model.unet, 'config'):
         shared.log.warning('Model compile enabled but model has no Unet')
-        return
+        return sd_model
     if shared.opts.cuda_compile_backend == 'none':
         shared.log.warning('Model compile enabled but no backend specified')
-        return
+        return sd_model
     size = 8*getattr(sd_model.unet.config, 'sample_size', 0)
     shared.log.info(f"Model compile: pipeline={sd_model.__class__.__name__} shape={size} mode={shared.opts.cuda_compile_mode} backend={shared.opts.cuda_compile_backend} fullgraph={shared.opts.cuda_compile_fullgraph} unet={shared.opts.cuda_compile} vae={shared.opts.cuda_compile_vae} upscaler={shared.opts.cuda_compile_upscaler}")
     if shared.opts.cuda_compile_backend == 'stable-fast':

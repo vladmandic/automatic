@@ -327,7 +327,7 @@ def read_metadata_from_safetensors(filename):
         if not os.path.isfile(sd_metadata_file):
             sd_metadata = {}
         else:
-            sd_metadata = shared.readfile(sd_metadata_file)
+            sd_metadata = shared.readfile(sd_metadata_file, lock=True)
     res = sd_metadata.get(filename, None)
     if res is not None:
         return res
@@ -387,7 +387,7 @@ def read_state_dict(checkpoint_file, map_location=None): # pylint: disable=unuse
         return None
     try:
         pl_sd = None
-        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Loading weights: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
+        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Loading model: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
             _, extension = os.path.splitext(checkpoint_file)
             if extension.lower() == ".ckpt" and shared.opts.sd_disable_ckpt:
                 shared.log.warning(f"Checkpoint loading disabled: {checkpoint_file}")
@@ -595,51 +595,52 @@ def change_backend():
     refresh_vae_list()
 
 
-def detect_pipeline(f: str, op: str = 'model'):
+def detect_pipeline(f: str, op: str = 'model', warning=True):
     if not f.endswith('.safetensors'):
         return None, None
     guess = shared.opts.diffusers_pipeline
+    warn = shared.log.warning if warning else lambda *args, **kwargs: None
     if guess == 'Autodetect':
         try:
             size = round(os.path.getsize(f) / 1024 / 1024)
             if size < 128:
-                shared.log.warning(f'Model size smaller than expected: {f} size={size} MB')
+                warn(f'Model size smaller than expected: {f} size={size} MB')
             elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
-                shared.log.warning(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
+                warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
                 guess = 'VAE'
             elif size >= 5351 and size <= 5359: # 5353
                 guess = 'Stable Diffusion' # SD v2
             elif size >= 5791 and size <= 5799: # 5795
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as SD-XL refiner model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD-XL refiner model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 if op == 'model':
-                    shared.log.warning(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion XL'
             elif (size >= 6611 and size <= 6619) or (size >= 6771 and size <= 6779): # 6617, HassakuXL is 6776
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as SD-XL base model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD-XL base model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion XL'
             elif size >= 3361 and size <= 3369: # 3368
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as SD upscale model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD upscale model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion Upscale'
             elif size >= 4891 and size <= 4899: # 4897
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as SD XL inpaint model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD XL inpaint model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion XL Inpaint'
             elif size >= 9791 and size <= 9799: # 9794
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as SD XL instruct pix2pix model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as SD XL instruct pix2pix model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion XL Instruct'
             else:
                 guess = 'Stable Diffusion'
             if 'LCM_' in f or 'LCM-' in f:
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as LCM model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as LCM model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Latent Consistency Model'
             if 'PixArt' in f:
                 if shared.backend == shared.Backend.ORIGINAL:
-                    shared.log.warning(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt Alpha'
             pipeline = shared_items.get_pipelines().get(guess, None)
             shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
@@ -988,6 +989,26 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     has_accelerate = getattr(pipe, "has_accelerate", None)
     embedding_db = getattr(pipe, "embedding_db", None)
 
+    # TODO implement alternative diffusion pipelines
+    """
+    from collections import OrderedDict
+    AUTO_TEXT2IMAGE_PIPELINES_MAPPING = OrderedDict(
+        [
+            ("stable-diffusion", diffusers.StableDiffusionPipeline),
+            ("stable-diffusion-xl", diffusers.StableDiffusionXLPipeline),
+            ("if", diffusers.IFPipeline),
+            ("kandinsky", diffusers.KandinskyCombinedPipeline),
+            ("kandinsky22", diffusers.KandinskyV22CombinedPipeline),
+            ("stable-diffusion-controlnet", diffusers.StableDiffusionControlNetPipeline),
+            ("stable-diffusion-xl-controlnet", diffusers.StableDiffusionXLControlNetPipeline),
+            ("wuerstchen", diffusers.WuerstchenCombinedPipeline),
+            ("lcm", diffusers.LatentConsistencyModelPipeline),
+            ("pixart", diffusers.PixArtAlphaPipeline),
+        ]
+    )
+    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING = AUTO_TEXT2IMAGE_PIPELINES_MAPPING
+    """
+
     if shared.opts.diffusers_force_inpaint:
         if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
             new_pipe_type = DiffusersTaskType.INPAINTING # sdxl may work better with init mask
@@ -1087,6 +1108,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     shared.log.debug(f"Model created from config: {checkpoint_config}")
     sd_model.used_config = checkpoint_config
     sd_model.has_accelerate = False
+    sd_model.is_sdxl = False # a1111 compatibility item
     timer.record("create")
     ok = load_model_weights(sd_model, checkpoint_info, state_dict, timer)
     if not ok:
