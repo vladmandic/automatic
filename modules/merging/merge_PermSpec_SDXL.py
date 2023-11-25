@@ -1,3 +1,5 @@
+from modules.merging.merge_rebasin import PermutationSpec, permutation_spec_from_axes_to_perm
+
 def sdxl_permutation_spec() -> PermutationSpec:
     conv = lambda name, p_in, p_out: {  # pylint: disable=unnecessary-lambda-assignment
         f"{name}.weight": (
@@ -53,10 +55,6 @@ def sdxl_permutation_spec() -> PermutationSpec:
             **skip("log_one_minus_alphas_cumprod", None, None),
             **skip("model_ema.decay", None, None),
             **skip("model_ema.num_updates", None, None),
-            **skip("model.diffusion_model.label_emb.0.0", None, None),
-            **skip("model.diffusion_model.label_emb.0.2", None, None),
-            **skip("model.diffusion_model.time_embed.0", None, None),
-            **skip("model.diffusion_model.time_embed.2", None, None),
             **skip("conditioner.embedders.0.transformer.text_model.embeddings.position_ids", None, None),
             **skip("conditioner.embedders.1.model.logit_scale", None, None),
             **skip("conditioner.embedders.1.model.positional_embedding", None, None),
@@ -1851,5 +1849,9 @@ def sdxl_permutation_spec() -> PermutationSpec:
             **dense("conditioner.embedders.1.model.transformer.resblocks.9.attn.out_proj", "P_bg1448", "P_bg1449", bias=False),
             **dense("conditioner.embedders.1.model.transformer.resblocks.9.mlp.c_fc", "P_bg1452", "P_bg1453", bias=False),
             **dense("conditioner.embedders.1.model.transformer.resblocks.9.mlp.c_proj", "P_bg1454", "P_bg1455", bias=False),
+            **dense("model.diffusion_model.label_emb.0.0", "P_bg1456", "P_bg1457", bias=True),
+            **dense("model.diffusion_model.label_emb.0.2", "P_bg1458", "P_bg1459", bias=True),
+            **dense("model.diffusion_model.time_embed.0", "P_bg1460", "P_bg1461", bias=True),
+            **dense("model.diffusion_model.time_embed.2", "P_bg1462", "P_bg1463", bias=True),
         }
     )

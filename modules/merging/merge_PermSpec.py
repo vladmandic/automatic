@@ -1,3 +1,4 @@
+from modules.merging.merge_rebasin import PermutationSpec, permutation_spec_from_axes_to_perm
 def sdunet_permutation_spec() -> PermutationSpec:
     conv = lambda name, p_in, p_out: {  # pylint: disable=unnecessary-lambda-assignment
         f"{name}.weight": (

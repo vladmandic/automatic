@@ -16,8 +16,8 @@ from modules.merging.merge_rebasin import (
     update_model_a,
     weight_matching,
 )
-from merge_PermSpec import sdunet_permutation_spec
-from merge_PermSpec_SDXL import sdxl_permutation_spec
+from modules.merging.merge_PermSpec import sdunet_permutation_spec
+from modules.merging.merge_PermSpec_SDXL import sdxl_permutation_spec
 ##########################################################
 # Files in modules.merging are heavily modified
 # versions of sd-meh by @s1dxl used with his blessing
