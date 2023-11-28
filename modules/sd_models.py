@@ -41,6 +41,7 @@ sd_metadata_file = os.path.join(paths.data_path, "metadata.json")
 sd_metadata = None
 sd_metadata_pending = 0
 sd_metadata_timer = 0
+re_lcm = re.compile(f'(\b|_|-)LCM(\b|_|-)', re.I)
 
 
 class CheckpointInfo:
@@ -637,7 +638,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
             else:
                 guess = 'Stable Diffusion'
             # guess by name
-            if 'LCM_' in f or 'LCM-' or '_LCM' or '-LCM' in f.upper():
+            if re_lcm.search(f): # Still doesn't account for situations where the naming convention is broken, like `modelNameLCM.safetensors`
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as LCM model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Latent Consistency Model'
