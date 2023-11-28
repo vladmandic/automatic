@@ -39,6 +39,7 @@ def get_pipelines():
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),
         'Latent Consistency Model': getattr(diffusers, 'LatentConsistencyModelPipeline', None),
+        'Latent Consistency Model Safetensor': getattr(diffusers, 'StableDiffusionPipeline', None),
         'PixArt Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
         'UniDiffuser': getattr(diffusers, 'UniDiffuserPipeline', None),
         'Wuerstchen': getattr(diffusers, 'WuerstchenCombinedPipeline', None),

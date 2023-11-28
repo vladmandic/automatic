@@ -641,7 +641,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
             if re_lcm.search(f): # Still doesn't account for situations where the naming convention is broken, like `modelNameLCM.safetensors`
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as LCM model, but attempting to load using backend=original: {op}={f} size={size} MB')
-                guess = 'Latent Consistency Model'
+                if f.lower().endswith('.safetensors'):
+                    guess = 'Latent Consistency Model Safetensor'
+                else:
+                    guess = 'Latent Consistency Model'
             if 'PixArt' in f:
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
