@@ -3,13 +3,11 @@ FROM pytorch/pytorch:2.1.1-cuda12.1-cudnn8-runtime
 # ARGS
 ARG INSTALLDIR="/webui" \
   RUN_UID=1000 \
-  DEBIAN_FRONTEND=noninteractive \
-  GIT_SHA
+  DEBIAN_FRONTEND=noninteractive
 ENV INSTALLDIR=$INSTALLDIR \
   RUN_UID=$RUN_UID \
   DATA_DIR=$INSTALLDIR/data \
-  TZ=Etc/UTC \
-  GIT_SHA=$GIT_SHA
+  TZ=Etc/UTC
 
 # Install dependencies (apt)
 RUN apt-get update && \
@@ -46,6 +44,9 @@ RUN ${INSTALLDIR}/entrypoint.sh --test --upgrade \
   --no-download \
   --skip-torch
 RUN WITH_CUDA=0 pip install -v -U git+https://github.com/chengzeyi/stable-fast.git@v0.0.14#egg=stable-fast
+
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 
 ENTRYPOINT ["/bin/bash", "-c", "${INSTALLDIR}/entrypoint.sh \"$0\" \"$@\""]
 
