@@ -1,7 +1,7 @@
 name: sdnext
 
 services:
-  api:
+  sdnext:
     command: |
       --listen
       --docs
@@ -10,6 +10,7 @@ services:
       --skip-extensions
       --skip-git
       --skip-torch
+      --quick
     deploy:
       resources:
         reservations:

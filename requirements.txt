@@ -70,3 +70,5 @@ timm==0.9.7
 pydantic==1.10.13
 typing-extensions==4.8.0
 peft
+xformers
+ninja
