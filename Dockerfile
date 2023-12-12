@@ -45,7 +45,7 @@ ENV LD_PRELOAD=libtcmalloc.so
 RUN ${INSTALLDIR}/entrypoint.sh --test --upgrade \
   --no-download \
   --skip-torch
-RUN pip install -v -U git+https://github.com/chengzeyi/stable-fast.git@main
+RUN WITH_CUDA=0 pip install -v -U git+https://github.com/chengzeyi/stable-fast.git@main
 
 ENTRYPOINT ["/bin/bash", "-c", "${INSTALLDIR}/entrypoint.sh \"$0\" \"$@\""]
 
