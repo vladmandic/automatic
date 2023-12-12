@@ -72,3 +72,4 @@ typing-extensions==4.8.0
 peft
 xformers
 ninja
+triton
