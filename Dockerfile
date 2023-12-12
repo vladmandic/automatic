@@ -49,4 +49,4 @@ RUN pip install -v -U git+https://github.com/chengzeyi/stable-fast.git@main
 
 ENTRYPOINT ["/bin/bash", "-c", "${INSTALLDIR}/entrypoint.sh \"$0\" \"$@\""]
 
-CMD ["--listen", "--no-download", "--docs"]
+CMD ["--listen", "--no-download", "--docs", "--skip-requirements", "--skip-extensions", "--skip-tests", "--skip-git", "--skip-torch", "--quick"]
