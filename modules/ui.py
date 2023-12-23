@@ -1131,8 +1131,11 @@ def create_ui(startup_timer = None):
 
     interfaces = [
         (txt2img_interface, "Text", "txt2img"),
-        (img2img_interface, "Image", "img2img"),
-        (control_interface, "Control", "control"),
+        (img2img_interface, "Image", "img2img")
+    ]
+    if shared.backend == shared.Backend.DIFFUSERS:
+        interfaces += (control_interface, "Control", "control")
+    interfaces += [
         (extras_interface, "Process", "process"),
         (train_interface, "Train", "train"),
         (models_interface, "Models", "models"),
