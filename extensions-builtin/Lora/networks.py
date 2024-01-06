@@ -478,5 +478,4 @@ def infotext_pasted(infotext, params): # pylint: disable=W0613
         params["Prompt"] += "\n" + "".join(added)
 
 
-thread_lora = Thread(target=list_available_networks)
-thread_lora.start()
+list_available_networks()
