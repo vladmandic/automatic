@@ -200,7 +200,7 @@
 "settings sections": [
   {"id":"","label":"execution & models","localized":"","hint":"Settings related to execution backend, models, and prompt attention"},
   {"id":"","label":"Optimizations","localized":"","hint":""},
-  {"id":"","label":"Compute Settings","localized":"","hint":"Settings related to precision, cross attention, model compilation, and optimizations for DirectML, IPEX, and OpenVino"},
+  {"id":"","label":"Compute Settings","localized":"","hint":"Settings related to precision, cross attention, model compilation, and optimizations for computing platforms"},
   {"id":"","label":"Diffusers Settings","localized":"","hint":"Settings related to Diffusers backend"},
   {"id":"","label":"System Paths","localized":"","hint":"Settings related to location of various model directories"},
   {"id":"","label":"Image Options","localized":"","hint":"Settings related to image format, metadata, and image grids"},
