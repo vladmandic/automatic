@@ -6,13 +6,12 @@ BLOCKERS:
 - pending docs
 
 OPTIONAL:
-- pending `diffusers==0.26.0`
 - wuerstchen v3 [pr](https://github.com/huggingface/diffusers/pull/6487)
 - control api
 - masking api
 - preprocess api
 
-## Update for 2023-02-01
+## Update for 2023-02-02
 
 Another big release, highlights being:  
 - A lot more functionality in the **Control** module:
@@ -83,6 +82,7 @@ As of this release, default backend is set to **diffusers** as its more feature 
   - support controlnets with non-default yaml config files  
   - implement resize modes for override images  
   - allow any selection of units  
+  - dynamically install depenencies required by specific processors  
   - fix input image size  
   - fix video color mode  
   - fix correct image mode  
@@ -280,6 +280,7 @@ As of this release, default backend is set to **diffusers** as its more feature 
   - live preview: fix when using `bfloat16`  
   - live preview: add thread locking  
   - upscale: fix ldsr
+  - reference: fix links to models and use safetensors where possible  
   - model merge: unbalanced models where not all keys are present, thanks @AI-Casanova
   - better sdxl model detection
   - cli: fix cmd args parsing  
