@@ -351,6 +351,9 @@ def openvino_fx(subgraph, example_inputs):
         if (shared.compiled_model_state.lora_model != []):
             model_hash_str = model_hash_str + str(shared.compiled_model_state.lora_model)
 
+        # Replace ':' with "-" to avoid invalid file name
+        model_hash_str = model_hash_str.replace(":", "-");
+
         executor_parameters = {"model_hash_str": model_hash_str}
         # Check if the model was fully supported and already cached
         example_inputs.reverse()
