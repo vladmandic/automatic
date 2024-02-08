@@ -268,7 +268,7 @@ def load_diffusers_models(model_path: str, command_path: str = None, clear=True)
                     pass
         except Exception as e:
             shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: {model_path} {command_path} items={len(output)} time={time.time()-t0:.2f}')
+    shared.log.debug(f'Scanning diffusers cache: {places} items={len(output)} time={time.time()-t0:.2f}')
     return output
 
 
