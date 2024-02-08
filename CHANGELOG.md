@@ -12,9 +12,10 @@
   it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
 - **fixes**:  
+  - `installer` refresh package cache on any install  
   - `ipex` handle dependencies, thanks @Disty0  
   - `insightface` handle dependencies  
-  - `img2img` mask blur and padding
+  - `img2img` mask blur and padding  
 
 ## Update for 2024-02-07
 
