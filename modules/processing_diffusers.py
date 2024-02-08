@@ -410,7 +410,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         denoising_start=0 if use_refiner_start else p.refiner_start if use_denoise_start else None,
         denoising_end=p.refiner_start if use_refiner_start else 1 if use_denoise_start else None,
         output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
-        clip_skip=p.clip_skip,
+        clip_skip=p.clip_skip - 1,
         desc='Base',
     )
     update_sampler(shared.sd_model)
@@ -487,7 +487,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                     guidance_scale=p.image_cfg_scale if p.image_cfg_scale is not None else p.cfg_scale,
                     guidance_rescale=p.diffusers_guidance_rescale,
                     output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
-                    clip_skip=p.clip_skip,
+                    clip_skip=p.clip_skip - 1,
                     image=output.images,
                     strength=p.denoising_strength,
                     desc='Hires',
@@ -546,7 +546,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 denoising_end=1 if p.refiner_start > 0 and p.refiner_start < 1 else None,
                 image=image,
                 output_type=output_type,
-                clip_skip=p.clip_skip,
+                clip_skip=p.clip_skip - 1,
                 desc='Refiner',
             )
             shared.state.sampling_steps = refiner_args['num_inference_steps']
