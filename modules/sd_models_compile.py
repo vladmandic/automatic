@@ -23,6 +23,9 @@ class CompiledModelState:
         self.partitioned_modules = {}
 
 
+deepcache_worker = None
+
+
 def ipex_optimize(sd_model):
     try:
         t0 = time.time()
@@ -212,6 +215,25 @@ def compile_torch(sd_model):
     return sd_model
 
 
+def compile_deepcache(sd_model):
+    global deepcache_worker # pylint: disable=global-statement
+    try:
+        from DeepCache import DeepCacheSDHelper
+    except Exception as e:
+        shared.log.warning(f'Model compile using deep-cache: {e}')
+        return sd_model
+    t0 = time.time()
+    if deepcache_worker is not None:
+        deepcache_worker.disable()
+    deepcache_worker = DeepCacheSDHelper(pipe=sd_model)
+    deepcache_worker.set_params(cache_interval=shared.opts.deep_cache_interval, cache_branch_id=0)
+    deepcache_worker.enable()
+    t1 = time.time()
+    shared.log.info(f"Model compile: task=DeepCache config={deepcache_worker.params} time={t1-t0:.2f}")
+    # config={'cache_interval': 3, 'cache_layer_id': 0, 'cache_block_id': 0, 'skip_mode': 'uniform'} time=0.00
+    return sd_model
+
+
 def compile_diffusers(sd_model):
     if shared.opts.ipex_optimize:
         sd_model = ipex_optimize(sd_model)
@@ -225,7 +247,11 @@ def compile_diffusers(sd_model):
     shared.log.info(f"Model compile: pipeline={sd_model.__class__.__name__} mode={shared.opts.cuda_compile_mode} backend={shared.opts.cuda_compile_backend} fullgraph={shared.opts.cuda_compile_fullgraph} compile={shared.opts.cuda_compile}")
     if shared.opts.cuda_compile_backend == 'stable-fast':
         sd_model = compile_stablefast(sd_model)
+    elif shared.opts.cuda_compile_backend == 'deep-cache':
+        sd_model = compile_deepcache(sd_model)
     else:
+        if deepcache_worker is not None:
+            deepcache_worker.disable()
         sd_model = compile_torch(sd_model)
     return sd_model
 

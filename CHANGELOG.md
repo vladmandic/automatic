@@ -2,14 +2,15 @@
 
 ## Update for 2024-02-08
 
-TODO: controlnet, adetailer, img2img mask blur and padding
-
 - **FaceID** now works with multiple input images
 - **ONNX**:  
   - allow specify onnx default provider and cpu fallback  
     *settings -> diffusers*  
   - allow manual install of specific onnx flavor  
     *settings -> onnx*  
+- add support for [deep-cache](https://github.com/horseee/DeepCache) model acceleration  
+  it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
+    *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
 - **fixes**:  
   - `ipex` handle dependencies, thanks @Disty0  
   - `insightface` handle dependencies  

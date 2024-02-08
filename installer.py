@@ -568,6 +568,8 @@ def check_torch():
         log.debug(f'Cannot install xformers package: {e}')
     if opts.get('cuda_compile_backend', '') == 'hidet':
         install('hidet', 'hidet')
+    if opts.get('cuda_compile_backend', '') == 'deep-cache':
+        install('DeepCache')
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
     if args.profile:
