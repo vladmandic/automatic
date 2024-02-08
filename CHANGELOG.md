@@ -1,10 +1,25 @@
 # Change Log for SD.Next
 
+## Update for 2024-02-08
+
+TODO: controlnet, adetailer, img2img mask blur and padding
+
+- **FaceID** now works with multiple input images
+- **ONNX**:  
+  - allow specify onnx default provider and cpu fallback  
+    *settings -> diffusers*  
+  - allow manual install of specific onnx flavor  
+    *settings -> onnx*  
+- **fixes**:  
+  - `ipex` handle dependencies, thanks @Disty0  
+  - `insightface` handle dependencies  
+  - `img2img` mask blur and padding
+
 ## Update for 2024-02-07
 
 Another big release just hit the shelves!
 
-### Highlights  
+### Highlights 2024-02-07  
 
 - A lot more functionality in the **Control** module:
   - Inpaint and outpaint support, flexible resizing options, optional hires  
@@ -36,7 +51,7 @@ Further details:
 - For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 
-### Full changelog
+### Full changelog 2024-02-07  
 
 - Heavily updated [Wiki](https://github.com/vladmandic/automatic/wiki)  
 - **Control**:  
@@ -239,8 +254,8 @@ Further details:
     best used together with torch compile: *inductor*  
     this feature is highly experimental and will evolve over time  
     requires nightly versions of `torch` and `torchao`  
-    > pip install -U --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121  
-    > pip install -U git+https://github.com/pytorch-labs/ao  
+    > `pip install -U --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121`  
+    > `pip install -U git+https://github.com/pytorch-labs/ao`  
   - new option: **compile text encoder** (experimental)  
 - **correction**  
   - new section in generate, allows for image corrections during generataion directly in latent space  
@@ -336,7 +351,7 @@ Further details:
 
 To wrap up this amazing year, were releasing a new version of [SD.Next](https://github.com/vladmandic/automatic), this one is absolutely massive!  
 
-### Highlights  
+### Highlights 2023-12-29
 
 - Brand new Control module for *text, image, batch and video* processing  
   Native implementation of all control methods for both *SD15* and *SD-XL*  
@@ -360,7 +375,7 @@ And others improvements in areas such as: Upscaling (up to 8x now with 40+ avail
 
 Plus some nifty new modules such as **FaceID** automatic face guidance using embeds during generation and **Depth 3D** image to 3D scene
 
-### Full changelog
+### Full changelog 2023-12-29
 
 - **Control**  
   - native implementation of all image control methods:  

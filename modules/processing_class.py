@@ -376,7 +376,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             self.init_images = [self.init_images]
         for img in self.init_images:
             if img is None:
-                shared.log.warning(f"Skipping empty image: images={self.init_images}")
+                # shared.log.warning(f"Skipping empty image: images={self.init_images}")
                 continue
             self.init_img_hash = hashlib.sha256(img.tobytes()).hexdigest()[0:8] # pylint: disable=attribute-defined-outside-init
             self.init_img_width = img.width # pylint: disable=attribute-defined-outside-init
@@ -472,6 +472,7 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.adapter_conditioning_factor = 1.0
         self.attention = 'Attention'
         self.fidelity = 0.5
+        self.mask_image = None
         self.override = None
         self.ip_adapter_name = None
         self.ip_adapter_scale = 1.0

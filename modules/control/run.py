@@ -371,7 +371,9 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
 
                     debug(f'Control processed: {len(processed_images)}')
                     if len(processed_images) > 0:
-                        p.extra_generation_params["Control process"] = [p.processor_id for p in active_process]
+                        p.extra_generation_params["Control process"] = [p.processor_id for p in active_process if p.processor_id is not None]
+                        if len(p.extra_generation_params["Control process"]) == 0:
+                            p.extra_generation_params["Control process"] = None
                         if any(img is None for img in processed_images):
                             msg = 'Control: attempting process but output is none'
                             shared.log.error(f'{msg}: {processed_images}')

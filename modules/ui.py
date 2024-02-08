@@ -342,6 +342,10 @@ def create_ui(startup_timer = None):
                 loadsave.create_ui()
                 create_dirty_indicator("tab_defaults", [], interactive=False)
 
+            with gr.TabItem("ONNX", id="onnx_config", elem_id="tab_onnx"):
+                from modules.onnx_impl import ui as ui_onnx
+                ui_onnx.create_ui()
+
             with gr.TabItem("Change log", id="change_log", elem_id="system_tab_changelog"):
                 with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
                     md = f.read()
@@ -373,13 +377,6 @@ def create_ui(startup_timer = None):
     interfaces += [(interrogate_interface, "Interrogate", "interrogate")]
     interfaces += [(train_interface, "Train", "train")]
     interfaces += [(models_interface, "Models", "models")]
-    if shared.opts.onnx_show_menu:
-        with gr.Blocks(analytics_enabled=False) as onnx_interface:
-            if shared.backend == shared.Backend.DIFFUSERS:
-                from modules.onnx_impl import ui as ui_onnx
-                ui_onnx.create_ui()
-                timer.startup.record("ui-onnx")
-        interfaces += [(onnx_interface, "ONNX", "onnx")]
     interfaces += script_callbacks.ui_tabs_callback()
     interfaces += [(settings_interface, "System", "system")]
 

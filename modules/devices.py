@@ -302,6 +302,7 @@ dtype = torch.float16
 dtype_vae = torch.float16
 dtype_unet = torch.float16
 unet_needs_upcast = False
+onnx = None
 if args.profile:
     log.info(f'Torch build config: {torch.__config__.show()}')
 # set_cuda_sync_mode('block') # none/auto/spin/yield/block

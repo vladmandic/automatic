@@ -14,3 +14,4 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - preprocess api  
 - remove kohya from submodules  
 - bind panZoom to control input
+- deep-cache: <https://github.com/horseee/DeepCache>

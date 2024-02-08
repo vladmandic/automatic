@@ -197,6 +197,7 @@ if __name__ == "__main__":
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
     installer.set_environment()
     installer.check_torch()
+    installer.check_onnx()
     installer.check_modified_files()
     if args.reinstall:
         installer.log.info('Forcing reinstall of all packages')

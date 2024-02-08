@@ -201,10 +201,15 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
         return False
 
 
-def uninstall(package):
-    if installed(package, package, quiet=True):
-        log.warning(f'Uninstalling: {package}')
-        pip(f"uninstall {package} --yes --quiet", ignore=True, quiet=True)
+def uninstall(package, quiet = False):
+    packages = package if isinstance(package, list) else [package]
+    res = ''
+    for p in packages:
+        if installed(p, p, quiet=True):
+            if not quiet:
+                log.warning(f'Uninstalling: {p}')
+            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True)
+    return res
 
 
 def pip(arg: str, ignore: bool = False, quiet: bool = False):
@@ -229,11 +234,15 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False):
 
 # install package using pip if not already installed
 def install(package, friendly: str = None, ignore: bool = False):
+    res = ''
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
     if args.reinstall or not installed(package, friendly):
-        pip(f"install --upgrade {package}", ignore=ignore)
+        res = pip(f"install --upgrade {package}", ignore=ignore)
+        import imp  # pylint: disable=deprecated-module
+        imp.reload(pkg_resources)
+    return res
 
 
 # execute git command
@@ -362,6 +371,12 @@ def check_python():
         log.debug(f'Git {git_version.replace("git version", "").strip()}')
 
 
+# check onnx version
+def check_onnx():
+    if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
+        install('onnxruntime', 'onnxruntime', ignore=True)
+
+
 # check torch version
 def check_torch():
     if args.skip_torch:
@@ -379,8 +394,6 @@ def check_torch():
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
-    if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
-        install('onnxruntime', 'onnxruntime', ignore=True)
     if torch_command != '':
         pass
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
@@ -843,20 +856,11 @@ def get_version():
 
 
 def get_onnxruntime_source_for_rocm(rocm_ver):
-    ort_version = "1.16.3"
-
-    try:
-        import onnxruntime
-        ort_version = onnxruntime.__version__
-    except ImportError:
-        pass
-
+    ort_version = "1.16.3" # hardcoded
     cp_str = f"{sys.version_info.major}{sys.version_info.minor}"
-
     if rocm_ver is None:
         command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rocm_ver = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-
     return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
 
 

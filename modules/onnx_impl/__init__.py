@@ -16,7 +16,6 @@ class DynamicSessionOptions(ort.SessionOptions):
 
     def __init__(self):
         super().__init__()
-
         self.enable_mem_pattern = False
 
     @classmethod
@@ -77,7 +76,6 @@ class TemporalModule(TorchCompatibleModule):
         device = extract_device(args, kwargs)
         if device is not None and device.type != "cpu":
             from .execution_providers import TORCH_DEVICE_TO_EP
-
             provider = TORCH_DEVICE_TO_EP[device.type] if device.type in TORCH_DEVICE_TO_EP else self.provider
             return OnnxRuntimeModel.load_model(self.path, provider, DynamicSessionOptions.from_sess_options(self.sess_options))
         return self
@@ -100,10 +98,7 @@ class OnnxRuntimeModel(TorchCompatibleModule, diffusers.OnnxRuntimeModel):
 
 
 class VAEConfig:
-    DEFAULTS = {
-        "scaling_factor": 0.18215,
-    }
-
+    DEFAULTS = { "scaling_factor": 0.18215 }
     config: Dict
 
     def __init__(self, config: Dict):
@@ -151,10 +146,8 @@ class VAE(TorchCompatibleModule):
 
 def check_parameters_changed(p, refiner_enabled: bool):
     from modules import shared, sd_models
-
     if shared.sd_model.__class__.__name__ == "OnnxRawPipeline" or not shared.sd_model.__class__.__name__.startswith("Onnx"):
         return shared.sd_model
-
     compile_height = p.height
     compile_width = p.width
     if (shared.compiled_model_state is None or
@@ -172,17 +165,14 @@ def check_parameters_changed(p, refiner_enabled: bool):
     shared.compiled_model_state.height = compile_height
     shared.compiled_model_state.width = compile_width
     shared.compiled_model_state.batch_size = p.batch_size
-
     return shared.sd_model
 
 
 def preprocess_pipeline(p):
     from modules import shared, sd_models
-
     if "ONNX" not in shared.opts.diffusers_pipeline:
         shared.log.warning(f"Unsupported pipeline for 'olive-ai' compile backend: {shared.opts.diffusers_pipeline}. You should select one of the ONNX pipelines.")
         return shared.sd_model
-
     if hasattr(shared.sd_model, "preprocess"):
         shared.sd_model = shared.sd_model.preprocess(p)
     if hasattr(shared.sd_refiner, "preprocess"):
@@ -192,7 +182,6 @@ def preprocess_pipeline(p):
         if shared.opts.onnx_unload_base:
             sd_models.reload_model_weights(op='model')
             shared.sd_model = shared.sd_model.preprocess(p)
-
     return shared.sd_model
 
 
@@ -201,25 +190,20 @@ def ORTDiffusionModelPart_to(self, *args, **kwargs):
     return self
 
 
-def initialize():
+def initialize_onnx():
     global initialized # pylint: disable=global-statement
-
     if initialized:
         return
-
     from installer import log
     from modules import devices
     from modules.paths import models_path
     from modules.shared import opts
     from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
-
     onnx_dir = os.path.join(models_path, "ONNX")
     if not os.path.isdir(onnx_dir):
         os.mkdir(onnx_dir)
-
     if devices.backend == "rocm":
         TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
-
     from .pipelines.onnx_stable_diffusion_pipeline import OnnxStableDiffusionPipeline
     from .pipelines.onnx_stable_diffusion_img2img_pipeline import OnnxStableDiffusionImg2ImgPipeline
     from .pipelines.onnx_stable_diffusion_inpaint_pipeline import OnnxStableDiffusionInpaintPipeline
@@ -254,8 +238,7 @@ def initialize():
 
     optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
 
-    log.info(f'ONNX: selected={opts.onnx_execution_provider}, available={available_execution_providers}')
-
+    log.debug(f'ONNX: version={ort.__version__} provider={opts.onnx_execution_provider}, available={available_execution_providers}')
     initialized = True
 
 
@@ -283,10 +266,8 @@ def initialize_olive():
 
 def install_olive():
     from installer import installed, install, log
-
     if installed("olive-ai"):
         return
-
     try:
         log.info('Installing Olive')
         install('olive-ai', 'olive-ai', ignore=True)

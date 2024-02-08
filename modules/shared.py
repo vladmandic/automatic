@@ -16,8 +16,7 @@ from rich.console import Console
 from modules import errors, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
-from modules.onnx_impl import initialize as initialize_onnx
-from modules.onnx_impl.execution_providers import available_execution_providers, get_default_execution_provider
+from modules.onnx_impl import initialize_onnx, execution_providers
 import modules.interrogate
 import modules.memmon
 import modules.styles
@@ -445,8 +444,8 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "huggingface_token": OptionInfo('', 'HuggingFace token'),
 
     "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
-    "onnx_execution_provider": OptionInfo(get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": available_execution_providers }),
-    "onnx_show_menu": OptionInfo(False, 'ONNX show onnx-specific menu'),
+    "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),
+    "onnx_cpu_fallback": OptionInfo(True, 'ONNX allow fallback to CPU'),
     "onnx_cache_converted": OptionInfo(True, 'ONNX cache converted models'),
     "onnx_unload_base": OptionInfo(False, 'ONNX unload base model when processing refiner'),
 }))
@@ -902,6 +901,10 @@ log.info(f'Device: {print_dict(devices.get_gpu_info())}')
 prompt_styles = modules.styles.StyleDatabase(opts)
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
 devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
+devices.onnx = [opts.onnx_execution_provider]
+if opts.onnx_cpu_fallback and 'CPUExecutionProvider' not in devices.onnx:
+    devices.onnx.append('CPUExecutionProvider')
+print("HERE1", opts.onnx_cpu_fallback, devices.onnx)
 device = devices.device
 batch_cond_uncond = opts.always_batch_cond_uncond or not (cmd_opts.lowvram or cmd_opts.medvram)
 parallel_processing_allowed = not cmd_opts.lowvram

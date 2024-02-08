@@ -10,7 +10,7 @@ annotator_ckpts_path = os.path.join(os.path.dirname(__file__), 'ckpts')
 
 
 def dict2str(d: dict):
-    arr = [f'{name}: {d[name]}' for i, name in enumerate(d)]
+    arr = [f'{name} {d[name]}' for i, name in enumerate(d) if d[name] is not None and d[name] != '']
     return ' | '.join(arr)
 
 

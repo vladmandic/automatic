@@ -1,5 +1,6 @@
 import os
 import cv2
+import torch
 import numpy as np
 import huggingface_hub as hf
 from modules import shared, processing, sd_models, devices
@@ -10,13 +11,13 @@ controlnet_model = None
 debug = shared.log.trace if os.environ.get('SD_FACE_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
-def instant_id(p: processing.StableDiffusionProcessing, app, source_image, strength=1.0, conditioning=0.5, cache=True): # pylint: disable=arguments-differ
+def instant_id(p: processing.StableDiffusionProcessing, app, source_images, strength=1.0, conditioning=0.5, cache=True): # pylint: disable=arguments-differ
     from modules.face.instantid_model import StableDiffusionXLInstantIDPipeline, draw_kps
     from diffusers.models import ControlNetModel
     global controlnet_model # pylint: disable=global-statement
 
     # prepare pipeline
-    if source_image is None:
+    if source_images is None or len(source_images) == 0:
         shared.log.warning('InstantID: no input images')
         return None
 
@@ -26,12 +27,16 @@ def instant_id(p: processing.StableDiffusionProcessing, app, source_image, stren
         return None
 
     # prepare face emb
-    faces = app.get(cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR))
-    face = sorted(faces, key=lambda x:(x['bbox'][2]-x['bbox'][0])*x['bbox'][3]-x['bbox'][1])[-1]  # only use the maximum face
-    face_emb = face['embedding']
-    face_kps = draw_kps(source_image, face['kps'])
+    face_embeds = []
+    face_images = []
+    for i, source_image in enumerate(source_images):
+        faces = app.get(cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR))
+        face = sorted(faces, key=lambda x:(x['bbox'][2]-x['bbox'][0])*x['bbox'][3]-x['bbox'][1])[-1]  # only use the maximum face
+        face_embeds.append(torch.from_numpy(face['embedding']))
+        face_images.append(draw_kps(source_image, face['kps']))
+        p.extra_generation_params[f"InstantID {i+1}"] = f'{faces[0].det_score:.2f} {"female" if faces[0].gender==0 else "male"} {faces[0].age}y'
+        shared.log.debug(f'InstantID face: score={face.det_score:.2f} gender={"female" if face.gender==0 else "male"} age={face.age} bbox={face.bbox}')
 
-    shared.log.debug(f'InstantID face: score={face.det_score:.2f} gender={"female" if face.gender==0 else "male"} age={face.age} bbox={face.bbox}')
     shared.log.debug(f'InstantID loading: model={REPO_ID}')
     face_adapter = hf.hf_hub_download(repo_id=REPO_ID, filename="ip-adapter.bin")
     if controlnet_model is None or not cache:
@@ -63,20 +68,19 @@ def instant_id(p: processing.StableDiffusionProcessing, app, source_image, stren
     # pipeline specific args
     orig_prompt_attention = shared.opts.prompt_attention
     shared.opts.data['prompt_attention'] = 'Fixed attention' # otherwise need to deal with class_tokens_mask
-    p.task_args['prompt'] = p.all_prompts[0] # override all logic
-    p.task_args['negative_prompt'] = p.all_negative_prompts[0]
-    p.task_args['image_embeds'] = face_emb
-    p.task_args['image'] = face_kps
+    p.task_args['image_embeds'] = face_embeds[0].shape # placeholder
+    p.task_args['image'] = face_images[0]
     p.task_args['controlnet_conditioning_scale'] = float(conditioning)
     p.task_args['ip_adapter_scale'] = float(strength)
-    debug(f'InstantID: args={p.task_args}')
+    shared.log.debug(f"InstantID args: {p.task_args}")
+    p.task_args['prompt'] = p.all_prompts[0] # override all logic
+    p.task_args['negative_prompt'] = p.all_negative_prompts[0]
+    p.task_args['image_embeds'] = face_embeds[0] # overwrite placeholder
 
     # run processing
-    shared.log.debug(f'InstantID: strength={strength} conditioning={conditioning} image={source_image}')
     processed: processing.Processed = processing.process_images(p)
     shared.sd_model.set_ip_adapter_scale(0)
     p.extra_generation_params['InstantID'] = f'{strength}/{conditioning}'
-    p.extra_generation_params["Face"] = f'{face.det_score:.2f} {"female" if face.gender==0 else "male"} {face.age}y'
 
     if not cache:
         controlnet_model = None
