@@ -285,8 +285,17 @@ def list_samplers():
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
     disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
+    disable_themes = []
     disable_original = []
     disabled = []
+    theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme
+    if theme_name.lower() != 'modern':
+        disable_themes.append('sdnext-ui-ux')
+    if theme_name.lower() != 'lobe':
+        disable_themes.append('sd-webui-lobe-theme')
+    for ext in disable_themes:
+        if ext not in opts.disabled_extensions:
+            disabled.append(ext)
     if cmd_opts.safe:
         for ext in disable_safe:
             if ext not in opts.disabled_extensions:

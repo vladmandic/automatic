@@ -47,6 +47,7 @@ group.add_argument("--use-cuda", default=os.environ.get("SD_USECUDA", False), ac
 group.add_argument("--use-rocm", default=os.environ.get("SD_USEROCM", False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
 group.add_argument('--subpath', type=str, default=os.environ.get("SD_SUBPATH", None), help='Customize the URL subpath for usage with reverse proxy')
 group.add_argument('--backend', type=str, default=os.environ.get("SD_BACKEND", None), choices=['original', 'diffusers'], required=False, help='force model pipeline type')
+group.add_argument('--theme', type=str, default=os.environ.get("SD_THEME", None), help='Override UI theme')
 
 
 # removed args are added here as hidden in fixed format for compatbility reasons

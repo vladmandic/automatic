@@ -11,9 +11,11 @@
 - add support for [deep-cache](https://github.com/horseee/DeepCache) model acceleration  
   it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+- **other**:
+  - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
+    *note*: reproducing old genarations may need to have clip-skip value offset by +1 for sdxl  
+  - add `--theme` cli param to force theme on startup  
 - **fixes**:  
-  - `clip-skip` value handling in diffusers, thanks @Disty0  
-    note: reproducing old genarations will need to have clip-skip value offset by +1  
   - `installer` refresh package cache on any install  
   - `ipex` handle dependencies, thanks @Disty0  
   - `insightface` handle dependencies  
