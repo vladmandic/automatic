@@ -17,6 +17,7 @@ def create_ui():
     from modules.shared import log, opts, cmd_opts, refresh_checkpoints
     from modules.sd_models import checkpoint_tiles, get_closet_checkpoint_match
     from modules.paths import sd_configs_path
+    from . import run_olive_workflow
     from .execution_providers import ExecutionProvider, install_execution_provider
     from .utils import check_diffusers_cache
 
@@ -38,7 +39,7 @@ def create_ui():
                 ep_log = gr.HTML("")
                 ep_install.click(fn=install_execution_provider, inputs=[ep_checkbox], outputs=[ep_log])
 
-            if opts.cuda_compile_backend == "olive-ai":
+            if run_olive_workflow is not None:
                 import olive.passes as olive_passes
                 from olive.hardware.accelerator import AcceleratorSpec, Device
                 accelerator = AcceleratorSpec(accelerator_type=Device.GPU, execution_provider=opts.onnx_execution_provider)

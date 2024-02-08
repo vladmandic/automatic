@@ -297,7 +297,7 @@
   {"id":"","label":"VAE tiling","localized":"","hint":"Divide large images into overlapping tiles with limited VRAM. Results in a minor increase in processing time"},
   {"id":"","label":"Attention slicing","localized":"","hint":"Performs attention computation in steps instead of all at once. Slower inference times, but greatly reduced memory usage"},
   {"id":"","label":"Execution Provider","localized":"","hint":"ONNX Execution Provider"},
-  {"id":"","label":"ONNX show onnx-specific menu","localized":"","hint":"Enable ONNX tab in UI. Restart required"},
+  {"id":"","label":"ONNX allow fallback to CPU","localized":"","hint":"Allow fallback to CPU when selected execution provider failed"},
   {"id":"","label":"ONNX cache converted models","localized":"","hint":"Save the models that are converted to ONNX format as a cache. You can manage them in ONNX tab"},
   {"id":"","label":"ONNX unload base model when processing refiner","localized":"","hint":"Unload base model when the refiner is being converted/optimized/processed"},
   {"id":"","label":"inference-mode","localized":"","hint":"Use torch.inference_mode"},
