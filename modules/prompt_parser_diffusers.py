@@ -2,7 +2,6 @@ import os
 import time
 import typing
 import torch
-from compel import ReturnedEmbeddingsType
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
 from modules import shared, prompt_parser, devices
@@ -10,11 +9,26 @@ from modules import shared, prompt_parser, devices
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PROMPT')
 
-CLIP_SKIP_MAPPING = {
-    None: ReturnedEmbeddingsType.LAST_HIDDEN_STATES_NORMALIZED,
-    1: ReturnedEmbeddingsType.LAST_HIDDEN_STATES_NORMALIZED,
-    2: ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NORMALIZED,
-}
+
+def compel_hijack(self, token_ids: torch.Tensor,
+                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+    needs_hidden_states = self.returned_embeddings_type != 0
+    text_encoder_output = self.text_encoder(token_ids,
+                                            attention_mask,
+                                            output_hidden_states=needs_hidden_states,
+                                            return_dict=True)
+    normalized = self.returned_embeddings_type > 0
+    if normalized and needs_hidden_states:
+        clip_skip_hidden_state = text_encoder_output.hidden_states[-1 - abs(self.returned_embeddings_type)]
+        return self.text_encoder.text_model.final_layer_norm(clip_skip_hidden_state)
+    if needs_hidden_states:
+        clip_skip_hidden_state = text_encoder_output.hidden_states[-1 - abs(self.returned_embeddings_type)]
+        return clip_skip_hidden_state
+
+    return text_encoder_output.last_hidden_state
+
+
+EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack
 
 
 # from https://github.com/damian0815/compel/blob/main/src/compel/diffusers_textual_inversion_manager.py
@@ -127,12 +141,9 @@ def prepare_embedding_providers(pipe, clip_skip):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     embeddings_providers = []
     if 'XL' in pipe.__class__.__name__:
-        embedding_type = ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED
+        embedding_type = -clip_skip
     else:
-        if clip_skip > 2:
-            shared.log.warning(f"Prompt parser unsupported: clip_skip={clip_skip}")
-            clip_skip = 2
-        embedding_type = CLIP_SKIP_MAPPING[clip_skip]
+        embedding_type = clip_skip
     if hasattr(pipe, "tokenizer") and hasattr(pipe, "text_encoder"):
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False,
                                       returned_embeddings_type=embedding_type, device=device)
