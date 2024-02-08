@@ -582,7 +582,7 @@
   {"id":"","label":"Diffusers model loading variant","localized":"","hint":""},
   {"id":"","label":"Diffusers VAE loading variant","localized":"","hint":""},
   {"id":"","label":"Execution Provider","localized":"","hint":"ONNX Execution Provider"},
-  {"id":"","label":"ONNX show onnx-specific menu","localized":"ONNX 탭 보이기","hint":"UI에서 ONNX 탭을 볼 수 있게 한다. WebUI를 재시작하면 반영된다."},
+  {"id":"","label":"ONNX allow fallback to CPU","localized":"ONNX 생성 실패 시 CPU를 사용해 다시 시도","hint":"선택한 Execution Provider에서 오류가 발생했을 경우 CPU를 사용해 다시 시도한다."},
   {"id":"","label":"ONNX cache converted models","localized":"ONNX 모델 저장 (캐시)","hint":"ONNX 형식으로 변환된 모델을 캐시로 저장한다. ONNX 탭에서 관리할 수 있다."},
   {"id":"","label":"ONNX unload base model when processing refiner","localized":"ONNX 리파이너를 처리하고 있을 때 base 모델을 메모리에서 해제","hint":"리파이너 모델이 변환, 최적화 또는 처리되고 있을 때 base 모델을 메모리에서 잠시 해제합니다."}
 ],
