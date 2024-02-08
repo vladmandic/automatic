@@ -12,17 +12,17 @@ debug('Trace: PROMPT')
 
 def compel_hijack(self, token_ids: torch.Tensor,
                   attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
-    needs_hidden_states = self.returned_embeddings_type != 0
+    needs_hidden_states = self.returned_embeddings_type != 1
     text_encoder_output = self.text_encoder(token_ids,
                                             attention_mask,
                                             output_hidden_states=needs_hidden_states,
                                             return_dict=True)
     normalized = self.returned_embeddings_type > 0
     if normalized and needs_hidden_states:
-        clip_skip_hidden_state = text_encoder_output.hidden_states[-1 - abs(self.returned_embeddings_type)]
+        clip_skip_hidden_state = text_encoder_output.hidden_states[-abs(self.returned_embeddings_type)]
         return self.text_encoder.text_model.final_layer_norm(clip_skip_hidden_state)
     if needs_hidden_states:
-        clip_skip_hidden_state = text_encoder_output.hidden_states[-1 - abs(self.returned_embeddings_type)]
+        clip_skip_hidden_state = text_encoder_output.hidden_states[-abs(self.returned_embeddings_type)]
         return clip_skip_hidden_state
 
     return text_encoder_output.last_hidden_state
