@@ -52,12 +52,12 @@ def grid(images, labels = None, width = 0, height = 0, border = 0, square = Fals
         h = round(height / rows)
     size = tuple(size)
     image = Image.new('RGB', size = size, color = 'black') # pylint: disable=redefined-outer-name
-    font = ImageFont.truetype('DejaVuSansMono', round(w / 20))
+    font = ImageFont.truetype('DejaVuSansMono', round(w / 40))
     for i, img in enumerate(images): # pylint: disable=redefined-outer-name
         x = (i % cols * w) + (i % cols * border)
         y = (i // cols * h) + (i // cols * border)
         img.thumbnail((w, h), Image.Resampling.HAMMING)
-        image.paste(img, box=(x, y))
+        image.paste(img, box=(x + int(border / 2), y + int(border / 2)))
         if labels is not None and len(images) == len(labels):
             ctx = ImageDraw.Draw(image)
             label = wrap(labels[i], font, w)

@@ -89,8 +89,7 @@ def get_prompt_schedule(prompt, steps):
     return temp, len(schedule) > 1
 
 
-def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int,
-                   clip_skip: typing.Optional[int] = None):
+def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion':
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return None, None, None, None

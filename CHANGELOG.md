@@ -13,7 +13,7 @@
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
 - **other**:
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
-    *note*: reproducing old genarations may need to have clip-skip value offset by +1 for sdxl  
+    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
   - add `--theme` cli param to force theme on startup  
 - **fixes**:  
   - `installer` refresh package cache on any install  
