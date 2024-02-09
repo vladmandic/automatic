@@ -195,6 +195,9 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
                 vae = diffusers.ConsistencyDecoderVAE.from_pretrained('openai/consistency-decoder', **diffusers_load_config) # consistency decoder does not have from single file, so we'll just download it once more
             else:
                 vae = diffusers.AutoencoderKL.from_single_file(vae_file, **diffusers_load_config)
+                if getattr(vae.config, 'scaling_factor', 0) == 0.18125 and shared.sd_model_type == 'sdxl':
+                    vae.config.scaling_facor = 0.13025
+                    shared.log.debug('Diffusers VAE: fix scaling factor')
             vae = vae.to(devices.dtype_vae)
         else:
             if 'consistency-decoder' in vae_file:
