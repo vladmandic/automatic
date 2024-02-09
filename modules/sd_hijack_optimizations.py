@@ -568,8 +568,8 @@ def find_dynamic_attention_v1_slice_sizes(query_shape, query_element_size, slice
 class DynamicAttnProcessorV1:
     r"""
     dynamically slices attention queries based on query size and slice rate in GB
-    saves VRAM similar to Sub-Quad on Original backend and it is compatible with HyperTile
     slicing will not get triggered if the query size is smaller than the slice rate to gain performance
+    based on AttnProcessor V1
     """
 
     def __call__(self, attn, hidden_states: torch.FloatTensor,

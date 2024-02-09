@@ -19,6 +19,8 @@
       *settings -> diffusers*  
     - allow manual install of specific onnx flavor  
       *settings -> onnx*  
+  - **OpenVINO**  
+    - update to `torch 2.2.0`  
   - add `--theme` cli param to force theme on startup  
 - **wiki**:
   - updated benchmark notes for IPEX and Olive  
