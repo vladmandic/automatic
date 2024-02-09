@@ -25,7 +25,10 @@ class EdgeDetector:
     def __call__(self, input_image=None, pf=True, mode='edge', detect_resolution=512, image_resolution=512, output_type=None, **kwargs):
         global ed # pylint: disable=global-statement
         if ed is None:
-            ed = cv2.ximgproc.createEdgeDrawing()
+            try:
+                ed = cv2.ximgproc.createEdgeDrawing()
+            except Exception as e:
+                raise ImportError("Edge processor: invalid version of OpenCV found") from e
         params = cv2.ximgproc.EdgeDrawing.Params()
         params.PFmode = pf
         ed.setParams(params)

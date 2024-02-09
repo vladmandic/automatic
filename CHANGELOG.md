@@ -3,11 +3,6 @@
 ## Update for 2024-02-09
 
 - **improvements**:
-  - **ONNX**:  
-    - allow specify onnx default provider and cpu fallback  
-      *settings -> diffusers*  
-    - allow manual install of specific onnx flavor  
-      *settings -> onnx*  
   - **FaceID** now works with multiple input images
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
@@ -19,6 +14,11 @@
   - **Control** units now have extra option to re-use current preview image as processor input  
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
+  - **ONNX**:  
+    - allow specify onnx default provider and cpu fallback  
+      *settings -> diffusers*  
+    - allow manual install of specific onnx flavor  
+      *settings -> onnx*  
   - add `--theme` cli param to force theme on startup  
 - **wiki**:
   - updated benchmark notes for IPEX and Olive  
