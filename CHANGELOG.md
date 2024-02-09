@@ -30,6 +30,7 @@
   - insightface handle dependencies  
   - img2img mask blur and padding  
   - xyz grid handle ip adapter name and scale  
+  - lazy loading of image may prevent metadata from being loaded on time  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 

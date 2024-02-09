@@ -119,7 +119,8 @@ def create_ui(_blocks: gr.Blocks=None):
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
                 with gr.Accordion(open=False, label="Extensions", elem_id="control_extensions", elem_classes=["small-accordion"]):
-                    input_script_args = scripts.scripts_current.setup_ui(parent='control', accordion=False)
+                    with gr.Group(elem_id="control_script_container"):
+                        input_script_args = scripts.scripts_current.setup_ui(parent='control', accordion=False)
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')

@@ -810,6 +810,7 @@ def image_data(data):
     err2 = None
     try:
         image = Image.open(io.BytesIO(data))
+        image.load()
         info, _ = read_info_from_image(image)
         errors.log.debug(f'Decoded object: image={image} metadata={info}')
         return info, None
