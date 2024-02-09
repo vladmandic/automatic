@@ -140,7 +140,7 @@ def prepare_embedding_providers(pipe, clip_skip):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     embeddings_providers = []
     if 'XL' in pipe.__class__.__name__:
-        embedding_type = -clip_skip
+        embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
     if hasattr(pipe, "tokenizer") and hasattr(pipe, "text_encoder"):

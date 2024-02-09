@@ -174,9 +174,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
-        clip_skip = kwargs.pop("clip_skip", None)
-        if clip_skip is not None and 'XL' in model.__class__.__name__:
-            clip_skip -= 1
+        clip_skip = kwargs.pop("clip_skip", 1)
         if shared.opts.prompt_attention != 'Fixed attention' and 'StableDiffusion' in model.__class__.__name__ and 'Onnx' not in model.__class__.__name__:
             try:
                 prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=kwargs.get("num_inference_steps", 1), clip_skip=clip_skip)
@@ -186,8 +184,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                     errors.display(e, 'Prompt parser encode')
         if parser == 'Fixed attention':
-            if clip_skip is not None:
-                args['clip_skip'] = clip_skip
+            if clip_skip == 1:
+                pass # clip_skip = None
+            else:
+                args['clip_skip'] = clip_skip - 1
         if 'prompt' in possible:
             if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
                 args['prompt_embeds'] = p.prompt_embeds[0]
