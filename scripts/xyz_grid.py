@@ -233,7 +233,7 @@ axis_options = [
     AxisOption("CFG End", float, apply_field("cfg_end")),
     AxisOption("Variation seed", int, apply_field("subseed")),
     AxisOption("Variation strength", float, apply_field("subseed_strength")),
-    AxisOption("Clip skip", int, apply_clip_skip),
+    AxisOption("Clip skip", float, apply_clip_skip),
     AxisOption("Denoising strength", float, apply_field("denoising_strength")),
     AxisOption("Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
     AxisOption("Model dictionary", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),

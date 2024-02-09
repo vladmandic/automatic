@@ -1,4 +1,5 @@
 import os
+import math
 import time
 import typing
 import torch
@@ -17,15 +18,20 @@ def compel_hijack(self, token_ids: torch.Tensor,
                                             attention_mask,
                                             output_hidden_states=needs_hidden_states,
                                             return_dict=True)
+    if not needs_hidden_states:
+        return text_encoder_output.last_hidden_state
     normalized = self.returned_embeddings_type > 0
-    if normalized and needs_hidden_states:
-        clip_skip_hidden_state = text_encoder_output.hidden_states[-abs(self.returned_embeddings_type)]
-        return self.text_encoder.text_model.final_layer_norm(clip_skip_hidden_state)
-    if needs_hidden_states:
-        clip_skip_hidden_state = text_encoder_output.hidden_states[-abs(self.returned_embeddings_type)]
-        return clip_skip_hidden_state
+    clip_skip = math.floor(abs(self.returned_embeddings_type))
+    interpolation = abs(self.returned_embeddings_type) - clip_skip
+    if interpolation:
+        hidden_state = (1 - interpolation) * text_encoder_output.hidden_states[-clip_skip] + interpolation * text_encoder_output.hidden_states[-(clip_skip+1)]
+    else:
+        hidden_state = text_encoder_output.hidden_states[-clip_skip]
+    if normalized:
+        hidden_state = self.text_encoder.text_model.final_layer_norm(hidden_state)
+    return hidden_state
 
-    return text_encoder_output.last_hidden_state
+
 
 
 EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack
