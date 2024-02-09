@@ -443,6 +443,8 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(False, "VAE tiling"),
     "diffusers_attention_slicing": OptionInfo(False, "Attention slicing"),
+    "diffusers_dynamic_attention_slicing": OptionInfo(False, "Dynamic Attention slicing"),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Slicing rate for Dynamic Attention Slicing in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1}),
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),

@@ -704,6 +704,9 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
     if shared.opts.cross_attention_optimization == "xFormers" and hasattr(sd_model, 'enable_xformers_memory_efficient_attention'):
         sd_model.enable_xformers_memory_efficient_attention()
+    if shared.opts.diffusers_dynamic_attention_slicing:
+        from modules.sd_hijack_optimizations import DynamicAttnProcessorV1
+        set_diffusers_attention(sd_model, DynamicAttnProcessorV1())
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
         shared.log.debug(f'Setting {op}: enable fused projections')
         sd_model.fuse_qkv_projections()
@@ -1153,6 +1156,15 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__}")
     pipe = new_pipe
     return pipe
+
+
+def set_diffusers_attention(pipe, attention):
+        module_names, _ = pipe._get_signature_keys(pipe)
+        modules = [getattr(pipe, n, None) for n in module_names]
+        modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
+
+        for module in modules:
+            module.set_attn_processor(attention)
 
 
 def get_native(pipe: diffusers.DiffusionPipeline):

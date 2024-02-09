@@ -11,6 +11,12 @@
 - add support for [deep-cache](https://github.com/horseee/DeepCache) model acceleration  
   it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+- **diffusers**
+  - add *Dynamic Attention Slicing*  
+    dynamically slices attention queries based on query size and slice rate in GB  
+    saves VRAM similar to Sub-Quad on Original backend and it is compatible with HyperTile  
+    slicing will not get triggered if the query size is smaller than the slice rate to gain performance  
+    *settings -> diffusers settings -> dynamic attention slicing*  
 - **other**:
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
