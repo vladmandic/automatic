@@ -15,6 +15,8 @@
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
   - add `--theme` cli param to force theme on startup  
+- **wiki**:
+  - updated benchmark notes for IPEX and Olive  
 - **fixes**:  
   - `installer` refresh package cache on any install  
   - `ipex` handle dependencies, thanks @Disty0  
