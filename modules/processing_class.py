@@ -70,7 +70,9 @@ class StableDiffusionProcessing:
         self.all_negative_prompts = None
         self.all_seeds = None
         self.all_subseeds = None
-        self.clip_skip = clip_skip
+        self.clip_skip = int(clip_skip) if shared.backend == shared.Backend.ORIGINAL else clip_skip
+        shared.opts.data['clip_skip'] = self.clip_skip # for compatibility with a1111 sd_hijack_clip
+
         self.iteration = 0
         self.is_control = False
         self.is_hr_pass = False
@@ -101,7 +103,6 @@ class StableDiffusionProcessing:
         self.s_max = shared.opts.s_max
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
-        shared.opts.data['clip_skip'] = clip_skip
         self.task_args = {}
         # a1111 compatibility items
         self.refiner_switch_at = 0
