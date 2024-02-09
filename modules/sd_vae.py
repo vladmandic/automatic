@@ -196,7 +196,7 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
             else:
                 vae = diffusers.AutoencoderKL.from_single_file(vae_file, **diffusers_load_config)
                 if getattr(vae.config, 'scaling_factor', 0) == 0.18125 and shared.sd_model_type == 'sdxl':
-                    vae.config.scaling_facor = 0.13025
+                    vae.config.scaling_factor = 0.13025
                     shared.log.debug('Diffusers VAE: fix scaling factor')
             vae = vae.to(devices.dtype_vae)
         else:
