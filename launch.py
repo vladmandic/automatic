@@ -9,6 +9,7 @@ from functools import lru_cache
 import installer
 
 
+debug_install = installer.log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 commandline_args = os.environ.get('COMMANDLINE_ARGS', "")
 sys.argv += shlex.split(commandline_args)
 args = None
@@ -111,8 +112,13 @@ def run_python(code, desc=None, errdesc=None): # compatbility function
 
 @lru_cache()
 def run_pip(pkg, desc=None): # compatbility function
+    forbidden = ['onnxruntime', 'opencv-python']
     if desc is None:
         desc = pkg
+    for f in forbidden:
+        if f in pkg:
+            debug_install('Blocked package installation: package={f}')
+            return True
     index_url_line = f' --index-url {index_url}' if index_url != '' else ''
     return run(f'"{sys.executable}" -m pip {pkg} --prefer-binary{index_url_line}', desc=f"Installing {desc}", errdesc=f"Couldn't install {desc}")
 

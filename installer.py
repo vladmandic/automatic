@@ -628,10 +628,11 @@ def run_extension_installer(folder):
         env = os.environ.copy()
         env['PYTHONPATH'] = os.path.abspath(".")
         result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+        txt = result.stdout.decode(encoding="utf8", errors="ignore")
+        debug(f'Extension installer: file={path_installer} {txt}')
         if result.returncode != 0:
             global errors # pylint: disable=global-statement
             errors += 1
-            txt = result.stdout.decode(encoding="utf8", errors="ignore")
             if len(result.stderr) > 0:
                 txt = txt + '\n' + result.stderr.decode(encoding="utf8", errors="ignore")
             log.error(f'Error running extension installer: {path_installer}')

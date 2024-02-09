@@ -31,6 +31,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                  model_strength = None,
                  preview_process = None,
                  image_upload = None,
+                 image_reuse = None,
                  image_preview = None,
                  control_start = None,
                  control_end = None,
@@ -106,6 +107,12 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                 log.error(f'Control process upload image failed: path="{image_file.name}" error={e}')
                 return gr.update(visible=False, value=None)
 
+        def reuse_image(image):
+            log.debug(f'Control process reuse image: {image}')
+            self.process.override = image
+            self.override = self.process.override
+            return gr.update(visible=self.process.override is not None, value=self.process.override)
+
         # actual init
         if self.type == 't2i adapter':
             self.adapter = t2iadapter.Adapter(device=default_device, dtype=default_dtype)
@@ -162,6 +169,8 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
             preview_btn.click(fn=self.process.preview, inputs=[], outputs=[preview_process]) # return list of images for gallery
         if image_upload is not None:
             image_upload.upload(fn=upload_image, inputs=[image_upload], outputs=[image_preview]) # return list of images for gallery
+        if image_reuse is not None:
+            image_reuse.click(fn=reuse_image, inputs=[preview_process], outputs=[image_preview]) # return list of images for gallery
         if control_start is not None and control_end is not None:
             control_start.change(fn=control_change, inputs=[control_start, control_end])
             control_end.change(fn=control_change, inputs=[control_start, control_end])

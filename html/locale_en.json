@@ -3,6 +3,7 @@
   {"id":"","label":"♻️","localized":"","hint":"Reuse previous seed"},
   {"id":"","label":"🔄","localized":"","hint":"Reset values"},
   {"id":"","label":"⬆️","localized":"","hint":"Upload image"},
+  {"id":"","label":"⬅️","localized":"","hint":"Reuse image"},
   {"id":"","label":"⇅","localized":"","hint":"Swap values"},
   {"id":"","label":"⇦","localized":"","hint":"Read parameters from last generated image"},
   {"id":"","label":"⊗","localized":"","hint":"Clear prompt"},

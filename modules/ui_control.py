@@ -199,6 +199,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
                                 reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                 image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
+                                image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                 process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                                 image_preview = gr.Image(label="Input", type="pil", source="upload", height=128, width=128, visible=False, interactive=True, show_label=False, show_download_button=False, container=False)
                         controlnet_ui_units.append(unit_ui)
@@ -214,6 +215,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             preview_process = preview_process,
                             preview_btn = process_btn,
                             image_upload = image_upload,
+                            image_reuse = image_reuse,
                             image_preview = image_preview,
                             control_start = control_start,
                             control_end = control_end,
@@ -252,6 +254,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0-i/10)
                                 reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                 image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
+                                image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                 process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                                 image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
                         adapter_ui_units.append(unit_ui)
@@ -267,6 +270,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             preview_process = preview_process,
                             preview_btn = process_btn,
                             image_upload = image_upload,
+                            image_reuse = image_reuse,
                             image_preview = image_preview,
                             extra_controls = extra_controls,
                             )
@@ -296,6 +300,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
                                 reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                 image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
+                                image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                 process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                                 image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
                         controlnetxs_ui_units.append(unit_ui)
@@ -311,6 +316,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             preview_process = preview_process,
                             preview_btn = process_btn,
                             image_upload = image_upload,
+                            image_reuse = image_reuse,
                             image_preview = image_preview,
                             control_start = control_start,
                             control_end = control_end,
@@ -339,6 +345,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0-i/10)
                                 reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                 image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
+                                image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                 image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
                                 process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                         lite_ui_units.append(unit_ui)
@@ -354,6 +361,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             preview_process = preview_process,
                             preview_btn = process_btn,
                             image_upload = image_upload,
+                            image_reuse = image_reuse,
                             image_preview = image_preview,
                             extra_controls = extra_controls,
                             )
@@ -380,6 +388,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, visible=False)
                                 reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                 image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
+                                image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                 image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
                                 process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                         units.append(unit.Unit(
@@ -394,6 +403,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             preview_process = preview_process,
                             preview_btn = process_btn,
                             image_upload = image_upload,
+                            image_reuse = image_reuse,
                             image_preview = image_preview,
                             extra_controls = extra_controls,
                             )

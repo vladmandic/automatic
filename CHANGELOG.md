@@ -1,33 +1,34 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-08
+## Update for 2024-02-09
 
-- **FaceID** now works with multiple input images
-- **ONNX**:  
-  - allow specify onnx default provider and cpu fallback  
-    *settings -> diffusers*  
-  - allow manual install of specific onnx flavor  
-    *settings -> onnx*  
-- add support for [deep-cache](https://github.com/horseee/DeepCache) model acceleration  
-  it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
-    *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
-- **diffusers**
-  - add *Dynamic Attention Slicing*  
-    dynamically slices attention queries based on query size and slice rate in GB  
-    saves VRAM similar to Sub-Quad on Original backend and it is compatible with HyperTile  
-    slicing will not get triggered if the query size is smaller than the slice rate to gain performance  
+- **improvements**:
+  - **ONNX**:  
+    - allow specify onnx default provider and cpu fallback  
+      *settings -> diffusers*  
+    - allow manual install of specific onnx flavor  
+      *settings -> onnx*  
+  - **FaceID** now works with multiple input images
+  - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
+    it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
+      *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+  - *Dynamic Attention Slicing*  
+    dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
+    slicing gets only triggered if the query size is larger than the slice rate to gain performance  
     *settings -> diffusers settings -> dynamic attention slicing*  
-- **other**:
+  - **Control** units now have extra option to re-use current preview image as processor input  
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
   - add `--theme` cli param to force theme on startup  
 - **wiki**:
   - updated benchmark notes for IPEX and Olive  
 - **fixes**:  
-  - `installer` refresh package cache on any install  
-  - `ipex` handle dependencies, thanks @Disty0  
-  - `insightface` handle dependencies  
-  - `img2img` mask blur and padding  
+  - installer refresh package cache on any install  
+  - ipex handle dependencies, thanks @Disty0  
+  - insightface handle dependencies  
+  - img2img mask blur and padding  
+  - handle extensions that install conflicting versions of packages  
+    `onnxruntime`, `opencv2-python`  
 
 ## Update for 2024-02-07
 

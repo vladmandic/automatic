@@ -20,6 +20,7 @@ reuse = '♻️'
 info = 'ℹ' # noqa
 reset = '🔄'
 upload = '⬆️'
+reuse = '⬅️'
 search = '🔍'
 preview = '🖼️'
 image = '🖌️'
