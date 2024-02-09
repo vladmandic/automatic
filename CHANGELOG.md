@@ -14,6 +14,7 @@
   - **Control** units now have extra option to re-use current preview image as processor input  
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
+    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova
   - **ONNX**:  
     - allow specify onnx default provider and cpu fallback  
       *settings -> diffusers*  
