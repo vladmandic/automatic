@@ -114,6 +114,10 @@ class StableDiffusionProcessing:
         self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
         self.script_args_value: list = field(default=None, init=False)
         self.scripts_setup_complete: bool = field(default=False, init=False)
+        # ip adapter
+        self.ip_adapter_name = None
+        self.ip_adapter_scale = 1.0
+        self.ip_adapter_image = None
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness
@@ -474,9 +478,6 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.fidelity = 0.5
         self.mask_image = None
         self.override = None
-        self.ip_adapter_name = None
-        self.ip_adapter_scale = 1.0
-        self.ip_adapter_image = None
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass

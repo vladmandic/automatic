@@ -23,8 +23,8 @@ class Script(scripts.Script):
     def process(self, p: processing.StableDiffusionProcessing, enabled, adapter_name, scale, image): # pylint: disable=arguments-differ
         if shared.backend != shared.Backend.DIFFUSERS:
             return
+        p.ip_adapter_image = image
         if enabled:
             p.ip_adapter_name = adapter_name
             p.ip_adapter_scale = scale
-            p.ip_adapter_image = image
             # ipadapter.apply(shared.sd_model, p, adapter_name, scale, image) # called directly from processing.process_images_inner

@@ -27,6 +27,7 @@
   - ipex handle dependencies, thanks @Disty0  
   - insightface handle dependencies  
   - img2img mask blur and padding  
+  - xyz grid handle ip adapter name and scale  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 
