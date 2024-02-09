@@ -13,16 +13,27 @@ def refresh_vae_list():
     modules.sd_vae.refresh_vae_list()
 
 
-def list_crossattention():
-    return [
-        "Disabled",
-        "xFormers",
-        "Scaled-Dot-Product",
-        "Doggettx's",
-        "InvokeAI's",
-        "Sub-quadratic",
-        "Split attention"
-    ]
+def list_crossattention(diffusers=False):
+    if diffusers:
+        return [
+            "Disabled",
+            "xFormers",
+            "Scaled-Dot-Product",
+            "Torch BMM",
+            "Split attention",
+            "Dynamic Attention BMM",
+            "Dynamic Attention SDP"
+        ]
+    else:
+        return [
+            "Disabled",
+            "xFormers",
+            "Scaled-Dot-Product",
+            "Doggettx's",
+            "InvokeAI's",
+            "Sub-quadratic",
+            "Split attention"
+        ]
 
 def get_pipelines():
     import diffusers

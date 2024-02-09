@@ -313,16 +313,14 @@ def temp_disable_extensions():
 
 
 if devices.backend == "cpu":
-    cross_attention_optimization_default = "Doggettx's"
+    cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
 elif devices.backend == "mps":
-    cross_attention_optimization_default = "Doggettx's"
-elif devices.backend == "ipex":
-    cross_attention_optimization_default = "Scaled-Dot-Product"
+    cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
 elif devices.backend == "directml":
-    cross_attention_optimization_default = "Sub-quadratic"
+    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
 elif devices.backend == "rocm":
-    cross_attention_optimization_default = "Sub-quadratic"
-else: # cuda
+    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
+else: # cuda and ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
 
@@ -357,12 +355,13 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
 
     "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
-    "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention() }),
+    "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(diffusers=backend == Backend.DIFFUSERS) }),
     "cross_attention_options": OptionInfo([], "Attention advanced options", gr.CheckboxGroup, {"choices": ['xFormers enable flash Attention', 'SDP disable memory attention']}),
-    "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML),
-    "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8}),
-    "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8}),
-    "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Slicing rate for Dynamic Attention Slicing in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
+    "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": backend == Backend.ORIGINAL}),
+    "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
+    "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
+    "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": backend == Backend.ORIGINAL}),
 
     "other_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "opt_channelslast": OptionInfo(False, "Use channels last "),
@@ -442,9 +441,6 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(False, "VAE tiling"),
-    "diffusers_attention_slicing": OptionInfo(False, "Attention slicing"),
-    "diffusers_dynamic_attention_slicing": OptionInfo(False, "Dynamic Attention slicing"),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Slicing rate for Dynamic Attention Slicing in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1}),
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),

@@ -694,19 +694,23 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
-    if hasattr(sd_model, "enable_attention_slicing"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_attention_slicing:
-            shared.log.debug(f'Setting {op}: enable attention slicing')
-            sd_model.enable_attention_slicing()
-        else:
-            sd_model.disable_attention_slicing()
     if hasattr(sd_model, "vqvae"):
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
-    if shared.opts.cross_attention_optimization == "xFormers" and hasattr(sd_model, 'enable_xformers_memory_efficient_attention'):
+
+    if shared.opts.cross_attention_optimization == "Split attention" and hasattr(sd_model, "enable_attention_slicing"):
+        sd_model.enable_attention_slicing()
+    elif shared.opts.cross_attention_optimization == "xFormers" and hasattr(sd_model, 'enable_xformers_memory_efficient_attention'):
         sd_model.enable_xformers_memory_efficient_attention()
-    if shared.opts.diffusers_dynamic_attention_slicing:
-        from modules.sd_hijack_optimizations import DynamicAttnProcessorV1
-        set_diffusers_attention(sd_model, DynamicAttnProcessorV1())
+    elif shared.opts.cross_attention_optimization == "Torch BMM":
+        from diffusers.models.attention_processor import AttnProcessor
+        set_diffusers_attention(sd_model, AttnProcessor())
+    elif shared.opts.cross_attention_optimization == "Dynamic Attention BMM":
+        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorBMM
+        set_diffusers_attention(sd_model, DynamicAttnProcessorBMM())
+    elif shared.opts.cross_attention_optimization == "Dynamic Attention SDP":
+        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorSDP
+        set_diffusers_attention(sd_model, DynamicAttnProcessorSDP())
+
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
         shared.log.debug(f'Setting {op}: enable fused projections')
         sd_model.fuse_qkv_projections()
