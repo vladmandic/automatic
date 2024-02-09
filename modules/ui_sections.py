@@ -109,7 +109,7 @@ def create_advanced_inputs(tab):
                 diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Guidance rescale', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.backend == shared.Backend.DIFFUSERS)
                 diffusers_sag_scale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_image_sag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
             with gr.Row():
-                clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=1, elem_id=f"{tab}_clip_skip", interactive=True)
+                clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
         with gr.Group():
             gr.HTML('<br>')
             with gr.Row():
