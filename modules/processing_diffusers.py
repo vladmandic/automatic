@@ -175,7 +175,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
         clip_skip = kwargs.pop("clip_skip", None)
-        if clip_skip is not None:
+        if clip_skip is not None and 'XL' in model.__class__.__name__:
             clip_skip -= 1
         if shared.opts.prompt_attention != 'Fixed attention' and 'StableDiffusion' in model.__class__.__name__ and 'Onnx' not in model.__class__.__name__:
             try:

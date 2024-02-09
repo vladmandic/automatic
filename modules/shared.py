@@ -374,12 +374,12 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE", "Upscaler"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
     "cuda_compile_backend": OptionInfo("none" if not cmd_opts.use_openvino else "openvino_fx", "Model compile backend", gr.Radio, {"choices": ['none', 'inductor', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'ipex', 'openvino_fx', 'stable-fast', 'deep-cache', 'olive-ai']}),
     "cuda_compile_mode": OptionInfo("default", "Model compile mode", gr.Radio, {"choices": ['default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs']}),
-    "cuda_compile_fullgraph": OptionInfo(False, "Model compile fullgraph"),
+    "cuda_compile_fullgraph": OptionInfo(True, "Model compile fullgraph"),
     "cuda_compile_precompile": OptionInfo(False, "Model compile precompile"),
     "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
     "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
     "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
-    "deep_cache_interval": OptionInfo(3.0, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": backend == Backend.DIFFUSERS}),
 
@@ -420,7 +420,7 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
     "hypertile_unet_enabled": OptionInfo(False, "HyperTile UNet"),
-    "hypertile_unet_tile": OptionInfo(256, "HyperTile UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_unet_tile": OptionInfo(0, "HyperTile UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_vae_enabled": OptionInfo(False, "HyperTile VAE", gr.Checkbox),
     "hypertile_vae_tile": OptionInfo(128, "HyperTile VAE tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
 
