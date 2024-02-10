@@ -101,6 +101,11 @@ Also supported are modifiers such as:
 - **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
 - **AnimateDiff** for SD 1.5
 
+## Examples
+
+*IP Adapters*:
+![Screenshot-IPAdapter](html/screenshot-ipadapter.jpg)
+
 *Color grading*:  
 ![Screenshot-Color](html/screenshot-color.jpg)
 
