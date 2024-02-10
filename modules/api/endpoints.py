@@ -77,22 +77,28 @@ def post_interrogate(req: models.ReqInterrogate):
     image = helpers.decode_base64_to_image(req.image)
     image = image.convert('RGB')
     if req.model == "clip":
-        caption = shared.interrogator.interrogate(image)
-        return models.ResInterrogate(caption)
-    elif req.model == "deepdanbooru":
-        from mobules import deepbooru
+        try:
+            caption = shared.interrogator.interrogate(image)
+        except Exception as e:
+            caption = str(e)
+        return models.ResInterrogate(caption=caption)
+    elif req.model == "deepdanbooru" or req.model == 'deepbooru':
+        from modules import deepbooru
         caption = deepbooru.model.tag(image)
-        return models.ResInterrogate(caption)
+        return models.ResInterrogate(caption=caption)
     else:
         from modules.ui_interrogate import interrogate_image, analyze_image, get_models
         if req.model not in get_models():
             raise HTTPException(status_code=404, detail="Model not found")
-        caption = interrogate_image(image, model=req.model, mode=req.mode)
+        try:
+            caption = interrogate_image(image, model=req.model, mode=req.mode)
+        except Exception as e:
+            caption = str(e)
         if not req.analyze:
-            return models.ResInterrogate(caption)
+            return models.ResInterrogate(caption=caption)
         else:
             medium, artist, movement, trending, flavor = analyze_image(image, model=req.model)
-            return models.ResInterrogate(caption, medium, artist, movement, trending, flavor)
+            return models.ResInterrogate(caption=caption, medium=medium, artist=artist, movement=movement, trending=trending, flavor=flavor)
 
 def post_unload_checkpoint():
     from modules import sd_models

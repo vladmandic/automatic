@@ -79,7 +79,8 @@ class InterrogateModels:
 
     def load_blip_model(self):
         self.create_fake_fairscale()
-        import models.blip # pylint: disable=no-name-in-module
+        from repositories.blip import models
+        from repositories.blip.models import blip
         import modules.modelloader as modelloader
         model_path = os.path.join(paths.models_path, "BLIP")
         download_name='model_base_caption_capfilt_large.pth',
@@ -90,7 +91,7 @@ class InterrogateModels:
             ext_filter=[".pth"],
             download_name=download_name,
         )
-        blip_model = models.blip.blip_decoder(pretrained=files[0], image_size=blip_image_eval_size, vit='base', med_config=os.path.join(paths.paths["BLIP"], "configs", "med_config.json")) # pylint: disable=c-extension-no-member
+        blip_model = blip.blip_decoder(pretrained=files[0], image_size=blip_image_eval_size, vit='base', med_config=os.path.join(paths.paths["BLIP"], "configs", "med_config.json")) # pylint: disable=c-extension-no-member
         blip_model.eval()
 
         return blip_model

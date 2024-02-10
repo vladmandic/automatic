@@ -241,7 +241,6 @@ class FrozenCLIPEmbedderWithCustomWords(FrozenCLIPEmbedderWithCustomWordsBase):
 
     def encode_with_transformers(self, tokens):
         clip_skip = int(opts.data['clip_skip']) or 1
-        print('HERE', type(clip_skip), clip_skip)
         outputs = self.wrapped.transformer(input_ids=tokens, output_hidden_states=-clip_skip)
         if clip_skip > 1:
             z = outputs.hidden_states[-clip_skip]

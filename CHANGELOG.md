@@ -34,6 +34,7 @@
   - xyz grid handle ip adapter name and scale  
   - lazy loading of image may prevent metadata from being loaded on time  
   - allow startup without valid models folder  
+  - fix interrogate api endpoint  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 
