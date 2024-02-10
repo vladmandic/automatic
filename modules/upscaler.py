@@ -44,8 +44,11 @@ class Upscaler:
             shared.log.info(f'Upscaler create: folder="{self.user_path}"')
         if self.model_path is None and self.name:
             self.model_path = os.path.join(shared.models_path, self.name)
-        if self.model_path and create_dirs:
-            os.makedirs(self.model_path, exist_ok=True)
+        try:
+            if self.model_path and create_dirs:
+                os.makedirs(self.model_path, exist_ok=True)
+        except Exception:
+            pass
         try:
             import cv2  # pylint: disable=unused-import
             self.can_tile = True

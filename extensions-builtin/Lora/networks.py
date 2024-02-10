@@ -438,7 +438,6 @@ def list_available_networks():
     forbidden_network_aliases.clear()
     available_network_hash_lookup.clear()
     forbidden_network_aliases.update({"none": 1, "Addams": 1})
-    os.makedirs(shared.cmd_opts.lora_dir, exist_ok=True)
     directories = []
     if os.path.exists(shared.cmd_opts.lora_dir):
         directories.append(shared.cmd_opts.lora_dir)

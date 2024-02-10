@@ -17,8 +17,11 @@ codeformer = None
 
 
 def setup_model(dirname):
-    if not os.path.exists(model_path):
-        os.makedirs(model_path)
+    try:
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+    except Exception:
+        pass
     path = modules.paths.paths.get("CodeFormer", None)
     if path is None:
         return

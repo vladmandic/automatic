@@ -33,13 +33,16 @@ def initialize():
     masking.cache_dir   = os.path.join(shared.opts.control_dir, 'segment')
     unit.default_device = devices.device
     unit.default_dtype = devices.dtype
-    os.makedirs(shared.opts.control_dir, exist_ok=True)
-    os.makedirs(controlnet.cache_dir, exist_ok=True)
-    os.makedirs(xs.cache_dir, exist_ok=True)
-    os.makedirs(lite.cache_dir, exist_ok=True)
-    os.makedirs(t2iadapter.cache_dir, exist_ok=True)
-    os.makedirs(processors.cache_dir, exist_ok=True)
-    os.makedirs(masking.cache_dir, exist_ok=True)
+    try:
+        os.makedirs(shared.opts.control_dir, exist_ok=True)
+        os.makedirs(controlnet.cache_dir, exist_ok=True)
+        os.makedirs(xs.cache_dir, exist_ok=True)
+        os.makedirs(lite.cache_dir, exist_ok=True)
+        os.makedirs(t2iadapter.cache_dir, exist_ok=True)
+        os.makedirs(processors.cache_dir, exist_ok=True)
+        os.makedirs(masking.cache_dir, exist_ok=True)
+    except Exception:
+        pass
     scripts.scripts_current = scripts.scripts_control
     scripts.scripts_current.initialize_scripts(is_img2img=True)
 

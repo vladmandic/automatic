@@ -66,8 +66,11 @@ gfpgan_constructor = None
 
 
 def setup_model(dirname):
-    if not os.path.exists(model_path):
-        os.makedirs(model_path)
+    try:
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+    except Exception:
+        pass
     try:
         import gfpgan
         import facexlib

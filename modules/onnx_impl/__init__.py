@@ -199,9 +199,6 @@ def initialize_onnx():
     from modules.paths import models_path
     from modules.shared import opts
     from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
-    onnx_dir = os.path.join(models_path, "ONNX")
-    if not os.path.isdir(onnx_dir):
-        os.mkdir(onnx_dir)
     if devices.backend == "rocm":
         TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
     from .pipelines.onnx_stable_diffusion_pipeline import OnnxStableDiffusionPipeline

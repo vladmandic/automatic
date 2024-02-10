@@ -85,7 +85,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         n_iter = batch_count,
         batch_size = batch_size,
         inpaint_full_res = masking.opts.mask_only,
-        inpaint_full_res_padding = masking.opts.mask_padding,
+        # inpaint_full_res_padding = masking.opts.mask_padding,
         inpainting_mask_invert = 1 if masking.opts.invert else 0,
         inpainting_fill = 1,
         hdr_mode=hdr_mode, hdr_brightness=hdr_brightness, hdr_color=hdr_color, hdr_sharpen=hdr_sharpen, hdr_clamp=hdr_clamp,

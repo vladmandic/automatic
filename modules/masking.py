@@ -385,7 +385,7 @@ def run_mask(input_image: gr.Image, input_mask: gr.Image = None, return_type: st
 
     return_type = return_type or opts.preview_type
 
-    shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} type={return_type} time={t1-t0:.2f}')
+    shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur} erode={opts.mask_erode} dilate={opts.mask_dilate} type={return_type} time={t1-t0:.2f}')
     if return_type == 'None':
         return input_mask
     elif return_type == 'Binary':
