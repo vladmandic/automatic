@@ -7,19 +7,24 @@
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
       *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
-  - *Dynamic Attention Slicing*  
-    dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
-    slicing gets only triggered if the query size is larger than the slice rate to gain performance  
-    *settings -> diffusers settings -> dynamic attention slicing*  
   - **Control** units now have extra option to re-use current preview image as processor input  
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
     values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
+  - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
+    - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
+    - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
+      note: you may need to update your settings! if you were previously using split-attention, closest match is batch-matrix-matrix  
+  - **Dynamic Attention Slicing**  
+    dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
+    slicing gets only triggered if the query size is larger than the slice rate to gain performance  
+    *settings -> diffusers settings -> dynamic attention slicing*  
   - **ONNX**:  
     - allow specify onnx default provider and cpu fallback  
       *settings -> diffusers*  
     - allow manual install of specific onnx flavor  
       *settings -> onnx*  
+    - better handling of `fp16` models/vae, thanks @lshqqytiger  
   - **OpenVINO**  
     - update to `torch 2.2.0`  
   - add `--theme` cli param to force theme on startup  

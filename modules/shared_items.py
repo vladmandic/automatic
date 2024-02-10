@@ -17,9 +17,9 @@ def list_crossattention(diffusers=False):
     if diffusers:
         return [
             "Disabled",
-            "xFormers",
             "Scaled-Dot-Product",
-            "Torch BMM",
+            "xFormers",
+            "Batch matrix-matrix",
             "Split attention",
             "Dynamic Attention BMM",
             "Dynamic Attention SDP"
@@ -27,8 +27,8 @@ def list_crossattention(diffusers=False):
     else:
         return [
             "Disabled",
-            "xFormers",
             "Scaled-Dot-Product",
+            "xFormers",
             "Doggettx's",
             "InvokeAI's",
             "Sub-quadratic",
