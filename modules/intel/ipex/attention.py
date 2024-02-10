@@ -171,7 +171,7 @@ def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropo
                     attn_mask=attn_mask[start_idx:end_idx] if attn_mask is not None else attn_mask,
                     dropout_p=dropout_p, is_causal=is_causal
                 )
+        torch.xpu.synchronize(query.device)
     else:
         return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal)
-    torch.xpu.synchronize(query.device)
     return hidden_states
