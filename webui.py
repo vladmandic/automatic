@@ -246,6 +246,8 @@ def start_ui():
     allowed_paths = [os.path.dirname(__file__)]
     if cmd_opts.data_dir is not None and os.path.isdir(cmd_opts.data_dir):
         allowed_paths.append(cmd_opts.data_dir)
+    if cmd_opts.allowed_paths is not None:
+        allowed_paths += [p for p in cmd_opts.allowed_paths if os.path.isdir(p)]
     shared.log.debug(f'Root paths: {allowed_paths}')
     with contextlib.redirect_stdout(stdout):
         app, local_url, share_url = shared.demo.launch( # app is FastAPI(Starlette) instance

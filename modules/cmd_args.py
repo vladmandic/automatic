@@ -60,6 +60,7 @@ group.add_argument("--disable-console-progressbars", action='store_true', help=a
 group.add_argument("--disable-safe-unpickle", action='store_true', help=argparse.SUPPRESS, default=True)
 group.add_argument("--lowram", action='store_true', help=argparse.SUPPRESS)
 group.add_argument("--disable-extension-access", default=False, action='store_true', help=argparse.SUPPRESS)
+group.add_argument("--allowed-paths", nargs='+', default=[], type=str, required=False, help="add additional paths to paths allowed for web access")
 group.add_argument("--api", help=argparse.SUPPRESS, default=True)
 group.add_argument("--api-auth", type=str, help=argparse.SUPPRESS, default=None)
 

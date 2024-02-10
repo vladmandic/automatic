@@ -14,7 +14,7 @@
   - **Control** units now have extra option to re-use current preview image as processor input  
   - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
-    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova
+    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
   - **ONNX**:  
     - allow specify onnx default provider and cpu fallback  
       *settings -> diffusers*  
@@ -23,6 +23,7 @@
   - **OpenVINO**  
     - update to `torch 2.2.0`  
   - add `--theme` cli param to force theme on startup  
+  - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
 - **wiki**:
   - updated benchmark notes for IPEX and Olive  
 - **fixes**:  
@@ -32,6 +33,7 @@
   - img2img mask blur and padding  
   - xyz grid handle ip adapter name and scale  
   - lazy loading of image may prevent metadata from being loaded on time  
+  - allow startup without valid models folder  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 
