@@ -122,9 +122,9 @@ def torch_bmm_32_bit(input, mat2, *, out=None):
                     mat2[start_idx:end_idx],
                     out=out
                 )
+        torch.xpu.synchronize(input.device)
     else:
         return original_torch_bmm(input, mat2, out=out)
-    torch.xpu.synchronize(input.device)
     return hidden_states
 
 original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_attention
