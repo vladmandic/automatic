@@ -18,7 +18,9 @@
   - **Dynamic Attention Slicing**  
     dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
     slicing gets only triggered if the query size is larger than the slice rate to gain performance  
-    *settings -> diffusers settings -> dynamic attention slicing*  
+    *Dynamic Attention Slicing BMM* uses *Batch matrix-matrix*  
+    *Dynamic Attention Slicing SDP* uses *Scaled Dot Product*  
+    *settings -> compute settings -> attention -> dynamic attention slicing*  
   - **ONNX**:  
     - allow specify onnx default provider and cpu fallback  
       *settings -> diffusers*  
