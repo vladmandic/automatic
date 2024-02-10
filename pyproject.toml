@@ -51,6 +51,7 @@ ignore = [
 	"E731", # Do not assign a `lambda` expression, use a `def`
 	"I001", # Import block is un-sorted or un-formatted
 	"W605", # Invalid escape sequence, messes with some docstrings
+  "B006", # Do not use mutable data structures for argument defaults
   "B028", # No explicit stacklevel
   "B905", # Without explicit scrict
   "C408", # Rewrite as a literal

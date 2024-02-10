@@ -1,30 +1,75 @@
+from PIL import Image
 import gradio as gr
 from modules import scripts, processing, shared, ipadapter
 
 
+MAX_ADAPTERS = 4
+
+
 class Script(scripts.Script):
+    standalone = True
+
     def title(self):
-        return 'IP Adapter'
+        return 'IP Adapters'
 
     def show(self, is_img2img):
         return scripts.AlwaysVisible if shared.backend == shared.Backend.DIFFUSERS else False
 
-    def ui(self, _is_img2img):
-        with gr.Accordion('IP Adapter', open=False, elem_id='ipadapter'):
-            with gr.Row():
-                enabled = gr.Checkbox(label='Enabled', value=False)
-            with gr.Row():
-                adapter = gr.Dropdown(label='Adapter', choices=list(ipadapter.ADAPTERS), value='None')
-                scale = gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
-            with gr.Row():
-                image = gr.Image(image_mode='RGB', label='Image', source='upload', type='pil', width=512)
-        return [enabled, adapter, scale, image]
+    def load_images(self, files):
+        init_images = []
+        for file in files or []:
+            try:
+                if isinstance(file, str):
+                    from modules.api.api import decode_base64_to_image
+                    image = decode_base64_to_image(file)
+                elif isinstance(file, Image.Image):
+                    image = file
+                elif isinstance(file, dict) and 'name' in file:
+                    image = Image.open(file['name']) # _TemporaryFileWrapper from gr.Files
+                elif hasattr(file, 'name'):
+                    image = Image.open(file.name) # _TemporaryFileWrapper from gr.Files
+                else:
+                    raise ValueError(f'IP adapter unknown input: {file}')
+                init_images.append(image)
+            except Exception as e:
+                shared.log.warning(f'IP adapter failed to load image: {e}')
+        return init_images
 
-    def process(self, p: processing.StableDiffusionProcessing, enabled, adapter_name, scale, image): # pylint: disable=arguments-differ
+    def display_units(self, num_units):
+        return (num_units * [gr.update(visible=True)]) + ((MAX_ADAPTERS - num_units) * [gr.update(visible=False)])
+
+    def ui(self, _is_img2img):
+        with gr.Accordion('IP Adapters', open=False, elem_id='ipadapter'):
+            units = []
+            adapters = []
+            scales = []
+            files = []
+            galleries = []
+            with gr.Row():
+                num_adapters = gr.Slider(label="Active IP adapters", minimum=1, maximum=MAX_ADAPTERS, step=1, value=1, scale=1)
+            for i in range(MAX_ADAPTERS):
+                with gr.Accordion(f'Adapter {i+1}', visible=i==0) as unit:
+                    with gr.Row():
+                        adapters.append(gr.Dropdown(label='Adapter', choices=list(ipadapter.ADAPTERS), value='None'))
+                        scales.append(gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                    with gr.Row():
+                        files.append(gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100))
+                    with gr.Row():
+                        galleries.append(gr.Gallery(show_label=False, value=[]))
+                    files[i].change(fn=self.load_images, inputs=[files[i]], outputs=[galleries[i]])
+                units.append(unit)
+            num_adapters.change(fn=self.display_units, inputs=[num_adapters], outputs=units)
+        return [num_adapters] + adapters + scales + files
+
+    def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if shared.backend != shared.Backend.DIFFUSERS:
             return
-        p.ip_adapter_image = image
-        if enabled:
-            p.ip_adapter_name = adapter_name
-            p.ip_adapter_scale = scale
-            # ipadapter.apply(shared.sd_model, p, adapter_name, scale, image) # called directly from processing.process_images_inner
+        args = list(args)
+        units = args.pop(0)
+        if p.ip_adapter_names is None:
+            p.ip_adapter_names = args[:MAX_ADAPTERS][:units]
+        if p.ip_adapter_scales == 0.0:
+            p.ip_adapter_scales = args[MAX_ADAPTERS:MAX_ADAPTERS*2][:units]
+        if p.ip_adapter_images is None:
+            p.ip_adapter_images = args[MAX_ADAPTERS*2:MAX_ADAPTERS*3][:units]
+        # ipadapter.apply(shared.sd_model, p, adapter_name, scale, image) # called directly from processing.process_images_inner

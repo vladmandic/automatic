@@ -88,6 +88,8 @@ class Script(scripts.Script):
         return [mode, gallery, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache]
 
     def run(self, p: processing.StableDiffusionProcessing, mode, input_images, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
+        if shared.backend != shared.Backend.DIFFUSERS:
+            return
         if input_images is None or len(input_images) == 0:
             shared.log.error('Face: no init images')
             return None
@@ -101,11 +103,11 @@ class Script(scripts.Script):
                 from modules.api.api import decode_base64_to_image
                 input_images[i] = decode_base64_to_image(image).convert("RGB")
 
-        processed = None
         for i, image in enumerate(input_images):
             if not isinstance(image, Image.Image):
                 input_images[i] = Image.open(image['name'])
 
+        processed = None
         processing.process_init(p)
         if mode == 'FaceID': # faceid runs as ipadapter in its own pipeline
             from modules.face.insightface import get_app

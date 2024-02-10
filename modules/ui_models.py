@@ -671,7 +671,7 @@ def create_ui():
                     civit_update_download_btn = gr.Button(value="Download", variant='primary', visible=False)
 
                 class CivitModel:
-                    def __init__(self, name, fn, sha = None, meta = {}): # noqa: B006
+                    def __init__(self, name, fn, sha = None, meta = {}):
                         self.name = name
                         self.id = meta.get('id', 0)
                         self.fn = fn

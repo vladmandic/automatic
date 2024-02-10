@@ -1,8 +1,14 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-09
+## Update for 2024-02-10
 
 - **improvements**:
+  - **IP Adapter** major refactor  
+    - support for multiple input images per each ip adapter  
+    - support for multiple concurrent ip adapters  
+      *note*: you cannot mix&match ip adapters that use different CLiP models, for example `Base` and `Base ViT-G`  
+    - unified interface in txt2img, img2img and control  
+    - enhanced xyz grid support  
   - **FaceID** now works with multiple input images
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
@@ -29,6 +35,7 @@
     - better handling of `fp16` models/vae, thanks @lshqqytiger  
   - **OpenVINO**  
     - update to `torch 2.2.0`  
+  - **HyperTile** add swap size option, thanks @Disty0
   - add `--theme` cli param to force theme on startup  
   - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
 - **wiki**:

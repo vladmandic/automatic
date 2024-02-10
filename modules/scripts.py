@@ -37,6 +37,7 @@ class Script:
     infotext_fields = None
     paste_field_names = None
     section = None
+    standalone = False
 
     def title(self):
         """this function should return the title of the script. This is what will be displayed in the dropdown menu."""
@@ -449,8 +450,31 @@ class ScriptRunner:
             inputs_alwayson += [script.alwayson for _ in controls]
             script.args_to = len(inputs)
 
-        dropdown = gr.Dropdown(label="Script", elem_id=f'{parent}_script_list', choices=["None"] + self.titles, value="None", type="index")
-        inputs.insert(0, dropdown)
+        with gr.Row():
+            dropdown = gr.Dropdown(label="Script", elem_id=f'{parent}_script_list', choices=["None"] + self.titles, value="None", type="index")
+            inputs.insert(0, dropdown)
+
+        with gr.Row():
+            for script in self.alwayson_scripts:
+                if not script.standalone:
+                    continue
+                t0 = time.time()
+                with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['extension-script']) as group:
+                    create_script_ui(script, inputs, inputs_alwayson)
+                script.group = group
+                time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)
+
+        with gr.Row():
+            with gr.Accordion(label="Extensions", elem_id=f'{parent}_script_alwayson') if accordion else gr.Group():
+                for script in self.alwayson_scripts:
+                    if script.standalone:
+                        continue
+                    t0 = time.time()
+                    with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['extension-script']) as group:
+                        create_script_ui(script, inputs, inputs_alwayson)
+                    script.group = group
+                    time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)
+
         for script in self.selectable_scripts:
             with gr.Group(visible=False) as group:
                 t0 = time.time()
@@ -480,14 +504,6 @@ class ScriptRunner:
                 return gr.update(visible=visibility)
             else:
                 return gr.update(visible=False)
-
-        with gr.Accordion(label="Extensions", elem_id=f'{parent}_script_alwayson') if accordion else gr.Group():
-            for script in self.alwayson_scripts:
-                t0 = time.time()
-                with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['extension-script']) as group:
-                    create_script_ui(script, inputs, inputs_alwayson)
-                script.group = group
-                time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)
 
         self.infotext_fields.append( (dropdown, lambda x: gr.update(value=x.get('Script', 'None'))) )
         self.infotext_fields.extend( [(script.group, onload_script_visibility) for script in self.selectable_scripts] )

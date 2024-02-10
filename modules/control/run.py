@@ -40,7 +40,6 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                 resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
                 denoising_strength, batch_count, batch_size,
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
-                ip_adapter, ip_scale, ip_image,
                 *input_script_args # pylint: disable=unused-argument
         ):
     global pipe, original_pipeline # pylint: disable=global-statement
@@ -462,11 +461,6 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             instance.apply(selected_models, p.init_images, control_conditioning)
                     if hasattr(p, 'init_images') and p.init_images is None: # delete as its set via task_args
                         del p.init_images
-
-                    # ip adapter apply is run in processing.process_images
-                    p.ip_adapter_name = ip_adapter
-                    p.ip_adapter_scale = ip_scale
-                    p.ip_adapter_image = ip_image or input_image
 
                     # pipeline
                     output = None

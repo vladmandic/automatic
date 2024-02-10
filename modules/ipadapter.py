@@ -9,6 +9,7 @@ TODO ipadapter items:
 
 import os
 import time
+from PIL import Image
 from modules import processing, shared, devices
 
 
@@ -28,6 +29,46 @@ ADAPTERS = {
     'Plus Face ViT-H SXDL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
 }
 
+
+def get_images(input_images):
+    output_images = []
+    if input_images is None or len(input_images) == 0:
+        shared.log.error('IP adapter: no init images')
+        return None
+    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
+        shared.log.error('IP adapter: base model not supported')
+        return None
+    if isinstance(input_images, str):
+        from modules.api.api import decode_base64_to_image
+        input_images = decode_base64_to_image(input_images).convert("RGB")
+    input_images = input_images.copy()
+    if not isinstance(input_images, list):
+        input_images = [input_images]
+    for image in input_images:
+        if isinstance(image, list):
+            output_images.append(get_images(image)) # recursive
+        elif isinstance(image, Image.Image):
+            output_images.append(image)
+        elif isinstance(image, str):
+            from modules.api.api import decode_base64_to_image
+            decoded_image = decode_base64_to_image(image).convert("RGB")
+            output_images.append(decoded_image)
+        elif hasattr(image, 'name'): # gradio gallery entry
+            pil_image = Image.open(image.name)
+            pil_image.load()
+            output_images.append(pil_image)
+        else:
+            shared.log.error(f'IP adapter: unknown input: {image}')
+    return output_images
+
+
+def get_scales(adapter_scales, adapter_images):
+    output_scales = [adapter_scales] if not isinstance(adapter_scales, list) else adapter_scales
+    while len(output_scales) < len(adapter_images):
+        output_scales.append(output_scales[-1])
+    return output_scales
+
+
 def unapply(pipe): # pylint: disable=arguments-differ
     try:
         if hasattr(pipe, 'set_ip_adapter_scale'):
@@ -40,31 +81,39 @@ def unapply(pipe): # pylint: disable=arguments-differ
         pass
 
 
-def apply(pipe, p: processing.StableDiffusionProcessing, adapter_name='None', scale=1.0, image=None):
+def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_images=[]):
     global clip_loaded # pylint: disable=global-statement
     # overrides
-    if hasattr(p, 'ip_adapter_name'):
-        adapter = ADAPTERS.get(p.ip_adapter_name, None)
-        adapter_name = p.ip_adapter_name
+    if hasattr(p, 'ip_adapter_names'):
+        if isinstance(p.ip_adapter_names, str):
+            p.ip_adapter_names = [p.ip_adapter_names]
+        adapters = [ADAPTERS.get(adapter, None) for adapter in p.ip_adapter_names]
+        adapter_names = p.ip_adapter_names
     else:
-        adapter = ADAPTERS.get(adapter_name, None)
-    if hasattr(p, 'ip_adapter_scale'):
-        scale = p.ip_adapter_scale
-    if hasattr(p, 'ip_adapter_image'):
-        image = p.ip_adapter_image
-    if adapter is None:
+        if isinstance(adapter_names, str):
+            adapter_names = [adapter_names]
+        adapters = [ADAPTERS.get(adapter, None) for adapter in adapter_names]
+    adapters = [adapter for adapter in adapters if adapter is not None and adapter.lower() != 'none']
+    if len(adapters) == 0:
         unapply(pipe)
         return False
+    if hasattr(p, 'ip_adapter_scales'):
+        adapter_scales = p.ip_adapter_scales
+    if hasattr(p, 'ip_adapter_images'):
+        adapter_images = p.ip_adapter_images
+    adapter_images = get_images(adapter_images)
+    adapter_scales = get_scales(adapter_scales, adapter_images)
+
     # init code
     if pipe is None:
         return False
     if shared.backend != shared.Backend.DIFFUSERS:
         shared.log.warning('IP adapter: not in diffusers mode')
         return False
-    if image is None and adapter != 'none':
+    if len(adapter_images) == 0:
         shared.log.error('IP adapter: no image provided')
-        adapter = 'none' # unload adapter if previously loaded as it will cause runtime errors
-    if adapter == 'none':
+        adapters = [] # unload adapter if previously loaded as it will cause runtime errors
+    if len(adapters) == 0:
         unapply(pipe)
         return False
     if not hasattr(pipe, 'load_ip_adapter'):
@@ -74,49 +123,48 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_name='None', sc
         shared.log.error(f'IP adapter: unsupported model type: {shared.sd_model_type}')
         return False
 
-    # which clip to use
-    if 'ViT' not in adapter_name:
-        clip_repo = base_repo
-        clip_subfolder = 'models/image_encoder' if shared.sd_model_type == 'sd' else 'sdxl_models/image_encoder' # defaults per model
-    elif 'ViT-H' in adapter_name:
-        clip_repo = base_repo
-        clip_subfolder = 'models/image_encoder' # this is vit-h
-    elif 'ViT-G' in adapter_name:
-        clip_repo = base_repo
-        clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
-    else:
-        shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
-        return False
+    for adapter_name in adapter_names:
+        # which clip to use
+        if 'ViT' not in adapter_name:
+            clip_repo = base_repo
+            clip_subfolder = 'models/image_encoder' if shared.sd_model_type == 'sd' else 'sdxl_models/image_encoder' # defaults per model
+        elif 'ViT-H' in adapter_name:
+            clip_repo = base_repo
+            clip_subfolder = 'models/image_encoder' # this is vit-h
+        elif 'ViT-G' in adapter_name:
+            clip_repo = base_repo
+            clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
+        else:
+            shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
+            return False
 
-    # load feature extractor used by ip adapter
-    if pipe.feature_extractor is None:
-        from transformers import CLIPImageProcessor
-        shared.log.debug('IP adapter load: feature extractor')
-        pipe.feature_extractor = CLIPImageProcessor()
-    # load image encoder used by ip adapter
-    if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
-        try:
-            from transformers import CLIPVisionModelWithProjection
-            shared.log.debug(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}"')
-            pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir, use_safetensors=True)
-            clip_loaded = f'{clip_repo}/{clip_subfolder}'
-        except Exception as e:
-            shared.log.error(f'IP adapter: failed to load image encoder: {e}')
-            return
-    pipe.image_encoder.to(devices.device)
+        # load feature extractor used by ip adapter
+        if pipe.feature_extractor is None:
+            from transformers import CLIPImageProcessor
+            shared.log.debug('IP adapter load: feature extractor')
+            pipe.feature_extractor = CLIPImageProcessor()
+        # load image encoder used by ip adapter
+        if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
+            try:
+                from transformers import CLIPVisionModelWithProjection
+                shared.log.debug(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}"')
+                pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir, use_safetensors=True)
+                clip_loaded = f'{clip_repo}/{clip_subfolder}'
+            except Exception as e:
+                shared.log.error(f'IP adapter: failed to load image encoder: {e}')
+                return
+        pipe.image_encoder.to(devices.device)
 
     # main code
     t0 = time.time()
     ip_subfolder = 'models' if shared.sd_model_type == 'sd' else 'sdxl_models'
-    pipe.load_ip_adapter(base_repo, subfolder=ip_subfolder, weight_name=adapter)
-    pipe.set_ip_adapter_scale(scale)
-    t1 = time.time()
-    shared.log.info(f'IP adapter: adapter="{ip_subfolder}/{adapter}" scale={scale} image={image} time={t1-t0:.2f}')
-
-    if isinstance(image, str):
-        from modules.api.api import decode_base64_to_image
-        image = decode_base64_to_image(image).convert("RGB")
-
-    p.task_args['ip_adapter_image'] = [image]
-    p.extra_generation_params["IP Adapter"] = f'{os.path.splitext(adapter)[0]}:{scale}'
+    try:
+        pipe.load_ip_adapter([base_repo], subfolder=[ip_subfolder], weight_name=adapters)
+        pipe.set_ip_adapter_scale(adapter_scales)
+        p.task_args['ip_adapter_image'] = adapter_images
+        p.extra_generation_params["IP Adapter"] = ';'.join([f'{os.path.splitext(adapter)[0]}:{scale}' for adapter, scale in zip(adapter_names, adapter_scales)])
+        t1 = time.time()
+        shared.log.info(f'IP adapter: adapters={adapter_names} scale={adapter_scales} image={adapter_images} time={t1-t0:.2f}')
+    except Exception as e:
+        shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} {e}')
     return True
