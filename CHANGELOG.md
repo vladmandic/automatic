@@ -6,15 +6,18 @@
   - **IP Adapter** major refactor  
     - support for multiple input images per each ip adapter  
     - support for multiple concurrent ip adapters  
-      *note*: you cannot mix&match ip adapters that use different CLiP models, for example `Base` and `Base ViT-G`  
+      *note*: you cannot mix & match ip adapters that use different *CLiP* models, for example `Base` and `Base ViT-G`  
     - unified interface in txt2img, img2img and control  
     - enhanced xyz grid support  
-  - **FaceID** now works with multiple input images
+  - **FaceID** now works with multiple input images  
+  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
+    sometimes you want strong control over composition, but you want it to stop at some point  
+    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
       *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
   - **Control** units now have extra option to re-use current preview image as processor input  
-  - improved `clip-skip` value handling in diffusers, thanks @AI-Casanova & @Disty0  
+  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
     values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
   - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
