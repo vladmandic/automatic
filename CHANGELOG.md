@@ -24,12 +24,12 @@
     - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
     - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
       note: you may need to update your settings! if you were previously using split-attention, closest match is batch-matrix-matrix  
-  - **Dynamic Attention Slicing**  
-    dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
-    slicing gets only triggered if the query size is larger than the slice rate to gain performance  
-    *Dynamic Attention Slicing BMM* uses *Batch matrix-matrix*  
-    *Dynamic Attention Slicing SDP* uses *Scaled Dot Product*  
-    *settings -> compute settings -> attention -> dynamic attention slicing*  
+  - **Dynamic Attention Slicing**, thanks @Disty0  
+    - dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
+      slicing gets only triggered if the query size is larger than the slice rate to gain performance  
+      *Dynamic Attention Slicing BMM* uses *Batch matrix-matrix*  
+      *Dynamic Attention Slicing SDP* uses *Scaled Dot Product*  
+    - *settings -> compute settings -> attention -> dynamic attention slicing*  
   - **ONNX**:  
     - allow specify onnx default provider and cpu fallback  
       *settings -> diffusers*  
@@ -38,7 +38,9 @@
     - better handling of `fp16` models/vae, thanks @lshqqytiger  
   - **OpenVINO**  
     - update to `torch 2.2.0`  
-  - **HyperTile** add swap size option, thanks @Disty0
+  - **HyperTile**, thanks @Disty0  
+    - add swap size option  
+    - add use only for hires pass option  
   - add `--theme` cli param to force theme on startup  
   - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
 - **wiki**:

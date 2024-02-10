@@ -418,6 +418,7 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "freeu_s2": OptionInfo(0.2, "2nd stage skip factor", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
+    "hypertile_hires_only": OptionInfo(False, "HyperTile hires pass only"),
     "hypertile_unet_enabled": OptionInfo(False, "HyperTile UNet"),
     "hypertile_unet_tile": OptionInfo(0, "HyperTile UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_unet_swap_size": OptionInfo(1, "HyperTile UNet swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),

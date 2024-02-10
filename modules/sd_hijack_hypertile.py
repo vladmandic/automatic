@@ -20,7 +20,7 @@ max_h = 0
 max_w = 0
 error_reported = False
 reset_needed = False
-
+skip_hypertile = False
 
 def iterative_closest_divisors(hw:int, aspect_ratio:float) -> tuple[int, int]:
     """
@@ -96,7 +96,9 @@ def split_attention(layer: nn.Module, tile_size: int=256, min_tile_size: int=128
     def self_attn_forward(forward: Callable) -> Callable:
         @wraps(forward)
         def wrapper(*args, **kwargs):
-            global height, width, max_h, max_w, reset_needed, error_reported # pylint: disable=global-statement
+            global height, width, max_h, max_w, reset_needed, error_reported, skip_hypertile # pylint: disable=global-statement
+            if skip_hypertile:
+                return forward(*args, **kwargs)
             x = args[0]
             try:
                 nh = nhs[random.randint(0, len(nhs) - 1)]
@@ -224,7 +226,7 @@ def context_hypertile_unet(p):
 
 def hypertile_set(p, hr=False):
     from modules import shared
-    global height, width, error_reported, reset_needed # pylint: disable=global-statement
+    global height, width, error_reported, reset_needed, skip_hypertile # pylint: disable=global-statement
     if not shared.opts.hypertile_unet_enabled:
         return
     error_reported = False
@@ -236,4 +238,5 @@ def hypertile_set(p, hr=False):
     else:
         width=p.width
         height=p.height
+    skip_hypertile = shared.opts.hypertile_hires_only and not getattr(p, 'is_hr_pass', False)
     reset_needed = True
