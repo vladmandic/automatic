@@ -76,24 +76,25 @@ def get_variant():
         return opts.diffusers_model_load_variant
 
 
-def get_loader_arguments():
+def get_loader_arguments(no_variant: bool = False):
+    kwargs = {}
+
     if config.from_diffusers_cache:
         from modules.shared import opts
-        return {
-            "cache_dir": opts.diffusers_dir,
-            "variant": get_variant(),
-        }
+        kwargs["cache_dir"] = opts.diffusers_dir
+        if not no_variant:
+            kwargs["variant"] = get_variant()
 
-    return {}
+    return kwargs
 
 
 T = TypeVar("T")
-def from_pretrained(cls: Type[T], pretrained_model_name_or_path: os.PathLike, *args, **kwargs) -> T:
+def from_pretrained(cls: Type[T], pretrained_model_name_or_path: os.PathLike, *args, no_variant: bool = False, **kwargs) -> T:
     pretrained_model_name_or_path = str(pretrained_model_name_or_path)
     if pretrained_model_name_or_path.endswith(".onnx"):
         cls = diffusers.OnnxRuntimeModel
         pretrained_model_name_or_path = os.path.dirname(pretrained_model_name_or_path)
-    return cls.from_pretrained(pretrained_model_name_or_path, *args, **kwargs, **get_loader_arguments())
+    return cls.from_pretrained(pretrained_model_name_or_path, *args, **kwargs, **get_loader_arguments(no_variant))
 
 
 # -------------------------------------------------------------------------
@@ -247,7 +248,7 @@ def vae_encoder_load(model_name):
         subfolder = ""
 
     if config.vae is None:
-        model = from_pretrained(diffusers.AutoencoderKL, model_name, subfolder=subfolder)
+        model = from_pretrained(diffusers.AutoencoderKL, model_name, subfolder=subfolder, no_variant=config.vae_sdxl_fp16_fix)
     else:
         model = diffusers.AutoencoderKL.from_single_file(config.vae)
 
@@ -284,7 +285,7 @@ def vae_decoder_load(model_name):
         subfolder = ""
 
     if config.vae is None:
-        model = from_pretrained(diffusers.AutoencoderKL, model_name, subfolder=subfolder)
+        model = from_pretrained(diffusers.AutoencoderKL, model_name, subfolder=subfolder, no_variant=config.vae_sdxl_fp16_fix)
     else:
         model = diffusers.AutoencoderKL.from_single_file(config.vae)
 

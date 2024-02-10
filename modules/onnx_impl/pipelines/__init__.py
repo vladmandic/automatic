@@ -328,7 +328,7 @@ class OnnxRawPipeline(PipelineBase):
         config.vae = os.path.join(models_path, "VAE", shared.opts.sd_vae)
         if not os.path.isfile(config.vae):
             del config.vae
-        config.vae_sdxl_fp16_fix = self._is_sdxl and not shared.opts.diffusers_vae_upcast
+        config.vae_sdxl_fp16_fix = self._is_sdxl and shared.opts.diffusers_vae_upcast == "false"
 
         config.width = p.width
         config.height = p.height
