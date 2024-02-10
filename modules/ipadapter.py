@@ -87,7 +87,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_names'):
         if isinstance(p.ip_adapter_names, str):
             p.ip_adapter_names = [p.ip_adapter_names]
-        adapters = [ADAPTERS.get(adapter, None) for adapter in p.ip_adapter_names]
+        adapters = [ADAPTERS.get(adapter, None) for adapter in p.ip_adapter_names if adapter is not None and adapter.lower() != 'none']
         adapter_names = p.ip_adapter_names
     else:
         if isinstance(adapter_names, str):
