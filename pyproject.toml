@@ -4,7 +4,6 @@ exclude = [
   "/usr/lib",
 	"extensions",
   "extensions-builtin",
-  "modules/lora",
   "modules/dml",
   "modules/k-diffusion",
   "repositories/ldm",
