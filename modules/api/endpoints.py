@@ -80,7 +80,7 @@ def post_interrogate(req: models.ReqInterrogate):
         caption = shared.interrogator.interrogate(image)
         return models.ResInterrogate(caption)
     elif req.model == "deepdanbooru":
-        from mobules import deepbooru
+        from modules import deepbooru
         caption = deepbooru.model.tag(image)
         return models.ResInterrogate(caption)
     else:
