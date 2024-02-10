@@ -4,7 +4,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Candidates for next release
 
-- lock down controlnet
 - diffusers public callbacks  
 - multi-ipadapter: <https://github.com/huggingface/diffusers/pull/6573>
 - control second pass: <https://github.com/vladmandic/automatic/issues/2783>  
@@ -13,5 +12,4 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - control api  
 - masking api  
 - preprocess api  
-- remove kohya from submodules  
 - bind panZoom to control input
