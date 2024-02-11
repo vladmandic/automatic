@@ -128,9 +128,9 @@ def torch_bmm_32_bit(input, mat2, *, out=None):
     return hidden_states
 
 original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_attention
-def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False):
+def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
     if query.device.type != "xpu":
-        return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal)
+        return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
     do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_sdpa_slice_sizes(query.shape, query.element_size())
 
     # Slice SDPA
@@ -153,7 +153,7 @@ def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropo
                                 key[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 value[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 attn_mask=attn_mask[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3] if attn_mask is not None else attn_mask,
-                                dropout_p=dropout_p, is_causal=is_causal
+                                dropout_p=dropout_p, is_causal=is_causal, **kwargs
                             )
                     else:
                         hidden_states[start_idx:end_idx, start_idx_2:end_idx_2] = original_scaled_dot_product_attention(
@@ -161,7 +161,7 @@ def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropo
                             key[start_idx:end_idx, start_idx_2:end_idx_2],
                             value[start_idx:end_idx, start_idx_2:end_idx_2],
                             attn_mask=attn_mask[start_idx:end_idx, start_idx_2:end_idx_2] if attn_mask is not None else attn_mask,
-                            dropout_p=dropout_p, is_causal=is_causal
+                            dropout_p=dropout_p, is_causal=is_causal, **kwargs
                         )
             else:
                 hidden_states[start_idx:end_idx] = original_scaled_dot_product_attention(
@@ -169,9 +169,9 @@ def scaled_dot_product_attention_32_bit(query, key, value, attn_mask=None, dropo
                     key[start_idx:end_idx],
                     value[start_idx:end_idx],
                     attn_mask=attn_mask[start_idx:end_idx] if attn_mask is not None else attn_mask,
-                    dropout_p=dropout_p, is_causal=is_causal
+                    dropout_p=dropout_p, is_causal=is_causal, **kwargs
                 )
         torch.xpu.synchronize(query.device)
     else:
-        return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal)
+        return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
     return hidden_states
