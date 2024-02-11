@@ -91,8 +91,8 @@ def get_device():
         device = "CPU"
     elif shared.cmd_opts.device_id is not None:
         device = f"GPU.{shared.cmd_opts.device_id}"
-        if device not in available_devices:
-            device = "GPU.0" if "GPU.0" in available_devices else "GPU" if "GPU" in available_devices else "CPU"
+        if device not in core.available_devices:
+            device = "GPU.0" if "GPU.0" in core.available_devices else "GPU" if "GPU" in core.available_devices else "CPU"
     elif "GPU" in core.available_devices:
         device = "GPU"
     elif "GPU.1" in core.available_devices:
