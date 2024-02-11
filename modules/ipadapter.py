@@ -103,7 +103,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
     adapter_scales = get_scales(adapter_scales, adapter_images)
-
+    p.ip_adapter_scales = adapter_scales
     # init code
     if pipe is None:
         return False

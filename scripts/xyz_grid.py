@@ -275,6 +275,7 @@ axis_options = [
     AxisOption("[FreeU] 2nd stage skip factor", float, apply_setting('freeu_s2')),
     AxisOption("[IP adapter] Name", str, apply_field('ip_adapter_names'), cost=1.0, choices=lambda: list(ipadapter.ADAPTERS)),
     AxisOption("[IP adapter] Scale", float, apply_field('ip_adapter_scales')),
+    AxisOption("[IP adapter] End", float, apply_setting('ip_adapter_end')),
 ]
 
 
