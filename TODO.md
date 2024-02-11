@@ -12,3 +12,4 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - masking api  
 - preprocess api  
 - bind panZoom to control input
+- onediff: <https://github.com/siliconflow/onediff>
