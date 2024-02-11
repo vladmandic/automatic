@@ -318,9 +318,7 @@ elif devices.backend == "mps":
     cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
 elif devices.backend == "directml":
     cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
-elif devices.backend == "rocm":
-    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
-else: # cuda and ipex
+else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
 

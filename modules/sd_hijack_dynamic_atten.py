@@ -99,8 +99,10 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
 
 class DynamicAttnProcessorSDP:
     r"""
-    dynamically slices attention queries based on query size and slice rate in GB
+    dynamically slices attention queries in order to keep them under the slice rate
     slicing will not get triggered if the query size is smaller than the slice rate to gain performance
+
+    slice rate is in GB
     based on AttnProcessor V2
     """
 
@@ -181,8 +183,10 @@ class DynamicAttnProcessorSDP:
 
 class DynamicAttnProcessorBMM:
     r"""
-    dynamically slices attention queries based on query size and slice rate in GB
+    dynamically slices attention queries in order to keep them under the slice rate
     slicing will not get triggered if the query size is smaller than the slice rate to gain performance
+
+    slice rate is in GB
     based on AttnProcessor V1
     """
 
