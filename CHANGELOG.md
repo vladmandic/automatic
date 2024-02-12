@@ -23,9 +23,10 @@
   - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
     - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
     - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
-      note: you may need to update your settings! if you were previously using split-attention, closest match is batch-matrix-matrix  
+      note: you may need to update your settings! Attention Slicing is renamed to Split attention  
+    - for ROCm, updated default cross-attention to Scaled Dot Product  
   - **Dynamic Attention Slicing**, thanks @Disty0  
-    - dynamically slices attention queries in order to save vram based on query size and slice rate in GB  
+    - dynamically slices attention queries in order to keep them under the slice rate  
       slicing gets only triggered if the query size is larger than the slice rate to gain performance  
       *Dynamic Attention Slicing BMM* uses *Batch matrix-matrix*  
       *Dynamic Attention Slicing SDP* uses *Scaled Dot Product*  

@@ -901,8 +901,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     else:
                         modules.sd_hijack_accelerate.restore_accelerate()
                     sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
-                    if shared.opts.diffusers_to_gpu:
-                        shared.log.debug(f'Model load: move={modules.sd_hijack_accelerate.tensor_to_timer:.2f}')
                     if sd_model is not None and hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config') and 'inpainting' in checkpoint_info.path.lower():
                         shared.log.debug('Model patch: type=inpaint')
                         sd_model.unet.config.in_channels = 9

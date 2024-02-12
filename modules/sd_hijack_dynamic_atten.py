@@ -49,7 +49,7 @@ def find_slice_sizes(query_shape, query_element_size, slice_rate=4):
     return do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size
 
 
-def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False):
+def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
     do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate)
 
     # Slice SDPA
@@ -72,7 +72,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                                 key[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 value[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 attn_mask=attn_mask[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3] if attn_mask is not None else attn_mask,
-                                dropout_p=dropout_p, is_causal=is_causal
+                                dropout_p=dropout_p, is_causal=is_causal, **kwargs
                             )
                     else:
                         hidden_states[start_idx:end_idx, start_idx_2:end_idx_2] = F.scaled_dot_product_attention(
@@ -80,7 +80,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                             key[start_idx:end_idx, start_idx_2:end_idx_2],
                             value[start_idx:end_idx, start_idx_2:end_idx_2],
                             attn_mask=attn_mask[start_idx:end_idx, start_idx_2:end_idx_2] if attn_mask is not None else attn_mask,
-                            dropout_p=dropout_p, is_causal=is_causal
+                            dropout_p=dropout_p, is_causal=is_causal, **kwargs
                         )
             else:
                 hidden_states[start_idx:end_idx] = F.scaled_dot_product_attention(
@@ -88,19 +88,21 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                     key[start_idx:end_idx],
                     value[start_idx:end_idx],
                     attn_mask=attn_mask[start_idx:end_idx] if attn_mask is not None else attn_mask,
-                    dropout_p=dropout_p, is_causal=is_causal
+                    dropout_p=dropout_p, is_causal=is_causal, **kwargs
                 )
         if devices.backend != "directml":
             getattr(torch, query.device.type).synchronize()
     else:
-        return F.scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal)
+        return F.scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
     return hidden_states
 
 
 class DynamicAttnProcessorSDP:
     r"""
-    dynamically slices attention queries based on query size and slice rate in GB
+    dynamically slices attention queries in order to keep them under the slice rate
     slicing will not get triggered if the query size is smaller than the slice rate to gain performance
+
+    slice rate is in GB
     based on AttnProcessor V2
     """
 
@@ -181,8 +183,10 @@ class DynamicAttnProcessorSDP:
 
 class DynamicAttnProcessorBMM:
     r"""
-    dynamically slices attention queries based on query size and slice rate in GB
+    dynamically slices attention queries in order to keep them under the slice rate
     slicing will not get triggered if the query size is smaller than the slice rate to gain performance
+
+    slice rate is in GB
     based on AttnProcessor V1
     """
 

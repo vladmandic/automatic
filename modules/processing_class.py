@@ -115,11 +115,11 @@ class StableDiffusionProcessing:
         self.script_args_value: list = field(default=None, init=False)
         self.scripts_setup_complete: bool = field(default=False, init=False)
         # ip adapter
-        self.ip_adapter_names = None
-        self.ip_adapter_scales = 0.0
-        self.ip_adapter_images = None
-        self.ip_adapter_starts = None
-        self.ip_adapter_ends = None
+        self.ip_adapter_names = []
+        self.ip_adapter_scales = [0.0]
+        self.ip_adapter_images = []
+        self.ip_adapter_starts = [0.0]
+        self.ip_adapter_ends = [1.0]
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness
