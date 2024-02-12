@@ -2,7 +2,6 @@ import os
 import tempfile
 from collections import namedtuple
 from pathlib import Path
-import gradio as gr
 from PIL import Image, PngImagePlugin
 from modules import shared, errors, paths
 
@@ -79,7 +78,6 @@ def pil_to_temp_file(self, img: Image, dir: str, format="png") -> str: # pylint:
 
 
 # override save to file function so that it also writes PNG info
-gr.components.IOComponent.pil_to_temp_file = pil_to_temp_file # gradio >=3.32.0
 
 def on_tmpdir_changed():
     if shared.opts.temp_dir == "":

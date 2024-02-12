@@ -6,7 +6,7 @@ import json
 from PIL import Image
 import gradio as gr
 from modules.paths import data_path
-from modules import shared, ui_tempdir, script_callbacks, images
+from modules import shared, gr_tempdir, script_callbacks, images
 
 
 re_param_code = r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)'
@@ -58,7 +58,7 @@ def image_from_url_text(filedata):
         filedata = filedata[0]
     if type(filedata) == dict and filedata.get("is_file", False):
         filename = filedata["name"]
-        is_in_right_dir = ui_tempdir.check_tmp_file(shared.demo, filename)
+        is_in_right_dir = gr_tempdir.check_tmp_file(shared.demo, filename)
         if is_in_right_dir:
             filename = filename.rsplit('?', 1)[0]
             if not os.path.exists(filename):
