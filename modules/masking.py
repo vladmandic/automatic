@@ -12,6 +12,10 @@ from modules import shared, errors, devices, ui_components, ui_symbols, paths
 from modules.memstats import memory_stats
 
 
+debug = shared.log.trace if os.environ.get('SD_MASK_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug('Trace: MASK')
+
+
 def get_crop_region(mask, pad=0):
     """finds a rectangular region that contains all masked ares in an image. Returns (x1, y1, x2, y2) coordinates of the rectangle.
     For example, if a user has painted the top-right part of a 512x512 image", the result may be (256, 0, 512, 256)"""
@@ -36,12 +40,14 @@ def get_crop_region(mask, pad=0):
         if not (mask[i] == 0).all():
             break
         crop_bottom += 1
-    return (
+    crop_region = (
         int(max(crop_left-pad, 0)),
         int(max(crop_top-pad, 0)),
         int(min(w - crop_right + pad, w)),
         int(min(h - crop_bottom + pad, h))
     )
+    debug(f'Mask crop region: {crop_region}')
+    return crop_region
 
 
 def expand_crop_region(crop_region, processing_width, processing_height, image_width, image_height):
@@ -79,7 +85,7 @@ def expand_crop_region(crop_region, processing_width, processing_height, image_w
             x1 -= x1
         if x2 >= image_width:
             x2 = image_width
-
+    debug(f'Mask expand region: {x1, y1, x2, y2}')
     return x1, y1, x2, y2
 
 
@@ -123,8 +129,6 @@ MODELS = {
 COLORMAP = ['autumn', 'bone', 'jet', 'winter', 'rainbow', 'ocean', 'summer', 'spring', 'cool', 'hsv', 'pink', 'hot', 'parula', 'magma', 'inferno', 'plasma', 'viridis', 'cividis', 'twilight', 'shifted', 'turbo', 'deepgreen']
 cache_dir = 'models/control/segment'
 generator: MaskGenerationPipeline = None
-debug = shared.log.trace if os.environ.get('SD_MASK_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: MASK')
 busy = False
 btn_mask = None
 btn_lama = None
