@@ -126,7 +126,7 @@ class Processor():
     def __init__(self, processor_id: str = None, resize = True):
         self.model = None
         self.processor_id = None
-        # self.override = None
+        self.override = None
         self.resize = resize
         self.reset()
         self.config(processor_id)
@@ -138,7 +138,7 @@ class Processor():
             debug(f'Control Processor unloaded: id="{self.processor_id}"')
         self.model = None
         self.processor_id = processor_id
-        self.override = None
+        # self.override = None
         devices.torch_gc()
         self.load_config = { 'cache_dir': cache_dir }
 
@@ -215,8 +215,8 @@ class Processor():
             if resize_mode != 0 and resize_name != 'None':
                 if scale_tab == 1:
                     width_before, height_before = int(image_input.width * scale_by), int(image_input.height * scale_by)
-                debug(f'Control resize: op=before image={image_input} width={width_before} height={height_before} mode={resize_mode} name={resize_name}')
-                image_input = images.resize_image(resize_mode, image_input, width_before, height_before, resize_name)
+                    debug(f'Control resize: op=before image={image_input} width={width_before} height={height_before} mode={resize_mode} name={resize_name}')
+                    image_input = images.resize_image(resize_mode, image_input, width_before, height_before, resize_name)
         image_process = image_input
         if image_input is None:
             # log.error('Control Processor: no input')
