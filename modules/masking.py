@@ -40,13 +40,21 @@ def get_crop_region(mask, pad=0):
         if not (mask[i] == 0).all():
             break
         crop_bottom += 1
+    x1 = max(crop_left - pad, 0)
+    y1 = max(crop_top - pad, 0)
+    x2 = max(w - crop_right + pad, 0)
+    y2 = max(h - crop_bottom + pad, 0)
+    if x2 < x1:
+        x1, x2 = x2, x1
+    if y2 < y1:
+        y1, y2 = y2, y1
     crop_region = (
-        int(max(crop_left-pad, 0)),
-        int(max(crop_top-pad, 0)),
-        int(min(w - crop_right + pad, w)),
-        int(min(h - crop_bottom + pad, h))
+        int(min(x1, w)),
+        int(min(y1, h)),
+        int(min(x2, w)),
+        int(min(y2, h)),
     )
-    debug(f'Mask crop region: {crop_region}')
+    debug(f'Mask crop: mask={mask.shape} region={crop_region} pad={pad}')
     return crop_region
 
 
@@ -85,8 +93,14 @@ def expand_crop_region(crop_region, processing_width, processing_height, image_w
             x1 -= x1
         if x2 >= image_width:
             x2 = image_width
-    debug(f'Mask expand region: {x1, y1, x2, y2}')
-    return x1, y1, x2, y2
+    crop_expand = (
+        int(x1),
+        int(y1),
+        int(x2),
+        int(y2),
+    )
+    debug(f'Mask expand: region={crop_expand} processing={processing_width}x{processing_height} image={image_width}x{image_height}')
+    return crop_expand
 
 
 def fill(image, mask):
