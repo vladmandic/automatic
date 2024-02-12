@@ -6,16 +6,10 @@ import platform
 import subprocess
 from functools import reduce
 import gradio as gr
-from modules import call_queue, shared, prompt_parser
-from modules import generation_parameters_copypaste
-from modules import ui_sections
-from modules.ui_components import ToolButton
-import modules.ui_symbols as symbols
-import modules.images
-import modules.script_callbacks
+from modules import call_queue, shared, prompt_parser, ui_sections, ui_symbols, ui_components, generation_parameters_copypaste, images, scripts, script_callbacks
 
 
-folder_symbol = symbols.folder
+folder_symbol = ui_symbols.folder
 debug = shared.log.trace if os.environ.get('SD_PASTE_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PASTE')
 
@@ -58,19 +52,19 @@ def infotext_to_html(text):
     return code
 
 
-def delete_files(js_data, images, _html_info, index):
+def delete_files(js_data, files, _html_info, index):
     try:
         data = json.loads(js_data)
     except Exception:
         data = { 'index_of_first_image': 0 }
     start_index = 0
     if index > -1 and shared.opts.save_selected_only and (index >= data['index_of_first_image']):
-        images = [images[index]]
+        files = [files[index]]
         start_index = index
         filenames = []
     filenames = []
     fullfns = []
-    for _image_index, filedata in enumerate(images, start_index):
+    for _image_index, filedata in enumerate(files, start_index):
         if 'name' in filedata and os.path.isfile(filedata['name']):
             fullfn = filedata['name']
             filenames.append(os.path.basename(fullfn))
@@ -84,11 +78,11 @@ def delete_files(js_data, images, _html_info, index):
                 shared.log.info(f"Deleting image: {fullfn}")
             except Exception as e:
                 shared.log.error(f'Error deleting file: {fullfn} {e}')
-    images = [image for image in images if image['name'] not in fullfns]
-    return images, plaintext_to_html(f"Deleted: {filenames[0] if len(filenames) > 0 else 'none'}")
+    files = [image for image in files if image['name'] not in fullfns]
+    return files, plaintext_to_html(f"Deleted: {filenames[0] if len(filenames) > 0 else 'none'}")
 
 
-def save_files(js_data, images, html_info, index):
+def save_files(js_data, files, html_info, index):
     os.makedirs(shared.opts.outdir_save, exist_ok=True)
 
     class PObject: # pylint: disable=too-few-public-methods
@@ -117,11 +111,11 @@ def save_files(js_data, images, html_info, index):
     p = PObject(data)
     start_index = 0
     if index > -1 and shared.opts.save_selected_only and (index >= p.index_of_first_image):  # ensures we are looking at a specific non-grid picture, and we have save_selected_only # pylint: disable=no-member
-        images = [images[index]]
+        files = [files[index]]
         start_index = index
     filenames = []
     fullfns = []
-    for image_index, filedata in enumerate(images, start_index):
+    for image_index, filedata in enumerate(files, start_index):
         is_grid = image_index < p.index_of_first_image # pylint: disable=no-member
         i = 0 if is_grid else (image_index - p.index_of_first_image) # pylint: disable=no-member
         while len(p.all_seeds) <= i:
@@ -135,7 +129,7 @@ def save_files(js_data, images, html_info, index):
             filenames.append(os.path.basename(fullfn))
             fullfns.append(fullfn)
             destination = shared.opts.outdir_save
-            namegen = modules.images.FilenameGenerator(p, seed=p.all_seeds[i], prompt=p.all_prompts[i], image=None)  # pylint: disable=no-member
+            namegen = images.FilenameGenerator(p, seed=p.all_seeds[i], prompt=p.all_prompts[i], image=None)  # pylint: disable=no-member
             dirname = namegen.apply(shared.opts.directories_filename_pattern or "[prompt_words]").lstrip(' ').rstrip('\\ /')
             destination = os.path.join(destination, dirname)
             destination = namegen.sanitize(destination)
@@ -154,11 +148,11 @@ def save_files(js_data, images, html_info, index):
                     shared.log.debug(f'Saving: text="{filename_txt}"')
                 except Exception as e:
                     shared.log.warning(f'Image description save failed: {filename_txt} {e}')
-            modules.script_callbacks.image_save_btn_callback(tgt_filename)
+            script_callbacks.image_save_btn_callback(tgt_filename)
         else:
             image = generation_parameters_copypaste.image_from_url_text(filedata)
             info = p.infotexts[i + 1] if len(p.infotexts) > len(p.all_seeds) else p.infotexts[i] # infotexts may be offset by 1 because the first image is the grid
-            fullfn, txt_fullfn = modules.images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
+            fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:
                 continue
             filename = os.path.relpath(fullfn, shared.opts.outdir_save)
@@ -167,7 +161,7 @@ def save_files(js_data, images, html_info, index):
             if txt_fullfn:
                 filenames.append(os.path.basename(txt_fullfn))
                 # fullfns.append(txt_fullfn)
-            modules.script_callbacks.image_save_btn_callback(filename)
+            script_callbacks.image_save_btn_callback(filename)
     if shared.opts.samples_save_zip and len(fullfns) > 1:
         zip_filepath = os.path.join(shared.opts.outdir_save, "images.zip")
         from zipfile import ZipFile
@@ -277,11 +271,11 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 )
 
             if tabname == "txt2img":
-                paste_field_names = modules.scripts.scripts_txt2img.paste_field_names
+                paste_field_names = scripts.scripts_txt2img.paste_field_names
             elif tabname == "img2img":
-                paste_field_names = modules.scripts.scripts_img2img.paste_field_names
+                paste_field_names = scripts.scripts_img2img.paste_field_names
             elif tabname == "control":
-                paste_field_names = modules.scripts.scripts_control.paste_field_names
+                paste_field_names = scripts.scripts_control.paste_field_names
             else:
                 paste_field_names = []
             for paste_tabname, paste_button in buttons.items():
@@ -299,7 +293,7 @@ def create_refresh_button(refresh_component, refresh_method, refreshed_args, ele
             setattr(refresh_component, k, v)
         return gr.update(**(args or {}))
 
-    refresh_button = ToolButton(value=symbols.refresh, elem_id=elem_id, visible=visible)
+    refresh_button = ui_components.ToolButton(value=ui_symbols.refresh, elem_id=elem_id, visible=visible)
     refresh_button.click(fn=refresh, inputs=[], outputs=[refresh_component])
     return refresh_button
 
@@ -311,7 +305,7 @@ def create_browse_button(browse_component, elem_id):
             return gr.update(value = folder)
         return gr.update()
 
-    browse_button = ToolButton(value=symbols.folder, elem_id=elem_id)
+    browse_button = ui_components.ToolButton(value=ui_symbols.folder, elem_id=elem_id)
     browse_button.click(fn=browse, _js="async () => await browseFolder()", inputs=[browse_component], outputs=[browse_component])
     # browse_button.click(fn=browse, inputs=[browse_component], outputs=[browse_component])
     return browse_button
@@ -352,33 +346,30 @@ def connect_reuse_seed(seed: gr.Number, reuse_seed: gr.Button, generation_info: 
 
 
 def update_token_counter(text, steps):
-    from modules import extra_networks, sd_hijack
+    token_count = 0
+    max_length = 75
+    if shared.state.job_count > 0:
+        shared.log.info('Tokenizer busy')
+        return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+    from modules import extra_networks
     try:
         text, _ = extra_networks.parse_prompt(text)
         _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
         prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
     except Exception:
         prompt_schedules = [[[steps, text]]]
-
     flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
     prompts = [prompt_text for step, prompt_text in flat_prompts]
     if shared.backend == shared.Backend.ORIGINAL:
+        from modules import sd_hijack
         token_count, max_length = max([sd_hijack.model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
     elif shared.backend == shared.Backend.DIFFUSERS:
-        if shared.sd_model is not None and hasattr(shared.sd_model, 'tokenizer'):
-            tokenizer = shared.sd_model.tokenizer
-            if tokenizer is None:
-                token_count = 0
-                max_length = 75
-            else:
-                has_bos_token = tokenizer.bos_token_id is not None
-                has_eos_token = tokenizer.eos_token_id is not None
-                ids = [shared.sd_model.tokenizer(prompt) for prompt in prompts]
-                if len(ids) > 0 and hasattr(ids[0], 'input_ids'):
-                    ids = [x.input_ids for x in ids]
-                token_count = max([len(x) for x in ids]) - int(has_bos_token) - int(has_eos_token)
-                max_length = tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
-        else:
-            token_count = 0
-            max_length = 75
+        if shared.sd_model is not None and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
+            has_bos_token = shared.sd_model.tokenizer.bos_token_id is not None
+            has_eos_token = shared.sd_model.tokenizer.eos_token_id is not None
+            ids = [shared.sd_model.tokenizer(prompt) for prompt in prompts]
+            if len(ids) > 0 and hasattr(ids[0], 'input_ids'):
+                ids = [x.input_ids for x in ids]
+            token_count = max([len(x) for x in ids]) - int(has_bos_token) - int(has_eos_token)
+            max_length = shared.sd_model.tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
     return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
