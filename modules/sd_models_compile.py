@@ -68,29 +68,39 @@ def ipex_optimize(sd_model):
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
+        if sd_model.device.type == "meta":
+            shared.log.warning("Compress Weights is not compatible with Sequential CPU offload")
+            return sd_model
+
+        def nncf_compress_model(model):
+            return_device = model.device
+            model = nncf.compress_weights(model.to(devices.device)).to(return_device)
+            devices.torch_gc(force=True)
+            return model
+
         import nncf
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
 
         if "Model" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-                sd_model.unet = nncf.compress_weights(sd_model.unet)
+                sd_model.unet = nncf_compress_model(sd_model.unet)
             elif hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-                sd_model.transformer = nncf.compress_weights(sd_model.transformer)
+                sd_model.transformer = nncf_compress_model(sd_model.transformer)
             else:
                 shared.log.warning('Compress Weights enabled but model has no Unet or Transformer')
         if "VAE" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-                sd_model.vae = nncf.compress_weights(sd_model.vae)
+                sd_model.vae = nncf_compress_model(sd_model.vae)
             elif hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-                sd_model.movq = nncf.compress_weights(sd_model.movq)
+                sd_model.movq = nncf_compress_model(sd_model.movq)
             else:
                 shared.log.warning('Compress VAE Weights enabled but model has no VAE')
         if "Text Encoder" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-                sd_model.text_encoder = nncf.compress_weights(sd_model.text_encoder)
+                sd_model.text_encoder = nncf_compress_model(sd_model.text_encoder)
                 if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                    sd_model.text_encoder_2 = nncf.compress_weights(sd_model.text_encoder_2)
+                    sd_model.text_encoder_2 = nncf_compress_model(sd_model.text_encoder_2)
             else:
                 shared.log.warning('Compress VAE Text Encoder Weights enabled but model has no Text Encoder')
         t1 = time.time()
