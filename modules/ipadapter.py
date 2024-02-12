@@ -81,7 +81,7 @@ def unapply(pipe): # pylint: disable=arguments-differ
         pass
 
 
-def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_images=[]):
+def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
     global clip_loaded # pylint: disable=global-statement
     # overrides
     if hasattr(p, 'ip_adapter_names'):
@@ -99,11 +99,19 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         return False
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
+    if hasattr(p, 'ip_adapter_starts'):
+        adapter_starts = p.ip_adapter_starts
+    if hasattr(p, 'ip_adapter_ends'):
+        adapter_ends = p.ip_adapter_ends
     if hasattr(p, 'ip_adapter_images'):
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
     adapter_scales = get_scales(adapter_scales, adapter_images)
-    p.ip_adapter_scales = adapter_scales
+    p.ip_adapter_scales = adapter_scales.copy()
+    adapter_starts = get_scales(adapter_starts, adapter_images)
+    p.ip_adapter_starts = adapter_starts.copy()
+    adapter_ends = get_scales(adapter_ends, adapter_images)
+    p.ip_adapter_ends = adapter_ends.copy()
     # init code
     if pipe is None:
         return False
@@ -160,6 +168,9 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     ip_subfolder = 'models' if shared.sd_model_type == 'sd' else 'sdxl_models'
     try:
         pipe.load_ip_adapter([base_repo], subfolder=[ip_subfolder], weight_name=adapters)
+        for i in range(len(adapter_scales)):
+            if adapter_starts[i] > 0:
+                adapter_scales[i] = 0.00
         pipe.set_ip_adapter_scale(adapter_scales)
         p.task_args['ip_adapter_image'] = adapter_images
         p.extra_generation_params["IP Adapter"] = ';'.join([f'{os.path.splitext(adapter)[0]}:{scale}' for adapter, scale in zip(adapter_names, adapter_scales)])

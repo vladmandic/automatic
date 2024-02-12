@@ -118,6 +118,8 @@ class StableDiffusionProcessing:
         self.ip_adapter_names = None
         self.ip_adapter_scales = 0.0
         self.ip_adapter_images = None
+        self.ip_adapter_starts = None
+        self.ip_adapter_ends = None
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness
