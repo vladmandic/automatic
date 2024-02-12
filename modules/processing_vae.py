@@ -44,8 +44,8 @@ def full_vae_decode(latents, model):
     upcast = (model.vae.dtype == torch.float16) and getattr(model.vae.config, 'force_upcast', False) and hasattr(model, 'upcast_vae')
     if upcast: # this is done by diffusers automatically if output_type != 'latent'
         model.upcast_vae()
-
-    latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
+    if hasattr(model.vae, "post_quant_conv"):
+        latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
     decoded = model.vae.decode(latents / model.vae.config.scaling_factor, return_dict=False)[0]
 
     # Delete PyTorch VAE after OpenVINO compile
