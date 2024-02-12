@@ -58,6 +58,8 @@
   - control fix resize causing runtime errors  
   - control fix processor override image after processor change  
   - fix vae dtype mismatch, thanks @Disty0  
+  - fix controlnet inpaint mask  
+  - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 
