@@ -53,6 +53,7 @@
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  
+  - fix embeddings registration on server startup, thanks @AI-Casanova
   - ipex handle dependencies, thanks @Disty0  
   - insightface handle dependencies  
   - img2img mask blur and padding  
@@ -62,6 +63,7 @@
   - fix interrogate api endpoint  
   - control fix resize causing runtime errors  
   - control fix processor override image after processor change  
+  - handle pipelines that return dict instead of object  
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
   - fix extensions update information in ui  

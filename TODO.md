@@ -6,6 +6,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - control second pass: <https://github.com/vladmandic/automatic/issues/2783>  
 - onediff: <https://github.com/siliconflow/onediff>
+- regional prompting pipeline: <https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline>
 - diffusers public callbacks  
 - image2video: pia and vgen pipelines  
 - video2video

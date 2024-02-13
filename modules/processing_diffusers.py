@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 import os
 import time
 import math
@@ -437,6 +438,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     try:
         t0 = time.time()
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
+        if isinstance(output, dict):
+            output = SimpleNamespace(**output)
         openvino_post_compile(op="base") # only executes on compiled vino models
         if shared.cmd_opts.profile:
             t1 = time.time()
@@ -446,9 +449,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.log.debug(f'Generated: frames={output.frames[0].shape[1]}')
             else:
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
-            if isinstance(output, dict):
-                from types import SimpleNamespace
-                output = SimpleNamespace(**output)
             output.images = output.frames[0]
         if isinstance(output.images, np.ndarray):
             output.images = torch.from_numpy(output.images)
@@ -512,6 +512,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.state.sampling_steps = hires_args['num_inference_steps']
                 try:
                     output = shared.sd_model(**hires_args) # pylint: disable=not-callable
+                    if isinstance(output, dict):
+                        output = SimpleNamespace(**output)
                     openvino_post_compile(op="base")
                 except AssertionError as e:
                     shared.log.info(e)
@@ -570,6 +572,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if 'requires_aesthetics_score' in shared.sd_refiner.config:
                     shared.sd_refiner.register_to_config(requires_aesthetics_score=shared.opts.diffusers_aesthetics_score)
                 refiner_output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
+                if isinstance(refiner_output, dict):
+                    refiner_output = SimpleNamespace(**refiner_output)
                 openvino_post_compile(op="refiner")
             except AssertionError as e:
                 shared.log.info(e)
@@ -589,9 +593,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     # final decode since there is no refiner
     if not is_refiner_enabled():
         if output is not None:
-            if isinstance(output, dict):
-                from types import SimpleNamespace
-                output = SimpleNamespace(**output)
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
