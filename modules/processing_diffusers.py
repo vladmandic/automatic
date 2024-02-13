@@ -66,6 +66,16 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 time.sleep(0.1)
         if kwargs.get('latents', None) is None:
             return kwargs
+        if getattr(p, "ip_adapter_names", ["None"])[0] != "None":
+            ip_adapter_scales = list(p.ip_adapter_scales)
+            ip_adapter_starts = list(p.ip_adapter_starts)
+            ip_adapter_ends = list(p.ip_adapter_ends)
+            if any(end != 1 for end in ip_adapter_ends) or any(start != 0 for start in ip_adapter_starts):
+                for i in range(len(ip_adapter_scales)):
+                    ip_adapter_scales[i] *= float(step >= pipe.num_timesteps * ip_adapter_starts[i])
+                    ip_adapter_scales[i] *= float(step <= pipe.num_timesteps * ip_adapter_ends[i])
+                    debug(f"Callback: IP Adapter scales={ip_adapter_scales}")
+                pipe.set_ip_adapter_scale(ip_adapter_scales)
         if step != pipe.num_timesteps:
             kwargs = processing_correction.correction_callback(p, timestep, kwargs)
         if p.scheduled_prompt and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
