@@ -43,21 +43,21 @@ def ipex_optimize(sd_model):
             elif hasattr(sd_model, 'transformer'):
                 sd_model.transformer = ipex_optimize_model(sd_model.transformer)
             else:
-                shared.log.warning('IPEX Optimize enabled but model has no Unet or Transformer')
+                shared.log.warning('IPEX Optimize Model enabled but model has no Unet or Transformer')
         if "VAE" in shared.opts.ipex_optimize:
             if hasattr(sd_model, 'vae'):
                 sd_model.vae = ipex_optimize_model(sd_model.vae)
             elif hasattr(sd_model, 'movq'):
                 sd_model.movq = ipex_optimize_model(sd_model.movq)
             else:
-                shared.log.warning('Compress VAE Weights enabled but model has no VAE')
+                shared.log.warning('IPEX Optimize VAE enabled but model has no VAE')
         if "Text Encoder" in shared.opts.ipex_optimize:
             if hasattr(sd_model, 'text_encoder'):
                 sd_model.text_encoder = ipex_optimize_model(sd_model.text_encoder)
                 if hasattr(sd_model, 'text_encoder_2'):
                     sd_model.text_encoder_2 = ipex_optimize_model(sd_model.text_encoder_2)
             else:
-                shared.log.warning('IPEX Optimize Text Encoder Weights enabled but model has no Text Encoder')
+                shared.log.warning('IPEX Optimize Text Encoder enabled but model has no Text Encoder')
         t1 = time.time()
         shared.log.info(f"IPEX Optimize: time={t1-t0:.2f}")
         return sd_model
