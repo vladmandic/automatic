@@ -64,6 +64,7 @@
   - control fix processor override image after processor change  
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
+  - fix extensions update information in ui  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - prompts-from-file fix resizable prompt area  
 

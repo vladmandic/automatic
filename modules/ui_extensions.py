@@ -4,11 +4,10 @@ import shutil
 import errno
 import html
 from datetime import datetime, timedelta
-import git
 import gradio as gr
 from modules import extensions, shared, paths, errors, ui_symbols
 
-
+debug = shared.log.debug if os.environ.get('SD_EXT_DEBUG', None) is not None else lambda *args, **kwargs: None
 extensions_index = "https://vladmandic.github.io/sd-data/pages/extensions.json"
 hide_tags = ["localization"]
 extensions_list = []
@@ -49,6 +48,7 @@ def list_extensions():
         installed = get_installed(ext)
         if installed:
             found.append(installed)
+            debug(f'Extension installed from index: {ext}')
     for ext in [e for e in extensions.extensions if e not in found]: # installed but not in index
         entry = {
             "name": ext.name or "",
@@ -65,6 +65,7 @@ def list_extensions():
             "updated": ext.mtime,
         }
         extensions_list.append(entry)
+        debug(f'Extension installed without index: {entry}')
 
 
 def check_access():
@@ -155,6 +156,7 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
     if url.endswith('.git'):
         url = url.replace('.git', '')
     try:
+        import git
         shutil.rmtree(tmpdir, True)
         if not branch_name: # if no branch is specified, use the default branch
             with git.Repo.clone_from(url, tmpdir, filter=['blob:none']) as repo:
@@ -324,12 +326,15 @@ def create_html(search_text, sort_column):
         updated = datetime.timestamp(datetime.now())
         try:
             if 'github' in ext['url']:
-                author = ext['url'].split('/')[-2].split(':')[-1] if '/' in ext['url'] else ext['url'].split(':')[1].split('/')[0]
-                author = f"Author: {author}"
+                author = 'Author: ' + ext['url'].split('/')[-2].split(':')[-1] if '/' in ext['url'] else ext['url'].split(':')[1].split('/')[0]
                 updated = datetime.timestamp(datetime.fromisoformat(ext.get('updated', '2000-01-01T00:00:00.000Z').rstrip('Z')))
-        except Exception:
-            updated = datetime.timestamp(datetime.now())
-        update_available = (installed is not None) and (ext['remote'] is not None) and (ext['commit_date'] + 60 * 60 < updated)
+            else:
+                debug(f'Extension not from github: name={ext["name"]} url={ext["url"]}')
+        except Exception as e:
+            debug(f'Extension get updated error: name={ext["name"]} url={ext["url"]} {e}')
+        update_available = (installed is not None) and (ext['remote'] is not None) and (ext['commit_date'] > updated)
+        if update_available:
+            debug(f'Extension update available: name={ext["name"]} updated={updated}/{datetime.utcfromtimestamp(updated)} commit={ext["commit_date"]}/{datetime.utcfromtimestamp(ext["commit_date"])}')
         ext['sort_user'] = f"{'0' if ext['is_builtin'] else '1'}{'1' if ext['installed'] else '0'}{ext.get('name', '')}"
         ext['sort_enabled'] = f"{'0' if ext['enabled'] else '1'}{'1' if ext['is_builtin'] else '0'}{'1' if ext['installed'] else '0'}{ext.get('updated', '2000-01-01T00:00')}"
         ext['sort_update'] = f"{'1' if update_available else '0'}{'1' if ext['installed'] else '0'}{ext.get('updated', '2000-01-01T00:00')}"

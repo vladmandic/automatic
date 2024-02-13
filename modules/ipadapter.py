@@ -176,7 +176,6 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         pipe.set_ip_adapter_scale(adapter_scales)
         p.task_args['ip_adapter_image'] = adapter_images
         t1 = time.time()
-        print('HERE', adapter_names, adapter_scales, adapter_starts, adapter_ends, adapter_images)
         ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
         p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)
         shared.log.info(f'IP adapter: {ip_str} image={adapter_images} time={t1-t0:.2f}')
