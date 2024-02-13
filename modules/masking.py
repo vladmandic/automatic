@@ -54,7 +54,7 @@ def get_crop_region(mask, pad=0):
         int(min(x2, w)),
         int(min(y2, h)),
     )
-    debug(f'Mask crop: mask={mask.shape} region={crop_region} pad={pad}')
+    debug(f'Mask crop: mask={w, h} region={crop_region} pad={pad}')
     return crop_region
 
 
@@ -99,7 +99,7 @@ def expand_crop_region(crop_region, processing_width, processing_height, image_w
         int(x2),
         int(y2),
     )
-    debug(f'Mask expand: region={crop_expand} processing={processing_width}x{processing_height} image={image_width}x{image_height}')
+    debug(f'Mask expand: image={image_width, image_height} processing={processing_width, processing_height} region={crop_expand}')
     return crop_expand
 
 

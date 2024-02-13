@@ -36,6 +36,7 @@ class Script(scripts.Script):
         return init_images
 
     def display_units(self, num_units):
+        num_units = num_units or 1
         return (num_units * [gr.update(visible=True)]) + ((MAX_ADAPTERS - num_units) * [gr.update(visible=False)])
 
     def ui(self, _is_img2img):

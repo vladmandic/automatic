@@ -440,6 +440,8 @@ class ScriptRunner:
                 script.group = group
 
         def select_script(script_index):
+            if script_index is None:
+                return [gr.update(visible=False) for script in self.selectable_scripts]
             selected_script = self.selectable_scripts[script_index - 1] if script_index > 0 else None
             return [gr.update(visible=selected_script == s) for s in self.selectable_scripts]
 

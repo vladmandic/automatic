@@ -98,6 +98,8 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
             self.adain_weight = c4
 
         def upload_image(image_file):
+            if image_file is None:
+                return gr.update(value=None)
             try:
                 self.process.override = Image.open(image_file.name)
                 self.override = self.process.override

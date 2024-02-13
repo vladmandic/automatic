@@ -67,6 +67,7 @@ def interrogate_booru():
 
 
 def display_units(num_units):
+    num_units = num_units or 1
     return (num_units * [gr.update(visible=True)]) + ((max_units - num_units) * [gr.update(visible=False)])
 
 

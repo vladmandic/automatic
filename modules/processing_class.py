@@ -361,10 +361,10 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 crop_region = masking.expand_crop_region(crop_region, self.width, self.height, mask.width, mask.height)
                 x1, y1, x2, y2 = crop_region
                 crop_mask = mask.crop(crop_region)
-                self.image_mask = images.resize_image(2, crop_mask, self.width, self.height)
+                self.image_mask = images.resize_image(resize_mode=2, im=crop_mask, width=self.width, height=self.height)
                 self.paste_to = (x1, y1, x2-x1, y2-y1)
             else: # full image inpaint
-                self.image_mask = images.resize_image(self.resize_mode, self.image_mask, self.width, self.height)
+                self.image_mask = images.resize_image(resize_mode=self.resize_mode, im=self.image_mask, width=self.width, height=self.height)
                 np_mask = np.array(self.image_mask)
                 np_mask = np.clip((np_mask.astype(np.float32)) * 2, 0, 255).astype(np.uint8)
                 self.mask_for_overlay = Image.fromarray(np_mask)
