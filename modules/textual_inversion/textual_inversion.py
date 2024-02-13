@@ -153,7 +153,7 @@ class EmbeddingDatabase:
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
         return vec.shape[1]
 
-    def load_diffusers_embedding(self, filename: Union[str, List[str]], path: Optional[Union[str, List[str]]] = None):
+    def load_diffusers_embedding(self, filename: Union[str, List[str]]):
         _loaded_pre = len(self.word_embeddings)
         embeddings_to_load = []
         loaded_embeddings = {}
@@ -169,38 +169,32 @@ class EmbeddingDatabase:
         elif clip_l and tokenizer:
             model_type = 'SD'
         else:
-            model_type = 'UNDEFINED'
             return 0
-        filenames = [filename] if not isinstance(filename, list) else filename
-        exts = [".SAFETENSORS", '.BIN', '.PT', '.PNG', '.WEBP', '.JXL', '.AVIF'] # SDXL only uses safetensors
-        filename_paths = zip(filenames, len(filenames) * [path] if (isinstance(path, str) or path is None) else path)
-        unk_token_id = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
-        for filename, fullname in filename_paths:
-            debug(f'Embedding check: {filename}')
-            if fullname is None:
-                fullname = filename
-                filename = os.path.basename(fullname)
+        filenames = list(filename)
+        exts = [".SAFETENSORS", '.BIN', '.PT', '.PNG', '.WEBP', '.JXL', '.AVIF']
+        for filename in filenames:
+            # debug(f'Embedding check: {filename}')
+            fullname = filename
+            filename = os.path.basename(fullname)
             fn, ext = os.path.splitext(filename)
             name = os.path.basename(fn)
             embedding = Embedding(vec=None, name=name, filename=fullname)
+            tokenizer_vocab = tokenizer.get_vocab()
             try:
                 if ext.upper() not in exts:
                     raise ValueError(f'extension `{ext}` is invalid, expected one of: {exts}')
-                if name in tokenizer.get_vocab() or f"{name}_1" in tokenizer.get_vocab():
-                    loaded_embeddings[name] = embedding
-                    debug(f'Embedding already loaded: {name}')
+                if name in tokenizer_vocab:
+                    raise ValueError(f'invalid embedding name (cannot exist in vocab.json)')
                 embeddings_to_load.append(embedding)
             except Exception as e:
                 skipped_embeddings.append(embedding)
-                debug(f'Embedding check: {name} {e}')
+                debug(f'Embedding skipped: "{name}" {e}')
                 continue
             embeddings_to_load = sorted(embeddings_to_load, key=lambda e: exts.index(os.path.splitext(e.filename)[1].upper()))
 
         tokens_to_add = {}
-        tokenizer_vocab = tokenizer.get_vocab()
         for embedding in embeddings_to_load:
             try:
-                debug(f'Embedding load: {embedding.name} file={embedding.filename}')
                 if embedding.name in tokens_to_add or embedding.name in loaded_embeddings:
                     raise ValueError('duplicate token')
                 embeddings_dict = {}
@@ -236,7 +230,7 @@ class EmbeddingDatabase:
                 if not _tokens_to_add:
                     raise ValueError('no valid tokens to add')
                 tokens_to_add.update(_tokens_to_add)
-                loaded_embeddings[name] = embedding
+                loaded_embeddings[embedding.name] = embedding
             except Exception as e:
                 debug(f"Embedding loading: {embedding.filename} {e}")
                 continue
@@ -248,11 +242,9 @@ class EmbeddingDatabase:
                 clip_g.resize_token_embeddings(len(tokenizer_2)) # type: ignore
             for token, data in tokens_to_add.items():
                 token_id = tokenizer.convert_tokens_to_ids(token)
-                if token_id > unk_token_id:
-                    clip_l.get_input_embeddings().weight.data[token_id] = data.clip_l
-                    if model_type == 'SDXL':
-                        clip_g.get_input_embeddings().weight.data[token_id] = data.clip_g # type: ignore
-
+                clip_l.get_input_embeddings().weight.data[token_id] = data.clip_l
+                if model_type == 'SDXL':
+                    clip_g.get_input_embeddings().weight.data[token_id] = data.clip_g # type: ignore
         for embedding in loaded_embeddings.values():
             if not embedding:
                 continue
