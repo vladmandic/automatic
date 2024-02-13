@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-12
+## Update for 2024-02-13
 
 - **improvements**:
   - **IP Adapter** major refactor  
@@ -47,6 +47,8 @@
 - **wiki**:
   - updated benchmark notes for IPEX and Olive  
 - **fixes**:  
+  - handle extensions that install conflicting versions of packages  
+    `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  
   - ipex handle dependencies, thanks @Disty0  
   - insightface handle dependencies  
@@ -60,8 +62,7 @@
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
-  - handle extensions that install conflicting versions of packages  
-    `onnxruntime`, `opencv2-python`  
+  - prompts-from-file fix resizable prompt area  
 
 ## Update for 2024-02-07
 

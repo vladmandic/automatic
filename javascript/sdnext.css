@@ -317,7 +317,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
       #txt2img_results, #extras_results, #txt2im g_footer p {text-wrap: wrap; max-width: 100% !important; } /* maintain side by side split on larger mobile displays for from text */
     }
     #scripts_alwayson_txt2img div, #scripts_alwayson_img2img div { max-width: 100%; }
-    #txt2img_prompt_container, #img2img_prompt_container, #control_prompt_container { resize:vertical !important; }
+    #txt2img_prompt_container, #img2img_prompt_container, #control_prompt_container { resize: vertical !important; }
     #txt2img_generate_box, #txt2img_enqueue_wrapper { min-width: 100% !important;} /* make generate and enqueue buttons take up the entire width of their rows. */
     #img2img_toprow>div.gradio-column {flex-grow: 1 !important;} /*make interrogate buttons take up appropriate space. */
     #img2img_actions_column {display: flex; min-width: fit-content !important; flex-direction: row;justify-content: space-evenly; align-items: center;}
@@ -340,5 +340,6 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
     .gradio-dropdown ul.options li.item {height: 40px !important; display: flex; align-items: center;}
     .gradio-slider input[type="number"] { width: 4em; font-size: var(--text-xs); height: 16px; text-align: center; } /* adjust slider input fields as they were too large for mobile devices. */
     #txt2img_settings .block .padded:not(.gradio-accordion) {padding: 0 !important;margin-right: 0; min-width: 100% !important; width:100% !important;}
+    #script_txt2img_prompts_from_file_prompt_txt, #script_img2img_prompts_from_file_prompt_txt, #script_control2img_prompts_from_file_prompt_txt { resize: vertical !important; }
   }    
 }
