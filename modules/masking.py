@@ -374,7 +374,7 @@ def run_mask(input_image: gr.Image, input_mask: gr.Image = None, return_type: st
             kernel = np.ones((int(opts.mask_erode * size / 4) + 1, int(opts.mask_erode * size / 4) + 1), np.uint8)
             cv2_mask = cv2.erode(mask, kernel, iterations=opts.kernel_iterations) # remove noise
             mask = cv2_mask
-            debug(f'Mask erode={opts.mask_erode} kernel={kernel.shape} mask={mask.shape}')
+            debug(f'Mask erode={opts.mask_erode:.3f} kernel={kernel.shape} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask erode: {e}')
     if opts.mask_dilate > 0:
@@ -382,7 +382,7 @@ def run_mask(input_image: gr.Image, input_mask: gr.Image = None, return_type: st
             kernel = np.ones((int(opts.mask_dilate * size / 4) + 1, int(opts.mask_dilate * size / 4) + 1), np.uint8)
             cv2_mask = cv2.dilate(mask, kernel, iterations=opts.kernel_iterations) # expand area
             mask = cv2_mask
-            debug(f'Mask dilate={opts.mask_dilate} kernel={kernel.shape} mask={mask.shape}')
+            debug(f'Mask dilate={opts.mask_dilate:.3f} kernel={kernel.shape} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask dilate: {e}')
     if opts.mask_blur > 0:
@@ -390,7 +390,7 @@ def run_mask(input_image: gr.Image, input_mask: gr.Image = None, return_type: st
             sigmax, sigmay = 1 + int(opts.mask_blur * size / 4), 1 + int(opts.mask_blur * size / 4)
             cv2_mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmax, sigmaY=sigmay) # blur mask
             mask = cv2_mask
-            debug(f'Mask blur={opts.mask_blur} x={sigmax} y={sigmay} mask={mask.shape}')
+            debug(f'Mask blur={opts.mask_blur:.3f} x={sigmax} y={sigmay} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask blur: {e}')
     if opts.invert:
