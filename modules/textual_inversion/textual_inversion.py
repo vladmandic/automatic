@@ -184,7 +184,7 @@ class EmbeddingDatabase:
                 if ext.upper() not in exts:
                     raise ValueError(f'extension `{ext}` is invalid, expected one of: {exts}')
                 if name in tokenizer_vocab:
-                    raise ValueError(f'invalid embedding name (cannot exist in vocab.json)')
+                    raise ValueError('invalid embedding name (cannot exist in vocab.json)')
                 embeddings_to_load.append(embedding)
             except Exception as e:
                 skipped_embeddings.append(embedding)

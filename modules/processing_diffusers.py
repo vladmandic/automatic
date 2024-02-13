@@ -595,8 +595,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
-            if output.images is not None and len(output.images) > 0:
+            if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                 results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality)
+            elif hasattr(output, 'images'):
+                results = output.images
             else:
                 shared.log.warning('Processing returned no results')
                 results = []
