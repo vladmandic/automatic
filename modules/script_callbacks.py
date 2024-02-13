@@ -9,7 +9,7 @@ import modules.errors as errors
 
 
 def report_exception(e, c, job):
-    errors.display(e, f'executing callback: {c.script} {job}')
+    errors.display(e, f'Executing callback: {c.script} {job}')
 
 
 class ImageSaveParams:

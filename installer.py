@@ -47,7 +47,7 @@ args = Dot({
 })
 git_commit = "unknown"
 submodules_commit = {
-    # 'sd-webui-controlnet': 'ecd33eb',
+    'sd-webui-controlnet': 'ecd33eb',
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
 
@@ -456,12 +456,6 @@ def check_torch():
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
         if rocm_ver is not None:
             install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
-            try:
-                import onnxruntime
-                if "ROCMExecutionProvider" not in onnxruntime.get_available_providers():
-                    log.warning('Failed to automatically install onxnruntime package for ROCm. Please manually install it if you need.')
-            except Exception:
-                pass
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
         log.info('Intel OneAPI Toolkit detected')
@@ -864,7 +858,10 @@ def get_onnxruntime_source_for_rocm(rocm_ver):
     if rocm_ver is None:
         command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rocm_ver = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-    return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+    if "linux" in sys.platform:
+        return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+    else:
+        return 'onnxruntime-gpu'
 
 
 # check version of the main repo and optionally upgrade it

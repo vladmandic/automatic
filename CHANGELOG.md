@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-10
+## Update for 2024-02-12
 
 - **improvements**:
   - **IP Adapter** major refactor  
@@ -9,7 +9,7 @@
       *note*: you cannot mix & match ip adapters that use different *CLiP* models, for example `Base` and `Base ViT-G`  
     - unified interface in txt2img, img2img and control  
     - enhanced xyz grid support  
-  - **FaceID** now works with multiple input images  
+  - **FaceID** now also works with multiple input images!  
   - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
     sometimes you want strong control over composition, but you want it to stop at some point  
     for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
@@ -55,6 +55,11 @@
   - lazy loading of image may prevent metadata from being loaded on time  
   - allow startup without valid models folder  
   - fix interrogate api endpoint  
+  - control fix resize causing runtime errors  
+  - control fix processor override image after processor change  
+  - fix vae dtype mismatch, thanks @Disty0  
+  - fix controlnet inpaint mask  
+  - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
 
