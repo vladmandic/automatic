@@ -7,6 +7,9 @@
     - support for multiple input images per each ip adapter  
     - support for multiple concurrent ip adapters  
       *note*: you cannot mix & match ip adapters that use different *CLiP* models, for example `Base` and `Base ViT-G`  
+    - add adapter start/end to settings, thanks @AI-Casanova  
+      having adapter start late can help with better control over composition and prompt adherence  
+      having adapter end early can help with overal quality and performance  
     - unified interface in txt2img, img2img and control  
     - enhanced xyz grid support  
   - **FaceID** now also works with multiple input images!  

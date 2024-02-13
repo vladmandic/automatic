@@ -106,6 +106,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_images'):
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
+    if len(adapters) < len(adapter_images):
+        adapter_images = adapter_images[:len(adapters)]
     adapter_scales = get_scales(adapter_scales, adapter_images)
     p.ip_adapter_scales = adapter_scales.copy()
     adapter_starts = get_scales(adapter_starts, adapter_images)
@@ -173,9 +175,11 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                 adapter_scales[i] = 0.00
         pipe.set_ip_adapter_scale(adapter_scales)
         p.task_args['ip_adapter_image'] = adapter_images
-        p.extra_generation_params["IP Adapter"] = ';'.join([f'{os.path.splitext(adapter)[0]}:{scale}' for adapter, scale in zip(adapter_names, adapter_scales)])
         t1 = time.time()
-        shared.log.info(f'IP adapter: adapters={adapter_names} scale={adapter_scales} image={adapter_images} time={t1-t0:.2f}')
+        print('HERE', adapter_names, adapter_scales, adapter_starts, adapter_ends, adapter_images)
+        ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
+        p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)
+        shared.log.info(f'IP adapter: {ip_str} image={adapter_images} time={t1-t0:.2f}')
     except Exception as e:
-        shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} {e}')
+        shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} names={adapter_names} {e}')
     return True
