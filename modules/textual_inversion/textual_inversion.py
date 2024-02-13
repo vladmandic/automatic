@@ -183,8 +183,9 @@ class EmbeddingDatabase:
             try:
                 if ext.upper() not in exts:
                     raise ValueError(f'extension `{ext}` is invalid, expected one of: {exts}')
-                if name in tokenizer_vocab:
-                    raise ValueError('invalid embedding name (cannot exist in vocab.json)')
+                if name in tokenizer.get_vocab() or f"{name}_1" in tokenizer.get_vocab():
+                    loaded_embeddings[name] = embedding
+                    debug(f'Embedding already loaded: {name}')
                 embeddings_to_load.append(embedding)
             except Exception as e:
                 skipped_embeddings.append(embedding)
@@ -240,11 +241,14 @@ class EmbeddingDatabase:
             if model_type == 'SDXL':
                 tokenizer_2.add_tokens(list(tokens_to_add.keys())) # type: ignore
                 clip_g.resize_token_embeddings(len(tokenizer_2)) # type: ignore
+            unk_token_id = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
             for token, data in tokens_to_add.items():
                 token_id = tokenizer.convert_tokens_to_ids(token)
-                clip_l.get_input_embeddings().weight.data[token_id] = data.clip_l
-                if model_type == 'SDXL':
-                    clip_g.get_input_embeddings().weight.data[token_id] = data.clip_g # type: ignore
+                if token_id > unk_token_id:
+                    clip_l.get_input_embeddings().weight.data[token_id] = data.clip_l
+                    if model_type == 'SDXL':
+                        clip_g.get_input_embeddings().weight.data[token_id] = data.clip_g # type: ignore
+
         for embedding in loaded_embeddings.values():
             if not embedding:
                 continue
