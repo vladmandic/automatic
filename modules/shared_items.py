@@ -54,7 +54,6 @@ def get_pipelines():
         'PixArt Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
         'UniDiffuser': getattr(diffusers, 'UniDiffuserPipeline', None),
         'Wuerstchen': getattr(diffusers, 'WuerstchenCombinedPipeline', None),
-        'Stable Cascade': getattr(diffusers, 'StableCascadeCombinedPipeline', None),
         'Kandinsky 2.1': getattr(diffusers, 'KandinskyPipeline', None),
         'Kandinsky 2.2': getattr(diffusers, 'KandinskyV22Pipeline', None),
         'Kandinsky 3': getattr(diffusers, 'Kandinsky3Pipeline', None),
@@ -70,6 +69,9 @@ def get_pipelines():
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         # Segmind SSD-1B, Segmind Tiny
     }
+
+    if hasattr(diffusers, 'StableCascadeCombinedPipeline'):
+        pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:
