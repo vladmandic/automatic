@@ -450,7 +450,7 @@ def openvino_fx(subgraph, example_inputs):
                                 example_inputs_reordered.append(example_inputs[idx1])
                 example_inputs = example_inputs_reordered
 
-            if dont_use_faketensors:
+            if dont_use_faketensors or shared.opts.openvino_disable_memory_cleanup:
                 pass
             else:
                 # Delete unused subgraphs

@@ -317,12 +317,12 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
             if shared.compiled_model_state.first_pass and op == "base":
                 shared.compiled_model_state.first_pass = False
-                if hasattr(shared.sd_model, "unet"):
+                if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):
                     shared.sd_model.unet.apply(sd_models.convert_to_faketensors)
                     devices.torch_gc(force=True)
             if shared.compiled_model_state.first_pass_refiner and op == "refiner":
                 shared.compiled_model_state.first_pass_refiner = False
-                if hasattr(shared.sd_refiner, "unet"):
+                if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_refiner, "unet"):
                     shared.sd_refiner.unet.apply(sd_models.convert_to_faketensors)
                     devices.torch_gc(force=True)
 

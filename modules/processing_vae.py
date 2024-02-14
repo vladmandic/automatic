@@ -51,7 +51,7 @@ def full_vae_decode(latents, model):
     # Delete PyTorch VAE after OpenVINO compile
     if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
         shared.compiled_model_state.first_pass_vae = False
-        if hasattr(shared.sd_model, "vae"):
+        if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "vae"):
             model.vae.apply(sd_models.convert_to_faketensors)
             devices.torch_gc(force=True)
 
