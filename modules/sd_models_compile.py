@@ -44,8 +44,6 @@ def ipex_optimize(sd_model):
                 sd_model.transformer = ipex_optimize_model(sd_model.transformer)
             if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
                 sd_model.decoder = ipex_optimize_model(sd_model.decoder)
-            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
-                sd_model.prior = ipex_optimize_model(sd_model.prior)
             if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
                 sd_model.prior_prior = ipex_optimize_model(sd_model.prior_prior)
         if "VAE" in shared.opts.ipex_optimize:
@@ -57,8 +55,6 @@ def ipex_optimize(sd_model):
                 sd_model.vqgan = ipex_optimize_model(sd_model.vqgan)
             if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
                 sd_model.image_encoder = ipex_optimize_model(sd_model.image_encoder)
-            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
-                sd_model.prior_image_encoder = ipex_optimize_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.ipex_optimize:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
                 sd_model.text_encoder = ipex_optimize_model(sd_model.text_encoder)
@@ -97,8 +93,6 @@ def nncf_compress_weights(sd_model):
                 sd_model.transformer = nncf_compress_model(sd_model.transformer)
             if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
                 sd_model.decoder = nncf_compress_model(sd_model.decoder)
-            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
-                sd_model.prior = nncf_compress_model(sd_model.prior)
             if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
                 sd_model.prior_prior = nncf_compress_model(sd_model.prior_prior)
         if "VAE" in shared.opts.nncf_compress_weights:
@@ -110,8 +104,6 @@ def nncf_compress_weights(sd_model):
                 sd_model.vqgan = nncf_compress_model(sd_model.vqgan)
             if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
                 sd_model.image_encoder = nncf_compress_model(sd_model.image_encoder)
-            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
-                sd_model.prior_image_encoder = nncf_compress_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
                 sd_model.text_encoder = nncf_compress_model(sd_model.text_encoder)
@@ -221,8 +213,6 @@ def compile_torch(sd_model):
                 sd_model.transformer = torch_compile_model(sd_model.transformer)
             if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
                 sd_model.decoder = torch_compile_model(sd_model.decoder)
-            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
-                sd_model.prior = torch_compile_model(sd_model.prior)
             if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
                 sd_model.prior_prior = torch_compile_model(sd_model.prior_prior)
         if "VAE" in shared.opts.cuda_compile:
@@ -234,8 +224,6 @@ def compile_torch(sd_model):
                 sd_model.vqgan = torch_compile_model(sd_model.vqgan)
             if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
                 sd_model.image_encoder = torch_compile_model(sd_model.image_encoder)
-            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
-                sd_model.prior_image_encoder = torch_compile_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.cuda_compile:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
                 sd_model.text_encoder = torch_compile_model(sd_model.text_encoder)
