@@ -594,6 +594,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt Alpha'
+            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower():
+                if shared.backend == shared.Backend.ORIGINAL:
+                    warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                guess = 'Stable Cascade'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -813,14 +817,24 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
             if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
                 diffusers_load_config['variant'] = 'fp16'
-            if model_type in ['InstaFlow']: # forced pipeline
+            if model_type in ['Stable Cascade']: # forced pipeline
+                try:
+                    from diffusers import StableCascadeDecoderPipeline, StableCascadePriorPipeline, StableCascadeCombinedPipeline
+                    # set prior manually for now
+                    prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    decoder = StableCascadeDecoderPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    sd_model = StableCascadeCombinedPipeline(tokenizer=decoder.tokenizer, text_encoder=decoder.text_encoder, decoder=decoder.decoder, scheduler=decoder.scheduler, vqgan=decoder.vqgan, prior_prior=prior.prior, prior_scheduler=prior.scheduler, feature_extractor=prior.feature_extractor, image_encoder=prior.image_encoder)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    return
+            elif model_type in ['InstaFlow']: # forced pipeline
                 try:
                     pipeline = diffusers.utils.get_class_from_dynamic_module('instaflow_one_step', module_file='pipeline.py')
                     sd_model = pipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     return
-            if model_type in ['SegMoE']: # forced pipeline
+            elif model_type in ['SegMoE']: # forced pipeline
                 try:
                     from modules.segmoe.segmoe_model import SegMoEPipeline
                     sd_model = SegMoEPipeline(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
