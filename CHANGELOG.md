@@ -4,32 +4,32 @@
 
 - **improvements**:
   - **IP Adapter** major refactor  
-    - support for multiple input images per each ip adapter  
-    - support for multiple concurrent ip adapters  
+    - support for **multiple input images** per each ip adapter  
+    - support for **multiple concurrent ip adapters**  
       *note*: you cannot mix & match ip adapters that use different *CLiP* models, for example `Base` and `Base ViT-G`  
-    - add adapter start/end to settings, thanks @AI-Casanova  
+    - add **adapter start/end** to settings, thanks @AI-Casanova  
       having adapter start late can help with better control over composition and prompt adherence  
       having adapter end early can help with overal quality and performance  
     - unified interface in txt2img, img2img and control  
     - enhanced xyz grid support  
   - **FaceID** now also works with multiple input images!  
-  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
-    sometimes you want strong control over composition, but you want it to stop at some point  
-    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
-  - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
-    it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
-      *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
-  - **Control** units now have extra option to re-use current preview image as processor input  
-  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
-    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
-    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
-  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
-    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
-    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
   - **Regional prompting** as a built-in solution  
     simply enable from scripts -> regional prompting  
     note that usage is same as original implementation from @hako-mikan  
     click on title to open docs and see examples of full syntax on how to use it  
+  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
+    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
+    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
+  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
+    sometimes you want strong control over composition, but you want it to stop at some point  
+    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
+  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
+    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
+    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
+  - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
+    it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
+      *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+  - **Control** units now have extra option to re-use current preview image as processor input  
   - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
     - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
     - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
@@ -47,9 +47,8 @@
     - allow manual install of specific onnx flavor  
       *settings -> onnx*  
     - better handling of `fp16` models/vae, thanks @lshqqytiger  
-  - **OpenVINO**  
-    - update to `torch 2.2.0`  
-  - **HyperTile**, thanks @Disty0  
+  - **OpenVINO** update to `torch 2.2.0`, thanks @Disty0  
+  - **HyperTile** additional options thanks @Disty0  
     - add swap size option  
     - add use only for hires pass option  
   - add `--theme` cli param to force theme on startup  
@@ -60,7 +59,7 @@
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  
-  - fix embeddings registration on server startup, thanks @AI-Casanova
+  - fix embeddings registration on server startup, thanks @AI-Casanova  
   - ipex handle dependencies, thanks @Disty0  
   - insightface handle dependencies  
   - img2img mask blur and padding  
