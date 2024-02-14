@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, masking, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -124,21 +124,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             }
         elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images' ,[])) > 0:
             p.ops.append('inpaint')
-            if p.task_args.get('mask_image', None) is not None: # provided as override by a control module
-                p.mask = masking.run_mask(input_image=p.init_images, input_mask=p.task_args['mask_image'], return_type='Grayscale', invert=p.inpainting_mask_invert==1)
-            elif getattr(p, 'image_mask', None) is not None: # standard img2img
-                if 'control' in p.ops:
-                    p.mask = masking.run_mask(input_image=p.init_images, input_mask=p.image_mask, return_type='Grayscale', invert=p.inpainting_mask_invert==1) # blur/padding are handled in masking module
-                else:
-                    p.mask = masking.run_mask(input_image=p.init_images, input_mask=p.image_mask, return_type='Grayscale', invert=p.inpainting_mask_invert==1, mask_blur=p.mask_blur, mask_padding=p.inpaint_full_res_padding) # old img2img
-            elif getattr(p, 'mask', None) is not None: # backward compatibility
-                pass
-            else: # fallback
-                p.mask = TF.to_pil_image(torch.ones_like(TF.to_tensor(p.init_images[0]))).convert("L")
             width, height = resize_init_images(p)
             task_args = {
                 'image': p.init_images,
-                'mask_image': p.mask,
+                'mask_image': p.image_mask,
                 'strength': p.denoising_strength,
                 'height': height,
                 'width': width,
@@ -437,6 +426,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
     try:
         t0 = time.time()
+        img = base_args['mask_image']
+        img.save('/tmp/mask.png')
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)

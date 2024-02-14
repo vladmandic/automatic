@@ -376,7 +376,8 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         return None
 
     size = min(input_image.width, input_image.height)
-    debug(f'Mask args: blur={mask_blur} padding={mask_padding}')
+    if mask_blur is not None or mask_padding is not None:
+        debug(f'Mask args legacy: blur={mask_blur} padding={mask_padding}')
     if invert is not None:
         opts.invert = invert
     if mask_blur is not None: # compatibility with old img2img values which uses px values
@@ -396,24 +397,21 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     if opts.mask_erode > 0:
         try:
             kernel = np.ones((int(opts.mask_erode * size / 4) + 1, int(opts.mask_erode * size / 4) + 1), np.uint8)
-            cv2_mask = cv2.erode(mask, kernel, iterations=opts.kernel_iterations) # remove noise
-            mask = cv2_mask
+            mask = cv2.erode(mask, kernel, iterations=opts.kernel_iterations) # remove noise
             debug(f'Mask erode={opts.mask_erode:.3f} kernel={kernel.shape} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask erode: {e}')
     if opts.mask_dilate > 0:
         try:
             kernel = np.ones((int(opts.mask_dilate * size / 4) + 1, int(opts.mask_dilate * size / 4) + 1), np.uint8)
-            cv2_mask = cv2.dilate(mask, kernel, iterations=opts.kernel_iterations) # expand area
-            mask = cv2_mask
+            mask = cv2.dilate(mask, kernel, iterations=opts.kernel_iterations) # expand area
             debug(f'Mask dilate={opts.mask_dilate:.3f} kernel={kernel.shape} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask dilate: {e}')
     if opts.mask_blur > 0:
         try:
             sigmax, sigmay = 1 + int(opts.mask_blur * size / 4), 1 + int(opts.mask_blur * size / 4)
-            cv2_mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmax, sigmaY=sigmay) # blur mask
-            mask = cv2_mask
+            mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmax, sigmaY=sigmay) # blur mask
             debug(f'Mask blur={opts.mask_blur:.3f} x={sigmax} y={sigmay} mask={mask.shape}')
         except Exception as e:
             shared.log.error(f'Mask blur: {e}')

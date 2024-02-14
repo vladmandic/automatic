@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-13
+## Update for 2024-02-14
 
 - **improvements**:
   - **IP Adapter** major refactor  
@@ -67,6 +67,7 @@
   - control fix resize causing runtime errors  
   - control fix processor override image after processor change  
   - handle pipelines that return dict instead of object  
+  - fix inpaint mask only for diffusers  
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
   - fix theme list refresh  

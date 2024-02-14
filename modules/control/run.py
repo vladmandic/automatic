@@ -143,7 +143,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
             p.fidelity = u.fidelity
             shared.log.debug('Control Reference unit')
         else:
-            active_process.append(u.process)
+            if u.process.processor_id is not None:
+                active_process.append(u.process)
             shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
             active_strength.append(float(u.strength))
     p.ops.append('control')
@@ -347,7 +348,6 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         p.extra_generation_params["Mask erode"] = masking.opts.mask_erode if masking.opts.mask_erode > 0 else None
                         p.extra_generation_params["Mask dilate"] = masking.opts.mask_dilate if masking.opts.mask_dilate > 0 else None
                         p.extra_generation_params["Mask model"] = masking.opts.model if masking.opts.model is not None else None
-                    if len(active_process) > 0:
                         masked_image = masking.run_mask(input_image=input_image, input_mask=mask, return_type='Masked', invert=p.inpainting_mask_invert==1) if mask is not None else input_image
                     else:
                         masked_image = input_image
