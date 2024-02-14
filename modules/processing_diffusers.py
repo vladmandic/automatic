@@ -426,8 +426,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
     try:
         t0 = time.time()
-        img = base_args['mask_image']
-        img.save('/tmp/mask.png')
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)

@@ -7,22 +7,26 @@ from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsPr
 from transformers import PreTrainedTokenizer
 from modules import shared, prompt_parser, devices
 
+
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PROMPT')
+orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_embeddings # pylint: disable=protected-access
 
 
 def compel_hijack(self, token_ids: torch.Tensor,
                   attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
     needs_hidden_states = self.returned_embeddings_type != 1
-    text_encoder_output = self.text_encoder(token_ids,
-                                            attention_mask,
-                                            output_hidden_states=needs_hidden_states,
-                                            return_dict=True)
+    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
     if not needs_hidden_states:
         return text_encoder_output.last_hidden_state
-    normalized = self.returned_embeddings_type > 0
-    clip_skip = math.floor(abs(self.returned_embeddings_type))
-    interpolation = abs(self.returned_embeddings_type) - clip_skip
+    try:
+        normalized = self.returned_embeddings_type > 0
+        clip_skip = math.floor(abs(self.returned_embeddings_type))
+        interpolation = abs(self.returned_embeddings_type) - clip_skip
+    except Exception:
+        normalized = False
+        clip_skip = 1
+        interpolation = False
     if interpolation:
         hidden_state = (1 - interpolation) * text_encoder_output.hidden_states[-clip_skip] + interpolation * text_encoder_output.hidden_states[-(clip_skip+1)]
     else:
@@ -32,9 +36,7 @@ def compel_hijack(self, token_ids: torch.Tensor,
     return hidden_state
 
 
-
-
-EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack
+EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
 
 
 # from https://github.com/damian0815/compel/blob/main/src/compel/diffusers_textual_inversion_manager.py

@@ -26,6 +26,10 @@
   - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
     values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
+  - **Regional prompting** as a built-in solution  
+    simply enable from scripts -> regional prompting  
+    note that usage is same as original implementation from @hako-mikan  
+    click on title to open docs and see examples of full syntax on how to use it  
   - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
     - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
     - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
