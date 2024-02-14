@@ -67,7 +67,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 time.sleep(0.1)
         if kwargs.get('latents', None) is None:
             return kwargs
-        if getattr(p, "ip_adapter_names", ["None"])[0] != "None":
+        if len(getattr(p, "ip_adapter_names", [])) > 0:
             ip_adapter_scales = list(p.ip_adapter_scales)
             ip_adapter_starts = list(p.ip_adapter_starts)
             ip_adapter_ends = list(p.ip_adapter_ends)

@@ -14,3 +14,4 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - masking api  
 - preprocess api  
 - bind panZoom to control input
+- masking.outpaint should return mask and override future run_masking
