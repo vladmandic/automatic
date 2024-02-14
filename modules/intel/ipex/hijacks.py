@@ -45,7 +45,7 @@ def autocast_init(self, device_type, dtype=None, enabled=True, cache_enabled=Non
 original_interpolate = torch.nn.functional.interpolate
 @wraps(torch.nn.functional.interpolate)
 def interpolate(tensor, size=None, scale_factor=None, mode='nearest', align_corners=None, recompute_scale_factor=None, antialias=False): # pylint: disable=too-many-arguments
-    if antialias or align_corners is not None:
+    if antialias or align_corners is not None or mode == 'bicubic':
         return_device = tensor.device
         return_dtype = tensor.dtype
         return original_interpolate(tensor.to("cpu", dtype=torch.float32), size=size, scale_factor=scale_factor, mode=mode,
@@ -219,7 +219,9 @@ def torch_empty(*args, device=None, **kwargs):
 
 original_torch_randn = torch.randn
 @wraps(torch.randn)
-def torch_randn(*args, device=None, **kwargs):
+def torch_randn(*args, device=None, dtype=None, **kwargs):
+    if dtype == bytes:
+        dtype = None
     if check_device(device):
         return original_torch_randn(*args, device=return_xpu(device), **kwargs)
     else:

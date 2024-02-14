@@ -38,26 +38,34 @@ def ipex_optimize(sd_model):
             return model
 
         if "Model" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'unet'):
+            if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
                 sd_model.unet = ipex_optimize_model(sd_model.unet)
-            elif hasattr(sd_model, 'transformer'):
+            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
                 sd_model.transformer = ipex_optimize_model(sd_model.transformer)
-            else:
-                shared.log.warning('IPEX Optimize Model enabled but model has no Unet or Transformer')
+            if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
+                sd_model.decoder = ipex_optimize_model(sd_model.decoder)
+            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
+                sd_model.prior = ipex_optimize_model(sd_model.prior)
+            if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
+                sd_model.prior_prior = ipex_optimize_model(sd_model.prior_prior)
         if "VAE" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'vae'):
+            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
                 sd_model.vae = ipex_optimize_model(sd_model.vae)
-            elif hasattr(sd_model, 'movq'):
+            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
                 sd_model.movq = ipex_optimize_model(sd_model.movq)
-            else:
-                shared.log.warning('IPEX Optimize VAE enabled but model has no VAE')
+            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
+                sd_model.vqgan = ipex_optimize_model(sd_model.vqgan)
+            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
+                sd_model.image_encoder = ipex_optimize_model(sd_model.image_encoder)
+            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
+                sd_model.prior_image_encoder = ipex_optimize_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'text_encoder'):
+            if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
                 sd_model.text_encoder = ipex_optimize_model(sd_model.text_encoder)
-                if hasattr(sd_model, 'text_encoder_2'):
-                    sd_model.text_encoder_2 = ipex_optimize_model(sd_model.text_encoder_2)
-            else:
-                shared.log.warning('IPEX Optimize Text Encoder enabled but model has no Text Encoder')
+            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
+                sd_model.text_encoder_2 = ipex_optimize_model(sd_model.text_encoder_2)
+            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+                sd_model.prior_text_encoder = ipex_optimize_model(sd_model.prior_text_encoder)
         t1 = time.time()
         shared.log.info(f"IPEX Optimize: time={t1-t0:.2f}")
         return sd_model
@@ -85,24 +93,32 @@ def nncf_compress_weights(sd_model):
         if "Model" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
                 sd_model.unet = nncf_compress_model(sd_model.unet)
-            elif hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
+            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
                 sd_model.transformer = nncf_compress_model(sd_model.transformer)
-            else:
-                shared.log.warning('Compress Weights enabled but model has no Unet or Transformer')
+            if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
+                sd_model.decoder = nncf_compress_model(sd_model.decoder)
+            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
+                sd_model.prior = nncf_compress_model(sd_model.prior)
+            if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
+                sd_model.prior_prior = nncf_compress_model(sd_model.prior_prior)
         if "VAE" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
                 sd_model.vae = nncf_compress_model(sd_model.vae)
-            elif hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
+            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
                 sd_model.movq = nncf_compress_model(sd_model.movq)
-            else:
-                shared.log.warning('Compress VAE Weights enabled but model has no VAE')
+            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
+                sd_model.vqgan = nncf_compress_model(sd_model.vqgan)
+            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
+                sd_model.image_encoder = nncf_compress_model(sd_model.image_encoder)
+            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
+                sd_model.prior_image_encoder = nncf_compress_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.nncf_compress_weights:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
                 sd_model.text_encoder = nncf_compress_model(sd_model.text_encoder)
-                if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                    sd_model.text_encoder_2 = nncf_compress_model(sd_model.text_encoder_2)
-            else:
-                shared.log.warning('Compress VAE Text Encoder Weights enabled but model has no Text Encoder')
+            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
+                sd_model.text_encoder_2 = nncf_compress_model(sd_model.text_encoder_2)
+            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+                sd_model.prior_text_encoder = nncf_compress_model(sd_model.prior_text_encoder)
         t1 = time.time()
         shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
         return sd_model
@@ -168,9 +184,14 @@ def compile_stablefast(sd_model):
 
 def compile_torch(sd_model):
     try:
+        t0 = time.time()
         import torch._dynamo # pylint: disable=unused-import,redefined-outer-name
         torch._dynamo.reset() # pylint: disable=protected-access
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
+
+        def torch_compile_model(model):
+            return torch.compile(model, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
+
         if shared.opts.cuda_compile_backend == "openvino_fx":
             sd_model = optimize_openvino(sd_model)
         elif shared.opts.cuda_compile_backend == "olive-ai":
@@ -193,28 +214,35 @@ def compile_torch(sd_model):
         except Exception as e:
             shared.log.error(f"Torch inductor config error: {e}")
 
-        t0 = time.time()
         if "Model" in shared.opts.cuda_compile:
             if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-                sd_model.unet = torch.compile(sd_model.unet, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-            elif hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-                sd_model.transformer = torch.compile(sd_model.transformer, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-            else:
-                shared.log.warning('Model compile enabled but model has no Unet or Transformer')
+                sd_model.unet = torch_compile_model(sd_model.unet)
+            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
+                sd_model.transformer = torch_compile_model(sd_model.transformer)
+            if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
+                sd_model.decoder = torch_compile_model(sd_model.decoder)
+            if hasattr(sd_model, 'prior') and hasattr(sd_model.prior, 'config'):
+                sd_model.prior = torch_compile_model(sd_model.prior)
+            if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
+                sd_model.prior_prior = torch_compile_model(sd_model.prior_prior)
         if "VAE" in shared.opts.cuda_compile:
             if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-                sd_model.vae.decode = torch.compile(sd_model.vae.decode, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-            elif hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-                sd_model.movq.decode = torch.compile(sd_model.movq.decode, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-            else:
-                shared.log.warning('Model compile enabled but model has no VAE')
+                sd_model.vae = torch_compile_model(sd_model.vae)
+            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
+                sd_model.movq = torch_compile_model(sd_model.movq)
+            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
+                sd_model.vqgan = torch_compile_model(sd_model.vqgan)
+            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
+                sd_model.image_encoder = torch_compile_model(sd_model.image_encoder)
+            if hasattr(sd_model, 'prior_image_encoder') and hasattr(sd_model.prior_image_encoder, 'config'):
+                sd_model.prior_image_encoder = torch_compile_model(sd_model.prior_image_encoder)
         if "Text Encoder" in shared.opts.cuda_compile:
             if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-                sd_model.text_encoder = torch.compile(sd_model.text_encoder, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-                if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                    sd_model.text_encoder_2 = torch.compile(sd_model.text_encoder_2, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
-            else:
-                shared.log.warning('Text Encoder compile enabled but model has no Text Encoder')
+                sd_model.text_encoder = torch_compile_model(sd_model.text_encoder)
+            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
+                sd_model.text_encoder_2 = torch_compile_model(sd_model.text_encoder_2)
+            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+                sd_model.prior_text_encoder = torch_compile_model(sd_model.prior_text_encoder)
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
