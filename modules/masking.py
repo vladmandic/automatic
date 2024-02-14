@@ -333,7 +333,31 @@ def get_mask(input_image: gr.Image, input_mask: gr.Image):
         return output_mask
 
 
-def run_mask(input_image: gr.Image, input_mask: gr.Image = None, return_type: str = None, mask_blur: int = None, mask_padding: int = None, segment_enable=True, invert=None):
+def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
+    image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGR)
+    h, w = image.shape[:2]
+    empty = (image == 0).all(axis=2)
+    y0, x0 = np.where(~empty) # non empty
+    x1, x2 = min(x0), max(x0)
+    y1, y2 = min(y0), max(y0)
+    cropped = image[y1:y2, x1:x2]
+
+    if outpaint_type == 'Edge':
+        bordered = cv2.copyMakeBorder(cropped, y1, h-y2, x1, w-x2, cv2.BORDER_REPLICATE)
+        bordered = cv2.resize(bordered, (w, h))
+        image = bordered
+        # noise = np.random.normal(1, variation, bordered.shape)
+        # noised = (noise * bordered).astype(np.uint8)
+        # h, w = cropped.shape[:2]
+        # noised[y1:y1 + h, x1:x1 + w] = cropped # overlay original over initialized
+        # image = noised
+
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = Image.fromarray(image)
+    return image
+
+
+def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_type: str = None, mask_blur: int = None, mask_padding: int = None, segment_enable=True, invert=None):
     debug(f'Run mask: function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
 
     if input_image is None:

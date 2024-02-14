@@ -341,19 +341,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                     np_mask = cv2.GaussianBlur(np_mask, (kernel_size, 1), self.mask_blur)
                     np_mask = cv2.GaussianBlur(np_mask, (1, kernel_size), self.mask_blur)
                     self.image_mask = Image.fromarray(np_mask)
-            """
-            else: # handled in processing_diffusers
-                if hasattr(self, 'init_images'):
-                    self.image_mask = masking.run_mask(
-                        input_image=self.init_images,
-                        input_mask=self.image_mask,
-                        return_type='Grayscale',
-                        mask_blur=self.mask_blur,
-                        mask_padding=self.inpaint_full_res_padding,
-                        segment_enable=False,
-                        invert=self.inpainting_mask_invert==1,
-                    )
-            """
             if self.inpaint_full_res: # mask only inpaint
                 self.mask_for_overlay = self.image_mask
                 mask = self.image_mask.convert('L')

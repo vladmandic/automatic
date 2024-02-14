@@ -20,6 +20,9 @@
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
       *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
   - **Control** units now have extra option to re-use current preview image as processor input  
+  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
+    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
+    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
   - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
     now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
     values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
@@ -66,6 +69,7 @@
   - handle pipelines that return dict instead of object  
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
+  - fix theme list refresh  
   - fix extensions update information in ui  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - prompts-from-file fix resizable prompt area  
