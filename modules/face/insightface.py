@@ -8,6 +8,7 @@ instightface_mp = None
 
 
 def get_app(mp_name):
+    global insightface_app, instightface_mp # pylint: disable=global-statement
     from installer import installed, install
     packages = [
         ('insightface', 'insightface'),
@@ -15,8 +16,7 @@ def get_app(mp_name):
     ]
     for pkg in packages:
         if not installed(pkg[1], reload=False, quiet=True):
-            install(pkg[0], pkg[1], ignore=True)
-    global insightface_app, instightface_mp # pylint: disable=global-statement
+            install(pkg[0], pkg[1], ignore=False)
     if insightface_app is None or mp_name != instightface_mp:
         from insightface.app import FaceAnalysis
         import huggingface_hub as hf

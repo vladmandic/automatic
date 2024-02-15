@@ -1,15 +1,18 @@
+import os
 import gc
 import sys
 import time
 import contextlib
 import torch
 from modules.errors import log
-from modules import cmd_args, shared, memstats
+from modules import cmd_args, shared, memstats, errors
 
 if sys.platform == "darwin":
     from modules import mac_specific # pylint: disable=ungrouped-imports
 
+
 previous_oom = 0
+debug = os.environ.get('SD_DEVICE_DEBUG', None) is not None
 
 
 def has_mps() -> bool:
@@ -21,7 +24,6 @@ def has_mps() -> bool:
 
 def get_gpu_info():
     def get_driver():
-        import os
         import subprocess
         if torch.cuda.is_available() and torch.version.cuda:
             try:
@@ -79,6 +81,8 @@ def get_gpu_info():
                     'device': 'unknown'
                 }
         except Exception as ex:
+            if debug:
+                errors.display(ex, 'Device exception')
             return { 'error': ex }
 
 
