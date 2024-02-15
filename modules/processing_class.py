@@ -382,7 +382,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             if shared.opts.save_init_img:
                 images.save_image(img, path=shared.opts.outdir_init_images, basename=None, forced_filename=self.init_img_hash, suffix="-init-image")
             image = images.flatten(img, shared.opts.img2img_background_color)
-            if self.width is None or self.height is None or self.resize_mode == 0:
+            if self.width is None or self.height is None:
                 self.width, self.height = image.width, image.height
             if crop_region is None and self.resize_mode != 4 and self.resize_mode > 0:
                 if image.width != self.width or image.height != self.height:
