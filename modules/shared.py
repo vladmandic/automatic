@@ -714,7 +714,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": backend==Backend.DIFFUSERS}),
     "extra_networks_sep3": OptionInfo("<h2>Extra networks settings</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
-    "lora_preferred_name": OptionInfo("filename", "LoRA preffered name", gr.Radio, {"choices": ["filename", "alias"]}),
+    "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),
     "lora_add_hashes_to_infotext": OptionInfo(True, "LoRA add hash info"),
     "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use alternative loading method"),
     "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use merge when using alternative method"),

@@ -71,6 +71,7 @@
   - control fix processor override image after processor change  
   - control fix display grid with batch  
   - handle pipelines that return dict instead of object  
+  - lora use strict name matching if preferred option is by-filename  
   - fix inpaint mask only for diffusers  
   - fix vae dtype mismatch, thanks @Disty0  
   - fix controlnet inpaint mask  
