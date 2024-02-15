@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-14
+## Update for 2024-02-15
 
 - **improvements**:
   - **IP Adapter** major refactor  
@@ -69,6 +69,7 @@
   - fix interrogate api endpoint  
   - control fix resize causing runtime errors  
   - control fix processor override image after processor change  
+  - control fix display grid with batch  
   - handle pipelines that return dict instead of object  
   - fix inpaint mask only for diffusers  
   - fix vae dtype mismatch, thanks @Disty0  

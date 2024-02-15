@@ -480,15 +480,16 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                     t3 += time.time() - t3
 
                     # outputs
-                    if output is not None and len(output) > 0:
-                        output_image = output[0]
+                    output = output or []
+                    for i, output_image in enumerate(output):
                         if output_image is not None:
 
                             # resize after
+                            is_grid = len(output) == p.batch_size * p.n_iter + 1 and i == 0
                             if selected_scale_tab_after == 1:
                                 width_after = int(output_image.width * scale_by_after)
                                 height_after = int(output_image.height * scale_by_after)
-                            if resize_mode_after != 0 and resize_name_after != 'None':
+                            if resize_mode_after != 0 and resize_name_after != 'None' and not is_grid:
                                 debug(f'Control resize: op=after image={output_image} width={width_after} height={height_after} mode={resize_mode_after} name={resize_name_after}')
                                 output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after)
 
@@ -524,11 +525,9 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     if len(output_images) == 0:
         output_images = None
         image_txt = 'images=None'
-    elif len(output_images) == 1:
-        output_images = output_images[0]
-        image_txt = f'| Images 1 | Size {output_images.width}x{output_images.height}' if output_image is not None else 'None'
     else:
-        image_txt = f'| Images {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}' if output_image is not None else 'None'
+        image_str = [f'{image.width}x{image.height}' for image in output_images]
+        image_txt = f'| Images {len(output_images)} | Size {" ".join(image_str)}'
 
     if video_type != 'None' and isinstance(output_images, list):
         p.do_not_save_grid = True # pylint: disable=attribute-defined-outside-init

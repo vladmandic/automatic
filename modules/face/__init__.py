@@ -45,6 +45,8 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
+            gr.HTML("<span>&nbsp Face module</span><br>")
+        with gr.Row():
             mode = gr.Dropdown(label='Mode', choices=['None', 'FaceID', 'FaceSwap', 'InstantID', 'PhotoMaker'], value='None')
         with gr.Group(visible=False) as cfg_faceid:
             with gr.Row():

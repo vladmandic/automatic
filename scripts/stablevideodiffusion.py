@@ -25,6 +25,8 @@ class Script(scripts.Script):
             ]
 
         with gr.Row():
+            gr.HTML('<a href="https://huggingface.co/stabilityai/stable-video-diffusion-img2vid">&nbsp Stable Video Diffusion</a><br>')
+        with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=1, maximum=50, step=1, value=14)
             min_guidance_scale = gr.Slider(label='Min guidance', minimum=0.0, maximum=10.0, step=0.1, value=1.0)
             max_guidance_scale = gr.Slider(label='Max guidance', minimum=0.0, maximum=10.0, step=0.1, value=3.0)

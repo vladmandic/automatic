@@ -76,6 +76,10 @@ def create_ui(_blocks: gr.Blocks=None):
         txt_prompt_img.change(fn=images.image_data, inputs=[txt_prompt_img], outputs=[prompt, txt_prompt_img])
 
         with gr.Group(elem_id="control_interface", equal_height=False):
+
+            with gr.Row(elem_id='control_status'):
+                result_txt = gr.HTML(elem_classes=['control-result'], elem_id='control-result')
+
             with gr.Row(elem_id='control_settings'):
 
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
@@ -126,9 +130,6 @@ def create_ui(_blocks: gr.Blocks=None):
                 extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, btn_extra, 'control', skip_indexing=shared.opts.extra_network_skip_indexing)
                 timer.startup.record('ui-en')
 
-            with gr.Row(elem_id='control_status'):
-                result_txt = gr.HTML(elem_classes=['control-result'], elem_id='control-result')
-
             with gr.Row(elem_id='control-inputs'):
                 with gr.Column(scale=9, elem_id='control-input-column', visible=True) as _column_input:
                     gr.HTML('<span id="control-input-button">Control input</p>')
@@ -173,7 +174,7 @@ def create_ui(_blocks: gr.Blocks=None):
                         with gr.Tab('Preview', id='preview-image') as tab_image:
                             preview_process = gr.Image(label="Preview", show_label=False, type="pil", source="upload", interactive=False, height=gr_height, visible=True, elem_id='control_preview', elem_classes=['control-image'])
 
-            with gr.Accordion('Control elements'):
+            with gr.Accordion('Control elements', open=False):
                 with gr.Tabs(elem_id='control-tabs') as _tabs_control_type:
 
                     with gr.Tab('ControlNet') as _tab_controlnet:

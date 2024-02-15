@@ -18,6 +18,8 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
             ]
 
         with gr.Row():
+            gr.HTML("<span>&nbsp Video</span><br>")
+        with gr.Row():
             video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
             duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
         with gr.Row():

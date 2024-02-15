@@ -14,6 +14,8 @@ class Script(scripts.Script):
 
     def ui(self, _is_img2img):
         with gr.Row():
+            gr.HTML('<a href="https://huggingface.co/salesforce/blipdiffusion">&nbsp BLIP Diffusion</a><br>')
+        with gr.Row():
             source_subject = gr.Textbox(value='', label='Source subject')
         with gr.Row():
             target_subject = gr.Textbox(value='', label='Target subject')
