@@ -425,6 +425,8 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         self.current_axis_options = [x for x in axis_options if type(x) == AxisOption or x.is_img2img == is_img2img]
         with gr.Row():
+            gr.HTML('<span">&nbsp X/Y/Z Grid</span><br>')
+        with gr.Row():
             with gr.Column():
                 with gr.Row(variant='compact'):
                     x_type = gr.Dropdown(label="X type", container=True, choices=[x.label for x in self.current_axis_options], value=self.current_axis_options[0].label, type="index", elem_id=self.elem_id("x_type"))

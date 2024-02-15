@@ -416,7 +416,7 @@ class ScriptRunner:
                 if not script.standalone:
                     continue
                 t0 = time.time()
-                with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['extension-script']) as group:
+                with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['group-extension']) as group:
                     create_script_ui(script, inputs, inputs_alwayson)
                 script.group = group
                 time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)
@@ -427,13 +427,13 @@ class ScriptRunner:
                     if script.standalone:
                         continue
                     t0 = time.time()
-                    with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['extension-script']) as group:
+                    with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['group-extension']) as group:
                         create_script_ui(script, inputs, inputs_alwayson)
                     script.group = group
                     time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)
 
         for script in self.selectable_scripts:
-            with gr.Group(visible=False) as group:
+            with gr.Group(elem_id=f'{parent}_script_{script.title().lower().replace(" ", "_")}', elem_classes=['group-scripts'], visible=False) as group:
                 t0 = time.time()
                 create_script_ui(script, inputs, inputs_alwayson)
                 time_setup[script.title()] = time_setup.get(script.title(), 0) + (time.time()-t0)

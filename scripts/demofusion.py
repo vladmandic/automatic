@@ -816,8 +816,8 @@ class DemoFusionSDXLPipeline(DiffusionPipeline, FromSingleFileMixin, LoraLoaderM
         if denoising_end is not None and isinstance(denoising_end, float) and denoising_end > 0 and denoising_end < 1:
             discrete_timestep_cutoff = int(
                 round(
-                    self.scheduler.config.num_train_timesteps
-                    - (denoising_end * self.scheduler.config.num_train_timesteps)
+                    self.scheduler.config.num_train_timesteps # pylint: disable=no-member
+                    - (denoising_end * self.scheduler.config.num_train_timesteps) # pylint: disable=no-member
                 )
             )
             num_inference_steps = len(list(filter(lambda ts: ts >= discrete_timestep_cutoff, timesteps)))
@@ -938,7 +938,7 @@ class DemoFusionSDXLPipeline(DiffusionPipeline, FromSingleFileMixin, LoraLoaderM
                 for i, t in enumerate(timesteps):
                     count = torch.zeros_like(latents)
                     value = torch.zeros_like(latents)
-                    cosine_factor = 0.5 * (1 + torch.cos(torch.pi * (self.scheduler.config.num_train_timesteps - t) / self.scheduler.config.num_train_timesteps)).cpu()
+                    cosine_factor = 0.5 * (1 + torch.cos(torch.pi * (self.scheduler.config.num_train_timesteps - t) / self.scheduler.config.num_train_timesteps)).cpu() # pylint: disable=no-member
 
                     c1 = cosine_factor ** cosine_scale_1
                     latents = latents * (1 - c1) + noise_latents[i] * c1
@@ -1004,7 +1004,7 @@ class DemoFusionSDXLPipeline(DiffusionPipeline, FromSingleFileMixin, LoraLoaderM
                             noise_pred = rescale_noise_cfg(noise_pred, noise_pred_text, guidance_rescale=guidance_rescale)
 
                         # compute the previous noisy sample x_t -> x_t-1
-                        self.scheduler._init_step_index(t)
+                        self.scheduler._init_step_index(t) # pylint: disable=no-member
                         latents_denoised_batch = self.scheduler.step(
                             noise_pred, t, latents_for_view, **extra_step_kwargs, return_dict=False)[0]
 
@@ -1089,7 +1089,7 @@ class DemoFusionSDXLPipeline(DiffusionPipeline, FromSingleFileMixin, LoraLoaderM
                             noise_pred = rescale_noise_cfg(noise_pred, noise_pred_text, guidance_rescale=guidance_rescale)
 
                         # compute the previous noisy sample x_t -> x_t-1
-                        self.scheduler._init_step_index(t)
+                        self.scheduler._init_step_index(t) # pylint: disable=no-member
                         latents_denoised_batch = self.scheduler.step(
                             noise_pred, t, latents_for_view, **extra_step_kwargs, return_dict=False)[0]
 
@@ -1229,6 +1229,8 @@ class Script(scripts.Script):
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):
+        with gr.Row():
+            gr.HTML('<a href="https://github.com/PRIS-CV/DemoFusion">&nbsp DemoFusion</a><br>')
         with gr.Row():
             cosine_scale_1 = gr.Slider(minimum=0, maximum=5, step=0.1, value=3, label="Cosine scale 1")
             cosine_scale_2 = gr.Slider(minimum=0, maximum=5, step=0.1, value=1, label="Cosine scale 2")

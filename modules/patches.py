@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Optional
+from modules.errors import log
 
 
 def patch(key, obj, field, replacement, add_if_not_exists:bool = False):
@@ -16,9 +17,10 @@ def patch(key, obj, field, replacement, add_if_not_exists:bool = False):
     """
     patch_key = (obj, field)
     if patch_key in originals[key]:
-        raise RuntimeError(f"patch for {field} is already applied")
+        log.error(f"Patch already applied: field={field}")
     if not hasattr(obj, field) and not add_if_not_exists:
-        raise AttributeError(f"type {type(obj)} '{type.__name__}' has no attribute '{field}'")
+        log.error(f"Patch no attribute: type={type(obj)} name='{type.__name__}' fiel'{field}'")
+        return None
     original_func = getattr(obj, field, None)
     originals[key][patch_key] = original_func
     setattr(obj, field, replacement)
@@ -37,7 +39,8 @@ def undo(key, obj, field):
     """
     patch_key = (obj, field)
     if patch_key not in originals[key]:
-        raise RuntimeError(f"there is no patch for {field} to undo")
+        log.error(f"Patch no patch to undo: field={field}")
+        return
     original_func = originals[key].pop(patch_key)
     if original_func is None:
         delattr(obj, field)

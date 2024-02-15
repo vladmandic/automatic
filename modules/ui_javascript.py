@@ -56,7 +56,7 @@ def html_css(is_builtin: bool):
         if not os.path.isfile(cssfile):
             continue
         head += stylesheet(cssfile)
-    if shared.opts.gradio_theme in theme.list_builtin_themes():
+    if shared.opts.gradio_theme in theme.list_builtin_themes() and os.path.exists(os.path.join(script_path, "javascript", f"{shared.opts.gradio_theme}.css")):
         head += stylesheet(os.path.join(script_path, "javascript", f"{shared.opts.gradio_theme}.css"))
     if os.path.exists(os.path.join(data_path, "user.css")):
         head += stylesheet(os.path.join(data_path, "user.css"))

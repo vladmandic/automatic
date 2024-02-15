@@ -6,7 +6,6 @@ import modules.extensions
 
 
 gradio_theme = gr.themes.Base()
-# modules.shared.opts.onchange("gradio_theme", reload_gradio_theme)
 
 
 def list_builtin_themes():
@@ -64,15 +63,13 @@ def reload_gradio_theme(theme_name=None):
         'font':['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'font_mono':['IBM Plex Mono', 'ui-monospace', 'Consolas', 'monospace']
     }
-    is_builtin = theme_name.lower() in list_builtin_themes()
-    is_external = theme_name.lower() in ['lobe', 'modern']
     base = 'base.css'
-    if is_builtin:
+    if theme_name.lower() in list_builtin_themes():
         base = 'sdnext.css'
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
         return True
-    elif is_external:
+    elif theme_name.lower() in ['lobe', 'modern']:
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
     elif theme_name.startswith("gradio/"):

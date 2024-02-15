@@ -33,7 +33,7 @@ class Script(scripts.Script):
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://arxiv.org/abs/2302.02412">&nbsp Mixture tiling</a>')
+            gr.HTML('<a href="https://arxiv.org/abs/2302.02412">&nbsp Mixture tiling</a><br>')
         with gr.Row():
             gr.HTML('<span>&nbsp Separated prompts using new lines<br>&nbsp Number of prompts must matcxh X*Y</span>')
         with gr.Row():

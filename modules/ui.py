@@ -20,6 +20,8 @@ log = shared.log
 opts = shared.opts
 cmd_opts = shared.cmd_opts
 ui_system_tabs = None
+paste_function = None
+wrap_queued_call = call_queue.wrap_queued_call
 switch_values_symbol = ui_symbols.switch
 detect_image_size_symbol = ui_symbols.detect
 paste_symbol = ui_symbols.paste
@@ -29,8 +31,6 @@ folder_symbol = ui_symbols.folder
 extra_networks_symbol = ui_symbols.networks
 apply_style_symbol = ui_symbols.apply
 save_style_symbol = ui_symbols.save
-paste_function = None
-wrap_queued_call = call_queue.wrap_queued_call
 gr_hijack.init()
 
 

@@ -47,6 +47,8 @@ class Script(scripts.Script):
                 return gr.update(value=f'<span> &nbsp frames: {model["params"][0]} size: {model["params"][1]}x{model["params"][2]}</span> <a href="https://huggingface.co/{model["path"]}" target="_blank">link</a>')
 
         with gr.Row():
+            gr.HTML('<span>&nbsp Text to video</span><br>')
+        with gr.Row():
             model_name = gr.Dropdown(label='Model', value='None', choices=[m['name'] for m in MODELS])
         with gr.Row():
             model_info = gr.HTML()

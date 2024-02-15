@@ -96,6 +96,8 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         with gr.Row():
+            gr.HTML('<span">&nbsp Prompt from file</span><br>')
+        with gr.Row():
             checkbox_iterate = gr.Checkbox(label="Iterate seed per line", value=False, elem_id=self.elem_id("checkbox_iterate"))
             checkbox_iterate_batch = gr.Checkbox(label="Use same seed", value=False, elem_id=self.elem_id("checkbox_iterate_batch"))
         prompt_txt = gr.Textbox(label="Prompts", lines=2, elem_id=self.elem_id("prompt_txt"))

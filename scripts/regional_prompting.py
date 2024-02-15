@@ -31,7 +31,7 @@ class Script(scripts.Script):
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline">&nbsp Regional prompting</a>')
+            gr.HTML('<a href="https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline">&nbsp Regional prompting</a><br>')
         with gr.Row():
             mode = gr.Radio(label='Mode', choices=['None', 'Prompt', 'Prompt EX', 'Columns', 'Rows'], value='None')
         with gr.Row():

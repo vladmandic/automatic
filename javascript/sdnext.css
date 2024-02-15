@@ -54,7 +54,8 @@ input[type='color'] { width: 64px; height: 32px; }
 .small-accordion .label-wrap .icon { margin-right: 1em; margin-left: 0.3em; color: var(--button-primary-border-color); }
 .small-accordion .label-wrap { padding: 16px 0px 8px 0px; margin: 0; border-top: 2px solid var(--button-secondary-border-color); }
 .small-accordion { width: fit-content !important; min-width: fit-content !important; padding-left: 0 !important; }
-.extension-script { max-width: 48vw; }
+.group-exetensions { max-width: 48vw; }
+.group-scripts { max-width: 48vw; margin-top: 1em; padding-top: 0.5em; border-top: 2px solid var(--button-secondary-border-color) !important; }
 button.custom-button{ border-radius: var(--button-large-radius); padding: var(--button-large-padding); font-weight: var(--button-large-text-weight); border: var(--button-border-width) solid var(--button-secondary-border-color);
     background: var(--button-secondary-background-fill); color: var(--button-secondary-text-color); font-size: var(--text-lg);
     display: inline-flex; justify-content: center; align-items: center; transition: var(--button-transition); box-shadow: var(--button-shadow); text-align: center; }
