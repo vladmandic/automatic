@@ -261,11 +261,11 @@ def torch_Generator(device=None):
 
 original_torch_load = torch.load
 @wraps(torch.load)
-def torch_load(f, map_location=None, pickle_module=None, *, weights_only=False, mmap=None, **kwargs):
+def torch_load(f, map_location=None, *args, **kwargs):
     if check_device(map_location):
-        return original_torch_load(f, map_location=return_xpu(map_location), pickle_module=pickle_module, weights_only=weights_only, mmap=mmap, **kwargs)
+        return original_torch_load(f, *args, map_location=return_xpu(map_location), **kwargs)
     else:
-        return original_torch_load(f, map_location=map_location, pickle_module=pickle_module, weights_only=weights_only, mmap=mmap, **kwargs)
+        return original_torch_load(f, *args, map_location=map_location, **kwargs)
 
 
 # Hijack Functions:

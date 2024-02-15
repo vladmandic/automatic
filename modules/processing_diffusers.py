@@ -207,7 +207,17 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             model.scheduler.noise_sampler_seed = p.seeds[0] # some schedulers have internal noise generator and do not use pipeline generator
         if 'noise_sampler_seed' in possible:
             args['noise_sampler_seed'] = p.seeds[0]
-        if 'guidance_scale' in possible:
+        if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_num_inference_steps' in possible:
+            steps = kwargs.pop("num_inference_steps", 20)
+            args["prior_num_inference_steps"] = steps
+            args["num_inference_steps"] = max(int(steps / 2), 1) # TODO: add another slider without overcrowding the UI
+        if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_guidance_scale' in possible:
+            cfg_scale = kwargs.pop("guidance_scale", p.cfg_scale)
+            args["prior_guidance_scale"] = cfg_scale
+            # Using decoder_guidance_scale causes "Expected all tensors to be on the same device" errors right now
+            # Enabling model cpu offload fixes the error above
+            #args["decoder_guidance_scale"] = 0.0
+        elif 'guidance_scale' in possible:
             args['guidance_scale'] = p.cfg_scale
         if 'generator' in possible and generator is not None:
             args['generator'] = generator
@@ -219,6 +229,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if 'callback' in possible:
             args['callback'] = diffusers_callback_legacy
         elif 'callback_on_step_end_tensor_inputs' in possible:
+            if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_guidance_scale' in possible:
+                args['prior_callback_on_step_end'] = diffusers_callback
             args['callback_on_step_end'] = diffusers_callback
             if 'prompt_embeds' in possible and 'negative_prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):
                 args['callback_on_step_end_tensor_inputs'] = model._callback_tensor_inputs # pylint: disable=protected-access
