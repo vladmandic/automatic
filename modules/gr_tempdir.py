@@ -54,17 +54,17 @@ def pil_to_temp_file(self, img: Image, dir: str, format="png") -> str: # pylint:
         debug(f'Image registered: {name}')
         return name
     if shared.opts.temp_dir != "":
-        dir = shared.opts.temp_dir
+        folder = shared.opts.temp_dir
     use_metadata = False
     metadata = PngImagePlugin.PngInfo()
     for key, value in img.info.items():
         if isinstance(key, str) and isinstance(value, str):
             metadata.add_text(key, value)
             use_metadata = True
-    if not os.path.exists(dir):
-        os.makedirs(dir, exist_ok=True)
-        shared.log.debug(f'Created temp folder: path="{dir}"')
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".png", dir=dir) as tmp:
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+        shared.log.debug(f'Created temp folder: path="{folder}"')
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".png", dir=folder) as tmp:
         name = tmp.name
         img.save(name, pnginfo=(metadata if use_metadata else None))
         img.already_saved_as = name
