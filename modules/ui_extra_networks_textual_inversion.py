@@ -42,7 +42,13 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
 
     def list_items(self):
         if sd_models.model_data.sd_model is None:
-            candidates = list(files_cache.list_files(shared.opts.embeddings_dir, ext_filter=['.pt', '.safetensors'], recursive=files_cache.not_hidden))
+            '''
+            `files_cache.list_files` returns an `filter` generator, converting
+            this to a list bumps the processing time of `self.list_items` by
+            as much as 10% in certain situations.
+            I don't know why, but that's what I saw in testing.
+            '''
+            candidates = files_cache.list_files(shared.opts.embeddings_dir, ext_filter=['.pt', '.safetensors'], recursive=files_cache.not_hidden)
             self.embeddings = [
                 Embedding(vec=0, name=os.path.basename(embedding_path), filename=embedding_path)
                 for embedding_path

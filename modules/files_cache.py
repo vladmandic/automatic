@@ -1,21 +1,19 @@
 import itertools
 import os
 from collections import UserDict
-from dataclasses import dataclass, field
-from typing import Callable, Dict, Iterator, List, Optional, Union
-from installer import log
+from threading import Thread
+from queue import Queue, Empty
+from os import PathLike
+from typing import Callable, Dict, Iterator, List, Optional, Union, Iterable
 
-
-class Directory: # forward declaration
-    ...
 
 FilePathList = List[str]
 FilePathIterator = Iterator[str]
 DirectoryPathList = List[str]
 DirectoryPathIterator = Iterator[str]
-DirectoryList = List[Directory]
-DirectoryIterator = Iterator[Directory]
-DirectoryCollection = Dict[str, Directory]
+DirectoryList = List['Directory']
+DirectoryIterator = Iterator['Directory']
+DirectoryCollection = Dict[str, 'Directory']
 ExtensionFilter = Callable
 ExtensionList = list[str]
 RecursiveType = Union[bool,Callable]
@@ -29,64 +27,179 @@ def real_path(directory_path:str) -> Union[str, None]:
     return None
 
 
-@dataclass(frozen=True)
-class Directory(Directory): # pylint: disable=E0102
-    path: str = field(default_factory=str)
-    mtime: float = field(default_factory=float, init=False)
-    files: FilePathList = field(default_factory=list)
-    directories: DirectoryPathList = field(default_factory=list)
+def threaded_walker(directory, queue):
+    try:
+        scandir_it = os.scandir(directory)
+    except OSError:
+        ...
+    if scandir_it:
+        with scandir_it:
+            while True:
+                path = False
+                try:
+                    path = next(scandir_it, False)
+                except OSError:
+                    ...
+                if path is False:
+                    break
+                queue.put(path)
+    queue.put(True)
 
-    def __post_init__(self):
-        object.__setattr__(self, 'mtime', self.live_mtime)
+
+class DirectoryWalker():
+    def __init__(self, directory):
+        self.directory = directory
+        self.__complete = False
+        self.paths: list[PathLike] = []
+        self.queue = Queue()
+        self.thread = Thread(target=threaded_walker, daemon=True, args=[self.directory, self.queue])
+        self.mtime = self.directory.live_mtime
+        self.thread.start()
+
+
+    def is_stale(self, mtime_compare:float):
+        return mtime_compare and mtime_compare != self.mtime
+
+
+    def is_complete(self, blocking = True) -> bool:
+        path = None
+        while not self.__complete:
+            try:
+                path = self.queue.get_nowait()
+            except Empty:
+                if path is None and blocking:
+                    path = self.queue.get()
+                else:
+                    break
+            if path is True:
+                self.__complete = True
+            elif path:
+                self.paths.append(path)
+            elif blocking:
+                raise GeneratorExit('Unknown Error, empty path, somehow')
+
+        return self.__complete
+
+
+    @property
+    def files(self) -> Iterable[str]:
+        i = 0
+        while not self.is_complete() or i < len(self.paths):
+            i += 1
+            try:
+                if self.paths[i-1].is_dir():
+                    continue
+            except OSError:
+                ...
+            yield self.paths[i-1].path
+
+
+    @property
+    def directories(self) -> Iterable[str]:
+        i = 0
+        while not self.is_complete() or i < len(self.paths):
+            try:
+                if self.paths[i].is_dir():
+                    yield self.paths[i].path
+            except OSError:
+                ...
+            i += 1
+
+
+class Directory(PathLike):
+
+    def __init__(self, filepath):
+        self.path = filepath
+        self.mtime = None
+        self.__walker = None
+        self.__files = set()
+        self.__directories = set()
+        self.__sync()
+
+
+    def __fspath__(self) -> str:
+        return f'{self.path}'
+
+
+    def __sync(self):
+        if self.is_directory:
+            if (not self.__walker and self.is_stale) or (self.__walker and self.__walker.is_stale(self.mtime)):
+                self.__walker = DirectoryWalker(self)
+
+
+    def __is_complete(self) -> bool:
+        self.__sync()
+        if self.__walker and self.__walker.is_complete(False):
+            walker = self.__walker
+            self.__walker = None
+            self._update({
+                'mtime': walker.mtime,
+                'files': set(walker.files),
+                'directories': set(walker.directories),
+            })
+        return self.__walker is None
+
+
+    @property
+    def files(self) -> Union[set[str], Iterable[str]]:
+        return self.__files if self.__is_complete() else self.__walker.files
+
+
+    @property
+    def directories(self) -> Union[set[str], Iterable[str]]:
+        return self.__directories if self.__is_complete() else self.__walker.directories
+
+
+    @property
+    def is_stale(self) -> bool:
+        return not self.mtime or self.mtime != self.live_mtime
+
+
+    @property
+    def is_directory(self) -> bool:
+        return is_directory(self.path)
+
+
+    @property
+    def live_mtime(self) -> float:
+        return os.path.getmtime(self.path)
 
     @classmethod
-    def from_dict(cls, dict_object: dict) -> Directory:
+    def from_dict(cls, dict_object: Dict) -> 'Directory':
         directory = cls.__new__(cls)
-        object.__setattr__(directory, 'path', dict_object.get('path'))
-        object.__setattr__(directory, 'mtime', dict_object.get('mtime'))
-        object.__setattr__(directory, 'files', dict_object.get('files'))
-        object.__setattr__(directory, 'directories', dict_object.get('directories'))
+        directory._update(dict_object)
         return directory
 
+    @property
+    def dict(self) -> Dict:
+        return {
+            'path': self.path,
+            'directories': set(self.directories),
+            'files': set(self.files),
+            'mtime': self.mtime
+        }
+
     def clear(self) -> None:
-        self._update(Directory.from_dict({
+        self._update({
             'path': None,
             'mtime': float(),
             'files': [],
             'directories': []
-        }))
+        })
 
-    def update(self, source_directory: Directory) -> Directory:
+    def update(self, source_directory: 'Directory') -> 'Directory':
         if source_directory is not self:
-            self._update(source_directory)
+            self._update(source_directory.dict)
         return self
 
-    def _update(self, source:Directory) -> None:
-        assert not source.path or source.path == self.path, f'When updating a directory, the paths must match.  Attemped to update Directory `{self.path}` with `{source.path}`'
-        for dead_path in self.directories:
-            if dead_path not in source.directories:
-                delete_cached_directory(dead_path)
-        self.directories[:] = source.directories
-        self.files[:] = source.files
-        object.__setattr__(self, 'mtime', source.mtime)
-
-    @property
-    def exists(self) -> bool:
-        return self.path and os.path.exists(self.path)
-
-    @property
-    def is_directory(self) -> bool:
-        return self.exists and os.path.isdir(self.path)
-
-    @property
-    def live_mtime(self) -> float:
-        return os.path.getmtime(self.path) if self.is_directory else 0
-
-    @property
-    def is_stale(self) -> bool:
-        return not self.is_directory or self.mtime != self.live_mtime
-
-
+    def _update(self, source:Dict) -> None:
+        assert source.get('path', None) is None or source.path == self.path, f'When updating a directory, the paths must match.  Attemped to update Directory `{self.path}` with `{source.path}`'
+        for dead_directory in self.__directories:
+            if dead_directory not in source.directories:
+                delete_cached_directory(dead_directory)
+        self.mtime = source.get('mtime')
+        self.__files = set(source.get('files'))
+        self.__directories = set(source.get('directories'))
 
 
 class DirectoryCache(UserDict, DirectoryCollection):
@@ -98,34 +211,6 @@ class DirectoryCache(UserDict, DirectoryCollection):
         del self.data[directory_path]
 
 
-def clean_directory(directory: Directory, /, recursive: RecursiveType=False) -> bool:
-    if not directory.is_directory:
-        is_clean = False
-        delete_cached_directory(directory.path)
-    else:
-        is_clean = not directory.is_stale
-        if not is_clean:
-            directory.update(fetch_directory(directory.path))
-        else:
-            for directory_path in directory.directories[:]:
-                try:
-                    recurse = recursive and (not callable(recursive) or recursive(directory.path))
-                    directory = get_directory(directory_path, fetch=recurse)
-                    if directory:
-                        if directory.is_directory:
-                            if recurse:
-                                is_clean = clean_directory(directory, recursive=recurse) and is_clean
-                            continue
-                        delete_cached_directory(directory_path)
-                    # If we had intended to fetch this directory, but didn't, that means it doesn't exist. Purge.
-                    if recurse:
-                        directory.directories.remove(directory_path)
-                    is_clean = False
-                except Exception:
-                    pass
-    return is_clean
-
-
 def get_directory(directory_or_path: str, /, fetch:bool=True) -> Union[Directory, None]:
     if isinstance(directory_or_path, Directory):
         if directory_or_path.is_directory:
@@ -135,66 +220,26 @@ def get_directory(directory_or_path: str, /, fetch:bool=True) -> Union[Directory
     directory_or_path = real_path(directory_or_path)
     if not cache_folders.get(directory_or_path, None):
         if fetch:
-            directory = fetch_directory(directory_path=directory_or_path)
-            if directory:
+            directory = Directory(directory_or_path)
+            if directory.is_directory:
                 cache_folders[directory_or_path] = directory
-    else:
-        clean_directory(cache_folders[directory_or_path])
+            else:
+                print(f'Not Dir: {directory_or_path}')
     return cache_folders[directory_or_path] if directory_or_path in cache_folders else None
 
 
-def fetch_directory(directory_path: str) -> Union[Directory, None]:
-    directory: Directory
-    for directory in _walk(directory_path, recurse=False):
-        return directory # The return is intentional, we get a generator, we only need the one
-    return None
-
-
-def _walk(top, recurse:RecursiveType=True) -> Directory:
-    # reimplemented `path.walk()`
-    nondirs = []
-    walk_dirs = []
-    try:
-        scandir_it = os.scandir(top)
-    except OSError:
+def cached_walk(directory_path, recurse:RecursiveType=True) -> Iterable[Directory]:
+    directory_path = get_directory(directory_path)
+    if not directory_path:
         return
-    with scandir_it:
-        while True:
-            try:
-                entry = next(scandir_it)
-            except StopIteration:
-                break
-            if not entry.is_dir():
-                nondirs.append(entry.path)
-            else:
-                if entry.is_symlink() and not os.path.exists(entry.path):
-                    log.error(f'Files broken symlink: {entry.path}')
-                else:
-                    walk_dirs.append(entry.path)
-    yield Directory(top, nondirs, walk_dirs)
+    yield directory_path
     if recurse:
-        for new_path in walk_dirs:
-            if callable(recurse) and not recurse(new_path):
-                continue
-            yield from _walk(new_path, recurse=recurse)
-
-
-def _cached_walk(top, recurse:RecursiveType=True) -> Directory:
-    top = get_directory(top)
-    if not top:
-        return
-    yield top
-    if recurse:
-        for child_directory in top.directories:
+        for child_directory in directory_path.directories:
             if os.path.basename(child_directory).startswith('models--'):
                 continue
             if callable(recurse) and not recurse(child_directory):
                 continue
-            yield from _cached_walk(child_directory, recurse=recurse)
-
-
-def walk(top, recurse:RecursiveType=True, cached=True) -> Directory:
-    yield from _cached_walk(top, recurse=recurse) if cached else _walk(top, recurse=recurse)
+            yield from cached_walk(child_directory, recurse=recurse)
 
 
 def delete_cached_directory(directory_path:str) -> bool:
