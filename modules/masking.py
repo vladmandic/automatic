@@ -354,7 +354,6 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
         mask = cv2.erode(mask, kernel, iterations=max(sigmaX, sigmaY) // 3) # increase overlap area
         mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmaX, sigmaY=sigmaY) # blur mask
         mask = Image.fromarray(mask)
-        mask.save('/tmp/mask2.png')
 
     if outpaint_type == 'Edge':
         bordered = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_REPLICATE)

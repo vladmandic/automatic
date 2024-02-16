@@ -2,7 +2,7 @@
 
 ## Update for 2024-02-16
 
-- **improvements**:
+- **Improvements**:
   - **IP Adapter** major refactor  
     - support for **multiple input images** per each ip adapter  
     - support for **multiple concurrent ip adapters**  
@@ -58,10 +58,13 @@
     - add use only for hires pass option  
   - add `--theme` cli param to force theme on startup  
   - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
-- **wiki**:
+- **Wiki**:
   - added benchmark notes for IPEX, OpenVINO and Olive  
   - added ZLUDA wiki page  
-- **fixes**:  
+- **Internal**
+  - update dependencies  
+  - refactor txt2img/img2img api  
+- **Fixes**:  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  

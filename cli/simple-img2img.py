@@ -17,7 +17,6 @@ logging.basicConfig(level = logging.INFO, format = '%(asctime)s %(levelname)s: %
 log = logging.getLogger(__name__)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-filename='/tmp/simple-img2img.jpg'
 options = {
     "save_images": False,
     "send_images": True,
@@ -74,8 +73,11 @@ def generate(args): # pylint: disable=redefined-outer-name
             b64 = data['images'][i].split(',',1)[0]
             info = data['info']
             image = Image.open(io.BytesIO(base64.b64decode(b64)))
-            image.save(filename)
-            log.info(f'received image: size={image.size} file={filename} time={t1-t0:.2f} info="{info}"')
+            log.info(f'received image: size={image.size} time={t1-t0:.2f} info="{info}"')
+            if args.output:
+                image.save(args.output)
+                log.info(f'image saved: size={image.size} filename={args.output}')
+
     else:
         log.warning(f'no images received: {data}')
 
@@ -89,6 +91,7 @@ if __name__ == "__main__":
     parser.add_argument('--steps', required=False, default=20, help='number of steps')
     parser.add_argument('--seed', required=False, default=-1, help='initial seed')
     parser.add_argument('--sampler', required=False, default='Euler a', help='sampler name')
+    parser.add_argument('--output', required=False, default=None, help='output image file')
     parser.add_argument('--model', required=False, help='model name')
     args = parser.parse_args()
     log.info(f'img2img: {args}')
