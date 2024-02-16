@@ -109,7 +109,6 @@ class KeyConvert:
         if shared.backend == shared.Backend.ORIGINAL:
             self.converter = self.original
             self.is_sd2 = 'model_transformer_resblocks' in shared.sd_model.network_layer_mapping
-
         else:
             self.converter = self.diffusers
             self.is_sdxl = True if shared.sd_model_type == "sdxl" else False

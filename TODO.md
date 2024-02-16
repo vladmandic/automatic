@@ -6,13 +6,18 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - zluda
 - stable cascade
-- control second pass: <https://github.com/vladmandic/automatic/issues/2783>  
-- onediff: <https://github.com/siliconflow/onediff>
+- init latents, variations, tiling
+- lora sliders: <https://github.com/vladmandic/automatic/issues/2868>
 - diffusers public callbacks  
 - image2video: pia and vgen pipelines  
 - video2video
+- preprocess api  
+
+## Control missing features
+
+- second pass: <https://github.com/vladmandic/automatic/issues/2783>  
+- inpaint masking explicit processing size: <https://github.com/vladmandic/automatic/issues/2857>
+- outpaint return mask and optional override future run_masking
 - control api  
 - masking api  
-- preprocess api  
-- bind panZoom to control input
-- masking.outpaint should return mask and override future run_masking
+- inpaint pan/zoom

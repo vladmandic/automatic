@@ -221,12 +221,13 @@ This should be fully cross-platform, but we'd really love to have additional con
 ### **Evolution**
 
 <a href="https://star-history.com/#vladmandic/automatic&Date">
-  <picture>
+  <picture width=640>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date" />
+    <img src="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date" alt="starts" width="320">
   </picture>
 </a>
+
+- [OSS Stats](https://ossinsight.io/analyze/vladmandic/automatic#overview)
 
 ### **Docs**
 
