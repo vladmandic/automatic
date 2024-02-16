@@ -118,7 +118,7 @@ div#extras_scale_to_tab div.form{ flex-direction: row; }
 /* settings */
 #si-sparkline-memo, #si-sparkline-load { background-color: #111; }
 #quicksettings { width: fit-content; }
-#quicksettings>button { padding: 0 1em 0 0; align-self: end; margin-bottom: var(--text-sm); }
+#quicksettings>button { padding: 0 1em 0 0; align-self: end; margin-bottom: 6px; }
 #settings { display: flex; gap: var(--layout-gap); }
 #settings div { border: none; gap: 0; margin: 0 0 var(--layout-gap) 0px; padding: 0; }
 #settings>div.tab-content { flex: 10 0 75%; display: grid; }
