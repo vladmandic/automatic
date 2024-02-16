@@ -44,6 +44,7 @@ def pil_to_temp_file(self, img: Image, dir: str, format="png") -> str: # pylint:
     filename = str(temp_dir / f"image.{format}")
     img.save(filename, pnginfo=gr.processing_utils.get_pil_metadata(img))
     """
+    folder = dir
     already_saved_as = getattr(img, 'already_saved_as', None)
     exists = os.path.isfile(already_saved_as) if already_saved_as is not None else False
     debug(f'Image lookup: {already_saved_as} exists={exists}')
