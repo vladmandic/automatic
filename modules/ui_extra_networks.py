@@ -9,9 +9,9 @@ import urllib.parse
 import threading
 from datetime import datetime
 from types import SimpleNamespace
-from pathlib import Path
 from html.parser import HTMLParser
 from collections import OrderedDict
+import queue
 import gradio as gr
 from PIL import Image
 from starlette.responses import FileResponse, JSONResponse
@@ -20,7 +20,9 @@ from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 
 
-allowed_dirs = []
+allowed_dirs = [os.path.abspath('html/'),os.path.abspath('models/')]
+thumb_queue = queue.Queue()
+thumb_exts = ("jpg", "jpeg", "png", "webp", "tiff", "jp2")
 refresh_time = 0
 extra_pages = shared.extra_networks
 debug = shared.log.trace if os.environ.get('SD_EN_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -35,7 +37,7 @@ card_full = '''
             <span class='details' title="Get details" onclick="showCardDetails(event)">&#x1f6c8;</span>
             <div class='additional'><ul></ul></div>
         </div>
-        <img class='preview' src='{preview}' style='width: {width}px; height: {height}px; object-fit: {fit}' loading='lazy'></img>
+        <img class='preview' src='{preview}' loading='lazy'></img>
     </div>
 '''
 card_list = '''
@@ -47,20 +49,107 @@ card_list = '''
         </div>
     </div>
 '''
+html_format = '''
+    <style>
+        #{page_name}_cards .preview {{
+            width: {width}px;
+            height: {height}px;
+            object-fit: {fit};
+        }}
+    </style>
+    <div id='{page_name}_subdirs' class='extra-network-subdirs'>
+        {subdirs_html}
+    </div>
+    <div id='{page_name}_cards' class='extra-network-cards'>
+        {cards_html}
+    </div>
+'''
+
+
+def in_allowed_dir(filepath):
+    abs_filepath = os.path.abspath(filepath)
+    return any(abs_filepath.startswith(os.path.join(os.path.abspath(allowed_dir),'')) for allowed_dir in allowed_dirs)
+
+
+def resolve_preview(base):
+    for ext in thumb_exts:
+        for mid in ('.thumb.', '.', '.preview.'):
+            file = f'{base}{mid}{ext}'
+            if os.path.exists(file) and os.path.isfile(file):
+                return file
+    return None
+
+
+def thumbs_worker():
+    debug('EN create-thumb-worker: starting')
+    created = 0
+    processed = 0
+    timer = time.time()
+    timeout = 60
+    last_report = 0
+    report_time = 60
+    reference_path = os.path.abspath(os.path.join('models', 'Reference'))
+    while True:
+        try:
+            file = os.path.abspath(thumb_queue.get(timeout=timeout))
+            if not processed:
+                process_time = time.time()
+            processed += 1
+            if not file.startswith(reference_path) and in_allowed_dir(file):
+                file = resolve_preview(file)
+                if file:
+                    base, ext = os.path.splitext(file)
+                    if not base.endswith('.thumb'):
+                        if base.endswith('.preview'):
+                            base = base[:-8]
+                        thumb_file = f'{base}.thumb.{ext}'
+                        if not os.path.exists(thumb_file): # thumbnail doesn't exists
+                            try:
+                                img = Image.open(file)
+                                if img and img.width > 1024 or img.height > 1024 or os.path.getsize(file) > 65536:
+                                    img = img.convert('RGB')
+                                    img.thumbnail((512, 512), Image.Resampling.HAMMING)
+                                    img.save(thumb_file, quality=50)
+                                    img.close()
+                                    created += 1
+                            except Exception as e:
+                                img = None
+                                os.remove(file)
+                                shared.log.warning(f'Extra network error creating thumbnail: {file} {e}')
+            thumb_queue.task_done()
+            if (time.time()-last_report) >= report_time:
+                debug(f"Extra network thumbnails: process_report created={created} processed={processed} rate={processed/(time.time()-process_time):.2f}/s time={time.time()-timer:.2f}")
+                last_report = time.time()
+        except queue.Empty:
+            last_report = 0
+            if processed > 0:
+                debug(f"Extra network thumbnails: empty_timeout created={created} processed={processed} time={(time.time()-timeout)-timer:.2f}")
+                created = 0
+                processed = 0
+                timer = time.time()
+            else:
+                debug(f"Extra network thumbnails: empty_timeout_checkin time={time.time()-timer:.2f}")
+
+
+threading.Thread(target=thumbs_worker, daemon=True).start()
 
 
 def init_api(app):
 
     def fetch_file(filename: str = ""):
-        if not os.path.exists(filename):
-            return JSONResponse({ "error": f"file {filename}: not found" }, status_code=404)
-        if filename.startswith('html/') or filename.startswith('models/'):
-            return FileResponse(filename, headers={"Accept-Ranges": "bytes"})
-        if not any(Path(folder).absolute() in Path(filename).absolute().parents for folder in allowed_dirs):
+        abs_filename = os.path.abspath(filename)
+        if not in_allowed_dir(abs_filename):
             return JSONResponse({ "error": f"file {filename}: must be in one of allowed directories" }, status_code=403)
-        if os.path.splitext(filename)[1].lower() not in (".png", ".jpg", ".jpeg", ".webp"):
-            return JSONResponse({"error": f"file {filename}: not an image file"}, status_code=403)
-        return FileResponse(filename, headers={"Accept-Ranges": "bytes"})
+        else:
+            base, ext = os.path.splitext(filename)
+            file_path = None
+            if ext.lower() in thumb_exts:
+                file_path = abs_filename
+            else:
+                file_path = resolve_preview(base) or os.path.abspath('html/card-no-preview.png')
+            if file_path:
+                return FileResponse(file_path, headers={"Accept-Ranges": "bytes", "File-Path": os.path.relpath(file_path)})
+        return JSONResponse({ "error": f"file {filename}: not found" }, status_code=404)
 
     def get_metadata(page: str = "", item: str = ""):
         page = next(iter([x for x in shared.extra_networks if x.name == page]), None)
@@ -143,46 +232,16 @@ class ExtraNetworksPage:
             opt = xyz_grid.AxisOption(f"[Network] {self.title}", str, add_prompt, choices=lambda: [x["name"] for x in self.items])
             xyz_grid.axis_options.append(opt)
 
-    def link_preview(self, filename):
-        quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
-        mtime = os.path.getmtime(filename) if os.path.exists(filename) else 0
-        preview = f"./sd_extra_networks/thumb?filename={quoted_filename}&mtime={mtime}"
+    def link_preview(self, filename, decache = None):
+        if decache is None:
+            decache = f'{time.time():.1f}'
+        preview = f"./sd_extra_networks/thumb?filename={urllib.parse.quote(os.path.relpath(filename))}"
+        if decache:
+            preview += f"&decache={urllib.parse.quote(decache)}"
         return preview
 
     def is_empty(self, folder):
         return any(files_cache.list_files(folder, ext_filter=['.ckpt', '.safetensors', '.pt', '.json']))
-
-    def create_thumb(self):
-        debug(f'EN create-thumb: {self.name}')
-        created = 0
-        for f in self.missing_thumbs:
-            if os.path.join('models', 'Reference') in f or not os.path.exists(f):
-                continue
-            fn = os.path.splitext(f)[0].replace('.preview', '')
-            fn = f'{fn}.thumb.jpg'
-            if os.path.exists(fn): # thumbnail already exists
-                continue
-            img = None
-            try:
-                img = Image.open(f)
-            except Exception:
-                img = None
-                shared.log.warning(f'Extra network removing invalid image: {f}')
-            try:
-                if img is None:
-                    img = None
-                    os.remove(f)
-                elif img.width > 1024 or img.height > 1024 or os.path.getsize(f) > 65536:
-                    img = img.convert('RGB')
-                    img.thumbnail((512, 512), Image.Resampling.HAMMING)
-                    img.save(fn, quality=50)
-                    img.close()
-                    created += 1
-            except Exception as e:
-                shared.log.warning(f'Extra network error creating thumbnail: {f} {e}')
-        if created > 0:
-            shared.log.info(f"Extra network thumbnails: {self.name} created={created}")
-            self.missing_thumbs.clear()
 
     def create_items(self, tabname):
         if self.refresh_time is not None and self.refresh_time > refresh_time: # cached results
@@ -213,8 +272,7 @@ class ExtraNetworksPage:
         if skip:
             return f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'></div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>Extra network page not ready<br>Click refresh to try again</div>"
         subdirs = {}
-        allowed_folders = [os.path.abspath(x) for x in self.allowed_directories_for_previews() if os.path.exists(x)]
-        for parentdir, dirs in {d: files_cache.walk(d, cached=True, recurse=files_cache.not_hidden) for d in allowed_folders}.items():
+        for parentdir, dirs in {d: files_cache.cached_walk(d, recurse=files_cache.not_hidden) for d in self.allowed_directories_for_previews()}.items():
             for tgt in dirs:
                 tgt = tgt.path
                 if os.path.join(paths.models_path, 'Reference') in tgt:
@@ -240,24 +298,21 @@ class ExtraNetworksPage:
         if self.name == 'style' and shared.opts.extra_networks_styles:
             subdirs['built-in'] = 1
         subdirs_html = "<button class='lg secondary gradio-button custom-button search-all' onclick='extraNetworksSearchButton(event)'>All</button><br>"
-        subdirs_html += "".join([f"<button class='lg secondary gradio-button custom-button' onclick='extraNetworksSearchButton(event)'>{html.escape(subdir)}</button><br>" for subdir in subdirs if subdir != ''])
-        self.html = ''
+        subdirs_html += "".join(f"<button class='lg secondary gradio-button custom-button' onclick='extraNetworksSearchButton(event)'>{html.escape(subdir)}</button><br>" for subdir in subdirs if subdir != '')
         self.create_items(tabname)
         self.create_xyz_grid()
-        htmls = []
         if len(self.items) > 0 and self.items[0].get('mtime', None) is not None:
             self.items.sort(key=lambda x: x["mtime"], reverse=True)
-        for item in self.items:
-            htmls.append(self.create_html(item, tabname))
-        self.html += ''.join(htmls)
+        self.html = html_format.format(
+            page_name=f'{tabname}_{self_name_id}',
+            width=shared.opts.extra_networks_card_size,
+            height=shared.opts.extra_networks_card_size if shared.opts.extra_networks_card_square else 'auto',
+            fit=shared.opts.extra_networks_card_fit,
+            subdirs_html=subdirs_html,
+            cards_html=''.join(str(self.create_html(item, tabname)) for item in self.items)
+        )
         self.page_time = time.time()
-        if len(subdirs_html) > 0 or len(self.html) > 0:
-            self.html = f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'>{subdirs_html}</div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>{self.html}</div>"
-        else:
-            return ''
         shared.log.debug(f"Extra networks: page='{self.name}' items={len(self.items)} subfolders={len(subdirs)} tab={tabname} folders={self.allowed_directories_for_previews()} list={self.list_time:.2f} thumb={self.preview_time:.2f} desc={self.desc_time:.2f} info={self.info_time:.2f} workers={shared.max_workers}")
-        if len(self.missing_thumbs) > 0:
-            threading.Thread(target=self.create_thumb).start()
         return self.html
 
     def list_items(self):
@@ -275,10 +330,7 @@ class ExtraNetworksPage:
                 "title": os.path.basename(item["name"].replace('_', ' ')),
                 "filename": item["filename"],
                 "tags": '|'.join([item.get("tags")] if isinstance(item.get("tags", {}), str) else list(item.get("tags", {}).keys())),
-                "preview": html.escape(item.get("preview", self.link_preview('html/card-no-preview.png'))),
-                "width": shared.opts.extra_networks_card_size,
-                "height": shared.opts.extra_networks_card_size if shared.opts.extra_networks_card_square else 'auto',
-                "fit": shared.opts.extra_networks_card_fit,
+                "preview": html.escape(str(item.get("preview", self.link_preview('html/card-no-preview.png')))),
                 "prompt": item.get("prompt", None),
                 "search": item.get("search_term", ""),
                 "description": item.get("description") or "",
@@ -299,16 +351,15 @@ class ExtraNetworksPage:
             return 'html/card-no-preview.png'
         if os.path.join('models', 'Reference') in path:
             return path
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         if shared.opts.diffusers_dir in path:
             path = os.path.relpath(path, shared.opts.diffusers_dir)
             reference_path = os.path.abspath(os.path.join('models', 'Reference'))
             fn = os.path.join(reference_path, path.replace('models--', '').replace('\\', '/').split('/')[0])
-            files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
+            files = list(files_cache.list_files(reference_path, ext_filter=thumb_exts, recursive=False))
         else:
             fn = os.path.splitext(path)[0]
-            files = list(files_cache.list_files(os.path.dirname(path), ext_filter=exts, recursive=False))
-        for file in [f'{fn}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
+            files = list(files_cache.list_files(os.path.dirname(path), ext_filter=thumb_exts, recursive=False))
+        for file in [f'{fn}{mid}{ext}' for ext in thumb_exts for mid in ['.thumb.', '.', '.preview.']]:
             if file in files:
                 if '.thumb.' not in file:
                     self.missing_thumbs.append(file)
@@ -323,30 +374,21 @@ class ExtraNetworksPage:
 
     def update_all_previews(self, items):
         t0 = time.time()
-        reference_path = os.path.abspath(os.path.join('models', 'Reference'))
-        possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
-        all_previews = list(files_cache.list_files(*possible_paths, ext_filter=exts, recursive=False))
+        diffusers_dir = os.path.abspath(shared.opts.diffusers_dir)
+        diffusers_pre = os.path.join(diffusers_dir, 'models--')
         for item in items:
             if item.get('preview', None) is not None:
                 continue
-            base = os.path.splitext(item['filename'])[0]
-            if item.get('local_preview', None) is None:
+            base = os.path.splitext(os.path.abspath(item['filename']))[0]
+            if base.startswith(diffusers_pre):
+                reference_path = os.path.abspath(os.path.join('models', 'Reference'))
+                base = base[len(diffusers_pre):base.find(os.path.sep,len(diffusers_pre))]
+                item['local_preview'] = f'{os.path.join(f"{diffusers_pre}{base}{os.path.sep}", base)}.{shared.opts.samples_format}'
+                base = os.path.join(reference_path, base)
+            elif item.get('local_preview', None) is None:
                 item['local_preview'] = f'{base}.{shared.opts.samples_format}'
-            if shared.opts.diffusers_dir in base:
-                match = re.search(r"models--([^/^\\]+)[/\\]", base)
-                base = os.path.join(reference_path, match[1])
-                model_path = os.path.join(shared.opts.diffusers_dir, match[0])
-                item['local_preview'] = f'{os.path.join(model_path, match[1])}.{shared.opts.samples_format}'
-                all_previews += list(files_cache.list_files(model_path, ext_filter=exts, recursive=False))
-            for file in [f'{base}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
-                if file in all_previews:
-                    if '.thumb.' not in file:
-                        self.missing_thumbs.append(file)
-                    item['preview'] = self.link_preview(file)
-                    break
-            if item.get('preview', None) is None:
-                item['preview'] = self.link_preview('html/card-no-preview.png')
+            thumb_queue.put(base)
+            item['preview'] = self.link_preview(base)
         self.preview_time += time.time() - t0
 
 
