@@ -16,4 +16,3 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - second pass: <https://github.com/vladmandic/automatic/issues/2783>  
 - control api  
 - masking api  
-- inpaint pan/zoom

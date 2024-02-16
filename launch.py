@@ -180,7 +180,8 @@ def start_server(immediate=True, server=None):
     return uvicorn, server
 
 
-if __name__ == "__main__":
+def main():
+    global args # pylint: disable=global-statement
     installer.ensure_base_requirements()
     init_args() # setup argparser and default folders
     installer.args = args
@@ -255,3 +256,7 @@ if __name__ == "__main__":
                 installer.log.info('Exiting...')
                 break
         time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
