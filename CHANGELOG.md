@@ -15,6 +15,7 @@
   - **FaceID** now also works with multiple input images!  
   - **Regional prompting** as a built-in solution  
     simply enable from scripts -> regional prompting  
+    supports sd-15 models  
     note that usage is same as original implementation from @hako-mikan  
     click on title to open docs and see examples of full syntax on how to use it  
   - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
@@ -64,6 +65,7 @@
 - **Internal**
   - update dependencies  
   - refactor txt2img/img2img api  
+  - enhanced theme loader  
 - **Fixes**:  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  

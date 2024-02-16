@@ -41,7 +41,13 @@ def list_themes():
     extensions = [e.name for e in modules.extensions.extensions if e.enabled]
     engines = []
     if 'sdnext-ui-ux' in extensions:
-        engines.append('modern')
+        ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
+        folder = os.path.join(ext.path, 'themes')
+        engines.append('modern/default')
+        if os.path.exists(folder):
+            for f in os.listdir(folder):
+                if f.endswith('.css'):
+                    engines.append(f'modern/{os.path.splitext(f)[0]}')
     if 'sd-webui-lobe-theme' in extensions:
         engines.append('lobe')
     gradio = ["gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
@@ -69,7 +75,10 @@ def reload_gradio_theme(theme_name=None):
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
         return True
-    elif theme_name.lower() in ['lobe', 'modern']:
+    elif theme_name.lower() in ['lobe']:
+        gradio_theme = gr.themes.Base(**default_font_params)
+        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
+    elif theme_name.lower() == 'modern' or theme_name.lower().startswith('modern/'):
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
     elif theme_name.startswith("gradio/"):

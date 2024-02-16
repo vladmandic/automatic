@@ -56,8 +56,16 @@ def html_css(is_builtin: bool):
         if not os.path.isfile(cssfile):
             continue
         head += stylesheet(cssfile)
-    if shared.opts.gradio_theme in theme.list_builtin_themes() and os.path.exists(os.path.join(script_path, "javascript", f"{shared.opts.gradio_theme}.css")):
-        head += stylesheet(os.path.join(script_path, "javascript", f"{shared.opts.gradio_theme}.css"))
+
+    theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme or ''
+    if theme_name.startswith('modern/'):
+        theme_name = theme_name[7:]
+        theme_folder = next((e.path for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
+        theme_file = os.path.join(theme_folder or '', 'themes', f'{theme_name}.css')
+        if os.path.exists(theme_file):
+            head += stylesheet(theme_file)
+    elif theme_name in theme.list_builtin_themes() and os.path.exists(os.path.join(script_path, "javascript", f"{theme_name}.css")):
+        head += stylesheet(os.path.join(script_path, "javascript", f"{theme_name}.css"))
     if os.path.exists(os.path.join(data_path, "user.css")):
         head += stylesheet(os.path.join(data_path, "user.css"))
     added = [a.replace(script_path, '').replace('\\', '/') for a in added]

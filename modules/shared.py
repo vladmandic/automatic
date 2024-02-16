@@ -290,7 +290,7 @@ def temp_disable_extensions():
     disable_original = []
     disabled = []
     theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme
-    if theme_name.lower() != 'modern':
+    if theme_name.lower() != 'modern' and not theme_name.lower().startswith('modern/'):
         disable_themes.append('sdnext-ui-ux')
     if theme_name.lower() != 'lobe':
         disable_themes.append('sd-webui-lobe-theme')
