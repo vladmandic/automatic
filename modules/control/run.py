@@ -38,6 +38,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
                 resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
+                resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
                 denoising_strength, batch_count, batch_size,
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
                 *input_script_args # pylint: disable=unused-argument
@@ -461,6 +462,13 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             instance.apply(selected_models, p.init_images, control_conditioning)
                     if hasattr(p, 'init_images') and p.init_images is None: # delete as its set via task_args
                         del p.init_images
+
+                    # resize mask
+                    if mask is not None and resize_mode_mask != 0 and resize_name_mask != 'None':
+                        if selected_scale_tab_mask == 1:
+                            width_mask, height_mask = int(input_image.width * scale_by_before), int(input_image.height * scale_by_before)
+                        p.width, p.height = width_mask, height_mask
+                        debug(f'Control resize: op=mask image={mask} width={width_mask} height={height_mask} mode={resize_mode_mask} name={resize_name_mask}')
 
                     # pipeline
                     output = None

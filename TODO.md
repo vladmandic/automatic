@@ -16,8 +16,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ## Control missing features
 
 - second pass: <https://github.com/vladmandic/automatic/issues/2783>  
-- inpaint masking explicit processing size: <https://github.com/vladmandic/automatic/issues/2857>
-- outpaint return mask and optional override future run_masking
 - control api  
 - masking api  
 - inpaint pan/zoom

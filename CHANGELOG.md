@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-15
+## Update for 2024-02-16
 
 - **improvements**:
   - **IP Adapter** major refactor  
@@ -26,10 +26,15 @@
   - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
     new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
     note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
+    outpaint can run in *img2img* mode (default) and *inpaint* mode where original image is masked (if inpaint masked only is selected)  
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
-      *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
-  - **Control** units now have extra option to re-use current preview image as processor input  
+    *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+  - [ZLUDA](https://github.com/vosen/ZLUDA) CUDA wrapper experimental support, thanks @lshqqytiger  
+    - best use case is *AMD GPUs on Windows*, see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details  
+  - **Control**
+    - when performing inpainting, you can specify processing resolution using **size->mask**  
+    - units now have extra option to re-use current preview image as processor input  
   - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
     - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
     - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
@@ -54,7 +59,8 @@
   - add `--theme` cli param to force theme on startup  
   - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
 - **wiki**:
-  - updated benchmark notes for IPEX and Olive  
+  - added benchmark notes for IPEX, OpenVINO and Olive  
+  - added ZLUDA wiki page  
 - **fixes**:  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  

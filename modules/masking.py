@@ -335,16 +335,30 @@ def get_mask(input_image: gr.Image, input_mask: gr.Image):
 
 def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
     image = cv2.cvtColor(np.array(input_image), cv2.COLOR_RGB2BGR)
-    h, w = image.shape[:2]
+    h0, w0 = image.shape[:2]
     empty = (image == 0).all(axis=2)
     y0, x0 = np.where(~empty) # non empty
     x1, x2 = min(x0), max(x0)
     y1, y2 = min(y0), max(y0)
     cropped = image[y1:y2, x1:x2]
+    h1, w1 = cropped.shape[:2]
+    mask = None
+
+    if opts.mask_only:
+        mask = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+        mask = cv2.resize(mask, (w0, h0))
+        mask = cv2.cvtColor(np.array(mask), cv2.COLOR_BGR2GRAY)
+        mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
+        sigmaX, sigmaY = int((h0-h1)/3), int((w0-w1)/3)
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.erode(mask, kernel, iterations=max(sigmaX, sigmaY) // 3) # increase overlap area
+        mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmaX, sigmaY=sigmaY) # blur mask
+        mask = Image.fromarray(mask)
+        mask.save('/tmp/mask2.png')
 
     if outpaint_type == 'Edge':
-        bordered = cv2.copyMakeBorder(cropped, y1, h-y2, x1, w-x2, cv2.BORDER_REPLICATE)
-        bordered = cv2.resize(bordered, (w, h))
+        bordered = cv2.copyMakeBorder(cropped, y1, h0-y2, x1, w0-x2, cv2.BORDER_REPLICATE)
+        bordered = cv2.resize(bordered, (w0, h0))
         image = bordered
         # noise = np.random.normal(1, variation, bordered.shape)
         # noised = (noise * bordered).astype(np.uint8)
@@ -354,7 +368,7 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(image)
-    return image
+    return image, mask
 
 
 def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_type: str = None, mask_blur: int = None, mask_padding: int = None, segment_enable=True, invert=None):
@@ -428,6 +442,9 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur} erode={opts.mask_erode} dilate={opts.mask_dilate} type={return_type} time={t1-t0:.2f}')
     if return_type == 'None':
         return input_mask
+    elif return_type == 'Opaque':
+        binary_mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
+        return Image.fromarray(binary_mask)
     elif return_type == 'Binary':
         binary_mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1] # otsu uses mean instead of threshold
         return Image.fromarray(binary_mask)

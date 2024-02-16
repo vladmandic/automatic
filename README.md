@@ -202,7 +202,7 @@ Below is partial list of all available parameters, run `webui --help` for the fu
 
 SD.Next comes with several extensions pre-installed:
 
-- [ControlNet](https://github.com/Mikubill/sd-webui-controlnet)
+- [ControlNet](https://github.com/Mikubill/sd-webui-controlnet) (*active in backend: original only*)
 - [Agent Scheduler](https://github.com/ArtVentureX/sd-webui-agent-scheduler)
 - [Image Browser](https://github.com/AlUlkesh/stable-diffusion-webui-images-browser)
 
@@ -214,9 +214,9 @@ This should be fully cross-platform, but we'd really love to have additional con
 
 ### **Credits**
 
-- Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
-- Additional credits are listed in [Credits](https://github.com/AUTOMATIC1111/stable-diffusion-webui/#credits)
-- Licenses for modules are listed in [Licenses](html/licenses.html)
+- Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for original codebase  
+- Additional credits are listed in [Credits](https://github.com/AUTOMATIC1111/stable-diffusion-webui/#credits)  
+- Licenses for modules are listed in [Licenses](html/licenses.html)  
 
 ### **Evolution**
 
