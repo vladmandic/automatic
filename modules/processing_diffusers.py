@@ -170,6 +170,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if shared.opts.diffusers_generator_device == "Unset":
             generator_device = None
             generator = None
+        elif getattr(p, "generator", None) is not None:
+            generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
+            generator = p.generator
         else:
             generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
             generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
@@ -222,6 +225,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             args['guidance_scale'] = p.cfg_scale
         if 'generator' in possible and generator is not None:
             args['generator'] = generator
+        if 'latents' in possible and getattr(p, "init_latent", None) is not None:
+            args['latents'] = p.init_latent
         if 'output_type' in possible:
             if hasattr(model, 'vae'):
                 args['output_type'] = 'np' # only set latent if model has vae
