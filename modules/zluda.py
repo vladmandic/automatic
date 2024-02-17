@@ -9,5 +9,6 @@ def initialize_zluda():
         torch.backends.cudnn.enabled = shared.opts.zluda_enable_cudnn
         if torch.backends.cudnn.enabled:
             shared.log.warning("cuDNN with ZLUDA won't work at this moment. Please wait for future update.")
-        if shared.opts.cross_attention_optimization == "Scaled-Dot-Product":
-            shared.log.warning("ZLUDA does not support Scaled-Dot-Product attention. Please consider changing it to Batch matrix-matrix.")
+        torch.backends.cuda.enable_flash_sdp(False)
+        torch.backends.cuda.enable_math_sdp(True)
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
