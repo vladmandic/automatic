@@ -126,9 +126,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
     if isinstance(selected_input, Image.Image): # image via upload -> image
         if input_mode == 'Outpaint':
             masking.opts.invert = True
-            selected_input, outpaint_mask = masking.outpaint(input_image=selected_input)
-        if outpaint_mask is not None:
-            input_mask = outpaint_mask
+            selected_input, input_mask = masking.outpaint(input_image=selected_input)
         input_source = [selected_input]
         input_type = 'PIL.Image'
         status = f'Control input | Image | Size {selected_input.width}x{selected_input.height} | Mode {selected_input.mode}'

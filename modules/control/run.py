@@ -19,15 +19,19 @@ from modules.processing_class import StableDiffusionProcessingControl
 debug = shared.log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: CONTROL')
 pipe = None
+instance = None
 original_pipeline = None
 
 
 def restore_pipeline():
-    global pipe # pylint: disable=global-statement
-    pipe = None
+    global pipe, instance # pylint: disable=global-statement
+    if instance is not None and hasattr(instance, 'restore'):
+        instance.restore()
     if original_pipeline is not None:
         shared.sd_model = original_pipeline
-        debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__}')
+        shared.log.debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__}')
+    pipe = None
+    instance = None
     devices.torch_gc()
 
 
@@ -43,7 +47,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
                 *input_script_args # pylint: disable=unused-argument
         ):
-    global pipe, original_pipeline # pylint: disable=global-statement
+    global instance, pipe, original_pipeline # pylint: disable=global-statement
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
     if inputs is None or (type(inputs) is list and len(inputs) == 0):
         inputs = [None]
@@ -244,6 +248,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     index = 0
     frames = 0
 
+    # set pipeline
     original_pipeline = shared.sd_model
     shared.sd_model = pipe
     sd_models.move_model(shared.sd_model, shared.device)
@@ -473,6 +478,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                     # pipeline
                     output = None
                     if pipe is not None: # run new pipeline
+                        pipe.restore_pipeline = restore_pipeline
                         debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
                         debug(f'Control exec pipeline: p={vars(p)}')
                         debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
@@ -526,10 +532,6 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         shared.log.error(f'Control pipeline failed: type={unit_type} units={len(active_model)} error={e}')
         errors.display(e, 'Control')
 
-    shared.sd_model = original_pipeline
-    pipe = None
-    devices.torch_gc()
-
     if len(output_images) == 0:
         output_images = None
         image_txt = 'images=None'
@@ -543,8 +545,6 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
     image_txt += f' | {util.dict2str(p.extra_generation_params)}'
-    if hasattr(instance, 'restore'):
-        instance.restore()
     restore_pipeline()
     debug(f'Control ready: {image_txt}')
     if is_generator:
