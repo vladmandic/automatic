@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-16
+## Update for 2024-02-17
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -31,7 +31,8 @@
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
-  - [ZLUDA](https://github.com/vosen/ZLUDA) CUDA wrapper experimental support, thanks @lshqqytiger  
+  - [ZLUDA](https://github.com/vosen/ZLUDA) experimental support, thanks @lshqqytiger  
+    - ZLUDA is CUDA wrapper that can be used for GPUs without native support
     - best use case is *AMD GPUs on Windows*, see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details  
   - **Control**
     - when performing inpainting, you can specify processing resolution using **size->mask**  
@@ -66,6 +67,7 @@
   - update dependencies  
   - refactor txt2img/img2img api  
   - enhanced theme loader  
+  - add additional debug env variables  
 - **Fixes**:  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
@@ -81,6 +83,7 @@
   - control fix resize causing runtime errors  
   - control fix processor override image after processor change  
   - control fix display grid with batch  
+  - control restore pipeline before running scripts/extensions  
   - handle pipelines that return dict instead of object  
   - lora use strict name matching if preferred option is by-filename  
   - fix inpaint mask only for diffusers  

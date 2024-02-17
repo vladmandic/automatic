@@ -317,7 +317,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
 
             if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
-                print('HERE')
                 shared.sd_model.restore_pipeline()
 
             for i, x_sample in enumerate(x_samples_ddim):

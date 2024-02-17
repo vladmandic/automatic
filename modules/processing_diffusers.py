@@ -14,6 +14,7 @@ from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, c
 
 
 debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug_callback = shared.log.trace if os.environ.get('SD_CALLBACK_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: DIFFUSERS')
 
 
@@ -52,11 +53,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 time.sleep(0.1)
 
     def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
+        latents = kwargs.get('latents', None)
+        debug_callback(f'Callback: step={step} timestep={timestep} latents={latents.shape if latents is not None else None} kwargs={list(kwargs)}')
         shared.state.sampling_step = step
-        if shared.opts.nan_skip:
-            latents = kwargs.get('latents', None)
-            if latents is not None:
-                assert not torch.isnan(latents[..., 0, 0]).all(), f'NaN detected at step {step}: Skipping...'
         if shared.state.interrupted or shared.state.skipped:
             raise AssertionError('Interrupted...')
         if shared.state.paused:
@@ -65,8 +64,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if shared.state.interrupted or shared.state.skipped:
                     raise AssertionError('Interrupted...')
                 time.sleep(0.1)
-        if kwargs.get('latents', None) is None:
+        if latents is None:
             return kwargs
+        elif shared.opts.nan_skip:
+            assert not torch.isnan(latents[..., 0, 0]).all(), f'NaN detected at step {step}: Skipping...'
         if len(getattr(p, "ip_adapter_names", [])) > 0:
             ip_adapter_scales = list(p.ip_adapter_scales)
             ip_adapter_starts = list(p.ip_adapter_starts)
