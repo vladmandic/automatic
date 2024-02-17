@@ -402,6 +402,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "olive_vae_encoder_float32": OptionInfo(False, 'Olive force FP32 for VAE Encoder'),
     "olive_static_dims": OptionInfo(True, 'Olive use static dimensions'),
     "olive_cache_optimized": OptionInfo(True, 'Olive cache optimized models'),
+
+    "zluda_sep": OptionInfo("<h2>ZLUDA</h2>(experimental)", "", gr.HTML, {"visible": devices.backend == "cuda"}),
+    "zluda_force_sync": OptionInfo(False, 'ZLUDA force synchronization (experimental, restart required)', gr.Checkbox, {"visible": devices.backend == "cuda"}),
 }))
 
 options_templates.update(options_section(('advanced', "Inference Settings"), {
