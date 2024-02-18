@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-17
+## Update for 2024-02-18
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -91,6 +91,7 @@
   - fix controlnet inpaint mask  
   - fix theme list refresh  
   - fix extensions update information in ui  
+  - fix model merge manual merge settings, thanks @AI-Casanova  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - prompts-from-file fix resizable prompt area  
 

@@ -104,6 +104,7 @@ class StableDiffusionProcessing:
         self.s_tmax = float('inf')  # not representable as a standard ui option
         self.task_args = {}
         # a1111 compatibility items
+        self.batch_index = 0
         self.refiner_switch_at = 0
         self.hr_prompt = ''
         self.all_hr_prompts = []
