@@ -31,8 +31,6 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Enhanced *Lora*/*LoCon*/*Lyco* code supporting latest trends in training  
 - Built-in queue management  
 - Enterprise level logging and hardened API  
-- Modern localization and hints engine  
-- Broad compatibility with existing extensions ecosystem and new extensions manager  
 - Built in installer with automatic updates and dependency management  
 - Modernized UI with theme support and number of built-in themes *(dark and light)*  
 
@@ -50,7 +48,7 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
 **SD.Next** supports two main backends: *Diffusers* and *Original*:
 
 - **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
-  Supports *original* SD models as well as *all* models listed below  
+  Supports *all* models listed below  
   This backend is set as default for new installations  
   See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information  
 - **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
@@ -116,7 +114,7 @@ Also supported are modifiers such as:
 > [!IMPORTANT]
 > - Loading any model other than standard SD 1.x / SD 2.x requires use of backend **Diffusers**  
 > - Loading any other models using **Original** backend is not supported  
-> - Loading manually download model `.safetensors` files is supported for SD 1.x / SD 2.x / SD-XL models only  
+> - Loading manually download model `.safetensors` files is supported for specified models only (typically SD 1.x / SD 2.x / SD-XL models only)  
 > - For all other model types, use backend **Diffusers** and use built in Model downloader or  
   select model from Networks -> Models -> Reference list in which case it will be auto-downloaded and loaded  
 
@@ -141,7 +139,7 @@ Also supported are modifiers such as:
 - If you can't run us locally, try our friends at [RunDuffusion!](https://rundiffusion.com?utm_source=github&utm_medium=referral&utm_campaign=SDNext)
 
 > [!TIP]
-> - Server can run without virtual environment,  
+> - Server can run with or without virtual environment,  
   Recommended to use `VENV` to avoid library version conflicts with other applications  
 > - **nVidia/CUDA** / **AMD/ROCm** / **Intel/OneAPI** are auto-detected if present and available,  
   For any other use case such as **DirectML**, **ONNX/Olive**, **OpenVINO** specify required parameter explicitly  
@@ -169,7 +167,7 @@ Below is partial list of all available parameters, run `webui --help` for the fu
       --listen                         Launch web server using public IP address, default: False
       --auth AUTH                      Set access authentication like "user:pwd,user:pwd""
       --autolaunch                     Open the UI URL in the system's default browser upon launch
-      --docs                           Mount Gradio docs at /docs, default: False
+      --docs                           Mount API docs, default: False
       --no-hashing                     Disable hashing of checkpoints, default: False
       --no-metadata                    Disable reading of metadata from models, default: False
       --backend {original,diffusers}   force model pipeline type
@@ -208,9 +206,9 @@ SD.Next comes with several extensions pre-installed:
 
 ### **Collab**
 
-- We'd love to have additional maintainers with full admin rights. If you're interested, ping us!  
-- In addition to general cross-platform code, desire is to have a lead for each of the main platforms.
-This should be fully cross-platform, but we'd really love to have additional contributors and/or maintainers to join and help lead the efforts on different platforms.
+- We'd love to have additional maintainers (with comes with full repo rights). If you're interested, ping us!  
+- In addition to general cross-platform code, desire is to have a lead for each of the main platforms  
+This should be fully cross-platform, but we'd really love to have additional contributors and/or maintainers to join and help lead the efforts on different platforms  
 
 ### **Credits**
 

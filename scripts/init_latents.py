@@ -1,9 +1,7 @@
-# from PIL import Image
-# import gradio as gr
-from modules import scripts, processing, shared, devices
-from modules.processing_helpers import slerp
 import torch
 from diffusers.utils.torch_utils import randn_tensor
+from modules import scripts, processing, shared, devices
+from modules.processing_helpers import slerp
 
 
 class Script(scripts.Script):
@@ -21,11 +19,9 @@ class Script(scripts.Script):
         generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
         shape = (len(generator), shared.sd_model.unet.config.in_channels, p.height // shared.sd_model.vae_scale_factor,
                  p.width // shared.sd_model.vae_scale_factor)
-        latents = randn_tensor(shape, generator=generator, device=shared.sd_model._execution_device,
-                               dtype=shared.sd_model.unet.dtype)
+        latents = randn_tensor(shape, generator=generator, device=shared.sd_model._execution_device, dtype=shared.sd_model.unet.dtype) # pylint: disable=protected-access
         var_generator = [torch.Generator(generator_device).manual_seed(ss) for ss in p.subseeds]
-        var_latents = randn_tensor(shape, generator=var_generator, device=shared.sd_model._execution_device,
-                                   dtype=shared.sd_model.unet.dtype)
+        var_latents = randn_tensor(shape, generator=var_generator, device=shared.sd_model._execution_device, dtype=shared.sd_model.unet.dtype) # pylint: disable=protected-access
         return latents, var_latents, generator, var_generator
 
     @staticmethod
@@ -44,9 +40,6 @@ class Script(scripts.Script):
         if shared.backend != shared.Backend.DIFFUSERS:
             return
         args = list(args)
-        if p.subseed_strength != 0:
+        if p.subseed_strength != 0 and getattr(shared.sd_model, '_execution_device', None) is not None:
             latents, var_latents, generator, var_generator = self.get_latents(p)
             self.set_slerp(p, latents, var_latents, generator, var_generator)
-
-
-

@@ -69,6 +69,7 @@
   - enhanced theme loader  
   - add additional debug env variables  
 - **Fixes**:  
+  - add variation seed to diffusers txt2img, thanks @AI-Casanova  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  
