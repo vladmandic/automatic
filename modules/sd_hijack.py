@@ -50,17 +50,17 @@ def apply_optimizations():
             shared.log.warning("Cross-attention: xFormers is not available on CPU")
             shared.xformers_available = False
 
-    shared.log.info(f"Cross-attention: optimization={shared.opts.cross_attention_optimization} options={shared.opts.cross_attention_options}")
+    shared.log.info(f"Cross-attention: optimization={shared.opts.cross_attention_optimization}")
     if shared.opts.cross_attention_optimization == "Disabled":
         optimization_method = 'none'
-    if can_use_sdp and shared.opts.cross_attention_optimization == "Scaled-Dot-Product" and 'SDP disable memory attention' in shared.opts.cross_attention_options:
-        ldm.modules.attention.CrossAttention.forward = sd_hijack_optimizations.scaled_dot_product_no_mem_attention_forward
-        ldm.modules.diffusionmodules.model.AttnBlock.forward = sd_hijack_optimizations.sdp_no_mem_attnblock_forward
-        optimization_method = 'sdp-no-mem'
-    elif can_use_sdp and shared.opts.cross_attention_optimization == "Scaled-Dot-Product":
-        ldm.modules.attention.CrossAttention.forward = sd_hijack_optimizations.scaled_dot_product_attention_forward
-        ldm.modules.diffusionmodules.model.AttnBlock.forward = sd_hijack_optimizations.sdp_attnblock_forward
+    if can_use_sdp and shared.opts.cross_attention_optimization == "Scaled-Dot-Product":
         optimization_method = 'sdp'
+        if 'Memory attention' in shared.opts.sdp_options:
+            ldm.modules.attention.CrossAttention.forward = sd_hijack_optimizations.scaled_dot_product_no_mem_attention_forward
+            ldm.modules.diffusionmodules.model.AttnBlock.forward = sd_hijack_optimizations.sdp_no_mem_attnblock_forward
+        else:
+            ldm.modules.attention.CrossAttention.forward = sd_hijack_optimizations.scaled_dot_product_attention_forward
+            ldm.modules.diffusionmodules.model.AttnBlock.forward = sd_hijack_optimizations.sdp_attnblock_forward
     if shared.xformers_available and shared.opts.cross_attention_optimization == "xFormers":
         ldm.modules.attention.CrossAttention.forward = sd_hijack_optimizations.xformers_attention_forward
         ldm.modules.diffusionmodules.model.AttnBlock.forward = sd_hijack_optimizations.xformers_attnblock_forward

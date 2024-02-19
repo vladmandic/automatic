@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-18
+## Update for 2024-02-19
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -68,6 +68,8 @@
   - refactor txt2img/img2img api  
   - enhanced theme loader  
   - add additional debug env variables  
+  - enhanced sdp cross-optimization control  
+    see *settings -> compute settings*  
 - **Fixes**:  
   - add variation seed to diffusers txt2img, thanks @AI-Casanova  
   - handle extensions that install conflicting versions of packages  

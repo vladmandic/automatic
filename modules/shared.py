@@ -355,8 +355,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(diffusers=backend == Backend.DIFFUSERS) }),
-    "cross_attention_options": OptionInfo([], "Attention advanced options", gr.CheckboxGroup, {"choices": ['xFormers enable flash Attention', 'SDP disable memory attention'], "visible": False }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Slicing rate for Dynamic Attention Slicing in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
+    "sdp_options": OptionInfo(['Flash attention', 'Memory attention', 'Math attention'], "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
+    "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": backend == Backend.ORIGINAL}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
@@ -365,6 +366,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "other_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "opt_channelslast": OptionInfo(False, "Use channels last "),
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
+    "cudnn_deterministic": OptionInfo(False, "Use deterministic options for cuDNN"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_gc_threshold": OptionInfo(80, "Memory usage threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
 

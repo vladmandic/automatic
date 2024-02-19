@@ -35,6 +35,7 @@ async def txt2img():
     log.debug({ 'info': info })
     if options['batch_size'] != len(data['images']):
         log.error({ 'requested': options['batch_size'], 'received': len(data['images']) })
+        return 0
     for i in range(len(data['images'])):
         data['images'][i] = Image.open(io.BytesIO(base64.b64decode(data['images'][i].split(',',1)[0])))
         if args.save:
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     log.info({ 'run-benchmark' })
     parser = argparse.ArgumentParser(description = 'run-benchmark')
     parser.add_argument("--steps", type=int, default=50, required=False, help="steps")
-    parser.add_argument("--sampler", type=str, default='Euler a', required=False, help="max batch size")
+    parser.add_argument("--sampler", type=str, default='Euler a', required=False, help="Use specific sampler")
     parser.add_argument("--prompt", type=str, default='photo of two dice on a table', required=False, help="prompt")
     parser.add_argument("--negative", type=str, default='foggy, blurry', required=False, help="prompt")
     parser.add_argument("--maxbatch", type=int, default=16, required=False, help="max batch size")
