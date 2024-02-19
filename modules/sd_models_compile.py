@@ -1,7 +1,7 @@
 import time
 import logging
 import torch
-from modules import shared, devices
+from modules import shared, devices, sd_models
 from installer import setup_logging
 
 
@@ -241,6 +241,14 @@ def compile_torch(sd_model):
     return sd_model
 
 
+def check_deepcache(enable: bool):
+    if deepcache_worker is not None:
+        if enable:
+            deepcache_worker.enable()
+        else:
+            deepcache_worker.disable()
+
+
 def compile_deepcache(sd_model):
     global deepcache_worker # pylint: disable=global-statement
     try:
@@ -249,11 +257,9 @@ def compile_deepcache(sd_model):
         shared.log.warning(f'Model compile using deep-cache: {e}')
         return sd_model
     t0 = time.time()
-    if deepcache_worker is not None:
-        deepcache_worker.disable()
+    check_deepcache(False)
     deepcache_worker = DeepCacheSDHelper(pipe=sd_model)
     deepcache_worker.set_params(cache_interval=shared.opts.deep_cache_interval, cache_branch_id=0)
-    deepcache_worker.enable()
     t1 = time.time()
     shared.log.info(f"Model compile: task=DeepCache config={deepcache_worker.params} time={t1-t0:.2f}")
     # config={'cache_interval': 3, 'cache_layer_id': 0, 'cache_block_id': 0, 'skip_mode': 'uniform'} time=0.00
@@ -276,8 +282,7 @@ def compile_diffusers(sd_model):
     elif shared.opts.cuda_compile_backend == 'deep-cache':
         sd_model = compile_deepcache(sd_model)
     else:
-        if deepcache_worker is not None:
-            deepcache_worker.disable()
+        check_deepcache(False)
         sd_model = compile_torch(sd_model)
     return sd_model
 
@@ -305,3 +310,40 @@ def dynamic_quantization(sd_model):
     except Exception as e:
         shared.log.error(f"Model dynamic quantization error: {e}")
     return sd_model
+
+
+def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes
+    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
+        if shared.opts.cuda_compile_backend == "openvino_fx":
+            compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
+            compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
+            if (shared.compiled_model_state is None or
+            (not shared.compiled_model_state.first_pass
+            and (shared.compiled_model_state.height != compile_height
+            or shared.compiled_model_state.width != compile_width
+            or shared.compiled_model_state.batch_size != p.batch_size))):
+                if refiner:
+                    shared.log.info("OpenVINO: Recompiling refiner")
+                    sd_models.unload_model_weights(op='refiner')
+                    sd_models.reload_model_weights(op='refiner')
+                else:
+                    shared.log.info("OpenVINO: Recompiling base model")
+                    sd_models.unload_model_weights(op='model')
+                    sd_models.reload_model_weights(op='model')
+            shared.compiled_model_state.height = compile_height
+            shared.compiled_model_state.width = compile_width
+            shared.compiled_model_state.batch_size = p.batch_size
+
+
+def openvino_post_compile(op="base"): # delete unet after OpenVINO compile
+    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
+        if shared.compiled_model_state.first_pass and op == "base":
+            shared.compiled_model_state.first_pass = False
+            if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):
+                shared.sd_model.unet.apply(sd_models.convert_to_faketensors)
+                devices.torch_gc(force=True)
+        if shared.compiled_model_state.first_pass_refiner and op == "refiner":
+            shared.compiled_model_state.first_pass_refiner = False
+            if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_refiner, "unet"):
+                shared.sd_refiner.unet.apply(sd_models.convert_to_faketensors)
+                devices.torch_gc(force=True)

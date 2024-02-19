@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -214,7 +214,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_num_inference_steps' in possible:
             steps = kwargs.pop("num_inference_steps", 20)
             args["prior_num_inference_steps"] = steps
-            args["num_inference_steps"] = max(int(steps / 2), 1) # TODO: add another slider without overcrowding the UI
+            args["num_inference_steps"] = max(int(steps / 2), 1)
         if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_guidance_scale' in possible:
             cfg_scale = kwargs.pop("guidance_scale", p.cfg_scale)
             args["prior_guidance_scale"] = cfg_scale
@@ -309,41 +309,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         debug(f'Diffusers pipeline args: {args}')
         return args
 
-    def recompile_model(hires=False): # recompile if a parameter changes
-        if shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
-            if shared.opts.cuda_compile_backend == "openvino_fx":
-                compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
-                compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
-                if (shared.compiled_model_state is None or
-                (not shared.compiled_model_state.first_pass
-                and (shared.compiled_model_state.height != compile_height
-                or shared.compiled_model_state.width != compile_width
-                or shared.compiled_model_state.batch_size != p.batch_size))):
-                    shared.log.info("OpenVINO: Parameter change detected")
-                    shared.log.info("OpenVINO: Recompiling base model")
-                    sd_models.unload_model_weights(op='model')
-                    sd_models.reload_model_weights(op='model')
-                    if is_refiner_enabled():
-                        shared.log.info("OpenVINO: Recompiling refiner")
-                        sd_models.unload_model_weights(op='refiner')
-                        sd_models.reload_model_weights(op='refiner')
-                shared.compiled_model_state.height = compile_height
-                shared.compiled_model_state.width = compile_width
-                shared.compiled_model_state.batch_size = p.batch_size
-
-    def openvino_post_compile(op="base"): # delete unet after OpenVINO compile
-        if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
-            if shared.compiled_model_state.first_pass and op == "base":
-                shared.compiled_model_state.first_pass = False
-                if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):
-                    shared.sd_model.unet.apply(sd_models.convert_to_faketensors)
-                    devices.torch_gc(force=True)
-            if shared.compiled_model_state.first_pass_refiner and op == "refiner":
-                shared.compiled_model_state.first_pass_refiner = False
-                if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_refiner, "unet"):
-                    shared.sd_refiner.unet.apply(sd_models.convert_to_faketensors)
-                    devices.torch_gc(force=True)
-
     def update_sampler(sd_model, second_pass=False):
         sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
         if sd_model.__class__.__name__ in ['AmusedPipeline']:
@@ -405,7 +370,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         sd_models.move_model(shared.sd_model, devices.device)
 
     # recompile if a parameter changes
-    recompile_model()
+    sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False)
 
     # pipeline type is set earlier in processing, but check for sanity
     is_control = getattr(p, 'is_control', False) is True
@@ -444,10 +409,12 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
     try:
         t0 = time.time()
+        sd_models_compile.check_deepcache(enable=True)
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
-        openvino_post_compile(op="base") # only executes on compiled vino models
+        sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
+        sd_models_compile.check_deepcache(enable=False)
         if shared.cmd_opts.profile:
             t1 = time.time()
             shared.log.debug(f'Profile: pipeline call: {t1-t0:.2f}')
@@ -494,7 +461,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             output.images = resize_hires(p, latents=output.images)
             if (latent_scale_mode is not None or p.hr_force) and p.denoising_strength > 0:
                 p.ops.append('hires')
-                recompile_model(hires=True)
+                sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
                 shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
                 if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
                     shared.sd_model = preprocess_onnx_pipeline(p)
@@ -518,10 +485,12 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.state.job = 'hires'
                 shared.state.sampling_steps = hires_args['num_inference_steps']
                 try:
+                    sd_models_compile.check_deepcache(enable=True)
                     output = shared.sd_model(**hires_args) # pylint: disable=not-callable
                     if isinstance(output, dict):
                         output = SimpleNamespace(**output)
-                    openvino_post_compile(op="base")
+                    sd_models_compile.check_deepcache(enable=False)
+                    sd_models_compile.openvino_post_compile(op="base")
                 except AssertionError as e:
                     shared.log.info(e)
                 p.init_images = []
@@ -546,6 +515,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_refiner, devices.device)
         p.ops.append('refine')
         p.is_refiner_pass = True
+        sd_models_compile.openvino_recompile_model(p, hires=False, refiner=True)
         shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         shared.sd_refiner = sd_models.set_diffuser_pipe(shared.sd_refiner, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
         update_sampler(shared.sd_refiner, second_pass=True)
@@ -581,7 +551,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 refiner_output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
                 if isinstance(refiner_output, dict):
                     refiner_output = SimpleNamespace(**refiner_output)
-                openvino_post_compile(op="refiner")
+                sd_models_compile.openvino_post_compile(op="refiner")
             except AssertionError as e:
                 shared.log.info(e)
 
