@@ -176,7 +176,7 @@ def create_ui(_blocks: gr.Blocks=None):
                         with gr.Tab('Preview', id='preview-image') as tab_image:
                             preview_process = gr.Image(label="Preview", show_label=False, type="pil", source="upload", interactive=False, height=gr_height, visible=True, elem_id='control_preview', elem_classes=['control-image'])
 
-            with gr.Accordion('Control elements', open=False):
+            with gr.Accordion('Control elements', open=False, elem_id="control_elements"):
                 with gr.Tabs(elem_id='control-tabs') as _tabs_control_type:
 
                     with gr.Tab('ControlNet') as _tab_controlnet:
