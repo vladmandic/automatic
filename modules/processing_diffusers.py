@@ -266,32 +266,15 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clean.pop('callback_steps', None)
         clean.pop('callback_on_step_end', None)
         clean.pop('callback_on_step_end_tensor_inputs', None)
-        if 'latents' in clean:
-            clean['latents'] = clean['latents'].shape
-        if 'image' in clean:
-            clean['image'] = type(clean['image'])
-        if 'mask_image' in clean:
-            clean['mask_image'] = type(clean['mask_image'])
-        if 'masked_image_latents' in clean:
-            clean['masked_image_latents'] = type(clean['masked_image_latents'])
-        if 'ip_adapter_image' in clean:
-            clean['ip_adapter_image'] = type(clean['ip_adapter_image'])
         if 'prompt' in clean:
             clean['prompt'] = len(clean['prompt'])
         if 'negative_prompt' in clean:
             clean['negative_prompt'] = len(clean['negative_prompt'])
-        if 'prompt_embeds' in clean:
-            clean['prompt_embeds'] = clean['prompt_embeds'].shape if torch.is_tensor(clean['prompt_embeds']) else type(clean['prompt_embeds'])
-        if 'pooled_prompt_embeds' in clean:
-            clean['pooled_prompt_embeds'] = clean['pooled_prompt_embeds'].shape if torch.is_tensor(clean['pooled_prompt_embeds']) else type(clean['pooled_prompt_embeds'])
-        if 'negative_prompt_embeds' in clean:
-            clean['negative_prompt_embeds'] = clean['negative_prompt_embeds'].shape if torch.is_tensor(clean['negative_prompt_embeds']) else type(clean['negative_prompt_embeds'])
-        if 'negative_pooled_prompt_embeds' in clean:
-            clean['negative_pooled_prompt_embeds'] = clean['negative_pooled_prompt_embeds'].shape if torch.is_tensor(clean['negative_pooled_prompt_embeds']) else type(clean['negative_pooled_prompt_embeds'])
-        if 'image_embeds' in clean:
-            clean['image_embeds'] = clean['image_embeds'].shape if torch.is_tensor(clean['image_embeds']) else type(clean['image_embeds'])
         clean['generator'] = generator_device
         clean['parser'] = parser
+        for k, v in clean.items():
+            if isinstance(v, torch.Tensor):
+                clean[k] = v.shape
         shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} set={clean}')
         if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
             txt = 'HDR:'

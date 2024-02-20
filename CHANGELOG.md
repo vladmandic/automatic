@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-19
+## Update for 2024-02-20
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -13,27 +13,32 @@
     - unified interface in txt2img, img2img and control  
     - enhanced xyz grid support  
   - **FaceID** now also works with multiple input images!  
-  - **Regional prompting** as a built-in solution  
-    simply enable from scripts -> regional prompting  
-    supports sd-15 models  
-    note that usage is same as original implementation from @hako-mikan  
+  - [Differential diffusion](https://github.com/exx8/differential-diffusion)  
+    img2img generation where you control strength of each pixel or image area  
+    can be used with manually created masks or with auto-generated depth-maps  
+    simply enable from *img2img -> scripts -> differential diffusion*  
+    *note*: supports sd-xl models only  
+  - [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline) as a built-in solution  
+    usage is same as original implementation from @hako-mikan  
     click on title to open docs and see examples of full syntax on how to use it  
-  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
-    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
-    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
-  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
-    sometimes you want strong control over composition, but you want it to stop at some point  
-    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
-  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
-    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
-    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
-    outpaint can run in *img2img* mode (default) and *inpaint* mode where original image is masked (if inpaint masked only is selected)  
+    simply enable from *scripts -> regional prompting*  
+    *note*: supports sd-15 models only  
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
   - [ZLUDA](https://github.com/vosen/ZLUDA) experimental support, thanks @lshqqytiger  
     - ZLUDA is CUDA wrapper that can be used for GPUs without native support
     - best use case is *AMD GPUs on Windows*, see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details  
+  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
+    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
+    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
+    outpaint can run in *img2img* mode (default) and *inpaint* mode where original image is masked (if inpaint masked only is selected)  
+  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
+    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
+    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
+  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
+    sometimes you want strong control over composition, but you want it to stop at some point  
+    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
   - **Control**
     - when performing inpainting, you can specify processing resolution using **size->mask**  
     - units now have extra option to re-use current preview image as processor input  

@@ -10,16 +10,21 @@ image_processor: AutoImageProcessor = None
 
 
 class DPTDetector:
-    def __init__(self, model=None, processor=None):
+    def __init__(self, model=None, processor=None, model_path=None):
         self.model = model
         self.processor = processor
+        self.model_path = model_path or "Intel/dpt-large"
 
-    def __call__(self, input_image=None):
+    def __call__(self, input_image=None, model_path=None):
         from modules.control.processors import cache_dir
+        if model_path is not None and model_path != self.model_path:
+            self.model_path = model_path
+            self.processor = None
+            self.model = None
         if self.processor is None:
-            self.processor = AutoImageProcessor.from_pretrained("Intel/dpt-large", cache_dir=cache_dir)
+            self.processor = AutoImageProcessor.from_pretrained(self.model_path, cache_dir=cache_dir)
         if self.model is None:
-            self.model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large", cache_dir=cache_dir)
+            self.model = DPTForDepthEstimation.from_pretrained(self.model_path, cache_dir=cache_dir)
 
         self.model.to(devices.device)
         with devices.inference_context():

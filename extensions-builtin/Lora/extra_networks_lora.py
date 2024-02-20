@@ -67,7 +67,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             if 'CLIP' in shared.sd_model.text_encoder.__class__.__name__ and not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
                 if shared.opts.lora_fuse_diffusers:
                     shared.sd_model.unfuse_lora()
-                shared.sd_model.unload_lora_weights()
+                try:
+                    shared.sd_model.unload_lora_weights() # fails for non-CLIP models
+                except Exception:
+                    pass
         if not self.active and getattr(networks, "originals", None ) is not None:
             networks.originals.undo() # remove patches
             if networks.debug:
