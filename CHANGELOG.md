@@ -15,7 +15,8 @@
   - **FaceID** now also works with multiple input images!  
   - [Differential diffusion](https://github.com/exx8/differential-diffusion)  
     img2img generation where you control strength of each pixel or image area  
-    can be used with manually created masks or with auto-generated depth-maps  
+    can be used with manually created masks or with auto-generated depth-maps
+    uses general denoising strength value  
     simply enable from *img2img -> scripts -> differential diffusion*  
     *note*: supports sd-xl models only  
   - [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline) as a built-in solution  
