@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import json
+import threading
 import contextlib
 from types import SimpleNamespace
 from urllib.parse import urlparse
@@ -793,7 +794,7 @@ class Options:
         data_label = self.data_labels.get(key)
         return data_label.default if data_label is not None else None
 
-    def save(self, filename=None, silent=False):
+    def save_atomic(self, filename=None, silent=False):
         if filename is None:
             filename = self.filename
         if cmd_opts.freeze:
@@ -827,6 +828,9 @@ class Options:
                 log.debug(f"Unused settings: {unused_settings}")
         except Exception as e:
             log.error(f'Saving settings failed: {filename} {e}')
+
+    def save(self, filename=None, silent=False):
+        threading.Thread(target=self.save_atomic, args=(filename, silent)).start()
 
     def same_type(self, x, y):
         if x is None or y is None:

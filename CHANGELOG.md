@@ -101,6 +101,7 @@
   - fix theme list refresh  
   - fix extensions update information in ui  
   - fix model merge manual merge settings, thanks @AI-Casanova  
+  - fix gradio instant update issues for textboxes in quicksettings  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - prompts-from-file fix resizable prompt area  
 

@@ -1014,7 +1014,7 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixin)
 
         if is_bridge:
             if up_block_additional_residual[0].shape != sample.shape:
-                print('HERE SKIP1')
+                pass # TODO VM patch
             elif fusion_guidance_scale is not None:
                 sample = sample + fusion_guidance_scale * (up_block_additional_residual.pop(0) - sample)
             else:
@@ -1053,7 +1053,7 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin, UNet2DConditionLoadersMixin)
             ################# bridge usage #################
             if is_bridge and len(up_block_additional_residual) > 0:
                 if sample.shape != up_block_additional_residual[0].shape:
-                    print('HERE SKIP2')
+                    pass # TODO VM PATCH
                 elif fusion_guidance_scale is not None:
                     sample = sample + fusion_guidance_scale * (up_block_additional_residual.pop(0) - sample)
                 else:

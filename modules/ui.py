@@ -105,7 +105,9 @@ def get_value_for_setting(key):
     value = getattr(opts, key)
     info = opts.data_labels[key]
     args = info.component_args() if callable(info.component_args) else info.component_args or {}
-    args = {k: v for k, v in args.items() if k not in {'precision', 'multiselect'}}
+    args = {k: v for k, v in args.items() if k not in {'precision', 'multiselect', 'visible'}}
+    # if not args:
+    #    return gr.update()
     return gr.update(value=value, **args)
 
 
@@ -258,7 +260,7 @@ def create_ui(startup_timer = None):
             return opts.dumpjson(), f'{len(changed)} Settings changed without save: {", ".join(changed)}'
         return opts.dumpjson(), f'{len(changed)} Settings changed{": " if len(changed) > 0 else ""}{", ".join(changed)}'
 
-    def run_settings_single(value, key):
+    def run_settings_single(value, key, progress=False):
         if not opts.same_type(value, opts.data_labels[key].default):
             return gr.update(visible=True), opts.dumpjson()
         if not opts.set(key, value):
@@ -268,7 +270,7 @@ def create_ui(startup_timer = None):
         if cmd_opts.use_directml:
             directml_override_opts()
         opts.save(shared.config_filename)
-        log.debug(f'Setting changed: key={key}, value={value}')
+        log.debug(f'Setting changed: {key}={value} progress={progress}')
         return get_value_for_setting(key), opts.dumpjson()
 
     with gr.Blocks(analytics_enabled=False) as settings_interface:
@@ -432,13 +434,17 @@ def create_ui(startup_timer = None):
         for _i, k, _item in quicksettings_list:
             component = component_dict[k]
             info = opts.data_labels[k]
-            change_handler = component.release if hasattr(component, 'release') else component.change
-            change_handler(
-                fn=lambda value, k=k: run_settings_single(value, key=k),
-                inputs=[component],
-                outputs=[component, text_settings],
-                show_progress=info.refresh is not None,
-            )
+            if isinstance(component, gr.components.Textbox):
+                change_handlers = [component.blur, component.submit]
+            else:
+                change_handlers = [component.release if hasattr(component, 'release') else component.change]
+            for change_handler in change_handlers:
+                change_handler(
+                    fn=lambda value, k=k, progress=info.refresh is not None: run_settings_single(value, key=k, progress=progress),
+                    inputs=[component],
+                    outputs=[component, text_settings],
+                    show_progress=info.refresh is not None,
+                )
 
         dummy_component = gr.Textbox(visible=False, value='dummy')
         button_set_checkpoint = gr.Button('Change model', elem_id='change_checkpoint', visible=False)

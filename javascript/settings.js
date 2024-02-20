@@ -8,9 +8,9 @@ const monitoredOpts = [
 ];
 
 const AppyOpts = [
-  { compact_view: (val) => toggleCompact(val) },
+  { compact_view: (val, old) => toggleCompact(val, old) },
   { gradio_theme: (val, old) => setTheme(val, old) },
-  { font_size: (val) => setFontSize(val) },
+  { font_size: (val, old) => setFontSize(val, old) },
 ];
 
 async function updateOpts(json_string) {
