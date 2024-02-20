@@ -18,12 +18,12 @@
     can be used with manually created masks or with auto-generated depth-maps
     uses general denoising strength value  
     simply enable from *img2img -> scripts -> differential diffusion*  
-    *note*: supports sd-xl models only  
+    *note*: supports sd15 and sdxl models  
   - [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline) as a built-in solution  
     usage is same as original implementation from @hako-mikan  
     click on title to open docs and see examples of full syntax on how to use it  
     simply enable from *scripts -> regional prompting*  
-    *note*: supports sd-15 models only  
+    *note*: supports sd15 models only  
   - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
     it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
     *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  

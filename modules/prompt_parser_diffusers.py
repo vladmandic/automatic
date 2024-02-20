@@ -163,8 +163,10 @@ def prepare_embedding_providers(pipe, clip_skip):
 
 
 def pad_to_same_length(pipe, embeds):
+    if not hasattr(pipe, 'encode_prompt'):
+        return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    try:  # SDXL
+    try: # SDXL
         empty_embed = pipe.encode_prompt("")
     except TypeError:  # SD1.5
         empty_embed = pipe.encode_prompt("", device, 1, False)
