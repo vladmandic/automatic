@@ -43,7 +43,8 @@ input[type=range]::-webkit-slider-thumb { box-shadow: 2px 2px 3px #111111 !impor
   border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: 0px !important; }
 input[type=range]::-moz-range-thumb { box-shadow: 2px 2px 3px #111111 !important; border: 0px solid #000000 !important; height: var(--line-sm) !important; width: var(--line-sm) !important;
   border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: 0px !important; }
-::-webkit-scrollbar { width: 12px; }
+:root { scrollbar-color: var(--highlight-color) #3a343a; }
+::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: #3a343a; }
 ::-webkit-scrollbar-thumb { background-color: var(--highlight-color); border-radius: var(--radius-lg); border-width: 0; box-shadow: 2px 2px 3px #111111; }
 div.form { border-width: 0; box-shadow: none; background: transparent; overflow: visible; margin-bottom: 6px; }

@@ -39,6 +39,7 @@ input[type=range] { height: var(--line-sm); appearance: none; margin-top: 0; min
 input[type=range]::-webkit-slider-runnable-track, input[type=range]::-moz-range-track { width: 100%; height: 6px; cursor: pointer; background: var(--primary-400); border-radius: var(--radius-lg); border: 0px solid #222222; }
 input[type=range]::-webkit-slider-thumb, input[type=range]::-moz-range-thumb { border: 0px solid #000000; height: var(--line-sm); width: 8px; border-radius: var(--radius-lg); background: white; cursor: pointer; appearance: none; margin-top: 0px; }
 input[type=range]::-moz-range-progress {  background-color: var(--primary-500);  height: 6px;  border-radius: var(--radius-lg); }
+:root { scrollbar-color: var(--highlight-color) #333333; }
 ::-webkit-scrollbar-track { background: #333333; }
 ::-webkit-scrollbar-thumb { background-color: var(--highlight-color); border-radius: var(--radius-lg); border-width: 0; box-shadow: 2px 2px 3px #111111; }
 div.form { border-width: 0; box-shadow: none; background: transparent; overflow: visible; margin-bottom: 6px; }
