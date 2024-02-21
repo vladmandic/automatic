@@ -3,7 +3,7 @@ from collections import namedtuple
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_cascade_previewer, sd_samplers
+from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_vae_stablecascade, sd_samplers
 
 
 SamplerData = namedtuple('SamplerData', ['name', 'constructor', 'aliases', 'options'])
@@ -48,6 +48,7 @@ def single_sample_to_image(sample, approximation=None):
             sd_cascade = True
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
+
         if shared.backend == shared.Backend.DIFFUSERS: # [-x,x] to [-5,5]
             sample_max = torch.max(sample)
             if sample_max > 5:
@@ -56,7 +57,7 @@ def single_sample_to_image(sample, approximation=None):
             if sample_min < -5:
                 sample = sample * (5 / abs(sample_min))
         if sd_cascade:
-            x_sample = sd_cascade_previewer.decode(sample)
+            x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
         elif approximation == 1: # Approximate

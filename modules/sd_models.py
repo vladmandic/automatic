@@ -20,7 +20,7 @@ from omegaconf import OmegaConf
 import tomesd
 from transformers import logging as transformers_logging
 from ldm.util import instantiate_from_config
-from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, errors, hashes, sd_models_config, sd_models_compile
+from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, errors, hashes, sd_models_config, sd_models_compile, sd_hijack_accelerate
 from modules.timer import Timer
 from modules.memstats import memory_stats
 from modules.paths import models_path, script_path
@@ -123,6 +123,7 @@ class NoWatermark:
 
 def setup_model():
     list_models()
+    sd_hijack_accelerate.hijack_hfhub()
     if shared.backend == shared.Backend.ORIGINAL:
         enable_midas_autodownload()
 
@@ -189,6 +190,11 @@ def update_model_hashes():
 
 
 def get_closet_checkpoint_match(search_string):
+    if search_string.startswith('huggingface/'):
+        model_name = search_string.replace('huggingface/', '')
+        checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
+        checkpoint_info.type = 'huggingface'
+        return checkpoint_info
     checkpoint_info = checkpoint_aliases.get(search_string, None)
     if checkpoint_info is not None:
         return checkpoint_info
@@ -813,23 +819,31 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         shared.log.debug(f'Diffusers loading: path="{checkpoint_info.path}"')
         pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
-        if os.path.isdir(checkpoint_info.path):
+        if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface':
             files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
             if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
                 diffusers_load_config['variant'] = 'fp16'
             if model_type in ['Stable Cascade']: # forced pipeline
+                # TODO experimental stable cascade
                 try:
-                    # TODO: Add decoder and vqgan loader
-                    # vqgan can reuse the vae loader ui
-                    # decoder needs a new loader
-                    vae_file = diffusers_load_config.pop("vae", None)
-                    prior_model = "stabilityai/stable-cascade-prior" if "models--stabilityai--stable-cascade" in checkpoint_info.path and "models--stabilityai--stable-cascade-prior" not in checkpoint_info.path else checkpoint_info.path
-                    decoder_model = "stabilityai/stable-cascade" if vae_file is None else vae_file
-                    prior = diffusers.StableCascadePriorPipeline.from_pretrained(prior_model, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config) # pylint: disable=no-member
-                    decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained(decoder_model, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config) # pylint: disable=no-member
-                    sd_model = diffusers.StableCascadeCombinedPipeline(tokenizer=decoder.tokenizer, text_encoder=decoder.text_encoder, decoder=decoder.decoder, scheduler=decoder.scheduler, vqgan=decoder.vqgan, prior_prior=prior.prior, prior_scheduler=prior.scheduler, feature_extractor=prior.feature_extractor, image_encoder=prior.image_encoder) # pylint: disable=no-member
+                    diffusers_load_config.pop("vae", None)
+                    diffusers_load_config.pop("variant", None)
+                    decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/17", **diffusers_load_config)
+                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    sd_model = diffusers.StableCascadeCombinedPipeline(
+                        tokenizer=decoder.tokenizer,
+                        text_encoder=decoder.text_encoder,
+                        decoder=decoder.decoder,
+                        scheduler=decoder.scheduler,
+                        vqgan=decoder.vqgan,
+                        prior_prior=prior.prior,
+                        prior_scheduler=prior.scheduler,
+                        feature_extractor=prior.feature_extractor,
+                        image_encoder=prior.image_encoder)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
                     return
             elif model_type in ['InstaFlow']: # forced pipeline
                 try:
@@ -837,6 +851,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     sd_model = pipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
                     return
             elif model_type in ['SegMoE']: # forced pipeline
                 try:
@@ -845,6 +861,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     sd_model = sd_model.pipe # segmoe pipe does its stuff in __init__ and __call__ is the original pipeline
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
                     return
             elif 'ONNX' in model_type: # forced pipeline
                 sd_model = pipeline.from_pretrained(checkpoint_info.path)
@@ -913,11 +931,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if shared.opts.disable_accelerate:
                         from diffusers.utils import import_utils
                         import_utils._accelerate_available = False # pylint: disable=protected-access
-                    import modules.sd_hijack_accelerate
                     if shared.opts.diffusers_to_gpu:
-                        modules.sd_hijack_accelerate.hijack_accelerate()
+                        sd_hijack_accelerate.hijack_accelerate()
                     else:
-                        modules.sd_hijack_accelerate.restore_accelerate()
+                        sd_hijack_accelerate.restore_accelerate()
                     sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
                     if sd_model is not None and hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config') and 'inpainting' in checkpoint_info.path.lower():
                         shared.log.debug('Model patch: type=inpaint')

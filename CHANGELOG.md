@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-20
+## Update for 2024-02-21
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -78,6 +78,7 @@
     see *settings -> compute settings*  
 - **Fixes**:  
   - add variation seed to diffusers txt2img, thanks @AI-Casanova  
+  - add cmd param `--skip-env` to skip setting of environment parameters during sdnext load  
   - handle extensions that install conflicting versions of packages  
     `onnxruntime`, `opencv2-python`  
   - installer refresh package cache on any install  
@@ -100,6 +101,7 @@
   - fix controlnet inpaint mask  
   - fix theme list refresh  
   - fix extensions update information in ui  
+  - fix taesd with bfloat16
   - fix model merge manual merge settings, thanks @AI-Casanova  
   - fix gradio instant update issues for textboxes in quicksettings  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  

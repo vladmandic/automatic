@@ -11,6 +11,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - diffusers public callbacks  
 - image2video: pia and vgen pipelines  
 - video2video
+- async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 
 ## Control missing features
 

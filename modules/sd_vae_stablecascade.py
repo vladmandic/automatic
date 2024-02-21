@@ -1,5 +1,4 @@
 import os
-import torch
 from torch import nn
 import safetensors
 from modules import devices, paths
@@ -69,7 +68,7 @@ def load_model(model_path):
 
 def decode(latents):
     from modules import shared
-    global preview_model
+    global preview_model # pylint: disable=global-statement
     if preview_model is None:
         model_path = os.path.join(paths.models_path, "VAE-approx", "sd_cascade_previewer.safetensors")
         download_model(model_path)

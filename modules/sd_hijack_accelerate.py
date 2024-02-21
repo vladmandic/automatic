@@ -58,3 +58,9 @@ def hijack_accelerate():
 
 def restore_accelerate():
     accelerate.utils.set_module_tensor_to_device = orig_method
+
+
+def hijack_hfhub():
+    import contextlib
+    import huggingface_hub.file_download
+    huggingface_hub.file_download.FileLock = contextlib.nullcontext

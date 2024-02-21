@@ -73,6 +73,12 @@
     "desc": "(SVD) Image-to-Video is a latent diffusion model trained to generate short video clips from an image conditioning. This model was trained to generate 25 frames at resolution 576x1024 given a context frame of the same size, finetuned from SVD Image-to-Video [14 frames]. We also finetune the widely used f8-decoder for temporal consistency.",
     "preview": "stabilityai--stable-video-diffusion-img2vid-xt.jpg"
   },
+  "StabilityAI Stable Cascade": {
+    "path": "huggingface/stabilityai/stable-cascade",
+    "skip": true,
+    "desc": "Stable Cascade is a diffusion model built upon the Würstchen architecture and its main difference to other models like Stable Diffusion is that it is working at a much smaller latent space. Why is this important? The smaller the latent space, the faster you can run inference and the cheaper the training becomes. How small is the latent space? Stable Diffusion uses a compression factor of 8, resulting in a 1024x1024 image being encoded to 128x128. Stable Cascade achieves a compression factor of 42, meaning that it is possible to encode a 1024x1024 image to 24x24, while maintaining crisp reconstructions. The text-conditional model is then trained in the highly compressed latent space. Previous versions of this architecture, achieved a 16x cost reduction over Stable Diffusion 1.5",
+    "preview": "stabilityai--stable-cascade.jpg"
+  },
   "Segmind Vega": {
     "path": "segmind/Segmind-Vega",
     "desc": "The Segmind-Vega Model is a distilled version of the Stable Diffusion XL (SDXL), offering a remarkable 70% reduction in size and an impressive 100% speedup while retaining high-quality text-to-image generation capabilities. Trained on diverse datasets, including Grit and Midjourney scrape data, it excels at creating a wide range of visual content based on textual prompts. Employing a knowledge distillation strategy, Segmind-Vega leverages the teachings of several expert models, including SDXL, ZavyChromaXL, and JuggernautXL, to combine their strengths and produce compelling visual outputs.",

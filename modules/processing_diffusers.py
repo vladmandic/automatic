@@ -165,7 +165,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if hasattr(model, 'pipe'): # recurse
             model = model.pipe
         signature = inspect.signature(type(model).__call__, follow_wrapped=True)
-        possible = signature.parameters.keys()
+        possible = list(signature.parameters)
         debug(f'Diffusers pipeline possible: {possible}')
         if shared.opts.diffusers_generator_device == "Unset":
             generator_device = None
@@ -179,15 +179,16 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
         clip_skip = kwargs.pop("clip_skip", 1)
+        steps = kwargs.get("num_inference_steps", 1)
         if shared.opts.prompt_attention != 'Fixed attention' and 'StableDiffusion' in model.__class__.__name__ and 'Onnx' not in model.__class__.__name__:
             try:
-                prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=kwargs.get("num_inference_steps", 1), clip_skip=clip_skip)
+                prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
                 parser = shared.opts.prompt_attention
             except Exception as e:
                 shared.log.error(f'Prompt parser encode: {e}')
                 if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                     errors.display(e, 'Prompt parser encode')
-        if parser == 'Fixed attention':
+        if 'clip_skip' in possible and parser == 'Fixed attention':
             if clip_skip == 1:
                 pass # clip_skip = None
             else:
@@ -211,17 +212,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             model.scheduler.noise_sampler_seed = p.seeds[0] # some schedulers have internal noise generator and do not use pipeline generator
         if 'noise_sampler_seed' in possible:
             args['noise_sampler_seed'] = p.seeds[0]
-        if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_num_inference_steps' in possible:
-            steps = kwargs.pop("num_inference_steps", 20)
-            args["prior_num_inference_steps"] = steps
-            args["num_inference_steps"] = max(int(steps / 2), 1)
-        if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_guidance_scale' in possible:
-            cfg_scale = kwargs.pop("guidance_scale", p.cfg_scale)
-            args["prior_guidance_scale"] = cfg_scale
-            # Using decoder_guidance_scale causes "Expected all tensors to be on the same device" errors right now
-            # Enabling model cpu offload fixes the error above
-            #args["decoder_guidance_scale"] = 0.0
-        elif 'guidance_scale' in possible:
+        if 'guidance_scale' in possible:
             args['guidance_scale'] = p.cfg_scale
         if 'generator' in possible and generator is not None:
             args['generator'] = generator
@@ -230,18 +221,40 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if 'output_type' in possible:
             if hasattr(model, 'vae'):
                 args['output_type'] = 'np' # only set latent if model has vae
+
+        # stable cascade
+        if 'StableCascade' in model.__class__.__name__:
+            kwargs.pop("guidance_scale") # remove
+            kwargs.pop("num_inference_steps") # remove
+            if 'prior_num_inference_steps' in possible:
+                args["prior_num_inference_steps"] = p.steps
+                args["num_inference_steps"] = p.refiner_steps
+            if 'prior_guidance_scale' in possible:
+                args["prior_guidance_scale"] = p.cfg_scale
+            if 'decoder_guidance_scale' in possible:
+                args["decoder_guidance_scale"] = p.image_cfg_scale
+            # TODO Stable Cascade callbacks are currently broken in combined pipeline so preview will not get triggered
+            if 'prior_callback_on_step_end' in possible:
+                possible.remove('callback_on_step_end')
+            if 'callback_on_step_end' in possible:
+                possible.remove('callback_on_step_end')
+            if 'callback' in possible:
+                possible.remove('callback')
+
+        # set callbacks
         if 'callback_steps' in possible:
             args['callback_steps'] = 1
-        if 'callback' in possible:
-            args['callback'] = diffusers_callback_legacy
-        elif 'callback_on_step_end_tensor_inputs' in possible:
-            if hasattr(model, "decoder") and hasattr(model, "prior_prior") and 'prior_guidance_scale' in possible:
-                args['prior_callback_on_step_end'] = diffusers_callback
+        if 'callback_on_step_end' in possible:
             args['callback_on_step_end'] = diffusers_callback
-            if 'prompt_embeds' in possible and 'negative_prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):
-                args['callback_on_step_end_tensor_inputs'] = model._callback_tensor_inputs # pylint: disable=protected-access
-            else:
-                args['callback_on_step_end_tensor_inputs'] = ['latents']
+            if 'callback_on_step_end_tensor_inputs' in possible:
+                if 'prompt_embeds' in possible and 'negative_prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):
+                    args['callback_on_step_end_tensor_inputs'] = model._callback_tensor_inputs # pylint: disable=protected-access
+                else:
+                    args['callback_on_step_end_tensor_inputs'] = ['latents']
+        elif 'callback' in possible:
+            args['callback'] = diffusers_callback_legacy
+
+        # handle remaining args
         for arg in kwargs:
             if arg in possible: # add kwargs
                 args[arg] = kwargs[arg]
@@ -261,6 +274,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 debug(f'Diffusers unknown task args: {k}={v}')
 
         sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
+
+        # debug info
         clean = args.copy()
         clean.pop('callback', None)
         clean.pop('callback_steps', None)
@@ -284,8 +299,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             txt += f' Clamp threshold={p.hdr_threshold} boundary={p.hdr_boundary}' if p.hdr_clamp else ' Clamp off'
             txt += f' Maximize boundary={p.hdr_max_boundry} center={p.hdr_max_center}' if p.hdr_maximize else ' Maximize off'
             shared.log.debug(txt)
-        # components = [{ k: getattr(v, 'device', None) } for k, v in model.components.items()]
-        # shared.log.debug(f'Diffuser pipeline components: {components}')
         if shared.cmd_opts.profile:
             t1 = time.time()
             shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')

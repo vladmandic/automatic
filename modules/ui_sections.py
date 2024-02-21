@@ -206,7 +206,7 @@ def create_hires_inputs(tab):
         with gr.Group(visible=shared.backend == shared.Backend.DIFFUSERS):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
                 refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.8, elem_id=f"{tab}_refiner_start")
-                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=5)
+                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=10)
             with gr.Row(elem_id=f"{tab}_refiner_row3", variant="compact"):
                 refiner_prompt = gr.Textbox(value='', label='Secondary prompt', elem_id=f"{tab}_refiner_prompt")
             with gr.Row(elem_id="txt2img_refiner_row4", variant="compact"):

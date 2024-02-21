@@ -302,6 +302,8 @@ def load_reference(name: str):
         if v.get('path', '') == name:
             model_opts = v
             break
+    if model_opts.get('skip', False):
+        return True
     model_dir = download_diffusers_model(
         hub_id=name,
         cache_dir=shared.opts.diffusers_dir,

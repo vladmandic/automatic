@@ -98,7 +98,7 @@ async def main():
             if i == 0:
                 log.info({ 'warmup': round(ts, 2) })
             else:
-                peak = gpu['session']['peak'] if 'session' in gpu else 0
+                peak = gpu['system']['used'] # gpu['session']['peak'] if 'session' in gpu else 0
                 log.info({ 'batch': batch[i], 'its': round(options.steps / (ts / batch[i]), 2), 'img': round(ts / batch[i], 2), 'wall': round(ts, 2), 'peak': gb(peak), 'oom': oom > 0 })
         else:
             await asyncio.sleep(10)

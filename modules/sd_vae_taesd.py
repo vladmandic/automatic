@@ -77,7 +77,6 @@ def download_model(model_path):
     model_name = os.path.basename(model_path)
     model_url = f'https://github.com/madebyollin/taesd/raw/main/{model_name}'
     if not os.path.exists(model_path):
-        import torch
         from modules.shared import log
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         log.info(f'Downloading TAESD decoder: {model_path}')
@@ -109,6 +108,7 @@ def decode(latents):
     model_class = shared.sd_model_type
     if model_class == 'ldm':
         model_class = 'sd'
+    dtype = devices.dtype_vae if devices.dtype_vae != torch.bfloat16 else torch.float16 # taesd does not support bf16
     if 'sd' not in model_class:
         shared.log.warning(f'TAESD unsupported model type: {model_class}')
         return Image.new('RGB', (8, 8), color = (0, 0, 0))
@@ -120,10 +120,10 @@ def decode(latents):
             taesd_models[f'{model_class}-decoder'] = TAESD(decoder_path=model_path, encoder_path=None)
             shared.log.debug(f'VAE load: type=taesd model={model_path}')
             vae = taesd_models[f'{model_class}-decoder']
-            vae.decoder.to(devices.device, devices.dtype_vae)
+            vae.decoder.to(devices.device, dtype)
     try:
         with devices.inference_context():
-            latents = latents.detach().clone().to(devices.device, devices.dtype_vae)
+            latents = latents.detach().clone().to(devices.device, dtype)
             if len(latents.shape) == 3:
                 latents = latents.unsqueeze(0)
                 image = vae.decoder(latents).clamp(0, 1).detach()
