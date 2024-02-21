@@ -48,7 +48,8 @@ input[type=range]::-webkit-slider-thumb { border: 0px solid var(--background-col
   border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -0.2em !important; }
 input[type=range]::-moz-range-thumb { border: 0px solid var(--background-color) !important; height: var(--line-sm) !important; width: var(--line-sm) !important;
   border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -0.2em !important; }
-::-webkit-scrollbar { width: 12px; }
+:root { scrollbar-color: var(--highlight-color) var(--primary-700); }
+::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: var(--primary-700) }
 ::-webkit-scrollbar-thumb { background-color: var(--highlight-color); border-radius: var(--radius-lg); border-width: 0; }
 div.form { border-width: 0; box-shadow: none; background: transparent; overflow: visible; }
