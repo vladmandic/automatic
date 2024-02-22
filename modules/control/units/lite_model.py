@@ -72,7 +72,6 @@ class LLLiteModule(torch.nn.Module):
 
     def forward(self, x):
         if self.cond_emb is None:
-            # print(f"cond_emb is None, {self.name}")
             cx = self.conditioning1(self.cond_image.to(x.device, dtype=x.dtype))
             # if blk_shape is not None:
             #     b, c, h, w = blk_shape
@@ -89,7 +88,6 @@ class LLLiteModule(torch.nn.Module):
             if self.is_conv2d:
                 cx = cx.repeat(x.shape[0] // cx.shape[0], 1, 1, 1)
             else:
-                # print("x.shape[0] != cx.shape[0]", x.shape[0], cx.shape[0])
                 cx = cx.repeat(x.shape[0] // cx.shape[0], 1, 1)
 
         cx = torch.cat([cx, self.down(x)], dim=1 if self.is_conv2d else 2)
@@ -173,7 +171,7 @@ class ControlNetLLLite(torch.nn.Module): # pylint: disable=abstract-method
                 mapped_block, mapped_number = map_down_lllite_to_unet[int(block)]
                 b = model.down_blocks[mapped_block].attentions[int(mapped_number)].transformer_blocks[int(block_number)]
             elif root == 'output':
-                print(f'Not implemented: {root}')
+                pass # not implemented
             else:
                 b = model.mid_block.attentions[0].transformer_blocks[int(block_number)]
             b = getattr(b, attn_name, None)

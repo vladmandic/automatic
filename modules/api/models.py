@@ -37,10 +37,7 @@ class PydanticModelGenerator:
         additional_fields = None,
     ):
         def field_type_generator(_k, v):
-            # field_type = str if not overrides.get(k) else overrides[k]["type"]
-            # print(k, v.annotation, v.default)
             field_type = v.annotation
-
             return Optional[field_type]
 
         def merge_class_params(class_):

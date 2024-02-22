@@ -382,20 +382,20 @@ def parse_prompt_attention(text):
 
 if __name__ == "__main__":
     input_text = '[black] [[grey]] (white) ((gray)) ((orange:1.1) yellow) ((purple) and [dark] red:1.1) [mouse:0.2] [(cat:1.1):0.5]'
-    print(f'Prompt: {input_text}')
+    log.info(f'Prompt: {input_text}')
     all_schedules = get_learned_conditioning_prompt_schedules([input_text], 100)[0]
-    print('Schedules', all_schedules)
+    log.info(f'Schedules: {all_schedules}')
     for schedule in all_schedules:
-        print('Schedule', schedule[0])
+        log.info(f'Schedule: {schedule[0]}')
         opts.data['prompt_attention'] = 'Fixed attention'
         output_list = parse_prompt_attention(schedule[1])
-        print('  Fixed:', output_list)
+        log.info(f'  Fixed: {output_list}')
         opts.data['prompt_attention'] = 'Compel parser'
         output_list = parse_prompt_attention(schedule[1])
-        print('  Compel:', output_list)
+        log.info(f'  Compel: {output_list}')
         opts.data['prompt_attention'] = 'A1111 parser'
         output_list = parse_prompt_attention(schedule[1])
-        print('  A1111:', output_list)
+        log.info(f'  A1111: {output_list}')
         opts.data['prompt_attention'] = 'Full parser'
-        output_list = parse_prompt_attention(schedule[1])
-        print('  Full :', output_list)
+        log.info = parse_prompt_attention(schedule[1])
+        log.info(f'  Full:  {output_list}')

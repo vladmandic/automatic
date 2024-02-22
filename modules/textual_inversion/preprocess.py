@@ -187,7 +187,7 @@ def preprocess_work(process_src, process_dst, process_width, process_height, pre
             try:
                 dnn_model_path = autocrop.download_and_cache_models(os.path.join(paths.models_path, "opencv"))
             except Exception as e:
-                print("Unable to load face detection model for auto crop selection. Falling back to lower quality haar method.", e)
+                shared.log.error(f"TI unable to load face detection model for auto crop selection. Falling back to lower quality haar method. {e}")
             autocrop_settings = autocrop.Settings(
                 crop_width = width,
                 crop_height = height,
@@ -206,7 +206,7 @@ def preprocess_work(process_src, process_dst, process_width, process_height, pre
             if cropped is not None:
                 save_pic(cropped, index, params, existing_caption=existing_caption)
             else:
-                print(f"skipped {img.width}x{img.height} image {filename} (can't find suitable size within error threshold)")
+                shared.log.error(f"TI skipped {img.width}x{img.height} image {filename} (can't find suitable size within error threshold)")
             process_default_resize = False
         if process_keep_original_size:
             save_pic(img, index, params, existing_caption=existing_caption)

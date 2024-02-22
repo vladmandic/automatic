@@ -4,7 +4,7 @@ from contextlib import nullcontext
 import torch
 import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
 import numpy as np
-from modules import devices
+from modules import devices, errors
 
 device_supports_fp64 = torch.xpu.has_fp64_dtype()
 
@@ -13,7 +13,7 @@ device_supports_fp64 = torch.xpu.has_fp64_dtype()
 class DummyDataParallel(torch.nn.Module): # pylint: disable=missing-class-docstring, unused-argument, too-few-public-methods
     def __new__(cls, module, device_ids=None, output_device=None, dim=0): # pylint: disable=unused-argument
         if isinstance(device_ids, list) and len(device_ids) > 1:
-            print("IPEX backend doesn't support DataParallel on multiple XPU devices")
+            errors.log.error("IPEX backend doesn't support DataParallel on multiple XPU devices")
         return module.to(devices.device)
 
 def return_null_context(*args, **kwargs): # pylint: disable=unused-argument

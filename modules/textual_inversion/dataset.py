@@ -129,12 +129,6 @@ class PersonalizedBase(Dataset):
         self.gradient_step = min(gradient_step, self.length // self.batch_size)
         self.latent_sampling_method = latent_sampling_method
 
-        if len(groups) > 1:
-            print("Buckets:")
-            for (w, h), ids in sorted(groups.items(), key=lambda x: x[0]):
-                print(f"  {w}x{h}: {len(ids)}")
-            print()
-
     def create_text(self, filename_text):
         text = random.choice(self.lines)
         tags = filename_text.split(',')
@@ -210,8 +204,6 @@ class BatchLoader:
             self.weight = torch.stack([entry.weight for entry in data]).squeeze(1)
         else:
             self.weight = None
-        #self.emb_index = [entry.emb_index for entry in data]
-        #print(self.latent_sample.device)
 
     def pin_memory(self):
         self.latent_sample = self.latent_sample.pin_memory()

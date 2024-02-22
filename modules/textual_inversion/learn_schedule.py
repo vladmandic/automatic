@@ -49,10 +49,6 @@ class LearnRateScheduler:
         self.schedules = LearnScheduleIterator(learn_rate, max_steps, cur_step)
         (self.learn_rate,  self.end_step) = next(self.schedules)
         self.verbose = verbose
-
-        # if self.verbose:
-        #    print(f'Training at rate of {self.learn_rate} until step {self.end_step}')
-
         self.finished = False
 
     def step(self, step_number):

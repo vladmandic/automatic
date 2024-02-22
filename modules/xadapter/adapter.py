@@ -310,18 +310,3 @@ def zero_module(module):
     for p in module.parameters():
         p.detach().zero_()
     return module
-
-
-if __name__=='__main__':
-    adapter = Adapter_XL(use_zero_conv=True,
-                 enable_timestep=True, use_norm=True, temb_channels=1280, fusion_type='SPADE').cuda()
-    x = [torch.randn(4, 1280, 32, 32).cuda(), torch.randn(4, 640, 64, 64).cuda(), torch.randn(4, 320, 64, 64).cuda()]
-    t = torch.tensor([1,2,3,4]).cuda()
-    result = adapter(x, t=t)
-    for xx in result:
-        print(xx[0].shape)
-        print(xx[1].shape)
-
-
-
-

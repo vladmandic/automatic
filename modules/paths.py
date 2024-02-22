@@ -38,7 +38,7 @@ debug('Trace: PATH')
 paths = {}
 
 if os.environ.get('SD_PATH_DEBUG', None) is not None:
-    print(f'Paths: script-path="{script_path}" data-dir="{data_path}" models-dir="{models_path}" config="{config_path}"')
+    log.debug(f'Paths: script-path="{script_path}" data-dir="{data_path}" models-dir="{models_path}" config="{config_path}"')
 
 
 def register_paths():

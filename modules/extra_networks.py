@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
-
 from modules import errors
+
 
 extra_network_registry = {}
 
@@ -69,7 +69,7 @@ def activate(p, extra_network_data):
     for extra_network_name, extra_network_args in extra_network_data.items():
         extra_network = extra_network_registry.get(extra_network_name, None)
         if extra_network is None:
-            print(f"Skipping unknown extra network: {extra_network_name}")
+            errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
             continue
         try:
             extra_network.activate(p, extra_network_args)

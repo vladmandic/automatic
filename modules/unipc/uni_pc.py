@@ -520,7 +520,6 @@ class UniPC:
             return self.multistep_uni_pc_vary_update(x, model_prev_list, t_prev_list, t, order, **kwargs)
 
     def multistep_uni_pc_vary_update(self, x, model_prev_list, t_prev_list, t, order, use_corrector=True):
-        #print(f'using unified predictor-corrector with order {order} (solver type: vary coeff)')
         ns = self.noise_schedule
         assert order <= len(model_prev_list)
 
@@ -622,7 +621,6 @@ class UniPC:
         return x_t, model_t
 
     def multistep_uni_pc_bh_update(self, x, model_prev_list, t_prev_list, t, order, x_t=None, use_corrector=True):
-        #print(f'using unified predictor-corrector with order {order} (solver type: B(h))')
         ns = self.noise_schedule
         assert order <= len(model_prev_list)
         dims = x.dim()
@@ -751,7 +749,6 @@ class UniPC:
         if method == 'multistep':
             if timesteps is None:
                 timesteps = get_time_steps(self.noise_schedule, skip_type=skip_type, t_T=t_T, t_0=t_0, N=steps, device=device)
-            #print(f"Running UniPC Sampling with {timesteps.shape[0]} timesteps, order {order}")
             assert steps >= order, "UniPC order must be < sampling steps"
             assert timesteps.shape[0] - 1 == steps
             with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=shared.console) as progress:

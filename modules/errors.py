@@ -92,5 +92,4 @@ def profile_torch(profiler, msg: str):
     lines = lines.split('\n')
     lines = [x for x in lines if '/profiler' not in x and '---' not in x]
     txt = '\n'.join(lines)
-    # print(f'Torch {msg}:', txt)
     log.debug(f'Torch profile {msg}: \n{txt}')

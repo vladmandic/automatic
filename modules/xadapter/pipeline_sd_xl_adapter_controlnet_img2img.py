@@ -1797,19 +1797,6 @@ class StableDiffusionXLAdapterControlnetI2IPipeline(DiffusionPipeline, FromSingl
         init_latents = self.vae.encode(image).latent_dist.sample()
         init_latents = init_latents.to(dtype)
         init_latents = self.vae.config.scaling_factor * init_latents
-        shape = init_latents.shape
-        noise = randn_tensor(shape, generator=generator, device=device, dtype=dtype)
-        # get latents
-        print(timesteps)
-        print(timesteps[-1])
-        input()
-        # init_latents = self.scheduler.add_noise(init_latents, noise, timesteps[-1])
-        # if self.vae.config.force_upcast:
-        #     self.vae.to(dtype)
-        # image = self.vae.decode(init_latents / self.vae.config.scaling_factor, return_dict=False)[0]
-        # image = self.image_processor.postprocess(image, output_type="pil")[0]
-        # image.save(f'./test_img/noisy_init_latent_sdxl_{adapter_guidance_start:.2f}.png')
-
         return init_latents
 
     def prepare_xl_latents_from_sd_1_5(
