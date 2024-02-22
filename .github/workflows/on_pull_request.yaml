@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pylint
       - name: pre-commit
-        uses: pre-commit-ci/lite-action@v1.0.1
+        uses: pre-commit-ci/lite-action@v1.0.2
         if: always()
         with:
           msg: apply code formatting and linting auto-fixes
