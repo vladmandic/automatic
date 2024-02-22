@@ -197,10 +197,11 @@ def initialize_onnx():
     from installer import log
     from modules import devices
     from modules.shared import opts
-    from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
-    if devices.backend == "rocm":
-        TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
-    try:
+    try: # may fail on onnx import
+        import onnx # pylint: disable=unused-import
+        from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
+        if devices.backend == "rocm":
+            TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
         from .pipelines.onnx_stable_diffusion_pipeline import OnnxStableDiffusionPipeline
         from .pipelines.onnx_stable_diffusion_img2img_pipeline import OnnxStableDiffusionImg2ImgPipeline
         from .pipelines.onnx_stable_diffusion_inpaint_pipeline import OnnxStableDiffusionInpaintPipeline
@@ -208,8 +209,7 @@ def initialize_onnx():
         from .pipelines.onnx_stable_diffusion_xl_pipeline import OnnxStableDiffusionXLPipeline
         from .pipelines.onnx_stable_diffusion_xl_img2img_pipeline import OnnxStableDiffusionXLImg2ImgPipeline
 
-        # OnnxRuntimeModel Hijack.
-        OnnxRuntimeModel.__module__ = 'diffusers'
+        OnnxRuntimeModel.__module__ = 'diffusers' # OnnxRuntimeModel Hijack.
         diffusers.OnnxRuntimeModel = OnnxRuntimeModel
 
         diffusers.OnnxStableDiffusionPipeline = OnnxStableDiffusionPipeline
@@ -229,8 +229,7 @@ def initialize_onnx():
         diffusers.OnnxStableDiffusionXLImg2ImgPipeline = OnnxStableDiffusionXLImg2ImgPipeline
         diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
-        # Huggingface model compatibility
-        diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline
+        diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline # Huggingface model compatibility
         diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
         optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
