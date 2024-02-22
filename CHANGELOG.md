@@ -76,6 +76,7 @@
   - add additional debug env variables  
   - enhanced sdp cross-optimization control  
     see *settings -> compute settings*  
+  - experimental support for *python 3.12*  
 - **Fixes**:  
   - add variation seed to diffusers txt2img, thanks @AI-Casanova  
   - add cmd param `--skip-env` to skip setting of environment parameters during sdnext load  

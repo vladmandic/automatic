@@ -7,7 +7,12 @@ import logging
 import platform
 import subprocess
 import cProfile
-import pkg_resources
+
+try:
+    import pkg_resources # python 3.12 no longer packages it built-in
+except ImportError:
+    stdout = subprocess.run(f'"{sys.executable}" -m pip install setuptools', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    import pkg_resources
 
 
 class Dot(dict): # dot notation access to dictionary attributes
@@ -163,8 +168,11 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
     ok = True
     try:
         if reload:
-            import imp # pylint: disable=deprecated-module
-            imp.reload(pkg_resources)
+            try:
+                import imp # pylint: disable=deprecated-module
+                imp.reload(pkg_resources)
+            except Exception:
+                pass
         if friendly:
             pkgs = friendly.split()
         else:
@@ -240,8 +248,11 @@ def install(package, friendly: str = None, ignore: bool = False):
         quick_allowed = False
     if args.reinstall or not installed(package, friendly):
         res = pip(f"install --upgrade {package}", ignore=ignore)
-        import imp  # pylint: disable=deprecated-module
-        imp.reload(pkg_resources)
+        try:
+            import imp # pylint: disable=deprecated-module
+            imp.reload(pkg_resources)
+        except Exception:
+            pass
     return res
 
 
