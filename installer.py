@@ -394,6 +394,13 @@ def check_torch():
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
+    def is_rocm_available():
+        if not allow_rocm:
+            return False
+        if platform.system() == 'Windows':
+            hip_path = os.environ.get('HIP_PATH', None)
+            return hip_path is not None and os.path.exists(os.path.join(hip_path, 'bin'))
+        return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
     if torch_command != '':
         pass
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
@@ -404,14 +411,21 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
-    elif allow_rocm and (shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')):
+    elif is_rocm_available():
+        is_windows = platform.system() == 'Windows' # provides more better logs for ZLUDA users and ROCm for Windows users in future.
         log.info('AMD ROCm toolkit detected')
         os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
-        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
+        if not is_windows:
+            os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
         try:
-            command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
-            amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
+            if is_windows:
+                command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+                amd_gpus = [x.split(' ')[-1].strip() for x in amd_gpus if x.startswith('gcnArchName:')]
+            else:
+                command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+                amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
             log.debug(f'ROCm agents detected: {amd_gpus}')
         except Exception as e:
             log.debug(f'Run rocm_agent_enumerator failed: {e}')
@@ -446,16 +460,17 @@ def check_torch():
         except Exception as e:
             log.debug(f'ROCm hipconfig failed: {e}')
             rocm_ver = None
-        if rocm_ver in {"5.7"}:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-        elif rocm_ver in {"5.5", "5.6"}:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-        else:
-            # ROCm 5.5 is oldest for PyTorch 2.1
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+        if not is_windows: # remove after PyTorch built with ROCm for Windows is launched
+            if rocm_ver in {"5.7"}:
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+            elif rocm_ver in {"5.5", "5.6"}:
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+            else:
+                # ROCm 5.5 is oldest for PyTorch 2.1
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+            if rocm_ver is not None:
+                install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
-        if rocm_ver is not None:
-            install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
         log.info('Intel OneAPI Toolkit detected')
