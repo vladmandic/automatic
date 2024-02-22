@@ -2,6 +2,25 @@
 
 ## Update for 2024-02-22
 
+Only 3 weeks since last release, but here's another feature-packed one!
+This time release schedule was shorter as we wanted to get some of the fixes out faster.
+
+### Highlights
+
+- **IP-Adapters** & **FaceID**: multi-adapter and multi-image suport  
+- New optimization engines: [DeepCache](https://github.com/horseee/DeepCache), [ZLUDA](https://github.com/vosen/ZLUDA) and **Dynamic Attention Slicing**  
+- New built-in pipelines: [Differential diffusion](https://github.com/exx8/differential-diffusion) and [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline)  
+- Big updates to: **Outpainting** (noised-edge-extend), **Clip-skip** (interpolate with non-integrer values!), **CFG end** (prevent overburn on high CFG scales), **Control** module masking functionality  
+- All reported issues since the last release are addressed and included in this release  
+
+Further details:  
+- For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
+- For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
+- For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
+- [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
+
+### Full ChangeLog for 2024-02-22
+
 - **Improvements**:
   - **IP Adapter** major refactor  
     - support for **multiple input images** per each ip adapter  
@@ -145,7 +164,7 @@ Further details:
 - For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 
-### Full changelog 2024-02-07  
+### Full ChangeLog 2024-02-07  
 
 - Heavily updated [Wiki](https://github.com/vladmandic/automatic/wiki)  
 - **Control**:  
@@ -469,7 +488,7 @@ And others improvements in areas such as: Upscaling (up to 8x now with 40+ avail
 
 Plus some nifty new modules such as **FaceID** automatic face guidance using embeds during generation and **Depth 3D** image to 3D scene
 
-### Full changelog 2023-12-29
+### Full ChangeLog 2023-12-29
 
 - **Control**  
   - native implementation of all image control methods:  
