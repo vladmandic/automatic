@@ -47,17 +47,20 @@ def get_pipelines():
         'Kandinsky 2.2': getattr(diffusers, 'KandinskyV22Pipeline', None),
         'Kandinsky 3': getattr(diffusers, 'Kandinsky3Pipeline', None),
         'DeepFloyd IF': getattr(diffusers, 'IFPipeline', None),
-        'ONNX Stable Diffusion': getattr(diffusers, 'OnnxStableDiffusionPipeline', None),
-        'ONNX Stable Diffusion Img2Img': getattr(diffusers, 'OnnxStableDiffusionImg2ImgPipeline', None),
-        'ONNX Stable Diffusion Inpaint': getattr(diffusers, 'OnnxStableDiffusionInpaintPipeline', None),
-        'ONNX Stable Diffusion Upscale': getattr(diffusers, 'OnnxStableDiffusionUpscalePipeline', None),
-        'ONNX Stable Diffusion XL': getattr(diffusers, 'OnnxStableDiffusionXLPipeline', None),
-        'ONNX Stable Diffusion XL Img2Img': getattr(diffusers, 'OnnxStableDiffusionXLImg2ImgPipeline', None),
         'Custom Diffusers Pipeline': getattr(diffusers, 'DiffusionPipeline', None),
         'InstaFlow': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
-        # Segmind SSD-1B, Segmind Tiny
     }
+    if hasattr(diffusers, 'OnnxStableDiffusionXLPipeline'):
+        onnx_pipelines = {
+            'ONNX Stable Diffusion': getattr(diffusers, 'OnnxStableDiffusionPipeline', None),
+            'ONNX Stable Diffusion Img2Img': getattr(diffusers, 'OnnxStableDiffusionImg2ImgPipeline', None),
+            'ONNX Stable Diffusion Inpaint': getattr(diffusers, 'OnnxStableDiffusionInpaintPipeline', None),
+            'ONNX Stable Diffusion Upscale': getattr(diffusers, 'OnnxStableDiffusionUpscalePipeline', None),
+            'ONNX Stable Diffusion XL': getattr(diffusers, 'OnnxStableDiffusionXLPipeline', None),
+            'ONNX Stable Diffusion XL Img2Img': getattr(diffusers, 'OnnxStableDiffusionXLImg2ImgPipeline', None),
+        }
+        pipelines.update(onnx_pipelines)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

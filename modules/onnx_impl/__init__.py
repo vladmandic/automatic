@@ -95,7 +95,7 @@ class OnnxRuntimeModel(TorchCompatibleModule, diffusers.OnnxRuntimeModel):
         device = extract_device(args, kwargs)
         if device is not None:
             self.device = device
-            self.model = move_inference_session(self.model, device)
+            self.model = move_inference_session(self.model, device) # pylint: disable=attribute-defined-outside-init
         return self
 
 
@@ -203,7 +203,6 @@ def ORTDiffusionModelPart_to(self, *args, **kwargs):
 
 def initialize():
     global initialized # pylint: disable=global-statement
-
     if initialized:
         return
 
@@ -211,52 +210,53 @@ def initialize():
     from modules import devices
     from modules.paths import models_path
     from modules.shared import opts
-    from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
 
-    onnx_dir = os.path.join(models_path, "ONNX")
-    if not os.path.isdir(onnx_dir):
-        os.mkdir(onnx_dir)
+    try: # may fail on onnx import
+        import onnx # pylint: disable=unused-import
+        from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
 
-    if devices.backend == "rocm":
-        TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
+        onnx_dir = os.path.join(models_path, "ONNX")
+        if not os.path.isdir(onnx_dir):
+            os.mkdir(onnx_dir)
+        if devices.backend == "rocm":
+            TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
 
-    from .pipelines.onnx_stable_diffusion_pipeline import OnnxStableDiffusionPipeline
-    from .pipelines.onnx_stable_diffusion_img2img_pipeline import OnnxStableDiffusionImg2ImgPipeline
-    from .pipelines.onnx_stable_diffusion_inpaint_pipeline import OnnxStableDiffusionInpaintPipeline
-    from .pipelines.onnx_stable_diffusion_upscale_pipeline import OnnxStableDiffusionUpscalePipeline
-    from .pipelines.onnx_stable_diffusion_xl_pipeline import OnnxStableDiffusionXLPipeline
-    from .pipelines.onnx_stable_diffusion_xl_img2img_pipeline import OnnxStableDiffusionXLImg2ImgPipeline
+        from .pipelines.onnx_stable_diffusion_pipeline import OnnxStableDiffusionPipeline
+        from .pipelines.onnx_stable_diffusion_img2img_pipeline import OnnxStableDiffusionImg2ImgPipeline
+        from .pipelines.onnx_stable_diffusion_inpaint_pipeline import OnnxStableDiffusionInpaintPipeline
+        from .pipelines.onnx_stable_diffusion_upscale_pipeline import OnnxStableDiffusionUpscalePipeline
+        from .pipelines.onnx_stable_diffusion_xl_pipeline import OnnxStableDiffusionXLPipeline
+        from .pipelines.onnx_stable_diffusion_xl_img2img_pipeline import OnnxStableDiffusionXLImg2ImgPipeline
 
-    # OnnxRuntimeModel Hijack.
-    OnnxRuntimeModel.__module__ = 'diffusers'
-    diffusers.OnnxRuntimeModel = OnnxRuntimeModel
+        OnnxRuntimeModel.__module__ = 'diffusers' # OnnxRuntimeModel Hijack.
+        diffusers.OnnxRuntimeModel = OnnxRuntimeModel
 
-    diffusers.OnnxStableDiffusionPipeline = OnnxStableDiffusionPipeline
-    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionPipeline
+        diffusers.OnnxStableDiffusionPipeline = OnnxStableDiffusionPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionPipeline
 
-    diffusers.OnnxStableDiffusionImg2ImgPipeline = OnnxStableDiffusionImg2ImgPipeline
-    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionImg2ImgPipeline
+        diffusers.OnnxStableDiffusionImg2ImgPipeline = OnnxStableDiffusionImg2ImgPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionImg2ImgPipeline
 
-    diffusers.OnnxStableDiffusionInpaintPipeline = OnnxStableDiffusionInpaintPipeline
-    diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionInpaintPipeline
+        diffusers.OnnxStableDiffusionInpaintPipeline = OnnxStableDiffusionInpaintPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING["onnx-stable-diffusion"] = diffusers.OnnxStableDiffusionInpaintPipeline
 
-    diffusers.OnnxStableDiffusionUpscalePipeline = OnnxStableDiffusionUpscalePipeline
+        diffusers.OnnxStableDiffusionUpscalePipeline = OnnxStableDiffusionUpscalePipeline
 
-    diffusers.OnnxStableDiffusionXLPipeline = OnnxStableDiffusionXLPipeline
-    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLPipeline
+        diffusers.OnnxStableDiffusionXLPipeline = OnnxStableDiffusionXLPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLPipeline
 
-    diffusers.OnnxStableDiffusionXLImg2ImgPipeline = OnnxStableDiffusionXLImg2ImgPipeline
-    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
+        diffusers.OnnxStableDiffusionXLImg2ImgPipeline = OnnxStableDiffusionXLImg2ImgPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
-    # Huggingface model compatibility
-    diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline
-    diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
+        diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline # Huggingface model compatibility
+        diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
-    optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
+        optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
 
-    log.info(f'ONNX: selected={opts.onnx_execution_provider}, available={available_execution_providers}')
-
-    initialized = True
+        log.info(f'ONNX: selected={opts.onnx_execution_provider}, available={available_execution_providers}')
+        initialized = True
+    except Exception as e:
+        log.error(f'ONNX: failed to initialize: {e}')
 
 
 def initialize_olive():

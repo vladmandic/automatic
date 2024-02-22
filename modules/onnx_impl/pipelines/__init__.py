@@ -5,12 +5,11 @@ import tempfile
 from abc import ABCMeta
 from typing import Type, Tuple, List, Any, Dict
 from packaging import version
-import onnx
 import torch
 import diffusers
 import onnxruntime as ort
 import optimum.onnxruntime
-from installer import log
+from installer import log, install
 from modules import shared
 from modules.paths import sd_configs_path, models_path
 from modules.sd_models import CheckpointInfo
@@ -148,6 +147,8 @@ class OnnxRawPipeline(PipelineBase):
         return pipeline
 
     def convert(self, submodels: List[str], in_dir: os.PathLike, out_dir: os.PathLike):
+        install('onnx') # may not be installed yet, this performs check and installs as needed
+        import onnx
         shutil.rmtree("cache", ignore_errors=True)
         shutil.rmtree("footprints", ignore_errors=True)
 
@@ -328,7 +329,7 @@ class OnnxRawPipeline(PipelineBase):
         config.vae = os.path.join(models_path, "VAE", shared.opts.sd_vae)
         if not os.path.isfile(config.vae):
             del config.vae
-        config.vae_sdxl_fp16_fix = self._is_sdxl and not shared.opts.diffusers_vae_upcast
+        config.vae_sdxl_fp16_fix = self._is_sdxl and shared.opts.diffusers_vae_upcast == "false"
 
         config.width = p.width
         config.height = p.height

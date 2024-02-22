@@ -7,7 +7,12 @@ import logging
 import platform
 import subprocess
 import cProfile
-import pkg_resources
+
+try:
+    import pkg_resources # python 3.12 no longer packages it built-in
+except ImportError:
+    stdout = subprocess.run(f'"{sys.executable}" -m pip install setuptools', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    import pkg_resources
 
 
 class Dot(dict): # dot notation access to dictionary attributes
@@ -163,8 +168,11 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
     ok = True
     try:
         if reload:
-            import imp # pylint: disable=deprecated-module
-            imp.reload(pkg_resources)
+            try:
+                import imp # pylint: disable=deprecated-module
+                imp.reload(pkg_resources)
+            except Exception:
+                pass
         if friendly:
             pkgs = friendly.split()
         else:
@@ -201,10 +209,15 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
         return False
 
 
-def uninstall(package):
-    if installed(package, package, quiet=True):
-        log.warning(f'Uninstalling: {package}')
-        pip(f"uninstall {package} --yes --quiet", ignore=True, quiet=True)
+def uninstall(package, quiet = False):
+    packages = package if isinstance(package, list) else [package]
+    res = ''
+    for p in packages:
+        if installed(p, p, quiet=True):
+            if not quiet:
+                log.warning(f'Uninstalling: {p}')
+            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True)
+    return res
 
 
 def pip(arg: str, ignore: bool = False, quiet: bool = False):
@@ -229,11 +242,18 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False):
 
 # install package using pip if not already installed
 def install(package, friendly: str = None, ignore: bool = False):
+    res = ''
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
     if args.reinstall or not installed(package, friendly):
-        pip(f"install --upgrade {package}", ignore=ignore)
+        res = pip(f"install --upgrade {package}", ignore=ignore)
+        try:
+            import imp # pylint: disable=deprecated-module
+            imp.reload(pkg_resources)
+        except Exception:
+            pass
+    return res
 
 
 # execute git command
@@ -362,6 +382,12 @@ def check_python():
         log.debug(f'Git {git_version.replace("git version", "").strip()}')
 
 
+# check onnx version
+def check_onnx():
+    if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
+        install('onnxruntime', 'onnxruntime', ignore=True)
+
+
 # check torch version
 def check_torch():
     if args.skip_torch:
@@ -379,8 +405,13 @@ def check_torch():
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
-    if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
-        install('onnxruntime', 'onnxruntime', ignore=True)
+    def is_rocm_available():
+        if not allow_rocm:
+            return False
+        if platform.system() == 'Windows':
+            hip_path = os.environ.get('HIP_PATH', None)
+            return hip_path is not None and os.path.exists(os.path.join(hip_path, 'bin'))
+        return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
     if torch_command != '':
         pass
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
@@ -391,14 +422,21 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
-    elif allow_rocm and (shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')):
+    elif is_rocm_available():
+        is_windows = platform.system() == 'Windows' # provides more better logs for ZLUDA users and ROCm for Windows users in future.
         log.info('AMD ROCm toolkit detected')
         os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
-        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
+        if not is_windows:
+            os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
         try:
-            command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
-            amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
+            if is_windows:
+                command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+                amd_gpus = [x.split(' ')[-1].strip() for x in amd_gpus if x.startswith('gcnArchName:')]
+            else:
+                command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+                amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
             log.debug(f'ROCm agents detected: {amd_gpus}')
         except Exception as e:
             log.debug(f'Run rocm_agent_enumerator failed: {e}')
@@ -433,22 +471,17 @@ def check_torch():
         except Exception as e:
             log.debug(f'ROCm hipconfig failed: {e}')
             rocm_ver = None
-        if rocm_ver in {"5.7"}:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-        elif rocm_ver in {"5.5", "5.6"}:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-        else:
-            # ROCm 5.5 is oldest for PyTorch 2.1
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+        if not is_windows: # remove after PyTorch built with ROCm for Windows is launched
+            if rocm_ver in {"5.7"}:
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+            elif rocm_ver in {"5.5", "5.6"}:
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+            else:
+                # ROCm 5.5 is oldest for PyTorch 2.1
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+            if rocm_ver is not None:
+                install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
-        if rocm_ver is not None:
-            install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
-            try:
-                import onnxruntime
-                if "ROCMExecutionProvider" not in onnxruntime.get_available_providers():
-                    log.warning('Failed to automatically install onxnruntime package for ROCm. Please manually install it if you need.')
-            except Exception:
-                pass
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
         log.info('Intel OneAPI Toolkit detected')
@@ -482,10 +515,10 @@ def check_torch():
         install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True)
     elif allow_openvino and args.use_openvino:
         log.info('Using OpenVINO')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cpu')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
         install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
         install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True) # TODO openvino: numpy version conflicts with tensorflow and doesn't support Python 3.11
-        install('nncf==2.8.0', 'nncf')
+        install('nncf==2.8.1', 'nncf')
         os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
         os.environ.setdefault('NEOReadDebugKeys', '1')
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
@@ -555,6 +588,8 @@ def check_torch():
         log.debug(f'Cannot install xformers package: {e}')
     if opts.get('cuda_compile_backend', '') == 'hidet':
         install('hidet', 'hidet')
+    if opts.get('cuda_compile_backend', '') == 'deep-cache':
+        install('DeepCache')
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
     if args.profile:
@@ -613,10 +648,11 @@ def run_extension_installer(folder):
         env = os.environ.copy()
         env['PYTHONPATH'] = os.path.abspath(".")
         result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
+        txt = result.stdout.decode(encoding="utf8", errors="ignore")
+        debug(f'Extension installer: file={path_installer} {txt}')
         if result.returncode != 0:
             global errors # pylint: disable=global-statement
             errors += 1
-            txt = result.stdout.decode(encoding="utf8", errors="ignore")
             if len(result.stderr) > 0:
                 txt = txt + '\n' + result.stderr.decode(encoding="utf8", errors="ignore")
             log.error(f'Error running extension installer: {path_installer}')
@@ -843,21 +879,15 @@ def get_version():
 
 
 def get_onnxruntime_source_for_rocm(rocm_ver):
-    ort_version = "1.16.3"
-
-    try:
-        import onnxruntime
-        ort_version = onnxruntime.__version__
-    except ImportError:
-        pass
-
+    ort_version = "1.16.3" # hardcoded
     cp_str = f"{sys.version_info.major}{sys.version_info.minor}"
-
     if rocm_ver is None:
         command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         rocm_ver = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-
-    return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+    if "linux" in sys.platform:
+        return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+    else:
+        return 'onnxruntime-gpu'
 
 
 # check version of the main repo and optionally upgrade it
@@ -971,6 +1001,7 @@ def add_args(parser):
     group.add_argument('--skip-git', default = os.environ.get("SD_SKIPGIT",False), action='store_true', help = "Skips running all GIT operations, default: %(default)s")
     group.add_argument('--skip-torch', default = os.environ.get("SD_SKIPTORCH",False), action='store_true', help = "Skips running Torch checks, default: %(default)s")
     group.add_argument('--skip-all', default = os.environ.get("SD_SKIPALL",False), action='store_true', help = "Skips running all checks, default: %(default)s")
+    group.add_argument('--skip-env', default = os.environ.get("SD_SKIPENV",False), action='store_true', help = "Skips setting of env variables during startup, default: %(default)s")
     group.add_argument('--experimental', default = os.environ.get("SD_EXPERIMENTAL",False), action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
     group.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
     group.add_argument('--test', default = os.environ.get("SD_TEST",False), action='store_true', help = "Run test only and exit")

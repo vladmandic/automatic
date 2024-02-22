@@ -2,7 +2,6 @@ from PIL import Image
 import numpy as np
 import gradio as gr
 from modules import scripts_postprocessing
-from modules.postprocess import gfpgan_model
 
 
 class ScriptPostprocessingGfpGan(scripts_postprocessing.ScriptPostprocessing):
@@ -15,8 +14,12 @@ class ScriptPostprocessingGfpGan(scripts_postprocessing.ScriptPostprocessing):
         return { "gfpgan_visibility": gfpgan_visibility }
 
     def process(self, pp: scripts_postprocessing.PostprocessedImage, gfpgan_visibility): # pylint: disable=arguments-differ
+        from installer import install
+        install("facexlib")
+        install("gfpgan")
         if gfpgan_visibility == 0:
             return
+        from modules.postprocess import gfpgan_model
         restored_img = gfpgan_model.gfpgan_fix_faces(np.array(pp.image, dtype=np.uint8))
         res = Image.fromarray(restored_img)
         if gfpgan_visibility < 1.0:

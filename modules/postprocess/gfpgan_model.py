@@ -104,4 +104,4 @@ def setup_model(dirname):
 
         shared.face_restorers.append(FaceRestorerGFPGAN())
     except Exception as e:
-        errors.display(e, 'gfpgan')
+        errors.log.error(f'GFPGan failed to initialize: {e}')
