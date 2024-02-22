@@ -1,10 +1,138 @@
 # Change Log for SD.Next
 
+## Update for 2024-02-22
+
+Only 3 weeks since last release, but here's another feature-packed one!
+This time release schedule was shorter as we wanted to get some of the fixes out faster.
+
+### Highlights
+
+- **IP-Adapters** & **FaceID**: multi-adapter and multi-image suport  
+- New optimization engines: [DeepCache](https://github.com/horseee/DeepCache), [ZLUDA](https://github.com/vosen/ZLUDA) and **Dynamic Attention Slicing**  
+- New built-in pipelines: [Differential diffusion](https://github.com/exx8/differential-diffusion) and [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline)  
+- Big updates to: **Outpainting** (noised-edge-extend), **Clip-skip** (interpolate with non-integrer values!), **CFG end** (prevent overburn on high CFG scales), **Control** module masking functionality  
+- All reported issues since the last release are addressed and included in this release  
+
+Further details:  
+- For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
+- For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
+- For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
+- [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
+
+### Full ChangeLog for 2024-02-22
+
+- **Improvements**:
+  - **IP Adapter** major refactor  
+    - support for **multiple input images** per each ip adapter  
+    - support for **multiple concurrent ip adapters**  
+      *note*: you cannot mix & match ip adapters that use different *CLiP* models, for example `Base` and `Base ViT-G`  
+    - add **adapter start/end** to settings, thanks @AI-Casanova  
+      having adapter start late can help with better control over composition and prompt adherence  
+      having adapter end early can help with overal quality and performance  
+    - unified interface in txt2img, img2img and control  
+    - enhanced xyz grid support  
+  - **FaceID** now also works with multiple input images!  
+  - [Differential diffusion](https://github.com/exx8/differential-diffusion)  
+    img2img generation where you control strength of each pixel or image area  
+    can be used with manually created masks or with auto-generated depth-maps
+    uses general denoising strength value  
+    simply enable from *img2img -> scripts -> differential diffusion*  
+    *note*: supports sd15 and sdxl models  
+  - [Regional prompting](https://github.com/huggingface/diffusers/blob/main/examples/community/README.md#regional-prompting-pipeline) as a built-in solution  
+    usage is same as original implementation from @hako-mikan  
+    click on title to open docs and see examples of full syntax on how to use it  
+    simply enable from *scripts -> regional prompting*  
+    *note*: supports sd15 models only  
+  - [DeepCache](https://github.com/horseee/DeepCache) model acceleration  
+    it can produce massive speedups (2x-5x) with no overhead, but with some loss of quality  
+    *settings -> compute -> model compile -> deep-cache* and *settings -> compute -> model compile -> cache interval*  
+  - [ZLUDA](https://github.com/vosen/ZLUDA) experimental support, thanks @lshqqytiger  
+    - ZLUDA is CUDA wrapper that can be used for GPUs without native support
+    - best use case is *AMD GPUs on Windows*, see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details  
+  - **Outpaint** control outpaint now uses new alghorithm: noised-edge-extend  
+    new method allows for much larger outpaint areas in a single pass, even outpaint 512->1024 works well  
+    note that denoise strength should be increased for larger the outpaint areas, for example outpainting 512->1024 works well with denoise 0.75  
+    outpaint can run in *img2img* mode (default) and *inpaint* mode where original image is masked (if inpaint masked only is selected)  
+  - **Clip-skip** reworked completely, thanks @AI-Casanova & @Disty0  
+    now clip-skip range is 0-12 where previously lowest value was 1 (default is still 1)  
+    values can also be decimal to interpolate between different layers, for example `clip-skip: 1.5`, thanks @AI-Casanova  
+  - **CFG End** new param to control image generation guidance, thanks @AI-Casanova  
+    sometimes you want strong control over composition, but you want it to stop at some point  
+    for example, when used with ip-adapters or controlnet, high cfg scale can overpower the guided image  
+  - **Control**
+    - when performing inpainting, you can specify processing resolution using **size->mask**  
+    - units now have extra option to re-use current preview image as processor input  
+  - **Cross-attention** refactored cross-attention methods, thanks @Disty0  
+    - for backend:original, its unchanged: SDP, xFormers, Doggettxs, InvokeAI, Sub-quadratic, Split attention  
+    - for backend:diffuers, list is now: SDP, xFormers, Batch matrix-matrix, Split attention, Dynamic Attention BMM, Dynamic Attention SDP  
+      note: you may need to update your settings! Attention Slicing is renamed to Split attention  
+    - for ROCm, updated default cross-attention to Scaled Dot Product  
+  - **Dynamic Attention Slicing**, thanks @Disty0  
+    - dynamically slices attention queries in order to keep them under the slice rate  
+      slicing gets only triggered if the query size is larger than the slice rate to gain performance  
+      *Dynamic Attention Slicing BMM* uses *Batch matrix-matrix*  
+      *Dynamic Attention Slicing SDP* uses *Scaled Dot Product*  
+    - *settings -> compute settings -> attention -> dynamic attention slicing*  
+  - **ONNX**:  
+    - allow specify onnx default provider and cpu fallback  
+      *settings -> diffusers*  
+    - allow manual install of specific onnx flavor  
+      *settings -> onnx*  
+    - better handling of `fp16` models/vae, thanks @lshqqytiger  
+  - **OpenVINO** update to `torch 2.2.0`, thanks @Disty0  
+  - **HyperTile** additional options thanks @Disty0  
+    - add swap size option  
+    - add use only for hires pass option  
+  - add `--theme` cli param to force theme on startup  
+  - add `--allow-paths` cli param to add additional paths that are allowed to be accessed via web, thanks @OuticNZ  
+- **Wiki**:
+  - added benchmark notes for IPEX, OpenVINO and Olive  
+  - added ZLUDA wiki page  
+- **Internal**
+  - update dependencies  
+  - refactor txt2img/img2img api  
+  - enhanced theme loader  
+  - add additional debug env variables  
+  - enhanced sdp cross-optimization control  
+    see *settings -> compute settings*  
+  - experimental support for *python 3.12*  
+- **Fixes**:  
+  - add variation seed to diffusers txt2img, thanks @AI-Casanova  
+  - add cmd param `--skip-env` to skip setting of environment parameters during sdnext load  
+  - handle extensions that install conflicting versions of packages  
+    `onnxruntime`, `opencv2-python`  
+  - installer refresh package cache on any install  
+  - fix embeddings registration on server startup, thanks @AI-Casanova  
+  - ipex handle dependencies, thanks @Disty0  
+  - insightface handle dependencies  
+  - img2img mask blur and padding  
+  - xyz grid handle ip adapter name and scale  
+  - lazy loading of image may prevent metadata from being loaded on time  
+  - allow startup without valid models folder  
+  - fix interrogate api endpoint  
+  - control fix resize causing runtime errors  
+  - control fix processor override image after processor change  
+  - control fix display grid with batch  
+  - control restore pipeline before running scripts/extensions  
+  - handle pipelines that return dict instead of object  
+  - lora use strict name matching if preferred option is by-filename  
+  - fix inpaint mask only for diffusers  
+  - fix vae dtype mismatch, thanks @Disty0  
+  - fix controlnet inpaint mask  
+  - fix theme list refresh  
+  - fix extensions update information in ui  
+  - fix taesd with bfloat16
+  - fix model merge manual merge settings, thanks @AI-Casanova  
+  - fix gradio instant update issues for textboxes in quicksettings  
+  - fix rembg missing dependency  
+  - bind controlnet extension to last known working commit, thanks @Aptronymist  
+  - prompts-from-file fix resizable prompt area  
+
 ## Update for 2024-02-07
 
 Another big release just hit the shelves!
 
-### Highlights  
+### Highlights 2024-02-07  
 
 - A lot more functionality in the **Control** module:
   - Inpaint and outpaint support, flexible resizing options, optional hires  
@@ -36,7 +164,7 @@ Further details:
 - For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 
-### Full changelog
+### Full ChangeLog 2024-02-07  
 
 - Heavily updated [Wiki](https://github.com/vladmandic/automatic/wiki)  
 - **Control**:  
@@ -239,8 +367,8 @@ Further details:
     best used together with torch compile: *inductor*  
     this feature is highly experimental and will evolve over time  
     requires nightly versions of `torch` and `torchao`  
-    > pip install -U --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121  
-    > pip install -U git+https://github.com/pytorch-labs/ao  
+    > `pip install -U --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121`  
+    > `pip install -U git+https://github.com/pytorch-labs/ao`  
   - new option: **compile text encoder** (experimental)  
 - **correction**  
   - new section in generate, allows for image corrections during generataion directly in latent space  
@@ -336,7 +464,7 @@ Further details:
 
 To wrap up this amazing year, were releasing a new version of [SD.Next](https://github.com/vladmandic/automatic), this one is absolutely massive!  
 
-### Highlights  
+### Highlights 2023-12-29
 
 - Brand new Control module for *text, image, batch and video* processing  
   Native implementation of all control methods for both *SD15* and *SD-XL*  
@@ -360,7 +488,7 @@ And others improvements in areas such as: Upscaling (up to 8x now with 40+ avail
 
 Plus some nifty new modules such as **FaceID** automatic face guidance using embeds during generation and **Depth 3D** image to 3D scene
 
-### Full changelog
+### Full ChangeLog 2023-12-29
 
 - **Control**  
   - native implementation of all image control methods:  
