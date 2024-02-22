@@ -78,14 +78,20 @@ class StyleDatabase:
             self.load_csv(legacy_file)
             opts.styles_dir = os.path.join(paths.models_path, "styles")
             self.path = opts.styles_dir
-            os.makedirs(opts.styles_dir, exist_ok=True)
-            self.save_styles(opts.styles_dir, verbose=True)
-            log.debug(f'Migrated styles: file={legacy_file} folder={opts.styles_dir}')
-            self.reload()
+            try:
+                os.makedirs(opts.styles_dir, exist_ok=True)
+                self.save_styles(opts.styles_dir, verbose=True)
+                log.debug(f'Migrated styles: file={legacy_file} folder={opts.styles_dir}')
+                self.reload()
+            except Exception as e:
+                log.error(f'styles failed to migrate: file={legacy_file} error={e}')
         if not os.path.isdir(opts.styles_dir):
             opts.styles_dir = os.path.join(paths.models_path, "styles")
             self.path = opts.styles_dir
-            os.makedirs(opts.styles_dir, exist_ok=True)
+            try:
+                os.makedirs(opts.styles_dir, exist_ok=True)
+            except Exception:
+                pass
 
     def load_style(self, fn, prefix=None):
         with open(fn, 'r', encoding='utf-8') as f:

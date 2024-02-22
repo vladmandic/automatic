@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-21
+## Update for 2024-02-22
 
 - **Improvements**:
   - **IP Adapter** major refactor  
@@ -104,6 +104,7 @@
   - fix taesd with bfloat16
   - fix model merge manual merge settings, thanks @AI-Casanova  
   - fix gradio instant update issues for textboxes in quicksettings  
+  - fix rembg missing dependency  
   - bind controlnet extension to last known working commit, thanks @Aptronymist  
   - prompts-from-file fix resizable prompt area  
 

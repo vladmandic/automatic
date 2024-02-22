@@ -343,7 +343,7 @@ class FilenameGenerator:
         else:
             debug(f'Filename generator init: {seed} {prompt}')
         self.p = p
-        if seed is not None and seed > 0:
+        if seed is not None and int(seed) > 0:
             self.seed = seed
         elif hasattr(p, 'all_seeds'):
             self.seed = p.all_seeds[0]

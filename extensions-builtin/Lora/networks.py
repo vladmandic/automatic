@@ -442,7 +442,7 @@ def list_available_networks():
     if os.path.exists(shared.cmd_opts.lora_dir):
         directories.append(shared.cmd_opts.lora_dir)
     else:
-        shared.log.warning('LoRA directory not found: path="{shared.cmd_opts.lora_dir}"')
+        shared.log.warning(f'LoRA directory not found: path="{shared.cmd_opts.lora_dir}"')
     if os.path.exists(shared.cmd_opts.lyco_dir) and shared.cmd_opts.lyco_dir != shared.cmd_opts.lora_dir:
         directories.append(shared.cmd_opts.lyco_dir)
 
