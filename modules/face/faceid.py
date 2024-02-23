@@ -6,7 +6,7 @@ import numpy as np
 import diffusers
 import huggingface_hub as hf
 from PIL import Image
-from modules import processing, shared, devices
+from modules import processing, shared, devices, extra_networks
 
 
 FACEID_MODELS = {
@@ -165,16 +165,33 @@ def face_id(
     ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
     # run generate
     faceid_model.set_scale(scale)
-    for i in range(p.n_iter):
-        ip_model_dict.update({
-                "prompt": p.all_prompts[i],
-                "negative_prompt": p.all_negative_prompts[i],
-                "seed": int(p.all_seeds[i]),
-            })
-        debug(f"FaceID: {ip_model_dict}")
-        res = faceid_model.generate(**ip_model_dict)
-        if isinstance(res, list):
-            processed_images += res
+
+    with devices.inference_context():
+        with devices.autocast():
+            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+
+        extra_network_data = None
+
+        for i in range(p.n_iter):
+            p.iteration = i
+            p.prompts = p.all_prompts[i * p.batch_size:(i + 1) * p.batch_size]
+            p.negative_prompts = p.all_negative_prompts[i * p.batch_size:(i + 1) * p.batch_size]
+            p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
+            p.seeds = p.all_seeds[i * p.batch_size:(i + 1) * p.batch_size]
+
+            if not p.disable_extra_networks:
+                with devices.autocast():
+                    extra_networks.activate(p, extra_network_data)
+
+            ip_model_dict.update({
+                    "prompt": p.prompts,
+                    "negative_prompt": p.negative_prompts,
+                    "seed": int(p.seeds[0]),
+                })
+            debug(f"FaceID: {ip_model_dict}")
+            res = faceid_model.generate(**ip_model_dict)
+            if isinstance(res, list):
+                processed_images += res
     faceid_model.set_scale(0)
 
     if not cache:
