@@ -430,7 +430,7 @@ def check_torch():
         xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
     elif is_rocm_available():
-        is_windows = platform.system() == 'Windows' # provides more better logs for ZLUDA users and ROCm for Windows users in future.
+        is_windows = platform.system() == 'Windows'
         log.info('AMD ROCm toolkit detected')
         os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
         if not is_windows:
@@ -478,12 +478,13 @@ def check_torch():
         except Exception as e:
             log.debug(f'ROCm hipconfig failed: {e}')
             rocm_ver = None
-        if args.use_zluda: # ZLUDA is available on both Linux and Windows
+        if args.use_zluda:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
-            log.warning("Currently, ZLUDA support is experimental and unstable.")
+            log.warning("ZLUDA support: experimental")
             zluda_need_dll_patch = is_windows and not installed('torch')
-        elif is_windows: # remove this check after PyTorch built with ROCm for Windows is released
-            log.warning("HIP SDK is detected, but there's no PyTorch release for Windows at this moment. If you are trying ZLUDA, please add '--use-zluda'.")
+        elif is_windows: # TODO TBD after ROCm for Windows is released
+            log.warning("HIP SDK is detected, but no Torch release for Windows available")
+            log.info("For ZLUDA support specify '--use-zluda'")
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         else:
@@ -492,8 +493,7 @@ def check_torch():
             elif rocm_ver in {"5.5", "5.6"}:
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
             else:
-                # ROCm 5.5 is oldest for PyTorch 2.1
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5') # ROCm 5.5 is oldest for PyTorch 2.1
             if rocm_ver is not None:
                 install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
@@ -549,14 +549,14 @@ def check_torch():
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
         else:
             if args.use_zluda:
-                log.warning("Failed to initialize ZLUDA. There's no HIP SDK found in PATH.")
+                log.warning("ZLUDA failed to initialize: no HIP SDK found")
             log.info('Using CPU-only Torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
         log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
         if zluda_need_dll_patch:
-            patch_dlls_for_zluda()
+            patch_zluda()
     else:
         try:
             import torch
@@ -909,7 +909,7 @@ def get_onnxruntime_source_for_rocm(rocm_ver):
         return 'onnxruntime-gpu'
 
 
-def patch_dlls_for_zluda():
+def patch_zluda():
     zluda_path = os.environ.get('ZLUDA', None)
     if zluda_path is None:
         paths = os.environ.get('PATH', '').split(';')
@@ -931,7 +931,7 @@ def patch_dlls_for_zluda():
         for k, v in dlls_to_patch.items():
             shutil.copyfile(os.path.join(zluda_path, k), os.path.join(venv_path, 'Lib', 'site-packages', 'torch', 'lib', v))
     except Exception as e:
-        log.warning(f'Failed to automatically patch torch with ZLUDA: {e}')
+        log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
 
 
 # check version of the main repo and optionally upgrade it
