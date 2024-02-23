@@ -17,6 +17,8 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - remove training: ti
 - remove training: hypernetwork
 - extra network hide page with no entries
+- ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
+- theme/cozynest: <https://github.com/Nevysha/Cozy-Nest>
 
 ## Control missing features
 

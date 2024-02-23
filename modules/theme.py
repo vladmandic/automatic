@@ -49,7 +49,11 @@ def list_themes():
                 if f.endswith('.css'):
                     engines.append(f'modern/{os.path.splitext(f)[0]}')
     if 'sd-webui-lobe-theme' in extensions:
+        modules.shared.log.info('Theme: installed="lobe"')
         engines.append('lobe')
+    if 'Cozy-Nest' in extensions:
+        modules.shared.log.info('Theme: installed="cozy-nest"')
+        engines.append('cozy-nest')
     gradio = ["gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
     huggingface = refresh_themes(no_update=True)
     huggingface = {x['id'] for x in huggingface if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()}
@@ -75,7 +79,7 @@ def reload_gradio_theme(theme_name=None):
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
         return True
-    elif theme_name.lower() in ['lobe']:
+    elif theme_name.lower() in ['lobe', 'cozy-nest']:
         gradio_theme = gr.themes.Base(**default_font_params)
         modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
     elif theme_name.lower() == 'modern' or theme_name.lower().startswith('modern/'):
