@@ -5,13 +5,18 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ## Candidates for next release
 
 - stable cascade
-- init latents, variations, tiling
-- lora sliders: <https://github.com/vladmandic/automatic/issues/2868>
+- init latents: variations, tiling, img2img
 - x-adapter: <https://github.com/showlab/X-Adapter>
 - diffusers public callbacks  
 - image2video: pia and vgen pipelines  
 - video2video
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
+- remove builtin: controlnet
+- remove builtin: image-browser
+- defork
+- remove training: ti
+- remove training: hypernetwork
+- extra network hide page with no entries
 
 ## Control missing features
 

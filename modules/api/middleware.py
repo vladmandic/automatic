@@ -18,7 +18,6 @@ errors.install()
 
 
 def setup_middleware(app: FastAPI, cmd_opts):
-    log.info('Initializing middleware')
     ssl._create_default_https_context = ssl._create_unverified_context # pylint: disable=protected-access
     uvicorn_logger=logging.getLogger("uvicorn.error")
     uvicorn_logger.disabled = True
@@ -91,3 +90,4 @@ def setup_middleware(app: FastAPI, cmd_opts):
             return handle_exception(req, e)
 
     app.build_middleware_stack() # rebuild middleware stack on-the-fly
+    log.debug(f'FastAPI middleware: {[m.__class__.__name__ for m in app.user_middleware]}')

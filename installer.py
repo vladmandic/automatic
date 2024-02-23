@@ -1039,7 +1039,7 @@ def extensions_preload(parser):
             preload_extensions(ext_dir, parser)
             t1 = time.time()
             preload_time[ext_dir] = round(t1 - t0, 2)
-        log.info(f'Extension preload: {preload_time}')
+        log.debug(f'Extension preload: {preload_time}')
     except Exception:
         log.error('Error running extension preloading')
     if args.profile:
