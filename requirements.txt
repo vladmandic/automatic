@@ -1,18 +1,12 @@
 setuptools
 patch-ng
-addict
-aenum
-aiohttp
 anyio
-appdirs
+addict
 astunparse
 blendmodes
 clean-fid
-easydev
-extcolors
 filetype
 future
-gdown
 GitPython
 httpcore
 inflection
@@ -30,7 +24,6 @@ resize-right
 rich
 safetensors
 scipy
-tb_nightly
 tensordict==0.2.1
 toml
 torchdiffeq
@@ -40,7 +33,6 @@ scikit-image
 fasteners
 dctorch
 pymatting
-matplotlib
 peft
 orjson
 httpx==0.24.1

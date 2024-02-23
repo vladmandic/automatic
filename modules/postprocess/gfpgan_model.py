@@ -1,6 +1,6 @@
 import os
 
-import modules.face_restoration
+from installer import install
 from modules import paths, shared, devices, modelloader, errors
 
 model_dir = "GFPGAN"
@@ -72,8 +72,11 @@ def setup_model(dirname):
     except Exception:
         pass
     try:
+        install('basicsr')
+        install('gfpgan')
         import gfpgan
         import facexlib
+        import modules.face_restoration
 
         global user_path # pylint: disable=global-statement
         global have_gfpgan # pylint: disable=global-statement

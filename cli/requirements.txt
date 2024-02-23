@@ -1,4 +1,7 @@
+aiohttp
 mediapipe
+extcolors
 colormap
 filetype
 albumentations
+matplotlib

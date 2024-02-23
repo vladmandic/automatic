@@ -9,7 +9,7 @@ import subprocess
 import cProfile
 
 try:
-    import pkg_resources # python 3.12 no longer packages it built-in
+    import pkg_resources # python 3.12 no longer has it built-in
 except ImportError:
     stdout = subprocess.run(f'"{sys.executable}" -m pip install setuptools', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     import pkg_resources
@@ -405,13 +405,16 @@ def check_torch():
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
+
     def is_rocm_available():
         if not allow_rocm:
             return False
         if platform.system() == 'Windows':
             hip_path = os.environ.get('HIP_PATH', None)
             return hip_path is not None and os.path.exists(os.path.join(hip_path, 'bin'))
-        return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
+        else:
+            return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
+
     if torch_command != '':
         pass
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
@@ -439,7 +442,7 @@ def check_torch():
                 amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
             log.debug(f'ROCm agents detected: {amd_gpus}')
         except Exception as e:
-            log.debug(f'Run rocm_agent_enumerator failed: {e}')
+            log.debug(f'ROCm agent enumerator failed: {e}')
             amd_gpus = []
 
         hip_visible_devices = [] # use the first available amd gpu by default
@@ -481,6 +484,9 @@ def check_torch():
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
             if rocm_ver is not None:
                 install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
+        else:
+            log.info('Using CPU-only Torch')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
@@ -517,7 +523,7 @@ def check_torch():
         log.info('Using OpenVINO')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
         install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
-        install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True) # TODO openvino: numpy version conflicts with tensorflow and doesn't support Python 3.11
+        install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True)
         install('nncf==2.8.1', 'nncf')
         os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
         os.environ.setdefault('NEOReadDebugKeys', '1')
@@ -536,7 +542,7 @@ def check_torch():
             log.info('Using CPU-only Torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
-        # log.info('Installing torch - this may take a while')
+        log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
     else:
         try:

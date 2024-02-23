@@ -9,6 +9,7 @@ from tqdm import tqdm
 import safetensors.torch
 import numpy as np
 from PIL import Image, PngImagePlugin
+from installer import install
 from modules import shared, devices, processing, sd_models, images, errors
 import modules.textual_inversion.dataset
 from modules.textual_inversion.learn_schedule import LearnRateScheduler
@@ -432,6 +433,7 @@ def write_loss(log_directory, filename, step, epoch_len, values):
 
 
 def tensorboard_setup(log_directory):
+    install('tensorboard')
     from torch.utils.tensorboard import SummaryWriter
     os.makedirs(os.path.join(log_directory, "tensorboard"), exist_ok=True)
     return SummaryWriter(
