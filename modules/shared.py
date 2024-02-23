@@ -295,6 +295,8 @@ def temp_disable_extensions():
         disable_themes.append('sdnext-ui-ux')
     if theme_name.lower() != 'lobe':
         disable_themes.append('sd-webui-lobe-theme')
+    if theme_name.lower() != 'cozy-nest':
+        disable_themes.append('Cozy-Nest')
     for ext in disable_themes:
         if ext not in opts.disabled_extensions:
             disabled.append(ext)

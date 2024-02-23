@@ -864,8 +864,14 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if debug_load:
                         errors.display(e, 'Load')
                     return
-            elif 'ONNX' in model_type: # forced pipeline
-                sd_model = pipeline.from_pretrained(checkpoint_info.path)
+            elif model_type is not None and pipeline is not None and 'ONNX' in model_type: # forced pipeline
+                try:
+                    sd_model = pipeline.from_pretrained(checkpoint_info.path)
+                except Exception as e:
+                    shared.log.error(f'ONNX Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
             else:
                 err1, err2, err3 = None, None, None
                 # diffusers_load_config['use_safetensors'] = True
