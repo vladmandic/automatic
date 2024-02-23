@@ -585,6 +585,8 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                     executor.submit(page.create_items, ui.tabname)
         for page in get_pages():
             page.create_page(ui.tabname, skip_indexing)
+            if len(page.items) == 0:
+                continue
             with gr.Tab(page.title, id=page.title.lower().replace(" ", "_"), elem_classes="extra-networks-tab") as tab:
                 page_html = gr.HTML(page.html, elem_id=f'{tabname}{page.name}_extra_page', elem_classes="extra-networks-page")
                 ui.pages.append(page_html)
