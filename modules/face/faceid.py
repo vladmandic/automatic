@@ -192,6 +192,10 @@ def face_id(
             res = faceid_model.generate(**ip_model_dict)
             if isinstance(res, list):
                 processed_images += res
+                
+        if not p.disable_extra_networks:
+            extra_networks.deactivate(p, extra_network_data)
+
     faceid_model.set_scale(0)
 
     if not cache:
