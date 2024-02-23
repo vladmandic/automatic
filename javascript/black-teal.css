@@ -4,7 +4,7 @@
   --font: 'NotoSans';
   --font-mono: 'ui-monospace', 'Consolas', monospace;
   --font-size: 16px;
-  --primary-50: #7dffff;
+  --primary-50:  #7dffff;
   --primary-100: #72e8e8;
   --primary-200: #67d2d2;
   --primary-300: #5dbcbc;
@@ -15,7 +15,7 @@
   --primary-800: #2b5656;
   --primary-900: #224444;
   --primary-950: #193232;
-  --neutral-50: #f0f0f0;
+  --neutral-50:  #f0f0f0;
   --neutral-100: #e0e0e0;
   --neutral-200: #d0d0d0;
   --neutral-300: #b0b0b0;
@@ -30,14 +30,17 @@
   --inactive-color: var(--primary--800);
   --body-text-color: var(--neutral-100);
   --body-text-color-subdued: var(--neutral-300);
-  --background-color: #050505;
+  --background-color: black;
   --background-fill-primary: var(--neutral-700);
   --input-padding: 4px;
   --input-background-fill: var(--neutral-800);
   --input-shadow: none;
+  --button-primary-text-color: var(--neutral-100);
+  --button-primary-background-fill: var(--primary-600);
+  --button-primary-background-fill-hover: var(--primary-800);
   --button-secondary-text-color: var(--neutral-100);
-  --button-secondary-background-fill: linear-gradient(to bottom right, var(--neutral-400), var(--neutral-700));
-  --button-secondary-background-fill-hover: linear-gradient(to bottom right, var(--neutral-700), var(--neutral-400));
+  --button-secondary-background-fill: var(--neutral-600);
+  --button-secondary-background-fill-hover: var(--neutral-800);
   --block-title-text-color: var(--neutral-300);
   --radius-xxs: 0;
   --radius-xs: 1;
@@ -66,6 +69,8 @@ input[type=range]::-moz-range-thumb     { border: 0px solid #000000 !important; 
 ::-webkit-scrollbar-track { background: #303030; }
 ::-webkit-scrollbar-thumb { background-color: var(--highlight-color); border-radius: var(--radius-lg); border-width: 0; box-shadow: 2px 2px 3px var(--neutral-950); }
 div.form { border-width: 0; box-shadow: none; background: transparent; overflow: visible; }
+
+.button-icon { font-size: 1.5em !important; margin: 0 !important; padding: 0 !important; height: 1.7em !important; min-height: unset !important; }
 
 /* gradio style classes */
 fieldset .gr-block.gr-box, label.block span { padding: 0; margin-top: -4px; }
@@ -210,11 +215,8 @@ textarea[rows="1"] { height: 33px !important; width: 99% !important; padding: 8p
   --button-cancel-border-color-hover: var(--button-cancel-border-color);
   --button-cancel-text-color: var(--neutral-50);
   --button-cancel-text-color-hover: var(--button-cancel-text-color);
-  --button-primary-background-fill: linear-gradient(to bottom right, var(--primary-500), var(--primary-800));
-  --button-primary-background-fill-hover: linear-gradient(to bottom right, var(--primary-500), var(--primary-300));
   --button-primary-border-color: var(--primary-500);
   --button-primary-border-color-hover: var(--button-primary-border-color);
-  --button-primary-text-color: var(--neutral-50);
   --button-primary-text-color-hover: var(--button-primary-text-color);
   --button-secondary-border-color: var(--neutral-600);
   --button-secondary-border-color-hover: var(--button-secondary-border-color);

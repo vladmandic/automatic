@@ -41,6 +41,25 @@ async function validateHints(elements, data) {
   log('in locale but not ui:', missingUI);
 }
 
+async function replaceButtonText(el) {
+  // https://www.nerdfonts.com/cheat-sheet
+  // use unicode of icon with format nf-md-<icon>_circle
+  const textIcons = {
+    Generate: '\uf144',
+    Enqueue: '\udb81\udc17',
+    Stop: '\udb81\ude66',
+    Skip: '\udb81\ude61',
+    Pause: '\udb80\udfe5',
+    Restore: '\udb82\udd9b',
+    Clear: '\udb80\udd59',
+    Networks: '\uf261',
+  };
+  if (textIcons[el.innerText]) {
+    el.classList.add('button-icon');
+    el.innerText = textIcons[el.innerText];
+  }
+}
+
 async function setHints() {
   if (localeData.finished) return;
   if (localeData.data.length === 0) {
@@ -66,6 +85,7 @@ async function setHints() {
       localized++;
       el.textContent = found.localized;
     }
+    // replaceButtonText(el);
     if (found?.hint?.length > 0) {
       hints++;
       if (localeData.type === 1) {
