@@ -24,7 +24,7 @@ resize-right
 rich
 safetensors
 scipy
-tensordict==0.2.1
+tensordict==0.1.2
 toml
 torchdiffeq
 voluptuous
