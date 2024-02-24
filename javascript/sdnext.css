@@ -1,5 +1,5 @@
 @font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
-:root { --left-column: 550px; }
+:root { --left-column: 520px; }
 a { font-weight: bold; cursor: pointer; }
 h2 { margin-top: 1em !important; font-size: var(--text-xxl) !important; }
 footer { display: none; margin-top: 0 !important;}
@@ -45,7 +45,7 @@ input[type='color'] { width: 64px; height: 32px; }
 .gradio-textbox { overflow: visible !important; }
 .gradio-radio { padding: 0 !important; width: max-content !important; }
 .gradio-slider { margin-right: var(--spacing-sm) !important; width: max-content !important }
-.gradio-slider input[type="number"] { width: 6em; font-size: var(--text-xs); height: 16px; text-align: right; }
+.gradio-slider input[type="number"] { width: 5em; font-size: var(--text-xs); height: 16px; text-align: right; padding: 0; }
 
 /* custom gradio elements */
 .accordion-compact { padding: 8px 0px 4px 0px !important; }
@@ -301,9 +301,10 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
   --spacing-xxs: 1px;
   --spacing-xs: 2px;
   --spacing-sm: 3px;
-  --spacing-lg: 4px;
-  --spacing-xl: 5px;
-  --spacing-xxl: 6px; 
+  --spacing-md: 4px;
+  --spacing-lg: 5px;
+  --spacing-xl: 6px;
+  --spacing-xxl: 7px; 
 }
 
 @media (hover: none) and (pointer: coarse) { /* Apply different styles for devices with coarse pointers dependant on screen resolution */

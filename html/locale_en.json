@@ -133,7 +133,7 @@
   {"id":"","label":"Refiner start","localized":"","hint":"Refiner pass will start when base model is this much complete (set to 0 or 1 to run after full base model run)"},
   {"id":"","label":"Refiner steps","localized":"","hint":"Number of steps to use for refiner pass"},
   {"id":"","label":"Secondary CFG Scale","localized":"","hint":"CFG scale used for refiner pass"},
-  {"id":"","label":"Guidance rescale","localized":"","hint":"Rescale CFG generated noise to avoid overexposed images"},
+  {"id":"","label":"Rescale guidance","localized":"","hint":"Rescale CFG generated noise to avoid overexposed images"},
   {"id":"","label":"Secondary Prompt","localized":"","hint":"Prompt used for both second encoder in base model (if it exists) and for refiner pass (if enabled)"},
   {"id":"","label":"Secondary negative prompt","localized":"","hint":"Negative prompt used for both second encoder in base model (if it exists) and for refiner pass (if enabled)"},
   {"id":"","label":"Width","localized":"","hint":"Image width"},

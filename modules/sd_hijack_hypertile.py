@@ -22,6 +22,7 @@ error_reported = False
 reset_needed = False
 skip_hypertile = False
 
+
 def iterative_closest_divisors(hw:int, aspect_ratio:float) -> tuple[int, int]:
     """
     Finds h and w such that h*w = hw and h/w = aspect_ratio
@@ -33,6 +34,7 @@ def iterative_closest_divisors(hw:int, aspect_ratio:float) -> tuple[int, int]:
     closest_ratio = min(ratios, key=lambda x: abs(x - aspect_ratio)) # closest ratio to aspect_ratio
     closest_pair = pairs[ratios.index(closest_ratio)] # closest pair of divisors to aspect_ratio
     return closest_pair
+
 
 @cache
 def find_hw_candidates(hw:int, aspect_ratio:float) -> tuple[int, int]:
@@ -96,7 +98,7 @@ def split_attention(layer: nn.Module, tile_size: int=256, min_tile_size: int=128
     def self_attn_forward(forward: Callable) -> Callable:
         @wraps(forward)
         def wrapper(*args, **kwargs):
-            global height, width, max_h, max_w, reset_needed, error_reported, skip_hypertile # pylint: disable=global-statement
+            global height, width, max_h, max_w, reset_needed, error_reported # pylint: disable=global-statement
             if skip_hypertile:
                 return forward(*args, **kwargs)
             x = args[0]
@@ -196,7 +198,6 @@ def context_hypertile_vae(p):
         shared.log.info(f'Applying hypertile: vae={tile_size}')
         p.extra_generation_params['Hypertile VAE'] = tile_size
         return split_attention(vae, tile_size=tile_size, min_tile_size=128, swap_size=shared.opts.hypertile_vae_swap_size)
-
 
 
 def context_hypertile_unet(p):
