@@ -2,6 +2,10 @@
 
 ## Update for 2024-02-24
 
+- **Image2Video**
+  - new module for creating videos from images  
+  - simply enable from *img2img -> scripts -> image2video*  
+  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 - **Improvements**
   - default theme updates
   - additional built-in theme *black-gray*

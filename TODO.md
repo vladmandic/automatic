@@ -10,7 +10,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - init latents: variations, tiling, img2img
 - x-adapter: <https://github.com/showlab/X-Adapter>
 - diffusers public callbacks  
-- image2video: pia and vgen pipelines  
 - video2video
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - remove builtin: controlnet
