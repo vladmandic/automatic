@@ -740,8 +740,10 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
         sd_model.unet.to(memory_format=torch.channels_last)
 
 
-def move_model(model, device=None):
-    if model is not None and not getattr(model, 'has_accelerate', False):
+def move_model(model, device=None, force=False):
+    if model is not None:
+        if getattr(model, 'has_accelerate', False) and not force:
+            return
         debug_move(f'Model move: to={device} class={model.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
         try:
             model.to(device)
@@ -1416,6 +1418,7 @@ def convert_to_faketensors(tensor):
         return tensor
     except Exception:
         pass
+    return tensor
 
 
 def disable_offload(sd_model):

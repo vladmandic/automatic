@@ -8,17 +8,17 @@ from modules.shared import opts
 
 
 class EmbeddingEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, torch.Tensor):
-            return {'TORCHTENSOR': obj.cpu().detach().numpy().tolist()}
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, torch.Tensor):
+            return {'TORCHTENSOR': o.cpu().detach().numpy().tolist()}
+        return json.JSONEncoder.default(self, o)
 
 
 class EmbeddingDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, *args, object_hook=self.object_hook, **kwargs)
 
-    def object_hook(self, d):
+    def object_hook(self, d): # pylint: disable=E0202
         if 'TORCHTENSOR' in d:
             return torch.from_numpy(np.array(d['TORCHTENSOR']))
         return d
@@ -41,8 +41,8 @@ def lcg(m=2**32, a=1664525, c=1013904223, seed=0):
 
 
 def xor_block(block):
-    g = lcg()
-    randblock = np.array([next(g) for _ in range(np.prod(block.shape))]).astype(np.uint8).reshape(block.shape)
+    blk = lcg()
+    randblock = np.array([next(blk) for _ in range(np.prod(block.shape))]).astype(np.uint8).reshape(block.shape)
     return np.bitwise_xor(block.astype(np.uint8), randblock & 0x0F)
 
 
@@ -110,7 +110,7 @@ def crop_black(img, tol=0):
 
 def extract_image_data_embed(image):
     d = 3
-    outarr = crop_black(np.array(image.convert('RGB').getdata()).reshape(image.size[1], image.size[0], d).astype(np.uint8)) & 0x0F
+    outarr = crop_black(np.array(image.convert('RGB').getdata()).reshape(image.size[1], image.size[0], d).astype(np.uint8)) & 0x0F # pylint: disable=E1121
     black_cols = np.where(np.sum(outarr, axis=(0, 2)) == 0)
     if black_cols[0].shape[0] < 2:
         return None
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     new_image = Image.new('RGBA', (512, 512), (255, 255, 200, 255))
     cap_image = caption_image_overlay(new_image, 'title', 'footerLeft', 'footerMid', 'footerRight')
 
-    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}}
+    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}} # noqa: NPY002
 
     embedded_image = insert_image_data_embed(cap_image, test_embed)
 

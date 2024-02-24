@@ -16,8 +16,8 @@ class Script(scripts.Script):
         return 'Image-to-Video'
 
     def show(self, is_img2img):
-        # return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
-        return False
+        return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        # return False
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):
@@ -85,7 +85,7 @@ class Script(scripts.Script):
             motion_adapter = diffusers.MotionAdapter.from_pretrained(repo_id)
             motion_adapter.to(devices.device, devices.dtype)
             shared.sd_model = sd_models.switch_pipe(diffusers.PIAPipeline, shared.sd_model, { 'motion_adapter': motion_adapter })
-            sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
+            sd_models.move_model(shared.sd_model, devices.device, force=True) # move pipeline to device
             if num_frames > 0:
                 p.task_args['num_frames'] = num_frames
                 p.task_args['image'] = p.init_images[0]

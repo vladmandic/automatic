@@ -15,8 +15,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - remove builtin: controlnet
 - remove builtin: image-browser
-- remove training: ti
-- remove training: hypernetwork
 
 ## Control missing features
 

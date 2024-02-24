@@ -5,6 +5,9 @@
 - **Improvements**
   - default theme updates
   - additional built-in theme *black-gray*
+- **Internal**
+  - remove obsolete textual inversion training code
+  - remove obsolete hypernetworks training code
 - **Fixes**
   - fix extra networks refresh
   - improve ZLUDA installer when using `--use-zluda` cli param, thanks @lshqqytiger
