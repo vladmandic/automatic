@@ -75,18 +75,14 @@ def face_id(
         script_callbacks.before_process_callback(p)
 
         with context_hypertile_vae(p), context_hypertile_unet(p), devices.inference_context():
-            with devices.autocast():
-                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
-
+            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
             ip_ckpt = FACEID_MODELS[model]
             folder, filename = os.path.split(ip_ckpt)
             basename, _ext = os.path.splitext(filename)
             model_path = hf.hf_hub_download(repo_id=folder, filename=filename, cache_dir=shared.opts.diffusers_dir)
-
             if model_path is None:
                 shared.log.error(f"FaceID download failed: model={model} file={ip_ckpt}")
                 return None
-
             if override:
                 shared.sd_model.scheduler = diffusers.DDIMScheduler(
                     num_train_timesteps=1000,
@@ -97,7 +93,6 @@ def face_id(
                     set_alpha_to_one=False,
                     steps_offset=1,
                 )
-
             if faceid_model_weights is None or faceid_model_name != model or not cache:
                 shared.log.debug(f"FaceID load: model={model} file={ip_ckpt}")
                 faceid_model_weights = torch.load(model_path, map_location="cpu")
@@ -108,7 +103,6 @@ def face_id(
                 image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
                 original_load_ip_adapter = IPAdapterFaceIDPlusXL.load_ip_adapter
                 IPAdapterFaceIDPlusXL.load_ip_adapter = hijack_load_ip_adapter
-
                 faceid_model = IPAdapterFaceIDPlusXL(
                     sd_pipe=shared.sd_model,
                     image_encoder_path=image_encoder_path,
@@ -121,7 +115,6 @@ def face_id(
             elif "XL" in model:
                 original_load_ip_adapter = IPAdapterFaceIDXL.load_ip_adapter
                 IPAdapterFaceIDXL.load_ip_adapter = hijack_load_ip_adapter
-
                 faceid_model = IPAdapterFaceIDXL(
                     sd_pipe=shared.sd_model,
                     ip_ckpt=model_path,
@@ -133,7 +126,6 @@ def face_id(
             elif "Plus" in model:
                 original_load_ip_adapter = IPAdapterFaceIDPlus.load_ip_adapter
                 IPAdapterFaceIDPlus.load_ip_adapter = hijack_load_ip_adapter
-
                 image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
                 faceid_model = IPAdapterFaceIDPlus(
                     sd_pipe=shared.sd_model,
@@ -147,7 +139,6 @@ def face_id(
             elif "Portrait" in model:
                 original_load_ip_adapter = IPAdapterFaceIDPortrait.load_ip_adapter
                 IPAdapterFaceIDPortrait.load_ip_adapter = hijack_load_ip_adapter
-
                 faceid_model = IPAdapterFaceIDPortrait(
                     sd_pipe=shared.sd_model,
                     ip_ckpt=model_path,
@@ -159,7 +150,6 @@ def face_id(
             else:
                 original_load_ip_adapter = IPAdapterFaceID.load_ip_adapter
                 IPAdapterFaceID.load_ip_adapter = hijack_load_ip_adapter
-
                 faceid_model = IPAdapterFaceID(
                     sd_pipe=shared.sd_model,
                     ip_ckpt=model_path,
@@ -171,10 +161,8 @@ def face_id(
 
             shortcut = "v2" in model
             faceid_model_name = model
-
             face_embeds = []
             face_images = []
-
             for i, source_image in enumerate(source_images):
                 np_image = cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR)
                 faces = app.get(np_image)
@@ -204,16 +192,12 @@ def face_id(
             # optional generate dict
             if shortcut is not None:
                 ip_model_dict["shortcut"] = shortcut
-
             if "Plus" in model:
                 ip_model_dict["s_scale"] = structure
-
             shared.log.debug(f"FaceID args: {ip_model_dict}")
             if "Plus" in model:
                 ip_model_dict["face_image"] = face_images
-
             ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
-
             faceid_model.set_scale(scale)
             extra_network_data = None
 
@@ -223,20 +207,16 @@ def face_id(
                 p.negative_prompts = p.all_negative_prompts[i * p.batch_size:(i + 1) * p.batch_size]
                 p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
                 p.seeds = p.all_seeds[i * p.batch_size:(i + 1) * p.batch_size]
-
                 if not p.disable_extra_networks:
                     with devices.autocast():
                         extra_networks.activate(p, extra_network_data)
-
                 ip_model_dict.update({
                         "prompt": p.prompts,
                         "negative_prompt": p.negative_prompts,
                         "seed": int(p.seeds[0]),
                     })
-
                 debug(f"FaceID: {ip_model_dict}")
                 res = faceid_model.generate(**ip_model_dict)
-
                 if isinstance(res, list):
                     processed_images += res
 
@@ -246,11 +226,9 @@ def face_id(
             if not cache:
                 faceid_model_weights = None
                 faceid_model_name = None
-
             devices.torch_gc()
 
         ipadapter.unapply(p.sd_model)
-
         if not p.disable_extra_networks:
             extra_networks.deactivate(p, extra_network_data)
 
@@ -258,10 +236,8 @@ def face_id(
     finally:
         if faceid_model is not None and original_load_ip_adapter is not None:
             faceid_model.__class__.load_ip_adapter = original_load_ip_adapter
-
         if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, 0)
-
         script_callbacks.after_process_callback(p)
 
     return processed_images

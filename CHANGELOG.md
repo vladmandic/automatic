@@ -7,8 +7,8 @@
   - simply enable from *img2img -> scripts -> image2video*  
   - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 - **Improvements**
-  - default theme updates
-  - additional built-in theme *black-gray*
+  - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
+  - default theme updates and additional built-in theme *black-gray*
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
