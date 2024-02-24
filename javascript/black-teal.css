@@ -87,7 +87,7 @@ fieldset .gr-block.gr-box, label.block span { padding: 0; margin-top: -4px; }
 .gr-input-label { color: lightyellow; border-width: 0; background: transparent; padding: 2px !important; }
 .gr-panel { background-color: var(--background-color); }
 .eta-bar { display: none !important }
-.gradio-slider input[type="number"] { background: var(--neutral-950); }
+.gradio-slider input[type="number"] { background: var(--neutral-950); margin-top: 2px; }
 svg.feather.feather-image, .feather .feather-image { display: none }
 .gap-2 { padding-top: 8px; }
 .gr-box > div > div > input.gr-text-input { right: 0; width: 4em; padding: 0; top: -12px; border: none; max-height: 20px; }
@@ -125,7 +125,7 @@ svg.feather.feather-image, .feather .feather-image { display: none }
 
 #txt2img_prompt, #txt2img_neg_prompt, #img2img_prompt, #img2img_neg_prompt, #control_prompt, #control_neg_prompt { background-color: var(--background-color); box-shadow: none !important; }
 #txt2img_prompt > label > textarea, #txt2img_neg_prompt > label > textarea, #img2img_prompt > label > textarea, #img2img_neg_prompt > label > textarea, #control_prompt > label > textarea, #control_neg_prompt > label > textarea { font-size: 1.0em; line-height: 1.4em; }
-#txt2img_styles, #img2img_styles, #control_styles { padding: 0; }
+#txt2img_styles, #img2img_styles, #control_styles { padding: 0; margin-top: 2px; }
 #txt2img_styles_refresh, #img2img_styles_refresh, #control_styles_refresh { padding: 0; margin-top: 1em; }
 #img2img_settings { min-width: calc(2 * var(--left-column)); max-width: calc(2 * var(--left-column)); background-color: var(--neutral-950); padding-top: 16px; }
 #interrogate, #deepbooru { margin: 0 0px 10px 0px; max-width: 80px; max-height: 80px; font-weight: normal; font-size: 0.95em; }

@@ -83,7 +83,7 @@ button.custom-button{ border-radius: var(--button-large-radius); padding: var(--
 #txt2img_footer, #img2img_footer, #control_footer { height: fit-content; display: none; }
 #txt2img_generate_box, #img2img_generate_box, #control_general_box { gap: 0.5em; flex-wrap: wrap-reverse; height: fit-content; }
 #txt2img_actions_column, #img2img_actions_column, #control_actions_column { gap: 0.3em; height: fit-content; }
-#txt2img_generate_box>button, #img2img_generate_box>button, #control_generate_box>button, #txt2img_enqueue, #img2img_enqueue { min-height: 44px; max-height: 44px; line-height: 1em; }
+#txt2img_generate_box>button, #img2img_generate_box>button, #control_generate_box>button, #txt2img_enqueue, #img2img_enqueue { min-height: 44px !important; max-height: 44px !important; line-height: 1em; }
 #txt2img_generate_line2, #img2img_generate_line2, #txt2img_tools, #img2img_tools, #control_generate_line2, #control_tools { display: flex; }
 #txt2img_generate_line2>button, #img2img_generate_line2>button, #extras_generate_box>button, #control_generate_line2>button, #txt2img_tools>button, #img2img_tools>button, #control_tools>button { height: 2em; line-height: 0; font-size: var(--text-md);
   min-width: unset; display: block !important; }

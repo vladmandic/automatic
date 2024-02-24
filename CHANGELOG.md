@@ -1,5 +1,14 @@
 # Change Log for SD.Next
 
+## Update for 2024-02-24
+
+- **Improvements**
+  - default theme updates
+  - additional built-in theme *black-gray*
+- **Fixes**
+  - fix extra networks refresh
+  - improve ZLUDA installer when using `--use-zluda` cli param, thanks @lshqqytiger
+
 ## Update for 2024-02-22
 
 Only 3 weeks since last release, but here's another feature-packed one!
