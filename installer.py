@@ -488,7 +488,7 @@ def check_torch():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         else:
-            if rocm_ver in {"5.7"}:
+            if rocm_ver in {"5.7", "6.0"}:
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
             elif rocm_ver in {"5.5", "5.6"}:
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
