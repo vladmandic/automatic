@@ -1518,7 +1518,7 @@ class StableDiffusionDiffImg2ImgPipeline(DiffusionPipeline):
         negative_prompt=None,
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
-        lora_scale: Optional[float] = None,
+        lora_scale: Optional[float] = None, # pylint: disable=unused-argument
         clip_skip: Optional[int] = None,
     ):
         if prompt is not None and isinstance(prompt, str):
@@ -1892,11 +1892,11 @@ class Script(scripts.Script):
             image = gr.Image(label="Image map", show_label=False, type="pil", source="upload", interactive=True, tool="editor", visible=True, image_mode='RGB')
         return enabled, strength, invert, model, image
 
-    def depthmap(self, image_init: Image.Image, image_map: Image.Image, model: str, strength: float, invert: bool, output_type="tensor"):
+    def depthmap(self, image_init: Image.Image, image_map: Image.Image, model: str, strength: float, invert: bool):
         global detector # pylint: disable=global-statement
         from modules.control.proc.dpt import DPTDetector
         if image_init is None:
-            return None, None
+            return None, None, None
         image_map = None
         if image_map is not None:
             image_map = image_map.resize(image_init.size, Image.Resampling.LANCZOS)
@@ -1916,14 +1916,14 @@ class Script(scripts.Script):
                 init_img_hash = hashlib.sha256(image_map.tobytes()).hexdigest()[0:8] # pylint: disable=attribute-defined-outside-init
                 images.save_image(image_map, path=shared.opts.outdir_init_images, basename=None, forced_filename=init_img_hash, suffix="-init-image")
         else:
-            return None, None
-        if output_type == "tensor":
-            image_map = transforms.ToTensor()(image_map)
-            image_map = image_map.to(devices.device)
-            image_init = 2 * transforms.ToTensor()(image_init) - 1
-            image_init = image_init.unsqueeze(0)
-            image_init = image_init.to(devices.device)
-        return image_init, image_map
+            return None, None, None
+        image_mask = image_map.copy()
+        image_map = transforms.ToTensor()(image_map)
+        image_map = image_map.to(devices.device)
+        image_init = 2 * transforms.ToTensor()(image_init) - 1
+        image_init = image_init.unsqueeze(0)
+        image_init = image_init.to(devices.device)
+        return image_init, image_map, image_mask
 
     def run(self, p: processing.StableDiffusionProcessingImg2Img, enabled, strength, invert, model, image): # pylint: disable=arguments-differ
         if not enabled:
@@ -1935,7 +1935,7 @@ class Script(scripts.Script):
             shared.log.error('Differential-diffusion: no input images')
             return
 
-        image_init, image_map = self.depthmap(p.init_images[0], image, model, strength, invert, output_type="tensor")
+        image_init, image_map, image_mask = self.depthmap(p.init_images[0], image, model, strength, invert)
         if image_map is None:
             shared.log.error('Differential-diffusion: no image map')
             return
@@ -1974,6 +1974,7 @@ class Script(scripts.Script):
                 p.task_args['original_image'] = image_init
             shared.log.debug(f'Differential-diffusion: pipeline={pipe.__class__.__name__} strength={strength} model={model} auto={image is None}')
             shared.sd_model = pipe
+            sd_models.move_model(pipe.vae, devices.device, force=True)
         except Exception as e:
             shared.log.error(f'Differential-diffusion: pipeline creation failed: {e}')
             errors.display(e, 'Differential-diffusion: pipeline creation failed')
@@ -1981,6 +1982,9 @@ class Script(scripts.Script):
 
         # run pipeline
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
+        if shared.opts.include_mask:
+            if image_mask is not None and isinstance(image_mask, Image.Image):
+                processed.images.append(image_mask)
 
         # restore pipeline and params
         pipe = None

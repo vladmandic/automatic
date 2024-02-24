@@ -345,7 +345,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 p.task_args['sag_scale'] = p.sag_scale
             else:
                 shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
-
         if shared.opts.cuda_compile_backend == "olive-ai":
             sd_model = olive_check_parameters_changed(p, is_refiner_enabled())
         if sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -362,12 +361,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
-    if shared.opts.diffusers_move_base:
-        sd_models.move_model(shared.sd_model, devices.device)
-
-    # recompile if a parameter changes
-    sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False)
-
     # pipeline type is set earlier in processing, but check for sanity
     is_control = getattr(p, 'is_control', False) is True
     has_images = len(getattr(p, 'init_images' ,[])) > 0
@@ -377,6 +370,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.INPAINTING) # force pipeline
         if len(getattr(p, 'init_images' ,[])) == 0:
             p.init_images = [TF.to_pil_image(torch.rand((3, getattr(p, 'height', 512), getattr(p, 'width', 512))))]
+
+    sd_models.move_model(shared.sd_model, devices.device)
+    sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False) # recompile if a parameter changes
 
     use_refiner_start = is_txt2img() and is_refiner_enabled() and not p.is_hr_pass and p.refiner_start > 0 and p.refiner_start < 1
     use_denoise_start = not is_txt2img() and p.refiner_start > 0 and p.refiner_start < 1

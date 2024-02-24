@@ -742,6 +742,12 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
 
 def move_model(model, device=None, force=False):
     if model is not None:
+        if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
+            if device == devices.device: # force vae back to gpu if not in txt2img mode
+                model.vae.to(device)
+                if hasattr(model.vae, '_hf_hook'):
+                    debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                    model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
         if getattr(model, 'has_accelerate', False) and not force:
             return
         debug_move(f'Model move: to={device} class={model.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access

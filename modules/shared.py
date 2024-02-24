@@ -507,6 +507,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "img_max_size_mp": OptionInfo(250, "Maximum image size (MP)", gr.Slider, {"minimum": 100, "maximum": 2000, "step": 1}),
     "webp_lossless": OptionInfo(False, "WebP lossless compression"),
     "save_selected_only": OptionInfo(True, "Save only saves selected image"),
+    "include_mask": OptionInfo(False, "Include mask in outputs"),
     "samples_save_zip": OptionInfo(True, "Create ZIP archive"),
 
     "image_sep_metadata": OptionInfo("<h2>Metadata/Logging</h2>", "", gr.HTML),

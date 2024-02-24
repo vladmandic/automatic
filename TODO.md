@@ -7,11 +7,10 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - defork
 - stable cascade: <https://github.com/vladmandic/automatic/wiki/Stable-Cascade>
 - ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
-- init latents: variations, tiling, img2img
 - x-adapter: <https://github.com/showlab/X-Adapter>
-- diffusers public callbacks  
-- video2video
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
+- init latents: variations, tiling, img2img
+- diffusers public callbacks  
 - remove builtin: controlnet
 - remove builtin: image-browser
 

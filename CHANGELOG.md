@@ -8,11 +8,13 @@
   - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
+  - new setting in image options *include mask in output*
   - default theme updates and additional built-in theme *black-gray*
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
 - **Fixes**
+  - improve model offload compatibility
   - fix extra networks refresh
   - improve ZLUDA installer when using `--use-zluda` cli param, thanks @lshqqytiger
 

@@ -396,6 +396,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if not p.disable_extra_networks:
         extra_networks.deactivate(p, extra_network_data)
 
+    if shared.opts.include_mask:
+        if getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
+            output_images.append(p.image_mask)
+
     processed = Processed(
         p,
         images_list=output_images,
