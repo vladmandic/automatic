@@ -67,6 +67,7 @@ def face_id(
 
     try:
         shared.prompt_styles.apply_styles_to_extra(p)
+
         if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
@@ -173,6 +174,7 @@ def face_id(
 
             face_embeds = []
             face_images = []
+
             for i, source_image in enumerate(source_images):
                 np_image = cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR)
                 faces = app.get(np_image)
@@ -187,8 +189,8 @@ def face_id(
             if len(face_embeds) == 0:
                 shared.log.error("FaceID: no faces found")
                 return None
-            face_embeds = torch.cat(face_embeds, dim=0)
 
+            face_embeds = torch.cat(face_embeds, dim=0)
             ip_model_dict = {  # main generate dict
                 "num_samples": p.batch_size,
                 "width": p.width,
@@ -202,13 +204,15 @@ def face_id(
             # optional generate dict
             if shortcut is not None:
                 ip_model_dict["shortcut"] = shortcut
+
             if "Plus" in model:
                 ip_model_dict["s_scale"] = structure
+
             shared.log.debug(f"FaceID args: {ip_model_dict}")
             if "Plus" in model:
                 ip_model_dict["face_image"] = face_images
-            ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
 
+            ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
 
             faceid_model.set_scale(scale)
             extra_network_data = None
@@ -229,8 +233,10 @@ def face_id(
                         "negative_prompt": p.negative_prompts,
                         "seed": int(p.seeds[0]),
                     })
+
                 debug(f"FaceID: {ip_model_dict}")
                 res = faceid_model.generate(**ip_model_dict)
+
                 if isinstance(res, list):
                     processed_images += res
 
