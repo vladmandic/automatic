@@ -923,7 +923,7 @@ def patch_zluda():
     venv_dir = os.environ.get('VENV_DIR', os.path.dirname(shutil.which('python')))
     dlls_to_patch = {
         'cublas.dll': 'cublas64_11.dll',
-        'cudnn.dll': 'cudnn64_8.dll',
+        #'cudnn.dll': 'cudnn64_8.dll',
         'cusparse.dll': 'cusparse64_11.dll',
         'nvrtc.dll': 'nvrtc64_112_0.dll',
     }
