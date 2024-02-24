@@ -920,7 +920,7 @@ def patch_zluda():
     if zluda_path is None:
         log.warning('Failed to automatically patch torch with ZLUDA. Could not find ZLUDA from PATH.')
         return
-    venv_path = os.path.dirname(shutil.which('python'))
+    venv_dir = os.environ.get('VENV_DIR', os.path.dirname(shutil.which('python')))
     dlls_to_patch = {
         'cublas.dll': 'cublas64_11.dll',
         'cudnn.dll': 'cudnn64_8.dll',
@@ -929,7 +929,7 @@ def patch_zluda():
     }
     try:
         for k, v in dlls_to_patch.items():
-            shutil.copyfile(os.path.join(zluda_path, k), os.path.join(venv_path, 'Lib', 'site-packages', 'torch', 'lib', v))
+            shutil.copyfile(os.path.join(zluda_path, k), os.path.join(venv_dir, 'Lib', 'site-packages', 'torch', 'lib', v))
     except Exception as e:
         log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
 
