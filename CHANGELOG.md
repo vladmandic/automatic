@@ -6,6 +6,8 @@
   - new module for creating videos from images  
   - simply enable from *img2img -> scripts -> image2video*  
   - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- **VQA** visual question & answer in interrogate  
+  - with support for multiple variations of base models: *GIT, BLIP, ViLT, PIX*
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - new setting in image options: *include mask in output*
