@@ -73,181 +73,182 @@ def face_id(
 
         script_callbacks.before_process_callback(p)
 
-        with context_hypertile_vae(p), context_hypertile_unet(p):
-            with devices.inference_context():
+        with context_hypertile_vae(p), context_hypertile_unet(p), devices.inference_context():
+            with devices.autocast():
+                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
 
-                with devices.autocast():
-                    p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+            ip_ckpt = FACEID_MODELS[model]
+            folder, filename = os.path.split(ip_ckpt)
+            basename, _ext = os.path.splitext(filename)
+            model_path = hf.hf_hub_download(repo_id=folder, filename=filename, cache_dir=shared.opts.diffusers_dir)
 
-                ip_ckpt = FACEID_MODELS[model]
-                folder, filename = os.path.split(ip_ckpt)
-                basename, _ext = os.path.splitext(filename)
-                model_path = hf.hf_hub_download(repo_id=folder, filename=filename, cache_dir=shared.opts.diffusers_dir)
+            if model_path is None:
+                shared.log.error(f"FaceID download failed: model={model} file={ip_ckpt}")
+                return None
 
-                if model_path is None:
-                    shared.log.error(f"FaceID download failed: model={model} file={ip_ckpt}")
-                    return None
-                if override:
-                    shared.sd_model.scheduler = diffusers.DDIMScheduler(
-                        num_train_timesteps=1000,
-                        beta_start=0.00085,
-                        beta_end=0.012,
-                        beta_schedule="scaled_linear",
-                        clip_sample=False,
-                        set_alpha_to_one=False,
-                        steps_offset=1,
-                    )
+            if override:
+                shared.sd_model.scheduler = diffusers.DDIMScheduler(
+                    num_train_timesteps=1000,
+                    beta_start=0.00085,
+                    beta_end=0.012,
+                    beta_schedule="scaled_linear",
+                    clip_sample=False,
+                    set_alpha_to_one=False,
+                    steps_offset=1,
+                )
 
-                if faceid_model_weights is None or faceid_model_name != model or not cache:
-                    shared.log.debug(f"FaceID load: model={model} file={ip_ckpt}")
-                    faceid_model_weights = torch.load(model_path, map_location="cpu")
-                else:
-                    shared.log.debug(f"FaceID cached: model={model} file={ip_ckpt}")
+            if faceid_model_weights is None or faceid_model_name != model or not cache:
+                shared.log.debug(f"FaceID load: model={model} file={ip_ckpt}")
+                faceid_model_weights = torch.load(model_path, map_location="cpu")
+            else:
+                shared.log.debug(f"FaceID cached: model={model} file={ip_ckpt}")
 
-                if "XL Plus" in model:
-                    image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
-                    original_load_ip_adapter = IPAdapterFaceIDPlusXL.load_ip_adapter
-                    IPAdapterFaceIDPlusXL.load_ip_adapter = hijack_load_ip_adapter
+            if "XL Plus" in model:
+                image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+                original_load_ip_adapter = IPAdapterFaceIDPlusXL.load_ip_adapter
+                IPAdapterFaceIDPlusXL.load_ip_adapter = hijack_load_ip_adapter
 
-                    faceid_model = IPAdapterFaceIDPlusXL(
-                        sd_pipe=shared.sd_model,
-                        image_encoder_path=image_encoder_path,
-                        ip_ckpt=model_path,
-                        lora_rank=128,
-                        num_tokens=4,
-                        device=devices.device,
-                        torch_dtype=devices.dtype,
-                    )
-                elif "XL" in model:
-                    original_load_ip_adapter = IPAdapterFaceIDXL.load_ip_adapter
-                    IPAdapterFaceIDXL.load_ip_adapter = hijack_load_ip_adapter
+                faceid_model = IPAdapterFaceIDPlusXL(
+                    sd_pipe=shared.sd_model,
+                    image_encoder_path=image_encoder_path,
+                    ip_ckpt=model_path,
+                    lora_rank=128,
+                    num_tokens=4,
+                    device=devices.device,
+                    torch_dtype=devices.dtype,
+                )
+            elif "XL" in model:
+                original_load_ip_adapter = IPAdapterFaceIDXL.load_ip_adapter
+                IPAdapterFaceIDXL.load_ip_adapter = hijack_load_ip_adapter
 
-                    faceid_model = IPAdapterFaceIDXL(
-                        sd_pipe=shared.sd_model,
-                        ip_ckpt=model_path,
-                        lora_rank=128,
-                        num_tokens=4,
-                        device=devices.device,
-                        torch_dtype=devices.dtype,
-                    )
-                elif "Plus" in model:
-                    original_load_ip_adapter = IPAdapterFaceIDPlus.load_ip_adapter
-                    IPAdapterFaceIDPlus.load_ip_adapter = hijack_load_ip_adapter
+                faceid_model = IPAdapterFaceIDXL(
+                    sd_pipe=shared.sd_model,
+                    ip_ckpt=model_path,
+                    lora_rank=128,
+                    num_tokens=4,
+                    device=devices.device,
+                    torch_dtype=devices.dtype,
+                )
+            elif "Plus" in model:
+                original_load_ip_adapter = IPAdapterFaceIDPlus.load_ip_adapter
+                IPAdapterFaceIDPlus.load_ip_adapter = hijack_load_ip_adapter
 
-                    image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
-                    faceid_model = IPAdapterFaceIDPlus(
-                        sd_pipe=shared.sd_model,
-                        image_encoder_path=image_encoder_path,
-                        ip_ckpt=model_path,
-                        lora_rank=128,
-                        num_tokens=4,
-                        device=devices.device,
-                        torch_dtype=devices.dtype,
-                    )
-                elif "Portrait" in model:
-                    original_load_ip_adapter = IPAdapterFaceIDPortrait.load_ip_adapter
-                    IPAdapterFaceIDPortrait.load_ip_adapter = hijack_load_ip_adapter
+                image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+                faceid_model = IPAdapterFaceIDPlus(
+                    sd_pipe=shared.sd_model,
+                    image_encoder_path=image_encoder_path,
+                    ip_ckpt=model_path,
+                    lora_rank=128,
+                    num_tokens=4,
+                    device=devices.device,
+                    torch_dtype=devices.dtype,
+                )
+            elif "Portrait" in model:
+                original_load_ip_adapter = IPAdapterFaceIDPortrait.load_ip_adapter
+                IPAdapterFaceIDPortrait.load_ip_adapter = hijack_load_ip_adapter
 
-                    faceid_model = IPAdapterFaceIDPortrait(
-                        sd_pipe=shared.sd_model,
-                        ip_ckpt=model_path,
-                        num_tokens=16,
-                        n_cond=5,
-                        device=devices.device,
-                        torch_dtype=devices.dtype,
-                    )
-                else:
-                    original_load_ip_adapter = IPAdapterFaceID.load_ip_adapter
-                    IPAdapterFaceID.load_ip_adapter = hijack_load_ip_adapter
+                faceid_model = IPAdapterFaceIDPortrait(
+                    sd_pipe=shared.sd_model,
+                    ip_ckpt=model_path,
+                    num_tokens=16,
+                    n_cond=5,
+                    device=devices.device,
+                    torch_dtype=devices.dtype,
+                )
+            else:
+                original_load_ip_adapter = IPAdapterFaceID.load_ip_adapter
+                IPAdapterFaceID.load_ip_adapter = hijack_load_ip_adapter
 
-                    faceid_model = IPAdapterFaceID(
-                        sd_pipe=shared.sd_model,
-                        ip_ckpt=model_path,
-                        lora_rank=128,
-                        num_tokens=4,
-                        device=devices.device,
-                        torch_dtype=devices.dtype,
-                    )
+                faceid_model = IPAdapterFaceID(
+                    sd_pipe=shared.sd_model,
+                    ip_ckpt=model_path,
+                    lora_rank=128,
+                    num_tokens=4,
+                    device=devices.device,
+                    torch_dtype=devices.dtype,
+                )
 
-                shortcut = "v2" in model
-                faceid_model_name = model
+            shortcut = "v2" in model
+            faceid_model_name = model
 
-                face_embeds = []
-                face_images = []
-                for i, source_image in enumerate(source_images):
-                    np_image = cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR)
-                    faces = app.get(np_image)
-                    if len(faces) == 0:
-                        shared.log.error("FaceID: no faces found")
-                        break
-                    face_embeds.append(torch.from_numpy(faces[0].normed_embedding).unsqueeze(0))
-                    face_images.append(face_align.norm_crop(np_image, landmark=faces[0].kps, image_size=224))
-                    shared.log.debug(f'FaceID face: i={i+1} score={faces[0].det_score:.2f} gender={"female" if faces[0].gender==0 else "male"} age={faces[0].age} bbox={faces[0].bbox}')
-                    p.extra_generation_params[f"FaceID {i+1}"] = f'{faces[0].det_score:.2f} {"female" if faces[0].gender==0 else "male"} {faces[0].age}y'
-                if len(face_embeds) == 0:
+            face_embeds = []
+            face_images = []
+            for i, source_image in enumerate(source_images):
+                np_image = cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR)
+                faces = app.get(np_image)
+                if len(faces) == 0:
                     shared.log.error("FaceID: no faces found")
-                    return None
-                face_embeds = torch.cat(face_embeds, dim=0)
+                    break
+                face_embeds.append(torch.from_numpy(faces[0].normed_embedding).unsqueeze(0))
+                face_images.append(face_align.norm_crop(np_image, landmark=faces[0].kps, image_size=224))
+                shared.log.debug(f'FaceID face: i={i+1} score={faces[0].det_score:.2f} gender={"female" if faces[0].gender==0 else "male"} age={faces[0].age} bbox={faces[0].bbox}')
+                p.extra_generation_params[f"FaceID {i+1}"] = f'{faces[0].det_score:.2f} {"female" if faces[0].gender==0 else "male"} {faces[0].age}y'
 
-                ip_model_dict = {  # main generate dict
-                    "num_samples": p.batch_size,
-                    "width": p.width,
-                    "height": p.height,
-                    "num_inference_steps": p.steps,
-                    "scale": scale,
-                    "guidance_scale": p.cfg_scale,
-                    "faceid_embeds": face_embeds.shape,  # placeholder
-                }
-                # optional generate dict
-                if shortcut is not None:
-                    ip_model_dict["shortcut"] = shortcut
-                if "Plus" in model:
-                    ip_model_dict["s_scale"] = structure
-                shared.log.debug(f"FaceID args: {ip_model_dict}")
-                if "Plus" in model:
-                    ip_model_dict["face_image"] = face_images
-                ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
+            if len(face_embeds) == 0:
+                shared.log.error("FaceID: no faces found")
+                return None
+            face_embeds = torch.cat(face_embeds, dim=0)
 
-                # run generate
-                faceid_model.set_scale(scale)
-                extra_network_data = None
+            ip_model_dict = {  # main generate dict
+                "num_samples": p.batch_size,
+                "width": p.width,
+                "height": p.height,
+                "num_inference_steps": p.steps,
+                "scale": scale,
+                "guidance_scale": p.cfg_scale,
+                "faceid_embeds": face_embeds.shape,  # placeholder
+            }
 
-                for i in range(p.n_iter):
-                    p.iteration = i
-                    p.prompts = p.all_prompts[i * p.batch_size:(i + 1) * p.batch_size]
-                    p.negative_prompts = p.all_negative_prompts[i * p.batch_size:(i + 1) * p.batch_size]
-                    p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
-                    p.seeds = p.all_seeds[i * p.batch_size:(i + 1) * p.batch_size]
+            # optional generate dict
+            if shortcut is not None:
+                ip_model_dict["shortcut"] = shortcut
+            if "Plus" in model:
+                ip_model_dict["s_scale"] = structure
+            shared.log.debug(f"FaceID args: {ip_model_dict}")
+            if "Plus" in model:
+                ip_model_dict["face_image"] = face_images
+            ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
 
-                    if not p.disable_extra_networks:
-                        with devices.autocast():
-                            extra_networks.activate(p, extra_network_data)
 
-                    ip_model_dict.update({
-                            "prompt": p.prompts,
-                            "negative_prompt": p.negative_prompts,
-                            "seed": int(p.seeds[0]),
-                        })
-                    debug(f"FaceID: {ip_model_dict}")
-                    res = faceid_model.generate(**ip_model_dict)
-                    if isinstance(res, list):
-                        processed_images += res
+            faceid_model.set_scale(scale)
+            extra_network_data = None
 
-                faceid_model.set_scale(0)
-                faceid_model = None
+            for i in range(p.n_iter):
+                p.iteration = i
+                p.prompts = p.all_prompts[i * p.batch_size:(i + 1) * p.batch_size]
+                p.negative_prompts = p.all_negative_prompts[i * p.batch_size:(i + 1) * p.batch_size]
+                p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
+                p.seeds = p.all_seeds[i * p.batch_size:(i + 1) * p.batch_size]
 
-                if not cache:
-                    faceid_model_weights = None
-                    faceid_model_name = None
+                if not p.disable_extra_networks:
+                    with devices.autocast():
+                        extra_networks.activate(p, extra_network_data)
 
-                devices.torch_gc()
+                ip_model_dict.update({
+                        "prompt": p.prompts,
+                        "negative_prompt": p.negative_prompts,
+                        "seed": int(p.seeds[0]),
+                    })
+                debug(f"FaceID: {ip_model_dict}")
+                res = faceid_model.generate(**ip_model_dict)
+                if isinstance(res, list):
+                    processed_images += res
 
-            ipadapter.unapply(p.sd_model)
+            faceid_model.set_scale(0)
+            faceid_model = None
 
-            if not p.disable_extra_networks:
-                extra_networks.deactivate(p, extra_network_data)
+            if not cache:
+                faceid_model_weights = None
+                faceid_model_name = None
 
-            p.extra_generation_params["IP Adapter"] = f"{basename}:{scale}"
+            devices.torch_gc()
+
+        ipadapter.unapply(p.sd_model)
+
+        if not p.disable_extra_networks:
+            extra_networks.deactivate(p, extra_network_data)
+
+        p.extra_generation_params["IP Adapter"] = f"{basename}:{scale}"
     finally:
         if faceid_model is not None and original_load_ip_adapter is not None:
             faceid_model.__class__.load_ip_adapter = original_load_ip_adapter
