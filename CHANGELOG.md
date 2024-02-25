@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-02-24
+## Update for 2024-02-25
 
 - **Image2Video**
   - new module for creating videos from images  
@@ -19,6 +19,7 @@
 - **Fixes**
   - improve model offload compatibility
   - fix extra networks refresh
+  - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
 ## Update for 2024-02-22
