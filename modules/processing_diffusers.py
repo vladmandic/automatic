@@ -41,6 +41,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         try:
             for layer in [layer for layer in shared.sd_model.unet.modules() if type(layer) is torch.nn.Conv2d]:
                 layer.padding_mode = 'circular' if enable else 'zeros'
+            for layer in [layer for layer in shared.sd_model.vae.modules() if type(layer) is torch.nn.Conv2d]:
+                layer.padding_mode = 'circular' if enable else 'zeros'
         except Exception as e:
             debug(f"Diffusers tiling failed: {e}")
 
