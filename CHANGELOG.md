@@ -10,6 +10,7 @@
   - with support for multiple variations of base models: *GIT, BLIP, ViLT, PIX*
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
+  - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
   - new setting in image options: *include mask in output*
   - default theme updates and additional built-in theme *black-gray*
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
