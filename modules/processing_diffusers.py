@@ -37,6 +37,13 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             for j in range(len(decoded)):
                 images.save_image(decoded[j], path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix=suffix)
 
+    def apply_circular(enable):
+        try:
+            for layer in [layer for layer in shared.sd_model.unet.modules() if type(layer) is torch.nn.Conv2d]:
+                layer.padding_mode = 'circular' if enable else 'zeros'
+        except Exception as e:
+            debug(f"Diffusers tiling failed: {e}")
+
     def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[torch.FloatTensor, np.ndarray]):
         if isinstance(latents, np.ndarray): # latents from Onnx pipelines is ndarray.
             latents = torch.from_numpy(latents)
@@ -159,6 +166,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def set_pipeline_args(model, prompts: list, negative_prompts: list, prompts_2: typing.Optional[list]=None, negative_prompts_2: typing.Optional[list]=None, desc:str='', **kwargs):
         t0 = time.time()
+        apply_circular(p.tiling)
         if hasattr(model, "set_progress_bar_config"):
             model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
         args = {}
