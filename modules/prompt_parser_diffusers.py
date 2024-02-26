@@ -1,42 +1,20 @@
 import os
-import math
 import time
 import typing
 import torch
+from compel import ReturnedEmbeddingsType
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
 from modules import shared, prompt_parser, devices
 
-
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PROMPT')
-orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_embeddings # pylint: disable=protected-access
 
-
-def compel_hijack(self, token_ids: torch.Tensor,
-                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
-    needs_hidden_states = self.returned_embeddings_type != 1
-    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
-    if not needs_hidden_states:
-        return text_encoder_output.last_hidden_state
-    try:
-        normalized = self.returned_embeddings_type > 0
-        clip_skip = math.floor(abs(self.returned_embeddings_type))
-        interpolation = abs(self.returned_embeddings_type) - clip_skip
-    except Exception:
-        normalized = False
-        clip_skip = 1
-        interpolation = False
-    if interpolation:
-        hidden_state = (1 - interpolation) * text_encoder_output.hidden_states[-clip_skip] + interpolation * text_encoder_output.hidden_states[-(clip_skip+1)]
-    else:
-        hidden_state = text_encoder_output.hidden_states[-clip_skip]
-    if normalized:
-        hidden_state = self.text_encoder.text_model.final_layer_norm(hidden_state)
-    return hidden_state
-
-
-EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
+CLIP_SKIP_MAPPING = {
+    None: ReturnedEmbeddingsType.LAST_HIDDEN_STATES_NORMALIZED,
+    1: ReturnedEmbeddingsType.LAST_HIDDEN_STATES_NORMALIZED,
+    2: ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NORMALIZED,
+}
 
 
 # from https://github.com/damian0815/compel/blob/main/src/compel/diffusers_textual_inversion_manager.py
@@ -97,7 +75,8 @@ def get_prompt_schedule(prompt, steps):
     return temp, len(schedule) > 1
 
 
-def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
+def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int,
+                   clip_skip: typing.Optional[int] = None):
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion':
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return None, None, None, None
@@ -148,9 +127,12 @@ def prepare_embedding_providers(pipe, clip_skip):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     embeddings_providers = []
     if 'XL' in pipe.__class__.__name__:
-        embedding_type = -(clip_skip + 1)
+        embedding_type = ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED
     else:
-        embedding_type = clip_skip
+        if clip_skip > 2:
+            shared.log.warning(f"Prompt parser unsupported: clip_skip={clip_skip}")
+            clip_skip = 2
+        embedding_type = CLIP_SKIP_MAPPING[clip_skip]
     if hasattr(pipe, "tokenizer") and hasattr(pipe, "text_encoder"):
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False,
                                       returned_embeddings_type=embedding_type, device=device)
@@ -163,10 +145,8 @@ def prepare_embedding_providers(pipe, clip_skip):
 
 
 def pad_to_same_length(pipe, embeds):
-    if not hasattr(pipe, 'encode_prompt'):
-        return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    try: # SDXL
+    try:  # SDXL
         empty_embed = pipe.encode_prompt("")
     except TypeError:  # SD1.5
         empty_embed = pipe.encode_prompt("", device, 1, False)
