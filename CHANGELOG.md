@@ -14,6 +14,7 @@
   - new setting in image options: *include mask in output*
   - default theme updates and additional built-in theme *black-gray*
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
+  - support models with their own YAML model config files
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
@@ -21,6 +22,7 @@
   - improve model offload compatibility
   - fix extra networks refresh
   - fix sdp memory attention in backend original
+  - fix autodetect v2.1 models
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 

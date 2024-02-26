@@ -42,11 +42,13 @@ def get_pipelines():
     pipelines = { # note: not all pipelines can be used manually as they require prior pipeline next to decoder pipeline
         'Autodetect': None,
         'Stable Diffusion': getattr(diffusers, 'StableDiffusionPipeline', None),
+        'Stable Diffusion 2': getattr(diffusers, 'StableDiffusionPipeline', None),
         'Stable Diffusion Inpaint': getattr(diffusers, 'StableDiffusionInpaintPipeline', None),
         'Stable Diffusion Img2Img': getattr(diffusers, 'StableDiffusionImg2ImgPipeline', None),
         'Stable Diffusion Instruct': getattr(diffusers, 'StableDiffusionInstructPix2PixPipeline', None),
         'Stable Diffusion Upscale': getattr(diffusers, 'StableDiffusionUpscalePipeline', None),
         'Stable Diffusion XL': getattr(diffusers, 'StableDiffusionXLPipeline', None),
+        'Stable Diffusion XL Refiner': getattr(diffusers, 'StableDiffusionXLPipeline', None),
         'Stable Diffusion XL Img2Img': getattr(diffusers, 'StableDiffusionXLImg2ImgPipeline', None),
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),

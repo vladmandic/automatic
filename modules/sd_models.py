@@ -553,14 +553,16 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
                     warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
                     guess = 'VAE'
-                elif size >= 5351 and size <= 5359: # 5353
-                    guess = 'Stable Diffusion' # SD v2
+                elif size >= 4970 and size <= 4976: # 4973
+                    guess = 'Stable Diffusion 2' # SD v2 but could be eps or v-prediction
+                # elif size < 0: # unknown
+                #    guess = 'Stable Diffusion 2B'
                 elif size >= 5791 and size <= 5799: # 5795
                     if shared.backend == shared.Backend.ORIGINAL:
                         warn(f'Model detected as SD-XL refiner model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     if op == 'model':
                         warn(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
-                    guess = 'Stable Diffusion XL'
+                    guess = 'Stable Diffusion XL Refiner'
                 elif (size >= 6611 and size <= 7220): # 6617, HassakuXL is 6776, monkrenRealisticINT_v10 is 7217
                     if shared.backend == shared.Backend.ORIGINAL:
                         warn(f'Model detected as SD-XL base model, but attempting to load using backend=original: {op}={f} size={size} MB')
@@ -758,6 +760,23 @@ def move_model(model, device=None, force=False):
         devices.torch_gc()
 
 
+def get_load_config(model_file, model_type):
+    yaml = os.path.splitext(model_file)[0] + '.yaml'
+    if os.path.exists(yaml):
+        return yaml
+    elif model_type == 'Stable Diffusion':
+        return 'configs/v1-inference.yaml'
+    elif model_type == 'Stable Diffusion XL':
+        return 'configs/sd_xl_base.yaml'
+    elif model_type == 'Stable Diffusion XL Refiner':
+        return 'configs/sd_xl_refiner.yaml'
+    elif model_type == 'Stable Diffusion 2':
+        return None # dont know if its eps or v so let diffusers sort it out
+        # return 'configs/v2-inference-512-base.yaml'
+        # return 'configs/v2-inference-768-v.yaml'
+    return None
+
+
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
     if shared.cmd_opts.profile:
         import cProfile
@@ -926,20 +945,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
                     if shared.opts.diffusers_aesthetics_score:
                         diffusers_load_config['requires_aesthetics_score'] = shared.opts.diffusers_aesthetics_score
-                    if 'inpainting' in checkpoint_info.path.lower():
-                        diffusers_load_config['config_files'] = {
-                            'v1': 'configs/v1-inpainting-inference.yaml',
-                            'v2': 'configs/v2-inference-768-v.yaml',
-                            'xl': 'configs/sd_xl_base.yaml',
-                            'xl_refiner': 'configs/sd_xl_refiner.yaml',
-                        }
-                    else:
-                        diffusers_load_config['config_files'] = {
-                            'v1': 'configs/v1-inference.yaml',
-                            'v2': 'configs/v2-inference-768-v.yaml',
-                            'xl': 'configs/sd_xl_base.yaml',
-                            'xl_refiner': 'configs/sd_xl_refiner.yaml',
-                        }
+                    # diffusers_load_config['config_files'] = get_load_config(checkpoint_info.path.lower())
+                    diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type)
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
                     if shared.opts.disable_accelerate:
