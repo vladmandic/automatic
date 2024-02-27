@@ -41,7 +41,7 @@ def instant_id(p: processing.StableDiffusionProcessing, app, source_images, stre
     face_adapter = hf.hf_hub_download(repo_id=REPO_ID, filename="ip-adapter.bin")
     if controlnet_model is None or not cache:
         controlnet_model = ControlNetModel.from_pretrained(REPO_ID, subfolder="ControlNetModel", torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
-        controlnet_model.to(devices.device, devices.dtype)
+        sd_models.move_model(controlnet_model, devices.device)
 
     processing.process_init(p)
 

@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageFilter, ImageOps
 from transformers import SamModel, SamImageProcessor, MaskGenerationPipeline
-from modules import shared, errors, devices, ui_components, ui_symbols, paths
+from modules import shared, errors, devices, ui_components, ui_symbols, paths, sd_models
 from modules.memstats import memory_stats
 
 
@@ -480,7 +480,8 @@ def run_lama(input_image: gr.Image, input_mask: gr.Image = None):
         shared.log.debug(f'Mask LaMa loading: model={modules.lama.LAMA_MODEL_URL}')
         lama_model = modules.lama.SimpleLama()
         shared.log.debug(f'Mask LaMa loaded: {memory_stats()}')
-    lama_model.model.to(devices.device)
+    sd_models.move_model(lama_model.model, devices.device)
+
     result = lama_model(input_image, input_mask)
     if shared.opts.control_move_processor:
         lama_model.model.to('cpu')

@@ -83,7 +83,7 @@ class Script(scripts.Script):
                 return
             shared.log.info(f'Image2Video PIA load: model={repo_id}')
             motion_adapter = diffusers.MotionAdapter.from_pretrained(repo_id)
-            motion_adapter.to(devices.device, devices.dtype)
+            sd_models.move_model(motion_adapter, devices.device)
             shared.sd_model = sd_models.switch_pipe(diffusers.PIAPipeline, shared.sd_model, { 'motion_adapter': motion_adapter })
             sd_models.move_model(shared.sd_model, devices.device, force=True) # move pipeline to device
             if num_frames > 0:

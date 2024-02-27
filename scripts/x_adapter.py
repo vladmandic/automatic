@@ -58,7 +58,7 @@ class Script(scripts.Script):
             adapter.load_state_dict(adapter_dict)
             try:
                 if adapter is not None:
-                    adapter.to(devices.device)
+                    sd_models.move_model(adapter, devices.device)
             except Exception:
                 pass
         if adapter is None:

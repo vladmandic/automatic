@@ -10,7 +10,7 @@ TODO ipadapter items:
 import os
 import time
 from PIL import Image
-from modules import processing, shared, devices
+from modules import processing, shared, devices, sd_models
 
 
 base_repo = "h94/IP-Adapter"
@@ -163,7 +163,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
             except Exception as e:
                 shared.log.error(f'IP adapter: failed to load image encoder: {e}')
                 return
-        pipe.image_encoder.to(devices.device)
+        sd_models.move_model(pipe.image_encoder, devices.device)
 
     # main code
     t0 = time.time()
