@@ -1,7 +1,16 @@
 # Change Log for SD.Next
 
+## TODO
+
+- EDM samplers for Playground require diffusers==0.27.0
+- StableCascade requires diffuers side-branch
+
 ## Update for 2024-02-26
 
+- [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
+  - new model version from Playground: based on SDXL, but with some cool new concepts
+  - download using networks -> reference
+  - set sampler to DPM++ 2M EDM or Euler EDM
 - **Image2Video**
   - new module for creating videos from images  
   - simply enable from *img2img -> scripts -> image2video*  

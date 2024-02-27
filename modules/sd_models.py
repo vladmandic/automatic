@@ -323,37 +323,40 @@ def read_metadata_from_safetensors(filename):
     # try:
     t0 = time.time()
     with open(filename, mode="rb") as file:
-        metadata_len = file.read(8)
-        metadata_len = int.from_bytes(metadata_len, "little")
-        json_start = file.read(2)
-        if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-            shared.log.error(f"Not a valid safetensors file: {filename}")
-        json_data = json_start + file.read(metadata_len-2)
-        json_obj = json.loads(json_data)
-        for k, v in json_obj.get("__metadata__", {}).items():
-            if v.startswith("data:"):
-                v = 'data'
-            if k == 'format' and v == 'pt':
-                continue
-            large = True if len(v) > 2048 else False
-            if large and k == 'ss_datasets':
-                continue
-            if large and k == 'workflow':
-                continue
-            if large and k == 'prompt':
-                continue
-            if large and k == 'ss_bucket_info':
-                continue
-            if v[0:1] == '{':
-                try:
-                    v = json.loads(v)
-                    if large and k == 'ss_tag_frequency':
-                        v = { i: len(j) for i, j in v.items() }
-                    if large and k == 'sd_merge_models':
-                        scrub_dict(v, ['sd_merge_recipe'])
-                except Exception:
-                    pass
-            res[k] = v
+        try:
+            metadata_len = file.read(8)
+            metadata_len = int.from_bytes(metadata_len, "little")
+            json_start = file.read(2)
+            if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
+                shared.log.error(f"Model metadata invalid: fn={filename}")
+            json_data = json_start + file.read(metadata_len-2)
+            json_obj = json.loads(json_data)
+            for k, v in json_obj.get("__metadata__", {}).items():
+                if v.startswith("data:"):
+                    v = 'data'
+                if k == 'format' and v == 'pt':
+                    continue
+                large = True if len(v) > 2048 else False
+                if large and k == 'ss_datasets':
+                    continue
+                if large and k == 'workflow':
+                    continue
+                if large and k == 'prompt':
+                    continue
+                if large and k == 'ss_bucket_info':
+                    continue
+                if v[0:1] == '{':
+                    try:
+                        v = json.loads(v)
+                        if large and k == 'ss_tag_frequency':
+                            v = { i: len(j) for i, j in v.items() }
+                        if large and k == 'sd_merge_models':
+                            scrub_dict(v, ['sd_merge_recipe'])
+                    except Exception:
+                        pass
+                res[k] = v
+        except Exception as e:
+            shared.log.error(f"Model metadata: fn={filename} {e}")
     sd_metadata[filename] = res
     global sd_metadata_pending # pylint: disable=global-statement
     sd_metadata_pending += 1

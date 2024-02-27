@@ -72,6 +72,14 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
 ]
 
+try: # diffusers==0.27.0
+    from diffusers import EDMDPMSolverMultistepScheduler, EDMEulerScheduler
+    config['DPM++ 2M EDM'] = { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero' } # 'algorithm_type': 'dpmsolver++'
+    config['Euler EDM'] = { }
+    samplers_data_diffusers.append(sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}))
+    samplers_data_diffusers.append(sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}))
+except Exception:
+    pass
 
 class DiffusionSampler:
     def __init__(self, name, constructor, model, **kwargs):
@@ -126,6 +134,10 @@ class DiffusionSampler:
             self.config['algorithm_type'] = shared.opts.schedulers_dpm_solver
         if name == 'DEIS':
             self.config['algorithm_type'] = 'deis'
+        if 'EDM' in name:
+            del self.config['beta_start']
+            del self.config['beta_end']
+            del self.config['beta_schedule']
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
