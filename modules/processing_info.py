@@ -72,10 +72,10 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args["Second pass"] = p.enable_hr
         args["Hires force"] = p.hr_force
         args["Hires steps"] = p.hr_second_pass_steps
-        args["Hires upscaler"] = p.hr_upscaler
-        args["Hires upscale"] = p.hr_scale
-        args["Hires resize"] = f"{p.hr_resize_x}x{p.hr_resize_y}"
-        args["Hires size"] = f"{p.hr_upscale_to_x}x{p.hr_upscale_to_y}"
+        args["Hires upscaler"] = p.hr_upscaler if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
+        args["Hires upscale"] = p.hr_scale if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
+        args["Hires resize"] = f"{p.hr_resize_x}x{p.hr_resize_y}" if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
+        args["Hires size"] = f"{p.hr_upscale_to_x}x{p.hr_upscale_to_y}" if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
         args["Denoising strength"] = p.denoising_strength
         args["Hires sampler"] = p.hr_sampler_name
         args["Image CFG scale"] = p.image_cfg_scale

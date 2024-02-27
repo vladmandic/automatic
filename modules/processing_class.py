@@ -261,14 +261,14 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                     self.hr_upscale_to_y = self.hr_resize_y
                 self.truncate_x = (self.hr_upscale_to_x - target_w) // 8
                 self.truncate_y = (self.hr_upscale_to_y - target_h) // 8
-        # special case: the user has chosen to do nothing
-        if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or self.hr_upscaler is None or self.hr_upscaler == 'None':
-            self.is_hr_pass = False
-            return
-        self.is_hr_pass = True
-        hypertile_set(self, hr=True)
-        shared.state.job_count = 2 * self.n_iter
-        shared.log.debug(f'Init hires: upscaler="{self.hr_upscaler}" sampler="{self.hr_sampler_name}" resize={self.hr_resize_x}x{self.hr_resize_y} upscale={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        if shared.backend == shared.Backend.ORIGINAL: # diffusers are handled in processing_diffusers
+            if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or self.hr_upscaler is None or self.hr_upscaler == 'None': # special case: the user has chosen to do nothing
+                self.is_hr_pass = False
+                return
+            self.is_hr_pass = True
+            hypertile_set(self, hr=True)
+            shared.state.job_count = 2 * self.n_iter
+            shared.log.debug(f'Init hires: upscaler="{self.hr_upscaler}" sampler="{self.hr_sampler_name}" resize={self.hr_resize_x}x{self.hr_resize_y} upscale={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
         from modules import processing_original

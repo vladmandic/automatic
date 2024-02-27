@@ -8,6 +8,11 @@
   - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 - **VQA** visual question & answer in interrogate  
   - with support for multiple variations of base models: *GIT, BLIP, ViLT, PIX*
+- **Second Pass / Refine**
+  - independent upscale and hires options: run hires without upscale or upscale without hires or both
+  - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
+  - update ui section to reflect changes
+  - *note*: behavior using backend:original is unchanged for backwards compatibilty
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova

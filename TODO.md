@@ -6,6 +6,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - defork
 - stable diffusion 3.0
+- EDMEulerScheduler: <https://github.com/huggingface/diffusers/pull/7109>
 - stable cascade: <https://github.com/vladmandic/automatic/wiki/Stable-Cascade>
 - ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
 - x-adapter: <https://github.com/showlab/X-Adapter>
