@@ -96,7 +96,7 @@ class SimpleLama:
         image, mask = prepare_img_and_mask(image, mask, self.device)
         with devices.inference_context():
             inpainted = self.model(image, mask)
-            cur_res = inpainted[0].permute(1, 2, 0).detach().cpu().numpy()
+            cur_res = inpainted[0].permute(1, 2, 0).detach().float().cpu().numpy()
             cur_res = np.clip(cur_res * 255, 0, 255).astype(np.uint8)
             cur_res = Image.fromarray(cur_res)
             return cur_res

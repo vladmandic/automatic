@@ -298,6 +298,9 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         if processed_result is None:
             processed_result = copy(processed)
+            if processed_result is None:
+                shared.log.error('XYZ grid: no processing results')
+                return processing.Processed(p, [])
             processed_result.images = [None] * list_size
             processed_result.all_prompts = [None] * list_size
             processed_result.all_seeds = [None] * list_size

@@ -26,9 +26,10 @@
 - **Fixes**
   - improve model cpu offload compatibility
   - improve model sequential offload compatibility
+  - improve bfloat16 compatibility
   - fix extra networks refresh
   - fix sdp memory attention in backend original
-  - fix autodetect v2.1 models
+  - fix autodetect sd21 models
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
