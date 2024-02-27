@@ -87,6 +87,7 @@ def create_ui():
                 show_progress=False,
             )
             txt2img_prompt.submit(**txt2img_dict)
+            txt2img_negative_prompt.submit(**txt2img_dict)
             txt2img_submit.click(**txt2img_dict)
             txt2img_paste_fields = [
                 # prompt

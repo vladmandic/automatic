@@ -241,11 +241,11 @@ function clearPrompts(prompt, negative_prompt) {
   return [prompt, negative_prompt];
 }
 
-const promptTokecountUpdateFuncs = {};
+const promptTokenCountUpdateFuncs = {};
 
 function recalculatePromptTokens(name) {
-  if (promptTokecountUpdateFuncs[name]) {
-    promptTokecountUpdateFuncs[name]();
+  if (promptTokenCountUpdateFuncs[name]) {
+    promptTokenCountUpdateFuncs[name]();
   }
 }
 
@@ -330,8 +330,8 @@ onAfterUiUpdate(async () => {
     if (counter.parentElement === prompt.parentElement) return;
     prompt.parentElement.insertBefore(counter, prompt);
     prompt.parentElement.style.position = 'relative';
-    promptTokecountUpdateFuncs[id] = () => { update_token_counter(id_button); };
-    localTextarea.addEventListener('input', promptTokecountUpdateFuncs[id]);
+    promptTokenCountUpdateFuncs[id] = () => { update_token_counter(id_button); };
+    localTextarea.addEventListener('input', promptTokenCountUpdateFuncs[id]);
     if (!promptsInitialized) log('initPrompts');
     promptsInitialized = true;
   }
