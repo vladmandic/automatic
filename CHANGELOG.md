@@ -19,7 +19,8 @@
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
 - **Fixes**
-  - improve model offload compatibility
+  - improve model cpu offload compatibility
+  - improve model sequential offload compatibility
   - fix extra networks refresh
   - fix sdp memory attention in backend original
   - fix autodetect v2.1 models

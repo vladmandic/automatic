@@ -56,19 +56,6 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
   Supports **SD 1.x** and **SD 2.x** models  
   All other model types such as *SD-XL, LCM, PixArt, Segmind, Kandinsky, etc.* require backend **Diffusers**  
 
-## Control
-
-**SD.Next** comes with built-in control for all types of text2image, image2image, video2video and batch processing
-
-*Control interface*:  
-![Screenshot-Control](html/screenshot-control.jpg)
-
-*Control processors*:  
-![Screenshot-Process](html/screenshot-processors.jpg)
-
-*Masking*:
-![Screenshot-Mask](html/screenshot-mask.jpg)
-
 ## Model support
 
 Additional models will be added as they become available and there is public interest in them
@@ -110,7 +97,6 @@ Also supported are modifiers such as:
 *InstantID*:  
 ![Screenshot-InstantID](html/screenshot-instantid.jpg)
 
-
 > [!IMPORTANT]
 > - Loading any model other than standard SD 1.x / SD 2.x requires use of backend **Diffusers**  
 > - Loading any other models using **Original** backend is not supported  
@@ -151,50 +137,88 @@ Also supported are modifiers such as:
 
 Once SD.Next is installed, simply run `webui.ps1` or `webui.bat` (*Windows*) or `webui.sh` (*Linux or MacOS*)
 
-Below is partial list of all available parameters, run `webui --help` for the full list:
+List of available parameters, run `webui --help` for the full & up-to-date list:
 
     Server options:
-      --config CONFIG                  Use specific server configuration file, default: config.json
-      --ui-config UI_CONFIG            Use specific UI configuration file, default: ui-config.json
-      --medvram                        Split model stages and keep only active part in VRAM, default: False
-      --lowvram                        Split model components and keep only active part in VRAM, default: False
-      --ckpt CKPT                      Path to model checkpoint to load immediately, default: None
-      --vae VAE                        Path to VAE checkpoint to load immediately, default: None
-      --data-dir DATA_DIR              Base path where all user data is stored, default:
-      --models-dir MODELS_DIR          Base path where all models are stored, default: models
-      --share                          Enable UI accessible through Gradio site, default: False
-      --insecure                       Enable extensions tab regardless of other options, default: False
-      --listen                         Launch web server using public IP address, default: False
-      --auth AUTH                      Set access authentication like "user:pwd,user:pwd""
-      --autolaunch                     Open the UI URL in the system's default browser upon launch
-      --docs                           Mount API docs, default: False
-      --no-hashing                     Disable hashing of checkpoints, default: False
-      --no-metadata                    Disable reading of metadata from models, default: False
-      --backend {original,diffusers}   force model pipeline type
+      --config CONFIG                                    Use specific server configuration file, default: config.json
+      --ui-config UI_CONFIG                              Use specific UI configuration file, default: ui-config.json
+      --medvram                                          Split model stages and keep only active part in VRAM, default: False
+      --lowvram                                          Split model components and keep only active part in VRAM, default: False
+      --ckpt CKPT                                        Path to model checkpoint to load immediately, default: None
+      --vae VAE                                          Path to VAE checkpoint to load immediately, default: None
+      --data-dir DATA_DIR                                Base path where all user data is stored, default:
+      --models-dir MODELS_DIR                            Base path where all models are stored, default: models
+      --allow-code                                       Allow custom script execution, default: False
+      --share                                            Enable UI accessible through Gradio site, default: False
+      --insecure                                         Enable extensions tab regardless of other options, default: False
+      --use-cpu USE_CPU [USE_CPU ...]                    Force use CPU for specified modules, default: []
+      --listen                                           Launch web server using public IP address, default: False
+      --port PORT                                        Launch web server with given server port, default: 7860
+      --freeze                                           Disable editing settings
+      --auth AUTH                                        Set access authentication like "user:pwd,user:pwd""
+      --auth-file AUTH_FILE                              Set access authentication using file, default: None
+      --autolaunch                                       Open the UI URL in the system's default browser upon launch
+      --docs                                             Mount API docs, default: False
+      --api-only                                         Run in API only mode without starting UI
+      --api-log                                          Enable logging of all API requests, default: False
+      --device-id DEVICE_ID                              Select the default CUDA device to use, default: None
+      --cors-origins CORS_ORIGINS                        Allowed CORS origins as comma-separated list, default: None
+      --cors-regex CORS_REGEX                            Allowed CORS origins as regular expression, default: None
+      --tls-keyfile TLS_KEYFILE                          Enable TLS and specify key file, default: None
+      --tls-certfile TLS_CERTFILE                        Enable TLS and specify cert file, default: None
+      --tls-selfsign                                     Enable TLS with self-signed certificates, default: False
+      --server-name SERVER_NAME                          Sets hostname of server, default: None
+      --no-hashing                                       Disable hashing of checkpoints, default: False
+      --no-metadata                                      Disable reading of metadata from models, default: False
+      --disable-queue                                    Disable queues, default: False
+      --subpath SUBPATH                                  Customize the URL subpath for usage with reverse proxy
+      --backend {original,diffusers}                     force model pipeline type
+      --allowed-paths ALLOWED_PATHS [ALLOWED_PATHS ...]  add additional paths to paths allowed for web access
 
     Setup options:
-      --debug                          Run installer with debug logging, default: False
-      --reset                          Reset main repository to latest version, default: False
-      --upgrade                        Upgrade main repository to latest version, default: False
-      --requirements                   Force re-check of requirements, default: False
-      --quick                          Run with startup sequence only, default: False
-      --use-directml                   Use DirectML if no compatible GPU is detected, default: False
-      --use-openvino                   Use Intel OpenVINO backend, default: False
-      --use-ipex                       Force use Intel OneAPI XPU backend, default: False
-      --use-cuda                       Force use nVidia CUDA backend, default: False
-      --use-rocm                       Force use AMD ROCm backend, default: False
-      --use-xformers                   Force use xFormers cross-optimization, default: False
-      --skip-requirements              Skips checking and installing requirements, default: False
-      --skip-extensions                Skips running individual extension installers, default: False
-      --skip-git                       Skips running all GIT operations, default: False
-      --skip-torch                     Skips running Torch checks, default: False
-      --skip-all                       Skips running all checks, default: False
-      --experimental                   Allow unsupported versions of libraries, default: False
-      --reinstall                      Force reinstallation of all requirements, default: False
-      --safe                           Run in safe mode with no user extensions
+      --reset                                            Reset main repository to latest version, default: False
+      --upgrade                                          Upgrade main repository to latest version, default: False
+      --requirements                                     Force re-check of requirements, default: False
+      --quick                                            Bypass version checks, default: False
+      --use-directml                                     Use DirectML if no compatible GPU is detected, default: False
+      --use-openvino                                     Use Intel OpenVINO backend, default: False
+      --use-ipex                                         Force use Intel OneAPI XPU backend, default: False
+      --use-cuda                                         Force use nVidia CUDA backend, default: False
+      --use-rocm                                         Force use AMD ROCm backend, default: False
+      --use-zluda                                        Force use ZLUDA, AMD GPUs only, default: False
+      --use-xformers                                     Force use xFormers cross-optimization, default: False
+      --skip-requirements                                Skips checking and installing requirements, default: False
+      --skip-extensions                                  Skips running individual extension installers, default: False
+      --skip-git                                         Skips running all GIT operations, default: False
+      --skip-torch                                       Skips running Torch checks, default: False
+      --skip-all                                         Skips running all checks, default: False
+      --skip-env                                         Skips setting of env variables during startup, default: False
+      --experimental                                     Allow unsupported versions of libraries, default: False
+      --reinstall                                        Force reinstallation of all requirements, default: False
+      --test                                             Run test only and exit
+      --version                                          Print version information
+      --ignore                                           Ignore any errors and attempt to continue
+      --safe                                             Run in safe mode with no user extensions
 
+    Logging options:
+      --log LOG                                          Set log file, default: None
+      --debug                                            Run installer with debug logging, default: False
+      --profile                                          Run profiler, default: False
 
 ## Notes
+
+### Control
+
+**SD.Next** comes with built-in control for all types of text2image, image2image, video2video and batch processing
+
+*Control interface*:  
+![Screenshot-Control](html/screenshot-control.jpg)
+
+*Control processors*:  
+![Screenshot-Process](html/screenshot-processors.jpg)
+
+*Masking*:
+![Screenshot-Mask](html/screenshot-mask.jpg)
 
 ### **Extensions**
 

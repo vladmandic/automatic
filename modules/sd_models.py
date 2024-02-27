@@ -1130,7 +1130,8 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
                 unet=pipeline.unet,
                 scheduler=pipeline.scheduler,
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
-            ).to(pipeline.device)
+            )
+            move_model(new_pipe, pipeline.device)
             switch_mode = 'sdxl'
         elif 'tokenizer' in possible and hasattr(pipeline, 'tokenizer'):
             new_pipe = cls(
@@ -1142,7 +1143,8 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
                 requires_safety_checker=False,
                 safety_checker=None,
-            ).to(pipeline.device)
+            )
+            move_model(new_pipe, pipeline.device)
             switch_mode = 'sd'
         else:
             shared.log.error(f'Pipeline switch error: {pipeline.__class__.__name__} unrecognized')
