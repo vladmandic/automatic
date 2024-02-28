@@ -146,5 +146,7 @@ class DiffusionSampler:
             if key not in possible:
                 shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
+        # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
         self.sampler = constructor(**self.config)
+        # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
         self.sampler.name = name

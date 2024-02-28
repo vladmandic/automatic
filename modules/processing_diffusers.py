@@ -229,7 +229,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if 'latents' in possible and getattr(p, "init_latent", None) is not None:
             args['latents'] = p.init_latent
         if 'output_type' in possible:
-            if hasattr(model, 'vae'):
+            if not hasattr(model, 'vae'):
                 args['output_type'] = 'np' # only set latent if model has vae
 
         # stable cascade

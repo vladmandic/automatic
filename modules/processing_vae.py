@@ -46,9 +46,20 @@ def full_vae_decode(latents, model):
         model.upcast_vae()
     if hasattr(model.vae, "post_quant_conv"):
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
-    decoded = model.vae.decode(latents / model.vae.config.scaling_factor, return_dict=False)[0]
 
-    # Delete PyTorch VAE after OpenVINO compile
+    # normalize latents
+    latents_mean = model.vae.config.get("latents_mean", None)
+    latents_std = model.vae.config.get("latents_std", None)
+    scaling_factor = model.vae.config.get("scaling_factor", None)
+    if latents_mean and latents_std:
+        latents_mean = (torch.tensor(latents_mean).view(1, 4, 1, 1).to(latents.device, latents.dtype))
+        latents_std = (torch.tensor(latents_std).view(1, 4, 1, 1).to(latents.device, latents.dtype))
+        latents = latents * latents_std / scaling_factor + latents_mean
+    else:
+        latents = latents / scaling_factor
+    decoded = model.vae.decode(latents, return_dict=False)[0]
+
+    # delete vae after OpenVINO compile
     if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
         shared.compiled_model_state.first_pass_vae = False
         if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "vae"):

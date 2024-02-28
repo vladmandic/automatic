@@ -10,7 +10,7 @@
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
   - download using networks -> reference
-  - set sampler to DPM++ 2M EDM or Euler EDM
+  - set sampler to *DPM++ 2M EDM* or *Euler EDM* (EDM are new family of samplers)
 - **Image2Video**
   - new module for creating videos from images  
   - simply enable from *img2img -> scripts -> image2video*  
@@ -29,6 +29,7 @@
   - default theme updates and additional built-in theme *black-gray*
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - support models with their own YAML model config files
+  - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code

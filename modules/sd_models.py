@@ -780,6 +780,50 @@ def get_load_config(model_file, model_type):
     return None
 
 
+def patch_diffuser_config(sd_model, model_file):
+    def load_config(fn, k):
+        model_file = os.path.splitext(fn)[0]
+        cfg_file = f'{model_file}_{k}.json'
+        try:
+            if os.path.exists(cfg_file):
+                with open(cfg_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            cfg_file = f'{os.path.join(paths.sd_configs_path, os.path.basename(model_file))}_{k}.json'
+            if os.path.exists(cfg_file):
+                with open(cfg_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {}
+
+    if sd_model is None:
+        return sd_model
+    if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config') and 'inpaint' in model_file.lower():
+        if debug_load:
+            shared.log.debug('Model config patch: type=inpaint')
+        sd_model.unet.config.in_channels = 9
+    if not hasattr(sd_model, '_internal_dict'):
+        return sd_model
+    for c in sd_model._internal_dict.keys(): # pylint: disable=protected-access
+        component = getattr(sd_model, c, None)
+        if hasattr(component, 'config'):
+            if debug_load:
+                shared.log.debug(f'Model config: component={c} config={component.config}')
+            override = load_config(model_file, c)
+            updated = {}
+            for k, v in override.items():
+                if k.startswith('_'):
+                    continue
+                if v != component.config.get(k, None):
+                    if hasattr(component.config, '__frozen'):
+                        component.config.__frozen = False # pylint: disable=protected-access
+                    component.config[k] = v
+                    updated[k] = v
+            if updated and debug_load:
+                shared.log.debug(f'Model config: component={c} override={updated}')
+    return sd_model
+
+
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
     if shared.cmd_opts.profile:
         import cProfile
@@ -966,9 +1010,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     else:
                         sd_hijack_accelerate.restore_accelerate()
                     sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
-                    if sd_model is not None and hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config') and 'inpainting' in checkpoint_info.path.lower():
-                        shared.log.debug('Model patch: type=inpaint')
-                        sd_model.unet.config.in_channels = 9
+                    sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
                 elif hasattr(pipeline, 'from_ckpt'):
                     sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
                 else:
