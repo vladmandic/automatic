@@ -5,7 +5,7 @@
 - EDM samplers for Playground require diffusers==0.27.0
 - StableCascade requires diffuers side-branch
 
-## Update for 2024-02-26
+## Update for 2024-02-28
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -39,6 +39,7 @@
   - fix extra networks refresh
   - fix sdp memory attention in backend original
   - fix autodetect sd21 models
+  - fix api info endpoint
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
