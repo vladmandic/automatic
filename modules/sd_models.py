@@ -872,7 +872,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         prior_prior=prior.prior,
                         prior_text_encoder=prior.text_encoder,
                         prior_tokenizer=prior.tokenizer,
-                        prior_tokenizer=prior.tokenizer,
                         prior_scheduler=prior.scheduler,
                         prior_prior_feature_extractor=prior.feature_extractor,
                         prior_prior_image_encoder=prior.image_encoder)
