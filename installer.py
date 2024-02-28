@@ -481,7 +481,6 @@ def check_torch():
         if args.use_zluda:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
             log.warning("ZLUDA support: experimental")
-            paths = os.environ.get('PATH', '.')
             zluda_need_dll_patch = is_windows and not installed('torch')
             zluda_path = find_zluda()
             if zluda_path is None:
@@ -500,8 +499,9 @@ def check_torch():
                 zluda_path = os.path.abspath('./.zluda')
                 os.remove('_zluda')
             log.debug(f'Found ZLUDA in {zluda_path}')
+            paths = os.environ.get('PATH', '.')
             if zluda_path not in paths:
-                os.environ['PATH'] += ';' + zluda_path
+                os.environ['PATH'] = paths + ';' + zluda_path
         elif is_windows: # TODO TBD after ROCm for Windows is released
             log.warning("HIP SDK is detected, but no Torch release for Windows available")
             log.info("For ZLUDA support specify '--use-zluda'")
