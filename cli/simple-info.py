@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 import os
-import io
 import time
 import base64
 import logging
 import argparse
 import requests
 import urllib3
-from PIL import Image
+
 
 sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860")
 sd_username = os.environ.get('SDAPI_USR', None)
 sd_password = os.environ.get('SDAPI_PWD', None)
+
 
 logging.basicConfig(level = logging.INFO, format = '%(asctime)s %(levelname)s: %(message)s')
 log = logging.getLogger(__name__)
@@ -40,16 +40,11 @@ def post(endpoint: str, dct: dict = None):
         return req.json()
 
 
-def encode(fn):
-    with open(fn, 'rb') as f:
-        content = f.read()
-        encoded = base64.b64encode(content).decode()
-        return encoded
-
-
 def info(args): # pylint: disable=redefined-outer-name
     t0 = time.time()
-    data = post('/sdapi/v1/png-info', { 'image': encode(args.input) })
+    with open(args.input, 'rb') as f:
+        content = f.read()
+    data = post('/sdapi/v1/png-info', { 'image': base64.b64encode(content).decode() })
     t1 = time.time()
     log.info(f'received: {data} time={t1-t0:.2f}')
 
