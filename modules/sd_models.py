@@ -867,9 +867,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         scheduler=decoder.scheduler,
                         vqgan=decoder.vqgan,
                         prior_prior=prior.prior,
+                        prior_text_encoder=prior.text_encoder,
+                        prior_tokenizer=prior.tokenizer,
                         prior_scheduler=prior.scheduler,
-                        feature_extractor=prior.feature_extractor,
-                        image_encoder=prior.image_encoder)
+                        prior_feature_extractor=prior.feature_extractor,
+                        prior_image_encoder=prior.image_encoder)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
