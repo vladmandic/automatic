@@ -2,8 +2,8 @@
 
 ## TODO
 
-- EDM samplers for Playground require diffusers==0.27.0
-- StableCascade requires diffuers side-branch
+- EDM samplers for Playground require `diffusers==0.27.0`
+- StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
 
 ## Update for 2024-02-29
 
