@@ -5,12 +5,16 @@
 - EDM samplers for Playground require diffusers==0.27.0
 - StableCascade requires diffuers side-branch
 
-## Update for 2024-02-28
+## Update for 2024-02-29
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
   - download using networks -> reference
   - set sampler to *DPM++ 2M EDM* or *Euler EDM* (EDM are new family of samplers)
+- [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
+  - another very fast & light sd-xl model where original unet was compressed and distilled to 54% of original size  
+  - download using networks -> reference
+  - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
 - **Image2Video**
   - new module for creating videos from images  
   - simply enable from *img2img -> scripts -> image2video*  
