@@ -112,7 +112,7 @@ def create_advanced_inputs(tab):
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
         with gr.Group():
             gr.HTML('<br>')
-            with gr.Row():
+            with gr.Row(elem_id=f"{tab}_advanced_options"):
                 full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
                 restore_faces = gr.Checkbox(label='Face restore', value=False, visible=len(shared.face_restorers) > 1, elem_id=f"{tab}_restore_faces")
                 tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling", visible=shared.backend == shared.Backend.ORIGINAL)
@@ -165,10 +165,10 @@ def create_sampler_and_steps_selection(choices, tabname):
             values = []
             values += ['brownian noise'] if shared.opts.data.get('schedulers_brownian_noise', False) else []
             values += ['discard penultimate sigma'] if shared.opts.data.get('schedulers_discard_penultimate', True) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', choices=choices, value=values, type='value')
+            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=choices, value=values, type='value')
         with gr.Row(elem_classes=['flex-break']):
             shared.opts.data['schedulers_sigma'] = shared.opts.data.get('schedulers_sigma', 'default')
-            sampler_algo = gr.Radio(label='Sigma algorithm', choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
+            sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
         sampler_options.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
         sampler_algo.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
     else:
@@ -179,7 +179,7 @@ def create_sampler_and_steps_selection(choices, tabname):
             values += ['dynamic threshold'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
             values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
             values += ['rescale beta'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', choices=choices, value=values, type='value')
+            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=choices, value=values, type='value')
         sampler_options.change(fn=set_sampler_diffuser_options, inputs=[sampler_options], outputs=[])
     return steps, sampler_index
 
