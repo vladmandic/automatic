@@ -53,6 +53,7 @@
   - fix autodetect sd21 models
   - fix api info endpoint
   - fix sampler eta in xyz grid, thanks @AI-Casanova
+  - use diffusers lora load override for lcm/tcd/turbo loras
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
