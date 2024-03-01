@@ -3,7 +3,7 @@ import mimetypes
 import gradio as gr
 import gradio.routes
 import gradio.utils
-from modules.call_queue import wrap_gradio_call
+from modules.call_queue import wrap_gradio_call, wrap_gradio_gpu_call # pylint: disable=unused-import
 from modules import timer, gr_hijack, shared, theme, sd_models, script_callbacks, modelloader, ui_common, ui_loadsave, ui_symbols, ui_javascript, generation_parameters_copypaste, call_queue
 from modules.paths import script_path, data_path # pylint: disable=unused-import
 from modules.dml import directml_override_opts
