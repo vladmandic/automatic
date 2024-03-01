@@ -272,7 +272,7 @@ class ResProcessBatch(ResProcess):
     images: List[str] = Field(title="Images", description="The generated images in base64 format.")
 
 class ReqImageInfo(BaseModel):
-    image: str = Field(title="Image", description="The base64 encoded PNG image")
+    image: str = Field(title="Image", description="The base64 encoded image")
 
 class ResImageInfo(BaseModel):
     info: str = Field(title="Image info", description="A string with the parameters used to generate the image")

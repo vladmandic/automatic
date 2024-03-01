@@ -9,7 +9,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
 - x-adapter: <https://github.com/showlab/X-Adapter>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
-- init latents: variations, tiling, img2img
+- init latents: variations, img2img
 - diffusers public callbacks  
 - remove builtin: controlnet
 - remove builtin: image-browser
@@ -19,4 +19,3 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - second pass: <https://github.com/vladmandic/automatic/issues/2783>  
 - control api  
 - masking api  
-- preprocess api

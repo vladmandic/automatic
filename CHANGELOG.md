@@ -41,6 +41,8 @@
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
+- **API**
+  - add preprocessor api endpoints: `/sdapi/v1/preprocessors`, `/sdapi/v1/preprocess`
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
