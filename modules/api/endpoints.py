@@ -146,8 +146,6 @@ def post_pnginfo(req: models.ReqImageInfo):
     geninfo, items = images.read_info_from_image(image)
     if geninfo is None:
         geninfo = ""
-    if items and items['parameters']:
-        del items['parameters']
     params = generation_parameters_copypaste.parse_generation_parameters(geninfo)
     script_callbacks.infotext_pasted_callback(geninfo, params)
     return models.ResImageInfo(info=geninfo, items=items, parameters=params)

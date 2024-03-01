@@ -63,7 +63,7 @@ class DeepDanbooru:
 
         with devices.inference_context(), devices.autocast():
             x = torch.from_numpy(a).to(devices.device)
-            y = self.model(x)[0].detach().cpu().numpy()
+            y = self.model(x)[0].detach().float().cpu().numpy()
 
         probability_dict = {}
 

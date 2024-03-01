@@ -4,6 +4,7 @@ import diffusers.utils
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
 from modules.shared import log, opts
 from modules.control.units import detect
+from modules import sd_models
 
 
 what = 'Reference'
@@ -34,7 +35,8 @@ class ReferencePipeline():
                 unet=pipeline.unet,
                 scheduler=pipeline.scheduler,
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
-            ).to(pipeline.device)
+            )
+            sd_models.move_model(self.pipeline, pipeline.device)
         elif detect.is_sd15(pipeline):
             cls = diffusers.utils.get_class_from_dynamic_module('stable_diffusion_reference', module_file='pipeline.py')
             self.pipeline = cls(
@@ -46,7 +48,8 @@ class ReferencePipeline():
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
                 requires_safety_checker=False,
                 safety_checker=None,
-            ).to(pipeline.device)
+            )
+            sd_models.move_model(self.pipeline, pipeline.device)
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return

@@ -4,7 +4,7 @@ from typing import Union
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, ControlNetModel, StableDiffusionControlNetPipeline, StableDiffusionXLControlNetPipeline
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
-from modules import errors
+from modules import errors, sd_models
 
 
 what = 'ControlNet'
@@ -193,7 +193,8 @@ class ControlNetPipeline():
                 scheduler=pipeline.scheduler,
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
                 controlnet=controlnet, # can be a list
-            ).to(pipeline.device)
+            )
+            sd_models.move_model(self.pipeline, pipeline.device)
         elif detect.is_sd15(pipeline):
             self.pipeline = StableDiffusionControlNetPipeline(
                 vae=pipeline.vae,
@@ -205,7 +206,8 @@ class ControlNetPipeline():
                 requires_safety_checker=False,
                 safety_checker=None,
                 controlnet=controlnet, # can be a list
-            ).to(pipeline.device)
+            )
+            sd_models.move_model(self.pipeline, pipeline.device)
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return

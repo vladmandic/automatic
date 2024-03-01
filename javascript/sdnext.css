@@ -1,5 +1,5 @@
 @font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
-:root { --left-column: 550px; }
+:root { --left-column: 520px; }
 a { font-weight: bold; cursor: pointer; }
 h2 { margin-top: 1em !important; font-size: var(--text-xxl) !important; }
 footer { display: none; margin-top: 0 !important;}
@@ -45,7 +45,7 @@ input[type='color'] { width: 64px; height: 32px; }
 .gradio-textbox { overflow: visible !important; }
 .gradio-radio { padding: 0 !important; width: max-content !important; }
 .gradio-slider { margin-right: var(--spacing-sm) !important; width: max-content !important }
-.gradio-slider input[type="number"] { width: 6em; font-size: var(--text-xs); height: 16px; text-align: right; }
+.gradio-slider input[type="number"] { width: 5em; font-size: var(--text-xs); height: 16px; text-align: right; padding: 0; }
 
 /* custom gradio elements */
 .accordion-compact { padding: 8px 0px 4px 0px !important; }
@@ -107,8 +107,8 @@ div#extras_scale_to_tab div.form{ flex-direction: row; }
 #mode_img2img .gradio-image>div.fixed-height, #mode_img2img .gradio-image>div.fixed-height img{ height: 480px !important; max-height: 480px !important; min-height: 480px !important; }
 #img2img_sketch, #img2maskimg, #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 .image-buttons button{ min-width: auto; }
-.infotext { overflow-wrap: break-word; line-height: 1.5em; }
-.infotext>p { padding-left: 1em; text-indent: -1em; white-space: pre-wrap; }
+.infotext { overflow-wrap: break-word; line-height: 1.5em; font-size: 0.95em !important; }
+.infotext > p { padding-left: 1em; text-indent: -1em; white-space: pre-wrap; color: var(--block-info-text-color) !important; }
 .tooltip { display: block; position: fixed; top: 1em; right: 1em; padding: 0.5em; background: var(--input-background-fill); color: var(--body-text-color); border: 1pt solid var(--button-primary-border-color);
   width: 22em; min-height: 1.3em; font-size: var(--text-xs); transition: opacity 0.2s ease-in; pointer-events: none; opacity: 0; z-index: 999; }
 .tooltip-show { opacity: 0.9; }
@@ -301,9 +301,10 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
   --spacing-xxs: 1px;
   --spacing-xs: 2px;
   --spacing-sm: 3px;
-  --spacing-lg: 4px;
-  --spacing-xl: 5px;
-  --spacing-xxl: 6px; 
+  --spacing-md: 4px;
+  --spacing-lg: 5px;
+  --spacing-xl: 6px;
+  --spacing-xxl: 7px; 
 }
 
 @media (hover: none) and (pointer: coarse) { /* Apply different styles for devices with coarse pointers dependant on screen resolution */

@@ -246,7 +246,7 @@ axis_options = [
     AxisOption("[Sampler] Sigma tmax", float, apply_field("s_tmax")),
     AxisOption("[Sampler] Sigma Churn", float, apply_field("s_churn")),
     AxisOption("[Sampler] Sigma noise", float, apply_field("s_noise")),
-    AxisOption("[Sampler] ETA", float, apply_field("eta")),
+    AxisOption("[Sampler] ETA", float, apply_setting("scheduler_eta")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
     AxisOption("[Second pass] Upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
     AxisOption("[Second pass] Sampler", str, apply_hr_sampler_name, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
@@ -298,6 +298,9 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         if processed_result is None:
             processed_result = copy(processed)
+            if processed_result is None:
+                shared.log.error('XYZ grid: no processing results')
+                return processing.Processed(p, [])
             processed_result.images = [None] * list_size
             processed_result.all_prompts = [None] * list_size
             processed_result.all_seeds = [None] * list_size

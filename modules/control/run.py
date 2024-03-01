@@ -482,6 +482,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
                         debug(f'Control exec pipeline: p={vars(p)}')
                         debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
+                        if sd_models.get_diffusers_task(pipe) != sd_models.DiffusersTaskType.TEXT_2_IMAGE: # force vae back to gpu if not in txt2img mode
+                            sd_models.move_model(pipe.vae, devices.device)
                         p.scripts = scripts.scripts_control
                         p.script_args = input_script_args
                         processed = p.scripts.run(p, *input_script_args)
@@ -508,6 +510,10 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                                 output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after)
 
                             output_images.append(output_image)
+                            if shared.opts.include_mask:
+                                if processed_image is not None and isinstance(processed_image, Image.Image):
+                                    output_images.append(processed_image)
+
                             if is_generator:
                                 image_txt = f'{output_image.width}x{output_image.height}' if output_image is not None else 'None'
                                 if video is not None:

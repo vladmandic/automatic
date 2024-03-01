@@ -46,11 +46,11 @@ def soft_clamp_tensor(tensor, threshold=0.8, boundary=4):
 def center_tensor(tensor, channel_shift=0.0, full_shift=0.0, offset=0.0):
     if channel_shift == 0 and full_shift == 0 and offset == 0:
         return tensor
-    debug(f'HDR center: Before Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).cpu().numpy()}')
+    debug(f'HDR center: Before Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
     tensor -= tensor.mean(dim=(-1, -2), keepdim=True) * channel_shift
     tensor -= tensor.mean() * full_shift - offset
     debug(f'HDR center: channel-shift={channel_shift} full-shift={full_shift}')
-    debug(f'HDR center: After Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).cpu().numpy()}')
+    debug(f'HDR center: After Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
     return tensor
 
 
@@ -122,9 +122,9 @@ def correction_callback(p, timestep, kwargs):
         for i in range(latents.shape[0]):
             latents[i] = correction(p, timestep, latents[i])
             debug(f"Full Mean: {latents[i].mean().item()}")
-            debug(f"Channel Means: {latents[i].mean(dim=(-1, -2), keepdim=True).flatten().cpu().numpy()}")
-            debug(f"Channel Mins: {latents[i].min(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().cpu().numpy()}")
-            debug(f"Channel Maxes: {latents[i].max(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().cpu().numpy()}")
+            debug(f"Channel Means: {latents[i].mean(dim=(-1, -2), keepdim=True).flatten().float().cpu().numpy()}")
+            debug(f"Channel Mins: {latents[i].min(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
+            debug(f"Channel Maxes: {latents[i].max(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
     elif len(latents.shape) == 5 and latents.shape[0] == 1: # probably animatediff
         latents = latents.squeeze(0).permute(1, 0, 2, 3)
         for i in range(latents.shape[0]):

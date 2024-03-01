@@ -28,12 +28,15 @@ class MemUsageMonitor():
 
     def reset(self):
         if not self.disabled:
-            torch.cuda.reset_peak_memory_stats(self.device)
-            self.data['retries'] = 0
-            self.data['oom'] = 0
-            # torch.cuda.reset_accumulated_memory_stats(self.device)
-            # torch.cuda.reset_max_memory_allocated(self.device)
-            # torch.cuda.reset_max_memory_cached(self.device)
+            try:
+                torch.cuda.reset_peak_memory_stats(self.device)
+                self.data['retries'] = 0
+                self.data['oom'] = 0
+                # torch.cuda.reset_accumulated_memory_stats(self.device)
+                # torch.cuda.reset_max_memory_allocated(self.device)
+                # torch.cuda.reset_max_memory_cached(self.device)
+            except Exception:
+                pass
 
     def read(self):
         if not self.disabled:

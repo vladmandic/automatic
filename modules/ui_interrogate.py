@@ -186,6 +186,10 @@ def create_ui():
                     trending = gr.Label(label="Trending", num_top_classes=5)
                     flavor = gr.Label(label="Flavor", num_top_classes=5)
                 with gr.Row():
+                    clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
+                    ui_common.create_refresh_button(clip_model, get_models, lambda: {"choices": get_models()}, 'refresh_interrogate_models')
+                    mode = gr.Radio(['best', 'fast', 'classic', 'caption', 'negative'], label='Mode', value='best')
+                with gr.Row():
                     btn_interrogate_img = gr.Button("Interrogate", variant='primary')
                     btn_analyze_img = gr.Button("Analyze", variant='primary')
                     btn_unload = gr.Button("Unload")
@@ -193,6 +197,9 @@ def create_ui():
                     buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "extras", "control"])
                 for tabname, button in buttons.items():
                     parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(paste_button=button, tabname=tabname, source_text_component=prompt, source_image_component=image,))
+                btn_interrogate_img.click(interrogate_image, inputs=[image, clip_model, mode], outputs=prompt)
+                btn_analyze_img.click(analyze_image, inputs=[image, clip_model], outputs=[medium, artist, movement, trending, flavor])
+                btn_unload.click(unload)
             with gr.Tab("Batch"):
                 with gr.Row():
                     batch_files = gr.File(label="Files", show_label=True, file_count='multiple', file_types=['image'], type='file', interactive=True, height=100)
@@ -205,15 +212,20 @@ def create_ui():
                 with gr.Row():
                     write = gr.Checkbox(label='Write prompts to files', value=False)
                 with gr.Row():
+                    clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
+                    ui_common.create_refresh_button(clip_model, get_models, lambda: {"choices": get_models()}, 'refresh_interrogate_models')
+                with gr.Row():
                     btn_interrogate_batch = gr.Button("Interrogate", variant='primary')
-        with gr.Column():
-            with gr.Row():
-                # clip_model = gr.Dropdown(get_models(), value='ViT-L-14/openai', label='CLIP Model')
-                clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
-                ui_common.create_refresh_button(clip_model, get_models, lambda: {"choices": get_models()}, 'refresh_interrogate_models')
-            with gr.Row():
-                mode = gr.Radio(['best', 'fast', 'classic', 'caption', 'negative'], label='Mode', value='best')
-        btn_interrogate_img.click(interrogate_image, inputs=[image, clip_model, mode], outputs=prompt)
-        btn_analyze_img.click(analyze_image, inputs=[image, clip_model], outputs=[medium, artist, movement, trending, flavor])
-        btn_interrogate_batch.click(interrogate_batch, inputs=[batch_files, batch_folder, batch_str, clip_model, mode, write], outputs=[batch])
-        btn_unload.click(unload)
+                btn_interrogate_batch.click(interrogate_batch, inputs=[batch_files, batch_folder, batch_str, clip_model, mode, write], outputs=[batch])
+            with gr.Tab("VQA"):
+                from modules import vqa
+                with gr.Row():
+                    vqa_image = gr.Image(type='pil', label="Image")
+                with gr.Row():
+                    vqa_question = gr.Textbox(label="Question")
+                with gr.Row():
+                    vqa_answer = gr.Textbox(label="Answer", lines=3)
+                with gr.Row():
+                    vqa_model = gr.Dropdown(list(vqa.MODELS), value='None', label='VQA Model')
+                    vqa_submit = gr.Button("Interrogate", variant='primary')
+                vqa_submit.click(vqa.interrogate, inputs=[vqa_question, vqa_image, vqa_model], outputs=[vqa_answer])

@@ -37,6 +37,15 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             for j in range(len(decoded)):
                 images.save_image(decoded[j], path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix=suffix)
 
+    def apply_circular(enable):
+        try:
+            for layer in [layer for layer in shared.sd_model.unet.modules() if type(layer) is torch.nn.Conv2d]:
+                layer.padding_mode = 'circular' if enable else 'zeros'
+            for layer in [layer for layer in shared.sd_model.vae.modules() if type(layer) is torch.nn.Conv2d]:
+                layer.padding_mode = 'circular' if enable else 'zeros'
+        except Exception as e:
+            debug(f"Diffusers tiling failed: {e}")
+
     def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[torch.FloatTensor, np.ndarray]):
         if isinstance(latents, np.ndarray): # latents from Onnx pipelines is ndarray.
             latents = torch.from_numpy(latents)
@@ -159,6 +168,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def set_pipeline_args(model, prompts: list, negative_prompts: list, prompts_2: typing.Optional[list]=None, negative_prompts_2: typing.Optional[list]=None, desc:str='', **kwargs):
         t0 = time.time()
+        apply_circular(p.tiling)
         if hasattr(model, "set_progress_bar_config"):
             model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
         args = {}
@@ -219,7 +229,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if 'latents' in possible and getattr(p, "init_latent", None) is not None:
             args['latents'] = p.init_latent
         if 'output_type' in possible:
-            if hasattr(model, 'vae'):
+            if not hasattr(model, 'vae'):
                 args['output_type'] = 'np' # only set latent if model has vae
 
         # stable cascade
@@ -345,7 +355,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 p.task_args['sag_scale'] = p.sag_scale
             else:
                 shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
-
         if shared.opts.cuda_compile_backend == "olive-ai":
             sd_model = olive_check_parameters_changed(p, is_refiner_enabled())
         if sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -362,12 +371,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
-    if shared.opts.diffusers_move_base:
-        sd_models.move_model(shared.sd_model, devices.device)
-
-    # recompile if a parameter changes
-    sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False)
-
     # pipeline type is set earlier in processing, but check for sanity
     is_control = getattr(p, 'is_control', False) is True
     has_images = len(getattr(p, 'init_images' ,[])) > 0
@@ -378,10 +381,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if len(getattr(p, 'init_images' ,[])) == 0:
             p.init_images = [TF.to_pil_image(torch.rand((3, getattr(p, 'height', 512), getattr(p, 'width', 512))))]
 
+    sd_models.move_model(shared.sd_model, devices.device)
+    sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False) # recompile if a parameter changes
+
     use_refiner_start = is_txt2img() and is_refiner_enabled() and not p.is_hr_pass and p.refiner_start > 0 and p.refiner_start < 1
     use_denoise_start = not is_txt2img() and p.refiner_start > 0 and p.refiner_start < 1
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
+    shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
     base_args = set_pipeline_args(
         model=shared.sd_model,
         prompts=p.prompts,
@@ -442,54 +449,65 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
-    # optional hires pass
-    if p.enable_hr and getattr(p, 'hr_upscaler', 'None') != 'None' and len(getattr(p, 'init_images', [])) == 0:
+    # optional second pass
+    if p.enable_hr and len(getattr(p, 'init_images', [])) == 0:
         p.is_hr_pass = True
-    latent_scale_mode = shared.latent_upscale_modes.get(p.hr_upscaler, None) if (hasattr(p, "hr_upscaler") and p.hr_upscaler is not None) else shared.latent_upscale_modes.get(shared.latent_upscale_default_mode, "None")
     if p.is_hr_pass:
         p.init_hr()
         prev_job = shared.state.job
-        if hasattr(p, 'height') and hasattr(p, 'width') and (p.width != p.hr_upscale_to_x or p.height != p.hr_upscale_to_y):
+
+        # upscale
+        if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
+            shared.log.info(f'Upscale: upscaler="{p.hr_upscaler}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
             p.ops.append('upscale')
             if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(latents=output.images, suffix="-before-hires")
             shared.state.job = 'upscale'
             output.images = resize_hires(p, latents=output.images)
-            if (latent_scale_mode is not None or p.hr_force) and p.denoising_strength > 0:
-                p.ops.append('hires')
-                sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
-                shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
-                if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
-                    shared.sd_model = preprocess_onnx_pipeline(p)
-                update_sampler(shared.sd_model, second_pass=True)
-                hires_args = set_pipeline_args(
-                    model=shared.sd_model,
-                    prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
-                    negative_prompts=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
-                    prompts_2=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
-                    negative_prompts_2=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
-                    num_inference_steps=calculate_hires_steps(p),
-                    eta=shared.opts.scheduler_eta,
-                    guidance_scale=p.image_cfg_scale if p.image_cfg_scale is not None else p.cfg_scale,
-                    guidance_rescale=p.diffusers_guidance_rescale,
-                    output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
-                    clip_skip=p.clip_skip,
-                    image=output.images,
-                    strength=p.denoising_strength,
-                    desc='Hires',
-                )
-                shared.state.job = 'hires'
-                shared.state.sampling_steps = hires_args['num_inference_steps']
-                try:
-                    sd_models_compile.check_deepcache(enable=True)
-                    output = shared.sd_model(**hires_args) # pylint: disable=not-callable
-                    if isinstance(output, dict):
-                        output = SimpleNamespace(**output)
-                    sd_models_compile.check_deepcache(enable=False)
-                    sd_models_compile.openvino_post_compile(op="base")
-                except AssertionError as e:
-                    shared.log.info(e)
-                p.init_images = []
+            sd_hijack_hypertile.hypertile_set(p, hr=True)
+
+        latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
+        if (latent_upscale is not None or p.hr_force) and p.denoising_strength > 0:
+            p.ops.append('hires')
+            sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
+            if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
+                shared.sd_model = preprocess_onnx_pipeline(p)
+            p.hr_force = True
+
+        # hires
+        if p.hr_force:
+            shared.state.job_count = 2 * p.n_iter
+            shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
+            update_sampler(shared.sd_model, second_pass=True)
+            shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            hires_args = set_pipeline_args(
+                model=shared.sd_model,
+                prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
+                negative_prompts=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
+                prompts_2=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
+                negative_prompts_2=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
+                num_inference_steps=calculate_hires_steps(p),
+                eta=shared.opts.scheduler_eta,
+                guidance_scale=p.image_cfg_scale if p.image_cfg_scale is not None else p.cfg_scale,
+                guidance_rescale=p.diffusers_guidance_rescale,
+                output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
+                clip_skip=p.clip_skip,
+                image=output.images,
+                strength=p.denoising_strength,
+                desc='Hires',
+            )
+            shared.state.job = 'hires'
+            shared.state.sampling_steps = hires_args['num_inference_steps']
+            try:
+                sd_models_compile.check_deepcache(enable=True)
+                output = shared.sd_model(**hires_args) # pylint: disable=not-callable
+                if isinstance(output, dict):
+                    output = SimpleNamespace(**output)
+                sd_models_compile.check_deepcache(enable=False)
+                sd_models_compile.openvino_post_compile(op="base")
+            except AssertionError as e:
+                shared.log.info(e)
+            p.init_images = []
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
@@ -523,6 +541,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
+            shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             refiner_args = set_pipeline_args(
                 model=shared.sd_refiner,
                 prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts[i],

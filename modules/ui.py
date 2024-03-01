@@ -144,11 +144,6 @@ def create_ui(startup_timer = None):
         ui_postprocessing.create_ui()
         timer.startup.record("ui-extras")
 
-    with gr.Blocks(analytics_enabled=False) as train_interface:
-        from modules import ui_train
-        ui_train.create_ui()
-        timer.startup.record("ui-train")
-
     with gr.Blocks(analytics_enabled=False) as models_interface:
         from modules import ui_models
         ui_models.create_ui()
@@ -377,7 +372,6 @@ def create_ui(startup_timer = None):
     interfaces += [(control_interface, "Control", "control")] if control_interface is not None else []
     interfaces += [(extras_interface, "Process", "process")]
     interfaces += [(interrogate_interface, "Interrogate", "interrogate")]
-    interfaces += [(train_interface, "Train", "train")]
     interfaces += [(models_interface, "Models", "models")]
     interfaces += script_callbacks.ui_tabs_callback()
     interfaces += [(settings_interface, "System", "system")]

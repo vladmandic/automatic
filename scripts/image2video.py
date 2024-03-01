@@ -6,7 +6,7 @@ from modules import scripts, processing, shared, images, sd_models, devices
 
 MODELS = [
     { 'name': 'None', 'info': '' },
-    { 'name': 'PIA', 'url': 'openmmlab/PIA-condition-adapter', 'info': '<a href="https://huggingface.co/docs/diffusers/main/en/api/pipelines/pia" target="_blank">Open MMLab Personalized Image Animator</a>' },
+    # { 'name': 'PIA', 'url': 'openmmlab/PIA-condition-adapter', 'info': '<a href="https://huggingface.co/docs/diffusers/main/en/api/pipelines/pia" target="_blank">Open MMLab Personalized Image Animator</a>' },
     { 'name': 'VGen', 'url': 'ali-vilab/i2vgen-xl', 'info': '<a href="https://huggingface.co/ali-vilab/i2vgen-xl" target="_blank">Alibaba VGen</a>' },
 ]
 
@@ -16,8 +16,8 @@ class Script(scripts.Script):
         return 'Image-to-Video'
 
     def show(self, is_img2img):
-        # return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
-        return False
+        return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        # return False
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):
@@ -75,17 +75,17 @@ class Script(scripts.Script):
         shared.log.debug(f'Image2Video: model={model_name} frames={num_frames}, video={video_type} duration={duration} loop={gif_loop} pad={mp4_pad} interpolate={mp4_interpolate}')
         p.ops.append('image2video')
         p.do_not_save_grid = True
+        orig_pipeline = shared.sd_model
 
         if model_name == 'PIA':
             if shared.sd_model_type != 'sd':
                 shared.log.error('Image2Video PIA: base model must be SD15')
                 return
-            orig_pipeline = shared.sd_model
             shared.log.info(f'Image2Video PIA load: model={repo_id}')
             motion_adapter = diffusers.MotionAdapter.from_pretrained(repo_id)
-            motion_adapter.to(devices.device, devices.dtype)
+            sd_models.move_model(motion_adapter, devices.device)
             shared.sd_model = sd_models.switch_pipe(diffusers.PIAPipeline, shared.sd_model, { 'motion_adapter': motion_adapter })
-            sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
+            sd_models.move_model(shared.sd_model, devices.device, force=True) # move pipeline to device
             if num_frames > 0:
                 p.task_args['num_frames'] = num_frames
                 p.task_args['image'] = p.init_images[0]
@@ -101,7 +101,6 @@ class Script(scripts.Script):
             shared.log.debug(f'Image2Video PIA: args={p.task_args}')
             processed = processing.process_images(p)
             shared.sd_model.motion_adapter = None
-            shared.sd_model = orig_pipeline
 
         if model_name == 'VGen':
             if not isinstance(shared.sd_model, diffusers.I2VGenXLPipeline):
@@ -121,6 +120,7 @@ class Script(scripts.Script):
             shared.log.debug(f'Image2Video VGen: args={p.task_args}')
             processed = processing.process_images(p)
 
+        shared.sd_model = orig_pipeline
         if video_type != 'None' and processed is not None:
             images.save_video(p, filename=None, images=processed.images, video_type=video_type, duration=duration, loop=gif_loop, pad=mp4_pad, interpolate=mp4_interpolate)
         return processed

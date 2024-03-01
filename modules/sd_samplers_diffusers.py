@@ -2,6 +2,7 @@ import os
 import inspect
 from modules import shared
 from modules import sd_samplers_common
+from modules.tcd import TCDScheduler
 
 
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -50,6 +51,7 @@ config = {
     'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0 },
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False },
     'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace'},
+    'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
 }
 
 samplers_data_diffusers = [
@@ -70,7 +72,17 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
 ]
+
+try: # diffusers==0.27.0
+    from diffusers import EDMDPMSolverMultistepScheduler, EDMEulerScheduler
+    config['DPM++ 2M EDM'] = { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero' } # 'algorithm_type': 'dpmsolver++'
+    config['Euler EDM'] = { }
+    samplers_data_diffusers.append(sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}))
+    samplers_data_diffusers.append(sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}))
+except Exception:
+    pass
 
 
 class DiffusionSampler:
@@ -126,6 +138,10 @@ class DiffusionSampler:
             self.config['algorithm_type'] = shared.opts.schedulers_dpm_solver
         if name == 'DEIS':
             self.config['algorithm_type'] = 'deis'
+        if 'EDM' in name:
+            del self.config['beta_start']
+            del self.config['beta_end']
+            del self.config['beta_schedule']
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
@@ -134,5 +150,7 @@ class DiffusionSampler:
             if key not in possible:
                 shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
+        # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
         self.sampler = constructor(**self.config)
+        # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
         self.sampler.name = name
