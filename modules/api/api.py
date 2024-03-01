@@ -52,13 +52,15 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ResProcessImage)
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ResProcessBatch)
         self.add_api_route("/sdapi/v1/preprocess", control_api.post_preprocess, methods=["POST"])
-        self.add_api_route("/sdapi/v1/preprocessors", control_api.get_preprocess, methods=["GET"])
+        self.add_api_route("/sdapi/v1/mask", control_api.post_mask, methods=["POST"])
 
         # api dealing with optional scripts
         self.add_api_route("/sdapi/v1/scripts", script.get_scripts_list, methods=["GET"], response_model=models.ResScripts)
         self.add_api_route("/sdapi/v1/script-info", script.get_script_info, methods=["GET"], response_model=List[models.ItemScript])
 
         # enumerator api
+        self.add_api_route("/sdapi/v1/preprocessors", control_api.get_preprocess, methods=["GET"])
+        self.add_api_route("/sdapi/v1/masking", control_api.get_mask, methods=["GET"])
         self.add_api_route("/sdapi/v1/interrogate", endpoints.get_interrogate, methods=["GET"], response_model=List[str])
         self.add_api_route("/sdapi/v1/samplers", endpoints.get_samplers, methods=["GET"], response_model=List[models.ItemSampler])
         self.add_api_route("/sdapi/v1/upscalers", endpoints.get_upscalers, methods=["GET"], response_model=List[models.ItemUpscaler])

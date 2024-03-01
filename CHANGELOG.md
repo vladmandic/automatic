@@ -42,7 +42,10 @@
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
 - **API**
-  - add preprocessor api endpoints: `/sdapi/v1/preprocessors`, `/sdapi/v1/preprocess`
+  - add preprocessor api endpoints  
+    GET:`/sdapi/v1/preprocessors`, POST:`/sdapi/v1/preprocess`, sample script:`cli/simple-preprocess.py`
+  - add masking api endpoints  
+    GET:`/sdapi/v1/masking`, POST:`/sdapi/v1/mask`, sample script:`cli/simple-mask.py`
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
