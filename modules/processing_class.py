@@ -311,9 +311,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts, all_seeds, all_subseeds):
-        if shared.backend == shared.Backend.DIFFUSERS and self.image_mask is not None and not self.is_control:
+        if shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
-        elif shared.backend == shared.Backend.DIFFUSERS and self.image_mask is None and not self.is_control:
+        elif shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'init_images', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
 
         if self.sampler_name == "PLMS":

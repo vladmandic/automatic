@@ -753,14 +753,16 @@ def move_model(model, device=None, force=False):
                 if hasattr(model.vae, '_hf_hook'):
                     debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
                     model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
+        debug_move(f'Model move: to={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+        if hasattr(model, '_hf_hook'):
+            model._hf_hook.execution_device = device # pylint: disable=protected-access
+        devices.torch_gc()
         if getattr(model, 'has_accelerate', False) and not force:
             return
-        debug_move(f'Model move: to={device} class={model.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
         try:
             model.to(device)
         except Exception as e:
             shared.log.error(f'Model move: {e}')
-        devices.torch_gc()
 
 
 def get_load_config(model_file, model_type):
@@ -1039,8 +1041,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         elif "Kandinsky" in sd_model.__class__.__name__:
             sd_model.scheduler.name = 'DDIM'
 
-        set_diffuser_options(sd_model, vae, op)
-
         base_sent_to_cpu=False
         if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none') or shared.opts.ipex_optimize or shared.opts.nncf_compress_weights:
             if op == 'refiner' and not getattr(sd_model, 'has_accelerate', False):
@@ -1088,6 +1088,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if op == 'refiner' and base_sent_to_cpu:
             shared.log.debug('Moving base model back to GPU')
             move_model(model_data.sd_model, devices.device)
+        set_diffuser_options(sd_model, vae, op) # offloading should enabled after all
     except Exception as e:
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
@@ -1262,7 +1263,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__}")
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} fn={sys._getframe().f_back.f_code.co_name}")
     pipe = new_pipe
     return pipe
 
