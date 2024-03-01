@@ -2,6 +2,7 @@ import os
 import inspect
 from modules import shared
 from modules import sd_samplers_common
+from modules.tcd import TCDScheduler
 
 
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -50,6 +51,7 @@ config = {
     'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0 },
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False },
     'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace'},
+    'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
 }
 
 samplers_data_diffusers = [
@@ -70,6 +72,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
 ]
 
 try: # diffusers==0.27.0
@@ -80,6 +83,7 @@ try: # diffusers==0.27.0
     samplers_data_diffusers.append(sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}))
 except Exception:
     pass
+
 
 class DiffusionSampler:
     def __init__(self, name, constructor, model, **kwargs):

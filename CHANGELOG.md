@@ -5,12 +5,12 @@
 - EDM samplers for Playground require `diffusers==0.27.0`
 - StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
 
-## Update for 2024-02-29
+## Update for 2024-03-01
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
   - download using networks -> reference
-  - set sampler to *DPM++ 2M EDM* or *Euler EDM* (EDM are new family of samplers)
+  - set sampler to *DPM++ 2M EDM* or *Euler EDM*
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
   - another very fast & light sd-xl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
@@ -26,6 +26,13 @@
   - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
   - update ui section to reflect changes
   - *note*: behavior using backend:original is unchanged for backwards compatibilty
+- **Samplers**
+  - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
+    new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
+    for best results, use with TCD LoRA: <https://huggingface.co/h1t/TCD-SDXL-LoRA>
+  - *DPM++ 2M EDM* and *Euler EDM*  
+    EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
+    Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
@@ -45,6 +52,7 @@
   - fix sdp memory attention in backend original
   - fix autodetect sd21 models
   - fix api info endpoint
+  - fix sampler eta in xyz grid, thanks @AI-Casanova
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 

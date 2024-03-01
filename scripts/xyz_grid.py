@@ -246,7 +246,7 @@ axis_options = [
     AxisOption("[Sampler] Sigma tmax", float, apply_field("s_tmax")),
     AxisOption("[Sampler] Sigma Churn", float, apply_field("s_churn")),
     AxisOption("[Sampler] Sigma noise", float, apply_field("s_noise")),
-    AxisOption("[Sampler] ETA", float, apply_field("eta")),
+    AxisOption("[Sampler] ETA", float, apply_setting("scheduler_eta")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
     AxisOption("[Second pass] Upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
     AxisOption("[Second pass] Sampler", str, apply_hr_sampler_name, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),

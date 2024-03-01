@@ -16,6 +16,7 @@ exclude = [
   "modules/control/units/*_pipe.py",
   "modules/pipelines/*.py",
   "modules/xadapter/*.py",
+  "modules/tcd/*.py",
 ]
 [tool.ruff.lint]
 select = [
