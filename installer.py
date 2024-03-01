@@ -479,7 +479,6 @@ def check_torch():
             log.debug(f'ROCm hipconfig failed: {e}')
             rocm_ver = None
         if args.use_zluda:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
             log.warning("ZLUDA support: experimental")
             zluda_need_dll_patch = is_windows and not installed('torch')
             zluda_path = find_zluda()
@@ -493,15 +492,24 @@ def check_torch():
                     import tarfile
                     archive_type = tarfile.TarFile
                     zluda_url = 'https://github.com/vosen/ZLUDA/releases/download/v3/zluda-3-linux.tar.gz'
-                urllib.request.urlretrieve(zluda_url, '_zluda')
-                with archive_type('_zluda', 'r') as f:
-                    f.extractall('.zluda')
-                zluda_path = os.path.abspath('./.zluda')
-                os.remove('_zluda')
-            log.debug(f'Found ZLUDA in {zluda_path}')
-            paths = os.environ.get('PATH', '.')
-            if zluda_path not in paths:
-                os.environ['PATH'] = paths + ';' + zluda_path
+                try:
+                    urllib.request.urlretrieve(zluda_url, '_zluda')
+                    with archive_type('_zluda', 'r') as f:
+                        f.extractall('.zluda')
+                    zluda_path = os.path.abspath('./.zluda')
+                    os.remove('_zluda')
+                except Exception as e:
+                    log.warning(f'Failed to install ZLUDA: {e}')
+            if os.path.exists(os.path.join(zluda_path, 'nvcuda.dll')):
+                log.info(f'Using ZLUDA in {zluda_path}')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                paths = os.environ.get('PATH', '.')
+                if zluda_path not in paths:
+                    os.environ['PATH'] = paths + ';' + zluda_path
+            else:
+                log.info('Using CPU-only torch')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+                zluda_need_dll_patch = False
         elif is_windows: # TODO TBD after ROCm for Windows is released
             log.warning("HIP SDK is detected, but no Torch release for Windows available")
             log.info("For ZLUDA support specify '--use-zluda'")
