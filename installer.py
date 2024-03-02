@@ -425,9 +425,12 @@ def check_torch():
         log.info('nVidia CUDA toolkit detected: nvidia-smi present')
         if not args.use_xformers:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
+            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu121')
         else:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
-        xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
+            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu118')
+        if opts.get('cross_attention_optimization', '') != 'xFormers':
+            xformers_package = 'none'
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
     elif is_rocm_available():
         is_windows = platform.system() == 'Windows'
@@ -629,8 +632,6 @@ def check_torch():
             install(f'--no-deps {xformers_package}', ignore=True)
             import torch
             import xformers
-            if torch.__version__ != '2.0.1+cu118' and xformers.__version__ in ['0.0.22', '0.0.21', '0.0.20']:
-                log.warning(f'Likely incompatible torch with: xformers=={xformers.__version__} installed: torch=={torch.__version__} required: torch==2.1.0+cu118 - build xformers manually or downgrade torch')
         elif not args.experimental and not args.use_xformers:
             uninstall('xformers')
     except Exception as e:
