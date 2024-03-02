@@ -998,9 +998,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 if model_type.startswith('Stable Diffusion'):
                     if shared.opts.diffusers_force_zeros:
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
-                    if shared.opts.diffusers_aesthetics_score:
-                        diffusers_load_config['requires_aesthetics_score'] = shared.opts.diffusers_aesthetics_score
-                    # diffusers_load_config['config_files'] = get_load_config(checkpoint_info.path.lower())
                     diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type)
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
@@ -1263,7 +1260,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} fn={sys._getframe().f_back.f_code.co_name}")
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 

@@ -49,17 +49,21 @@
 - **Internal**
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
+- **Refiner** validated workflows:
+  - Fully functional: SD15 + SD15, SDXL + SDXL, SDXL + SDXL-R
+  - Functional, but result is not as good: SD15 + SDXL, SDXL + SD15, SD15 + SDXL-R
 - **Fixes**
-  - improve model cpu offload compatibility
-  - improve model sequential offload compatibility
-  - improve bfloat16 compatibility
-  - improve xformers installer to match cuda version and install triton
+  - improve *model cpu offload* compatibility
+  - improve *model sequential offload* compatibility
+  - improve *bfloat16* compatibility
+  - improve *xformers* installer to match cuda version and install triton
   - fix extra networks refresh
-  - fix sdp memory attention in backend original
+  - fix *sdp memory attention* in backend original
   - fix autodetect sd21 models
   - fix api info endpoint
-  - fix sampler eta in xyz grid, thanks @AI-Casanova
-  - use diffusers lora load override for lcm/tcd/turbo loras
+  - fix *sampler eta* in xyz grid, thanks @AI-Casanova
+  - fix *requires_aesthetics_score* errors
+  - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
