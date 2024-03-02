@@ -14,7 +14,6 @@ exclude = [
   "modules/control/proc/leres/",
   "modules/control/units/*_model.py",
   "modules/control/units/*_pipe.py",
-  "modules/pipelines/*.py",
   "modules/xadapter/*.py",
   "modules/tcd/*.py",
 ]
