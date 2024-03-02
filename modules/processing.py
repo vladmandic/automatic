@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
-from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img # pylint: disable=unused-import
+from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
 
 

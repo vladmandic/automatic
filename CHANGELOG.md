@@ -5,7 +5,7 @@
 - EDM samplers for Playground require `diffusers==0.27.0`
 - StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
 
-## Update for 2024-03-01
+## Update for 2024-03-02
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -299,7 +299,7 @@ Further details:
     - full implementation for *SD15* and *SD-XL*, to use simply select from *Scripts*  
       **Base** (93MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-H-14* (2.5GB) as image encoder  
       **Plus** (150MB) uses *InsightFace* to generate face embeds and *CLIP-ViT-H-14-laion2B* (3.8GB) as image encoder  
-      **SXDL** (1022MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-bigG-14* (3.7GB) as image encoder  
+      **SDXL** (1022MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-bigG-14* (3.7GB) as image encoder  
   - [FaceSwap](https://github.com/deepinsight/insightface/blob/master/examples/in_swapper/README.md)  
     - face swap performs face swapping at the end of generation  
     - based on InsightFace in-swapper  
@@ -316,7 +316,7 @@ Further details:
 - [IPAdapter](https://huggingface.co/h94/IP-Adapter)  
   - additional models for *SD15* and *SD-XL*, to use simply select from *Scripts*:  
     **SD15**: Base, Base ViT-G, Light, Plus, Plus Face, Full Face  
-    **SDXL**: Base SXDL, Base ViT-H SXDL, Plus ViT-H SXDL, Plus Face ViT-H SXDL  
+    **SDXL**: Base SDXL, Base ViT-H SDXL, Plus ViT-H SDXL, Plus Face ViT-H SDXL  
   - enable use via api, thanks @trojaner  
 - [Segmind SegMoE](https://github.com/segmind/segmoe)  
   - initial support for reference models  

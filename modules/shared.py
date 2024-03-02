@@ -68,6 +68,7 @@ restricted_opts = {
     "outdir_txt2img_samples",
     "outdir_img2img_samples",
     "outdir_extras_samples",
+    "outdir_control_samples",
     "outdir_grids",
     "outdir_txt2img_grids",
     "outdir_save",

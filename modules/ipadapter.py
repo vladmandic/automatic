@@ -23,10 +23,10 @@ ADAPTERS = {
     'Plus': 'ip-adapter-plus_sd15.safetensors',
     'Plus Face': 'ip-adapter-plus-face_sd15.safetensors',
     'Full Face': 'ip-adapter-full-face_sd15.safetensors',
-    'Base SXDL': 'ip-adapter_sdxl.safetensors',
-    'Base ViT-H SXDL': 'ip-adapter_sdxl_vit-h.safetensors',
-    'Plus ViT-H SXDL': 'ip-adapter-plus_sdxl_vit-h.safetensors',
-    'Plus Face ViT-H SXDL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
+    'Base SDXL': 'ip-adapter_sdxl.safetensors',
+    'Base ViT-H SDXL': 'ip-adapter_sdxl_vit-h.safetensors',
+    'Plus ViT-H SDXL': 'ip-adapter-plus_sdxl_vit-h.safetensors',
+    'Plus Face ViT-H SDXL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
 }
 
 

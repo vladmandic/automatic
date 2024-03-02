@@ -49,7 +49,7 @@ def info(args): # pylint: disable=redefined-outer-name
     models = get('/sdapi/v1/preprocessors')
     log.info(f'models: {models}')
     req = {
-        'model': 'Canny',
+        'model': args.model or 'Canny',
         'image': base64.b64encode(content).decode(),
         'config': { 'low_threshold': 50 },
     }
@@ -59,6 +59,9 @@ def info(args): # pylint: disable=redefined-outer-name
         b64 = data['image'].split(',',1)[0]
         image = Image.open(io.BytesIO(base64.b64decode(b64)))
         log.info(f'received image: size={image.size} time={t1-t0:.2f}')
+        if args.output:
+            image.save(args.output)
+            log.info(f'saved image: fn={args.output}')
     else:
         log.info(f'received: {data} time={t1-t0:.2f}')
 
@@ -66,6 +69,8 @@ def info(args): # pylint: disable=redefined-outer-name
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'simple-info')
     parser.add_argument('--input', required=True, help='input image')
+    parser.add_argument('--model', required=True, help='preprocessing model')
+    parser.add_argument('--output', required=False, help='output image')
     args = parser.parse_args()
     log.info(f'info: {args}')
     info(args)
