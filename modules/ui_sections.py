@@ -74,6 +74,8 @@ def create_batch_inputs(tab):
         with gr.Row(elem_id=f"{tab}_row_batch"):
             batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id=f"{tab}_batch_count")
             batch_size = gr.Slider(minimum=1, maximum=32, step=1, label='Batch size', value=1, elem_id=f"{tab}_batch_size")
+            batch_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_batch_switch_btn", label="Switch dims")
+            batch_switch_btn.click(lambda w, h: (h, w), inputs=[batch_count, batch_size], outputs=[batch_count, batch_size], show_progress=False)
     return batch_count, batch_size
 
 
