@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -73,6 +73,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if shared.state.interrupted or shared.state.skipped:
                     raise AssertionError('Interrupted...')
                 time.sleep(0.1)
+        if hasattr(p, "extra_network_data"):
+            if shared.opts.lora_force_diffusers:
+                shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
+            else:
+                functional = shared.opts.lora_functional
+                shared.opts.lora_functional = True
+                extra_networks.activate(p, p.extra_network_data, step=step)
+                shared.opts.lora_functional = functional
         if latents is None:
             return kwargs
         elif shared.opts.nan_skip:
