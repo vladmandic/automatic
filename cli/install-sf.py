@@ -3,7 +3,7 @@ import os
 import re
 import sys
 
-torch_supported = ['211', '212']
+torch_supported = ['211', '212','220','221']
 cuda_supported = ['cu118', 'cu121']
 python_supported = ['39', '310', '311']
 repo_url = 'https://github.com/chengzeyi/stable-fast'
