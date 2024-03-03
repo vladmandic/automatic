@@ -30,7 +30,7 @@ def create_ui():
                     extras_batch_input_dir = gr.Textbox(label="Input directory", **shared.hide_dirs, placeholder="A directory on the same machine where the server is running.", elem_id="extras_batch_input_dir")
                     extras_batch_output_dir = gr.Textbox(label="Output directory", **shared.hide_dirs, placeholder="Leave blank to save images to the default path.", elem_id="extras_batch_output_dir")
                     show_extras_results = gr.Checkbox(label='Show result images', value=True, elem_id="extras_show_extras_results")
-            with gr.Row():
+            with gr.Row(elem_id="copy_buttons_extras"):
                 buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "inpaint", "control"])
             with gr.Row():
                 save_output = gr.Checkbox(label='Save output', value=True, elem_id="extras_save_output")
