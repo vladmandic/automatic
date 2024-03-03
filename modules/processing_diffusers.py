@@ -413,6 +413,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
+        sd_models.move_model(shared.sd_model, devices.device)
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
@@ -480,6 +481,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            sd_models.move_model(shared.sd_model, devices.device)
             hires_args = set_pipeline_args(
                 model=shared.sd_model,
                 prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,

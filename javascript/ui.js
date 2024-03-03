@@ -67,6 +67,8 @@ function extract_image_from_gallery(gallery) {
 
 async function setTheme(val, old) {
   if (!old || val === old) return;
+  old = old.replace('modern/', '');
+  val = val.replace('modern/', '');
   const links = Array.from(document.getElementsByTagName('link')).filter((l) => l.href.includes(old));
   for (const link of links) {
     const href = link.href.replace(old, val);

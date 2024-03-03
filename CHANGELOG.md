@@ -5,7 +5,7 @@
 - EDM samplers for Playground require `diffusers==0.27.0`
 - StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
 
-## Update for 2024-03-02
+## Update for 2024-03-03
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -52,6 +52,10 @@
 - **Refiner** validated workflows:
   - Fully functional: SD15 + SD15, SDXL + SDXL, SDXL + SDXL-R
   - Functional, but result is not as good: SD15 + SDXL, SDXL + SD15, SD15 + SDXL-R
+- **UI**
+  - *interrogate* tab is now merged into *process* tab  
+  - *image viewer* now displays image metadata
+  - *themes* improve on-the-fly switching
 - **Fixes**
   - improve *model cpu offload* compatibility
   - improve *model sequential offload* compatibility
