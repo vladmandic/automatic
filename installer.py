@@ -67,6 +67,7 @@ def setup_logging():
             self.formatter = logging.Formatter('{ "asctime":"%(asctime)s", "created":%(created)f, "facility":"%(name)s", "pid":%(process)d, "tid":%(thread)d, "level":"%(levelname)s", "module":"%(module)s", "func":"%(funcName)s", "msg":"%(message)s" }')
 
         def emit(self, record):
+            record.msg = record.msg.replace('"', "'")
             msg = self.format(record)
             # self.buffer.append(json.loads(msg))
             self.buffer.append(msg)

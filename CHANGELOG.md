@@ -56,6 +56,7 @@
   - *interrogate* tab is now merged into *process* tab  
   - *image viewer* now displays image metadata
   - *themes* improve on-the-fly switching
+  - *log monitor* flag server warnings/errors and overall improve display
 - **Fixes**
   - improve *model cpu offload* compatibility
   - improve *model sequential offload* compatibility

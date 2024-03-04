@@ -1,11 +1,18 @@
 @font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
-:root { --left-column: 520px; }
+:root {
+  --left-column: 520px;
+  --color-trace: #666666;
+  --color-debug: #7F7F7F;
+  --color-info: #D4D4D4;
+  --color-warning: #FF9900;
+  --color-error: #BE0000
+}
 a { font-weight: bold; cursor: pointer; }
 h2 { margin-top: 1em !important; font-size: var(--text-xxl) !important; }
 footer { display: none; margin-top: 0 !important;}
 table { overflow-x: auto !important; overflow-y: auto !important; }
-td { border-bottom: none !important; padding: 0.1em 0.5em !important; }
-tr { border-bottom: none !important; padding: 0.1em 0.5em !important; }
+td { border-bottom: none !important; padding: 0 0.5em !important; }
+tr { border-bottom: none !important; padding: 0 0.5em !important; }
 textarea { overflow-y: auto !important; }
 span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
@@ -20,6 +27,9 @@ input[type='color'] { width: 64px; height: 32px; }
 .gap .compact{ padding: 0; gap: 0.2em 0; }
 .hidden { display: none; }
 .tabitem { padding: 0 !important; }
+
+/* color elements */
+
 
 .gradio-dropdown, .block.gradio-slider, .block.gradio-checkbox, .block.gradio-textbox, .block.gradio-radio, .block.gradio-checkboxgroup, .block.gradio-number, .block.gradio-colorpicker { border-width: 0 !important; box-shadow: none !important;}
 .gradio-accordion { padding-top: var(--spacing-md) !important; padding-right: 0 !important; padding-bottom: 0 !important; color: var(--body-text-color); }
@@ -248,7 +258,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #pnginfo_html_info .gradio-html > div { margin: 0.5em; }
 
 /* log monitor */
-.log-monitor { display: none; justify-content: unset !important; overflow: hidden; padding: 0; margin-top: auto; font-family: monospace; font-size: var(--text-xs); }
+.log-monitor { display: none; justify-content: unset !important; overflow: hidden; padding: 0; margin-top: auto; font-family: monospace; font-size: var(--text-xxs); }
 .log-monitor td, .log-monitor th { padding-left: 1em; }
 
 /* changelog */
