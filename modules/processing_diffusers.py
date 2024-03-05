@@ -363,6 +363,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             orig_pipeline = sd_model # processed ONNX pipeline should not be replaced with original pipeline.
         return sd_model
 
+    # sanitize init_images
+    if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
+        del p.init_images
     if len(getattr(p, 'init_images', [])) > 0:
         while len(p.init_images) < len(p.prompts):
             p.init_images.append(p.init_images[-1])

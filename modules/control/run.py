@@ -418,15 +418,15 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             return msg
                     elif unit_type == 'controlnet' and input_type == 1: # Init image same as control
                         p.task_args['control_image'] = p.init_images # switch image and control_image
-                        p.init_images = [p.override or input_image] * len(active_model)
                         p.task_args['strength'] = p.denoising_strength
+                        p.init_images = [p.override or input_image] * len(active_model)
                     elif unit_type == 'controlnet' and input_type == 2: # Separate init image
                         if init_image is None:
                             shared.log.warning('Control: separate init image not provided')
                             init_image = input_image
                         p.task_args['control_image'] = p.init_images # switch image and control_image
-                        p.init_images = [init_image] * len(active_model)
                         p.task_args['strength'] = p.denoising_strength
+                        p.init_images = [init_image] * len(active_model)
 
                     if is_generator:
                         image_txt = f'{processed_image.width}x{processed_image.height}' if processed_image is not None else 'None'
@@ -463,9 +463,10 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
                             if hasattr(p, 'init_images') and p.init_images is not None:
                                 p.task_args['image'] = p.init_images # need to set explicitly for txt2img
+                                del p.init_images
                         if unit_type == 'lite':
                             instance.apply(selected_models, p.init_images, control_conditioning)
-                    if hasattr(p, 'init_images') and p.init_images is None: # delete as its set via task_args
+                    if hasattr(p, 'init_images') and p.init_images is None: # delete empty
                         del p.init_images
 
                     # resize mask

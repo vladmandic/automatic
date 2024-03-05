@@ -746,23 +746,34 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
 
 
 def move_model(model, device=None, force=False):
-    if model is not None:
-        if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
-            if device == devices.device: # force vae back to gpu if not in txt2img mode
-                model.vae.to(device)
-                if hasattr(model.vae, '_hf_hook'):
-                    debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-                    model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-        debug_move(f'Model move: to={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-        if hasattr(model, '_hf_hook'):
-            model._hf_hook.execution_device = device # pylint: disable=protected-access
-        devices.torch_gc()
-        if getattr(model, 'has_accelerate', False) and not force:
-            return
-        try:
-            model.to(device)
-        except Exception as e:
-            shared.log.error(f'Model move: {e}')
+    if model is None or device is None:
+        return
+    if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
+        if device == devices.device: # force vae back to gpu if not in txt2img mode
+            model.vae.to(device)
+            if hasattr(model.vae, '_hf_hook'):
+                debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
+    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    if hasattr(model, "components"): # accelerate patch
+        for name, m in model.components.items():
+            if not hasattr(m, "_hf_hook"): # not accelerate hook
+                return
+            if not isinstance(m, torch.nn.Module) or name in model._exclude_from_cpu_offload: # pylint: disable=protected-access
+                continue
+            for module in m.modules():
+                if (hasattr(module, "_hf_hook") and hasattr(module._hf_hook, "execution_device") and module._hf_hook.execution_device is not None): # pylint: disable=protected-access
+                    try:
+                        module._hf_hook.execution_device = device # pylint: disable=protected-access
+                    except Exception as e:
+                        shared.log.error(f'Model move execution device: device={device} {e}')
+    if getattr(model, 'has_accelerate', False) and not force:
+        return
+    try:
+        model.to(device)
+    except Exception as e:
+        shared.log.error(f'Model move: device={device} {e}')
+    devices.torch_gc()
 
 
 def get_load_config(model_file, model_type):
