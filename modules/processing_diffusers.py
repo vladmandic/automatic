@@ -74,13 +74,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                     raise AssertionError('Interrupted...')
                 time.sleep(0.1)
         if hasattr(p, "extra_network_data"):
-            if shared.opts.lora_force_diffusers:
-                shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
-            else:
-                functional = shared.opts.lora_functional
-                shared.opts.lora_functional = True
-                extra_networks.activate(p, p.extra_network_data, step=step)
-                shared.opts.lora_functional = functional
+            extra_networks.activate(p, p.extra_network_data, step=step)
         if latents is None:
             return kwargs
         elif shared.opts.nan_skip:
