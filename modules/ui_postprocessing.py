@@ -74,16 +74,16 @@ def create_ui():
                         ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
                     with gr.Row(elem_id='interrogate_buttons_batch'):
                         btn_interrogate_batch = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
-                with gr.Tab("Query Image"):
+                with gr.Tab("Visual Query"):
                     from modules import vqa
                     with gr.Row():
                         vqa_image = gr.Image(type='pil', label="Image")
                     with gr.Row():
-                        vqa_question = gr.Textbox(label="Question")
+                        vqa_question = gr.Textbox(label="Question", placeholder="Descirbe the image")
                     with gr.Row():
                         vqa_answer = gr.Textbox(label="Answer", lines=3)
                     with gr.Row(elem_id='interrogate_buttons_query'):
-                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='None', label='VQA Model')
+                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='Moondream 2', label='VQA Model')
                         vqa_submit = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                     vqa_submit.click(vqa.interrogate, inputs=[vqa_question, vqa_image, vqa_model], outputs=[vqa_answer])
 
