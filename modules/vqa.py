@@ -118,7 +118,6 @@ def moondream(question: str, image: Image.Image, repo: str = None):
         question = "Describe the image."
     encoded = model.encode_image(image)
     with devices.inference_context():
-        print('HERE', question)
         response = model.answer_question(encoded, question, processor)
 
     shared.log.debug(f'VQA: response="{response}"')

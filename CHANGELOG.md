@@ -18,8 +18,8 @@
 - **Visual Query** visual query & answer in process tab  
   - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
   - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  
-    (its still 3.7GB in size, so not really tiny)  
-  - additional support for multiple variations of several base models: *GIT, BLIP, ViLT, PIX*
+    *note*: its still 3.7GB in size, so not really tiny  
+  - additional support for multiple variations of several base models: *GIT, BLIP, ViLT, PIX*, sizes range from 0.3 to 1.7GB  
 - **Second Pass / Refine**
   - independent upscale and hires options: run hires without upscale or upscale without hires or both
   - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
