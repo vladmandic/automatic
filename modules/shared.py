@@ -514,8 +514,6 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "image_metadata": OptionInfo(True, "Include metadata"),
     "save_txt": OptionInfo(False, "Create info file per image"),
     "save_log_fn": OptionInfo("", "Update JSON log file per image", component_args=hide_dirs),
-    "image_watermark_enabled": OptionInfo(False, "Include watermark"),
-    "image_watermark": OptionInfo('', "Watermark string"),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
@@ -532,6 +530,12 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_images_before_color_correction": OptionInfo(False, "Save image before color correction"),
     "save_mask": OptionInfo(False, "Save inpainting mask"),
     "save_mask_composite": OptionInfo(False, "Save inpainting masked composite"),
+
+    "image_sep_watermark": OptionInfo("<h2>Watermarking</h2>", "", gr.HTML),
+    "image_watermark_enabled": OptionInfo(False, "Include invisible watermark"),
+    "image_watermark": OptionInfo('', "Invisible watermark string"),
+    "image_watermark_position": OptionInfo('none', 'Image watermark position', gr.Dropdown, {"choices": ["none", "top/left", "top/right", "bottom/left", "bottom/right", "center", "random"]}),
+    "image_watermark_image": OptionInfo('', "Image watermark file"),
 }))
 
 options_templates.update(options_section(('saving-paths', "Image Naming & Paths"), {

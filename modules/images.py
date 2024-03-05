@@ -7,6 +7,7 @@ import json
 import uuid
 import queue
 import string
+import random
 import hashlib
 import datetime
 import threading
@@ -534,9 +535,9 @@ def atomically_save_image():
         try:
             image_format = Image.registered_extensions()[extension]
         except Exception:
-            shared.log.warning(f'Unknown image format: {extension}')
+            shared.log.warning(f'Saving: unknown image format: {extension}')
             image_format = 'JPEG'
-        if shared.opts.image_watermark_enabled:
+        if shared.opts.image_watermark_enabled or (shared.opts.image_watermark_position != 'none' and shared.opts.image_watermark_image != ''):
             image = set_watermark(image, shared.opts.image_watermark)
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
         shared.log.info(f'Saving: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
@@ -547,42 +548,33 @@ def atomically_save_image():
                     file.write(f"{exifinfo}\n")
                 shared.log.info(f'Saving: text="{filename_txt}" len={len(exifinfo)}')
             except Exception as e:
-                shared.log.warning(f'Image description save failed: {filename_txt} {e}')
+                shared.log.warning(f'Saving failed: description={filename_txt} {e}')
         # actual save
         exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
             for k, v in params.pnginfo.items():
                 pnginfo_data.add_text(k, str(v))
-            try:
-                image.save(fn, format=image_format, compress_level=6, pnginfo=pnginfo_data if shared.opts.image_metadata else None)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'compress_level': 6, 'pnginfo': pnginfo_data if shared.opts.image_metadata else None }
         elif image_format == 'JPEG':
             if image.mode == 'RGBA':
-                shared.log.warning('Saving RGBA image as JPEG: Alpha channel will be lost')
+                shared.log.warning('Saving: removing alpha channel')
                 image = image.convert("RGB")
             elif image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("L")
             exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            try:
-                image.save(fn, format=image_format, optimize=True, quality=shared.opts.jpeg_quality, exif=exif_bytes)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None }
         elif image_format == 'WEBP':
             if image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
             exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            try:
-                image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, lossless=shared.opts.webp_lossless, exif=exif_bytes)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None, 'lossless': shared.opts.webp_lossless }
         else:
-            # shared.log.warning(f'Unrecognized image format: {extension} attempting save as {image_format}')
-            try:
-                image.save(fn, format=image_format, quality=shared.opts.jpeg_quality)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'quality': shared.opts.jpeg_quality }
+        try:
+            image.save(fn, format=image_format, **save_args)
+        except Exception as e:
+            shared.log.error(f'Saving failed: file="{fn}" format={image_format} {e}')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -839,24 +831,55 @@ def flatten(img, bgcolor):
 
 
 def set_watermark(image, watermark):
-    from imwatermark import WatermarkEncoder
-    wm_type = 'bytes'
-    wm_method = 'dwtDctSvd'
-    wm_length = 32
-    length = wm_length // 8
-    info = image.info
-    data = np.asarray(image)
-    encoder = WatermarkEncoder()
-    text = f"{watermark:<{length}}"[:length]
-    bytearr = text.encode(encoding='ascii', errors='ignore')
-    try:
-        encoder.set_watermark(wm_type, bytearr)
-        encoded = encoder.encode(data, wm_method)
-        image = Image.fromarray(encoded)
-        image.info = info
-        shared.log.debug(f'Set watermark: {watermark} method={wm_method} bits={wm_length}')
-    except Exception as e:
-        shared.log.warning(f'Set watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
+    if shared.opts.image_watermark_position != 'none': # visible watermark
+        wm_image = None
+        try:
+            wm_image = Image.open(shared.opts.image_watermark_image)
+        except Exception as e:
+            shared.log.warning(f'Set image watermark: fn="{shared.opts.image_watermark_image}" {e}')
+        if wm_image is not None:
+            if shared.opts.image_watermark_position == 'top/left':
+                position = (0, 0)
+            elif shared.opts.image_watermark_position == 'top/right':
+                position = (image.width - wm_image.width, 0)
+            elif shared.opts.image_watermark_position == 'bottom/left':
+                position = (0, image.height - wm_image.height)
+            elif shared.opts.image_watermark_position == 'bottom/right':
+                position = (image.width - wm_image.width, image.height - wm_image.height)
+            elif shared.opts.image_watermark_position == 'center':
+                position = ((image.width - wm_image.width) // 2, (image.height - wm_image.height) // 2)
+            else:
+                position = (random.randint(0, image.width - wm_image.width), random.randint(0, image.height - wm_image.height))
+            try:
+                for x in range(wm_image.width):
+                    for y in range(wm_image.height):
+                        r, g, b, _a = wm_image.getpixel((x, y))
+                        if not (r == 0 and g == 0 and b == 0):
+                            image.putpixel((x+position[0], y+position[1]), (r, g, b))
+                shared.log.debug(f'Set image watermark: fn="{shared.opts.image_watermark_image}" image={wm_image} position={position}')
+            except Exception as e:
+                shared.log.warning(f'Set image watermark: image={wm_image} {e}')
+
+    if shared.opts.image_watermark_enabled: # invisible watermark
+        from imwatermark import WatermarkEncoder
+        wm_type = 'bytes'
+        wm_method = 'dwtDctSvd'
+        wm_length = 32
+        length = wm_length // 8
+        info = image.info
+        data = np.asarray(image)
+        encoder = WatermarkEncoder()
+        text = f"{watermark:<{length}}"[:length]
+        bytearr = text.encode(encoding='ascii', errors='ignore')
+        try:
+            encoder.set_watermark(wm_type, bytearr)
+            encoded = encoder.encode(data, wm_method)
+            image = Image.fromarray(encoded)
+            image.info = info
+            shared.log.debug(f'Set invisible watermark: {watermark} method={wm_method} bits={wm_length}')
+        except Exception as e:
+            shared.log.warning(f'Set invisible watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
+
     return image
 
 

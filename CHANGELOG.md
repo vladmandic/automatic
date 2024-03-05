@@ -60,6 +60,11 @@
   - *image viewer* now displays image metadata
   - *themes* improve on-the-fly switching
   - *log monitor* flag server warnings/errors and overall improve display
+- **Watermarking**
+  - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
+  - See *settings -> image options -> watermarking*  
+  - Invisible watermark: using steganogephy  
+  - Image watermark: overlaid on top of image  
 - **Fixes**
   - improve *model cpu offload* compatibility
   - improve *model sequential offload* compatibility
