@@ -5,7 +5,7 @@
 - EDM samplers for Playground require `diffusers==0.27.0`
 - StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
 
-## Update for 2024-03-03
+## Update for 2024-03-05
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -15,17 +15,20 @@
   - another very fast & light sd-xl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
-- **Image2Video**
-  - new module for creating videos from images  
-  - simply enable from *img2img -> scripts -> image2video*  
-  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
-- **VQA** visual question & answer in interrogate  
-  - with support for multiple variations of base models: *GIT, BLIP, ViLT, PIX*
+- **Visual Query** visual query & answer in process tab  
+  - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
+  - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  
+    (its still 3.7GB in size, so not really tiny)  
+  - additional support for multiple variations of several base models: *GIT, BLIP, ViLT, PIX*
 - **Second Pass / Refine**
   - independent upscale and hires options: run hires without upscale or upscale without hires or both
   - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
   - update ui section to reflect changes
   - *note*: behavior using backend:original is unchanged for backwards compatibilty
+- **Image2Video**
+  - new module for creating videos from images  
+  - simply enable from *img2img -> scripts -> image2video*  
+  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  

@@ -8,7 +8,7 @@ processor = None
 model = None
 loaded: str = None
 MODELS = {
-    "None": None,
+    "Moondream 2": "vikhyatk/moondream2", # 3.7GB
     "GIT TextCaps Base": "microsoft/git-base-textcaps", # 0.7GB
     "GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB
     "GIT VQA Large": "microsoft/git-large-vqav2", # 1.6GB
@@ -40,7 +40,6 @@ def git(question: str, image: Image.Image, repo: str = None):
         generated_ids = model.generate(**git_dict)
     response = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-    model.to(devices.cpu)
     shared.log.debug(f'VQA: response={response}')
     return response
 
@@ -80,7 +79,6 @@ def vilt(question: str, image: Image.Image, repo: str = None):
     idx = logits.argmax(-1).item()
     response = model.config.id2label[idx]
 
-    model.to(devices.cpu)
     shared.log.debug(f'VQA: response={response}')
     return response
 
@@ -102,25 +100,51 @@ def pix(question: str, image: Image.Image, repo: str = None):
         outputs = model.generate(**inputs)
     response = processor.decode(outputs[0], skip_special_tokens=True)
 
-    model.to(devices.cpu)
     shared.log.debug(f'VQA: response={response}')
+    return response
+
+
+def moondream(question: str, image: Image.Image, repo: str = None):
+    global processor, model, loaded # pylint: disable=global-statement
+    if model is None or loaded != repo:
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True) # revision = "2024-03-05"
+        processor = transformers.AutoTokenizer.from_pretrained(repo) # revision = "2024-03-05"
+        loaded = repo
+        model.eval()
+    model.to(devices.device, devices.dtype)
+    shared.log.debug(f'VQA: class={model.__class__.__name__} processor={processor.__class__} model={repo}')
+
+    if len(question) < 2:
+        question = "Describe the image."
+    encoded = model.encode_image(image)
+    with devices.inference_context():
+        print('HERE', question)
+        response = model.answer_question(encoded, question, processor)
+
+    shared.log.debug(f'VQA: response="{response}"')
     return response
 
 
 def interrogate(vqa_question, vqa_image, vqa_model):
     vqa_model = MODELS.get(vqa_model, None)
-    shared.log.debug(f'VQA: model="{vqa_model}" question={vqa_question} image={vqa_image}')
+    shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
     if vqa_image is None:
-        return 'no image provided'
+        answer = 'no image provided'
     if vqa_model is None:
-        return 'no model selected'
+        answer = 'no model selected'
     if 'git' in vqa_model.lower():
-        return git(vqa_question, vqa_image, vqa_model)
+        answer = git(vqa_question, vqa_image, vqa_model)
     if 'vilt' in vqa_model.lower():
-        return vilt(vqa_question, vqa_image, vqa_model)
+        answer = vilt(vqa_question, vqa_image, vqa_model)
     if 'blip' in vqa_model.lower():
-        return blip(vqa_question, vqa_image, vqa_model)
+        answer = blip(vqa_question, vqa_image, vqa_model)
     if 'pix' in vqa_model.lower():
-        return pix(vqa_question, vqa_image, vqa_model)
+        answer = pix(vqa_question, vqa_image, vqa_model)
+    if 'moondream2' in vqa_model.lower():
+        answer = moondream(vqa_question, vqa_image, vqa_model)
     else:
-        return 'unknown model'
+        answer = 'unknown model'
+    if model is not None:
+        model.to(devices.cpu)
+    devices.torch_gc()
+    return answer
