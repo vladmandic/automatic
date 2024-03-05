@@ -39,20 +39,20 @@ def create_ui():
                         image = gr.Image(type='pil', label="Image")
                     with gr.Row():
                         prompt = gr.Textbox(label="Prompt", lines=3)
-                    with gr.Row():
-                        medium = gr.Label(label="Medium", num_top_classes=5)
-                        artist = gr.Label(label="Artist", num_top_classes=5)
-                        movement = gr.Label(label="Movement", num_top_classes=5)
-                        trending = gr.Label(label="Trending", num_top_classes=5)
-                        flavor = gr.Label(label="Flavor", num_top_classes=5)
+                    with gr.Row(elem_id="interrogate_labels"):
+                        medium = gr.Label(elem_id="interrogate_label_medium", label="Medium", num_top_classes=5)
+                        artist = gr.Label(elem_id="interrogate_label_artist", label="Artist", num_top_classes=5)
+                        movement = gr.Label(elem_id="interrogate_label_movement", label="Movement", num_top_classes=5)
+                        trending = gr.Label(elem_id="interrogate_label_trending", label="Trending", num_top_classes=5)
+                        flavor = gr.Label(elem_id="interrogate_label_flavor", label="Flavor", num_top_classes=5)
                     with gr.Row():
                         clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
                         ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
                         mode = gr.Radio(['best', 'fast', 'classic', 'caption', 'negative'], label='Mode', value='best')
-                    with gr.Row():
-                        btn_interrogate_img = gr.Button("Interrogate", variant='primary')
-                        btn_analyze_img = gr.Button("Analyze", variant='primary')
-                        btn_unload = gr.Button("Unload")
+                    with gr.Row(elem_id='interrogate_buttons_image'):
+                        btn_interrogate_img = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
+                        btn_analyze_img = gr.Button("Analyze", elem_id="interrogate_btn_analyze", variant='primary')
+                        btn_unload = gr.Button("Unload", elem_id="interrogate_btn_unload")
                     with gr.Row(elem_id='copy_buttons_interrogate'):
                         buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "extras", "control"])
                     for tabname, button in buttons.items():
@@ -72,19 +72,19 @@ def create_ui():
                     with gr.Row():
                         clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
                         ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
-                    with gr.Row():
-                        btn_interrogate_batch = gr.Button("Interrogate", variant='primary')
-                with gr.Tab("Visual Query"):
+                    with gr.Row(elem_id='interrogate_buttons_batch'):
+                        btn_interrogate_batch = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
+                with gr.Tab("Query Image"):
                     from modules import vqa
                     with gr.Row():
                         vqa_image = gr.Image(type='pil', label="Image")
                     with gr.Row():
-                        vqa_question = gr.Textbox(label="Question", placeholder="Descirbe the image")
+                        vqa_question = gr.Textbox(label="Question")
                     with gr.Row():
                         vqa_answer = gr.Textbox(label="Answer", lines=3)
-                    with gr.Row():
-                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='Moondream 2', label='VQA Model')
-                        vqa_submit = gr.Button("Interrogate", variant='primary')
+                    with gr.Row(elem_id='interrogate_buttons_query'):
+                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='None', label='VQA Model')
+                        vqa_submit = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                     vqa_submit.click(vqa.interrogate, inputs=[vqa_question, vqa_image, vqa_model], outputs=[vqa_answer])
 
                 with gr.Row():
