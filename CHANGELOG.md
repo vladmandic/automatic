@@ -12,7 +12,7 @@
   - download using networks -> reference
   - set sampler to *DPM++ 2M EDM* or *Euler EDM*
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
-  - another very fast & light sd-xl model where original unet was compressed and distilled to 54% of original size  
+  - another very fast & light sdxl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
 - **Visual Query** visual query & answer in process tab  
@@ -36,6 +36,16 @@
   - *DPM++ 2M EDM* and *Euler EDM*  
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
+- **UI**
+  - *interrogate* tab is now merged into *process* tab  
+  - *image viewer* now displays image metadata
+  - *themes* improve on-the-fly switching
+  - *log monitor* flag server warnings/errors and overall improve display
+- **Watermarking**
+  - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
+  - See *settings -> image options -> watermarking*  
+  - Invisible watermark: using steganogephy  
+  - Image watermark: overlaid on top of image  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
@@ -55,16 +65,8 @@
 - **Refiner** validated workflows:
   - Fully functional: SD15 + SD15, SDXL + SDXL, SDXL + SDXL-R
   - Functional, but result is not as good: SD15 + SDXL, SDXL + SD15, SD15 + SDXL-R
-- **UI**
-  - *interrogate* tab is now merged into *process* tab  
-  - *image viewer* now displays image metadata
-  - *themes* improve on-the-fly switching
-  - *log monitor* flag server warnings/errors and overall improve display
-- **Watermarking**
-  - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
-  - See *settings -> image options -> watermarking*  
-  - Invisible watermark: using steganogephy  
-  - Image watermark: overlaid on top of image  
+- **SDXL Lightning** models just-work, just makes sure to set CFG Scale to 0  
+    and choose a best-suited sampler, it may not be the one you're used to (e.g. maybe even basic Euler)  
 - **Fixes**
   - improve *model cpu offload* compatibility
   - improve *model sequential offload* compatibility
