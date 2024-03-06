@@ -758,7 +758,7 @@ def move_model(model, device=None, force=False):
     if hasattr(model, "components"): # accelerate patch
         for name, m in model.components.items():
             if not hasattr(m, "_hf_hook"): # not accelerate hook
-                return
+                break
             if not isinstance(m, torch.nn.Module) or name in model._exclude_from_cpu_offload: # pylint: disable=protected-access
                 continue
             for module in m.modules():
