@@ -58,11 +58,15 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
 def ar_change(ar, width, height):
     if ar == 'AR':
         return gr.update(interactive=True), gr.update(interactive=True)
-    (w, h) = [int(x) for x in ar.split(':')]
+    try:
+        (w, h) = [int(x) for x in ar.split(':')]
+    except Exception as e:
+        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
+        return gr.update(interactive=True), gr.update(interactive=True)
     if w > h:
-        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * int(h) / int(w)))
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * h / w))
     elif w < h:
-        return gr.update(interactive=False, value=int(height * int(w) / int(h))), gr.update(interactive=True, value=height)
+        return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
     else:
         return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
 
@@ -70,7 +74,8 @@ def ar_change(ar, width, height):
 def create_resolution_inputs(tab):
     width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id=f"{tab}_width")
     height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id=f"{tab}_height")
-    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=["AR", "1:1", "4:3", "16:9", "16:10", "21:9", "3:4", "9:16", "10:16", "9:21"], value="AR", elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
     for c in [ar_dropdown, width, height]:
         c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
     res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn", label="Switch dims")
@@ -262,7 +267,8 @@ def create_resize_inputs(tab, images, scale_visible=True, mode=None, accordion=T
                                 with gr.Row():
                                     width = gr.Slider(minimum=64, maximum=8192, step=8, label="Width", value=512, elem_id=f"{tab}_width")
                                     height = gr.Slider(minimum=64, maximum=8192, step=8, label="Height", value=512, elem_id=f"{tab}_height")
-                                    ar_dropdown = gr.Dropdown(scale=1, show_label=False, interactive=True, choices=["AR", "1:1", "4:3", "16:9", "16:10", "21:9", "3:4", "9:16", "10:16", "9:21"], value="AR", elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+                                    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+                                    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
                                     for c in [ar_dropdown, width, height]:
                                         c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
                                     res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn")

@@ -22,6 +22,7 @@
   - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
   - currently requires 10GB VRAM, lighter version is in development
 - **Visual Query** visual query & answer in process tab  
+  - go to process -> visual query  
   - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
   - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  
     *note*: its still 3.7GB in size, so not really tiny  
@@ -48,7 +49,8 @@
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **UI**
-  - *aspect-ratio** add selector and lock to width/height control
+  - *aspect-ratio** add selector and lock to width/height control  
+    allowed aspect ration can be configured via *settings -> user interface*  
   - *interrogate* tab is now merged into *process* tab  
   - *image viewer* now displays image metadata
   - *themes* improve on-the-fly switching
