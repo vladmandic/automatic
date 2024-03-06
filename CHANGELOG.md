@@ -2,7 +2,7 @@
 
 ## TODO
 
-- `diffusers==0.27.0`:
+- items that require `diffusers==0.27.0.dev`:
   - EDM samplers for Playground 2.5
   - Stable Cascade
 
@@ -16,6 +16,11 @@
   - another very fast & light sdxl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
+  [Stable Cascade](https://github.com/Stability-AI/StableCascade)
+  - large multi-stage high-quality model
+  - download using networks -> reference
+  - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
+  - currently requires 10GB VRAM, lighter version is in development
 - **Visual Query** visual query & answer in process tab  
   - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
   - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  

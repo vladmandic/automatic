@@ -930,8 +930,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         prior_text_encoder=prior.text_encoder,
                         prior_tokenizer=prior.tokenizer,
                         prior_scheduler=prior.scheduler,
-                        prior_prior_feature_extractor=prior.feature_extractor,
-                        prior_prior_image_encoder=prior.image_encoder)
+                        prior_feature_extractor=prior.feature_extractor,
+                        prior_image_encoder=prior.image_encoder)
                     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
