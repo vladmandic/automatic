@@ -26,7 +26,7 @@ def create_ui():
                     with gr.Row():
                         extras_image = gr.Image(label="Source", source="upload", interactive=True, type="pil", elem_id="extras_image")
                     with gr.Row(elem_id='copy_buttons_process'):
-                        buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "inpaint", "control"])
+                        copy_process_buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "inpaint", "control"])
                 with gr.Tab('Process Batch', id="batch_process", elem_id="extras_batch_process_tab") as tab_batch:
                     image_batch = gr.Files(label="Batch process", interactive=True, elem_id="extras_image_batch")
                 with gr.Tab('Process Folder', id="batch_from_directory", elem_id="extras_batch_directory_tab") as tab_batch_dir:
@@ -54,9 +54,7 @@ def create_ui():
                         btn_analyze_img = gr.Button("Analyze", elem_id="interrogate_btn_analyze", variant='primary')
                         btn_unload = gr.Button("Unload", elem_id="interrogate_btn_unload")
                     with gr.Row(elem_id='copy_buttons_interrogate'):
-                        buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "extras", "control"])
-                    for tabname, button in buttons.items():
-                        parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(paste_button=button, tabname=tabname, source_text_component=prompt, source_image_component=image,))
+                        copy_interrogate_buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "extras", "control"])
                     btn_interrogate_img.click(interrogate.interrogate_image, inputs=[image, clip_model, mode], outputs=prompt)
                     btn_analyze_img.click(interrogate.analyze_image, inputs=[image, clip_model], outputs=[medium, artist, movement, trending, flavor])
                     btn_unload.click(interrogate.unload_clip_model)
@@ -103,8 +101,11 @@ def create_ui():
             gr.HTML('File metadata')
             exif_info = gr.HTML(elem_id="pnginfo_html_info")
             gen_info = gr.Text(elem_id="pnginfo_gen_info", visible=False)
-        for tabname, button in buttons.items():
+        for tabname, button in copy_process_buttons.items():
             parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(paste_button=button, tabname=tabname, source_text_component=gen_info, source_image_component=extras_image))
+        for tabname, button in copy_interrogate_buttons.items():
+            parameters_copypaste.register_paste_params_button(parameters_copypaste.ParamBinding(paste_button=button, tabname=tabname, source_text_component=prompt, source_image_component=image,))
+
 
     tab_single.select(fn=lambda: 0, inputs=[], outputs=[tab_index])
     tab_batch.select(fn=lambda: 1, inputs=[], outputs=[tab_index])

@@ -254,6 +254,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
                 if upscaler is not None:
                     im = latent(im, w, h, upscaler)
                 else:
+                    upscaler = upscalers[0]
                     shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={upscaler.name}")
         if im.width != w or im.height != h: # probably downsample after upscaler created larger image
             im = im.resize((w, h), resample=Image.Resampling.LANCZOS)

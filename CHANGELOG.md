@@ -2,10 +2,11 @@
 
 ## TODO
 
-- EDM samplers for Playground require `diffusers==0.27.0`
-- StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
+- `diffusers==0.27.0`:
+  - EDM samplers for Playground 2.5
+  - Stable Cascade
 
-## Update for 2024-03-05
+## Update for 2024-03-06
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -50,6 +51,7 @@
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
   - new setting in image options: *include mask in output*
+  - improved params parsing from from prompt string and styles
   - default theme updates and additional built-in theme *black-gray*
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - support models with their own YAML model config files

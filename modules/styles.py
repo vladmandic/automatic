@@ -47,10 +47,14 @@ def apply_styles_to_extra(p, style: Style):
         'sampler': 'sampler_name',
     }
     from modules.generation_parameters_copypaste import parse_generation_parameters
-    extra = parse_generation_parameters(style.extra)
+    s = style.extra
+    s = 'Negative prompt: ' + s if 'Negative prompt:' not in s else s
+    s = 'Prompt: ' + s if 'Prompt:' not in s else s
+    extra = parse_generation_parameters(s)
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []
+    skipped = []
     for k, v in extra.items():
         k = k.lower()
         k = k.replace(' ', '_')
@@ -62,7 +66,9 @@ def apply_styles_to_extra(p, style: Style):
                 v = type(orig)(v)
             setattr(p, k, v)
             fields.append(f'{k}={v}')
-    log.debug(f'Applying style: name="{style.name}" extra={fields}')
+        else:
+            skipped.append(f'{k}={v}')
+    log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped}')
 
 
 class StyleDatabase:
