@@ -918,7 +918,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     diffusers_load_config.pop("variant", None)
                     decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/44", **diffusers_load_config)
                     shared.log.debug(f'StableCascade decoder: scale={decoder.latent_dim_scale}')
-                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/2", **diffusers_load_config)
                     shared.log.debug(f'StableCascade prior: scale={prior.resolution_multiple}')
                     sd_model = diffusers.StableCascadeCombinedPipeline(
                         tokenizer=decoder.tokenizer,

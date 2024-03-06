@@ -243,13 +243,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args["prior_guidance_scale"] = p.cfg_scale
             if 'decoder_guidance_scale' in possible:
                 args["decoder_guidance_scale"] = p.image_cfg_scale
-            # TODO Stable Cascade callbacks are currently broken in combined pipeline so preview will not get triggered
-            if 'prior_callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback' in possible:
-                possible.remove('callback')
 
         # set callbacks
         if 'callback_steps' in possible:
