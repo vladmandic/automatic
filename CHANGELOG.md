@@ -35,6 +35,11 @@
   - new module for creating videos from images  
   - simply enable from *img2img -> scripts -> image2video*  
   - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- **Composable LoRA**, thanks @AI-Casanova
+  - control lora strength for each step
+    for example: `<xxx:0.1@0,0.9@1>` means strength=0.1 for step at 0% and intepolate towards strength=0.9 for step at 100%
+  - set sampler to *Composable LoRA*  
+  - *note*: this is a very experimental feature and may not work as expected
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
@@ -43,6 +48,7 @@
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **UI**
+  - *aspect-ratio** add selector and lock to width/height control
   - *interrogate* tab is now merged into *process* tab  
   - *image viewer* now displays image metadata
   - *themes* improve on-the-fly switching

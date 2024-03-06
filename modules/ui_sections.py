@@ -55,6 +55,29 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 
+def ar_change(ar, width, height):
+    if ar == 'AR':
+        return gr.update(interactive=True), gr.update(interactive=True)
+    (w, h) = [int(x) for x in ar.split(':')]
+    if w > h:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * int(h) / int(w)))
+    elif w < h:
+        return gr.update(interactive=False, value=int(height * int(w) / int(h))), gr.update(interactive=True, value=height)
+    else:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
+
+
+def create_resolution_inputs(tab):
+    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id=f"{tab}_width")
+    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=["AR", "1:1", "4:3", "16:9", "16:10", "21:9", "3:4", "9:16", "10:16", "9:21"], value="AR", elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+    for c in [ar_dropdown, width, height]:
+        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
+    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn", label="Switch dims")
+    res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
+    return width, height
+
+
 def create_interrogate_buttons(tab):
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])
@@ -239,6 +262,9 @@ def create_resize_inputs(tab, images, scale_visible=True, mode=None, accordion=T
                                 with gr.Row():
                                     width = gr.Slider(minimum=64, maximum=8192, step=8, label="Width", value=512, elem_id=f"{tab}_width")
                                     height = gr.Slider(minimum=64, maximum=8192, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+                                    ar_dropdown = gr.Dropdown(scale=1, show_label=False, interactive=True, choices=["AR", "1:1", "4:3", "16:9", "16:10", "21:9", "3:4", "9:16", "10:16", "9:21"], value="AR", elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+                                    for c in [ar_dropdown, width, height]:
+                                        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
                                     res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn")
                                     res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
                                     detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_detect_image_size_btn")

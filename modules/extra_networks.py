@@ -67,7 +67,8 @@ def is_stepwise(en_obj):
     for en in en_obj:
         all_args.extend(en.positional[1:])
         all_args.extend(en.named.values())
-    return any([len(str(x).split("@")) > 1 for x in all_args])
+    return any([len(str(x).split("@")) > 1 for x in all_args]) # noqa C419
+
 
 def activate(p, extra_network_data, step=0):
     """call activate for extra networks in extra_network_data in specified order, then call activate for all remaining registered networks with an empty argument list"""
@@ -101,7 +102,7 @@ def activate(p, extra_network_data, step=0):
             errors.display(e, f"activating extra network: name={extra_network_name}")
     if stepwise:
         p.extra_network_data = extra_network_data
-        shared.opts.lora_functional = functional
+        shared.opts.data['lora_functional'] = functional
 
 
 def deactivate(p, extra_network_data):

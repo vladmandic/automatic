@@ -1,7 +1,7 @@
 import gradio as gr
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_symbols, ui_sections, generation_parameters_copypaste
-from modules.ui_components import ToolButton
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste
+from modules.ui_components import ToolButton # pylint: disable=unused-import
 
 
 def calc_resolution_hires(width, height, hr_scale, hr_resize_x, hr_resize_y, hr_upscaler):
@@ -35,10 +35,7 @@ def create_ui():
             with gr.Column(variant='compact', elem_id="txt2img_settings"):
 
                 with gr.Row():
-                    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id="txt2img_width")
-                    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id="txt2img_height")
-                    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id="txt2img_res_switch_btn", label="Switch dims")
-                    res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
+                    width, height = ui_sections.create_resolution_inputs('txt2img')
 
                 with gr.Group(elem_classes="settings-accordion"):
 
