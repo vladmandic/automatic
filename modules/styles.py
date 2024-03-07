@@ -5,6 +5,7 @@ import os
 import csv
 import json
 import time
+import random
 from installer import log
 from modules import files_cache
 
@@ -38,6 +39,22 @@ def merge_prompts(style_prompt: str, prompt: str) -> str:
 def apply_styles_to_prompt(prompt, styles):
     for style in styles:
         prompt = merge_prompts(style, prompt)
+    return prompt
+
+
+def apply_wildcards_to_prompt(prompt, all_wildcards):
+    replaced = {}
+    for style_wildcards in all_wildcards:
+        wildcards = [x.strip() for x in style_wildcards.split(";") if len(x.strip()) > 0]
+        for wildcard in wildcards:
+            what, words = wildcard.split("=", 1)
+            words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
+            word = random.choice(words)
+            print('HERE', what, words, word)
+            prompt = prompt.replace(what, word)
+            replaced[what] = word
+    if replaced:
+        log.debug(f'Applying style wildcards: {replaced}')
     return prompt
 
 
@@ -179,13 +196,17 @@ class StyleDatabase:
         if styles is None or not isinstance(styles, list):
             log.error(f'Invalid styles: {styles}')
             return prompt
-        return apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
+        prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
+        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        return prompt
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
             log.error(f'Invalid styles: {styles}')
             return prompt
-        return apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
+        prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
+        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        return prompt
 
     def apply_styles_to_extra(self, p):
         if p.styles is None or not isinstance(p.styles, list):
