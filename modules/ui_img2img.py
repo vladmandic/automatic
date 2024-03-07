@@ -58,10 +58,10 @@ def create_ui():
                     with gr.Row(variant="compact", elem_id=f"img2img_copy_to_{tab_name}"):
                         for title, name in zip(['➠ Image', '➠ Sketch', '➠ Inpaint', '➠ Composite'], ['img2img', 'sketch', 'inpaint', 'inpaint_sketch']):
                             if name == tab_name:
-                                gr.Button(title, interactive=False)
+                                gr.Button(title, elem_id=f'copy_to_{name}', interactive=False)
                                 copy_image_destinations[name] = elem
                                 continue
-                            button = gr.Button(title)
+                            button = gr.Button(title, elem_id=f'copy_to_{name}')
                             copy_image_buttons.append((button, name, elem))
 
                 with gr.Tabs(elem_id="mode_img2img"):
