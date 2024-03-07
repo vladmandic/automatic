@@ -49,11 +49,12 @@
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **Styles**
-  - new styles editor: networs -> styles -> edit
+  - new styles editor: *networks -> styles -> edit*
   - styles can apply generate parameters, for example to have a style that enables and configures hires:  
     parameters=`enable_hr: True, hr_scale: 2, hr_upscaler: Latent Bilinear antialias, hr_sampler_name: DEIS, hr_second_pass_steps: 20, denoising_strength: 0.5`
   - styles can apply wildcards to prompts, for example:  
     wildcards=`movie=mad max, dune, star wars, star trek; intricate=realistic, color sketch, pencil sketch, intricate`
+  - as usual, you can apply any number of styles so you can choose which settings are applied and in which order and which wildcards are used
 - **UI**
   - *aspect-ratio** add selector and lock to width/height control  
     allowed aspect ration can be configured via *settings -> user interface*  
