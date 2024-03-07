@@ -50,7 +50,6 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
             what, words = wildcard.split("=", 1)
             words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
             word = random.choice(words)
-            print('HERE', what, words, word)
             prompt = prompt.replace(what, word)
             replaced[what] = word
     if replaced:
