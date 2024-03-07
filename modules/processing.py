@@ -163,6 +163,11 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
 
+        if p.width is not None:
+            p.width = 8 * int(p.width / 8)
+        if p.height is not None:
+            p.height = 8 * int(p.height / 8)
+
         script_callbacks.before_process_callback(p)
 
         if shared.cmd_opts.profile:
