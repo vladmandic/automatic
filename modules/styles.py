@@ -10,12 +10,13 @@ from modules import files_cache
 
 
 class Style():
-    def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", filename: str = "", preview: str = "", mtime: float = 0):
+    def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", wildcards: str = "", filename: str = "", preview: str = "", mtime: float = 0):
         self.name = name
         self.description = desc
         self.prompt = prompt
         self.negative_prompt = negative_prompt
         self.extra = extra
+        self.wildcards = wildcards
         self.filename = filename
         self.preview = preview
         self.mtime = mtime
@@ -121,6 +122,7 @@ class StyleDatabase:
                         prompt=style.get("prompt", ""),
                         negative_prompt=style.get("negative", ""),
                         extra=style.get("extra", ""),
+                        wildcards=style.get("wildcards", ""),
                         preview=style.get("preview", None),
                         filename=fn,
                         mtime=os.path.getmtime(fn),
@@ -227,7 +229,7 @@ class StyleDatabase:
                     name = row["name"]
                     prompt = row["prompt"] if "prompt" in row else row["text"]
                     negative = row.get("negative_prompt", "") if "negative_prompt" in row else row.get("negative", "")
-                    self.styles[name] = Style(name, desc=name, prompt=prompt, negative_prompt=negative, extra="")
+                    self.styles[name] = Style(name, desc=name, prompt=prompt, negative_prompt=negative)
                     log.debug(f'Migrated style: {self.styles[name].__dict__}')
                     num += 1
                 except Exception:

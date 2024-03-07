@@ -6,7 +6,7 @@
   - EDM samplers for Playground 2.5
   - Stable Cascade
 
-## Update for 2024-03-06
+## Update for 2024-03-07
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -48,6 +48,8 @@
   - *DPM++ 2M EDM* and *Euler EDM*  
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
+- **Styles**
+  - new styles editor: networs -> styles -> edit
 - **UI**
   - *aspect-ratio** add selector and lock to width/height control  
     allowed aspect ration can be configured via *settings -> user interface*  

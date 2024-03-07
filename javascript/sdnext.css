@@ -228,6 +228,8 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-network-cards .card-list { display: flex; margin: 0.3em; padding: 0.3em; background: var(--input-background-fill); cursor: pointer; border-radius: var(--button-large-radius); }
 .extra-network-cards .card-list .tag { color: var(--primary-500); margin-left: 0.8em; }
 .extra-details-close { position: fixed; top: 0.2em; right: 0.2em; z-index: 99; background: var(--button-secondary-background-fill) !important; }
+.extra-details-tabs textarea, .extra-details-tabs .gradio-json { overflow-y: scroll !important; scrollbar-width: unset !important; max-height: 15vh; }
+
 #txt2img_description, #img2img_description, #control_description { max-height: 63px; overflow-y: auto !important; }
 #txt2img_description>label>textarea, #img2img_description>label>textarea, #control_description>label>textarea { font-size: var(--text-xs); height: 6em; }
 
