@@ -27,9 +27,9 @@ def restore_pipeline():
     global pipe, instance # pylint: disable=global-statement
     if instance is not None and hasattr(instance, 'restore'):
         instance.restore()
-    if original_pipeline is not None:
+    if original_pipeline is not None and (original_pipeline.__class__.__name__ != shared.sd_model.__class__.__name__):
+        shared.log.debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__} to={original_pipeline.__class__.__name__}')
         shared.sd_model = original_pipeline
-        shared.log.debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__}')
     pipe = None
     instance = None
     devices.torch_gc()
@@ -44,6 +44,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                 resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
                 resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
                 denoising_strength, batch_count, batch_size,
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps,
+                refiner_start, refiner_prompt, refiner_negative,
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
                 *input_script_args # pylint: disable=unused-argument
         ):
@@ -66,13 +68,15 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         negative_prompt = negative,
         styles = styles,
         steps = steps,
+        n_iter = batch_count,
+        batch_size = batch_size,
         sampler_name = processing.get_sampler_name(sampler_index),
-        hr_sampler_name = processing.get_sampler_name(sampler_index),
         seed = seed,
         subseed = subseed,
         subseed_strength = subseed_strength,
         seed_resize_from_h = seed_resize_from_h,
         seed_resize_from_w = seed_resize_from_w,
+        # advanced
         cfg_scale = cfg_scale,
         clip_skip = clip_skip,
         image_cfg_scale = image_cfg_scale,
@@ -81,29 +85,46 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         full_quality = full_quality,
         restore_faces = restore_faces,
         tiling = tiling,
+        # resize
         resize_mode = resize_mode_before if resize_name_before != 'None' else 0,
         resize_name = resize_name_before,
         scale_by = scale_by_before,
         selected_scale_tab = selected_scale_tab_before,
         denoising_strength = denoising_strength,
-        n_iter = batch_count,
-        batch_size = batch_size,
+        # inpaint
         inpaint_full_res = masking.opts.mask_only,
-        # inpaint_full_res_padding = masking.opts.mask_padding,
         inpainting_mask_invert = 1 if masking.opts.invert else 0,
         inpainting_fill = 1,
+        # hdr
         hdr_mode=hdr_mode, hdr_brightness=hdr_brightness, hdr_color=hdr_color, hdr_sharpen=hdr_sharpen, hdr_clamp=hdr_clamp,
         hdr_boundary=hdr_boundary, hdr_threshold=hdr_threshold, hdr_maximize=hdr_maximize, hdr_max_center=hdr_max_center, hdr_max_boundry=hdr_max_boundry, hdr_color_picker=hdr_color_picker, hdr_tint_ratio=hdr_tint_ratio,
+        # path
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_control_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
     processing.process_init(p)
-
+    # set initial resolution
     if resize_mode_before != 0 or inputs is None or inputs == [None]:
         p.width, p.height = width_before, height_before # pylint: disable=attribute-defined-outside-init
     else:
         del p.width
         del p.height
+    # hires/refine defined outside of main init
+    p.enable_hr = enable_hr
+    p.hr_sampler_name = processing.get_sampler_name(hr_sampler_index)
+    p.hr_denoising_strength = hr_denoising_strength # TODO
+    p.hr_upscaler = hr_upscaler
+    p.hr_force = hr_force
+    p.hr_second_pass_steps = hr_second_pass_steps
+    p.hr_scale = hr_scale
+    p.hr_resize_x = hr_resize_x
+    p.hr_resize_y = hr_resize_y
+    p.refiner_steps = refiner_steps
+    p.refiner_start = refiner_start
+    p.refiner_prompt = refiner_prompt
+    p.refiner_negative = refiner_negative
+    if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
+        p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
 
     t0 = time.time()
     num_units = 0
@@ -451,7 +472,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             p.init_images = [processed_image]
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
                         else:
-                            p.init_hr()
+                            p.init_hr(p.scale_by, p.resize_name)
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
                     elif has_models: # actual control
                         p.is_control = True
@@ -547,6 +568,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     else:
         image_str = [f'{image.width}x{image.height}' for image in output_images]
         image_txt = f'| Images {len(output_images)} | Size {" ".join(image_str)}'
+        p.init_images = output_images # may be used for hires
 
     if video_type != 'None' and isinstance(output_images, list):
         p.do_not_save_grid = True # pylint: disable=attribute-defined-outside-init
@@ -554,7 +576,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
     image_txt += f' | {util.dict2str(p.extra_generation_params)}'
-    # restore_pipeline()
+    restore_pipeline()
     debug(f'Control ready: {image_txt}')
     if is_generator:
         yield (output_images, processed_image, f'Control ready {image_txt}', output_filename)

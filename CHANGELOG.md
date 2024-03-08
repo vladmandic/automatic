@@ -83,6 +83,7 @@
   - add masking api endpoints  
     GET:`/sdapi/v1/masking`, POST:`/sdapi/v1/mask`, sample script:`cli/simple-mask.py`
 - **Internal**
+  - **stable-fast** compatibility with torch 2.2.1  
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
 - **Refiner** validated workflows:

@@ -449,11 +449,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return results
 
     # optional second pass
-    if p.enable_hr and len(getattr(p, 'init_images', [])) == 0:
+    if p.enable_hr:
         p.is_hr_pass = True
-    if p.is_hr_pass:
-        p.init_hr()
+        p.init_hr(p.hr_scale, p.hr_upscaler)
         prev_job = shared.state.job
+
+        # hires runs on original pipeline
+        if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            shared.sd_model.restore_pipeline()
 
         # upscale
         if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
@@ -466,7 +469,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
-        if (latent_upscale is not None or p.hr_force) and p.denoising_strength > 0:
+        if (latent_upscale is not None or p.hr_force) and getattr(p, 'hr_denoising_strength', p.denoising_strength) > 0:
             p.ops.append('hires')
             sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
             if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -480,6 +483,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
             sd_models.move_model(shared.sd_model, devices.device)
+            orig_denoise = p.denoising_strength
+            p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
             hires_args = set_pipeline_args(
                 model=shared.sd_model,
                 prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
@@ -507,7 +512,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
                 shared.log.info(e)
-            p.init_images = []
+            p.denoising_strength = orig_denoise
+            # p.init_images = []
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
