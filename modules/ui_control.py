@@ -405,7 +405,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             if i == 0:
                                 units[-1].enabled = True # enable first unit in group
 
-                with gr.Accordion('Processor settings', open=False) as _tab_settings:
+                with gr.Accordion('Processor settings', open=False, elem_classes=['control-settings']) as _tab_settings:
                     with gr.Group(elem_classes=['processor-group']):
                         settings = []
                         with gr.Accordion('HED', open=True, elem_classes=['processor-settings']):

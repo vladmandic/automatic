@@ -283,8 +283,9 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .control-tabs > .tab-nav { margin-bottom: 0; margin-top: 0; }
 .control-unit { max-width: 1200px; padding: 0 !important; margin-top: -10px !important; }
 .control-unit > .label-wrap { margin-bottom: 0 !important; }
+.control-settings { border-width: var(--block-border-width) !important; border-top: var(--button-primary-border-color) !important; border-style: solid !important; margin-top: 1em !important; }
 .processor-settings { padding: 0 !important; max-width: 300px; }
-.processor-group>div { flex-flow: wrap;gap: 1em; }
+.processor-group > div { flex-flow: wrap;gap: 1em; }
 
 /* main info */
 .main-info { font-weight: var(--section-header-text-weight); color: var(--body-text-color-subdued); padding: 1em !important; margin-top: 2em !important; line-height: var(--line-lg) !important; }
