@@ -361,11 +361,10 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                     else:
                         masked_image = input_image
                     for i, process in enumerate(active_process): # list[image]
-                        image_mode = 'L' if unit_type == 't2i adapter' and len(active_model) > i and ('Canny' in active_model[i].model_id or 'Sketch' in active_model[i].model_id) else 'RGB' # t2iadapter canny and sketch work in grayscale only
                         debug(f'Control: i={i+1} process="{process.processor_id}" input={masked_image} override={process.override}')
                         processed_image = process(
                             image_input=masked_image,
-                            mode=image_mode,
+                            mode='RGB',
                             resize_mode=resize_mode_before,
                             resize_name=resize_name_before,
                             scale_tab=selected_scale_tab_before,
@@ -555,7 +554,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
     image_txt += f' | {util.dict2str(p.extra_generation_params)}'
-    restore_pipeline()
+    # restore_pipeline()
     debug(f'Control ready: {image_txt}')
     if is_generator:
         yield (output_images, processed_image, f'Control ready {image_txt}', output_filename)
