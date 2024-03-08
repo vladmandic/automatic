@@ -62,6 +62,7 @@
   - *image viewer* now displays image metadata
   - *themes* improve on-the-fly switching
   - *log monitor* flag server warnings/errors and overall improve display
+  - *control* separate processor settings from unit settings
 - **Watermarking**
   - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
   - See *settings -> image options -> watermarking*  
