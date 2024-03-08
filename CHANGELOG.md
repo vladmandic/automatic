@@ -6,7 +6,7 @@
   - EDM samplers for Playground 2.5
   - Stable Cascade
 
-## Update for 2024-03-07
+## Update for 2024-03-08
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -48,7 +48,7 @@
   - *DPM++ 2M EDM* and *Euler EDM*  
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
-- **Styles**
+- **Styles**: styles are not just for prompts!
   - new styles editor: *networks -> styles -> edit*
   - styles can apply generate parameters, for example to have a style that enables and configures hires:  
     parameters=`enable_hr: True, hr_scale: 2, hr_upscaler: Latent Bilinear antialias, hr_sampler_name: DEIS, hr_second_pass_steps: 20, denoising_strength: 0.5`

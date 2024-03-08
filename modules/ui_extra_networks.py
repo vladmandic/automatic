@@ -480,7 +480,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     ui.pages = []
     ui.state = gr.Textbox('{}', elem_id=f"{tabname}_extra_state", visible=False)
     ui.visible = gr.State(value=False) # pylint: disable=abstract-class-instantiated
-    ui.details = gr.Group(elem_id=f"{tabname}_extra_details", visible=False)
+    ui.details = gr.Group(elem_id=f"{tabname}_extra_details", elem_classes=["extra-details"], visible=False)
     ui.tabs = gr.Tabs(elem_id=f"{tabname}_extra_tabs")
     ui.button_details = gr.Button('Details', elem_id=f"{tabname}_extra_details_btn", visible=False)
     state = {}
@@ -556,7 +556,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                 with gr.Tab('Embedded metadata', elem_classes=['extra-details-tabs']):
                     meta = gr.JSON({}, show_label=False)
                     ui.details_components.append(meta)
-        with gr.Group(elem_id=f"{tabname}_extra_details_text", visible=False) as ui.details_text:
+        with gr.Group(elem_id=f"{tabname}_extra_details_text", elem_classes=["extra-details-text"], visible=False) as ui.details_text:
             description = gr.Textbox(label='Description', lines=1, placeholder="Style description...")
             prompt = gr.Textbox(label='Prompt', lines=2, placeholder="Prompt...")
             negative = gr.Textbox(label='Negative prompt', lines=2, placeholder="Negative prompt...")
@@ -585,7 +585,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         ui.button_close = ToolButton(symbols.close, elem_id=f"{tabname}_extra_close", visible=True)
         ui.button_model = ToolButton(symbols.refine, elem_id=f"{tabname}_extra_model", visible=True)
         ui.search = gr.Textbox('', show_label=False, elem_id=f"{tabname}_extra_search", placeholder="Search...", elem_classes="textbox", lines=2, container=False)
-        ui.description = gr.Textbox('', show_label=False, elem_id=f"{tabname}_description", elem_classes="textbox", lines=2, interactive=False, container=False)
+        ui.description = gr.Textbox('', show_label=False, elem_id=f"{tabname}_description", elem_classes=["textbox", "extra-description"], lines=2, interactive=False, container=False)
 
         if ui.tabname == 'txt2img': # refresh only once
             global refresh_time # pylint: disable=global-statement
