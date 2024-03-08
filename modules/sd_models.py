@@ -683,7 +683,10 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 shared.opts.diffusers_move_unet = False
                 shared.opts.diffusers_move_refiner = False
                 shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-            sd_model.enable_model_cpu_offload()
+            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                sd_model.enable_model_cpu_offload()
+            else:
+                sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_sequential_cpu_offload"):
         if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
@@ -766,7 +769,8 @@ def move_model(model, device=None, force=False):
                     try:
                         module._hf_hook.execution_device = device # pylint: disable=protected-access
                     except Exception as e:
-                        shared.log.error(f'Model move execution device: device={device} {e}')
+                        if os.environ.get('SD_MOVE_DEBUG', None):
+                            shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
     try:
@@ -1235,6 +1239,9 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
 def set_diffuser_pipe(pipe, new_pipe_type):
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
+    # skip specific pipelines
+    if pipe.__class__.__name__ == 'StableDiffusionReferencePipeline' or pipe.__class__.__name__ == 'StableDiffusionAdapterPipeline' or 'Onnx' in pipe.__class__.__name__:
+        return pipe
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)
@@ -1243,10 +1250,6 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     embedding_db = getattr(pipe, "embedding_db", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
-
-    # skip specific pipelines
-    if pipe.__class__.__name__ == 'StableDiffusionReferencePipeline' or pipe.__class__.__name__ == 'StableDiffusionAdapterPipeline' or 'Onnx' in pipe.__class__.__name__:
-        return pipe
 
     try:
         if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
@@ -1259,8 +1262,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__} {e}')
         return pipe
 
-    if pipe.__class__ == new_pipe.__class__:
-        return pipe
+    # if pipe.__class__ == new_pipe.__class__:
+    #    return pipe
     new_pipe.sd_checkpoint_info = sd_checkpoint_info
     new_pipe.sd_model_checkpoint = sd_model_checkpoint
     new_pipe.sd_model_hash = sd_model_hash
@@ -1271,7 +1274,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 

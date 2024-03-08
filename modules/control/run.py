@@ -249,13 +249,16 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     frames = 0
 
     # set pipeline
-    original_pipeline = shared.sd_model
-    shared.sd_model = pipe
-    sd_models.move_model(shared.sd_model, shared.device)
-    shared.sd_model.to(dtype=devices.dtype)
-    debug(f'Control device={devices.device} dtype={devices.dtype}')
-    sd_models.copy_diffuser_options(shared.sd_model, original_pipeline) # copy options from original pipeline
-    sd_models.set_diffuser_options(shared.sd_model)
+    if pipe.__class__.__name__ != shared.sd_model.__class__.__name__:
+        original_pipeline = shared.sd_model
+        shared.sd_model = pipe
+        sd_models.move_model(shared.sd_model, shared.device)
+        shared.sd_model.to(dtype=devices.dtype)
+        debug(f'Control device={devices.device} dtype={devices.dtype}')
+        sd_models.copy_diffuser_options(shared.sd_model, original_pipeline) # copy options from original pipeline
+        sd_models.set_diffuser_options(shared.sd_model)
+    else:
+        original_pipeline = None
 
     try:
         with devices.inference_context():
