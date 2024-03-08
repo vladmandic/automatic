@@ -41,6 +41,8 @@
     for example: `<xxx:0.1@0,0.9@1>` means strength=0.1 for step at 0% and intepolate towards strength=0.9 for step at 100%
   - set sampler to *Composable LoRA*  
   - *note*: this is a very experimental feature and may not work as expected
+- **Control**
+  - added *refiner/hires* workflows
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
@@ -102,6 +104,7 @@
   - fix api info endpoint
   - fix *sampler eta* in xyz grid, thanks @AI-Casanova
   - fix *requires_aesthetics_score* errors
+  - fix t2i-canny
   - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
