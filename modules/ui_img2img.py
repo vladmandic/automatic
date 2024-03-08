@@ -134,7 +134,7 @@ def create_ui():
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
-                    with gr.Accordion(open=True, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
+                    with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
                         with gr.Row():
                             mask_blur = gr.Slider(label='Blur', minimum=0, maximum=64, step=1, value=4, elem_id="img2img_mask_blur")
                             inpaint_full_res_padding = gr.Slider(label='Padding', minimum=0, maximum=256, step=4, value=32, elem_id="img2img_inpaint_full_res_padding")
