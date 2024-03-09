@@ -442,8 +442,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.log.error(f'Processing: args={base_args} {e}')
         errors.display(e, 'Processing')
 
-    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0:
+    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
+    if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None: # replace input with output so it can be used by hires/refine
+        p.task_args['image'] = output.images
 
     shared.state.nextjob()
     if shared.state.interrupted or shared.state.skipped:
