@@ -67,7 +67,12 @@ def setup_logging():
             self.formatter = logging.Formatter('{ "asctime":"%(asctime)s", "created":%(created)f, "facility":"%(name)s", "pid":%(process)d, "tid":%(thread)d, "level":"%(levelname)s", "module":"%(module)s", "func":"%(funcName)s", "msg":"%(message)s" }')
 
         def emit(self, record):
-            record.msg = record.msg.replace('"', "'")
+            if record.msg is not None and not isinstance(record.msg, str):
+                record.msg = str(record.msg)
+            try:
+                record.msg = record.msg.replace('"', "'")
+            except Exception:
+                pass
             msg = self.format(record)
             # self.buffer.append(json.loads(msg))
             self.buffer.append(msg)
