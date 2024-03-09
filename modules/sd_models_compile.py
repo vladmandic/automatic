@@ -164,6 +164,7 @@ def compile_stablefast(sd_model):
     try:
         t0 = time.time()
         sd_model = sf.compile(sd_model, config)
+        sd_model.sfast = True
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")

@@ -344,7 +344,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if p.sag_scale > 0 and is_txt2img():
             update_sampler(shared.sd_model)
             supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
-            if sd_model.scheduler.__class__.__name__ in supported:
+            if hasattr(sd_model, 'sfast'):
+                shared.log.warning(f'SAG incompatible compile mode: backend={shared.opts.cuda_compile_backend}')
+            elif sd_model.scheduler.__class__.__name__ in supported:
                 sd_model = sd_models.switch_pipe(diffusers.StableDiffusionSAGPipeline, sd_model)
                 p.extra_generation_params["SAG scale"] = p.sag_scale
                 p.task_args['sag_scale'] = p.sag_scale
