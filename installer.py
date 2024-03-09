@@ -637,7 +637,7 @@ def check_torch():
         if 'xformers' in xformers_package:
             install(f'--no-deps {xformers_package}', ignore=True)
             import torch
-            import xformers
+            import xformers # pylint: disable=unused-import
         elif not args.experimental and not args.use_xformers:
             uninstall('xformers')
     except Exception as e:

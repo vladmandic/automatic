@@ -23,7 +23,6 @@ from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, errors, hashes, sd_models_config, sd_models_compile, sd_hijack_accelerate
 from modules.timer import Timer
 from modules.memstats import memory_stats
-from modules.paths import models_path, script_path
 from modules.modeldata import model_data
 
 
@@ -48,7 +47,7 @@ class CheckpointInfo:
         self.filename = filename
         self.type = ''
         relname = filename
-        app_path = os.path.abspath(script_path)
+        app_path = os.path.abspath(paths.script_path)
 
         def rel(fn, path):
             try:
@@ -64,8 +63,8 @@ class CheckpointInfo:
             relname = rel(filename, shared.opts.diffusers_dir)
         elif relname.startswith(model_path):
             relname = rel(filename, model_path)
-        elif relname.startswith(script_path):
-            relname = rel(filename, script_path)
+        elif relname.startswith(paths.script_path):
+            relname = rel(filename, paths.script_path)
         elif relname.startswith(app_path):
             relname = rel(filename, app_path)
         else:
@@ -147,7 +146,7 @@ def list_models():
         ext_filter = [".ckpt", ".safetensors"]
     model_list = list(modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.opts.ckpt_dir, ext_filter=ext_filter, download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"]))
     if shared.backend == shared.Backend.DIFFUSERS:
-        model_list += modelloader.load_diffusers_models(model_path=os.path.join(models_path, 'Diffusers'), command_path=shared.opts.diffusers_dir, clear=True)
+        model_list += modelloader.load_diffusers_models(clear=True)
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
         if checkpoint_info.name is not None:

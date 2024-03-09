@@ -62,9 +62,7 @@ class Script(scripts.Script):
             p.do_not_save_grid = True
             if c == 'StableVideoDiffusionPipeline':
                 p.sampler_name = 'Default' # svd does not support non-default sampler
-                p.task_args['output_type'] = 'np'
-            else:
-                p.task_args['output_type'] = 'pil'
+            p.task_args['output_type'] = 'pil'
             p.task_args['generator'] = torch.manual_seed(p.seed) # svd does not support gpu based generator
             p.task_args['width'] = p.width
             p.task_args['height'] = p.height
