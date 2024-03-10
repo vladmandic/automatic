@@ -43,10 +43,6 @@
   - *note*: this is a very experimental feature and may not work as expected
 - **Control**
   - added *refiner/hires* workflows
-- **ROCm**  
-  - added *flash attention* support for rdna3, thanks @Disty0  
-    install flash_attn package for rdna3 manually and enable *flash attention* from *compute settings*   
-    to install flash_attn, activate the venv and run `pip install -U git+https://github.com/ROCm/flash-attention@howiejay/navi_support`   
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
@@ -69,6 +65,11 @@
   - *themes* improve on-the-fly switching
   - *log monitor* flag server warnings/errors and overall improve display
   - *control* separate processor settings from unit settings
+- **Face HiRes**
+  - new *face restore* option, works similar to well-known *adetailer* by running an inpaint on detected faces but with just a checkbox to enable/disable  
+  - set as default face restorer in settings -> postprocessing  
+  - disabled by default, to enable simply check *face restore* in your generate advanced settings  
+  - strength is controlled by refine strength setting  
 - **Watermarking**
   - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
   - See *settings -> image options -> watermarking*  
@@ -80,9 +81,13 @@
   - new setting in image options: *include mask in output*
   - improved params parsing from from prompt string and styles
   - default theme updates and additional built-in theme *black-gray*
-  - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
+- **ROCm**  
+  - add **ROCm** 6.0 nightly option to installer, thanks @jicka
+  - add *flash attention* support for rdna3, thanks @Disty0  
+    install flash_attn package for rdna3 manually and enable *flash attention* from *compute settings*  
+    to install flash_attn, activate the venv and run `pip install -U git+https://github.com/ROCm/flash-attention@howiejay/navi_support`  
 - **API**
   - add preprocessor api endpoints  
     GET:`/sdapi/v1/preprocessors`, POST:`/sdapi/v1/preprocess`, sample script:`cli/simple-preprocess.py`
@@ -109,6 +114,7 @@
   - fix *sampler eta* in xyz grid, thanks @AI-Casanova
   - fix *requires_aesthetics_score* errors
   - fix t2i-canny
+  - fix *differenital diffusion* for manual mask, thanks @23pennies
   - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
