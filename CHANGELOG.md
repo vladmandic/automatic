@@ -69,7 +69,7 @@
   - new *face restore* option, works similar to well-known *adetailer* by running an inpaint on detected faces but with just a checkbox to enable/disable  
   - set as default face restorer in settings -> postprocessing  
   - disabled by default, to enable simply check *face restore* in your generate advanced settings  
-  - strength is controlled by refine strength setting  
+  - strength, steps and sampler are set using by hires section in refine menu  
   - will use secondary prompt and secondary negative prompt if present in refine  
 - **Watermarking**
   - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  

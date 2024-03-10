@@ -521,6 +521,9 @@ def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None
     shared.log.debug(f"Switching class: {p.__class__} -> {new_class}")
     p.__class__ = new_class
     p.__init__(**kwargs)
+    for k, v in p.__dict__.items():
+        if hasattr(p, k):
+            setattr(p, k, v)
     if dct is not None: # post init set additional values
         for k, v in dct.items():
             if hasattr(p, k):

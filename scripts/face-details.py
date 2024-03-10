@@ -90,7 +90,9 @@ class FaceRestorerYolo(FaceRestoration):
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
         from modules import devices, processing_class
-        if np_image is None or hasattr(p, 'facehires'):
+        if not hasattr(p, 'facehires'):
+            p.facehires = 0
+        if np_image is None or getattr(p, 'facehires', 0) >= p.batch_size:
             return np_image
         self.load()
         if self.model is None:
@@ -107,7 +109,7 @@ class FaceRestorerYolo(FaceRestoration):
         orig_cls = p.__class__
 
         pp = None
-        p.facehires = True # set flag to avoid recursion
+        p.facehires += 1 # set flag to avoid recursion
         shared.opts.data['mask_apply_overlay'] = True
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img)
 
@@ -122,6 +124,8 @@ class FaceRestorerYolo(FaceRestoration):
             p.inpaint_full_res = True
             p.inpainting_mask_invert = 0
             p.inpainting_fill = 1 # no fill
+            p.sampler_name = orig_p.get('hr_sampler_name', 'default')
+            p.steps = orig_p.get('hr_second_pass_steps', p.steps)
             p.denoising_strength = orig_p.get('denoising_strength', 0.3)
             p.styles = []
             p.prompt = orig_p.get('refiner_prompt', '')
