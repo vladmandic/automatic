@@ -1897,10 +1897,8 @@ class Script(scripts.Script):
         from modules.control.proc.dpt import DPTDetector
         if image_init is None:
             return None, None, None
-        image_map = None
         if image_map is not None:
             image_map = image_map.resize(image_init.size, Image.Resampling.LANCZOS)
-            image_init = image_map
         if model != 'None':
             if detector is None:
                 detector = DPTDetector()
