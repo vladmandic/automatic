@@ -511,7 +511,7 @@ def check_torch():
                     log.warning(f'Failed to install ZLUDA: {e}')
             if os.path.exists(os.path.join(zluda_path, 'nvcuda.dll')):
                 log.info(f'Using ZLUDA in {zluda_path}')
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/cu118')
                 paths = os.environ.get('PATH', '.')
                 if zluda_path not in paths:
                     os.environ['PATH'] = paths + ';' + zluda_path
