@@ -1,11 +1,11 @@
 import os
 import numpy as np
 from PIL import Image, ImageDraw
-from modules import shared, paths, devices, modelloader, processing, processing_class, face_restoration
+from modules import shared, processing
+from modules.face_restoration import FaceRestoration
 
 
 class YoLoResult:
-    """Class face result"""
     def __init__(self, score: float, box: list[int], mask: Image.Image = None, size: float = 0):
         self.score = score
         self.box = box
@@ -13,15 +13,20 @@ class YoLoResult:
         self.size = size
 
 
-class FaceRestorerYolo(face_restoration.FaceRestoration):
+class FaceRestorerYolo(FaceRestoration):
     def name(self):
         return "Face HiRes"
 
     def __init__(self):
+        from modules import paths
         self.model = None
         self.model_dir = os.path.join(paths.models_path, 'yolo')
         self.model_name = 'yolov8n-face.pt'
         self.model_url = 'https://github.com/akanametov/yolov8-face/releases/download/v0.0.0/yolov8n-face.pt'
+
+    def dependencies(self):
+        import installer
+        installer.install('ultralytics', ignore=False)
 
     def predict(
             self,
@@ -39,7 +44,7 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
             mask: bool = True,
         ) -> list[YoLoResult]:
 
-        self.model.to(devices.device)
+        self.model.to(device)
         predictions = self.model.predict(
             source=[image],
             stream=False,
@@ -73,6 +78,8 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
         return result
 
     def load(self):
+        from modules import modelloader
+        self.dependencies()
         if self.model is None:
             model_files = modelloader.load_models(model_path=self.model_dir, model_url=self.model_url, download_name=self.model_name)
             for f in model_files:
@@ -82,6 +89,7 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
                     self.model = YOLO(f)
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
+        from modules import devices, processing_class
         if np_image is None or hasattr(p, 'facehires'):
             return np_image
         self.load()
@@ -102,8 +110,6 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
         p.facehires = True # set flag to avoid recursion
         shared.opts.data['mask_apply_overlay'] = True
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img)
-
-        shared.log.error(orig_p)
 
         for face in faces:
             if face.mask is None:
