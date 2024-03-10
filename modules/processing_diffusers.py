@@ -187,7 +187,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             generator = p.generator
         else:
             generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
-            generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
+            try:
+                generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
+            except Exception as e:
+                shared.log.error(f'Torch generator: seeds={p.seeds} device={generator_device} {e}')
+                generator = None
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
         clip_skip = kwargs.pop("clip_skip", 1)
@@ -457,7 +461,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     # optional second pass
     if p.enable_hr:
         p.is_hr_pass = True
-        p.init_hr(p.hr_scale, p.hr_upscaler)
+        p.init_hr(p.hr_scale, p.hr_upscaler, force=p.hr_force)
         prev_job = shared.state.job
 
         # hires runs on original pipeline
@@ -472,6 +476,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 save_intermediate(latents=output.images, suffix="-before-hires")
             shared.state.job = 'upscale'
             output.images = resize_hires(p, latents=output.images)
+            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None: # replace input with output so it can be used by hires/refine
+                p.task_args['image'] = output.images
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)

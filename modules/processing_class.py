@@ -492,13 +492,13 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass
 
-    def init_hr(self, scale = None, upscaler = None):
+    def init_hr(self, scale = None, upscaler = None, force = False):
         scale = scale or self.scale_by
         upscaler = upscaler or self.resize_name
         if upscaler == 'None' or scale == 1.0:
             return
         self.is_hr_pass = True
-        self.hr_force = True
+        self.hr_force = force
         self.hr_upscaler = upscaler
         self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
         # hypertile_set(self, hr=True)

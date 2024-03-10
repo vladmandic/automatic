@@ -112,7 +112,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     # hires/refine defined outside of main init
     p.enable_hr = enable_hr
     p.hr_sampler_name = processing.get_sampler_name(hr_sampler_index)
-    p.hr_denoising_strength = hr_denoising_strength # TODO
+    p.hr_denoising_strength = hr_denoising_strength
     p.hr_upscaler = hr_upscaler
     p.hr_force = hr_force
     p.hr_second_pass_steps = hr_second_pass_steps
@@ -472,7 +472,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             p.init_images = [processed_image]
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
                         else:
-                            p.init_hr(p.scale_by, p.resize_name)
+                            p.init_hr(p.scale_by, p.resize_name, force=True)
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
                     elif has_models: # actual control
                         p.is_control = True
