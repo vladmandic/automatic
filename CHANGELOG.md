@@ -70,11 +70,12 @@
   - set as default face restorer in settings -> postprocessing  
   - disabled by default, to enable simply check *face restore* in your generate advanced settings  
   - strength is controlled by refine strength setting  
+  - will use secondary prompt and secondary negative prompt if present in refine  
 - **Watermarking**
   - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
-  - See *settings -> image options -> watermarking*  
-  - Invisible watermark: using steganogephy  
-  - Image watermark: overlaid on top of image  
+  - see *settings -> image options -> watermarking*  
+  - invisible watermark: using steganogephy  
+  - image watermark: overlaid on top of image  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova

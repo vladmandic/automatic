@@ -103,6 +103,8 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
         shared.opts.data['mask_apply_overlay'] = True
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img)
 
+        shared.log.error(orig_p)
+
         for face in faces:
             if face.mask is None:
                 continue
@@ -115,6 +117,13 @@ class FaceRestorerYolo(face_restoration.FaceRestoration):
             p.inpainting_mask_invert = 0
             p.inpainting_fill = 1 # no fill
             p.denoising_strength = orig_p.get('denoising_strength', 0.3)
+            p.styles = []
+            p.prompt = orig_p.get('refiner_prompt', '')
+            if len(p.prompt) == 0:
+                p.prompt = orig_p.get('all_prompts', [''])[0]
+            p.negative_prompt = orig_p.get('refiner_negative', '')
+            if len(p.negative_prompt) == 0:
+                p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
             # TODO facehires expose as tunable
             p.mask_blur = 10
             p.inpaint_full_res_padding = 15
