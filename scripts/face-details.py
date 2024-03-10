@@ -92,7 +92,7 @@ class FaceRestorerYolo(FaceRestoration):
         from modules import devices, processing_class
         if not hasattr(p, 'facehires'):
             p.facehires = 0
-        if np_image is None or getattr(p, 'facehires', 0) >= p.batch_size:
+        if np_image is None or p.facehires >= p.batch_size:
             return np_image
         self.load()
         if self.model is None:
@@ -109,9 +109,33 @@ class FaceRestorerYolo(FaceRestoration):
         orig_cls = p.__class__
 
         pp = None
-        p.facehires += 1 # set flag to avoid recursion
         shared.opts.data['mask_apply_overlay'] = True
-        p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img)
+        args = {
+            'batch_size': 1,
+            'n_iter': 1,
+            'inpaint_full_res': True,
+            'inpainting_mask_invert': 0,
+            'inpainting_fill': 1, # no fill
+            'sampler_name': orig_p.get('hr_sampler_name', 'default'),
+            'steps': orig_p.get('hr_second_pass_steps', 0),
+            'negative_prompt': orig_p.get('refiner_negative', ''),
+            'denoising_strength': orig_p.get('denoising_strength', 0.3),
+            'styles': [],
+            'prompt': orig_p.get('refiner_prompt', ''),
+            # TODO facehires expose as tunable
+            'mask_blur': 10,
+            'inpaint_full_res_padding': 15,
+            'restore_faces': True,
+        }
+        p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
+        p.facehires += 1 # set flag to avoid recursion
+
+        if p.steps < 1:
+            p.steps = orig_p.get('steps', 0)
+        if len(p.prompt) == 0:
+            p.prompt = orig_p.get('all_prompts', [''])[0]
+        if len(p.negative_prompt) == 0:
+            p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
 
         for face in faces:
             if face.mask is None:
@@ -121,28 +145,14 @@ class FaceRestorerYolo(FaceRestoration):
                 continue
             p.init_images = [image]
             p.image_mask = [face.mask]
-            p.inpaint_full_res = True
-            p.inpainting_mask_invert = 0
-            p.inpainting_fill = 1 # no fill
-            p.sampler_name = orig_p.get('hr_sampler_name', 'default')
-            p.steps = orig_p.get('hr_second_pass_steps', p.steps)
-            p.denoising_strength = orig_p.get('denoising_strength', 0.3)
-            p.styles = []
-            p.prompt = orig_p.get('refiner_prompt', '')
-            if len(p.prompt) == 0:
-                p.prompt = orig_p.get('all_prompts', [''])[0]
-            p.negative_prompt = orig_p.get('refiner_negative', '')
-            if len(p.negative_prompt) == 0:
-                p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
-            # TODO facehires expose as tunable
-            p.mask_blur = 10
-            p.inpaint_full_res_padding = 15
-            p.restore_faces = True
-            shared.log.debug(f'Face HiRes: {face.__dict__} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding}')
+            shared.log.debug(f'Face HiRes: face={p.facehires} {face.__dict__} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding} steps={p.steps}')
             pp = processing.process_images_inner(p)
             p.overlay_images = None # skip applying overlay twice
             if pp is not None and pp.images is not None and len(pp.images) > 0:
                 image = pp.images[0]
+
+        if np_image is None or getattr(p, 'facehires', 0) >= p.batch_size:
+            p.facehires = 0
 
         # restore pipeline
         p = processing_class.switch_class(p, orig_cls, orig_p)

@@ -377,6 +377,8 @@ def download_url_to_file(url: str, dst: str):
 
 def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_name = None): # pylint: disable=unused-argument
     """Download a file from url into model_dir, using the file present if possible. Returns the path to the downloaded file."""
+    if model_dir is None:
+        shared.log.error('Download folder is none')
     os.makedirs(model_dir, exist_ok=True)
     if not file_name:
         parts = urlparse(url)
@@ -398,14 +400,15 @@ def load_models(model_path: str, model_url: str = None, command_path: str = None
     @param ext_filter: An optional list of filename extensions to filter by
     @return: A list of paths containing the desired model(s)
     """
-    places = list(set([model_path, command_path])) # noqa:C405
+    places = [x for x in list(set([model_path, command_path])) if x is not None] # noqa:C405
     output = []
     try:
         output:list = [*files_cache.list_files(*places, ext_filter=ext_filter, ext_blacklist=ext_blacklist)]
         if model_url is not None and len(output) == 0:
             if download_name is not None:
                 dl = load_file_from_url(model_url, model_dir=places[0], progress=True, file_name=download_name)
-                output.append(dl)
+                if dl is not None:
+                    output.append(dl)
             else:
                 output.append(model_url)
     except Exception as e:

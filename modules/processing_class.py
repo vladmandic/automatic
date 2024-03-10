@@ -242,7 +242,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         if all_subseeds is not None:
             self.all_subseeds = all_subseeds
 
-    def init_hr(self, scale = None, upscaler = None):
+    def init_hr(self, scale = None, upscaler = None, force = False): # pylint: disable=unused-argument
         scale = scale or self.hr_scale
         upscaler = upscaler or self.hr_upscaler
         if self.hr_resize_x == 0 and self.hr_resize_y == 0:
