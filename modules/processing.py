@@ -262,8 +262,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
-        with devices.autocast():
-            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+        if not hasattr(p, 'skip_init'):
+            with devices.autocast():
+                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
@@ -340,7 +341,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         p.restore_faces = orig
                         images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
                     p.ops.append('face')
-                    x_sample = face_restoration.restore_faces(x_sample)
+                    x_sample = face_restoration.restore_faces(x_sample, p)
                     image = Image.fromarray(x_sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
@@ -366,7 +367,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
-                    image_mask_composite = Image.composite(image.convert('RGBA').convert('RGBa'), Image.new('RGBa', image.size), images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')).convert('RGBA')
+                    image1 = image.convert('RGBA').convert('RGBa')
+                    image2 = Image.new('RGBa', image.size)
+                    mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
+                    image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
+                    image_mask_composite.save('/tmp/composite.png')
                     if shared.opts.save_mask:
                         images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:

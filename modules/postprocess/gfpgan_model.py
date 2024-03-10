@@ -105,7 +105,7 @@ def setup_model(dirname):
             def name(self):
                 return "GFPGAN"
 
-            def restore(self, np_image):
+            def restore(self, np_image, p=None): # pylint: disable=unused-argument
                 return gfpgan_fix_faces(np_image)
 
         shared.face_restorers.append(FaceRestorerGFPGAN())

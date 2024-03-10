@@ -397,7 +397,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     if mask_blur is not None: # compatibility with old img2img values which uses px values
         opts.mask_blur = round(4 * mask_blur / size, 3)
     if mask_padding is not None: # compatibility with old img2img values which uses px values
-        opts.mask_erode = 4 * mask_padding / size
+        opts.mask_dilate = 4 * mask_padding / size
 
     if opts.model is None or not segment_enable:
         mask = input_mask

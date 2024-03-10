@@ -172,7 +172,7 @@ class StableDiffusionProcessing:
     def comment(self, text):
         self.comments[text] = 1
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         pass
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
@@ -230,11 +230,17 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         self.scripts = None
         self.script_args = []
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.backend == shared.Backend.DIFFUSERS:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         self.width = self.width or 512
         self.height = self.height or 512
+        if all_prompts is not None:
+            self.all_prompts = all_prompts
+        if all_seeds is not None:
+            self.all_seeds = all_seeds
+        if all_subseeds is not None:
+            self.all_subseeds = all_subseeds
 
     def init_hr(self, scale = None, upscaler = None):
         scale = scale or self.hr_scale
@@ -312,11 +318,18 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.scripts = None
         self.script_args = []
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
         elif shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'init_images', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
+
+        if all_prompts is not None:
+            self.all_prompts = all_prompts
+        if all_seeds is not None:
+            self.all_seeds = all_seeds
+        if all_subseeds is not None:
+            self.all_subseeds = all_subseeds
 
         if self.sampler_name == "PLMS":
             self.sampler_name = 'UniPC'
@@ -491,3 +504,25 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         # hypertile_set(self, hr=True)
         shared.state.job_count = 2 * self.n_iter
         shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+
+
+def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None):
+    import inspect
+    signature = inspect.signature(type(new_class).__init__, follow_wrapped=True)
+    possible = list(signature.parameters)
+    kwargs = {}
+    for k, v in p.__dict__.items():
+        if k in possible:
+            kwargs[k] = v
+    if dct is not None:
+        for k, v in dct.items():
+            if k in possible:
+                kwargs[k] = v
+    shared.log.debug(f"Switching class: {p.__class__} -> {new_class}")
+    p.__class__ = new_class
+    p.__init__(**kwargs)
+    if dct is not None: # post init set additional values
+        for k, v in dct.items():
+            if hasattr(p, k):
+                setattr(p, k, v)
+    return p

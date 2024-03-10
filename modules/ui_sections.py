@@ -140,7 +140,7 @@ def create_advanced_inputs(tab):
             gr.HTML('<br>')
             with gr.Row(elem_id=f"{tab}_advanced_options"):
                 full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-                restore_faces = gr.Checkbox(label='Face restore', value=False, visible=len(shared.face_restorers) > 1, elem_id=f"{tab}_restore_faces")
+                restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
                 tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling", visible=True)
     return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_sag_scale, cfg_end, full_quality, restore_faces, tiling
 
@@ -226,7 +226,7 @@ def create_hires_inputs(tab):
                 hr_sampler_index = gr.Dropdown(label='Secondary sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Default', type="index")
             with gr.Row(elem_id=f"{tab}_hires_row2"):
                 hr_second_pass_steps = gr.Slider(minimum=0, maximum=99, step=1, label='HiRes steps', elem_id=f"{tab}_steps_alt", value=20)
-                denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.5, elem_id=f"{tab}_denoising_strength")
+                denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.3, elem_id=f"{tab}_denoising_strength")
         with gr.Group(visible=shared.backend == shared.Backend.DIFFUSERS):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
                 refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.8, elem_id=f"{tab}_refiner_start")

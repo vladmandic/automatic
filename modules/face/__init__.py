@@ -91,7 +91,9 @@ class Script(scripts.Script):
 
     def run(self, p: processing.StableDiffusionProcessing, mode, input_images, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
         if shared.backend != shared.Backend.DIFFUSERS:
-            return
+            return None
+        if mode == 'None':
+            return None
         if input_images is None or len(input_images) == 0:
             shared.log.error('Face: no init images')
             return None

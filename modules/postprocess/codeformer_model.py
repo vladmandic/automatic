@@ -66,7 +66,7 @@ def setup_model(dirname):
                 self.face_helper.face_det.to(device) # pylint: disable=no-member
                 self.face_helper.face_parse.to(device)
 
-            def restore(self, np_image, w=None):
+            def restore(self, np_image, p=None, w=None): # pylint: disable=unused-argument
                 from torchvision.transforms.functional import normalize
                 from basicsr.utils import img2tensor, tensor2img
                 np_image = np_image[:, :, ::-1]
@@ -90,7 +90,7 @@ def setup_model(dirname):
                         del output
                         devices.torch_gc()
                     except Exception as e:
-                        shared.log.error(f'CodeForomer error: {e}')
+                        shared.log.error(f'CodeFormer error: {e}')
                         restored_face = tensor2img(cropped_face_t, rgb2bgr=True, min_max=(-1, 1))
                     restored_face = restored_face.astype('uint8')
                     self.face_helper.add_restored_face(restored_face)

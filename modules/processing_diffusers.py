@@ -363,6 +363,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     # sanitize init_images
     if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
         del p.init_images
+    if hasattr(p, 'init_images') and not isinstance(getattr(p, 'init_images', []), list):
+        p.init_images = [p.init_images]
     if len(getattr(p, 'init_images', [])) > 0:
         while len(p.init_images) < len(p.prompts):
             p.init_images.append(p.init_images[-1])
