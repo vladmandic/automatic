@@ -1,3 +1,4 @@
+import copy
 import time
 import logging
 import torch
@@ -78,7 +79,11 @@ def nncf_compress_weights(sd_model):
 
         def nncf_compress_model(model):
             return_device = model.device
-            model = nncf.compress_weights(model.to(devices.device)).to(return_device)
+            if hasattr(model, "get_input_embeddings"):
+                backup_embeddings = copy.deepcopy(model.get_input_embeddings())
+            model = nncf.compress_weights(model.eval().to(devices.device)).to(return_device)
+            if hasattr(model, "set_input_embeddings"):
+                model.set_input_embeddings(backup_embeddings)
             devices.torch_gc(force=True)
             return model
 
