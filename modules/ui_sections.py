@@ -55,6 +55,34 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 
+def ar_change(ar, width, height):
+    if ar == 'AR':
+        return gr.update(interactive=True), gr.update(interactive=True)
+    try:
+        (w, h) = [float(x) for x in ar.split(':')]
+    except Exception as e:
+        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
+        return gr.update(interactive=True), gr.update(interactive=True)
+    if w > h:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * h / w))
+    elif w < h:
+        return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
+    else:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
+
+
+def create_resolution_inputs(tab):
+    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id=f"{tab}_width")
+    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+    for c in [ar_dropdown, width, height]:
+        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
+    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn", label="Switch dims")
+    res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
+    return width, height
+
+
 def create_interrogate_buttons(tab):
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])
@@ -74,8 +102,6 @@ def create_batch_inputs(tab):
         with gr.Row(elem_id=f"{tab}_row_batch"):
             batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id=f"{tab}_batch_count")
             batch_size = gr.Slider(minimum=1, maximum=32, step=1, label='Batch size', value=1, elem_id=f"{tab}_batch_size")
-            batch_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_batch_switch_btn", label="Switch dims")
-            batch_switch_btn.click(lambda w, h: (h, w), inputs=[batch_count, batch_size], outputs=[batch_count, batch_size], show_progress=False)
     return batch_count, batch_size
 
 
@@ -241,6 +267,10 @@ def create_resize_inputs(tab, images, scale_visible=True, mode=None, accordion=T
                                 with gr.Row():
                                     width = gr.Slider(minimum=64, maximum=8192, step=8, label="Width", value=512, elem_id=f"{tab}_width")
                                     height = gr.Slider(minimum=64, maximum=8192, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+                                    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+                                    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+                                    for c in [ar_dropdown, width, height]:
+                                        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
                                     res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn")
                                     res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
                                     detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_detect_image_size_btn")

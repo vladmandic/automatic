@@ -165,7 +165,7 @@
   {"id":"","label":"Separate Init Image","localized":"","hint":"Creates an additional window next to Control input labeled Init input, so you can have a separate image for both Control operations and an init source."}
 ],
 "process tab": [
-  {"id":"","label":"Single Image","localized":"","hint":"Process single image"},
+  {"id":"","label":"Process Image","localized":"","hint":"Process single image"},
   {"id":"","label":"Process Batch","localized":"","hint":"Process batch of images"},
   {"id":"","label":"Process Folder","localized":"","hint":"Process all images in a folder"},
   {"id":"","label":"Scale by","localized":"","hint":"Use this tab to resize the source image(s) by a chosen factor"},

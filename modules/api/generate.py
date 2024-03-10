@@ -1,5 +1,5 @@
 from threading import Lock
-from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 from modules import errors, shared, scripts, ui
 from modules.api import models, script, helpers
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
@@ -100,7 +100,7 @@ class APIGenerate():
         self.prepare_face_module(img2imgreq)
         init_images = img2imgreq.init_images
         if init_images is None:
-            raise HTTPException(status_code=404, detail="Init image not found")
+            return JSONResponse(status_code=400, content={"error": "Init image is none"})
         mask = img2imgreq.mask
         if mask:
             mask = helpers.decode_base64_to_image(mask)

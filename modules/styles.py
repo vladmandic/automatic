@@ -5,17 +5,19 @@ import os
 import csv
 import json
 import time
+import random
 from installer import log
 from modules import files_cache
 
 
 class Style():
-    def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", filename: str = "", preview: str = "", mtime: float = 0):
+    def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", wildcards: str = "", filename: str = "", preview: str = "", mtime: float = 0):
         self.name = name
         self.description = desc
         self.prompt = prompt
         self.negative_prompt = negative_prompt
         self.extra = extra
+        self.wildcards = wildcards
         self.filename = filename
         self.preview = preview
         self.mtime = mtime
@@ -40,6 +42,21 @@ def apply_styles_to_prompt(prompt, styles):
     return prompt
 
 
+def apply_wildcards_to_prompt(prompt, all_wildcards):
+    replaced = {}
+    for style_wildcards in all_wildcards:
+        wildcards = [x.strip() for x in style_wildcards.split(";") if len(x.strip()) > 0]
+        for wildcard in wildcards:
+            what, words = wildcard.split("=", 1)
+            words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
+            word = random.choice(words)
+            prompt = prompt.replace(what, word)
+            replaced[what] = word
+    if replaced:
+        log.debug(f'Applying style wildcards: {replaced}')
+    return prompt
+
+
 def apply_styles_to_extra(p, style: Style):
     if style is None:
         return
@@ -47,10 +64,14 @@ def apply_styles_to_extra(p, style: Style):
         'sampler': 'sampler_name',
     }
     from modules.generation_parameters_copypaste import parse_generation_parameters
-    extra = parse_generation_parameters(style.extra)
+    s = style.extra
+    s = 'Negative prompt: ' + s if 'Negative prompt:' not in s else s
+    s = 'Prompt: ' + s if 'Prompt:' not in s else s
+    extra = parse_generation_parameters(s)
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []
+    skipped = []
     for k, v in extra.items():
         k = k.lower()
         k = k.replace(' ', '_')
@@ -62,7 +83,9 @@ def apply_styles_to_extra(p, style: Style):
                 v = type(orig)(v)
             setattr(p, k, v)
             fields.append(f'{k}={v}')
-    log.debug(f'Applying style: name="{style.name}" extra={fields}')
+        else:
+            skipped.append(f'{k}={v}')
+    log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped}')
 
 
 class StyleDatabase:
@@ -115,6 +138,7 @@ class StyleDatabase:
                         prompt=style.get("prompt", ""),
                         negative_prompt=style.get("negative", ""),
                         extra=style.get("extra", ""),
+                        wildcards=style.get("wildcards", ""),
                         preview=style.get("preview", None),
                         filename=fn,
                         mtime=os.path.getmtime(fn),
@@ -171,13 +195,17 @@ class StyleDatabase:
         if styles is None or not isinstance(styles, list):
             log.error(f'Invalid styles: {styles}')
             return prompt
-        return apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
+        prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
+        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        return prompt
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
             log.error(f'Invalid styles: {styles}')
             return prompt
-        return apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
+        prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
+        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        return prompt
 
     def apply_styles_to_extra(self, p):
         if p.styles is None or not isinstance(p.styles, list):
@@ -221,7 +249,7 @@ class StyleDatabase:
                     name = row["name"]
                     prompt = row["prompt"] if "prompt" in row else row["text"]
                     negative = row.get("negative_prompt", "") if "negative_prompt" in row else row.get("negative", "")
-                    self.styles[name] = Style(name, desc=name, prompt=prompt, negative_prompt=negative, extra="")
+                    self.styles[name] = Style(name, desc=name, prompt=prompt, negative_prompt=negative)
                     log.debug(f'Migrated style: {self.styles[name].__dict__}')
                     num += 1
                 except Exception:

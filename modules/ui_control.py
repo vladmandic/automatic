@@ -124,6 +124,8 @@ def create_ui(_blocks: gr.Blocks=None):
                         video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
+
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
 
@@ -403,54 +405,54 @@ def create_ui(_blocks: gr.Blocks=None):
                             if i == 0:
                                 units[-1].enabled = True # enable first unit in group
 
-                    with gr.Tab('Processor settings') as _tab_settings:
-                        with gr.Group(elem_classes=['processor-group']):
-                            settings = []
-                            with gr.Accordion('HED', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Scribble", value=False))
-                            with gr.Accordion('Midas depth', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Slider(label="Background threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
-                                settings.append(gr.Checkbox(label="Depth and normal", value=False))
-                            with gr.Accordion('MLSD', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Slider(label="Score threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
-                                settings.append(gr.Slider(label="Distance threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
-                            with gr.Accordion('OpenBody', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Body", value=True))
-                                settings.append(gr.Checkbox(label="Hands", value=False))
-                                settings.append(gr.Checkbox(label="Face", value=False))
-                            with gr.Accordion('PidiNet', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Scribble", value=False))
-                                settings.append(gr.Checkbox(label="Apply filter", value=False))
-                            with gr.Accordion('LineArt', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Coarse", value=False))
-                            with gr.Accordion('Leres Depth', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Boost", value=False))
-                                settings.append(gr.Slider(label="Near threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
-                                settings.append(gr.Slider(label="Background threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
-                            with gr.Accordion('MediaPipe Face', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Slider(label="Max faces", minimum=1, maximum=10, step=1, value=1))
-                                settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.5))
-                            with gr.Accordion('Canny', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Slider(label="Low threshold", minimum=0, maximum=1000, step=1, value=100))
-                                settings.append(gr.Slider(label="High threshold", minimum=0, maximum=1000, step=1, value=200))
-                            with gr.Accordion('DWPose', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Radio(label="Model", choices=['Tiny', 'Medium', 'Large'], value='Tiny'))
-                                settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.3))
-                            with gr.Accordion('SegmentAnything', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Radio(label="Model", choices=['Base', 'Large'], value='Base'))
-                            with gr.Accordion('Edge', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Parameter free", value=True))
-                                settings.append(gr.Radio(label="Mode", choices=['edge', 'gradient'], value='edge'))
-                            with gr.Accordion('Zoe Depth', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Checkbox(label="Gamma corrected", value=False))
-                            with gr.Accordion('Marigold Depth', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Dropdown(label="Color map", choices=['None'] + plt.colormaps(), value='None'))
-                                settings.append(gr.Slider(label="Denoising steps", minimum=1, maximum=99, step=1, value=10))
-                                settings.append(gr.Slider(label="Ensemble size", minimum=1, maximum=99, step=1, value=10))
-                            with gr.Accordion('Depth Anything', open=True, elem_classes=['processor-settings']):
-                                settings.append(gr.Dropdown(label="Color map", choices=['none'] + masking.COLORMAP, value='inferno'))
-                            for setting in settings:
-                                setting.change(fn=processors.update_settings, inputs=settings, outputs=[])
+                with gr.Accordion('Processor settings', open=False, elem_classes=['control-settings']) as _tab_settings:
+                    with gr.Group(elem_classes=['processor-group']):
+                        settings = []
+                        with gr.Accordion('HED', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Scribble", value=False))
+                        with gr.Accordion('Midas depth', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Slider(label="Background threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
+                            settings.append(gr.Checkbox(label="Depth and normal", value=False))
+                        with gr.Accordion('MLSD', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Slider(label="Score threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
+                            settings.append(gr.Slider(label="Distance threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.1))
+                        with gr.Accordion('OpenBody', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Body", value=True))
+                            settings.append(gr.Checkbox(label="Hands", value=False))
+                            settings.append(gr.Checkbox(label="Face", value=False))
+                        with gr.Accordion('PidiNet', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Scribble", value=False))
+                            settings.append(gr.Checkbox(label="Apply filter", value=False))
+                        with gr.Accordion('LineArt', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Coarse", value=False))
+                        with gr.Accordion('Leres Depth', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Boost", value=False))
+                            settings.append(gr.Slider(label="Near threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
+                            settings.append(gr.Slider(label="Background threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
+                        with gr.Accordion('MediaPipe Face', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Slider(label="Max faces", minimum=1, maximum=10, step=1, value=1))
+                            settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                        with gr.Accordion('Canny', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Slider(label="Low threshold", minimum=0, maximum=1000, step=1, value=100))
+                            settings.append(gr.Slider(label="High threshold", minimum=0, maximum=1000, step=1, value=200))
+                        with gr.Accordion('DWPose', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Radio(label="Model", choices=['Tiny', 'Medium', 'Large'], value='Tiny'))
+                            settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.3))
+                        with gr.Accordion('SegmentAnything', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Radio(label="Model", choices=['Base', 'Large'], value='Base'))
+                        with gr.Accordion('Edge', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Parameter free", value=True))
+                            settings.append(gr.Radio(label="Mode", choices=['edge', 'gradient'], value='edge'))
+                        with gr.Accordion('Zoe Depth', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Checkbox(label="Gamma corrected", value=False))
+                        with gr.Accordion('Marigold Depth', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Dropdown(label="Color map", choices=['None'] + plt.colormaps(), value='None'))
+                            settings.append(gr.Slider(label="Denoising steps", minimum=1, maximum=99, step=1, value=10))
+                            settings.append(gr.Slider(label="Ensemble size", minimum=1, maximum=99, step=1, value=10))
+                        with gr.Accordion('Depth Anything', open=True, elem_classes=['processor-settings']):
+                            settings.append(gr.Dropdown(label="Color map", choices=['none'] + masking.COLORMAP, value='inferno'))
+                        for setting in settings:
+                            setting.change(fn=processors.update_settings, inputs=settings, outputs=[])
 
             with gr.Row(elem_id="control_script_container"):
                 input_script_args = scripts.scripts_current.setup_ui(parent='control', accordion=True)
@@ -501,6 +503,8 @@ def create_ui(_blocks: gr.Blocks=None):
                 resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
                 resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
                 denoising_strength, batch_count, batch_size,
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps,
+                refiner_start, refiner_prompt, refiner_negative,
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
             ]
             output_fields = [

@@ -218,7 +218,11 @@ def compile_upscaler(model):
         if "Upscaler" in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
             import torch._dynamo # pylint: disable=unused-import,redefined-outer-name
             torch._dynamo.reset() # pylint: disable=protected-access
-            shared.log.debug(f"Upscaler compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
+            if shared.opts.cuda_compile_backend not in torch._dynamo.list_backends(): # pylint: disable=protected-access
+                shared.log.warning(f"Upscaler compile not available: backend={shared.opts.cuda_compile_backend} available={torch._dynamo.list_backends()}") # pylint: disable=protected-access
+                return model
+            else:
+                shared.log.info(f"Upscaler compile: backend={shared.opts.cuda_compile_backend} available={torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
             if shared.opts.cuda_compile_backend == "openvino_fx":
                 from modules.intel.openvino import openvino_fx # pylint: disable=unused-import
@@ -241,11 +245,8 @@ def compile_upscaler(model):
                 shared.log.error(f"Torch inductor config error: {e}")
 
             t0 = time.time()
-
             model = torch.compile(model, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph) # pylint: disable=attribute-defined-outside-init
-
             setup_logging() # compile messes with logging so reset is needed
-
             t1 = time.time()
             shared.log.info(f"Upscaler compile: time={t1-t0:.2f}")
     except Exception as e:

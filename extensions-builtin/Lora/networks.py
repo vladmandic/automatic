@@ -193,10 +193,13 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             try:
                 if recompile_model:
                     shared.compiled_model_state.lora_model.append(f"{name}:{te_multipliers[i] if te_multipliers else 1.0}")
-                if shared.backend == shared.Backend.DIFFUSERS and shared.opts.lora_force_diffusers: # OpenVINO only works with Diffusers LoRa loading.
-                    # or getattr(network_on_disk, 'shorthash', '').lower() == 'aaebf6360f7d' # sd15-lcm
-                    # or getattr(network_on_disk, 'shorthash', '').lower() == '3d18b05e4f56' # sdxl-lcm
-                    # or getattr(network_on_disk, 'shorthash', '').lower() == '813ea5fb1c67' # turbo sdxl-turbo
+                shorthash = getattr(network_on_disk, 'shorthash', '').lower()
+                if shared.backend == shared.Backend.DIFFUSERS and (shared.opts.lora_force_diffusers # OpenVINO only works with Diffusers LoRa loading.
+                        or shorthash == 'aaebf6360f7d' # sd15-lcm
+                        or shorthash == '3d18b05e4f56' # sdxl-lcm
+                        or shorthash == 'b71dcb732467' # sdxl-tcd
+                        or shorthash == '813ea5fb1c67' # sdxl-turbo
+                    ):
                     net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
                 else:
                     net = load_network(name, network_on_disk)

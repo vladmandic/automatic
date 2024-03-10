@@ -23,7 +23,6 @@ from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, errors, hashes, sd_models_config, sd_models_compile, sd_hijack_accelerate
 from modules.timer import Timer
 from modules.memstats import memory_stats
-from modules.paths import models_path, script_path
 from modules.modeldata import model_data
 
 
@@ -48,7 +47,7 @@ class CheckpointInfo:
         self.filename = filename
         self.type = ''
         relname = filename
-        app_path = os.path.abspath(script_path)
+        app_path = os.path.abspath(paths.script_path)
 
         def rel(fn, path):
             try:
@@ -64,8 +63,8 @@ class CheckpointInfo:
             relname = rel(filename, shared.opts.diffusers_dir)
         elif relname.startswith(model_path):
             relname = rel(filename, model_path)
-        elif relname.startswith(script_path):
-            relname = rel(filename, script_path)
+        elif relname.startswith(paths.script_path):
+            relname = rel(filename, paths.script_path)
         elif relname.startswith(app_path):
             relname = rel(filename, app_path)
         else:
@@ -147,7 +146,7 @@ def list_models():
         ext_filter = [".ckpt", ".safetensors"]
     model_list = list(modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.opts.ckpt_dir, ext_filter=ext_filter, download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"]))
     if shared.backend == shared.Backend.DIFFUSERS:
-        model_list += modelloader.load_diffusers_models(model_path=os.path.join(models_path, 'Diffusers'), command_path=shared.opts.diffusers_dir, clear=True)
+        model_list += modelloader.load_diffusers_models(clear=True)
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
         if checkpoint_info.name is not None:
@@ -683,7 +682,10 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 shared.opts.diffusers_move_unet = False
                 shared.opts.diffusers_move_refiner = False
                 shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-            sd_model.enable_model_cpu_offload()
+            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                sd_model.enable_model_cpu_offload()
+            else:
+                sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_sequential_cpu_offload"):
         if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
@@ -746,21 +748,35 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
 
 
 def move_model(model, device=None, force=False):
-    if model is not None:
-        if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
-            if device == devices.device: # force vae back to gpu if not in txt2img mode
-                model.vae.to(device)
-                if hasattr(model.vae, '_hf_hook'):
-                    debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-                    model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-        if getattr(model, 'has_accelerate', False) and not force:
-            return
-        debug_move(f'Model move: to={device} class={model.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-        try:
-            model.to(device)
-        except Exception as e:
-            shared.log.error(f'Model move: {e}')
-        devices.torch_gc()
+    if model is None or device is None:
+        return
+    if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
+        if device == devices.device: # force vae back to gpu if not in txt2img mode
+            model.vae.to(device)
+            if hasattr(model.vae, '_hf_hook'):
+                debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
+    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    if hasattr(model, "components"): # accelerate patch
+        for name, m in model.components.items():
+            if not hasattr(m, "_hf_hook"): # not accelerate hook
+                break
+            if not isinstance(m, torch.nn.Module) or name in model._exclude_from_cpu_offload: # pylint: disable=protected-access
+                continue
+            for module in m.modules():
+                if (hasattr(module, "_hf_hook") and hasattr(module._hf_hook, "execution_device") and module._hf_hook.execution_device is not None): # pylint: disable=protected-access
+                    try:
+                        module._hf_hook.execution_device = device # pylint: disable=protected-access
+                    except Exception as e:
+                        if os.environ.get('SD_MOVE_DEBUG', None):
+                            shared.log.error(f'Model move execution device: device={device} {e}')
+    if getattr(model, 'has_accelerate', False) and not force:
+        return
+    try:
+        model.to(device)
+    except Exception as e:
+        shared.log.error(f'Model move: device={device} {e}')
+    devices.torch_gc()
 
 
 def get_load_config(model_file, model_type):
@@ -903,9 +919,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     shared.log.debug(f'StableCascade experimental: args={diffusers_load_config} device={devices.device} dtype={devices.dtype}')
                     diffusers_load_config.pop("vae", None)
                     diffusers_load_config.pop("variant", None)
-                    decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/17", **diffusers_load_config)
+                    decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/44", **diffusers_load_config)
                     shared.log.debug(f'StableCascade decoder: scale={decoder.latent_dim_scale}')
-                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/2", **diffusers_load_config)
                     shared.log.debug(f'StableCascade prior: scale={prior.resolution_multiple}')
                     sd_model = diffusers.StableCascadeCombinedPipeline(
                         tokenizer=decoder.tokenizer,
@@ -917,8 +933,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         prior_text_encoder=prior.text_encoder,
                         prior_tokenizer=prior.tokenizer,
                         prior_scheduler=prior.scheduler,
-                        prior_prior_feature_extractor=prior.feature_extractor,
-                        prior_prior_image_encoder=prior.image_encoder)
+                        prior_feature_extractor=prior.feature_extractor,
+                        prior_image_encoder=prior.image_encoder)
                     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
@@ -996,9 +1012,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 if model_type.startswith('Stable Diffusion'):
                     if shared.opts.diffusers_force_zeros:
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
-                    if shared.opts.diffusers_aesthetics_score:
-                        diffusers_load_config['requires_aesthetics_score'] = shared.opts.diffusers_aesthetics_score
-                    # diffusers_load_config['config_files'] = get_load_config(checkpoint_info.path.lower())
                     diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type)
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
@@ -1038,8 +1051,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             pass # scheduler is created on first use
         elif "Kandinsky" in sd_model.__class__.__name__:
             sd_model.scheduler.name = 'DDIM'
-
-        set_diffuser_options(sd_model, vae, op)
 
         base_sent_to_cpu=False
         if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none') or shared.opts.ipex_optimize or shared.opts.nncf_compress_weights:
@@ -1088,6 +1099,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if op == 'refiner' and base_sent_to_cpu:
             shared.log.debug('Moving base model back to GPU')
             move_model(model_data.sd_model, devices.device)
+        set_diffuser_options(sd_model, vae, op) # offloading should enabled after all
     except Exception as e:
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
@@ -1226,6 +1238,9 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
 def set_diffuser_pipe(pipe, new_pipe_type):
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
+    # skip specific pipelines
+    if pipe.__class__.__name__ == 'StableDiffusionReferencePipeline' or pipe.__class__.__name__ == 'StableDiffusionAdapterPipeline' or 'Onnx' in pipe.__class__.__name__:
+        return pipe
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)
@@ -1234,10 +1249,6 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     embedding_db = getattr(pipe, "embedding_db", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
-
-    # skip specific pipelines
-    if pipe.__class__.__name__ == 'StableDiffusionReferencePipeline' or pipe.__class__.__name__ == 'StableDiffusionAdapterPipeline' or 'Onnx' in pipe.__class__.__name__:
-        return pipe
 
     try:
         if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
@@ -1250,8 +1261,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__} {e}')
         return pipe
 
-    if pipe.__class__ == new_pipe.__class__:
-        return pipe
+    # if pipe.__class__ == new_pipe.__class__:
+    #    return pipe
     new_pipe.sd_checkpoint_info = sd_checkpoint_info
     new_pipe.sd_model_checkpoint = sd_model_checkpoint
     new_pipe.sd_model_hash = sd_model_hash
@@ -1262,7 +1273,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__}")
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 

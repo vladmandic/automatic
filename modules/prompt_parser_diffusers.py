@@ -151,13 +151,11 @@ def prepare_embedding_providers(pipe, clip_skip):
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
-    if hasattr(pipe, "tokenizer") and hasattr(pipe, "text_encoder"):
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False,
-                                      returned_embeddings_type=embedding_type, device=device)
+    if getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
-    if hasattr(pipe, "tokenizer_2") and hasattr(pipe, "text_encoder_2"):
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False,
-                                      returned_embeddings_type=embedding_type, device=device)
+    if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     return embeddings_providers
 

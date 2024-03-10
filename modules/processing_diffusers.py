@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -73,6 +73,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if shared.state.interrupted or shared.state.skipped:
                     raise AssertionError('Interrupted...')
                 time.sleep(0.1)
+        if hasattr(p, "extra_network_data"):
+            extra_networks.activate(p, p.extra_network_data, step=step)
         if latents is None:
             return kwargs
         elif shared.opts.nan_skip:
@@ -243,13 +245,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args["prior_guidance_scale"] = p.cfg_scale
             if 'decoder_guidance_scale' in possible:
                 args["decoder_guidance_scale"] = p.image_cfg_scale
-            # TODO Stable Cascade callbacks are currently broken in combined pipeline so preview will not get triggered
-            if 'prior_callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback' in possible:
-                possible.remove('callback')
 
         # set callbacks
         if 'callback_steps' in possible:
@@ -349,7 +344,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if p.sag_scale > 0 and is_txt2img():
             update_sampler(shared.sd_model)
             supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
-            if sd_model.scheduler.__class__.__name__ in supported:
+            if hasattr(sd_model, 'sfast'):
+                shared.log.warning(f'SAG incompatible compile mode: backend={shared.opts.cuda_compile_backend}')
+            elif sd_model.scheduler.__class__.__name__ in supported:
                 sd_model = sd_models.switch_pipe(diffusers.StableDiffusionSAGPipeline, sd_model)
                 p.extra_generation_params["SAG scale"] = p.sag_scale
                 p.task_args['sag_scale'] = p.sag_scale
@@ -363,6 +360,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             orig_pipeline = sd_model # processed ONNX pipeline should not be replaced with original pipeline.
         return sd_model
 
+    # sanitize init_images
+    if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
+        del p.init_images
     if len(getattr(p, 'init_images', [])) > 0:
         while len(p.init_images) < len(p.prompts):
             p.init_images.append(p.init_images[-1])
@@ -413,6 +413,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
+        sd_models.move_model(shared.sd_model, devices.device)
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
@@ -441,8 +442,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.log.error(f'Processing: args={base_args} {e}')
         errors.display(e, 'Processing')
 
-    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0:
+    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
+    if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None: # replace input with output so it can be used by hires/refine
+        p.task_args['image'] = output.images
 
     shared.state.nextjob()
     if shared.state.interrupted or shared.state.skipped:
@@ -450,11 +453,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return results
 
     # optional second pass
-    if p.enable_hr and len(getattr(p, 'init_images', [])) == 0:
+    if p.enable_hr:
         p.is_hr_pass = True
-    if p.is_hr_pass:
-        p.init_hr()
+        p.init_hr(p.hr_scale, p.hr_upscaler)
         prev_job = shared.state.job
+
+        # hires runs on original pipeline
+        if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            shared.sd_model.restore_pipeline()
 
         # upscale
         if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
@@ -467,7 +473,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
-        if (latent_upscale is not None or p.hr_force) and p.denoising_strength > 0:
+        if (latent_upscale is not None or p.hr_force) and getattr(p, 'hr_denoising_strength', p.denoising_strength) > 0:
             p.ops.append('hires')
             sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
             if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -480,6 +486,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            sd_models.move_model(shared.sd_model, devices.device)
+            orig_denoise = p.denoising_strength
+            p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
             hires_args = set_pipeline_args(
                 model=shared.sd_model,
                 prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
@@ -507,7 +516,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
                 shared.log.info(e)
-            p.init_images = []
+            p.denoising_strength = orig_denoise
+            # p.init_images = []
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
@@ -561,8 +571,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             )
             shared.state.sampling_steps = refiner_args['num_inference_steps']
             try:
-                if 'requires_aesthetics_score' in shared.sd_refiner.config:
-                    shared.sd_refiner.register_to_config(requires_aesthetics_score=shared.opts.diffusers_aesthetics_score)
+                if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true
+                    shared.sd_refiner.register_to_config(requires_aesthetics_score = getattr(shared.sd_refiner, 'tokenizer', None) is None)
                 refiner_output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
                 if isinstance(refiner_output, dict):
                     refiner_output = SimpleNamespace(**refiner_output)

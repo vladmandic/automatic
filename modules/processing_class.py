@@ -1,5 +1,4 @@
 import os
-import math
 import hashlib
 from typing import Any, Dict, List
 from dataclasses import dataclass, field
@@ -237,10 +236,12 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         self.width = self.width or 512
         self.height = self.height or 512
 
-    def init_hr(self):
+    def init_hr(self, scale = None, upscaler = None):
+        scale = scale or self.hr_scale
+        upscaler = upscaler or self.hr_upscaler
         if self.hr_resize_x == 0 and self.hr_resize_y == 0:
-            self.hr_upscale_to_x = int(self.width * self.hr_scale)
-            self.hr_upscale_to_y = int(self.height * self.hr_scale)
+            self.hr_upscale_to_x = int(self.width * scale)
+            self.hr_upscale_to_y = int(self.height * scale)
         else:
             if self.hr_resize_y == 0:
                 self.hr_upscale_to_x = self.hr_resize_x
@@ -262,7 +263,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 self.truncate_x = (self.hr_upscale_to_x - target_w) // 8
                 self.truncate_y = (self.hr_upscale_to_y - target_h) // 8
         if shared.backend == shared.Backend.ORIGINAL: # diffusers are handled in processing_diffusers
-            if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or self.hr_upscaler is None or self.hr_upscaler == 'None': # special case: the user has chosen to do nothing
+            if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or upscaler is None or upscaler == 'None': # special case: the user has chosen to do nothing
                 self.is_hr_pass = False
                 return
             self.is_hr_pass = True
@@ -283,6 +284,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.resize_mode: int = resize_mode
         self.resize_name: str = resize_name
         self.denoising_strength: float = denoising_strength
+        self.hr_denoising_strength: float = denoising_strength
         self.image_cfg_scale: float = image_cfg_scale
         self.init_latent = None
         self.image_mask = mask
@@ -311,9 +313,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts, all_seeds, all_subseeds):
-        if shared.backend == shared.Backend.DIFFUSERS and self.image_mask is not None and not self.is_control:
+        if shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
-        elif shared.backend == shared.Backend.DIFFUSERS and self.image_mask is None and not self.is_control:
+        elif shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'init_images', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
 
         if self.sampler_name == "PLMS":
@@ -477,14 +479,15 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass
 
-    def init_hr(self):
-        if self.resize_name == 'None' or self.scale_by == 1.0:
+    def init_hr(self, scale = None, upscaler = None):
+        scale = scale or self.scale_by
+        upscaler = upscaler or self.resize_name
+        if upscaler == 'None' or scale == 1.0:
             return
         self.is_hr_pass = True
         self.hr_force = True
-        self.hr_upscaler = self.resize_name
-        self.hr_upscale_to_x, self.hr_upscale_to_y = int(self.width * self.scale_by), int(self.height * self.scale_by)
-        self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * math.ceil(self.hr_upscale_to_x / 8), 8 * math.ceil(self.hr_upscale_to_y / 8)
+        self.hr_upscaler = upscaler
+        self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
         # hypertile_set(self, hr=True)
         shared.state.job_count = 2 * self.n_iter
-        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={self.scale_by} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')

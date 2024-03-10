@@ -13,7 +13,7 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
 
     def parse_desc(self, desc):
         lines = desc.strip().split("\n")
-        params = { 'name': '', 'description': '', 'prompt': '', 'negative': '', 'extra': ''}
+        params = { 'name': '', 'description': '', 'prompt': '', 'negative': '', 'extra': '', 'wildcards': ''}
         found = ''
         for line in lines:
             line = line.strip()
@@ -32,6 +32,9 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
             elif line.lower().startswith('extra:'):
                 found = 'extra'
                 params['extra'] = line[6:].strip()
+            elif line.lower().startswith('wildcards:'):
+                found = 'wildcards'
+                params['wildcards'] = line[10:].strip()
             elif found != '':
                 params[found] += '\n' + line
         if params['name'] == '':
@@ -53,10 +56,11 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
             "title": name,
             "filename": fn,
             "preview": self.find_preview(name),
-            "description": '',
+            "description": params.get('Description', ''),
             "prompt": params.get('Prompt', ''),
             "negative": params.get('Negative prompt', ''),
-            "extra": '',
+            "extra": params.get('Extra', ''),
+            "wildcards": params.get('Wildcards', ''),
             "local_preview": f"{name}.{shared.opts.samples_format}",
         }
         return item
@@ -82,6 +86,7 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
                 "prompt": getattr(style, 'prompt', ''),
                 "negative": getattr(style, 'negative_prompt', ''),
                 "extra": getattr(style, 'extra', ''),
+                "wildcards": getattr(style, 'wildcards', ''),
                 "local_preview": f"{fn}.{shared.opts.samples_format}",
                 "onclick": '"' + html.escape(f"""return selectStyle({json.dumps(name)})""") + '"',
                 "mtime": getattr(style, 'mtime', 0),

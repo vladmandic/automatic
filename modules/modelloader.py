@@ -87,7 +87,7 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
         model_file = os.path.join(shared.opts.ckpt_dir, model_path, model_name)
         temp_file = os.path.join(shared.opts.ckpt_dir, model_path, temp_file)
 
-    res = f'CivitAI download: name="{model_name}" url="{model_url}" path="{model_path}" temp="{temp_file}"'
+    res = f'Model download: name="{model_name}" url="{model_url}" path="{model_path}" temp="{temp_file}"'
     if os.path.isfile(model_file):
         res += ' already exists'
         shared.log.warning(res)
@@ -144,7 +144,7 @@ def download_civit_model(model_url: str, model_name: str, model_path: str, model
     import threading
     thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, preview, token))
     thread.start()
-    return f'CivitAI download: name={model_name} url={model_url} path={model_path}'
+    return f'Model download: name={model_name} url={model_url} path={model_path}'
 
 
 def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config: Dict[str, str] = None, token = None, variant = None, revision = None, mirror = None, custom_pipeline = None):
@@ -215,60 +215,47 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     return pipeline_dir
 
 
-def load_diffusers_models(model_path: str, command_path: str = None, clear=True):
+def load_diffusers_models(clear=True):
     excluded_models = [
         'PhotoMaker', 'inswapper_128', 'IP-Adapter'
     ]
     t0 = time.time()
-    places = []
-    places.append(model_path)
-    if command_path is not None and command_path != model_path:
-        places.append(command_path)
+    place = shared.opts.diffusers_dir
+    if place is None or len(place) == 0 or not os.path.isdir(place):
+        place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
     output = []
-    for place in places:
-        if not os.path.isdir(place):
-            continue
-        try:
-            """
-            import huggingface_hub as hf
-            res = hf.scan_cache_dir(cache_dir=place)
-            for r in list(res.repos):
-                cache_path = os.path.join(r.repo_path, "snapshots", list(r.revisions)[-1].commit_hash)
-                diffuser_repos.append({ 'name': r.repo_id, 'filename': r.repo_id, 'path': cache_path, 'size': r.size_on_disk, 'mtime': r.last_modified, 'hash': list(r.revisions)[-1].commit_hash, 'model_info': str(os.path.join(cache_path, "model_info.json")) })
-                if not os.path.isfile(os.path.join(cache_path, "hidden")):
-                    output.append(str(r.repo_id))
-            """
-            for folder in os.listdir(place):
-                try:
-                    if any([x in folder for x in excluded_models]): # noqa:C419
-                        continue
-                    if "--" not in folder:
-                        continue
-                    if folder.endswith("-prior"):
-                        continue
-                    _, name = folder.split("--", maxsplit=1)
-                    name = name.replace("--", "/")
-                    folder = os.path.join(place, folder)
-                    friendly = os.path.join(place, name)
-                    snapshots = os.listdir(os.path.join(folder, "snapshots"))
-                    if len(snapshots) == 0:
-                        shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
-                        continue
-                    commit = os.path.join(folder, 'snapshots', snapshots[-1])
-                    mtime = os.path.getmtime(commit)
-                    info = os.path.join(commit, "model_info.json")
-                    diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
-                    if os.path.exists(os.path.join(folder, 'hidden')):
-                        continue
-                    output.append(name)
-                except Exception:
-                    # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
-                    pass
-        except Exception as e:
-            shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: {places} items={len(output)} time={time.time()-t0:.2f}')
+    try:
+        for folder in os.listdir(place):
+            try:
+                if any([x in folder for x in excluded_models]): # noqa:C419
+                    continue
+                if "--" not in folder:
+                    continue
+                if folder.endswith("-prior"):
+                    continue
+                _, name = folder.split("--", maxsplit=1)
+                name = name.replace("--", "/")
+                folder = os.path.join(place, folder)
+                friendly = os.path.join(place, name)
+                snapshots = os.listdir(os.path.join(folder, "snapshots"))
+                if len(snapshots) == 0:
+                    shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
+                    continue
+                commit = os.path.join(folder, 'snapshots', snapshots[-1])
+                mtime = os.path.getmtime(commit)
+                info = os.path.join(commit, "model_info.json")
+                diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
+                if os.path.exists(os.path.join(folder, 'hidden')):
+                    continue
+                output.append(name)
+            except Exception:
+                # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
+                pass
+    except Exception as e:
+        shared.log.error(f"Error listing diffusers: {place} {e}")
+    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(output)} time={time.time()-t0:.2f}')
     return output
 
 

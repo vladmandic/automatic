@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
-from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img # pylint: disable=unused-import
+from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
 
 
@@ -162,6 +162,11 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
+
+        if p.width is not None:
+            p.width = 8 * int(p.width / 8)
+        if p.height is not None:
+            p.height = 8 * int(p.height / 8)
 
         script_callbacks.before_process_callback(p)
 

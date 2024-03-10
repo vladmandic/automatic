@@ -164,11 +164,12 @@ def compile_stablefast(sd_model):
     try:
         t0 = time.time()
         sd_model = sf.compile(sd_model, config)
+        sd_model.sfast = True
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
         t1 = time.time()
-        shared.log.info(f"Model compile: task=Stable-fast config={config.__dict__} time={t1-t0:.2f}")
+        shared.log.info(f"Model compile: task='Stable-fast' config={config.__dict__} time={t1-t0:.2f}")
     except Exception as e:
         shared.log.info(f"Model compile: task=Stable-fast error: {e}")
     return sd_model
@@ -261,7 +262,7 @@ def compile_deepcache(sd_model):
     deepcache_worker = DeepCacheSDHelper(pipe=sd_model)
     deepcache_worker.set_params(cache_interval=shared.opts.deep_cache_interval, cache_branch_id=0)
     t1 = time.time()
-    shared.log.info(f"Model compile: task=DeepCache config={deepcache_worker.params} time={t1-t0:.2f}")
+    shared.log.info(f"Model compile: task='DeepCache' config={deepcache_worker.params} time={t1-t0:.2f}")
     # config={'cache_interval': 3, 'cache_layer_id': 0, 'cache_block_id': 0, 'skip_mode': 'uniform'} time=0.00
     return sd_model
 

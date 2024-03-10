@@ -187,24 +187,34 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters(x: str):
+def parse_generation_parameters(param_str: str):
     res = {}
-    if x is None:
+    if param_str is None:
         return res
-    remaining = x.replace('\n', ' ').strip()
+    remaining = param_str.replace('\n', ' ').strip()
+    # remaining = param_str.strip()
     if len(remaining) == 0:
         return res
-    remaining = x[7:] if x.startswith('Prompt: ') else x
-    remaining = x[11:] if x.startswith('parameters: ') else x
-    if 'Steps: ' in remaining and 'Negative prompt: ' not in remaining:
-        remaining = remaining.replace('Steps: ', 'Negative prompt: Steps: ')
-    prompt, remaining = remaining.strip().split('Negative prompt: ', maxsplit=1) if 'Negative prompt: ' in remaining else (remaining, '')
+    if 'prompt:' in remaining:
+        remaining = remaining.replace('prompt:', 'Prompt:')
+    if 'negative prompt:' in remaining:
+        remaining = remaining.replace('negative prompt:', 'Negative prompt:')
+    if 'Negative Prompt:' in remaining:
+        remaining = remaining.replace('Negative Prompt:', 'Negative prompt:')
+    if 'steps:' in remaining:
+        remaining = remaining.replace('steps:', 'Steps:')
+    remaining = remaining[7:] if remaining.startswith('Prompt:') else remaining
+    remaining = remaining[11:] if remaining.startswith('parameters:') else remaining
+    if 'Steps:' in remaining and 'Negative prompt:' not in remaining:
+        remaining = remaining.replace('Steps:', 'Negative prompt: Steps:')
+    prompt, remaining = remaining.strip().split('Negative prompt:', maxsplit=1) if 'Negative prompt:' in remaining else (remaining, '')
     res["Prompt"] = prompt.strip()
-    negative, remaining = remaining.strip().split('Steps: ', maxsplit=1) if 'Steps: ' in remaining else (remaining, None)
+    negative, remaining = remaining.strip().split('Steps:', maxsplit=1) if 'Steps:' in remaining else (remaining, None)
     res["Negative prompt"] = negative.strip()
+
     if remaining is None:
         return res
-    remaining = f'Steps: {remaining}'
+    remaining = f'Steps: {remaining.strip()}'
     for k, v in re_param.findall(remaining.strip()):
         try:
             if v[0] == '"' and v[-1] == '"':

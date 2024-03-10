@@ -67,6 +67,12 @@ def setup_logging():
             self.formatter = logging.Formatter('{ "asctime":"%(asctime)s", "created":%(created)f, "facility":"%(name)s", "pid":%(process)d, "tid":%(thread)d, "level":"%(levelname)s", "module":"%(module)s", "func":"%(funcName)s", "msg":"%(message)s" }')
 
         def emit(self, record):
+            if record.msg is not None and not isinstance(record.msg, str):
+                record.msg = str(record.msg)
+            try:
+                record.msg = record.msg.replace('"', "'")
+            except Exception:
+                pass
             msg = self.format(record)
             # self.buffer.append(json.loads(msg))
             self.buffer.append(msg)
@@ -425,9 +431,12 @@ def check_torch():
         log.info('nVidia CUDA toolkit detected: nvidia-smi present')
         if not args.use_xformers:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
+            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu121')
         else:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
-        xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers' if opts.get('cross_attention_optimization', '') == 'xFormers' else 'none')
+            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu118')
+        if opts.get('cross_attention_optimization', '') != 'xFormers':
+            xformers_package = 'none'
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
     elif is_rocm_available():
         is_windows = platform.system() == 'Windows'
@@ -479,7 +488,6 @@ def check_torch():
             log.debug(f'ROCm hipconfig failed: {e}')
             rocm_ver = None
         if args.use_zluda:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
             log.warning("ZLUDA support: experimental")
             zluda_need_dll_patch = is_windows and not installed('torch')
             zluda_path = find_zluda()
@@ -493,15 +501,24 @@ def check_torch():
                     import tarfile
                     archive_type = tarfile.TarFile
                     zluda_url = 'https://github.com/vosen/ZLUDA/releases/download/v3/zluda-3-linux.tar.gz'
-                urllib.request.urlretrieve(zluda_url, '_zluda')
-                with archive_type('_zluda', 'r') as f:
-                    f.extractall('.zluda')
-                zluda_path = os.path.abspath('./.zluda')
-                os.remove('_zluda')
-            log.debug(f'Found ZLUDA in {zluda_path}')
-            paths = os.environ.get('PATH', '.')
-            if zluda_path not in paths:
-                os.environ['PATH'] = paths + ';' + zluda_path
+                try:
+                    urllib.request.urlretrieve(zluda_url, '_zluda')
+                    with archive_type('_zluda', 'r') as f:
+                        f.extractall('.zluda')
+                    zluda_path = os.path.abspath('./.zluda')
+                    os.remove('_zluda')
+                except Exception as e:
+                    log.warning(f'Failed to install ZLUDA: {e}')
+            if os.path.exists(os.path.join(zluda_path, 'nvcuda.dll')):
+                log.info(f'Using ZLUDA in {zluda_path}')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.1 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                paths = os.environ.get('PATH', '.')
+                if zluda_path not in paths:
+                    os.environ['PATH'] = paths + ';' + zluda_path
+            else:
+                log.info('Using CPU-only torch')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+                zluda_need_dll_patch = False
         elif is_windows: # TODO TBD after ROCm for Windows is released
             log.warning("HIP SDK is detected, but no Torch release for Windows available")
             log.info("For ZLUDA support specify '--use-zluda'")
@@ -515,7 +532,9 @@ def check_torch():
             else:
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5') # ROCm 5.5 is oldest for PyTorch 2.1
             if rocm_ver is not None:
-                install(os.environ.get('ONNXRUNTIME_PACKAGE', get_onnxruntime_source_for_rocm(arr)), "onnxruntime-training built with ROCm", ignore=True)
+                ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
+                ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
+                install(ort_package, 'onnxruntime-training')
         xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
@@ -618,9 +637,7 @@ def check_torch():
         if 'xformers' in xformers_package:
             install(f'--no-deps {xformers_package}', ignore=True)
             import torch
-            import xformers
-            if torch.__version__ != '2.0.1+cu118' and xformers.__version__ in ['0.0.22', '0.0.21', '0.0.20']:
-                log.warning(f'Likely incompatible torch with: xformers=={xformers.__version__} installed: torch=={torch.__version__} required: torch==2.1.0+cu118 - build xformers manually or downgrade torch')
+            import xformers # pylint: disable=unused-import
         elif not args.experimental and not args.use_xformers:
             uninstall('xformers')
     except Exception as e:
@@ -915,18 +932,6 @@ def get_version():
         except Exception:
             version = { 'app': 'sd.next', 'version': 'unknown' }
     return version
-
-
-def get_onnxruntime_source_for_rocm(rocm_ver):
-    ort_version = "1.16.3" # hardcoded
-    cp_str = f"{sys.version_info.major}{sys.version_info.minor}"
-    if rocm_ver is None:
-        command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        rocm_ver = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-    if "linux" in sys.platform:
-        return f"https://download.onnxruntime.ai/onnxruntime_training-{ort_version}%2Brocm{rocm_ver[0]}{rocm_ver[1]}-cp{cp_str}-cp{cp_str}-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
-    else:
-        return 'onnxruntime-gpu'
 
 
 def find_zluda():

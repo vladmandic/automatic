@@ -68,6 +68,7 @@ restricted_opts = {
     "outdir_txt2img_samples",
     "outdir_img2img_samples",
     "outdir_extras_samples",
+    "outdir_control_samples",
     "outdir_grids",
     "outdir_txt2img_grids",
     "outdir_save",
@@ -325,6 +326,12 @@ elif devices.backend == "directml":
 else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
+if devices.backend == "rocm":
+    sdp_options_default =  ['Memory attention', 'Math attention']
+#elif devices.backend == "zluda":
+#    sdp_options_default =  ['Math attention']
+else:
+    sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["original", "diffusers"] }),
@@ -358,7 +365,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(diffusers=backend == Backend.DIFFUSERS) }),
-    "sdp_options": OptionInfo(['Flash attention', 'Memory attention', 'Math attention'], "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
+    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
     "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": backend == Backend.ORIGINAL}),
@@ -457,7 +464,6 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
     "disable_accelerate": OptionInfo(False, "Disable accelerate"),
     "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty", gr.Checkbox, {"visible": False}),
-    "diffusers_aesthetics_score": OptionInfo(False, "Require aesthetics score"),
     "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
     "huggingface_token": OptionInfo('', 'HuggingFace token'),
 
@@ -514,8 +520,6 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "image_metadata": OptionInfo(True, "Include metadata"),
     "save_txt": OptionInfo(False, "Create info file per image"),
     "save_log_fn": OptionInfo("", "Update JSON log file per image", component_args=hide_dirs),
-    "image_watermark_enabled": OptionInfo(False, "Include watermark"),
-    "image_watermark": OptionInfo('', "Watermark string"),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
@@ -532,6 +536,12 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_images_before_color_correction": OptionInfo(False, "Save image before color correction"),
     "save_mask": OptionInfo(False, "Save inpainting mask"),
     "save_mask_composite": OptionInfo(False, "Save inpainting masked composite"),
+
+    "image_sep_watermark": OptionInfo("<h2>Watermarking</h2>", "", gr.HTML),
+    "image_watermark_enabled": OptionInfo(False, "Include invisible watermark"),
+    "image_watermark": OptionInfo('', "Invisible watermark string"),
+    "image_watermark_position": OptionInfo('none', 'Image watermark position', gr.Dropdown, {"choices": ["none", "top/left", "top/right", "bottom/left", "bottom/right", "center", "random"]}),
+    "image_watermark_image": OptionInfo('', "Image watermark file"),
 }))
 
 options_templates.update(options_section(('saving-paths', "Image Naming & Paths"), {
@@ -570,6 +580,7 @@ options_templates.update(options_section(('ui', "User Interface Options"), {
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "tooltips": OptionInfo("UI Tooltips", "UI tooltips", gr.Radio, {"choices": ["None", "Browser default", "UI tooltips"], "visible": False}),
+    "aspect_ratios": OptionInfo("1:1, 4:3, 16:9, 16:10, 21:9, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),

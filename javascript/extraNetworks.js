@@ -309,7 +309,7 @@ function quickSaveStyle() {
 }
 
 let enDirty = false;
-function closeDetailsEN(args) {
+function closeDetailsEN(...args) {
   // log('closeDetailsEN');
   enDirty = true;
   const tabname = getENActiveTab();
@@ -317,7 +317,7 @@ function closeDetailsEN(args) {
   if (btnClose) setTimeout(() => btnClose.click(), 100);
   const btnRefresh = gradioApp().getElementById(`${tabname}_extra_refresh`);
   if (btnRefresh && enDirty) setTimeout(() => btnRefresh.click(), 100);
-  return args;
+  return [...args];
 }
 
 function refeshDetailsEN(args) {

@@ -2,30 +2,51 @@
 
 ## TODO
 
-- EDM samplers for Playground require `diffusers==0.27.0`
-- StableCascade requires diffusers `kashif/diffusers.git@wuerstchen-v3`
+- items that require `diffusers==0.27.0.dev`:
+  - EDM samplers for Playground 2.5
+  - Stable Cascade
 
-## Update for 2024-03-01
+## Update for 2024-03-08
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
   - download using networks -> reference
   - set sampler to *DPM++ 2M EDM* or *Euler EDM*
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
-  - another very fast & light sd-xl model where original unet was compressed and distilled to 54% of original size  
+  - another very fast & light sdxl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
-- **Image2Video**
-  - new module for creating videos from images  
-  - simply enable from *img2img -> scripts -> image2video*  
-  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
-- **VQA** visual question & answer in interrogate  
-  - with support for multiple variations of base models: *GIT, BLIP, ViLT, PIX*
+  [Stable Cascade](https://github.com/Stability-AI/StableCascade)
+  - large multi-stage high-quality model
+  - download using networks -> reference
+  - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
+  - currently requires 10GB VRAM, lighter version is in development
+- **Visual Query** visual query & answer in process tab  
+  - go to process -> visual query  
+  - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
+  - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  
+    *note*: its still 3.7GB in size, so not really tiny  
+  - additional support for multiple variations of several base models: *GIT, BLIP, ViLT, PIX*, sizes range from 0.3 to 1.7GB  
 - **Second Pass / Refine**
   - independent upscale and hires options: run hires without upscale or upscale without hires or both
   - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
   - update ui section to reflect changes
   - *note*: behavior using backend:original is unchanged for backwards compatibilty
+- **Image2Video**
+  - new module for creating videos from images  
+  - simply enable from *img2img -> scripts -> image2video*  
+  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- **Composable LoRA**, thanks @AI-Casanova
+  - control lora strength for each step
+    for example: `<xxx:0.1@0,0.9@1>` means strength=0.1 for step at 0% and intepolate towards strength=0.9 for step at 100%
+  - set sampler to *Composable LoRA*  
+  - *note*: this is a very experimental feature and may not work as expected
+- **Control**
+  - added *refiner/hires* workflows
+- **ROCm**  
+  - added *flash attention* support for rdna3, thanks @Disty0  
+    install flash_attn package for rdna3 manually and enable *flash attention* from *compute settings*   
+    to install flash_attn, activate the venv and run `pip install -U git+https://github.com/ROCm/flash-attention@howiejay/navi_support`   
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
@@ -33,26 +54,62 @@
   - *DPM++ 2M EDM* and *Euler EDM*  
     EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
     Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
+- **Styles**: styles are not just for prompts!
+  - new styles editor: *networks -> styles -> edit*
+  - styles can apply generate parameters, for example to have a style that enables and configures hires:  
+    parameters=`enable_hr: True, hr_scale: 2, hr_upscaler: Latent Bilinear antialias, hr_sampler_name: DEIS, hr_second_pass_steps: 20, denoising_strength: 0.5`
+  - styles can apply wildcards to prompts, for example:  
+    wildcards=`movie=mad max, dune, star wars, star trek; intricate=realistic, color sketch, pencil sketch, intricate`
+  - as usual, you can apply any number of styles so you can choose which settings are applied and in which order and which wildcards are used
+- **UI**
+  - *aspect-ratio** add selector and lock to width/height control  
+    allowed aspect ration can be configured via *settings -> user interface*  
+  - *interrogate* tab is now merged into *process* tab  
+  - *image viewer* now displays image metadata
+  - *themes* improve on-the-fly switching
+  - *log monitor* flag server warnings/errors and overall improve display
+  - *control* separate processor settings from unit settings
+- **Watermarking**
+  - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  
+  - See *settings -> image options -> watermarking*  
+  - Invisible watermark: using steganogephy  
+  - Image watermark: overlaid on top of image  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
   - new setting in image options: *include mask in output*
+  - improved params parsing from from prompt string and styles
   - default theme updates and additional built-in theme *black-gray*
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
+- **API**
+  - add preprocessor api endpoints  
+    GET:`/sdapi/v1/preprocessors`, POST:`/sdapi/v1/preprocess`, sample script:`cli/simple-preprocess.py`
+  - add masking api endpoints  
+    GET:`/sdapi/v1/masking`, POST:`/sdapi/v1/mask`, sample script:`cli/simple-mask.py`
 - **Internal**
+  - **stable-fast** compatibility with torch 2.2.1  
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
+- **Refiner** validated workflows:
+  - Fully functional: SD15 + SD15, SDXL + SDXL, SDXL + SDXL-R
+  - Functional, but result is not as good: SD15 + SDXL, SDXL + SD15, SD15 + SDXL-R
+- **SDXL Lightning** models just-work, just makes sure to set CFG Scale to 0  
+    and choose a best-suited sampler, it may not be the one you're used to (e.g. maybe even basic Euler)  
 - **Fixes**
-  - improve model cpu offload compatibility
-  - improve model sequential offload compatibility
-  - improve bfloat16 compatibility
+  - improve *model cpu offload* compatibility
+  - improve *model sequential offload* compatibility
+  - improve *bfloat16* compatibility
+  - improve *xformers* installer to match cuda version and install triton
   - fix extra networks refresh
-  - fix sdp memory attention in backend original
+  - fix *sdp memory attention* in backend original
   - fix autodetect sd21 models
   - fix api info endpoint
-  - fix sampler eta in xyz grid, thanks @AI-Casanova
+  - fix *sampler eta* in xyz grid, thanks @AI-Casanova
+  - fix *requires_aesthetics_score* errors
+  - fix t2i-canny
+  - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
 
@@ -293,7 +350,7 @@ Further details:
     - full implementation for *SD15* and *SD-XL*, to use simply select from *Scripts*  
       **Base** (93MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-H-14* (2.5GB) as image encoder  
       **Plus** (150MB) uses *InsightFace* to generate face embeds and *CLIP-ViT-H-14-laion2B* (3.8GB) as image encoder  
-      **SXDL** (1022MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-bigG-14* (3.7GB) as image encoder  
+      **SDXL** (1022MB) uses *InsightFace* to generate face embeds and *OpenCLIP-ViT-bigG-14* (3.7GB) as image encoder  
   - [FaceSwap](https://github.com/deepinsight/insightface/blob/master/examples/in_swapper/README.md)  
     - face swap performs face swapping at the end of generation  
     - based on InsightFace in-swapper  
@@ -310,7 +367,7 @@ Further details:
 - [IPAdapter](https://huggingface.co/h94/IP-Adapter)  
   - additional models for *SD15* and *SD-XL*, to use simply select from *Scripts*:  
     **SD15**: Base, Base ViT-G, Light, Plus, Plus Face, Full Face  
-    **SDXL**: Base SXDL, Base ViT-H SXDL, Plus ViT-H SXDL, Plus Face ViT-H SXDL  
+    **SDXL**: Base SDXL, Base ViT-H SDXL, Plus ViT-H SDXL, Plus Face ViT-H SDXL  
   - enable use via api, thanks @trojaner  
 - [Segmind SegMoE](https://github.com/segmind/segmoe)  
   - initial support for reference models  
