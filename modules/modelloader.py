@@ -277,20 +277,31 @@ def find_diffuser(name: str):
     return None
 
 
-def load_reference(name: str):
-    found = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
-    if len(found) > 0: # already downloaded
-        shared.log.debug(f'Reference model: {found[0]}')
-        return True
-    shared.log.debug(f'Reference download: {name}')
+def get_reference_opts(name: str):
     reference_models = shared.readfile(os.path.join('html', 'reference.json'), silent=False)
     model_opts = {}
     for v in reference_models.values():
-        if v.get('path', '') == name:
+        reference_name = v.get('path', '').split('@')[0].split('.')[0]
+        if reference_name == name:
             model_opts = v
             break
+    if not model_opts:
+        shared.log.error(f'Reference: model="{name}" not found')
+        return {}
+    from modules import styles
+    styles.reference_style = model_opts.get('extras', None)
+    shared.log.debug(f'Reference: model="{name}" {styles.reference_style}')
+    return model_opts
+
+
+def load_reference(name: str):
+    found = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
+    if len(found) > 0: # already downloaded
+        model_opts = get_reference_opts(found[0]['name'])
+        return True
     if model_opts.get('skip', False):
         return True
+    shared.log.debug(f'Reference: download="{name}"')
     model_dir = download_diffusers_model(
         hub_id=name,
         cache_dir=shared.opts.diffusers_dir,
@@ -300,10 +311,11 @@ def load_reference(name: str):
         custom_pipeline=model_opts.get('custom_pipeline', None)
     )
     if model_dir is None:
-        shared.log.debug(f'Reference download failed: {name}')
+        shared.log.error(f'Reference download: model="{name}"')
         return False
     else:
-        shared.log.debug(f'Reference download complete: {name}')
+        shared.log.debug(f'Reference download complete: model="{name}"')
+        model_opts = get_reference_opts(name)
         from modules import sd_models
         sd_models.list_models()
         return True
@@ -314,19 +326,19 @@ def load_civitai(model: str, url: str):
     name, _ext = os.path.splitext(model)
     info = sd_models.get_closet_checkpoint_match(name)
     if info is not None:
-        shared.log.debug(f'Reference model: {name}')
+        _model_opts = get_reference_opts(info.model_name)
         return name # already downloaded
     else:
-        shared.log.debug(f'Reference model: {name} download start')
+        shared.log.debug(f'Reference download start: model="{name}"')
         download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', preview=None, token=None)
-        shared.log.debug(f'Reference model: {name} download complete')
+        shared.log.debug(f'Reference download complete: model="{name}"')
         sd_models.list_models()
         info = sd_models.get_closet_checkpoint_match(name)
         if info is not None:
-            shared.log.debug(f'Reference model: {name}')
+            shared.log.debug(f'Reference: model="{name}"')
             return name # already downloaded
         else:
-            shared.log.debug(f'Reference model: {name} not found')
+            shared.log.error(f'Reference model="{name}" not found')
             return None
 
 
@@ -336,7 +348,6 @@ def download_url_to_file(url: str, dst: str):
     import tempfile
     from urllib.request import urlopen, Request
     from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
-
     file_size = None
     req = Request(url, headers={"User-Agent": "sdnext"})
     u = urlopen(req) # pylint: disable=R1732

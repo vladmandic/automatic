@@ -82,6 +82,7 @@
   - new setting in image options: *include mask in output*
   - improved params parsing from from prompt string and styles
   - default theme updates and additional built-in theme *black-gray*
+  - new setting in extra network: "use reference values when available"
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
 - **ROCm**  

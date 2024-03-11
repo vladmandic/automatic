@@ -6,9 +6,10 @@ import csv
 import json
 import time
 import random
-from installer import log
-from modules import files_cache
+from modules import files_cache, shared
 
+
+reference_style = None
 
 class Style():
     def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", wildcards: str = "", filename: str = "", preview: str = "", mtime: float = 0):
@@ -21,6 +22,7 @@ class Style():
         self.filename = filename
         self.preview = preview
         self.mtime = mtime
+
 
 def merge_prompts(style_prompt: str, prompt: str) -> str:
     if "{prompt}" in style_prompt:
@@ -53,7 +55,7 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
             prompt = prompt.replace(what, word)
             replaced[what] = word
     if replaced:
-        log.debug(f'Applying style wildcards: {replaced}')
+        shared.log.debug(f'Applying style wildcards: {replaced}')
     return prompt
 
 
@@ -67,7 +69,8 @@ def apply_styles_to_extra(p, style: Style):
     s = style.extra
     s = 'Negative prompt: ' + s if 'Negative prompt:' not in s else s
     s = 'Prompt: ' + s if 'Prompt:' not in s else s
-    extra = parse_generation_parameters(s)
+    extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
+    extra.update(parse_generation_parameters(s))
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []
@@ -85,7 +88,7 @@ def apply_styles_to_extra(p, style: Style):
             fields.append(f'{k}={v}')
         else:
             skipped.append(f'{k}={v}')
-    log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped}')
+    shared.log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped}')
 
 
 class StyleDatabase:
@@ -104,10 +107,10 @@ class StyleDatabase:
             try:
                 os.makedirs(opts.styles_dir, exist_ok=True)
                 self.save_styles(opts.styles_dir, verbose=True)
-                log.debug(f'Migrated styles: file={legacy_file} folder={opts.styles_dir}')
+                shared.log.debug(f'Migrated styles: file={legacy_file} folder={opts.styles_dir}')
                 self.reload()
             except Exception as e:
-                log.error(f'styles failed to migrate: file={legacy_file} error={e}')
+                shared.log.error(f'styles failed to migrate: file={legacy_file} error={e}')
         if not os.path.isdir(opts.styles_dir):
             opts.styles_dir = os.path.join(paths.models_path, "styles")
             self.path = opts.styles_dir
@@ -145,7 +148,7 @@ class StyleDatabase:
                     )
                     self.styles[style["name"]] = new_style
             except Exception as e:
-                log.error(f'Failed to load style: file={fn} error={e}')
+                shared.log.error(f'Failed to load style: file={fn} error={e}')
             return new_style
 
 
@@ -173,7 +176,7 @@ class StyleDatabase:
 
         list_folder(self.path)
         t1 = time.time()
-        log.debug(f'Load styles: folder="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
+        shared.log.debug(f'Load styles: folder="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
 
     def find_style(self, name):
         found = [style for style in self.styles.values() if style.name == name]
@@ -181,19 +184,19 @@ class StyleDatabase:
 
     def get_style_prompts(self, styles):
         if styles is None or not isinstance(styles, list):
-            log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Invalid styles: {styles}')
             return []
         return [self.find_style(x).prompt for x in styles]
 
     def get_negative_style_prompts(self, styles):
         if styles is None or not isinstance(styles, list):
-            log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Invalid styles: {styles}')
             return []
         return [self.find_style(x).negative_prompt for x in styles]
 
     def apply_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
-            log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Invalid styles: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
         prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
@@ -201,7 +204,7 @@ class StyleDatabase:
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
-            log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Invalid styles: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
         prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
@@ -209,7 +212,7 @@ class StyleDatabase:
 
     def apply_styles_to_extra(self, p):
         if p.styles is None or not isinstance(p.styles, list):
-            log.error(f'Invalid styles: {p.styles}')
+            shared.log.error(f'Invalid styles: {p.styles}')
             return
         for style in p.styles:
             s = self.find_style(style)
@@ -231,12 +234,12 @@ class StyleDatabase:
                 with open(fn, 'w', encoding='utf-8') as f:
                     json.dump(style, f, indent=2)
                     if verbose:
-                        log.debug(f'Saved style: name={name} file={fn}')
+                        shared.log.debug(f'Saved style: name={name} file={fn}')
             except Exception as e:
-                log.error(f'Failed to save style: name={name} file={path} error={e}')
+                shared.log.error(f'Failed to save style: name={name} file={path} error={e}')
         count = len(list(self.styles))
         if count > 0:
-            log.debug(f'Saved styles: folder="{path}" items={count}')
+            shared.log.debug(f'Saved styles: folder="{path}" items={count}')
 
     def load_csv(self, legacy_file):
         if not os.path.isfile(legacy_file):
@@ -250,8 +253,8 @@ class StyleDatabase:
                     prompt = row["prompt"] if "prompt" in row else row["text"]
                     negative = row.get("negative_prompt", "") if "negative_prompt" in row else row.get("negative", "")
                     self.styles[name] = Style(name, desc=name, prompt=prompt, negative_prompt=negative)
-                    log.debug(f'Migrated style: {self.styles[name].__dict__}')
+                    shared.log.debug(f'Migrated style: {self.styles[name].__dict__}')
                     num += 1
                 except Exception:
-                    log.error(f'Styles error: file="{legacy_file}" row={row}')
-            log.info(f'Load legacy styles: file="{legacy_file}" loaded={num} created={len(list(self.styles))}')
+                    shared.log.error(f'Styles error: file="{legacy_file}" row={row}')
+            shared.log.info(f'Load legacy styles: file="{legacy_file}" loaded={num} created={len(list(self.styles))}')

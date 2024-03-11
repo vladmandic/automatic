@@ -235,7 +235,7 @@ def set_cuda_params():
             torch.backends.cuda.enable_mem_efficient_sdp('Memory attention' in shared.opts.sdp_options)
             torch.backends.cuda.enable_math_sdp('Math attention' in shared.opts.sdp_options)
             if backend == "rocm":
-                global backup_sdpa
+                global backup_sdpa # pylint: disable=global-statement
                 if 'Flash attention' in shared.opts.sdp_options:
                     try:
                         # https://github.com/huggingface/diffusers/discussions/7172
@@ -249,8 +249,8 @@ def set_cuda_params():
                                 return backup_sdpa(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
                         torch.nn.functional.scaled_dot_product_attention = sdpa_hijack
                         shared.log.debug('ROCm Flash Attention Hijacked')
-                    except Exception as e:
-                        log.error(f'ROCm Flash Attention failed: {e}')
+                    except Exception as err:
+                        log.error(f'ROCm Flash Attention failed: {err}')
                 elif backup_sdpa is not None: # Restore original SDPA
                     torch.nn.functional.scaled_dot_product_attention = backup_sdpa
     except Exception:

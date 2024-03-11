@@ -9,9 +9,6 @@ from modules.paths import data_path
 from modules import shared, gr_tempdir, script_callbacks, images
 
 
-re_param_code = r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)'
-re_param = re.compile(re_param_code)
-re_imagesize = re.compile(r"^(\d+)x(\d+)$")
 type_of_gr_update = type(gr.update())
 paste_fields = {}
 registered_param_bindings = []
@@ -187,12 +184,14 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters(param_str: str):
+def parse_generation_parameters_old(param_str: str):
+    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)')
+    re_imagesize = re.compile(r"^(\d+)x(\d+)$")
+
     res = {}
     if param_str is None:
         return res
     remaining = param_str.replace('\n', ' ').strip()
-    # remaining = param_str.strip()
     if len(remaining) == 0:
         return res
     if 'prompt:' in remaining:
@@ -231,6 +230,43 @@ def parse_generation_parameters(param_str: str):
         res["Full quality"] = False
     debug(f"Parse prompt: {res}")
     return res
+
+
+def parse_generation_parameters(input_string):
+    re_params = re.compile(r'(\w+):([^,]+)')
+    re_imagesize = re.compile(r"^(\d+)x(\d+)$")
+    if input_string is None or len(input_string.strip()) == 0:
+        return {}
+
+    neg_prompt_index = input_string.find("Negative prompt:")
+    prompt = input_string[:neg_prompt_index].replace('Prompt:', '').strip()
+    rest_of_string = input_string[neg_prompt_index + len("Negative prompt:"):].strip() if neg_prompt_index >= 0 else input_string.strip()
+    params = dict(re_params.findall(rest_of_string))
+    first_param = next(iter(params)) if params else None
+    params_index = rest_of_string.find(f'{first_param}:') if first_param else -1
+    negative = rest_of_string[:params_index].strip()
+    for k, v in params.copy().items(): # avoid dict-has-changed
+        v = v.strip()
+        if len(v) > 0 and v[0] == '"' and v[-1] == '"':
+            v = unquote(v)
+        m = re_imagesize.match(v)
+        if v.replace('.', '', 1).isdigit():
+            params[k] = float(v) if '.' in v else int(v)
+        elif v == "True":
+            params[k] = True
+        elif v == "False":
+            params[k] = False
+        elif m is not None:
+            params[f"{k}-1"] = m.group(1)
+            params[f"{k}-2"] = m.group(2)
+        elif k == 'VAE' and v == 'TAESD':
+            params["Full quality"] = False
+        else:
+            params[k] = v
+    params["Prompt"] = prompt
+    params["Negative prompt"] = negative
+    debug(f"Parse prompt: {params}")
+    return params
 
 
 settings_map = {}
