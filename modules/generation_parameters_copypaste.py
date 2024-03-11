@@ -244,7 +244,7 @@ def parse_generation_parameters(input_string):
     params = dict(re_params.findall(rest_of_string))
     first_param = next(iter(params)) if params else None
     params_index = rest_of_string.find(f'{first_param}:') if first_param else -1
-    negative = rest_of_string[:params_index].strip()
+    negative = rest_of_string[:params_index].strip() if neg_prompt_index >= 0 else ''
     for k, v in params.copy().items(): # avoid dict-has-changed
         v = v.strip()
         if len(v) > 0 and v[0] == '"' and v[-1] == '"':
