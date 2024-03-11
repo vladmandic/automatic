@@ -501,12 +501,12 @@ def create_ui():
                     log.debug(f'CivitAI select: variant={in_data[evt.index[0]]}')
                     return in_data[evt.index[0]][3], in_data[evt.index[0]][0], gr.update(interactive=True)
 
-                def civit_download_model(model_url: str, model_name: str, model_path: str, model_type: str, image_url: str, token: str = None):
+                def civit_download_model(model_url: str, model_name: str, model_path: str, model_type: str, token: str = None):
                     if model_url is None or len(model_url) == 0:
                         return 'No model selected'
                     try:
                         from modules.modelloader import download_civit_model
-                        res = download_civit_model(model_url, model_name, model_path, model_type, image_url, token)
+                        res = download_civit_model(model_url, model_name, model_path, model_type, token=token)
                     except Exception as e:
                         res = f"CivitAI model downloaded error: model={model_url} {e}"
                         log.error(res)
@@ -649,7 +649,7 @@ def create_ui():
                 civit_results1.change(fn=is_visible, inputs=[civit_results1], outputs=[civit_results1])
                 civit_results2.change(fn=is_visible, inputs=[civit_results2], outputs=[civit_results2])
                 civit_results3.change(fn=is_visible, inputs=[civit_results3], outputs=[civit_results3])
-                civit_download_model_btn.click(fn=civit_download_model, inputs=[civit_selected, civit_name, civit_path, civit_model_type, models_image, civit_token], outputs=[models_outcome])
+                civit_download_model_btn.click(fn=civit_download_model, inputs=[civit_selected, civit_name, civit_path, civit_model_type, civit_token], outputs=[models_outcome])
                 civit_previews_btn.click(fn=civit_search_metadata, inputs=[civit_previews_rehash, civit_previews_rehash], outputs=[models_outcome])
 
             with gr.Tab(label="Update"):
@@ -760,7 +760,7 @@ def create_ui():
                         model_name = f'{selected_model.name} {selected_model.latest}.safetensors'
                     else:
                         model_name = selected_model.latest_name
-                    return civit_download_model(selected_model.url, model_name, model_path='', model_type='Model', image_url=None)
+                    return civit_download_model(selected_model.url, model_name, model_path='', model_type='Model')
 
                 civit_update_btn.click(fn=civit_update_metadata, inputs=[], outputs=[civit_results4, models_outcome])
                 civit_results4.select(fn=civit_update_select, inputs=[civit_results4], outputs=[models_outcome, civit_update_download_btn])

@@ -71,7 +71,7 @@ def download_civit_preview(model_path: str, preview_url: str):
 
 download_pbar = None
 
-def download_civit_model_thread(model_name, model_url, model_path, model_type, preview, token):
+def download_civit_model_thread(model_name, model_url, model_path, model_type, token):
     import hashlib
     sha256 = hashlib.sha256()
     sha256.update(model_name.encode('utf-8'))
@@ -123,10 +123,12 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
             if written < 1024: # min threshold
                 os.remove(temp_file)
                 raise ValueError(f'removed invalid download: bytes={written}')
+            """
             if preview is not None:
                 preview_file = os.path.splitext(model_file)[0] + '.jpg'
                 preview.save(preview_file)
                 res += f' preview={preview_file}'
+            """
         except Exception as e:
             shared.log.error(f'{res} {e}')
         finally:
@@ -140,9 +142,9 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
     return res
 
 
-def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, preview, token: str = None):
+def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, token: str = None):
     import threading
-    thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, preview, token))
+    thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, token))
     thread.start()
     return f'Model download: name={model_name} url={model_url} path={model_path}'
 
@@ -330,7 +332,7 @@ def load_civitai(model: str, url: str):
         return name # already downloaded
     else:
         shared.log.debug(f'Reference download start: model="{name}"')
-        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', preview=None, token=None)
+        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', token=None)
         shared.log.debug(f'Reference download complete: model="{name}"')
         sd_models.list_models()
         info = sd_models.get_closet_checkpoint_match(name)
