@@ -6,7 +6,7 @@
   - EDM samplers for Playground 2.5
   - Stable Cascade
 
-## Update for 2024-03-08
+## Update for 2024-03-11
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts

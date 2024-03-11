@@ -4,7 +4,7 @@ import gradio as gr
 import gradio.routes
 import gradio.utils
 from modules.call_queue import wrap_gradio_call, wrap_gradio_gpu_call # pylint: disable=unused-import
-from modules import timer, gr_hijack, shared, theme, sd_models, script_callbacks, modelloader, ui_common, ui_loadsave, ui_symbols, ui_javascript, generation_parameters_copypaste, call_queue
+from modules import timer, gr_hijack, shared, theme, sd_models, script_callbacks, modelloader, ui_common, ui_loadsave, ui_symbols, ui_javascript, ui_sections, generation_parameters_copypaste, call_queue
 from modules.paths import script_path, data_path # pylint: disable=unused-import
 from modules.dml import directml_override_opts
 from modules.onnx_impl import install_olive
@@ -32,12 +32,17 @@ extra_networks_symbol = ui_symbols.networks
 apply_style_symbol = ui_symbols.apply
 save_style_symbol = ui_symbols.save
 gr_hijack.init()
+create_sampler_and_steps_selection = ui_sections.create_sampler_and_steps_selection # compatibility item
 
 
 if not cmd_opts.share and not cmd_opts.listen:
     # fix gradio phoning home
     gradio.utils.version_check = lambda: None
     gradio.utils.get_local_ip_address = lambda: '127.0.0.1'
+
+
+def create_override_settings_dropdown(a, _b):
+    return ui_common.create_override_inputs(a) # compatibility item
 
 
 def gr_show(visible=True):
