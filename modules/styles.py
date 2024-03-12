@@ -60,17 +60,15 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
 
 
 def apply_styles_to_extra(p, style: Style):
+    global reference_style # pylint: disable=global-statement
     if style is None:
         return
     name_map = {
         'sampler': 'sampler_name',
     }
     from modules.generation_parameters_copypaste import parse_generation_parameters
-    s = style.extra
-    s = 'Negative prompt: ' + s if 'Negative prompt:' not in s else s
-    s = 'Prompt: ' + s if 'Prompt:' not in s else s
     extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
-    extra.update(parse_generation_parameters(s))
+    extra.update(parse_generation_parameters(style.extra))
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []
@@ -88,7 +86,8 @@ def apply_styles_to_extra(p, style: Style):
             fields.append(f'{k}={v}')
         else:
             skipped.append(f'{k}={v}')
-    shared.log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped}')
+    shared.log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped} reference={True if reference_style else False}')
+    # reference_style = None
 
 
 class StyleDatabase:

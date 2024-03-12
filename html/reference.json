@@ -3,7 +3,7 @@
     "path": "dreamshaper_8.safetensors@https://civitai.com/api/download/models/128713",
     "desc": "Showcase finetuned model based on Stable diffusion 1.5",
     "preview": "dreamshaper_8.jpg",
-    "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0",
+    "extras": "width: 768, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0",
     "original": true
   },
   "DreamShaper SD XL Turbo": {

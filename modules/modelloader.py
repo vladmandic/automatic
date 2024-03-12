@@ -301,6 +301,8 @@ def load_reference(name: str):
     if len(found) > 0: # already downloaded
         model_opts = get_reference_opts(found[0]['name'])
         return True
+    else:
+        model_opts = get_reference_opts(name)
     if model_opts.get('skip', False):
         return True
     shared.log.debug(f'Reference: download="{name}"')

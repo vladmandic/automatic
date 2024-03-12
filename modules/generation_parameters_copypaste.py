@@ -187,7 +187,7 @@ def send_image_and_dimensions(x):
 def parse_generation_parameters(infotext):
     if not isinstance(infotext, str):
         return {}
-
+    debug(f'Parse infotext: {infotext}')
     re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
     re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
     sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
@@ -196,6 +196,7 @@ def parse_generation_parameters(infotext):
     sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
 
     params = dict(re_param.findall(sanitized))
+    debug(f"Parse params: {params}")
     params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
     first_param = next(iter(params)) if params else None
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
@@ -223,7 +224,7 @@ def parse_generation_parameters(infotext):
             params[k] = v
     params["Prompt"] = prompt.replace('Prompt:', '').strip()
     params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
-    debug(f"Paste params: {params}")
+    debug(f"Parse: {params}")
     return params
 
 
