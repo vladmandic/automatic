@@ -184,74 +184,30 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters_old(param_str: str):
-    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)')
-    re_imagesize = re.compile(r"^(\d+)x(\d+)$")
-
-    res = {}
-    if param_str is None:
-        return res
-    remaining = param_str.replace('\n', ' ').strip()
-    if len(remaining) == 0:
-        return res
-    if 'prompt:' in remaining:
-        remaining = remaining.replace('prompt:', 'Prompt:')
-    if 'negative prompt:' in remaining:
-        remaining = remaining.replace('negative prompt:', 'Negative prompt:')
-    if 'Negative Prompt:' in remaining:
-        remaining = remaining.replace('Negative Prompt:', 'Negative prompt:')
-    if 'steps:' in remaining:
-        remaining = remaining.replace('steps:', 'Steps:')
-    remaining = remaining[7:] if remaining.startswith('Prompt:') else remaining
-    remaining = remaining[11:] if remaining.startswith('parameters:') else remaining
-    if 'Steps:' in remaining and 'Negative prompt:' not in remaining:
-        remaining = remaining.replace('Steps:', 'Negative prompt: Steps:')
-    prompt, remaining = remaining.strip().split('Negative prompt:', maxsplit=1) if 'Negative prompt:' in remaining else (remaining, '')
-    res["Prompt"] = prompt.strip()
-    negative, remaining = remaining.strip().split('Steps:', maxsplit=1) if 'Steps:' in remaining else (remaining, None)
-    res["Negative prompt"] = negative.strip()
-
-    if remaining is None:
-        return res
-    remaining = f'Steps: {remaining.strip()}'
-    for k, v in re_param.findall(remaining.strip()):
-        try:
-            if v[0] == '"' and v[-1] == '"':
-                v = unquote(v)
-            m = re_imagesize.match(v)
-            if m is not None:
-                res[f"{k}-1"] = m.group(1)
-                res[f"{k}-2"] = m.group(2)
-            else:
-                res[k] = v
-        except Exception:
-            pass
-    if res.get('VAE', None) == 'TAESD':
-        res["Full quality"] = False
-    debug(f"Parse prompt: {res}")
-    return res
-
-
-def parse_generation_parameters(input_string):
-    re_params = re.compile(r'(\w+):([^,]+)')
-    re_imagesize = re.compile(r"^(\d+)x(\d+)$")
-    if input_string is None or len(input_string.strip()) == 0:
+def parse_generation_parameters(infotext):
+    if not isinstance(infotext, str):
         return {}
 
-    neg_prompt_index = input_string.find("Negative prompt:")
-    prompt = input_string[:neg_prompt_index].replace('Prompt:', '').strip()
-    rest_of_string = input_string[neg_prompt_index + len("Negative prompt:"):].strip() if neg_prompt_index >= 0 else input_string.strip()
-    params = dict(re_params.findall(rest_of_string))
+    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
+    re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
+    sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
+    sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
+    sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
+
+    params = dict(re_param.findall(sanitized))
+    params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
     first_param = next(iter(params)) if params else None
-    params_index = rest_of_string.find(f'{first_param}:') if first_param else -1
-    if neg_prompt_index == -1:
-        prompt = rest_of_string[:params_index].strip()
-    negative = rest_of_string[:params_index].strip() if neg_prompt_index >= 0 else ''
+    params_idx = sanitized.find(f'{first_param}:') if first_param else -1
+    negative_idx = infotext.find("Negative prompt:")
+
+    prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
+    negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
+
     for k, v in params.copy().items(): # avoid dict-has-changed
-        v = v.strip()
         if len(v) > 0 and v[0] == '"' and v[-1] == '"':
             v = unquote(v)
-        m = re_imagesize.match(v)
+        m = re_size.match(v)
         if v.replace('.', '', 1).isdigit():
             params[k] = float(v) if '.' in v else int(v)
         elif v == "True":
@@ -259,15 +215,15 @@ def parse_generation_parameters(input_string):
         elif v == "False":
             params[k] = False
         elif m is not None:
-            params[f"{k}-1"] = m.group(1)
-            params[f"{k}-2"] = m.group(2)
+            params[f"{k}-1"] = int(m.group(1))
+            params[f"{k}-2"] = int(m.group(2))
         elif k == 'VAE' and v == 'TAESD':
             params["Full quality"] = False
         else:
             params[k] = v
-    params["Prompt"] = prompt
-    params["Negative prompt"] = negative
-    debug(f"Parse prompt: {params}")
+    params["Prompt"] = prompt.replace('Prompt:', '').strip()
+    params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
+    debug(f"Paste params: {params}")
     return params
 
 
