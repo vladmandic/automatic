@@ -47,7 +47,7 @@ opencv-contrib-python-headless==4.9.0.80
 diffusers==0.26.3
 einops==0.4.1
 gradio==3.43.2
-huggingface_hub==0.20.3
+huggingface_hub==0.21.4
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.0
@@ -55,7 +55,7 @@ pandas
 protobuf==3.20.3
 pytorch_lightning==1.9.4
 tokenizers==0.15.2
-transformers==4.38.1
+transformers==4.38.2
 tomesd==0.1.3
 urllib3==1.26.18
 Pillow==10.2.0

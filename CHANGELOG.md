@@ -5,8 +5,20 @@
 - items that require `diffusers==0.27.0.dev`:
   - EDM samplers for Playground 2.5
   - Stable Cascade
+- move models to script:
+  - StabilityAI SVD
+  - StabilityAI SVD XT 1.0
+  - StabilityAI SVD XT 1.1
+- fix reference models:
+  - Warp Wuerstchen: pipeline does not have all components
+  - Kandinsky 2.1: pipeline does not have all components
+  - Kandinsky 2.2: pipeline does not have all components
+  - StabilityAI Stable Cascade Lite: broken decode in diffusers
+  - Tsinghua UniDiffuser: no model offload
+- untested:
+  - DeepFloyd IF Medium
 
-## Update for 2024-03-11
+## Update for 2024-03-12
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -16,7 +28,7 @@
   - another very fast & light sdxl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
-  [Stable Cascade](https://github.com/Stability-AI/StableCascade)
+  [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model
   - download using networks -> reference
   - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
@@ -76,13 +88,19 @@
   - see *settings -> image options -> watermarking*  
   - invisible watermark: using steganogephy  
   - image watermark: overlaid on top of image  
+- **Reference models**
+  - additional reference models available for single-click download & run:
+    *Stable Cascade, Stable Cascade lite, Stable Video Diffusion XT 1.1*  
+  - reference models will now download *fp16* variation by default  
+  - reference models will print recommended settings to log if present
+  - new setting in extra network: *use reference values when available*  
+    disabled by default, if enabled will force use of reference settings for models that have them
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
   - new setting in image options: *include mask in output*
   - improved params parsing from from prompt string and styles
   - default theme updates and additional built-in theme *black-gray*
-  - new setting in extra network: "use reference values when available"
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
 - **ROCm**  

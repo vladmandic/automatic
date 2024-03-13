@@ -297,14 +297,14 @@ class ExtraNetworksPage:
         if os.path.join('models', 'Reference') in path:
             return path
         exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
+        reference_path = os.path.abspath(os.path.join('models', 'Reference'))
+        files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         if shared.opts.diffusers_dir in path:
             path = os.path.relpath(path, shared.opts.diffusers_dir)
-            reference_path = os.path.abspath(os.path.join('models', 'Reference'))
             fn = os.path.join(reference_path, path.replace('models--', '').replace('\\', '/').split('/')[0])
-            files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         else:
             fn = os.path.splitext(path)[0]
-            files = list(files_cache.list_files(os.path.dirname(path), ext_filter=exts, recursive=False))
+            files += list(files_cache.list_files(os.path.dirname(path), ext_filter=exts, recursive=False))
         for file in [f'{fn}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
             if file in files:
                 if '.thumb.' not in file:
@@ -324,6 +324,7 @@ class ExtraNetworksPage:
         possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
         exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         all_previews = list(files_cache.list_files(*possible_paths, ext_filter=exts, recursive=False))
+        all_previews_fn = [os.path.basename(x) for x in all_previews]
         for item in items:
             if item.get('preview', None) is not None:
                 continue
@@ -336,11 +337,13 @@ class ExtraNetworksPage:
                 model_path = os.path.join(shared.opts.diffusers_dir, match[0])
                 item['local_preview'] = f'{os.path.join(model_path, match[1])}.{shared.opts.samples_format}'
                 all_previews += list(files_cache.list_files(model_path, ext_filter=exts, recursive=False))
+            base = os.path.basename(base)
             for file in [f'{base}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
-                if file in all_previews:
+                if file in all_previews_fn:
+                    file_idx = all_previews_fn.index(os.path.basename(file))
                     if '.thumb.' not in file:
-                        self.missing_thumbs.append(file)
-                    item['preview'] = self.link_preview(file)
+                        self.missing_thumbs.append(all_previews[file_idx])
+                    item['preview'] = self.link_preview(all_previews[file_idx])
                     break
             if item.get('preview', None) is None:
                 item['preview'] = self.link_preview('html/card-no-preview.png')

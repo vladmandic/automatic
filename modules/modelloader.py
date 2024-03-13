@@ -280,19 +280,16 @@ def find_diffuser(name: str):
 
 
 def get_reference_opts(name: str):
-    reference_models = shared.readfile(os.path.join('html', 'reference.json'), silent=False)
     model_opts = {}
-    for v in reference_models.values():
-        reference_name = v.get('path', '').split('@')[0].split('.')[0]
-        if reference_name == name:
+    for k, v in shared.reference_models.items():
+        model_name = os.path.splitext(v.get('path', '').split('@')[0])[0]
+        if k == name or model_name == name:
             model_opts = v
             break
     if not model_opts:
         shared.log.error(f'Reference: model="{name}" not found')
         return {}
-    from modules import styles
-    styles.reference_style = model_opts.get('extras', None)
-    shared.log.debug(f'Reference: model="{name}" {styles.reference_style}')
+    shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
     return model_opts
 
 

@@ -9,7 +9,6 @@ import random
 from modules import files_cache, shared
 
 
-reference_style = None
 
 class Style():
     def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", wildcards: str = "", filename: str = "", preview: str = "", mtime: float = 0):
@@ -59,14 +58,24 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
     return prompt
 
 
+def get_reference_style():
+    name = shared.sd_model.sd_checkpoint_info.name
+    name = name.replace('\\', '/').replace('Diffusers/', '')
+    for k, v in shared.reference_models.items():
+        model_file = os.path.splitext(v.get('path', '').split('@')[0])[0].replace('huggingface/', '')
+        if k == name or model_file == name:
+            return v.get('extras', None)
+    return None
+
+
 def apply_styles_to_extra(p, style: Style):
-    global reference_style # pylint: disable=global-statement
     if style is None:
         return
     name_map = {
         'sampler': 'sampler_name',
     }
     from modules.generation_parameters_copypaste import parse_generation_parameters
+    reference_style = get_reference_style()
     extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
     extra.update(parse_generation_parameters(style.extra))
     extra.pop('Prompt', None)
@@ -87,7 +96,6 @@ def apply_styles_to_extra(p, style: Style):
         else:
             skipped.append(f'{k}={v}')
     shared.log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped} reference={True if reference_style else False}')
-    # reference_style = None
 
 
 class StyleDatabase:

@@ -15,8 +15,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
         shared.refresh_checkpoints()
 
     def list_reference(self): # pylint: disable=inconsistent-return-statements
-        reference_models = shared.readfile(os.path.join('html', 'reference.json'))
-        for k, v in reference_models.items():
+        for k, v in shared.reference_models.items():
             if shared.backend != shared.Backend.DIFFUSERS:
                 if not v.get('original', False):
                     continue

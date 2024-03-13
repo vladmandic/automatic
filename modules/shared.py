@@ -932,6 +932,7 @@ log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.g
 log.info(f'Device: {print_dict(devices.get_gpu_info())}')
 
 prompt_styles = modules.styles.StyleDatabase(opts)
+reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
 devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
 devices.onnx = [opts.onnx_execution_provider]
