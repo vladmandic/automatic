@@ -5,15 +5,13 @@
 - items that require `diffusers==0.27.0.dev`:
   - EDM samplers for Playground 2.5
   - Stable Cascade
+  - LEdits++ pipeline
 - fix reference models:
   - Warp Wuerstchen: pipeline does not have all components
   - Kandinsky 2.1: pipeline does not have all components
   - Kandinsky 2.2: pipeline does not have all components
-  - StabilityAI Stable Cascade Lite: broken decode in diffusers
-- untested:
-  - DeepFloyd IF Medium
 
-## Update for 2024-03-12
+## Update for 2024-03-13
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
