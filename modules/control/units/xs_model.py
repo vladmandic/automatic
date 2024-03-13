@@ -22,12 +22,13 @@ from torch.nn import functional as F
 from torch.nn.modules.normalization import GroupNorm
 
 from diffusers.configuration_utils import ConfigMixin, register_to_config
-from diffusers.models.attention_processor import USE_PEFT_BACKEND, AttentionProcessor
+from diffusers.models.attention_processor import AttentionProcessor
 from diffusers.models.autoencoders import AutoencoderKL
 from diffusers.models.lora import LoRACompatibleConv
 from diffusers.models.modeling_utils import ModelMixin
+
 try:
-    from diffusers.models.unet_2d_blocks import CrossAttnDownBlock2D, CrossAttnUpBlock2D, DownBlock2D, Downsample2D, ResnetBlock2D, Transformer2DModel, UpBlock2D, Upsample2D
+    from diffusers.models.unet_2d_blocks import CrossAttnDownBlock2D, CrossAttnUpBlock2D, DownBlock2D, Downsample2D, ResnetBlock2D, Transformer2DModel, UpBlock2D, Upsample2D # pylint: disable=no-name-in-module
 except Exception:
     pass
 try:
@@ -36,7 +37,7 @@ except Exception:
     pass
 
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.utils import BaseOutput, logging
+from diffusers.utils import BaseOutput, logging, USE_PEFT_BACKEND
 
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name

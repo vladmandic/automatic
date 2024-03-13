@@ -10,7 +10,6 @@
   - Kandinsky 2.1: pipeline does not have all components
   - Kandinsky 2.2: pipeline does not have all components
   - StabilityAI Stable Cascade Lite: broken decode in diffusers
-  - Tsinghua UniDiffuser: no model offload
 - untested:
   - DeepFloyd IF Medium
 
