@@ -416,6 +416,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
+    output = None
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
@@ -450,7 +451,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
-    if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None: # replace input with output so it can be used by hires/refine
+    if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
         p.task_args['image'] = output.images
 
     shared.state.nextjob()
@@ -476,7 +477,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 save_intermediate(latents=output.images, suffix="-before-hires")
             shared.state.job = 'upscale'
             output.images = resize_hires(p, latents=output.images)
-            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None: # replace input with output so it can be used by hires/refine
+            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
                 p.task_args['image'] = output.images
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 

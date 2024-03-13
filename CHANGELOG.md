@@ -5,10 +5,6 @@
 - items that require `diffusers==0.27.0.dev`:
   - EDM samplers for Playground 2.5
   - Stable Cascade
-- move models to script:
-  - StabilityAI SVD
-  - StabilityAI SVD XT 1.0
-  - StabilityAI SVD XT 1.1
 - fix reference models:
   - Warp Wuerstchen: pipeline does not have all components
   - Kandinsky 2.1: pipeline does not have all components
@@ -44,10 +40,17 @@
   - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
   - update ui section to reflect changes
   - *note*: behavior using backend:original is unchanged for backwards compatibilty
-- **Image2Video**
-  - new module for creating videos from images  
-  - simply enable from *img2img -> scripts -> image2video*  
-  - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- **Video**
+  - **Image2Video**
+    - new module for creating videos from images  
+    - simply enable from *img2img -> scripts -> image2video*  
+    - model is auto-downloaded on first use
+    - based on [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+  - **Stable Video Diffusion**
+    - updated with *SVD 1.0, SVD XT 1.0 and SVD XT 1.1*
+    - models are auto-downloaded on first use
+    - simply enable from *img2img -> scripts -> stable video diffusion*  
+    - for svd 1.0, use frames=~14, for xt models use frames=~25
 - **Composable LoRA**, thanks @AI-Casanova
   - control lora strength for each step
     for example: `<xxx:0.1@0,0.9@1>` means strength=0.1 for step at 0% and intepolate towards strength=0.9 for step at 100%

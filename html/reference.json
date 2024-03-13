@@ -92,28 +92,6 @@
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
   },
 
-  "StabilityAI SVD": {
-    "path": "stabilityai/stable-video-diffusion-img2vid",
-    "preview": "stabilityai--stable-video-diffusion-img2vid.jpg",
-    "desc": "(SVD) Image-to-Video is a latent diffusion model trained to generate short video clips from an image conditioning. This model was trained to generate 14 frames at resolution 576x1024 given a context frame of the same size. We also finetune the widely used f8-decoder for temporal consistency.",
-    "variant": "fp16",
-    "extras": "width: 1024, height: 576, sampler: Default, steps: 20"
-  },
-  "StabilityAI SVD XT 1.0": {
-    "path": "stabilityai/stable-video-diffusion-img2vid-xt",
-    "preview": "stabilityai--stable-video-diffusion-img2vid-xt.jpg",
-    "desc": "(SVD) Image-to-Video is a latent diffusion model trained to generate short video clips from an image conditioning. This model was trained to generate 25 frames at resolution 576x1024 given a context frame of the same size, finetuned from SVD Image-to-Video [14 frames]. We also finetune the widely used f8-decoder for temporal consistency.",
-    "variant": "fp16",
-    "extras": "width: 1024, height: 576, sampler: Default, steps: 20"
-  },
-  "StabilityAI SVD XT 1.1": {
-    "path": "stabilityai/stable-video-diffusion-img2vid-xt-1-1",
-    "preview": "stabilityai--stable-video-diffusion-img2vid-xt.jpg",
-    "desc": "(SVD 1.1) Image-to-Video is a latent diffusion model trained to generate short video clips from an image conditioning. This model was trained to generate 25 frames at resolution 1024x576 given a context frame of the same size, finetuned from SVD Image-to-Video [25 frames].",
-    "variant": "fp16",
-    "extras": "width: 1024, height: 576, sampler: Default, steps: 20"
-  },
-
   "Segmind Vega": {
     "path": "huggingface/segmind/Segmind-Vega",
     "preview": "segmind--Segmind-Vega.jpg",

@@ -287,13 +287,13 @@ def get_reference_opts(name: str):
             model_opts = v
             break
     if not model_opts:
-        shared.log.error(f'Reference: model="{name}" not found')
+        # shared.log.error(f'Reference: model="{name}" not found')
         return {}
     shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
     return model_opts
 
 
-def load_reference(name: str):
+def load_reference(name: str, variant: str = None, revision: str = None, mirror: str = None, custom_pipeline: str = None):
     found = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(found) > 0: # already downloaded
         model_opts = get_reference_opts(found[0]['name'])
@@ -306,10 +306,10 @@ def load_reference(name: str):
     model_dir = download_diffusers_model(
         hub_id=name,
         cache_dir=shared.opts.diffusers_dir,
-        variant=model_opts.get('variant', None),
-        revision=model_opts.get('revision', None),
-        mirror=model_opts.get('mirror', None),
-        custom_pipeline=model_opts.get('custom_pipeline', None)
+        variant=variant or model_opts.get('variant', None),
+        revision=revision or model_opts.get('revision', None),
+        mirror=mirror or model_opts.get('mirror', None),
+        custom_pipeline=custom_pipeline or model_opts.get('custom_pipeline', None)
     )
     if model_dir is None:
         shared.log.error(f'Reference download: model="{name}"')
