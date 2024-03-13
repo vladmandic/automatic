@@ -89,7 +89,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                     ip_adapter_scales[i] *= float(step <= pipe.num_timesteps * ip_adapter_ends[i])
                     debug(f"Callback: IP Adapter scales={ip_adapter_scales}")
                 pipe.set_ip_adapter_scale(ip_adapter_scales)
-        if step != pipe.num_timesteps:
+        if step != getattr(pipe, 'num_timesteps', 0):
             kwargs = processing_correction.correction_callback(p, timestep, kwargs)
         if p.scheduled_prompt and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
             try:
@@ -99,7 +99,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 kwargs["negative_prompt_embeds"] = p.negative_embeds[j][0:1].expand(kwargs["negative_prompt_embeds"].shape)
             except Exception as e:
                 shared.log.debug(f"Callback: {e}")
-        if step == int(pipe.num_timesteps * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
+        if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
             pipe._guidance_scale = 0.0 # pylint: disable=protected-access
             for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
                 kwargs[key] = kwargs[key].chunk(2)[-1]
@@ -316,8 +316,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def update_sampler(sd_model, second_pass=False):
         sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
-        if sd_model.__class__.__name__ in ['AmusedPipeline']:
-            return # models with their own schedulers
         if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
             if sampler is None:

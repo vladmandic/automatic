@@ -28,6 +28,14 @@
   - download using networks -> reference
   - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
   - currently requires 10GB VRAM, lighter version is in development
+- [LEdit++](https://leditsplusplus-project.static.hf.space/index.html)
+  - context aware img2img method with image analysis and positive/negative prompt handling  
+  - enable via img2img -> scripts -> ledit
+  - uses following params from standard img2img: cfg scale (recommended ~3), steps (recommended ~50), denoise strength (recommended ~0.7)
+  - can use postive and/or negative prompt to guide editing process
+    - positive prompt: what to enhance, strength and threshold for auto-masking
+    - negative prompt: what to remove, strength and threshold for auto-masking  
+  - *note*: not compatible with model offloading
 - **Visual Query** visual query & answer in process tab  
   - go to process -> visual query  
   - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"

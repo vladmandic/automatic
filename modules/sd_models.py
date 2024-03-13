@@ -1136,9 +1136,9 @@ class DiffusersTaskType(Enum):
 
 
 def get_diffusers_task(pipe: diffusers.DiffusionPipeline) -> DiffusersTaskType:
-    if pipe.__class__.__name__ == "StableVideoDiffusionPipeline":
+    if pipe.__class__.__name__ in ["StableVideoDiffusionPipeline", "LEditsPPPipelineStableDiffusion", "LEditsPPPipelineStableDiffusionXL"]:
         return DiffusersTaskType.IMAGE_2_IMAGE
-    if pipe.__class__.__name__ == "StableDiffusionXLInstructPix2PixPipeline":
+    elif pipe.__class__.__name__ == "StableDiffusionXLInstructPix2PixPipeline":
         return DiffusersTaskType.INSTRUCT
     elif pipe.__class__ in diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING.values():
         return DiffusersTaskType.IMAGE_2_IMAGE
