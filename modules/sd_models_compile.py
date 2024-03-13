@@ -35,7 +35,20 @@ def ipex_optimize(sd_model):
             import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
             model.eval()
             model.training = False
-            model = ipex.optimize(model, dtype=devices.dtype, inplace=True, weights_prepack=False) # pylint: disable=attribute-defined-outside-init
+            if model.device.type != "meta":
+                return_device = model.device
+                model = ipex.optimize(model.to(devices.device),
+                    dtype=devices.dtype,
+                    inplace=True,
+                    weights_prepack=False
+                ).to(return_device) # pylint: disable=attribute-defined-outside-init
+            else:
+                model = ipex.optimize(model,
+                    dtype=devices.dtype,
+                    inplace=True,
+                    weights_prepack=False
+                ) # pylint: disable=attribute-defined-outside-init
+            devices.torch_gc()
             return model
 
         if "Model" in shared.opts.ipex_optimize:
@@ -79,9 +92,10 @@ def nncf_compress_weights(sd_model):
 
         def nncf_compress_model(model):
             return_device = model.device
+            model.eval()
             if hasattr(model, "get_input_embeddings"):
                 backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-            model = nncf.compress_weights(model.eval().to(devices.device)).to(return_device)
+            model = nncf.compress_weights(model.to(devices.device)).to(return_device)
             if hasattr(model, "set_input_embeddings"):
                 model.set_input_embeddings(backup_embeddings)
             devices.torch_gc(force=True)
@@ -188,7 +202,21 @@ def compile_torch(sd_model):
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
         def torch_compile_model(model):
-            return torch.compile(model, mode=shared.opts.cuda_compile_mode, backend=shared.opts.cuda_compile_backend, fullgraph=shared.opts.cuda_compile_fullgraph)
+            if model.device.type != "meta":
+                return_device = model.device
+                model = torch.compile(model.to(devices.device),
+                    mode=shared.opts.cuda_compile_mode,
+                    backend=shared.opts.cuda_compile_backend,
+                    fullgraph=shared.opts.cuda_compile_fullgraph
+                ).to(return_device)
+            else:
+                model = torch.compile(model,
+                    mode=shared.opts.cuda_compile_mode,
+                    backend=shared.opts.cuda_compile_backend,
+                    fullgraph=shared.opts.cuda_compile_fullgraph
+                )
+            devices.torch_gc()
+            return model
 
         if shared.opts.cuda_compile_backend == "openvino_fx":
             sd_model = optimize_openvino(sd_model)
@@ -273,10 +301,6 @@ def compile_deepcache(sd_model):
 
 
 def compile_diffusers(sd_model):
-    if shared.opts.ipex_optimize:
-        sd_model = ipex_optimize(sd_model)
-    if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-        sd_model = nncf_compress_weights(sd_model)
     if not shared.opts.cuda_compile:
         return sd_model
     if shared.opts.cuda_compile_backend == 'none':

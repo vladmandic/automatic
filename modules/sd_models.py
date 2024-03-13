@@ -1058,32 +1058,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         elif "Kandinsky" in sd_model.__class__.__name__:
             sd_model.scheduler.name = 'DDIM'
 
-        base_sent_to_cpu=False
-        if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none') or shared.opts.ipex_optimize or shared.opts.nncf_compress_weights:
-            if op == 'refiner' and not getattr(sd_model, 'has_accelerate', False):
-                gpu_vram = memory_stats().get('gpu', {})
-                free_vram = gpu_vram.get('total', 0) - gpu_vram.get('used', 0)
-                refiner_enough_vram = free_vram >= 7 if "StableDiffusionXL" in sd_model.__class__.__name__ else 3
-                if not shared.opts.diffusers_move_base and refiner_enough_vram:
-                    move_model(sd_model, devices.device)
-                    base_sent_to_cpu=False
-                else:
-                    if not refiner_enough_vram and not (shared.opts.diffusers_move_base and shared.opts.diffusers_move_refiner):
-                        shared.log.warning(f"Insufficient GPU memory, using system memory as fallback: free={free_vram} GB")
-                        if not shared.opts.shared.opts.diffusers_seq_cpu_offload and not shared.opts.diffusers_model_cpu_offload:
-                            shared.log.debug('Enabled moving base model to CPU')
-                            shared.log.debug('Enabled moving refiner model to CPU')
-                            shared.opts.diffusers_move_base=True
-                            shared.opts.diffusers_move_refiner=True
-                    shared.log.debug('Moving base model to CPU')
-                    move_model(model_data.sd_model, devices.cpu)
-                    devices.torch_gc(force=True)
-                    move_model(sd_model, devices.device)
-                    base_sent_to_cpu=True
-            else:
-                move_model(sd_model, devices.device)
-            sd_models_compile.compile_diffusers(sd_model)
-
         if sd_model is None:
             shared.log.error('Diffuser model not loaded')
             return
@@ -1097,15 +1071,24 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
+
+        set_diffuser_options(sd_model, vae, op)
+
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
             move_model(sd_model, devices.cpu)
         else:
             move_model(sd_model, devices.device)
-        if op == 'refiner' and base_sent_to_cpu:
-            shared.log.debug('Moving base model back to GPU')
-            move_model(model_data.sd_model, devices.device)
-        set_diffuser_options(sd_model, vae, op) # offloading should enabled after all
+
+        if shared.opts.ipex_optimize:
+            sd_model = sd_models_compile.ipex_optimize(sd_model)
+
+        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            sd_model = sd_models_compile.nncf_compress_weights(sd_model)
+
+        if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none'):
+            sd_model = sd_models_compile.compile_diffusers(sd_model)
+
     except Exception as e:
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
