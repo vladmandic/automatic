@@ -71,11 +71,10 @@ class Script(scripts.Script):
             shared.log.error(f'SVD: no checkpoint for {model_name}')
             modelloader.load_reference(model_path, variant='fp16')
         c = shared.sd_model.__class__.__name__
-        model_loaded = shared.sd_model.sd_checkpoint_info.model_name
+        model_loaded = shared.sd_model.sd_checkpoint_info.model_name if shared.sd_model is not None else None
         if model_name != model_loaded or c != 'StableVideoDiffusionPipeline':
             shared.opts.sd_model_checkpoint = model_path
             sd_models.reload_model_weights()
-        model_loaded = sd_models.model_data.sd_model.sd_checkpoint_info
 
         # set params
         if override_resolution:

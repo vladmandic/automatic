@@ -980,8 +980,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 if debug_load:
                     shared.log.debug(f'Diffusers load args: {diffusers_load_config}')
                 try: # 1 - autopipeline, best choice but not all pipelines are available
-                    sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                    sd_model.model_type = sd_model.__class__.__name__
+                    try:
+                        sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        sd_model.model_type = sd_model.__class__.__name__
+                    except ValueError as e:
+                        if 'no variant default' in str(e):
+                            shared.log.warning(f'Load: variant={diffusers_load_config["variant"]} model={checkpoint_info.path} using default variant')
+                            diffusers_load_config.pop('variant', None)
+                            sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                            sd_model.model_type = sd_model.__class__.__name__
+                        else:
+                            raise ValueError from e # reraise
                 except Exception as e:
                     err1 = e
                     if debug_load:

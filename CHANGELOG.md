@@ -2,17 +2,42 @@
 
 ## TODO
 
-- items that require `diffusers==0.27.0.dev`:
-  - EDM samplers for Playground 2.5
-  - Stable Cascade
-  - LEdits++ pipeline: <https://github.com/huggingface/diffusers/pull/6074>
-- fix reference models:
-  - Warp Wuerstchen: pipeline does not have all components
-  - Kandinsky 2.1: pipeline does not have all components
-  - Kandinsky 2.2: pipeline does not have all components
+- resize type: fixed, fill, etc.
 
 ## Update for 2024-03-14
 
+### Highlights 2024-03-14
+
+New models:
+- [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
+- [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
+- [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
+- [Stable Video Diffusion XT 1.1](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt-1-1)
+- [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+New pipelines and features:
+- Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for generate in even less steps
+- Image2image using [LEdit++](https://leditsplusplus-project.static.hf.space/index.html), context aware method with image analysis and positive/negative prompt handling
+- Visual Query & Answer using [moondream2](https://github.com/vikhyat/moondream) as an addition to standard interrogate methods
+- Face-HiRes: simple detailer for face refinements
+- UI aspect-ratio controls and other UI improvements
+- User controllable invisibile and visible watermarking
+- Native composable LoRA
+**Styles**: Not just for prompts! Can apply generate parameters as templates and can be used to apply wildcards to prompts
+**Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired
+Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow improvements, Additional API endpoints
+
+Further details:  
+- For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
+- For more details on all new features see full [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md)  
+- For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
+- [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
+
+### Full Changelog 2024-03-14
+
+- [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
+  - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
+  - download using networks -> reference
+  - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
   - download using networks -> reference
@@ -21,11 +46,6 @@
   - another very fast & light sdxl model where original unet was compressed and distilled to 54% of original size  
   - download using networks -> reference
   - *note* to download fp16 variant (recommended), set settings -> diffusers -> preferred model variant  
-  [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
-  - large multi-stage high-quality model
-  - download using networks -> reference
-  - see [wiki](https://github.com/vladmandic/automatic/wiki/Stable-Cascade) for details
-  - currently requires 10GB VRAM, lighter version is in development
 - [LEdit++](https://leditsplusplus-project.static.hf.space/index.html)
   - context aware img2img method with image analysis and positive/negative prompt handling  
   - enable via img2img -> scripts -> ledit
@@ -123,6 +143,7 @@
   - add masking api endpoints  
     GET:`/sdapi/v1/masking`, POST:`/sdapi/v1/mask`, sample script:`cli/simple-mask.py`
 - **Internal**
+  - improved vram efficiency for model compile, thanks @Disty0
   - **stable-fast** compatibility with torch 2.2.1  
   - remove obsolete textual inversion training code
   - remove obsolete hypernetworks training code
@@ -144,6 +165,7 @@
   - fix *requires_aesthetics_score* errors
   - fix t2i-canny
   - fix *differenital diffusion* for manual mask, thanks @23pennies
+  - use default model variant if specified variant doesnt exist
   - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
   - improve ZLUDA installer with `--use-zluda` cli param, thanks @lshqqytiger
@@ -153,7 +175,7 @@
 Only 3 weeks since last release, but here's another feature-packed one!
 This time release schedule was shorter as we wanted to get some of the fixes out faster.
 
-### Highlights
+### Highlights 2024-02-22
 
 - **IP-Adapters** & **FaceID**: multi-adapter and multi-image suport  
 - New optimization engines: [DeepCache](https://github.com/horseee/DeepCache), [ZLUDA](https://github.com/vosen/ZLUDA) and **Dynamic Attention Slicing**  
