@@ -675,7 +675,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 sd_model.vae.to(devices.dtype_vae)
             shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.get("force_upcast", None)}')
     if hasattr(sd_model, "enable_model_cpu_offload"):
-        if (shared.cmd_opts.medvram and devices.backend != "directml") or shared.opts.diffusers_model_cpu_offload:
+        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
             shared.log.debug(f'Setting {op}: enable model CPU offload')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
@@ -683,7 +683,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 shared.opts.diffusers_move_refiner = False
                 shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
             if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                sd_model.enable_model_cpu_offload()
+                sd_model.enable_model_cpu_offload(device=devices.device)
             else:
                 sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = True
