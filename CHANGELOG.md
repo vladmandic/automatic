@@ -5,13 +5,13 @@
 - items that require `diffusers==0.27.0.dev`:
   - EDM samplers for Playground 2.5
   - Stable Cascade
-  - LEdits++ pipeline
+  - LEdits++ pipeline: <https://github.com/huggingface/diffusers/pull/6074>
 - fix reference models:
   - Warp Wuerstchen: pipeline does not have all components
   - Kandinsky 2.1: pipeline does not have all components
   - Kandinsky 2.2: pipeline does not have all components
 
-## Update for 2024-03-13
+## Update for 2024-03-14
 
 - [Playground v2.5](https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic)
   - new model version from Playground: based on SDXL, but with some cool new concepts
@@ -90,6 +90,7 @@
   - set as default face restorer in settings -> postprocessing  
   - disabled by default, to enable simply check *face restore* in your generate advanced settings  
   - strength, steps and sampler are set using by hires section in refine menu  
+  - strength can be overriden in settings -> postprocessing  
   - will use secondary prompt and secondary negative prompt if present in refine  
 - **Watermarking**
   - SD.Next disables all known watermarks in models, but does allow user to set custom watermark  

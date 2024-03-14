@@ -1,4 +1,6 @@
 import os
+import sys
+import inspect
 import hashlib
 from typing import Any, Dict, List
 from dataclasses import dataclass, field
@@ -8,6 +10,9 @@ import cv2
 from PIL import Image, ImageOps
 from modules import shared, devices, images, scripts, masking, sd_samplers, sd_models, processing_helpers
 from modules.sd_hijack_hypertile import hypertile_set
+
+
+debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 @dataclass(repr=False)
@@ -507,18 +512,17 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
 
 
 def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None):
-    import inspect
     signature = inspect.signature(type(new_class).__init__, follow_wrapped=True)
     possible = list(signature.parameters)
     kwargs = {}
-    for k, v in p.__dict__.items():
+    for k, v in p.__dict__.copy().items():
         if k in possible:
             kwargs[k] = v
     if dct is not None:
         for k, v in dct.items():
             if k in possible:
                 kwargs[k] = v
-    shared.log.debug(f"Switching class: {p.__class__} -> {new_class}")
+    debug(f"Switching class: {p.__class__.__name__} -> {new_class.__name__} fn={sys._getframe(1).f_code.co_name}") # pylint: disable=protected-access
     p.__class__ = new_class
     p.__init__(**kwargs)
     for k, v in p.__dict__.items():

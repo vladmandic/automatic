@@ -268,18 +268,19 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
+            debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
             p.iteration = n
             if shared.state.skipped:
-                shared.log.debug(f'Process skipped: {n}/{p.n_iter}')
+                shared.log.debug(f'Process skipped: {n+1}/{p.n_iter}')
                 shared.state.skipped = False
                 continue
             if shared.state.interrupted:
-                shared.log.debug(f'Process interrupted: {n}/{p.n_iter}')
+                shared.log.debug(f'Process interrupted: {n+1}/{p.n_iter}')
                 break
-            p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-            p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-            p.seeds = p.all_seeds[n * p.batch_size:(n + 1) * p.batch_size]
-            p.subseeds = p.all_subseeds[n * p.batch_size:(n + 1) * p.batch_size]
+            p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
+            p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
+            p.seeds = p.all_seeds[n * p.batch_size:(n+1) * p.batch_size]
+            p.subseeds = p.all_subseeds[n * p.batch_size:(n+1) * p.batch_size]
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.before_process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
             if len(p.prompts) == 0:
@@ -313,8 +314,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.postprocess_batch(p, x_samples_ddim, batch_number=n)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-                p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
+                p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
+                p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
                 batch_params = scripts.PostprocessBatchListArgs(list(x_samples_ddim))
                 p.scripts.postprocess_batch_list(p, batch_params, batch_number=n)
                 x_samples_ddim = batch_params.images
@@ -326,6 +327,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 shared.sd_model.restore_pipeline()
 
             for i, x_sample in enumerate(x_samples_ddim):
+                if hasattr(p, 'recursion'):
+                    continue
+                debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
                 if type(x_sample) == Image.Image:
                     image = x_sample
@@ -335,11 +339,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image = Image.fromarray(x_sample)
                 if p.restore_faces:
                     if not p.do_not_save_samples and shared.opts.save_images_before_face_restoration:
-                        orig = p.restore_faces
-                        p.restore_faces = False
-                        info = infotext(i)
-                        p.restore_faces = orig
-                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
+                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
                     p.ops.append('face')
                     x_sample = face_restoration.restore_faces(x_sample, p)
                     image = Image.fromarray(x_sample)

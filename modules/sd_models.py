@@ -754,9 +754,9 @@ def move_model(model, device=None, force=False):
         if device == devices.device: # force vae back to gpu if not in txt2img mode
             model.vae.to(device)
             if hasattr(model.vae, '_hf_hook'):
-                debug_move(f'Model move: to={device} class={model.vae.__class__} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                debug_move(f'Model move: to={device} class={model.vae.__class__} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
                 model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     if hasattr(model, "components"): # accelerate patch
         for name, m in model.components.items():
             if not hasattr(m, "_hf_hook"): # not accelerate hook

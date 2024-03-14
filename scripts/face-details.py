@@ -92,7 +92,7 @@ class FaceRestorerYolo(FaceRestoration):
         from modules import devices, processing_class
         if not hasattr(p, 'facehires'):
             p.facehires = 0
-        if np_image is None or p.facehires >= p.batch_size:
+        if np_image is None or p.facehires >= p.batch_size * p.n_iter:
             return np_image
         self.load()
         if self.model is None:
@@ -119,7 +119,7 @@ class FaceRestorerYolo(FaceRestoration):
             'sampler_name': orig_p.get('hr_sampler_name', 'default'),
             'steps': orig_p.get('hr_second_pass_steps', 0),
             'negative_prompt': orig_p.get('refiner_negative', ''),
-            'denoising_strength': orig_p.get('denoising_strength', 0.3),
+            'denoising_strength': shared.opts.facehires_strength if shared.opts.facehires_strength > 0 else orig_p.get('denoising_strength', 0.3),
             'styles': [],
             'prompt': orig_p.get('refiner_prompt', ''),
             # TODO facehires expose as tunable
@@ -137,6 +137,7 @@ class FaceRestorerYolo(FaceRestoration):
         if len(p.negative_prompt) == 0:
             p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
 
+        shared.log.debug(f'Face HiRes: faces={[f.__dict__ for f in faces]} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding} steps={p.steps}')
         for face in faces:
             if face.mask is None:
                 continue
@@ -145,21 +146,20 @@ class FaceRestorerYolo(FaceRestoration):
                 continue
             p.init_images = [image]
             p.image_mask = [face.mask]
-            shared.log.debug(f'Face HiRes: face={p.facehires} {face.__dict__} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding} steps={p.steps}')
+            p.recursion = True
             pp = processing.process_images_inner(p)
+            del p.recursion
             p.overlay_images = None # skip applying overlay twice
             if pp is not None and pp.images is not None and len(pp.images) > 0:
-                image = pp.images[0]
-
-        if np_image is None or getattr(p, 'facehires', 0) >= p.batch_size:
-            p.facehires = 0
+                image = pp.images[0] # update image to be reused for next face
 
         # restore pipeline
         p = processing_class.switch_class(p, orig_cls, orig_p)
+        p.init_images = getattr(orig_p, 'init_images', None)
+        p.image_mask = getattr(orig_p, 'image_mask', None)
         shared.opts.data['mask_apply_overlay'] = orig_apply_overlay
-        if pp is not None and pp.images is not None and len(pp.images) > 0:
-            image = pp.images[0]
-            np_image = np.array(image)
+        np_image = np.array(image)
+        # shared.log.debug(f'Face HiRes complete: faces={len(faces)} time={t1-t0:.3f}')
         return np_image
 
 

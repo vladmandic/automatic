@@ -216,7 +216,7 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
 
 
 def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
-    shared.log.debug(f'Image resize: input={im} mode={resize_mode} target={width}x{height} upscaler={upscaler_name} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    shared.log.debug(f'Image resize: input={im} mode={resize_mode} target={width}x{height} upscaler={upscaler_name} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     """
     Resizes an image with the specified resize_mode, width, and height.
     Args:
@@ -597,7 +597,7 @@ save_thread.start()
 
 
 def save_image(image, path, basename='', seed=None, prompt=None, extension=shared.opts.samples_format, info=None, short_filename=False, no_prompt=False, grid=False, pnginfo_section_name='parameters', p=None, existing_info=None, forced_filename=None, suffix='', save_to_dirs=None): # pylint: disable=unused-argument
-    debug(f'Save from function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug(f'Save: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     if image is None:
         shared.log.warning('Image is none')
         return None, None
