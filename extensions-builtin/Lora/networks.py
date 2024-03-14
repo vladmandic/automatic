@@ -229,10 +229,10 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if recompile_model:
         shared.log.info("LoRA recompiling model")
         backup_lora_model = shared.compiled_model_state.lora_model
+        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            shared.sd_model = sd_models_compile.nncf_compress_weights(shared.sd_model)
         if shared.opts.cuda_compile:
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
-        if shared.opts.nncf_compress_weights:
-            shared.sd_model = sd_models_compile.nncf_compress_weights(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model
 
