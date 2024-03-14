@@ -394,7 +394,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": backend == Backend.DIFFUSERS}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
-    "ipex_optimize": OptionInfo(["Model", "VAE", "Text Encoder", "Upscaler"] if devices.backend == "ipex" else [], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
+    "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
 
     "openvino_sep": OptionInfo("<h2>OpenVINO</h2>", "", gr.HTML, {"visible": cmd_opts.use_openvino}),
     "openvino_devices": OptionInfo([], "OpenVINO devices to use", gr.CheckboxGroup, {"choices": get_openvino_device_list() if cmd_opts.use_openvino else [], "visible": cmd_opts.use_openvino}),

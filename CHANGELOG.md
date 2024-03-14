@@ -137,6 +137,8 @@ Further details:
   - add *flash attention* support for rdna3, thanks @Disty0  
     install flash_attn package for rdna3 manually and enable *flash attention* from *compute settings*  
     to install flash_attn, activate the venv and run `pip install -U git+https://github.com/ROCm/flash-attention@howiejay/navi_support`  
+- **IPEX**
+  - disabled IPEX Optimize by default  
 - **API**
   - add preprocessor api endpoints  
     GET:`/sdapi/v1/preprocessors`, POST:`/sdapi/v1/preprocess`, sample script:`cli/simple-preprocess.py`
