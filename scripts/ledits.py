@@ -36,8 +36,6 @@ class Script(scripts.Script):
         if image is None or len(image) == 0:
             shared.log.error('LEdits: no init_images')
             return None
-        else:
-            image = image[0]
         if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
             shared.log.error(f'LEdits: invalid model type: {shared.sd_model_type}')
             return None
@@ -59,8 +57,10 @@ class Script(scripts.Script):
 
         shared.sd_model.scheduler = diffusers.DPMSolverMultistepScheduler.from_config(shared.sd_model.scheduler.config, algorithm_type="sde-dpmsolver++", solver_order=2) # ledits is very picky
         p.sampler_name = 'Default'
+        p.init() # run init early to take care of resizing
+
         invert_args = {
-            'image': image,
+            'image': p.init_images[0],
             'source_prompt': p.prompt,
             'source_guidance_scale': p.cfg_scale,
             'num_inversion_steps': p.steps,
