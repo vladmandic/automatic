@@ -1080,6 +1080,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
+        if hasattr(sd_model, "watermark"):
+            sd_model.watermark = None
 
         set_diffuser_options(sd_model, vae, op)
 

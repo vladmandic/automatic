@@ -3,6 +3,7 @@
 ## TODO
 
 - resize type: fixed, fill, etc.
+- reference styles
 
 ## Update for 2024-03-14
 
