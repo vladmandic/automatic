@@ -144,6 +144,7 @@ textarea[rows="1"] { height: 33px !important; width: 99% !important; padding: 8p
 #txt2img_settings { min-width: var(--left-column); max-width: var(--left-column); background-color: var(--neutral-950); padding-top: 16px; }
 #pnginfo_html2_info { margin-top: -18px; background-color: var(--input-background-fill); padding: var(--input-padding) }
 #txt2img_styles_row, #img2img_styles_row, #control_styles_row { margin-top: -6px; }
+.block > span { margin-bottom: 0 !important; margin-top: var(--spacing-lg); }
 
 /* based on gradio built-in dark theme */
 :root, .light, .dark {
@@ -187,7 +188,7 @@ textarea[rows="1"] { height: 33px !important; width: 99% !important; padding: 8p
   --checkbox-label-border-color: var(--border-color-primary);
   --checkbox-label-border-color-hover: var(--checkbox-label-border-color);
   --checkbox-label-border-width: var(--input-border-width);
-  --checkbox-label-text-color: var(--body-text-color);
+  --checkbox-label-text-color: var(--block-title-text-color);
   --checkbox-label-text-color-selected: var(--checkbox-label-text-color);
   --error-background-fill: var(--background-fill-primary);
   --error-border-color: var(--border-color-primary);
