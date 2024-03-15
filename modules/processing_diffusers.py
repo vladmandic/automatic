@@ -139,7 +139,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             width, height = resize_init_images(p)
             task_args = {
                 'image': p.init_images,
-                'mask_image': p.image_mask,
+                'mask_image': p.task_args.get('image_mask', None) or getattr(p, 'image_mask', None) or getattr(p, 'mask', None),
                 'strength': p.denoising_strength,
                 'height': height,
                 'width': width,
@@ -269,6 +269,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args[arg] = kwargs[arg]
             else:
                 pass
+
         task_kwargs = task_specific_kwargs(model)
         for arg in task_kwargs:
             # if arg in possible and arg not in args: # task specific args should not override args
@@ -354,6 +355,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 p.task_args['sag_scale'] = p.sag_scale
             else:
                 shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
+        if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
+            shared.log.warning('Processing: mode=inpaint mask=None')
+            sd_model = sd_models.set_diffuser_pipe(sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
         if shared.opts.cuda_compile_backend == "olive-ai":
             sd_model = olive_check_parameters_changed(p, is_refiner_enabled())
         if sd_model.__class__.__name__ == "OnnxRawPipeline":
