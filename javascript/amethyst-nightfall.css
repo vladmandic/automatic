@@ -1,6 +1,6 @@
 /* generic html tags */
 :root {
-  --font: "Source Sans Pro", 'ui-sans-serif', 'system-ui', sans-serif;
+  --font: "Source Sans Pro", 'ui-sans-serif', 'system-ui', sans-serif, 'NotoSans';
   --font-size: 16px;
   --highlight-color: #8a3df6; /* Purple color */
   --inactive-color: #404040; /* Darker shade of gray */

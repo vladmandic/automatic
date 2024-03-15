@@ -1,6 +1,6 @@
 /* generic html tags */
 :root, .light, .dark {
-  --font: 'system-ui', 'ui-sans-serif', 'system-ui', "Roboto", sans-serif;
+  --font: 'system-ui', 'ui-sans-serif', 'system-ui', "Roboto", sans-serif, 'NotoSans';
   --font-mono: 'ui-monospace', 'Consolas', monospace;
   --font-size: 16px;
   --primary-100: #2a2a34; /* bg color*/
