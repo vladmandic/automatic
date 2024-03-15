@@ -80,7 +80,6 @@ Further details:
 - **Composable LoRA**, thanks @AI-Casanova
   - control lora strength for each step
     for example: `<xxx:0.1@0,0.9@1>` means strength=0.1 for step at 0% and intepolate towards strength=0.9 for step at 100%
-  - set sampler to *Composable LoRA*  
   - *note*: this is a very experimental feature and may not work as expected
 - **Control**
   - added *refiner/hires* workflows

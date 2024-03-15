@@ -1080,8 +1080,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
-        if hasattr(sd_model, "watermark"):
-            sd_model.watermark = None
 
         set_diffuser_options(sd_model, vae, op)
 
@@ -1224,6 +1222,8 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
                     components_skipped.append(k)
         if new_pipe is not None:
             copy_diffuser_options(new_pipe, pipeline)
+            if hasattr(new_pipe, "watermark"):
+                new_pipe.watermark = NoWatermark()
             if switch_mode == 'auto':
                 shared.log.debug(f'Pipeline switch: from={pipeline.__class__.__name__} to={new_pipe.__class__.__name__} components={components_used} skipped={components_skipped} missing={components_missing}')
             else:
@@ -1275,6 +1275,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
+    if hasattr(new_pipe, "watermark"):
+        new_pipe.watermark = NoWatermark()
     shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
