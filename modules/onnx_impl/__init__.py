@@ -194,9 +194,11 @@ def initialize_onnx():
     global initialized # pylint: disable=global-statement
     if initialized:
         return
-    from installer import log
+    from installer import log, installed
     from modules import devices
     from modules.shared import opts
+    if not installed('onnx', quiet=True):
+        return
     try: # may fail on onnx import
         import onnx # pylint: disable=unused-import
         from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
@@ -243,7 +245,7 @@ def initialize_onnx():
 def initialize_olive():
     global run_olive_workflow # pylint: disable=global-statement
     from installer import installed, log
-    if not installed("olive-ai"):
+    if not installed('olive-ai', quiet=True) or not installed('onnx', quiet=True):
         return
     import sys
     import importlib
@@ -268,6 +270,7 @@ def install_olive():
         return
     try:
         log.info('Installing Olive')
+        install('onnx', 'onnx', ignore=True)
         install('olive-ai', 'olive-ai', ignore=True)
         import olive.workflows # pylint: disable=unused-import
     except Exception as e:

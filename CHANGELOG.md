@@ -2,8 +2,9 @@
 
 ## TODO
 
-- resize type: fixed, fill, etc.
+- resize type: strech, fill/color, edge, etc.
 - reference styles
+- quick apply style
 
 ## Update for 2024-03-15
 
