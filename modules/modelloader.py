@@ -399,7 +399,10 @@ def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_
     if not os.path.exists(cached_file):
         shared.log.info(f'Downloading: url="{url}" file={cached_file}')
         download_url_to_file(url, cached_file)
-    return cached_file
+    if os.path.exists(cached_file):
+        return cached_file
+    else:
+        return None
 
 
 def load_models(model_path: str, model_url: str = None, command_path: str = None, ext_filter=None, download_name=None, ext_blacklist=None) -> list:

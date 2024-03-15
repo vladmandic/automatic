@@ -96,6 +96,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     adapters = [adapter for adapter in adapters if adapter is not None and adapter.lower() != 'none']
     if len(adapters) == 0:
         unapply(pipe)
+        if hasattr(p, 'ip_adapter_images'):
+            del p.ip_adapter_images
         return False
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
@@ -125,6 +127,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         adapters = [] # unload adapter if previously loaded as it will cause runtime errors
     if len(adapters) == 0:
         unapply(pipe)
+        if hasattr(p, 'ip_adapter_images'):
+            del p.ip_adapter_images
         return False
     if not hasattr(pipe, 'load_ip_adapter'):
         shared.log.error(f'IP adapter: pipeline not supported: {pipe.__class__.__name__}')

@@ -251,10 +251,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
 
-    if shared.backend == shared.Backend.DIFFUSERS:
-        from modules import ipadapter
-        ipadapter.apply(shared.sd_model, p)
-
     def infotext(_inxex=0): # dummy function overriden if there are iterations
         return ''
 
@@ -277,6 +273,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if shared.state.interrupted:
                 shared.log.debug(f'Process interrupted: {n+1}/{p.n_iter}')
                 break
+
+            if shared.backend == shared.Backend.DIFFUSERS:
+                from modules import ipadapter
+                ipadapter.apply(shared.sd_model, p)
             p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
             p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
             p.seeds = p.all_seeds[n * p.batch_size:(n+1) * p.batch_size]

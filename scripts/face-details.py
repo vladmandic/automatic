@@ -23,6 +23,8 @@ class FaceRestorerYolo(FaceRestoration):
         self.model_dir = os.path.join(paths.models_path, 'yolo')
         self.model_name = 'yolov8n-face.pt'
         self.model_url = 'https://github.com/akanametov/yolov8-face/releases/download/v0.0.0/yolov8n-face.pt'
+        # self.model_name = 'yolov9-c-face.pt'
+        # self.model_url = 'https://github.com/akanametov/yolov9-face/releases/download/1.0/yolov9-c-face.pt'
 
     def dependencies(self):
         import installer
@@ -81,12 +83,11 @@ class FaceRestorerYolo(FaceRestoration):
         from modules import modelloader
         self.dependencies()
         if self.model is None:
-            model_files = modelloader.load_models(model_path=self.model_dir, model_url=self.model_url, download_name=self.model_name)
-            for f in model_files:
-                if self.model_name in f:
-                    shared.log.info(f'Loading: type=FaceHires model={f}')
-                    from ultralytics import YOLO # pylint: disable=import-outside-toplevel
-                    self.model = YOLO(f)
+            model_file = modelloader.load_file_from_url(url=self.model_url, model_dir=self.model_dir, file_name=self.model_name)
+            if model_file is not None:
+                shared.log.info(f'Loading: type=FaceHires model={model_file}')
+                from ultralytics import YOLO # pylint: disable=import-outside-toplevel
+                self.model = YOLO(model_file)
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
         from modules import devices, processing_class
@@ -96,7 +97,7 @@ class FaceRestorerYolo(FaceRestoration):
             return np_image
         self.load()
         if self.model is None:
-            shared.log.error(f"Model load: type=FaceHires model={self.model_name} dir={self.model_dir} url={self.model_url}")
+            shared.log.error(f"Model load: type=FaceHires model='{self.model_name}' dir={self.model_dir} url={self.model_url}")
             return np_image
         image = Image.fromarray(np_image)
         faces = self.predict(image, mask=True, device=devices.device, offload=shared.opts.face_restoration_unload)

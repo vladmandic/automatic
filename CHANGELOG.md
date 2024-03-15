@@ -5,9 +5,9 @@
 - resize type: fixed, fill, etc.
 - reference styles
 
-## Update for 2024-03-14
+## Update for 2024-03-15
 
-### Highlights 2024-03-14
+### Highlights 2024-03-15
 
 New models:
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
@@ -16,16 +16,16 @@ New models:
 - [Stable Video Diffusion XT 1.1](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt-1-1)
 - [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 New pipelines and features:
-- Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for generate in even less steps
-- Image2image using [LEdit++](https://leditsplusplus-project.static.hf.space/index.html), context aware method with image analysis and positive/negative prompt handling
+- Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for processing in even less steps
+- Img2img using [LEdit++](https://leditsplusplus-project.static.hf.space/index.html), context aware method with image analysis and positive/negative prompt handling
 - Visual Query & Answer using [moondream2](https://github.com/vikhyat/moondream) as an addition to standard interrogate methods
 - Face-HiRes: simple detailer for face refinements
 - UI aspect-ratio controls and other UI improvements
 - User controllable invisibile and visible watermarking
 - Native composable LoRA
-**Styles**: Not just for prompts! Can apply generate parameters as templates and can be used to apply wildcards to prompts
-**Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired
-Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow improvements, Additional API endpoints
+**Styles**: Not just for prompts! Styles can apply *generate parameters* as templates and can be used to *apply wildcards* to prompts  
+**Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired  
+Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow improvements, Additional API endpoints  
 
 Further details:  
 - For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
@@ -33,7 +33,7 @@ Further details:
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 - [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
 
-### Full Changelog 2024-03-14
+### Full Changelog 2024-03-15
 
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
@@ -167,6 +167,7 @@ Further details:
   - fix *requires_aesthetics_score* errors
   - fix t2i-canny
   - fix *differenital diffusion* for manual mask, thanks @23pennies
+  - fix ipadapter apply/unapply on batch runs
   - use default model variant if specified variant doesnt exist
   - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather
