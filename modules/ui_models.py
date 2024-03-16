@@ -474,9 +474,13 @@ def create_ui():
                     for model in data:
                         if model['id'] == model_id:
                             for d in model['modelVersions']:
-                                if d.get('images') is not None and len(d['images']) > 0 and len(d['images'][0]['url']) > 0:
-                                    preview_img = d['images'][0]['url']
-                                data2.append([d['id'], d['modelId'], d['name'], d['baseModel'], d['createdAt']])
+                                try:
+                                    if d.get('images') is not None and len(d['images']) > 0 and len(d['images'][0]['url']) > 0:
+                                        preview_img = d['images'][0]['url']
+                                    data2.append([d.get('id', None), d.get('modelId', None) or model_id, d.get('name', None), d.get('baseModel', None), d.get('createdAt', None) or d.get('publishedAt', None)])
+                                except Exception as e:
+                                    log.error(f'CivitAI select: model="{in_data[evt.index[0]]}" {e}')
+                                    log.error(f'CivitAI version data={type(d)}: {d}')
                     log.debug(f'CivitAI select: model="{in_data[evt.index[0]]}" versions={len(data2)}')
                     return data2, None, preview_img
 
