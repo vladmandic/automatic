@@ -35,6 +35,12 @@ def restore_pipeline():
     devices.torch_gc()
 
 
+def terminate(msg):
+    restore_pipeline()
+    shared.log.error(f'Control terminated: {msg}')
+    return msg
+
+
 def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_generator: bool, input_type: int,
                 prompt, negative, styles, steps, sampler_index,
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
@@ -291,10 +297,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                 try:
                     video = cv2.VideoCapture(inputs)
                     if not video.isOpened():
-                        msg = f'Control: video open failed: path={inputs}'
-                        shared.log.error(msg)
-                        restore_pipeline()
-                        return msg
+                        yield terminate(f'Control: video open failed: path={inputs}')
+                        return
                     frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
                     fps = int(video.get(cv2.CAP_PROP_FPS))
                     w, h = int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -304,10 +308,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     shared.log.debug(f'Control: input video: path={inputs} frames={frames} fps={fps} size={w}x{h} codec={codec}')
                 except Exception as e:
-                    msg = f'Control: video open failed: path={inputs} {e}'
-                    shared.log.error(msg)
-                    restore_pipeline()
-                    return msg
+                    yield terminate(f'Control: video open failed: path={inputs} {e}')
+                    return
 
             while status:
                 processed_image = None
@@ -320,8 +322,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         continue
                     if shared.state.interrupted:
                         shared.state.interrupted = False
-                        restore_pipeline()
-                        return 'Control interrupted'
+                        yield terminate('Control interrupted')
+                        return
                     # get input
                     if isinstance(input_image, str):
                         try:
@@ -359,7 +361,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             debug(f'Control resize: op=before image={input_image} width={width_before} height={height_before} mode={resize_mode_before} name={resize_name_before}')
                             input_image = images.resize_image(resize_mode_before, input_image, width_before, height_before, resize_name_before)
                     if input_image is not None and init_image is not None and init_image.size != input_image.size:
-                        debug(f'Control resize init: image={p.override} target={input_image}')
+                        debug(f'Control resize init: image={init_image} target={input_image}')
                         init_image = images.resize_image(resize_mode=1, im=init_image, width=input_image.width, height=input_image.height)
                     if input_image is not None and p.override is not None and p.override.size != input_image.size:
                         debug(f'Control resize override: image={p.override} target={input_image}')
@@ -403,10 +405,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         if len(p.extra_generation_params["Control process"]) == 0:
                             p.extra_generation_params["Control process"] = None
                         if any(img is None for img in processed_images):
-                            msg = 'Control: attempting process but output is none'
-                            shared.log.error(f'{msg}: {processed_images}')
-                            restore_pipeline()
-                            return msg
+                            yield terminate('Control: attempting process but output is none')
+                            return
                         if len(processed_images) > 1:
                             processed_image = [np.array(i) for i in processed_images]
                             processed_image = util.blend(processed_image) # blend all processed images into one
@@ -417,10 +417,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                             debug(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
                             p.init_images = processed_images
                         elif isinstance(selected_models, list) and len(processed_images) != len(selected_models):
-                            msg = f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}'
-                            shared.log.error(msg)
-                            restore_pipeline()
-                            return msg
+                            yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
+                            return
                         elif selected_models is not None:
                             if len(processed_images) > 1:
                                 debug('Control: using blended image for single model')
@@ -435,10 +433,8 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                         p.task_args['ref_image'] = p.ref_image
                         debug(f'Control: process=None image={p.ref_image}')
                         if p.ref_image is None:
-                            msg = 'Control: attempting reference mode but image is none'
-                            shared.log.error(msg)
-                            restore_pipeline()
-                            return msg
+                            yield terminate('Control: attempting reference mode but image is none')
+                            return
                     elif unit_type == 'controlnet' and input_type == 1: # Init image same as control
                         p.task_args['control_image'] = p.init_images # switch image and control_image
                         p.task_args['strength'] = p.denoising_strength
@@ -488,9 +484,16 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
                                 p.task_args['image'] = p.init_images # need to set explicitly for txt2img
                                 del p.init_images
                         if unit_type == 'lite':
-                            instance.apply(selected_models, p.init_images, control_conditioning)
+                            p.init_image = [input_image]
+                            instance.apply(selected_models, processed_image, control_conditioning)
                     if hasattr(p, 'init_images') and p.init_images is None: # delete empty
                         del p.init_images
+
+                    # final check
+                    if has_models:
+                        if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None:
+                            yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
+                            return
 
                     # resize mask
                     if mask is not None and resize_mode_mask != 0 and resize_name_mask != 'None':

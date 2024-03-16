@@ -23,7 +23,9 @@ debug('Trace: CONTROL')
 def return_controls(res):
     # return preview, image, video, gallery, text
     debug(f'Control received: type={type(res)} {res}')
-    if isinstance(res, str): # error response
+    if res is None: # no response
+        return [None, None, None, None, '']
+    elif isinstance(res, str): # error response
         return [None, None, None, None, res]
     elif isinstance(res, tuple): # standard response received as tuple via control_run->yield(output_images, process_image, result_txt)
         preview_image = res[1] # may be None

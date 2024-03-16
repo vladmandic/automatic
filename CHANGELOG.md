@@ -6,9 +6,9 @@
 - reference styles
 - quick apply style
 
-## Update for 2024-03-15
+## Update for 2024-03-16
 
-### Highlights 2024-03-15
+### Highlights 2024-03-16
 
 New models:
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
@@ -34,7 +34,7 @@ Further details:
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 - [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
 
-### Full Changelog 2024-03-15
+### Full Changelog 2024-03-16
 
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
@@ -169,6 +169,9 @@ Further details:
   - fix t2i-canny
   - fix *differenital diffusion* for manual mask, thanks @23pennies
   - fix ipadapter apply/unapply on batch runs
+  - fix control with multiple units and override images
+  - fix control-lllite
+  - improve control error handling
   - use default model variant if specified variant doesnt exist
   - use diffusers lora load override for *lcm/tcd/turbo loras*
   - exception handler around vram memory stats gather

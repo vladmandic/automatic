@@ -208,7 +208,7 @@ class Processor():
 
     def __call__(self, image_input: Image, mode: str = 'RGB', resize_mode: int = 0, resize_name: str = 'None', scale_tab: int = 1, scale_by: float = 1.0, local_config: dict = {}):
         if self.processor_id is None or self.processor_id == 'None':
-            return image_input
+            return self.override if self.override is not None else image_input
         if self.override is not None:
             debug(f'Control Processor: id="{self.processor_id}" override={self.override}')
             image_input = self.override
