@@ -1,6 +1,6 @@
 /* generic html tags */
 :root, .light, .dark {
-  --font: "Source Sans Pro", 'ui-sans-serif', 'system-ui', "Roboto", sans-serif;
+  --font: "Source Sans Pro", 'ui-sans-serif', 'system-ui', "Roboto", sans-serif, 'NotoSans';
   --font-mono: 'IBM Plex Mono', 'ui-monospace', 'Consolas', monospace;
   --font-size: 14px;
   --highlight-color: #ff00f2;
