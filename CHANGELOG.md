@@ -171,6 +171,7 @@ Further details:
   - fix ipadapter apply/unapply on batch runs
   - fix control with multiple units and override images
   - fix control-lllite
+  - fix font fallback, thanks @NetroScript
   - update civitai downloader to handler new metadata
   - improve control error handling
   - use default model variant if specified variant doesnt exist
