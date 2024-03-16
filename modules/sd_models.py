@@ -727,8 +727,11 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
         set_diffusers_attention(sd_model, DynamicAttnProcessorSDP())
 
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
-        shared.log.debug(f'Setting {op}: enable fused projections')
-        sd_model.fuse_qkv_projections()
+        try:
+            sd_model.fuse_qkv_projections()
+            shared.log.debug(f'Setting {op}: enable fused projections')
+        except Exception as e:
+            shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_eval:
         if hasattr(sd_model, "unet") and hasattr(sd_model.unet, "requires_grad_"):
             sd_model.unet.requires_grad_(False)
