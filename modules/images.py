@@ -225,6 +225,8 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         return im
 
     def resize(im, w, h):
+        w = int(w)
+        h = int(h)
         if upscaler_name is None or upscaler_name == "None" or im.mode == 'L':
             return im.resize((w, h), resample=Image.Resampling.LANCZOS) # force for mask
         scale = max(w / im.width, h / im.height)
@@ -277,7 +279,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         return res
         """
         ratio = min(width / im.width, height / im.height)
-        im = resize(im, im.width * ratio, im.height * ratio)
+        im = resize(im, int(im.width * ratio), int(im.height * ratio))
         res = Image.new(im.mode, (width, height), color=color)
         res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
         return res
