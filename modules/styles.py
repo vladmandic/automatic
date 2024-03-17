@@ -225,6 +225,15 @@ class StyleDatabase:
             s = self.find_style(style)
             apply_styles_to_extra(p, s)
 
+    def extract_comments(self, p):
+        if not isinstance(p.prompt, str):
+            return
+        match = re.search(r'/\*.*?\*/', p.prompt, flags=re.DOTALL)
+        if match:
+            comment = match.group()
+            p.prompt = p.prompt.replace(comment, '')
+            p.extra_generation_params['Comment'] = comment.replace('/*', '').replace('*/', '')
+
     def save_styles(self, path, verbose=False):
         for name in list(self.styles):
             style = {

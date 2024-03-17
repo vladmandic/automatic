@@ -159,6 +159,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 sd_vae.reload_vae_weights()
 
         shared.prompt_styles.apply_styles_to_extra(p)
+        shared.prompt_styles.extract_comments(p)
         if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)

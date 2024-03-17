@@ -140,6 +140,8 @@ Further details:
   - default theme updates and additional built-in theme *black-gray*
   - support models with their own YAML model config files
   - support models with their own JSON per-component config files, for example: `playground-v2.5_vae.config`
+  - prompt can have comments enclosed with `/*` and `*/`  
+    comments are extracted from prompt and added to image metadata  
 - **ROCm**  
   - add **ROCm** 6.0 nightly option to installer, thanks @jicka
   - add *flash attention* support for rdna3, thanks @Disty0  

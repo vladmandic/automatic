@@ -294,7 +294,6 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         from modules import masking
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
-        res.save('/tmp/edge.png')
     if output_type == 'np':
         return np.array(res)
     return res
