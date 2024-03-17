@@ -179,6 +179,7 @@ Further details:
   - fix *differenital diffusion* for manual mask, thanks @23pennies
   - fix ipadapter apply/unapply on batch runs
   - fix control with multiple units and override images
+  - fix control with hires
   - fix control-lllite
   - fix font fallback, thanks @NetroScript
   - update civitai downloader to handler new metadata

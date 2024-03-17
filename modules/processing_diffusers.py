@@ -298,7 +298,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clean['generator'] = generator_device
         clean['parser'] = parser
         for k, v in clean.items():
-            if isinstance(v, torch.Tensor):
+            if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray) or (isinstance(v, list) and len(v) > 0 and (isinstance(v[0], torch.Tensor) or isinstance(v[0], np.ndarray))):
                 clean[k] = v.shape
         shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} set={clean}')
         if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
@@ -453,8 +453,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
-    if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
-        p.task_args['image'] = output.images
 
     shared.state.nextjob()
     if shared.state.interrupted or shared.state.skipped:
@@ -479,8 +477,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 save_intermediate(latents=output.images, suffix="-before-hires")
             shared.state.job = 'upscale'
             output.images = resize_hires(p, latents=output.images)
-            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
-                p.task_args['image'] = output.images
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
@@ -497,6 +493,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
+                if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
+                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil') # controlnet cannnot deal with latent input
+                    p.task_args['image'] = output.images # replace so hires uses new output
             sd_models.move_model(shared.sd_model, devices.device)
             orig_denoise = p.denoising_strength
             p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
@@ -528,7 +528,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             except AssertionError as e:
                 shared.log.info(e)
             p.denoising_strength = orig_denoise
-            # p.init_images = []
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
@@ -562,6 +561,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
+            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
+                p.task_args['image'] = image
             shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             refiner_args = set_pipeline_args(
                 model=shared.sd_refiner,

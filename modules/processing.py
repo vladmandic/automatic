@@ -324,9 +324,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             def infotext(index): # pylint: disable=function-redefined # noqa: F811
                 return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
 
-            if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
-                shared.sd_model.restore_pipeline()
-
             for i, x_sample in enumerate(x_samples_ddim):
                 if hasattr(p, 'recursion'):
                     continue
@@ -383,6 +380,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         output_images.append(image_mask_composite)
             del x_samples_ddim
             devices.torch_gc()
+
+        if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            shared.sd_model.restore_pipeline()
 
         t1 = time.time()
         shared.log.info(f'Processed: images={len(output_images)} time={t1 - t0:.2f} its={(p.steps * len(output_images)) / (t1 - t0):.2f} memory={memstats.memory_stats()}')
