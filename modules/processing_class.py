@@ -405,9 +405,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             image = images.flatten(img, shared.opts.img2img_background_color)
             if self.width is None or self.height is None:
                 self.width, self.height = image.width, image.height
-            if crop_region is None and self.resize_mode != 4 and self.resize_mode > 0:
-                if image.width != self.width or image.height != self.height:
-                    image = images.resize_image(self.resize_mode, image, self.width, self.height, self.resize_name)
+            if crop_region is None and self.resize_mode > 0:
+                image = images.resize_image(self.resize_mode, image, self.width, self.height, self.resize_name)
                 self.width = image.width
                 self.height = image.height
             if self.image_mask is not None and shared.opts.mask_apply_overlay:
@@ -445,8 +444,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             image = 2. * image - 1.
             image = image.to(device=shared.device, dtype=devices.dtype_vae)
             self.init_latent = self.sd_model.get_first_stage_encoding(self.sd_model.encode_first_stage(image))
-            if self.resize_mode == 4:
-                self.init_latent = torch.nn.functional.interpolate(self.init_latent, size=(self.height // 8, self.width // 8), mode="bilinear")
             if self.image_mask is not None:
                 init_mask = latent_mask
                 latmask = init_mask.convert('RGB').resize((self.init_latent.shape[3], self.init_latent.shape[2]))

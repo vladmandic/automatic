@@ -74,7 +74,7 @@ restricted_opts = {
     "outdir_save",
     "outdir_init_images"
 }
-resize_modes = ["None", "Fixed", "Crop", "Fill", "Latent"]
+resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
 console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
@@ -515,6 +515,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_selected_only": OptionInfo(True, "Save only saves selected image"),
     "include_mask": OptionInfo(False, "Include mask in outputs"),
     "samples_save_zip": OptionInfo(True, "Create ZIP archive"),
+    "image_background": OptionInfo("#000000", "Resize background color", gr.ColorPicker, {}),
 
     "image_sep_metadata": OptionInfo("<h2>Metadata/Logging</h2>", "", gr.HTML),
     "image_metadata": OptionInfo(True, "Include metadata"),
@@ -524,7 +525,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "n_rows": OptionInfo(-1, "Row count", gr.Slider, {"minimum": -1, "maximum": 16, "step": 1}),
-    "grid_background": OptionInfo("#000000", "Background color", gr.ColorPicker, {}),
+    "grid_background": OptionInfo("#000000", "Grid background color", gr.ColorPicker, {}),
     "font": OptionInfo("", "Font file"),
     "font_color": OptionInfo("#FFFFFF", "Font color", gr.ColorPicker, {}),
 

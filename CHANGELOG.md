@@ -2,13 +2,12 @@
 
 ## TODO
 
-- resize type: strech, fill/color, edge, etc.
 - reference styles
 - quick apply style
 
-## Update for 2024-03-16
+## Update for 2024-03-17
 
-### Highlights 2024-03-16
+### Highlights 2024-03-17
 
 New models:
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
@@ -16,17 +15,24 @@ New models:
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
 - [Stable Video Diffusion XT 1.1](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt-1-1)
 - [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+
 New pipelines and features:
 - Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for processing in even less steps
 - Img2img using [LEdit++](https://leditsplusplus-project.static.hf.space/index.html), context aware method with image analysis and positive/negative prompt handling
 - Visual Query & Answer using [moondream2](https://github.com/vikhyat/moondream) as an addition to standard interrogate methods
-- Face-HiRes: simple detailer for face refinements
+- Face-HiRes: simple built-in detailer for face refinements
+- Even simpler outpaint: when resizing image, simply pick outpaint method and if image has different aspect ratio, blank areas will be outpainted!
 - UI aspect-ratio controls and other UI improvements
 - User controllable invisibile and visible watermarking
 - Native composable LoRA
-**Styles**: Not just for prompts! Styles can apply *generate parameters* as templates and can be used to *apply wildcards* to prompts  
-**Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired  
-Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow improvements, Additional API endpoints  
+
+What else?
+
+- **Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired  
+- **Styles**: Not just for prompts! Styles can apply *generate parameters* as templates and can be used to *apply wildcards* to prompts  
+improvements, Additional API endpoints  
+- Given the high interest in [ZLUDA](https://github.com/vosen/ZLUDA) engine introduced in last release we've updated much more flexible/automatic install procedure (see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details)  
+- Plus Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow 
 
 Further details:  
 - For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
@@ -34,7 +40,7 @@ Further details:
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 - [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
 
-### Full Changelog 2024-03-16
+### Full Changelog 2024-03-17
 
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
@@ -84,6 +90,7 @@ Further details:
   - *note*: this is a very experimental feature and may not work as expected
 - **Control**
   - added *refiner/hires* workflows
+  - added resize methods to before/after/mask: fixed, crop, fill
 - **Samplers**
   - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
     new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  

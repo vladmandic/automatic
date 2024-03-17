@@ -123,13 +123,9 @@ class GridAnnotation:
 
 def get_font(fontsize):
     try:
-        return ImageFont.truetype(
-            shared.opts.font or "javascript/notosans-nerdfont-regular.ttf", fontsize
-        )
+        return ImageFont.truetype(shared.opts.font or "javascript/notosans-nerdfont-regular.ttf", fontsize)
     except Exception:
-        return ImageFont.truetype(
-            "javascript/notosans-nerdfont-regular.ttf", fontsize
-        )
+        return ImageFont.truetype("javascript/notosans-nerdfont-regular.ttf", fontsize)
 
 
 def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, title=None):
@@ -216,27 +212,15 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
 
 
 def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
-    shared.log.debug(f'Image resize: input={im} mode={resize_mode} target={width}x{height} upscaler={upscaler_name} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-    """
-    Resizes an image with the specified resize_mode, width, and height.
-    Args:
-        resize_mode: The mode to use when resizing the image.
-            0: No resize
-            1: Resize the image to the specified width and height.
-            2: Resize the image to fill the specified width and height, maintaining the aspect ratio, and then center the image within the dimensions, cropping the excess.
-            3: Resize the image to fit within the specified width and height, maintaining the aspect ratio, and then center the image within the dimensions, filling empty with data from image.
-        im: The image to resize.
-        width: The width to resize the image to.
-        height: The height to resize the image to.
-        upscaler_name: The name of the upscaler to use. If not provided, defaults to opts.upscaler_for_img2img.
-    """
+    if im.width == width and im.height == height:
+        shared.log.debug(f'Image resize: input={im} target={width}x{height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
     def latent(im, w, h, upscaler):
         from modules.processing_vae import vae_encode, vae_decode
         import torch
         latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode
-        latents = torch.nn.functional.interpolate(latents, size=(h // 8, w // 8), mode=upscaler["mode"], antialias=upscaler["antialias"])
+        latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
         im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
         return im
 
@@ -260,11 +244,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
             im = im.resize((w, h), resample=Image.Resampling.LANCZOS)
         return im
 
-    if resize_mode == 0 or (im.width == width and im.height == height):
-        res = im.copy()
-    elif resize_mode == 1:
-        res = resize(im, width, height)
-    elif resize_mode == 2:
+    def crop(im):
         ratio = width / height
         src_ratio = im.width / im.height
         src_w = width if ratio > src_ratio else im.width * height // im.height
@@ -272,7 +252,11 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         resized = resize(im, src_w, src_h)
         res = Image.new(im.mode, (width, height))
         res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
-    else:
+        return res
+
+    def fill(im, color=None):
+        color = color or shared.opts.image_background
+        """
         ratio = round(width / height, 1)
         src_ratio = round(im.width / im.height, 1)
         src_w = width if ratio < src_ratio else im.width * height // im.height
@@ -290,6 +274,27 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
             if height > 0 and fill_width > 0:
                 res.paste(resized.resize((fill_width, height), box=(0, 0, 0, height)), box=(0, 0))
                 res.paste(resized.resize((fill_width, height), box=(resized.width, 0, resized.width, height)), box=(fill_width + src_w, 0))
+        return res
+        """
+        ratio = min(width / im.width, height / im.height)
+        im = resize(im, im.width * ratio, im.height * ratio)
+        res = Image.new(im.mode, (width, height), color=color)
+        res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
+        return res
+
+    if resize_mode == 0 or (im.width == width and im.height == height): # none
+        res = im.copy()
+    elif resize_mode == 1: # fixed
+        res = resize(im, width, height)
+    elif resize_mode == 2: # crop
+        res = crop(im)
+    elif resize_mode == 3: # fill
+        res = fill(im)
+    elif resize_mode == 4: # edge
+        from modules import masking
+        res = fill(im, color=0)
+        res, _mask = masking.outpaint(res)
+        res.save('/tmp/edge.png')
     if output_type == 'np':
         return np.array(res)
     return res
