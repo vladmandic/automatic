@@ -491,7 +491,7 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
 
                     # final check
                     if has_models:
-                        if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None:
+                        if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None and getattr(p, 'init_images', None) is None:
                             yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
                             return
 

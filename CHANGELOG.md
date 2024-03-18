@@ -5,9 +5,9 @@
 - reference styles
 - quick apply style
 
-## Update for 2024-03-17
+## Update for 2024-03-18
 
-### Highlights 2024-03-17
+### Highlights 2024-03-18
 
 New models:
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
@@ -40,7 +40,7 @@ Further details:
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 - [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
 
-### Full Changelog 2024-03-17
+### Full Changelog 2024-03-18
 
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
@@ -62,17 +62,17 @@ Further details:
     - positive prompt: what to enhance, strength and threshold for auto-masking
     - negative prompt: what to remove, strength and threshold for auto-masking  
   - *note*: not compatible with model offloading
+- **Second Pass / Refine**
+  - independent upscale and hires options: run hires without upscale or upscale without hires or both
+  - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
+  - update ui section to reflect changes
+  - *note*: behavior using backend:original is unchanged for backwards compatibilty
 - **Visual Query** visual query & answer in process tab  
   - go to process -> visual query  
   - ask your questions, e.g. "describe the image", "what is behind the subject", "what are predominant colors of the image?"
   - primary model is [moondream2](https://github.com/vikhyat/moondream), a *tiny* 1.86B vision language model  
     *note*: its still 3.7GB in size, so not really tiny  
   - additional support for multiple variations of several base models: *GIT, BLIP, ViLT, PIX*, sizes range from 0.3 to 1.7GB  
-- **Second Pass / Refine**
-  - independent upscale and hires options: run hires without upscale or upscale without hires or both
-  - upscale can now run 0.1-8.0 scale and will also run if enabled at 1.0 to allow for upscalers that simply improve image quality
-  - update ui section to reflect changes
-  - *note*: behavior using backend:original is unchanged for backwards compatibilty
 - **Video**
   - **Image2Video**
     - new module for creating videos from images  
@@ -91,13 +91,6 @@ Further details:
 - **Control**
   - added *refiner/hires* workflows
   - added resize methods to before/after/mask: fixed, crop, fill
-- **Samplers**
-  - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
-    new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
-    for best results, use with TCD LoRA: <https://huggingface.co/h1t/TCD-SDXL-LoRA>
-  - *DPM++ 2M EDM* and *Euler EDM*  
-    EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
-    Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **Styles**: styles are not just for prompts!
   - new styles editor: *networks -> styles -> edit*
   - styles can apply generate parameters, for example to have a style that enables and configures hires:  
@@ -132,6 +125,13 @@ Further details:
   - reference models will print recommended settings to log if present
   - new setting in extra network: *use reference values when available*  
     disabled by default, if enabled will force use of reference settings for models that have them
+- **Samplers**
+  - [TCD](https://mhh0318.github.io/tcd/): Trajectory Consistency Distillation  
+    new sampler that produces consistent results in a very low number of steps (comparable to LCM but without reliance on LoRA)  
+    for best results, use with TCD LoRA: <https://huggingface.co/h1t/TCD-SDXL-LoRA>
+  - *DPM++ 2M EDM* and *Euler EDM*  
+    EDM is a new solver algorithm currently available for DPM++2M and Euler samplers  
+    Note that using EDM samplers with non-EDM optimized models will provide just noise and vice-versa  
 - **Improvements**
   - **FaceID** extend support for LoRA, HyperTile and FreeU, thanks @Trojaner
   - **Tiling** now extends to both Unet and VAE producing smoother outputs, thanks @AI-Casanova
