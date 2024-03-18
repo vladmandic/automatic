@@ -136,6 +136,39 @@ def optimize_openvino(sd_model):
     return sd_model
 
 
+def compile_onediff(sd_model):
+    try:
+        from onediff.infer_compiler import oneflow_compile
+
+    except Exception as e:
+        shared.log.warning(f"Model compile using onediff/oneflow: {e}")
+        return sd_model
+
+    try:
+        t0 = time.time()
+        # For some reason compiling the text_encoder, when it is used by
+        # the 'compel' package which sdnext uses, it becomes 100 times
+        # slower as if it is recompiling every time.
+        #sd_model.text_encoder = oneflow_compile(sd_model.text_encoder)
+        #if hasattr(sd_model, 'text_endcoder_2'):
+        #    sd_model.text_encoder_2 = oneflow_compile(sd_model.text_encoder_2)
+        sd_model.unet = oneflow_compile(sd_model.unet)
+        sd_model.vae.encoder = oneflow_compile(sd_model.vae.encoder)
+        sd_model.vae.decoder = oneflow_compile(sd_model.vae.decoder)
+        # How are Loras, Adaptors, and other things compiled
+
+        # DW: I'm unclear whether this is also a problem with onediff
+        # as it was for sfast.
+        setup_logging() # compile messes with logging so reset is needed
+        if shared.opts.cuda_compile_precompile:
+            sd_model("dummy prompt")
+        t1 = time.time()
+        shared.log.info(f"Model compile: task=onediff/oneflow time={t1-t0:.2f}")
+    except Exception as e:
+        shared.log.info(f"Model compile: task=onediff/oneflow error: {e}")
+    return sd_model
+
+
 def compile_stablefast(sd_model):
     try:
         import sfast.compilers.stable_diffusion_pipeline_compiler as sf
@@ -277,7 +310,9 @@ def compile_diffusers(sd_model):
         shared.log.warning('Model compile enabled but no backend specified')
         return sd_model
     shared.log.info(f"Model compile: pipeline={sd_model.__class__.__name__} mode={shared.opts.cuda_compile_mode} backend={shared.opts.cuda_compile_backend} fullgraph={shared.opts.cuda_compile_fullgraph} compile={shared.opts.cuda_compile}")
-    if shared.opts.cuda_compile_backend == 'stable-fast':
+    if shared.opts.cuda_compile_backend == 'onediff':
+        sd_model = compile_onediff(sd_model)
+    elif shared.opts.cuda_compile_backend == 'stable-fast':
         sd_model = compile_stablefast(sd_model)
     elif shared.opts.cuda_compile_backend == 'deep-cache':
         sd_model = compile_deepcache(sd_model)
