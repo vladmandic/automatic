@@ -927,7 +927,7 @@ def get_version():
                 'app': 'sd.next',
                 'updated': updated,
                 'hash': githash,
-                'branch': branch_name,
+                'branch': branch_name.replace('\n', ''),
                 'url': origin.replace('\n', '') + '/tree/' + branch_name.replace('\n', '')
             }
         except Exception:
