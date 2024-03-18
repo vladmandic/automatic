@@ -55,7 +55,7 @@ class RealESRGANer():
             self.device = torch.device(
                 f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu') if device is None else device
         else:
-            self.device = devices.device if device is None else device
+            self.device = devices.device_esrgan if device is None else device
 
         if isinstance(model_path, list):
             # dni
