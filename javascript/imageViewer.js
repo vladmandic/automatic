@@ -59,7 +59,7 @@ async function displayExif(el) {
   modalExif.innerHTML = '';
   const exif = await window.exifr.parse(el);
   if (!exif) return;
-  log('exif', exif);
+  // log('exif', exif);
   try {
     let html = `
       <b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>
@@ -69,7 +69,7 @@ async function displayExif(el) {
     html = html.replace('Negative prompt:', '<br><b>Negative</b>');
     html = html.replace('Steps:', '<br><b>Params</b> Steps:');
     modalExif.innerHTML = html;
-  } catch(e) { }
+  } catch (e) { }
 }
 
 function showModal(event) {
@@ -80,7 +80,7 @@ function showModal(event) {
   modalImage.onload = () => {
     previewInstance.moveTo(0, 0);
     modalPreviewZone.focus();
-    displayExif(modalImage);''
+    displayExif(modalImage);
   };
   modalImage.src = source.src;
   if (modalImage.style.display === 'none') lb.style.setProperty('background-image', `url(${source.src})`);
@@ -225,7 +225,7 @@ async function initImageViewer() {
   // exif
   const modalExif = document.createElement('div');
   modalExif.id = 'modalExif';
-  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small;'
+  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small;';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });

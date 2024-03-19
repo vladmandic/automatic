@@ -1,7 +1,7 @@
 let logMonitorEl = null;
 let logMonitorStatus = true;
-let logWarnings = 0
-let logErrors = 0
+let logWarnings = 0;
+let logErrors = 0;
 
 function dateToStr(ts) {
   const dt = new Date(1000 * ts);
@@ -12,8 +12,8 @@ function dateToStr(ts) {
   const min = String(dt.getMinutes()).padStart(2, '0');
   const sec = String(dt.getSeconds()).padStart(2, '0');
   const ms = String(dt.getMilliseconds()).padStart(3, '0');
-  const s  = `${year}-${mo}-${day} ${hour}:${min}:${sec}.${ms}`;
-  return s
+  const s = `${year}-${mo}-${day} ${hour}:${min}:${sec}.${ms}`;
+  return s;
 }
 
 async function logMonitor() {
@@ -41,8 +41,8 @@ async function logMonitor() {
         const row = document.createElement('tr');
         // row.style = 'padding: 10px; margin: 0;';
         const level = `<td style="color: var(--color-${l.level.toLowerCase()})">${l.level}</td>`;
-        if (l.level == 'WARNING') logWarnings++;
-        if (l.level == 'ERROR') logErrors++;
+        if (l.level === 'WARNING') logWarnings++;
+        if (l.level === 'ERROR') logErrors++;
         const module = `<td style="color: var(--var(--neutral-400))">${l.module}</td>`;
         row.innerHTML = `<td>${dateToStr(l.created)}</td>${level}<td>${l.facility}</td>${module}<td>${l.msg}</td>`;
         logMonitorEl.appendChild(row);
