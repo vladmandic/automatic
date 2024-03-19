@@ -5,9 +5,9 @@
 - reference styles
 - quick apply style
 
-## Update for 2024-03-18
+## Update for 2024-03-19
 
-### Highlights 2024-03-18
+### Highlights 2024-03-19
 
 New models:
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
@@ -17,10 +17,10 @@ New models:
 - [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
 
 New pipelines and features:
-- Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for processing in even less steps
 - Img2img using [LEdit++](https://leditsplusplus-project.static.hf.space/index.html), context aware method with image analysis and positive/negative prompt handling
+- Trajectory Consistency Distillation [TCD](https://mhh0318.github.io/tcd) for processing in even less steps
 - Visual Query & Answer using [moondream2](https://github.com/vikhyat/moondream) as an addition to standard interrogate methods
-- Face-HiRes: simple built-in detailer for face refinements
+- **Face-HiRes**: simple built-in detailer for face refinements
 - Even simpler outpaint: when resizing image, simply pick outpaint method and if image has different aspect ratio, blank areas will be outpainted!
 - UI aspect-ratio controls and other UI improvements
 - User controllable invisibile and visible watermarking
@@ -40,7 +40,7 @@ Further details:
 - For documentation, see [WiKi](https://github.com/vladmandic/automatic/wiki)
 - [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867) server  
 
-### Full Changelog 2024-03-18
+### Full Changelog 2024-03-19
 
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
   - large multi-stage high-quality model from warp-ai/wuerstchen team and released by stabilityai  
