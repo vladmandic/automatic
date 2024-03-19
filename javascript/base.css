@@ -116,6 +116,15 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .nvml { position: fixed; bottom: 10px; right: 10px; background: var(--background-fill-primary); border: 1px solid var(--button-primary-border-color); padding: 6px; color: var(--button-primary-text-color);
   font-size: 0.7em; z-index: 50; font-family: monospace; display: none; }
 
+/* image browser */
+#tab-browser-folders { width: max-content; }
+#tab-browser-files { display: block; overflow-x: hidden !important; overflow-y: auto !important; height: 75vh; }
+#tab-browser-image { height: 100%; }
+#tab-browser-search { padding: 0; }
+#tab-browser-status { align-content: center; text-align: right; background: var(--input-background-fill); padding-right: 1em; margin-left: -1em; }
+div:has(>#tab-browser-folders) { flex-grow: 0 !important; background-color: var(--input-background-fill); min-width: max-content !important; }
+.browser-separator { background-color: var(--input-background-fill); font-size: larger; padding: 0.5em; display: block !important; } 
+
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }
 .motd { margin-top: 2em; color: var(--body-text-color-subdued); font-family: monospace; font-variant: all-petite-caps; }

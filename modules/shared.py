@@ -529,6 +529,10 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "font": OptionInfo("", "Font file"),
     "font_color": OptionInfo("#FFFFFF", "Font color", gr.ColorPicker, {}),
 
+    "image_sep_browser": OptionInfo("<h2>Image Browser</h2>", "", gr.HTML),
+    "browser_folders": OptionInfo("", "Additional image browser folders"),
+    "viewer_show_metadata": OptionInfo(True, "Show metadata in full screen image browser"),
+
     "save_sep_options": OptionInfo("<h2>Intermediate Image Saving</h2>", "", gr.HTML),
     "save_init_img": OptionInfo(False, "Save init images"),
     "save_images_before_highres_fix": OptionInfo(False, "Save image before hires"),
@@ -648,9 +652,7 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     'uni_pc_variant': OptionInfo("bh1", "UniPC variant", gr.Radio, {"choices": ["bh1", "bh2", "vary_coeff"]}),
     'uni_pc_skip_type': OptionInfo("time_uniform", "UniPC skip type", gr.Radio, {"choices": ["time_uniform", "time_quadratic", "logSNR"]}),
     "ddim_discretize": OptionInfo('uniform', "DDIM discretize img2img", gr.Radio, {"choices": ['uniform', 'quad']}),
-    # TODO pad_cond_uncond implementation missing for original backend
     "pad_cond_uncond": OptionInfo(True, "Pad prompt and negative prompt to be same length", gr.Checkbox, {"visible": False}),
-    # TODO batch_cond-uncond implementation missing for original backend
     "batch_cond_uncond": OptionInfo(True, "Do conditional and unconditional denoising in one batch", gr.Checkbox, {"visible": False}),
 }))
 

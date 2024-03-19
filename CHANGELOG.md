@@ -5,6 +5,10 @@
 - reference styles
 - quick apply style
 
+## Update for 2024-03-20
+
+- Make metadata in full screen viewer optional
+
 ## Update for 2024-03-19
 
 ### Highlights 2024-03-19
@@ -32,7 +36,7 @@ What else?
 - **Styles**: Not just for prompts! Styles can apply *generate parameters* as templates and can be used to *apply wildcards* to prompts  
 improvements, Additional API endpoints  
 - Given the high interest in [ZLUDA](https://github.com/vosen/ZLUDA) engine introduced in last release we've updated much more flexible/automatic install procedure (see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details)  
-- Plus Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow 
+- Plus Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow  
 
 Further details:  
 - For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  

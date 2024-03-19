@@ -54,22 +54,35 @@ function modalKeyHandler(event) {
   event.stopPropagation();
 }
 
+async function getExif(el) {
+  const exif = await window.exifr.parse(el, { userComment: true });
+  // let html = `<b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>`;
+  let html = '';
+  let params;
+  if (exif.paramters) {
+    params = exif.paramters;
+  } else if (exif.userComment) {
+    params = Array.from(exif.userComment)
+      .map((c) => String.fromCharCode(c))
+      .filter((c) => c !== '\x00')
+      .join('')
+      .replace('UNICODE', '');
+  } else {
+    params = '';
+  }
+  if (params.length > 0) html += `<b>Prompt</b> ${params || ''}<br>`;
+  html = html.replace('Negative prompt:', '<br><b>Negative</b>');
+  html = html.replace('Steps:', '<br><b>Params</b> Steps:');
+  html = html.replaceAll('\n', '<br>');
+  html = html.replaceAll('<br><br>', '<br>');
+  return html;
+}
+window.getExif = getExif;
+
 async function displayExif(el) {
   const modalExif = gradioApp().getElementById('modalExif');
-  modalExif.innerHTML = '';
-  const exif = await window.exifr.parse(el);
-  if (!exif) return;
-  // log('exif', exif);
-  try {
-    let html = `
-      <b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>
-      <b>Prompt</b> ${exif.parameters || ''}<br>
-      `;
-    html = html.replace('\n', '<br>');
-    html = html.replace('Negative prompt:', '<br><b>Negative</b>');
-    html = html.replace('Steps:', '<br><b>Params</b> Steps:');
-    modalExif.innerHTML = html;
-  } catch (e) { }
+  const html = await getExif(el);
+  modalExif.innerHTML = html;
 }
 
 function showModal(event) {
@@ -80,7 +93,7 @@ function showModal(event) {
   modalImage.onload = () => {
     previewInstance.moveTo(0, 0);
     modalPreviewZone.focus();
-    displayExif(modalImage);
+    if (opts.viewer_show_metadata) displayExif(modalImage);
   };
   modalImage.src = source.src;
   if (modalImage.style.display === 'none') lb.style.setProperty('background-image', `url(${source.src})`);
@@ -225,7 +238,7 @@ async function initImageViewer() {
   // exif
   const modalExif = document.createElement('div');
   modalExif.id = 'modalExif';
-  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small;';
+  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em;';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });
