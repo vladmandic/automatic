@@ -141,6 +141,7 @@ MODELS = {
     # "isnet-anime",
 }
 COLORMAP = ['autumn', 'bone', 'jet', 'winter', 'rainbow', 'ocean', 'summer', 'spring', 'cool', 'hsv', 'pink', 'hot', 'parula', 'magma', 'inferno', 'plasma', 'viridis', 'cividis', 'twilight', 'shifted', 'turbo', 'deepgreen']
+TYPES = ['None', 'Opaque', 'Binary', 'Masked', 'Grayscale', 'Color', 'Composite']
 cache_dir = 'models/control/segment'
 generator: MaskGenerationPipeline = None
 busy = False
@@ -371,7 +372,7 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
 
 
 def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_type: str = None, mask_blur: int = None, mask_padding: int = None, segment_enable=True, invert=None):
-    debug(f'Run mask: function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug(f'Run mask: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
 
     if input_image is None:
         return input_mask
@@ -396,7 +397,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     if mask_blur is not None: # compatibility with old img2img values which uses px values
         opts.mask_blur = round(4 * mask_blur / size, 3)
     if mask_padding is not None: # compatibility with old img2img values which uses px values
-        opts.mask_erode = 4 * mask_padding / size
+        opts.mask_dilate = 4 * mask_padding / size
 
     if opts.model is None or not segment_enable:
         mask = input_mask

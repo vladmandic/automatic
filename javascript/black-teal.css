@@ -130,7 +130,7 @@ svg.feather.feather-image, .feather .feather-image { display: none }
 #img2img_settings { min-width: calc(2 * var(--left-column)); max-width: calc(2 * var(--left-column)); background-color: var(--neutral-950); padding-top: 16px; }
 #interrogate, #deepbooru { margin: 0 0px 10px 0px; max-width: 80px; max-height: 80px; font-weight: normal; font-size: 0.95em; }
 #quicksettings .gr-button-tool { font-size: 1.6rem; box-shadow: none; margin-left: -20px; margin-top: -2px; height: 2.4em; }
-#open_folder_extras, #footer, #style_pos_col, #style_neg_col, #roll_col, #extras_upscaler_2, #extras_upscaler_2_visibility, #txt2img_seed_resize_from_w, #txt2img_seed_resize_from_h { display: none; }
+#footer, #style_pos_col, #style_neg_col, #roll_col, #extras_upscaler_2, #extras_upscaler_2_visibility, #txt2img_seed_resize_from_w, #txt2img_seed_resize_from_h { display: none; }
 #save-animation { border-radius: var(--radius-sm) !important; margin-bottom: 16px; background-color: var(--neutral-950); }
 #script_list { padding: 4px; margin-top: 16px; margin-bottom: 8px; }
 #settings > div.flex-wrap { width: 15em; }
@@ -144,6 +144,7 @@ textarea[rows="1"] { height: 33px !important; width: 99% !important; padding: 8p
 #txt2img_settings { min-width: var(--left-column); max-width: var(--left-column); background-color: var(--neutral-950); padding-top: 16px; }
 #pnginfo_html2_info { margin-top: -18px; background-color: var(--input-background-fill); padding: var(--input-padding) }
 #txt2img_styles_row, #img2img_styles_row, #control_styles_row { margin-top: -6px; }
+.block > span { margin-bottom: 0 !important; margin-top: var(--spacing-lg); }
 
 /* based on gradio built-in dark theme */
 :root, .light, .dark {
@@ -187,7 +188,7 @@ textarea[rows="1"] { height: 33px !important; width: 99% !important; padding: 8p
   --checkbox-label-border-color: var(--border-color-primary);
   --checkbox-label-border-color-hover: var(--checkbox-label-border-color);
   --checkbox-label-border-width: var(--input-border-width);
-  --checkbox-label-text-color: var(--body-text-color);
+  --checkbox-label-text-color: var(--block-title-text-color);
   --checkbox-label-text-color-selected: var(--checkbox-label-text-color);
   --error-background-fill: var(--background-fill-primary);
   --error-border-color: var(--border-color-primary);

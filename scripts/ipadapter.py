@@ -72,14 +72,14 @@ class Script(scripts.Script):
             return
         args = list(args)
         units = args.pop(0)
-        if p.ip_adapter_names == []:
+        if getattr(p, 'ip_adapter_names', []) == []:
             p.ip_adapter_names = args[:MAX_ADAPTERS][:units]
-        if p.ip_adapter_scales == [0.0]:
+        if getattr(p, 'ip_adapter_scales', [0.0]) == [0.0]:
             p.ip_adapter_scales = args[MAX_ADAPTERS:MAX_ADAPTERS*2][:units]
-        if p.ip_adapter_images == []:
+        if getattr(p, 'ip_adapter_images', []) == []:
             p.ip_adapter_images = args[MAX_ADAPTERS*2:MAX_ADAPTERS*3][:units]
-        if p.ip_adapter_starts == [0.0]:
+        if getattr(p, 'ip_adapter_starts', [0.0]) == [0.0]:
             p.ip_adapter_starts = args[MAX_ADAPTERS*3:MAX_ADAPTERS*4][:units]
-        if p.ip_adapter_ends == [1.0]:
+        if getattr(p, 'ip_adapter_ends', [1.0]) == [1.0]:
             p.ip_adapter_ends = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
-        # ipadapter.apply(shared.sd_model, p, adapter_name, scale, image) # called directly from processing.process_images_inner
+        # ipadapter.apply(shared.sd_model, p, p.ip_adapter_names, p.ip_adapter_scales, p.ip_adapter_starts, p.ip_adapter_ends, p.ip_adapter_images) # called directly from processing.process_images_inner

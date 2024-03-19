@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -73,6 +73,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 if shared.state.interrupted or shared.state.skipped:
                     raise AssertionError('Interrupted...')
                 time.sleep(0.1)
+        if hasattr(p, "extra_network_data"):
+            extra_networks.activate(p, p.extra_network_data, step=step)
         if latents is None:
             return kwargs
         elif shared.opts.nan_skip:
@@ -87,7 +89,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                     ip_adapter_scales[i] *= float(step <= pipe.num_timesteps * ip_adapter_ends[i])
                     debug(f"Callback: IP Adapter scales={ip_adapter_scales}")
                 pipe.set_ip_adapter_scale(ip_adapter_scales)
-        if step != pipe.num_timesteps:
+        if step != getattr(pipe, 'num_timesteps', 0):
             kwargs = processing_correction.correction_callback(p, timestep, kwargs)
         if p.scheduled_prompt and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
             try:
@@ -97,7 +99,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 kwargs["negative_prompt_embeds"] = p.negative_embeds[j][0:1].expand(kwargs["negative_prompt_embeds"].shape)
             except Exception as e:
                 shared.log.debug(f"Callback: {e}")
-        if step == int(pipe.num_timesteps * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
+        if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
             pipe._guidance_scale = 0.0 # pylint: disable=protected-access
             for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
                 kwargs[key] = kwargs[key].chunk(2)[-1]
@@ -137,7 +139,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             width, height = resize_init_images(p)
             task_args = {
                 'image': p.init_images,
-                'mask_image': p.image_mask,
+                'mask_image': p.task_args.get('image_mask', None) or getattr(p, 'image_mask', None) or getattr(p, 'mask', None),
                 'strength': p.denoising_strength,
                 'height': height,
                 'width': width,
@@ -185,7 +187,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             generator = p.generator
         else:
             generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
-            generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
+            try:
+                generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
+            except Exception as e:
+                shared.log.error(f'Torch generator: seeds={p.seeds} device={generator_device} {e}')
+                generator = None
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
         clip_skip = kwargs.pop("clip_skip", 1)
@@ -243,13 +249,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args["prior_guidance_scale"] = p.cfg_scale
             if 'decoder_guidance_scale' in possible:
                 args["decoder_guidance_scale"] = p.image_cfg_scale
-            # TODO Stable Cascade callbacks are currently broken in combined pipeline so preview will not get triggered
-            if 'prior_callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback_on_step_end' in possible:
-                possible.remove('callback_on_step_end')
-            if 'callback' in possible:
-                possible.remove('callback')
 
         # set callbacks
         if 'callback_steps' in possible:
@@ -270,6 +269,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args[arg] = kwargs[arg]
             else:
                 pass
+
         task_kwargs = task_specific_kwargs(model)
         for arg in task_kwargs:
             # if arg in possible and arg not in args: # task specific args should not override args
@@ -298,7 +298,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clean['generator'] = generator_device
         clean['parser'] = parser
         for k, v in clean.items():
-            if isinstance(v, torch.Tensor):
+            if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray) or (isinstance(v, list) and len(v) > 0 and (isinstance(v[0], torch.Tensor) or isinstance(v[0], np.ndarray))):
                 clean[k] = v.shape
         shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} set={clean}')
         if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
@@ -317,8 +317,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def update_sampler(sd_model, second_pass=False):
         sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
-        if sd_model.__class__.__name__ in ['AmusedPipeline']:
-            return # models with their own schedulers
         if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
             if sampler is None:
@@ -349,12 +347,17 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if p.sag_scale > 0 and is_txt2img():
             update_sampler(shared.sd_model)
             supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
-            if sd_model.scheduler.__class__.__name__ in supported:
+            if hasattr(sd_model, 'sfast'):
+                shared.log.warning(f'SAG incompatible compile mode: backend={shared.opts.cuda_compile_backend}')
+            elif sd_model.scheduler.__class__.__name__ in supported:
                 sd_model = sd_models.switch_pipe(diffusers.StableDiffusionSAGPipeline, sd_model)
                 p.extra_generation_params["SAG scale"] = p.sag_scale
                 p.task_args['sag_scale'] = p.sag_scale
             else:
                 shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
+        if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
+            shared.log.warning('Processing: mode=inpaint mask=None')
+            sd_model = sd_models.set_diffuser_pipe(sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
         if shared.opts.cuda_compile_backend == "olive-ai":
             sd_model = olive_check_parameters_changed(p, is_refiner_enabled())
         if sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -363,6 +366,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             orig_pipeline = sd_model # processed ONNX pipeline should not be replaced with original pipeline.
         return sd_model
 
+    # sanitize init_images
+    if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
+        del p.init_images
+    if hasattr(p, 'init_images') and not isinstance(getattr(p, 'init_images', []), list):
+        p.init_images = [p.init_images]
     if len(getattr(p, 'init_images', [])) > 0:
         while len(p.init_images) < len(p.prompts):
             p.init_images.append(p.init_images[-1])
@@ -410,9 +418,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
+    output = None
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
+        sd_models.move_model(shared.sd_model, devices.device)
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
@@ -441,7 +451,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.log.error(f'Processing: args={base_args} {e}')
         errors.display(e, 'Processing')
 
-    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0:
+    if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
 
     shared.state.nextjob()
@@ -450,11 +460,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return results
 
     # optional second pass
-    if p.enable_hr and len(getattr(p, 'init_images', [])) == 0:
+    if p.enable_hr:
         p.is_hr_pass = True
-    if p.is_hr_pass:
-        p.init_hr()
+        p.init_hr(p.hr_scale, p.hr_upscaler, force=p.hr_force)
         prev_job = shared.state.job
+
+        # hires runs on original pipeline
+        if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            shared.sd_model.restore_pipeline()
 
         # upscale
         if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
@@ -467,7 +480,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
-        if (latent_upscale is not None or p.hr_force) and p.denoising_strength > 0:
+        if (latent_upscale is not None or p.hr_force) and getattr(p, 'hr_denoising_strength', p.denoising_strength) > 0:
             p.ops.append('hires')
             sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
             if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -480,6 +493,13 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
+                if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
+                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil') # controlnet cannnot deal with latent input
+                    p.task_args['image'] = output.images # replace so hires uses new output
+            sd_models.move_model(shared.sd_model, devices.device)
+            orig_denoise = p.denoising_strength
+            p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
             hires_args = set_pipeline_args(
                 model=shared.sd_model,
                 prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
@@ -507,7 +527,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
                 shared.log.info(e)
-            p.init_images = []
+            p.denoising_strength = orig_denoise
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
@@ -541,6 +561,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
+            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
+                p.task_args['image'] = image
             shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             refiner_args = set_pipeline_args(
                 model=shared.sd_refiner,
@@ -561,8 +583,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             )
             shared.state.sampling_steps = refiner_args['num_inference_steps']
             try:
-                if 'requires_aesthetics_score' in shared.sd_refiner.config:
-                    shared.sd_refiner.register_to_config(requires_aesthetics_score=shared.opts.diffusers_aesthetics_score)
+                if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true
+                    shared.sd_refiner.register_to_config(requires_aesthetics_score = getattr(shared.sd_refiner, 'tokenizer', None) is None)
                 refiner_output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
                 if isinstance(refiner_output, dict):
                     refiner_output = SimpleNamespace(**refiner_output)

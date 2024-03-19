@@ -68,8 +68,8 @@ def get_extra_networks(page: Optional[str] = None, name: Optional[str] = None, f
     return res
 
 def get_interrogate():
-    from modules.ui_interrogate import get_models
-    return ['clip', 'deepdanbooru'] + get_models()
+    from modules.interrogate import get_clip_models
+    return ['clip', 'deepdanbooru'] + get_clip_models()
 
 def post_interrogate(req: models.ReqInterrogate):
     if req.image is None or len(req.image) < 64:
@@ -87,8 +87,8 @@ def post_interrogate(req: models.ReqInterrogate):
         caption = deepbooru.model.tag(image)
         return models.ResInterrogate(caption=caption)
     else:
-        from modules.ui_interrogate import interrogate_image, analyze_image, get_models
-        if req.model not in get_models():
+        from modules.interrogate import interrogate_image, analyze_image, get_clip_models
+        if req.model not in get_clip_models():
             raise HTTPException(status_code=404, detail="Model not found")
         try:
             caption = interrogate_image(image, model=req.model, mode=req.mode)

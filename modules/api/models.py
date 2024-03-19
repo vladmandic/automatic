@@ -208,7 +208,7 @@ ReqTxt2Img = PydanticModelGenerator(
 StableDiffusionTxt2ImgProcessingAPI = ReqTxt2Img
 
 class ResTxt2Img(BaseModel):
-    images: List[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    images: List[str] = Field(default=None, title="Image", description="The generated images in base64 format.")
     parameters: dict
     info: str
 
@@ -233,7 +233,7 @@ ReqImg2Img = PydanticModelGenerator(
 StableDiffusionImg2ImgProcessingAPI = ReqImg2Img
 
 class ResImg2Img(BaseModel):
-    images: List[str] = Field(default=None, title="Image", description="The generated image in base64 format.")
+    images: List[str] = Field(default=None, title="Image", description="The generated images in base64 format.")
     parameters: dict
     info: str
 
@@ -272,7 +272,7 @@ class ResProcessBatch(ResProcess):
     images: List[str] = Field(title="Images", description="The generated images in base64 format.")
 
 class ReqImageInfo(BaseModel):
-    image: str = Field(title="Image", description="The base64 encoded PNG image")
+    image: str = Field(title="Image", description="The base64 encoded image")
 
 class ResImageInfo(BaseModel):
     info: str = Field(title="Image info", description="A string with the parameters used to generate the image")

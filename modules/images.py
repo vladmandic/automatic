@@ -7,6 +7,7 @@ import json
 import uuid
 import queue
 import string
+import random
 import hashlib
 import datetime
 import threading
@@ -122,13 +123,9 @@ class GridAnnotation:
 
 def get_font(fontsize):
     try:
-        return ImageFont.truetype(
-            shared.opts.font or "javascript/notosans-nerdfont-regular.ttf", fontsize
-        )
+        return ImageFont.truetype(shared.opts.font or "javascript/notosans-nerdfont-regular.ttf", fontsize)
     except Exception:
-        return ImageFont.truetype(
-            "javascript/notosans-nerdfont-regular.ttf", fontsize
-        )
+        return ImageFont.truetype("javascript/notosans-nerdfont-regular.ttf", fontsize)
 
 
 def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, title=None):
@@ -215,31 +212,21 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
 
 
 def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
-    shared.log.debug(f'Image resize: input={im} mode={resize_mode} target={width}x{height} upscaler={upscaler_name} function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-    """
-    Resizes an image with the specified resize_mode, width, and height.
-    Args:
-        resize_mode: The mode to use when resizing the image.
-            0: No resize
-            1: Resize the image to the specified width and height.
-            2: Resize the image to fill the specified width and height, maintaining the aspect ratio, and then center the image within the dimensions, cropping the excess.
-            3: Resize the image to fit within the specified width and height, maintaining the aspect ratio, and then center the image within the dimensions, filling empty with data from image.
-        im: The image to resize.
-        width: The width to resize the image to.
-        height: The height to resize the image to.
-        upscaler_name: The name of the upscaler to use. If not provided, defaults to opts.upscaler_for_img2img.
-    """
+    if im.width == width and im.height == height:
+        shared.log.debug(f'Image resize: input={im} target={width}x{height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
     def latent(im, w, h, upscaler):
         from modules.processing_vae import vae_encode, vae_decode
         import torch
         latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode
-        latents = torch.nn.functional.interpolate(latents, size=(h // 8, w // 8), mode=upscaler["mode"], antialias=upscaler["antialias"])
+        latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
         im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
         return im
 
     def resize(im, w, h):
+        w = int(w)
+        h = int(h)
         if upscaler_name is None or upscaler_name == "None" or im.mode == 'L':
             return im.resize((w, h), resample=Image.Resampling.LANCZOS) # force for mask
         scale = max(w / im.width, h / im.height)
@@ -253,16 +240,13 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
                 if upscaler is not None:
                     im = latent(im, w, h, upscaler)
                 else:
+                    upscaler = upscalers[0]
                     shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={upscaler.name}")
         if im.width != w or im.height != h: # probably downsample after upscaler created larger image
             im = im.resize((w, h), resample=Image.Resampling.LANCZOS)
         return im
 
-    if resize_mode == 0 or (im.width == width and im.height == height):
-        res = im.copy()
-    elif resize_mode == 1:
-        res = resize(im, width, height)
-    elif resize_mode == 2:
+    def crop(im):
         ratio = width / height
         src_ratio = im.width / im.height
         src_w = width if ratio > src_ratio else im.width * height // im.height
@@ -270,7 +254,11 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         resized = resize(im, src_w, src_h)
         res = Image.new(im.mode, (width, height))
         res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
-    else:
+        return res
+
+    def fill(im, color=None):
+        color = color or shared.opts.image_background
+        """
         ratio = round(width / height, 1)
         src_ratio = round(im.width / im.height, 1)
         src_w = width if ratio < src_ratio else im.width * height // im.height
@@ -288,6 +276,26 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
             if height > 0 and fill_width > 0:
                 res.paste(resized.resize((fill_width, height), box=(0, 0, 0, height)), box=(0, 0))
                 res.paste(resized.resize((fill_width, height), box=(resized.width, 0, resized.width, height)), box=(fill_width + src_w, 0))
+        return res
+        """
+        ratio = min(width / im.width, height / im.height)
+        im = resize(im, int(im.width * ratio), int(im.height * ratio))
+        res = Image.new(im.mode, (width, height), color=color)
+        res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
+        return res
+
+    if resize_mode == 0 or (im.width == width and im.height == height): # none
+        res = im.copy()
+    elif resize_mode == 1: # fixed
+        res = resize(im, width, height)
+    elif resize_mode == 2: # crop
+        res = crop(im)
+    elif resize_mode == 3: # fill
+        res = fill(im)
+    elif resize_mode == 4: # edge
+        from modules import masking
+        res = fill(im, color=0)
+        res, _mask = masking.outpaint(res)
     if output_type == 'np':
         return np.array(res)
     return res
@@ -534,9 +542,9 @@ def atomically_save_image():
         try:
             image_format = Image.registered_extensions()[extension]
         except Exception:
-            shared.log.warning(f'Unknown image format: {extension}')
+            shared.log.warning(f'Saving: unknown image format: {extension}')
             image_format = 'JPEG'
-        if shared.opts.image_watermark_enabled:
+        if shared.opts.image_watermark_enabled or (shared.opts.image_watermark_position != 'none' and shared.opts.image_watermark_image != ''):
             image = set_watermark(image, shared.opts.image_watermark)
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
         shared.log.info(f'Saving: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
@@ -547,42 +555,33 @@ def atomically_save_image():
                     file.write(f"{exifinfo}\n")
                 shared.log.info(f'Saving: text="{filename_txt}" len={len(exifinfo)}')
             except Exception as e:
-                shared.log.warning(f'Image description save failed: {filename_txt} {e}')
+                shared.log.warning(f'Saving failed: description={filename_txt} {e}')
         # actual save
         exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
             for k, v in params.pnginfo.items():
                 pnginfo_data.add_text(k, str(v))
-            try:
-                image.save(fn, format=image_format, compress_level=6, pnginfo=pnginfo_data if shared.opts.image_metadata else None)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'compress_level': 6, 'pnginfo': pnginfo_data if shared.opts.image_metadata else None }
         elif image_format == 'JPEG':
             if image.mode == 'RGBA':
-                shared.log.warning('Saving RGBA image as JPEG: Alpha channel will be lost')
+                shared.log.warning('Saving: removing alpha channel')
                 image = image.convert("RGB")
             elif image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("L")
             exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            try:
-                image.save(fn, format=image_format, optimize=True, quality=shared.opts.jpeg_quality, exif=exif_bytes)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None }
         elif image_format == 'WEBP':
             if image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
             exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            try:
-                image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, lossless=shared.opts.webp_lossless, exif=exif_bytes)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None, 'lossless': shared.opts.webp_lossless }
         else:
-            # shared.log.warning(f'Unrecognized image format: {extension} attempting save as {image_format}')
-            try:
-                image.save(fn, format=image_format, quality=shared.opts.jpeg_quality)
-            except Exception as e:
-                shared.log.error(f'Image save failed: file="{fn}" {e}')
+            save_args = { 'quality': shared.opts.jpeg_quality }
+        try:
+            image.save(fn, format=image_format, **save_args)
+        except Exception as e:
+            shared.log.error(f'Saving failed: file="{fn}" format={image_format} {e}')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -604,7 +603,7 @@ save_thread.start()
 
 
 def save_image(image, path, basename='', seed=None, prompt=None, extension=shared.opts.samples_format, info=None, short_filename=False, no_prompt=False, grid=False, pnginfo_section_name='parameters', p=None, existing_info=None, forced_filename=None, suffix='', save_to_dirs=None): # pylint: disable=unused-argument
-    debug(f'Save from function={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug(f'Save: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     if image is None:
         shared.log.warning('Image is none')
         return None, None
@@ -839,24 +838,55 @@ def flatten(img, bgcolor):
 
 
 def set_watermark(image, watermark):
-    from imwatermark import WatermarkEncoder
-    wm_type = 'bytes'
-    wm_method = 'dwtDctSvd'
-    wm_length = 32
-    length = wm_length // 8
-    info = image.info
-    data = np.asarray(image)
-    encoder = WatermarkEncoder()
-    text = f"{watermark:<{length}}"[:length]
-    bytearr = text.encode(encoding='ascii', errors='ignore')
-    try:
-        encoder.set_watermark(wm_type, bytearr)
-        encoded = encoder.encode(data, wm_method)
-        image = Image.fromarray(encoded)
-        image.info = info
-        shared.log.debug(f'Set watermark: {watermark} method={wm_method} bits={wm_length}')
-    except Exception as e:
-        shared.log.warning(f'Set watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
+    if shared.opts.image_watermark_position != 'none': # visible watermark
+        wm_image = None
+        try:
+            wm_image = Image.open(shared.opts.image_watermark_image)
+        except Exception as e:
+            shared.log.warning(f'Set image watermark: fn="{shared.opts.image_watermark_image}" {e}')
+        if wm_image is not None:
+            if shared.opts.image_watermark_position == 'top/left':
+                position = (0, 0)
+            elif shared.opts.image_watermark_position == 'top/right':
+                position = (image.width - wm_image.width, 0)
+            elif shared.opts.image_watermark_position == 'bottom/left':
+                position = (0, image.height - wm_image.height)
+            elif shared.opts.image_watermark_position == 'bottom/right':
+                position = (image.width - wm_image.width, image.height - wm_image.height)
+            elif shared.opts.image_watermark_position == 'center':
+                position = ((image.width - wm_image.width) // 2, (image.height - wm_image.height) // 2)
+            else:
+                position = (random.randint(0, image.width - wm_image.width), random.randint(0, image.height - wm_image.height))
+            try:
+                for x in range(wm_image.width):
+                    for y in range(wm_image.height):
+                        r, g, b, _a = wm_image.getpixel((x, y))
+                        if not (r == 0 and g == 0 and b == 0):
+                            image.putpixel((x+position[0], y+position[1]), (r, g, b))
+                shared.log.debug(f'Set image watermark: fn="{shared.opts.image_watermark_image}" image={wm_image} position={position}')
+            except Exception as e:
+                shared.log.warning(f'Set image watermark: image={wm_image} {e}')
+
+    if shared.opts.image_watermark_enabled: # invisible watermark
+        from imwatermark import WatermarkEncoder
+        wm_type = 'bytes'
+        wm_method = 'dwtDctSvd'
+        wm_length = 32
+        length = wm_length // 8
+        info = image.info
+        data = np.asarray(image)
+        encoder = WatermarkEncoder()
+        text = f"{watermark:<{length}}"[:length]
+        bytearr = text.encode(encoding='ascii', errors='ignore')
+        try:
+            encoder.set_watermark(wm_type, bytearr)
+            encoded = encoder.encode(data, wm_method)
+            image = Image.fromarray(encoded)
+            image.info = info
+            shared.log.debug(f'Set invisible watermark: {watermark} method={wm_method} bits={wm_length}')
+        except Exception as e:
+            shared.log.warning(f'Set invisible watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
+
     return image
 
 

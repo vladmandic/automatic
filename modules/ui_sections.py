@@ -55,6 +55,34 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 
+def ar_change(ar, width, height):
+    if ar == 'AR':
+        return gr.update(interactive=True), gr.update(interactive=True)
+    try:
+        (w, h) = [float(x) for x in ar.split(':')]
+    except Exception as e:
+        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
+        return gr.update(interactive=True), gr.update(interactive=True)
+    if w > h:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * h / w))
+    elif w < h:
+        return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
+    else:
+        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
+
+
+def create_resolution_inputs(tab):
+    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id=f"{tab}_width")
+    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+    for c in [ar_dropdown, width, height]:
+        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
+    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn", label="Switch dims")
+    res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
+    return width, height
+
+
 def create_interrogate_buttons(tab):
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])
@@ -74,8 +102,6 @@ def create_batch_inputs(tab):
         with gr.Row(elem_id=f"{tab}_row_batch"):
             batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id=f"{tab}_batch_count")
             batch_size = gr.Slider(minimum=1, maximum=32, step=1, label='Batch size', value=1, elem_id=f"{tab}_batch_size")
-            batch_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_batch_switch_btn", label="Switch dims")
-            batch_switch_btn.click(lambda w, h: (h, w), inputs=[batch_count, batch_size], outputs=[batch_count, batch_size], show_progress=False)
     return batch_count, batch_size
 
 
@@ -114,7 +140,7 @@ def create_advanced_inputs(tab):
             gr.HTML('<br>')
             with gr.Row(elem_id=f"{tab}_advanced_options"):
                 full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-                restore_faces = gr.Checkbox(label='Face restore', value=False, visible=len(shared.face_restorers) > 1, elem_id=f"{tab}_restore_faces")
+                restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
                 tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling", visible=True)
     return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_sag_scale, cfg_end, full_quality, restore_faces, tiling
 
@@ -200,10 +226,10 @@ def create_hires_inputs(tab):
                 hr_sampler_index = gr.Dropdown(label='Secondary sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Default', type="index")
             with gr.Row(elem_id=f"{tab}_hires_row2"):
                 hr_second_pass_steps = gr.Slider(minimum=0, maximum=99, step=1, label='HiRes steps', elem_id=f"{tab}_steps_alt", value=20)
-                denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.5, elem_id=f"{tab}_denoising_strength")
+                denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.3, elem_id=f"{tab}_denoising_strength")
         with gr.Group(visible=shared.backend == shared.Backend.DIFFUSERS):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
-                refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.8, elem_id=f"{tab}_refiner_start")
+                refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.0, elem_id=f"{tab}_refiner_start")
                 refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=10)
             with gr.Row(elem_id=f"{tab}_refiner_row3", variant="compact"):
                 refiner_prompt = gr.Textbox(value='', label='Secondary prompt', elem_id=f"{tab}_refiner_prompt")
@@ -212,23 +238,14 @@ def create_hires_inputs(tab):
     return enable_hr, hr_sampler_index, denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative
 
 
-def create_resize_inputs(tab, images, scale_visible=True, mode=None, accordion=True, latent=False):
-    def resize_from_to_html(width, height, scale_by):
-        target_width = int(width * scale_by)
-        target_height = int(height * scale_by)
-        if not target_width or not target_height:
-            return "Hires resize: no image selected"
-        return f"Hires resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
-
+def create_resize_inputs(tab, images, accordion=True, latent=False):
     dummy_component = gr.Number(visible=False, value=0)
     with gr.Accordion(open=False, label="Resize", elem_classes=["small-accordion"], elem_id=f"{tab}_resize_group") if accordion else gr.Group():
+        # with gr.Row():
+        #    resize_mode = gr.Radio(label="Mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
         with gr.Row():
-            if mode is not None:
-                resize_mode = gr.Radio(label="Resize mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value=mode, visible=False)
-            else:
-                resize_mode = gr.Radio(label="Resize mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='None')
-        with gr.Row():
-            resize_name = gr.Dropdown(label="Resize method", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode)
+            resize_mode = gr.Dropdown(label="Mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
+            resize_name = gr.Dropdown(label="Method", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode)
             ui_common.create_refresh_button(resize_name, modelloader.load_upscalers, lambda: {"choices": modelloader.load_upscalers()}, 'refresh_upscalers')
 
         with gr.Row(visible=True) as _resize_group:
@@ -241,25 +258,18 @@ def create_resize_inputs(tab, images, scale_visible=True, mode=None, accordion=T
                                 with gr.Row():
                                     width = gr.Slider(minimum=64, maximum=8192, step=8, label="Width", value=512, elem_id=f"{tab}_width")
                                     height = gr.Slider(minimum=64, maximum=8192, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+                                    ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
+                                    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+                                    for c in [ar_dropdown, width, height]:
+                                        c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
                                     res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn")
                                     res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
                                     detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_detect_image_size_btn")
                                     detect_image_size_btn.click(fn=lambda w, h, _: (w or gr.update(), h or gr.update()), _js=f'currentImageResolution{tab}', inputs=[dummy_component, dummy_component, dummy_component], outputs=[width, height], show_progress=False)
-
                     with gr.Tab(label="Scale") as tab_scale_by:
                         scale_by = gr.Slider(minimum=0.05, maximum=8.0, step=0.05, label="Scale", value=1.0, elem_id=f"{tab}_scale")
-                        if scale_visible:
-                            with gr.Row():
-                                scale_by_html = gr.HTML(resize_from_to_html(0, 0, 0.0), elem_id=f"{tab}_scale_resolution_preview")
-                                gr.Slider(label="Unused", elem_id=f"{tab}_unused_scale_by_slider")
-                                button_update_resize_to = gr.Button(visible=False, elem_id=f"{tab}_update_resize_to")
-                            on_change_args = dict(fn=resize_from_to_html, _js=f'currentImageResolution{tab}', inputs=[dummy_component, dummy_component, scale_by], outputs=scale_by_html, show_progress=False)
-                            scale_by.release(**on_change_args)
-                            button_update_resize_to.click(**on_change_args)
-
                     for component in images:
                         component.change(fn=lambda: None, _js="updateImg2imgResizeToTextAfterChangingImage", inputs=[], outputs=[], show_progress=False)
-
             tab_scale_to.select(fn=lambda: 0, inputs=[], outputs=[selected_scale_tab])
             tab_scale_by.select(fn=lambda: 1, inputs=[], outputs=[selected_scale_tab])
             # resize_mode.change(fn=lambda x: gr.update(visible=x != 0), inputs=[resize_mode], outputs=[_resize_group])

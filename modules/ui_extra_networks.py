@@ -297,14 +297,14 @@ class ExtraNetworksPage:
         if os.path.join('models', 'Reference') in path:
             return path
         exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
+        reference_path = os.path.abspath(os.path.join('models', 'Reference'))
+        files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         if shared.opts.diffusers_dir in path:
             path = os.path.relpath(path, shared.opts.diffusers_dir)
-            reference_path = os.path.abspath(os.path.join('models', 'Reference'))
             fn = os.path.join(reference_path, path.replace('models--', '').replace('\\', '/').split('/')[0])
-            files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         else:
             fn = os.path.splitext(path)[0]
-            files = list(files_cache.list_files(os.path.dirname(path), ext_filter=exts, recursive=False))
+            files += list(files_cache.list_files(os.path.dirname(path), ext_filter=exts, recursive=False))
         for file in [f'{fn}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
             if file in files:
                 if '.thumb.' not in file:
@@ -324,6 +324,7 @@ class ExtraNetworksPage:
         possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
         exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
         all_previews = list(files_cache.list_files(*possible_paths, ext_filter=exts, recursive=False))
+        all_previews_fn = [os.path.basename(x) for x in all_previews]
         for item in items:
             if item.get('preview', None) is not None:
                 continue
@@ -336,11 +337,13 @@ class ExtraNetworksPage:
                 model_path = os.path.join(shared.opts.diffusers_dir, match[0])
                 item['local_preview'] = f'{os.path.join(model_path, match[1])}.{shared.opts.samples_format}'
                 all_previews += list(files_cache.list_files(model_path, ext_filter=exts, recursive=False))
+            base = os.path.basename(base)
             for file in [f'{base}{mid}{ext}' for ext in exts for mid in ['.thumb.', '.', '.preview.']]:
-                if file in all_previews:
+                if file in all_previews_fn:
+                    file_idx = all_previews_fn.index(os.path.basename(file))
                     if '.thumb.' not in file:
-                        self.missing_thumbs.append(file)
-                    item['preview'] = self.link_preview(file)
+                        self.missing_thumbs.append(all_previews[file_idx])
+                    item['preview'] = self.link_preview(all_previews[file_idx])
                     break
             if item.get('preview', None) is None:
                 item['preview'] = self.link_preview('html/card-no-preview.png')
@@ -447,10 +450,12 @@ def get_pages(title=None):
 class ExtraNetworksUi:
     def __init__(self):
         self.tabname: str = None
-        self.pages: list(str) = None
+        self.pages: list[str] = None
         self.visible: gr.State = None
         self.state: gr.Textbox = None
         self.details: gr.Group = None
+        self.details_tabs: gr.Group = None
+        self.details_text: gr.Group = None
         self.tabs: gr.Tabs = None
         self.gallery: gr.Gallery = None
         self.description: gr.Textbox = None
@@ -478,7 +483,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     ui.pages = []
     ui.state = gr.Textbox('{}', elem_id=f"{tabname}_extra_state", visible=False)
     ui.visible = gr.State(value=False) # pylint: disable=abstract-class-instantiated
-    ui.details = gr.Group(elem_id=f"{tabname}_extra_details", visible=False)
+    ui.details = gr.Group(elem_id=f"{tabname}_extra_details", elem_classes=["extra-details"], visible=False)
     ui.tabs = gr.Tabs(elem_id=f"{tabname}_extra_tabs")
     ui.button_details = gr.Button('Details', elem_id=f"{tabname}_extra_details_btn", visible=False)
     state = {}
@@ -533,26 +538,39 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                 with gr.Row():
                     btn_save_img = gr.Button('Replace', elem_classes=['small-button'])
                     btn_delete_img = gr.Button('Delete', elem_classes=['small-button'])
-        with gr.Tabs():
-            with gr.Tab('Description'):
-                desc = gr.Textbox('', show_label=False, lines=8, placeholder="Extra network description...")
-                ui.details_components.append(desc)
-                with gr.Row():
-                    btn_save_desc = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_desc')
-                    btn_delete_desc = gr.Button('Delete', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_delete_desc')
-                    btn_close_desc = gr.Button('Close', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_close_desc')
-                    btn_close_desc.click(fn=lambda: gr.update(visible=False), _js='refeshDetailsEN', inputs=[], outputs=[ui.details])
-            with gr.Tab('Model metadata'):
-                info = gr.JSON({}, show_label=False)
-                ui.details_components.append(info)
-                with gr.Row():
-                    btn_save_info = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_info')
-                    btn_delete_info = gr.Button('Delete', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_delete_info')
-                    btn_close_info = gr.Button('Close', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_close_info')
-                    btn_close_info.click(fn=lambda: gr.update(visible=False), _js='refeshDetailsEN', inputs=[], outputs=[ui.details])
-            with gr.Tab('Embedded metadata'):
-                meta = gr.JSON({}, show_label=False)
-                ui.details_components.append(meta)
+        with gr.Group(elem_id=f"{tabname}_extra_details_tabs", visible=False) as ui.details_tabs:
+            with gr.Tabs():
+                with gr.Tab('Description', elem_classes=['extra-details-tabs']):
+                    desc = gr.Textbox('', show_label=False, lines=8, placeholder="Extra network description...")
+                    ui.details_components.append(desc)
+                    with gr.Row():
+                        btn_save_desc = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_desc')
+                        btn_delete_desc = gr.Button('Delete', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_delete_desc')
+                        btn_close_desc = gr.Button('Close', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_close_desc')
+                        btn_close_desc.click(fn=lambda: gr.update(visible=False), _js='refeshDetailsEN', inputs=[], outputs=[ui.details])
+                with gr.Tab('Model metadata', elem_classes=['extra-details-tabs']):
+                    info = gr.JSON({}, show_label=False)
+                    ui.details_components.append(info)
+                    with gr.Row():
+                        btn_save_info = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_info')
+                        btn_delete_info = gr.Button('Delete', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_delete_info')
+                        btn_close_info = gr.Button('Close', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_close_info')
+                        btn_close_info.click(fn=lambda: gr.update(visible=False), _js='refeshDetailsEN', inputs=[], outputs=[ui.details])
+                with gr.Tab('Embedded metadata', elem_classes=['extra-details-tabs']):
+                    meta = gr.JSON({}, show_label=False)
+                    ui.details_components.append(meta)
+        with gr.Group(elem_id=f"{tabname}_extra_details_text", elem_classes=["extra-details-text"], visible=False) as ui.details_text:
+            description = gr.Textbox(label='Description', lines=1, placeholder="Style description...")
+            prompt = gr.Textbox(label='Prompt', lines=2, placeholder="Prompt...")
+            negative = gr.Textbox(label='Negative prompt', lines=2, placeholder="Negative prompt...")
+            extra = gr.Textbox(label='Parameters', lines=2, placeholder="Generation parameters overrides...")
+            wildcards = gr.Textbox(label='Wildcards', lines=2, placeholder="Wildcard prompt replacements...")
+            ui.details_components += [description, prompt, negative, extra, wildcards]
+            with gr.Row():
+                btn_save_style = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_style')
+                btn_delete_style = gr.Button('Delete', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_delete_style')
+                btn_close_style = gr.Button('Close', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_close_style')
+                btn_close_style.click(fn=lambda: gr.update(visible=False), _js='refeshDetailsEN', inputs=[], outputs=[ui.details])
 
     with ui.tabs:
         def ui_tab_change(page):
@@ -570,7 +588,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         ui.button_close = ToolButton(symbols.close, elem_id=f"{tabname}_extra_close", visible=True)
         ui.button_model = ToolButton(symbols.refine, elem_id=f"{tabname}_extra_model", visible=True)
         ui.search = gr.Textbox('', show_label=False, elem_id=f"{tabname}_extra_search", placeholder="Search...", elem_classes="textbox", lines=2, container=False)
-        ui.description = gr.Textbox('', show_label=False, elem_id=f"{tabname}_description", elem_classes="textbox", lines=2, interactive=False, container=False)
+        ui.description = gr.Textbox('', show_label=False, elem_id=f"{tabname}_description", elem_classes=["textbox", "extra-description"], lines=2, interactive=False, container=False)
 
         if ui.tabname == 'txt2img': # refresh only once
             global refresh_time # pylint: disable=global-statement
@@ -639,10 +657,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     def fn_delete_desc(desc):
         if ui.last_item is None:
             return desc
-        if hasattr(ui.last_item, 'type') and ui.last_item.type == 'Style':
-            fn = os.path.splitext(ui.last_item.filename)[0] + '.json'
-        else:
-            fn = os.path.splitext(ui.last_item.filename)[0] + '.txt'
+        fn = os.path.splitext(ui.last_item.filename)[0] + '.txt'
         if os.path.exists(fn):
             shared.log.debug(f'Extra network delete desc: item={ui.last_item.name} filename="{fn}"')
             os.remove(fn)
@@ -665,14 +680,39 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             return ''
         return info
 
+    def fn_save_style(info, description, prompt, negative, extra, wildcards):
+        if not isinstance(info, dict) or isinstance(info, list):
+            shared.log.warning(f'Extra network save style skip: item={ui.last_item.name} not a dict: {type(info)}')
+            return info
+        if ui.last_item is None:
+            return info
+        fn = os.path.splitext(ui.last_item.filename)[0] + '.json'
+        if hasattr(ui.last_item, 'type') and ui.last_item.type == 'Style':
+            info.update(**{ 'description': description, 'prompt': prompt, 'negative': negative, 'extra': extra, 'wildcards': wildcards })
+            shared.writefile(info, fn, silent=True)
+            shared.log.debug(f'Extra network save style: item={ui.last_item.name} filename="{fn}"')
+        return info
+
+    def fn_delete_style(info):
+        if ui.last_item is None:
+            return info
+        fn = os.path.splitext(ui.last_item.filename)[0] + '.json'
+        if os.path.exists(fn):
+            shared.log.debug(f'Extra network delete style: item={ui.last_item.name} filename="{fn}"')
+            os.remove(fn)
+            return {}
+        return info
+
     btn_save_img.click(fn=fn_save_img, _js='closeDetailsEN', inputs=[img], outputs=[img])
     btn_delete_img.click(fn=fn_delete_img, _js='closeDetailsEN', inputs=[img], outputs=[img])
     btn_save_desc.click(fn=fn_save_desc, _js='closeDetailsEN', inputs=[desc], outputs=[desc])
     btn_delete_desc.click(fn=fn_delete_desc, _js='closeDetailsEN', inputs=[desc], outputs=[desc])
     btn_save_info.click(fn=fn_save_info, _js='closeDetailsEN', inputs=[info], outputs=[info])
     btn_delete_info.click(fn=fn_delete_info, _js='closeDetailsEN', inputs=[info], outputs=[info])
+    btn_save_style.click(fn=fn_save_style, _js='closeDetailsEN', inputs=[info, description, prompt, negative, extra, wildcards], outputs=[info])
+    btn_delete_style.click(fn=fn_delete_style, _js='closeDetailsEN', inputs=[info], outputs=[info])
 
-    def show_details(text, img, desc, info, meta, params):
+    def show_details(text, img, desc, info, meta, description, prompt, negative, parameters, wildcards, params, _dummy1=None, _dummy2=None):
         page, item = get_item(state, params)
         if item is not None and hasattr(item, 'name'):
             stat = os.stat(item.filename) if os.path.exists(item.filename) else None
@@ -730,12 +770,17 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                     <tr><td>Comment</td><td>{meta.get('ss_training_comment', 'N/A')}</td></tr>
                 '''
             if page.title == 'Style':
+                description = item.description
+                prompt = item.prompt
+                negative = item.negative
+                parameters = item.extra
+                wildcards = item.wildcards
                 style = f'''
                     <tr><td>Name</td><td>{item.name}</td></tr>
                     <tr><td>Description</td><td>{item.description}</td></tr>
                     <tr><td>Preview Embedded</td><td>{item.preview.startswith('data:')}</td></tr>
                 '''
-                desc = f'Name: {os.path.basename(item.name)}\nDescription: {item.description}\nPrompt: {item.prompt}\nNegative: {item.negative}\nExtra: {item.extra}\n'
+                # desc = f'Name: {os.path.basename(item.name)}\nDescription: {item.description}\nPrompt: {item.prompt}\nNegative: {item.negative}\nExtra: {item.extra}\n'
             text = f'''
                 <h2 style="border-bottom: 1px solid var(--button-primary-border-color); margin: 0em 0px 1em 0 !important">{item.name}</h2>
                 <table style="width: 100%; line-height: 1.3em;"><tbody>
@@ -752,7 +797,21 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                 </tbody></table>
                 {note}
             '''
-        return [text, img, desc, info, meta, gr.update(visible=item is not None)]
+        return [
+            text, # gr.html
+            img, # gr.image
+            desc, # gr.textbox
+            info, # gr.json
+            meta, # gr.json
+            description, # gr.textbox
+            prompt, # gr.textbox
+            negative, # gr.textbox
+            parameters, # gr.textbox
+            wildcards, # gr.textbox
+            gr.update(visible=item is not None), # details ui visible
+            gr.update(visible=page is not None and page.title != 'Style'), # details ui tabs visible
+            gr.update(visible=page is not None and page.title == 'Style'), # details ui text visible
+        ]
 
     def ui_refresh_click(title):
         pages = []
@@ -796,7 +855,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         else:
             prompt = ''
         params = generation_parameters_copypaste.parse_generation_parameters(prompt)
-        res = show_details(text=None, img=None, desc=None, info=None, meta=None, params=params)
+        res = show_details(text=None, img=None, desc=None, info=None, meta=None, parameters=None, description=None, prompt=None, negative=None, wildcards=None, params=params)
         return res
 
     def ui_quicksave_click(name):
@@ -836,7 +895,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     ui.button_scan.click(fn=ui_scan_click, _js='getENActivePage', inputs=[ui.search], outputs=ui.pages)
     ui.button_save.click(fn=ui_save_click, inputs=[], outputs=ui.details_components + [ui.details])
     ui.button_quicksave.click(fn=ui_quicksave_click, _js="() => prompt('Prompt name', '')", inputs=[ui.search], outputs=[])
-    ui.button_details.click(show_details, _js="getCardDetails", inputs=ui.details_components + [dummy], outputs=ui.details_components + [ui.details])
+    ui.button_details.click(show_details, _js="getCardDetails", inputs=ui.details_components + [dummy, dummy, dummy], outputs=ui.details_components + [ui.details, ui.details_tabs, ui.details_text])
     ui.state.change(state_change, inputs=[ui.state], outputs=[])
     return ui
 

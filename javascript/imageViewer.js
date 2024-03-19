@@ -24,7 +24,6 @@ function modalImageSwitch(offset) {
       nextButton.click();
       const modalImage = gradioApp().getElementById('modalImage');
       const modal = gradioApp().getElementById('lightboxModal');
-      modalImage.onload = () => modalPreviewZone.focus();
       modalImage.src = nextButton.children[0].src;
       if (modalImage.style.display === 'none') modal.style.setProperty('background-image', `url(${modalImage.src})`);
     }
@@ -55,6 +54,24 @@ function modalKeyHandler(event) {
   event.stopPropagation();
 }
 
+async function displayExif(el) {
+  const modalExif = gradioApp().getElementById('modalExif');
+  modalExif.innerHTML = '';
+  const exif = await window.exifr.parse(el);
+  if (!exif) return;
+  // log('exif', exif);
+  try {
+    let html = `
+      <b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>
+      <b>Prompt</b> ${exif.parameters || ''}<br>
+      `;
+    html = html.replace('\n', '<br>');
+    html = html.replace('Negative prompt:', '<br><b>Negative</b>');
+    html = html.replace('Steps:', '<br><b>Params</b> Steps:');
+    modalExif.innerHTML = html;
+  } catch (e) { }
+}
+
 function showModal(event) {
   const source = event.target || event.srcElement;
   const modalImage = gradioApp().getElementById('modalImage');
@@ -63,6 +80,7 @@ function showModal(event) {
   modalImage.onload = () => {
     previewInstance.moveTo(0, 0);
     modalPreviewZone.focus();
+    displayExif(modalImage);
   };
   modalImage.src = source.src;
   if (modalImage.style.display === 'none') lb.style.setProperty('background-image', `url(${source.src})`);
@@ -165,44 +183,49 @@ async function initImageViewer() {
   const modalZoom = document.createElement('span');
   modalZoom.id = 'modal_zoom';
   modalZoom.className = 'cursor';
-  modalZoom.innerHTML = '🔍';
+  modalZoom.innerHTML = '\uf531';
   modalZoom.title = 'Toggle zoomed view';
   modalZoom.addEventListener('click', modalZoomToggle, true);
 
   const modalReset = document.createElement('span');
   modalReset.id = 'modal_reset';
   modalReset.className = 'cursor';
-  modalReset.innerHTML = '♻️';
+  modalReset.innerHTML = '\uf532';
   modalReset.title = 'Reset zoomed view';
   modalReset.addEventListener('click', modalResetInstance, true);
 
   const modalTile = document.createElement('span');
   modalTile.id = 'modal_tile';
   modalTile.className = 'cursor';
-  modalTile.innerHTML = '🖽';
+  modalTile.innerHTML = '\udb81\udd70';
   modalTile.title = 'Preview tiling';
   modalTile.addEventListener('click', modalTileToggle, true);
 
   const modalSave = document.createElement('span');
   modalSave.id = 'modal_save';
   modalSave.className = 'cursor';
-  modalSave.innerHTML = '💾';
+  modalSave.innerHTML = '\udb80\udd93';
   modalSave.title = 'Save Image';
   modalSave.addEventListener('click', modalSaveImage, true);
 
   const modalDownload = document.createElement('span');
   modalDownload.id = 'modal_download';
   modalDownload.className = 'cursor';
-  modalDownload.innerHTML = '📷';
+  modalDownload.innerHTML = '\udb85\udc62';
   modalDownload.title = 'Download Image';
   modalDownload.addEventListener('click', modalDownloadImage, true);
 
   const modalClose = document.createElement('span');
   modalClose.id = 'modal_close';
   modalClose.className = 'cursor';
-  modalClose.innerHTML = '🗙';
+  modalClose.innerHTML = '\udb80\udd57';
   modalClose.title = 'Close';
   modalClose.addEventListener('click', (evt) => closeModal(evt, true), true);
+
+  // exif
+  const modalExif = document.createElement('div');
+  modalExif.id = 'modalExif';
+  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small;';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });
@@ -233,6 +256,7 @@ async function initImageViewer() {
   modal.appendChild(modalPreviewZone);
   modal.appendChild(modalNext);
   modal.append(modalControls);
+  modal.append(modalExif);
   modalControls.appendChild(modalZoom);
   modalControls.appendChild(modalReset);
   modalControls.appendChild(modalTile);

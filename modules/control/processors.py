@@ -206,9 +206,9 @@ class Processor():
             display(e, 'Control Processor load')
             return f'Processor load filed: {processor_id}'
 
-    def __call__(self, image_input: Image, mode: str = 'RGB', resize_mode: int = 0, resize_name: str = 'None', scale_tab: int = 1, scale_by: float = 1.0):
+    def __call__(self, image_input: Image, mode: str = 'RGB', resize_mode: int = 0, resize_name: str = 'None', scale_tab: int = 1, scale_by: float = 1.0, local_config: dict = {}):
         if self.processor_id is None or self.processor_id == 'None':
-            return image_input
+            return self.override if self.override is not None else image_input
         if self.override is not None:
             debug(f'Control Processor: id="{self.processor_id}" override={self.override}')
             image_input = self.override
@@ -232,6 +232,8 @@ class Processor():
         try:
             t0 = time.time()
             kwargs = config.get(self.processor_id, {}).get('params', None)
+            if kwargs:
+                kwargs.update(local_config)
             if self.resize:
                 image_resized = image_input.resize((512, 512), Image.Resampling.LANCZOS)
             else:

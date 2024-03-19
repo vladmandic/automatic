@@ -151,13 +151,11 @@ def prepare_embedding_providers(pipe, clip_skip):
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
-    if hasattr(pipe, "tokenizer") and hasattr(pipe, "text_encoder"):
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False,
-                                      returned_embeddings_type=embedding_type, device=device)
+    if getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
-    if hasattr(pipe, "tokenizer_2") and hasattr(pipe, "text_encoder_2"):
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False,
-                                      returned_embeddings_type=embedding_type, device=device)
+    if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     return embeddings_providers
 
@@ -244,11 +242,12 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
                 .argmax(dim=-1),
             ]
         else:
-            pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[prompt_2], device=device) if \
-                prompt_embeds[-1].shape[-1] > 768 else None
-            negative_pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[neg_prompt_2],
-                                                                                          device=device) if \
-                negative_prompt_embeds[-1].shape[-1] > 768 else None
+            try:
+                pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[prompt_2], device=device) if prompt_embeds[-1].shape[-1] > 768 else None
+                negative_pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[neg_prompt_2], device=device) if negative_prompt_embeds[-1].shape[-1] > 768 else None
+            except Exception:
+                pooled_prompt_embeds = None
+                negative_pooled_prompt_embeds = None
 
     prompt_embeds = torch.cat(prompt_embeds, dim=-1) if len(prompt_embeds) > 1 else prompt_embeds[0]
     negative_prompt_embeds = torch.cat(negative_prompt_embeds, dim=-1) if len(negative_prompt_embeds) > 1 else \

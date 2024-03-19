@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import shutil
 import importlib
 from typing import Dict
@@ -71,7 +72,7 @@ def download_civit_preview(model_path: str, preview_url: str):
 
 download_pbar = None
 
-def download_civit_model_thread(model_name, model_url, model_path, model_type, preview, token):
+def download_civit_model_thread(model_name, model_url, model_path, model_type, token):
     import hashlib
     sha256 = hashlib.sha256()
     sha256.update(model_name.encode('utf-8'))
@@ -87,7 +88,7 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
         model_file = os.path.join(shared.opts.ckpt_dir, model_path, model_name)
         temp_file = os.path.join(shared.opts.ckpt_dir, model_path, temp_file)
 
-    res = f'CivitAI download: name="{model_name}" url="{model_url}" path="{model_path}" temp="{temp_file}"'
+    res = f'Model download: name="{model_name}" url="{model_url}" path="{model_path}" temp="{temp_file}"'
     if os.path.isfile(model_file):
         res += ' already exists'
         shared.log.warning(res)
@@ -117,16 +118,24 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
         try:
             with open(temp_file, 'ab') as f:
                 for data in r.iter_content(block_size):
+                    if written == 0:
+                        try: # check if response is JSON message instead of bytes
+                            shared.log.error(f'Model download: response={json.loads(data.decode("utf-8"))}')
+                            raise ValueError('response: type=json expected=bytes')
+                        except Exception: # this is good
+                            pass
                     written = written + len(data)
                     f.write(data)
                     download_pbar.update(task, description="Download", completed=written)
             if written < 1024: # min threshold
                 os.remove(temp_file)
                 raise ValueError(f'removed invalid download: bytes={written}')
+            """
             if preview is not None:
                 preview_file = os.path.splitext(model_file)[0] + '.jpg'
                 preview.save(preview_file)
                 res += f' preview={preview_file}'
+            """
         except Exception as e:
             shared.log.error(f'{res} {e}')
         finally:
@@ -134,17 +143,18 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, p
             download_pbar.remove_task(task)
     if starting_pos+total_size != written:
         shared.log.warning(f'{res} written={round(written/1024/1024)}Mb incomplete download')
-    else:
+    elif os.path.exists(temp_file):
+        shared.log.debug(f'Model download complete: temp="{temp_file}" path="{model_file}"')
         os.rename(temp_file, model_file)
     shared.state.end()
     return res
 
 
-def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, preview, token: str = None):
+def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, token: str = None):
     import threading
-    thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, preview, token))
+    thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, token))
     thread.start()
-    return f'CivitAI download: name={model_name} url={model_url} path={model_path}'
+    return f'Model download: name={model_name} url={model_url} path={model_path}'
 
 
 def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config: Dict[str, str] = None, token = None, variant = None, revision = None, mirror = None, custom_pipeline = None):
@@ -215,60 +225,47 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     return pipeline_dir
 
 
-def load_diffusers_models(model_path: str, command_path: str = None, clear=True):
+def load_diffusers_models(clear=True):
     excluded_models = [
         'PhotoMaker', 'inswapper_128', 'IP-Adapter'
     ]
     t0 = time.time()
-    places = []
-    places.append(model_path)
-    if command_path is not None and command_path != model_path:
-        places.append(command_path)
+    place = shared.opts.diffusers_dir
+    if place is None or len(place) == 0 or not os.path.isdir(place):
+        place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
     output = []
-    for place in places:
-        if not os.path.isdir(place):
-            continue
-        try:
-            """
-            import huggingface_hub as hf
-            res = hf.scan_cache_dir(cache_dir=place)
-            for r in list(res.repos):
-                cache_path = os.path.join(r.repo_path, "snapshots", list(r.revisions)[-1].commit_hash)
-                diffuser_repos.append({ 'name': r.repo_id, 'filename': r.repo_id, 'path': cache_path, 'size': r.size_on_disk, 'mtime': r.last_modified, 'hash': list(r.revisions)[-1].commit_hash, 'model_info': str(os.path.join(cache_path, "model_info.json")) })
-                if not os.path.isfile(os.path.join(cache_path, "hidden")):
-                    output.append(str(r.repo_id))
-            """
-            for folder in os.listdir(place):
-                try:
-                    if any([x in folder for x in excluded_models]): # noqa:C419
-                        continue
-                    if "--" not in folder:
-                        continue
-                    if folder.endswith("-prior"):
-                        continue
-                    _, name = folder.split("--", maxsplit=1)
-                    name = name.replace("--", "/")
-                    folder = os.path.join(place, folder)
-                    friendly = os.path.join(place, name)
-                    snapshots = os.listdir(os.path.join(folder, "snapshots"))
-                    if len(snapshots) == 0:
-                        shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
-                        continue
-                    commit = os.path.join(folder, 'snapshots', snapshots[-1])
-                    mtime = os.path.getmtime(commit)
-                    info = os.path.join(commit, "model_info.json")
-                    diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
-                    if os.path.exists(os.path.join(folder, 'hidden')):
-                        continue
-                    output.append(name)
-                except Exception:
-                    # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
-                    pass
-        except Exception as e:
-            shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: {places} items={len(output)} time={time.time()-t0:.2f}')
+    try:
+        for folder in os.listdir(place):
+            try:
+                if any([x in folder for x in excluded_models]): # noqa:C419
+                    continue
+                if "--" not in folder:
+                    continue
+                if folder.endswith("-prior"):
+                    continue
+                _, name = folder.split("--", maxsplit=1)
+                name = name.replace("--", "/")
+                folder = os.path.join(place, folder)
+                friendly = os.path.join(place, name)
+                snapshots = os.listdir(os.path.join(folder, "snapshots"))
+                if len(snapshots) == 0:
+                    shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
+                    continue
+                commit = os.path.join(folder, 'snapshots', snapshots[-1])
+                mtime = os.path.getmtime(commit)
+                info = os.path.join(commit, "model_info.json")
+                diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
+                if os.path.exists(os.path.join(folder, 'hidden')):
+                    continue
+                output.append(name)
+            except Exception:
+                # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
+                pass
+    except Exception as e:
+        shared.log.error(f"Error listing diffusers: {place} {e}")
+    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(output)} time={time.time()-t0:.2f}')
     return output
 
 
@@ -290,33 +287,44 @@ def find_diffuser(name: str):
     return None
 
 
-def load_reference(name: str):
-    found = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
-    if len(found) > 0: # already downloaded
-        shared.log.debug(f'Reference model: {found[0]}')
-        return True
-    shared.log.debug(f'Reference download: {name}')
-    reference_models = shared.readfile(os.path.join('html', 'reference.json'), silent=False)
+def get_reference_opts(name: str):
     model_opts = {}
-    for v in reference_models.values():
-        if v.get('path', '') == name:
+    for k, v in shared.reference_models.items():
+        model_name = os.path.splitext(v.get('path', '').split('@')[0])[0]
+        if k == name or model_name == name:
             model_opts = v
             break
+    if not model_opts:
+        # shared.log.error(f'Reference: model="{name}" not found')
+        return {}
+    shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
+    return model_opts
+
+
+def load_reference(name: str, variant: str = None, revision: str = None, mirror: str = None, custom_pipeline: str = None):
+    found = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
+    if len(found) > 0: # already downloaded
+        model_opts = get_reference_opts(found[0]['name'])
+        return True
+    else:
+        model_opts = get_reference_opts(name)
     if model_opts.get('skip', False):
         return True
+    shared.log.debug(f'Reference: download="{name}"')
     model_dir = download_diffusers_model(
         hub_id=name,
         cache_dir=shared.opts.diffusers_dir,
-        variant=model_opts.get('variant', None),
-        revision=model_opts.get('revision', None),
-        mirror=model_opts.get('mirror', None),
-        custom_pipeline=model_opts.get('custom_pipeline', None)
+        variant=variant or model_opts.get('variant', None),
+        revision=revision or model_opts.get('revision', None),
+        mirror=mirror or model_opts.get('mirror', None),
+        custom_pipeline=custom_pipeline or model_opts.get('custom_pipeline', None)
     )
     if model_dir is None:
-        shared.log.debug(f'Reference download failed: {name}')
+        shared.log.error(f'Reference download: model="{name}"')
         return False
     else:
-        shared.log.debug(f'Reference download complete: {name}')
+        shared.log.debug(f'Reference download complete: model="{name}"')
+        model_opts = get_reference_opts(name)
         from modules import sd_models
         sd_models.list_models()
         return True
@@ -327,19 +335,19 @@ def load_civitai(model: str, url: str):
     name, _ext = os.path.splitext(model)
     info = sd_models.get_closet_checkpoint_match(name)
     if info is not None:
-        shared.log.debug(f'Reference model: {name}')
+        _model_opts = get_reference_opts(info.model_name)
         return name # already downloaded
     else:
-        shared.log.debug(f'Reference model: {name} download start')
-        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', preview=None, token=None)
-        shared.log.debug(f'Reference model: {name} download complete')
+        shared.log.debug(f'Reference download start: model="{name}"')
+        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', token=None)
+        shared.log.debug(f'Reference download complete: model="{name}"')
         sd_models.list_models()
         info = sd_models.get_closet_checkpoint_match(name)
         if info is not None:
-            shared.log.debug(f'Reference model: {name}')
+            shared.log.debug(f'Reference: model="{name}"')
             return name # already downloaded
         else:
-            shared.log.debug(f'Reference model: {name} not found')
+            shared.log.error(f'Reference model="{name}" not found')
             return None
 
 
@@ -349,7 +357,6 @@ def download_url_to_file(url: str, dst: str):
     import tempfile
     from urllib.request import urlopen, Request
     from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
-
     file_size = None
     req = Request(url, headers={"User-Agent": "sdnext"})
     u = urlopen(req) # pylint: disable=R1732
@@ -390,6 +397,8 @@ def download_url_to_file(url: str, dst: str):
 
 def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_name = None): # pylint: disable=unused-argument
     """Download a file from url into model_dir, using the file present if possible. Returns the path to the downloaded file."""
+    if model_dir is None:
+        shared.log.error('Download folder is none')
     os.makedirs(model_dir, exist_ok=True)
     if not file_name:
         parts = urlparse(url)
@@ -398,7 +407,10 @@ def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_
     if not os.path.exists(cached_file):
         shared.log.info(f'Downloading: url="{url}" file={cached_file}')
         download_url_to_file(url, cached_file)
-    return cached_file
+    if os.path.exists(cached_file):
+        return cached_file
+    else:
+        return None
 
 
 def load_models(model_path: str, model_url: str = None, command_path: str = None, ext_filter=None, download_name=None, ext_blacklist=None) -> list:
@@ -411,14 +423,15 @@ def load_models(model_path: str, model_url: str = None, command_path: str = None
     @param ext_filter: An optional list of filename extensions to filter by
     @return: A list of paths containing the desired model(s)
     """
-    places = list(set([model_path, command_path])) # noqa:C405
+    places = [x for x in list(set([model_path, command_path])) if x is not None] # noqa:C405
     output = []
     try:
         output:list = [*files_cache.list_files(*places, ext_filter=ext_filter, ext_blacklist=ext_blacklist)]
         if model_url is not None and len(output) == 0:
             if download_name is not None:
                 dl = load_file_from_url(model_url, model_dir=places[0], progress=True, file_name=download_name)
-                output.append(dl)
+                if dl is not None:
+                    output.append(dl)
             else:
                 output.append(model_url)
     except Exception as e:

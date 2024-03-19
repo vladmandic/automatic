@@ -60,6 +60,8 @@ def html_css(is_builtin: bool):
     theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme or ''
     if theme_name == 'default':
         theme_name = 'black-teal'
+    if theme_name == 'modern' or theme_name == 'modern/default':
+        theme_name = 'modern/sdxl_alpha'
     if theme_name.startswith('modern/'):
         theme_name = theme_name[7:]
         theme_folder = next((e.path for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)

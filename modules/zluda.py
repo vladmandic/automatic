@@ -1,9 +1,16 @@
 import platform
 import torch
+from torch._prims_common import DeviceLikeType
 from modules import shared, devices
 
 
-def test(device: torch.device):
+def is_zluda(device: DeviceLikeType):
+    device = torch.device(device)
+    return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+
+
+def test(device: DeviceLikeType):
+    device = torch.device(device)
     try:
         ten1 = torch.randn((2, 4,), device=device)
         ten2 = torch.randn((4, 8,), device=device)
@@ -15,7 +22,7 @@ def test(device: torch.device):
 
 def initialize_zluda():
     device = devices.get_optimal_device()
-    if platform.system() == "Windows" and devices.cuda_ok and torch.cuda.get_device_name(device).endswith("[ZLUDA]"):
+    if platform.system() == "Windows" and devices.cuda_ok and is_zluda(device):
         torch.backends.cudnn.enabled = False
         torch.backends.cuda.enable_flash_sdp(False)
         torch.backends.cuda.enable_math_sdp(True)

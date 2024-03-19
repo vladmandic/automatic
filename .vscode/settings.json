@@ -2,12 +2,10 @@
   "python.analysis.extraPaths": [
     ".",
     "./modules",
-    "./repositories/BLIP",
-    "./repositories/CodeFormer",
-    "./repositories/k-diffusion",
-    "./repositories/taming-transformers",
-    "./repositories/stable-diffusion-stability-ai",
-    "./repositories/stable-diffusion-stability-ai/ldm"
+    "./repositories/blip",
+    "./repositories/codeformer",
+    "./repositories/ldm",
+    "./repositories/taming"
   ],
   "python.analysis.typeCheckingMode": "off",
   "editor.formatOnSave": false

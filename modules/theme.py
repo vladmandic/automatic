@@ -43,11 +43,12 @@ def list_themes():
     if 'sdnext-ui-ux' in extensions:
         ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
         folder = os.path.join(ext.path, 'themes')
-        engines.append('modern/default')
         if os.path.exists(folder):
             for f in os.listdir(folder):
                 if f.endswith('.css'):
                     engines.append(f'modern/{os.path.splitext(f)[0]}')
+        if len(engines) == 0:
+            engines.append('modern/sdxl_alpha')
     if 'sd-webui-lobe-theme' in extensions:
         modules.shared.log.info('Theme: installed="lobe"')
         engines.append('lobe')
@@ -68,6 +69,8 @@ def reload_gradio_theme(theme_name=None):
     theme_name = theme_name or modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme
     if theme_name == 'default':
         theme_name = 'black-teal'
+    if theme_name == 'modern':
+        theme_name = 'modern/sdxl_alpha'
     modules.shared.opts.data['gradio_theme'] = theme_name
     default_font_params = {
         'font':['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],

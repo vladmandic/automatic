@@ -23,10 +23,10 @@ ADAPTERS = {
     'Plus': 'ip-adapter-plus_sd15.safetensors',
     'Plus Face': 'ip-adapter-plus-face_sd15.safetensors',
     'Full Face': 'ip-adapter-full-face_sd15.safetensors',
-    'Base SXDL': 'ip-adapter_sdxl.safetensors',
-    'Base ViT-H SXDL': 'ip-adapter_sdxl_vit-h.safetensors',
-    'Plus ViT-H SXDL': 'ip-adapter-plus_sdxl_vit-h.safetensors',
-    'Plus Face ViT-H SXDL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
+    'Base SDXL': 'ip-adapter_sdxl.safetensors',
+    'Base ViT-H SDXL': 'ip-adapter_sdxl_vit-h.safetensors',
+    'Plus ViT-H SDXL': 'ip-adapter-plus_sdxl_vit-h.safetensors',
+    'Plus Face ViT-H SDXL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
 }
 
 
@@ -96,6 +96,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     adapters = [adapter for adapter in adapters if adapter is not None and adapter.lower() != 'none']
     if len(adapters) == 0:
         unapply(pipe)
+        if hasattr(p, 'ip_adapter_images'):
+            del p.ip_adapter_images
         return False
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
@@ -125,6 +127,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         adapters = [] # unload adapter if previously loaded as it will cause runtime errors
     if len(adapters) == 0:
         unapply(pipe)
+        if hasattr(p, 'ip_adapter_images'):
+            del p.ip_adapter_images
         return False
     if not hasattr(pipe, 'load_ip_adapter'):
         shared.log.error(f'IP adapter: pipeline not supported: {pipe.__class__.__name__}')

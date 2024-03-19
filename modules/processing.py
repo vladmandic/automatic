@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
-from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img # pylint: disable=unused-import
+from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
 
 
@@ -159,9 +159,15 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 sd_vae.reload_vae_weights()
 
         shared.prompt_styles.apply_styles_to_extra(p)
+        shared.prompt_styles.extract_comments(p)
         if not shared.opts.cuda_compile:
             sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
+
+        if p.width is not None:
+            p.width = 8 * int(p.width / 8)
+        if p.height is not None:
+            p.height = 8 * int(p.height / 8)
 
         script_callbacks.before_process_callback(p)
 
@@ -246,10 +252,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
 
-    if shared.backend == shared.Backend.DIFFUSERS:
-        from modules import ipadapter
-        ipadapter.apply(shared.sd_model, p)
-
     def infotext(_inxex=0): # dummy function overriden if there are iterations
         return ''
 
@@ -257,23 +259,29 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
-        with devices.autocast():
-            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+        if not hasattr(p, 'skip_init'):
+            with devices.autocast():
+                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
+            debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
             p.iteration = n
             if shared.state.skipped:
-                shared.log.debug(f'Process skipped: {n}/{p.n_iter}')
+                shared.log.debug(f'Process skipped: {n+1}/{p.n_iter}')
                 shared.state.skipped = False
                 continue
             if shared.state.interrupted:
-                shared.log.debug(f'Process interrupted: {n}/{p.n_iter}')
+                shared.log.debug(f'Process interrupted: {n+1}/{p.n_iter}')
                 break
-            p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-            p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-            p.seeds = p.all_seeds[n * p.batch_size:(n + 1) * p.batch_size]
-            p.subseeds = p.all_subseeds[n * p.batch_size:(n + 1) * p.batch_size]
+
+            if shared.backend == shared.Backend.DIFFUSERS:
+                from modules import ipadapter
+                ipadapter.apply(shared.sd_model, p)
+            p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
+            p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
+            p.seeds = p.all_seeds[n * p.batch_size:(n+1) * p.batch_size]
+            p.subseeds = p.all_subseeds[n * p.batch_size:(n+1) * p.batch_size]
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.before_process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
             if len(p.prompts) == 0:
@@ -307,8 +315,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.postprocess_batch(p, x_samples_ddim, batch_number=n)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
-                p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
+                p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
+                p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
                 batch_params = scripts.PostprocessBatchListArgs(list(x_samples_ddim))
                 p.scripts.postprocess_batch_list(p, batch_params, batch_number=n)
                 x_samples_ddim = batch_params.images
@@ -316,10 +324,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             def infotext(index): # pylint: disable=function-redefined # noqa: F811
                 return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
 
-            if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
-                shared.sd_model.restore_pipeline()
-
             for i, x_sample in enumerate(x_samples_ddim):
+                if hasattr(p, 'recursion'):
+                    continue
+                debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
                 if type(x_sample) == Image.Image:
                     image = x_sample
@@ -329,13 +337,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image = Image.fromarray(x_sample)
                 if p.restore_faces:
                     if not p.do_not_save_samples and shared.opts.save_images_before_face_restoration:
-                        orig = p.restore_faces
-                        p.restore_faces = False
-                        info = infotext(i)
-                        p.restore_faces = orig
-                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
+                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
                     p.ops.append('face')
-                    x_sample = face_restoration.restore_faces(x_sample)
+                    x_sample = face_restoration.restore_faces(x_sample, p)
                     image = Image.fromarray(x_sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
@@ -361,7 +365,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
-                    image_mask_composite = Image.composite(image.convert('RGBA').convert('RGBa'), Image.new('RGBa', image.size), images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')).convert('RGBA')
+                    image1 = image.convert('RGBA').convert('RGBa')
+                    image2 = Image.new('RGBa', image.size)
+                    mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
+                    image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
+                    image_mask_composite.save('/tmp/composite.png')
                     if shared.opts.save_mask:
                         images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:
@@ -372,6 +380,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         output_images.append(image_mask_composite)
             del x_samples_ddim
             devices.torch_gc()
+
+        if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            shared.sd_model.restore_pipeline()
 
         t1 = time.time()
         shared.log.info(f'Processed: images={len(output_images)} time={t1 - t0:.2f} its={(p.steps * len(output_images)) / (t1 - t0):.2f} memory={memstats.memory_stats()}')

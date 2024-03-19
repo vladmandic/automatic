@@ -120,10 +120,10 @@ def vae_decode(latents, model, output_type='np', full_quality=True):
     if not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
-    if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
-        latents = latents.permute(1, 0, 2, 3)
     if len(latents.shape) == 3: # lost a batch dim in hires
         latents = latents.unsqueeze(0)
+    if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
+        latents = latents.permute(1, 0, 2, 3)
     if full_quality:
         decoded = full_vae_decode(latents=latents, model=shared.sd_model)
     else:

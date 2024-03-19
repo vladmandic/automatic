@@ -68,12 +68,13 @@ restricted_opts = {
     "outdir_txt2img_samples",
     "outdir_img2img_samples",
     "outdir_extras_samples",
+    "outdir_control_samples",
     "outdir_grids",
     "outdir_txt2img_grids",
     "outdir_save",
     "outdir_init_images"
 }
-resize_modes = ["None", "Fixed", "Crop", "Fill", "Latent"]
+resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
 console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
@@ -325,6 +326,12 @@ elif devices.backend == "directml":
 else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
+if devices.backend == "rocm":
+    sdp_options_default =  ['Memory attention', 'Math attention']
+#elif devices.backend == "zluda":
+#    sdp_options_default =  ['Math attention']
+else:
+    sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["original", "diffusers"] }),
@@ -340,7 +347,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": backend == Backend.ORIGINAL }),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": backend == Backend.ORIGINAL }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
-    "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format"),
+    "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
 }))
 
 options_templates.update(options_section(('cuda', "Compute Settings"), {
@@ -358,7 +365,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(diffusers=backend == Backend.DIFFUSERS) }),
-    "sdp_options": OptionInfo(['Flash attention', 'Memory attention', 'Math attention'], "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
+    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
     "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": backend == Backend.ORIGINAL}),
@@ -387,7 +394,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": backend == Backend.DIFFUSERS}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
-    "ipex_optimize": OptionInfo(["Model", "VAE", "Text Encoder", "Upscaler"] if devices.backend == "ipex" else [], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
+    "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
 
     "openvino_sep": OptionInfo("<h2>OpenVINO</h2>", "", gr.HTML, {"visible": cmd_opts.use_openvino}),
     "openvino_devices": OptionInfo([], "OpenVINO devices to use", gr.CheckboxGroup, {"choices": get_openvino_device_list() if cmd_opts.use_openvino else [], "visible": cmd_opts.use_openvino}),
@@ -457,7 +464,6 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
     "disable_accelerate": OptionInfo(False, "Disable accelerate"),
     "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty", gr.Checkbox, {"visible": False}),
-    "diffusers_aesthetics_score": OptionInfo(False, "Require aesthetics score"),
     "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
     "huggingface_token": OptionInfo('', 'HuggingFace token'),
 
@@ -509,18 +515,17 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_selected_only": OptionInfo(True, "Save only saves selected image"),
     "include_mask": OptionInfo(False, "Include mask in outputs"),
     "samples_save_zip": OptionInfo(True, "Create ZIP archive"),
+    "image_background": OptionInfo("#000000", "Resize background color", gr.ColorPicker, {}),
 
     "image_sep_metadata": OptionInfo("<h2>Metadata/Logging</h2>", "", gr.HTML),
     "image_metadata": OptionInfo(True, "Include metadata"),
     "save_txt": OptionInfo(False, "Create info file per image"),
     "save_log_fn": OptionInfo("", "Update JSON log file per image", component_args=hide_dirs),
-    "image_watermark_enabled": OptionInfo(False, "Include watermark"),
-    "image_watermark": OptionInfo('', "Watermark string"),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "n_rows": OptionInfo(-1, "Row count", gr.Slider, {"minimum": -1, "maximum": 16, "step": 1}),
-    "grid_background": OptionInfo("#000000", "Background color", gr.ColorPicker, {}),
+    "grid_background": OptionInfo("#000000", "Grid background color", gr.ColorPicker, {}),
     "font": OptionInfo("", "Font file"),
     "font_color": OptionInfo("#FFFFFF", "Font color", gr.ColorPicker, {}),
 
@@ -532,6 +537,12 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_images_before_color_correction": OptionInfo(False, "Save image before color correction"),
     "save_mask": OptionInfo(False, "Save inpainting mask"),
     "save_mask_composite": OptionInfo(False, "Save inpainting masked composite"),
+
+    "image_sep_watermark": OptionInfo("<h2>Watermarking</h2>", "", gr.HTML),
+    "image_watermark_enabled": OptionInfo(False, "Include invisible watermark"),
+    "image_watermark": OptionInfo('', "Invisible watermark string"),
+    "image_watermark_position": OptionInfo('none', 'Image watermark position', gr.Dropdown, {"choices": ["none", "top/left", "top/right", "bottom/left", "bottom/right", "center", "random"]}),
+    "image_watermark_image": OptionInfo('', "Image watermark file"),
 }))
 
 options_templates.update(options_section(('saving-paths', "Image Naming & Paths"), {
@@ -570,6 +581,7 @@ options_templates.update(options_section(('ui', "User Interface Options"), {
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "tooltips": OptionInfo("UI Tooltips", "UI tooltips", gr.Radio, {"choices": ["None", "Browser default", "UI tooltips"], "visible": False}),
+    "aspect_ratios": OptionInfo("1:1, 4:3, 16:9, 16:10, 21:9, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),
@@ -657,9 +669,10 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "CLIP_stop_at_last_layers": OptionInfo(1, "Clip skip", gr.Slider, {"minimum": 1, "maximum": 8, "step": 1, "visible": False}),
 
     "postprocessing_sep_face_restoration": OptionInfo("<h2>Face Restoration</h2>", "", gr.HTML),
-    "face_restoration_model": OptionInfo("CodeFormer", "Face restoration model", gr.Radio, lambda: {"choices": [x.name() for x in face_restorers]}),
+    "face_restoration_model": OptionInfo("Face HiRes", "Face restoration model", gr.Radio, lambda: {"choices": [x.name() for x in face_restorers]}),
+    "facehires_strength": OptionInfo(0.0, "Face HiRes strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
-    "face_restoration_unload": OptionInfo(False, "Move face restoration model to CPU when complete"),
+    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),
@@ -669,7 +682,7 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
 }))
 
 options_templates.update(options_section(('control', "Control Options"), {
-    "control_max_units": OptionInfo(3, "Maximum number of units", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "control_max_units": OptionInfo(4, "Maximum number of units", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
     "control_move_processor": OptionInfo(False, "Processor move to CPU after use"),
     "control_unload_processor": OptionInfo(False, "Processor unload after use"),
 }))
@@ -715,6 +728,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "extra_networks_card_square": OptionInfo(True, "UI disable variable aspect ratio"),
     "extra_networks_card_fit": OptionInfo("cover", "UI image contain method", gr.Radio, {"choices": ["contain", "cover", "fill"], "visible": False}),
     "extra_networks_sep2": OptionInfo("<h2>Extra networks general</h2>", "", gr.HTML),
+    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
     "extra_networks_default_multiplier": OptionInfo(1.0, "Default multiplier for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": backend==Backend.DIFFUSERS}),
@@ -920,6 +934,7 @@ log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.g
 log.info(f'Device: {print_dict(devices.get_gpu_info())}')
 
 prompt_styles = modules.styles.StyleDatabase(opts)
+reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
 devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
 devices.onnx = [opts.onnx_execution_provider]

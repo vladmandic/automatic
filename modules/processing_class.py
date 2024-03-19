@@ -1,5 +1,6 @@
 import os
-import math
+import sys
+import inspect
 import hashlib
 from typing import Any, Dict, List
 from dataclasses import dataclass, field
@@ -9,6 +10,9 @@ import cv2
 from PIL import Image, ImageOps
 from modules import shared, devices, images, scripts, masking, sd_samplers, sd_models, processing_helpers
 from modules.sd_hijack_hypertile import hypertile_set
+
+
+debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 @dataclass(repr=False)
@@ -173,7 +177,7 @@ class StableDiffusionProcessing:
     def comment(self, text):
         self.comments[text] = 1
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         pass
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
@@ -231,16 +235,24 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         self.scripts = None
         self.script_args = []
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.backend == shared.Backend.DIFFUSERS:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         self.width = self.width or 512
         self.height = self.height or 512
+        if all_prompts is not None:
+            self.all_prompts = all_prompts
+        if all_seeds is not None:
+            self.all_seeds = all_seeds
+        if all_subseeds is not None:
+            self.all_subseeds = all_subseeds
 
-    def init_hr(self):
+    def init_hr(self, scale = None, upscaler = None, force = False): # pylint: disable=unused-argument
+        scale = scale or self.hr_scale
+        upscaler = upscaler or self.hr_upscaler
         if self.hr_resize_x == 0 and self.hr_resize_y == 0:
-            self.hr_upscale_to_x = int(self.width * self.hr_scale)
-            self.hr_upscale_to_y = int(self.height * self.hr_scale)
+            self.hr_upscale_to_x = int(self.width * scale)
+            self.hr_upscale_to_y = int(self.height * scale)
         else:
             if self.hr_resize_y == 0:
                 self.hr_upscale_to_x = self.hr_resize_x
@@ -262,7 +274,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 self.truncate_x = (self.hr_upscale_to_x - target_w) // 8
                 self.truncate_y = (self.hr_upscale_to_y - target_h) // 8
         if shared.backend == shared.Backend.ORIGINAL: # diffusers are handled in processing_diffusers
-            if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or self.hr_upscaler is None or self.hr_upscaler == 'None': # special case: the user has chosen to do nothing
+            if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or upscaler is None or upscaler == 'None': # special case: the user has chosen to do nothing
                 self.is_hr_pass = False
                 return
             self.is_hr_pass = True
@@ -283,6 +295,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.resize_mode: int = resize_mode
         self.resize_name: str = resize_name
         self.denoising_strength: float = denoising_strength
+        self.hr_denoising_strength: float = denoising_strength
         self.image_cfg_scale: float = image_cfg_scale
         self.init_latent = None
         self.image_mask = mask
@@ -310,11 +323,18 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.scripts = None
         self.script_args = []
 
-    def init(self, all_prompts, all_seeds, all_subseeds):
-        if shared.backend == shared.Backend.DIFFUSERS and self.image_mask is not None and not self.is_control:
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
+        if shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
-        elif shared.backend == shared.Backend.DIFFUSERS and self.image_mask is None and not self.is_control:
+        elif shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'init_images', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
+
+        if all_prompts is not None:
+            self.all_prompts = all_prompts
+        if all_seeds is not None:
+            self.all_seeds = all_seeds
+        if all_subseeds is not None:
+            self.all_subseeds = all_subseeds
 
         if self.sampler_name == "PLMS":
             self.sampler_name = 'UniPC'
@@ -385,9 +405,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             image = images.flatten(img, shared.opts.img2img_background_color)
             if self.width is None or self.height is None:
                 self.width, self.height = image.width, image.height
-            if crop_region is None and self.resize_mode != 4 and self.resize_mode > 0:
-                if image.width != self.width or image.height != self.height:
-                    image = images.resize_image(self.resize_mode, image, self.width, self.height, self.resize_name)
+            if crop_region is None and self.resize_mode > 0:
+                image = images.resize_image(self.resize_mode, image, self.width, self.height, self.resize_name)
                 self.width = image.width
                 self.height = image.height
             if self.image_mask is not None and shared.opts.mask_apply_overlay:
@@ -425,8 +444,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             image = 2. * image - 1.
             image = image.to(device=shared.device, dtype=devices.dtype_vae)
             self.init_latent = self.sd_model.get_first_stage_encoding(self.sd_model.encode_first_stage(image))
-            if self.resize_mode == 4:
-                self.init_latent = torch.nn.functional.interpolate(self.init_latent, size=(self.height // 8, self.width // 8), mode="bilinear")
             if self.image_mask is not None:
                 init_mask = latent_mask
                 latmask = init_mask.convert('RGB').resize((self.init_latent.shape[3], self.init_latent.shape[2]))
@@ -477,14 +494,39 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass
 
-    def init_hr(self):
-        if self.resize_name == 'None' or self.scale_by == 1.0:
+    def init_hr(self, scale = None, upscaler = None, force = False):
+        scale = scale or self.scale_by
+        upscaler = upscaler or self.resize_name
+        if upscaler == 'None' or scale == 1.0:
             return
         self.is_hr_pass = True
-        self.hr_force = True
-        self.hr_upscaler = self.resize_name
-        self.hr_upscale_to_x, self.hr_upscale_to_y = int(self.width * self.scale_by), int(self.height * self.scale_by)
-        self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * math.ceil(self.hr_upscale_to_x / 8), 8 * math.ceil(self.hr_upscale_to_y / 8)
+        self.hr_force = force
+        self.hr_upscaler = upscaler
+        self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
         # hypertile_set(self, hr=True)
         shared.state.job_count = 2 * self.n_iter
-        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={self.scale_by} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+
+
+def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None):
+    signature = inspect.signature(type(new_class).__init__, follow_wrapped=True)
+    possible = list(signature.parameters)
+    kwargs = {}
+    for k, v in p.__dict__.copy().items():
+        if k in possible:
+            kwargs[k] = v
+    if dct is not None:
+        for k, v in dct.items():
+            if k in possible:
+                kwargs[k] = v
+    debug(f"Switching class: {p.__class__.__name__} -> {new_class.__name__} fn={sys._getframe(1).f_code.co_name}") # pylint: disable=protected-access
+    p.__class__ = new_class
+    p.__init__(**kwargs)
+    for k, v in p.__dict__.items():
+        if hasattr(p, k):
+            setattr(p, k, v)
+    if dct is not None: # post init set additional values
+        for k, v in dct.items():
+            if hasattr(p, k):
+                setattr(p, k, v)
+    return p
