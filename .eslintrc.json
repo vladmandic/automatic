@@ -89,6 +89,8 @@
     // imageviewer.js
     "modalPrevImage": "readonly",
     "modalNextImage": "readonly",
+    "galleryClickEventHandler": "readonly",
+    "getExif": "readonly",
     // logMonitor.js
     "jobStatusEl": "readonly",
     // loader.js

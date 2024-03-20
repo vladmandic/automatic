@@ -228,9 +228,10 @@ List of available parameters, run `webui --help` for the full & up-to-date list:
 
 SD.Next comes with several extensions pre-installed:
 
-- [ControlNet](https://github.com/Mikubill/sd-webui-controlnet) (*active in backend: original only*)
+- [System Info](https://github.com/vladmandic/sd-extension-system-info)
+- [chaiNNer](https://github.com/vladmandic/sd-extension-chainner)
+- [RemBg](https://github.com/vladmandic/sd-extension-rembg)
 - [Agent Scheduler](https://github.com/ArtVentureX/sd-webui-agent-scheduler)
-- [Image Browser](https://github.com/AlUlkesh/stable-diffusion-webui-images-browser)
 
 ### **Collab**
 

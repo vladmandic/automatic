@@ -5,7 +5,7 @@ from fastapi import FastAPI, APIRouter, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from modules import errors, shared, postprocessing
-from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control
+from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery
 
 
 errors.install()
@@ -82,6 +82,9 @@ class Api:
         self.add_api_route("/sdapi/v1/unload-checkpoint", endpoints.post_unload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", endpoints.post_reload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-vae", endpoints.post_refresh_vae, methods=["POST"])
+
+        # gallery api
+        gallery.register_api(app)
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if (shared.cmd_opts.auth or shared.cmd_opts.auth_file) and shared.cmd_opts.api_only:

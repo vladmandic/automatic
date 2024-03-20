@@ -154,6 +154,11 @@ def create_ui(startup_timer = None):
         ui_models.create_ui()
         timer.startup.record("ui-models")
 
+    with gr.Blocks(analytics_enabled=False) as gallery_interface:
+        from modules import ui_gallery
+        ui_gallery.create_ui()
+        timer.startup.record("ui-gallery")
+
     def create_setting_component(key, is_quicksettings=False):
         def fun():
             return opts.data[key] if key in opts.data else opts.data_labels[key].default
@@ -370,6 +375,7 @@ def create_ui(startup_timer = None):
     interfaces += [(img2img_interface, "Image", "img2img")]
     interfaces += [(control_interface, "Control", "control")] if control_interface is not None else []
     interfaces += [(extras_interface, "Process", "process")]
+    interfaces += [(gallery_interface, "Gallery", "gallery")]
     interfaces += [(models_interface, "Models", "models")]
     interfaces += script_callbacks.ui_tabs_callback()
     interfaces += [(settings_interface, "System", "system")]
