@@ -46,15 +46,15 @@ def apply_styles_to_prompt(prompt, styles):
 def apply_wildcards_to_prompt(prompt, all_wildcards):
     replaced = {}
     for style_wildcards in all_wildcards:
-        wildcards = [x.strip() for x in style_wildcards.split(";") if len(x.strip()) > 0]
+        wildcards = [x.strip() for x in style_wildcards.replace('\n', ' ').split(";") if len(x.strip()) > 0]
         for wildcard in wildcards:
             what, words = wildcard.split("=", 1)
             words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
             word = random.choice(words)
             prompt = prompt.replace(what, word)
             replaced[what] = word
-    if replaced:
-        shared.log.debug(f'Applying style wildcards: {replaced}')
+    # if replaced:
+    #    shared.log.debug(f'Applying style wildcards: {replaced}')
     return prompt
 
 
@@ -73,11 +73,18 @@ def apply_styles_to_extra(p, style: Style):
         return
     name_map = {
         'sampler': 'sampler_name',
+        'size-1': 'width',
+        'size-2': 'height',
     }
+    name_exclude = [
+        'size',
+    ]
     from modules.generation_parameters_copypaste import parse_generation_parameters
     reference_style = get_reference_style()
     extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
-    extra.update(parse_generation_parameters(style.extra))
+
+    style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards])
+    extra.update(parse_generation_parameters(style_extra))
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []
@@ -85,6 +92,8 @@ def apply_styles_to_extra(p, style: Style):
     for k, v in extra.items():
         k = k.lower()
         k = k.replace(' ', '_')
+        if k in name_exclude: # exclude some fields
+            continue
         if k in name_map: # rename some fields
             k = name_map[k]
         if hasattr(p, k):

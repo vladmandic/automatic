@@ -96,6 +96,8 @@ def add_paste_fields(tabname, init_img, fields, override_settings_component=None
         modules.ui.txt2img_paste_fields = fields
     elif tabname == 'img2img':
         modules.ui.img2img_paste_fields = fields
+    elif tabname == 'control':
+        modules.ui.control_paste_fields = fields
 
 
 def create_buttons(tabs_list):

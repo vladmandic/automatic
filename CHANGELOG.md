@@ -2,11 +2,14 @@
 
 ## TODO
 
-- reference styles
-- quick apply style
+- Include reference styles
+- Quick apply style
+- Add refine workflow in img2img
+- New image browser
 
 ## Update for 2024-03-20
 
+- Styles apply wildcards to params
 - Make metadata in full screen viewer optional
 
 ## Update for 2024-03-19
