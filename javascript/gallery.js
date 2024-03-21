@@ -30,11 +30,20 @@ class GalleryFolder extends HTMLElement {
       .gallery-folder:hover {
         background-color: var(--button-primary-background-fill-hover);
       }
+      .gallery-folder-selected {
+        background-color: var(--button-primary-background-fill);
+      }
     `;
     this.shadow.appendChild(style);
     const div = document.createElement('div');
     div.className = 'gallery-folder';
     div.textContent = `\uf44a ${this.name}`;
+    div.addEventListener('click', () => {
+      for (const folder of el.folders.children) {
+        if (folder.name === this.name) folder.shadow.children[1].classList.add('gallery-folder-selected');
+        else folder.shadow.children[1].classList.remove('gallery-folder-selected');
+      }
+    });
     div.addEventListener('click', fetchFiles); // eslint-disable-line no-use-before-define
     this.shadow.appendChild(div);
   }

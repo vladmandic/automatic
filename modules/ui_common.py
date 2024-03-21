@@ -44,11 +44,13 @@ def infotext_to_html(text):
     res.pop('Negative prompt', None)
     params = [f'{k}: {v}' for k, v in res.items() if v is not None]
     params = '| '.join(params) if len(params) > 0 else ''
-    code = f'''
-        <p><b>Prompt:</b> {html.escape(prompt)}</p>
-        <p><b>Negative:</b> {html.escape(negative)}</p>
-        <p><b>Parameters:</b> {html.escape(params)}</p>
-        '''
+    code = ''
+    if len(prompt) > 0:
+        code += f'<p><b>Prompt:</b> {html.escape(prompt)}</p>'
+    if len(negative) > 0:
+        code += f'<p><b>Negative:</b> {html.escape(negative)}</p>'
+    if len(params) > 0:
+        code += f'<p><b>Parameters:</b> {html.escape(params)}</p>'
     return code
 
 

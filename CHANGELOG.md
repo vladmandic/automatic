@@ -5,40 +5,28 @@
 - Include reference styles
 - Quick apply style
 - Add refine workflow in img2img
-- Gallery send to buttons row
 - Gallery client-side caching? thumbnails, metadata
 - Gallery search by metadata
 
 ## Update for 2024-03-21
 
-**Features**:
-- Gallery:
-  - All operations are async, non-blocking and auto-cancelled as needed  
-    This gives up a little bit of raw performance, but there is no "wait for current folder which has 10k images"  
-    Right now enumerate is ~100-300 images/sec which is sufficient to show first screen of images near-instant  
-  - Images are loaded using lazy-loading, meaning on-demand when they are scrolled into view  
-    But...If you want to have 10k images in a folder and then scroll-to-bottom, well...
-  - Majority of work is done client-side in browser without needing for typical Gradio round-trip  
-  - Nothing cached by choice, images are always up-to-date (I may add thumbnail caching later)
-  - Search is matching any part of folder/filename and image properties, but not image metadata (yet)
-  - Search allows for syntax like `size > 1000000` or `width > 1000`  
-    Operators are `<>=` and keys are `size`, `width`, `height`, `mtime`  
-  - Sort and search can easily handle 20k images-per-sec
-  - Folders are scanned recursively
-  - Optional user-defined folders: settings -> image options -> image browser
-  - Thumbnails can be fixed or varible width, set in settings -> image options -> image browser
-**Changes**:
-- Removed built-in extensions: *ControlNet* and *Image-Browser*  
-  as both *image-browser* and *controlnet* have native equivalents  
-  both can still be installed by user if desired  
-**Improvements**:
-- Styles apply wildcards to params
-- Make metadata in full screen viewer optional
-
-Fixes:
-- Propmpt params parser
-- Fix image save without metadata
-- fix ROCm compatibility, thanks @Disty0
+- **Features**:
+  - **Gallery**:
+      implemented as infinite-scroll with lazy-loading while being fully async and non-blocking  
+      search by path, name, size, width, height, mtime with extended syntax like `width > 1000`  
+      settings: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+      Optional user-defined folders: settings -> image options -> image browser  
+- **Changes**:
+  - Removed built-in extensions: *ControlNet* and *Image-Browser*  
+    as both *image-browser* and *controlnet* have native equivalents  
+    both can still be installed by user if desired  
+- **Improvements**:
+  - Styles apply wildcards to params
+  - Make metadata in full screen viewer optional
+- **Fixes**:
+  - Propmpt params parser
+  - Fix image save without metadata
+  - fix ROCm compatibility, thanks @Disty0
 
 ## Update for 2024-03-19
 
