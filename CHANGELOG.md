@@ -9,7 +9,7 @@
 - Gallery client-side caching? thumbnails, metadata
 - Gallery search by metadata
 
-## Update for 2024-03-20
+## Update for 2024-03-21
 
 **Features**:
 - Gallery:
@@ -38,6 +38,7 @@
 Fixes:
 - Propmpt params parser
 - Fix image save without metadata
+- fix ROCm compatibility, thanks @Disty0
 
 ## Update for 2024-03-19
 

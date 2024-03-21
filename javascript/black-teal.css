@@ -39,8 +39,8 @@
   --button-primary-background-fill: var(--primary-600);
   --button-primary-background-fill-hover: var(--primary-800);
   --button-secondary-text-color: var(--neutral-100);
-  --button-secondary-background-fill: var(--neutral-600);
-  --button-secondary-background-fill-hover: var(--neutral-800);
+  --button-secondary-background-fill: var(--neutral-900);
+  --button-secondary-background-fill-hover: var(--neutral-600);
   --block-title-text-color: var(--neutral-300);
   --radius-xxs: 0;
   --radius-xs: 1;
