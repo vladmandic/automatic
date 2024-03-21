@@ -18,12 +18,13 @@ def unquote(text):
         return text
 
 
-def parse_generation_parameters(infotext): # copied from modules.generation_parameters_copypaste
+def parse_generation_parameters(infotext):
     if not isinstance(infotext, str):
         return {}
-
     re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
     re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
+    basic_params = ['steps', 'seed', 'width', 'height', 'sampler', 'size', 'cfg scale', 'hires'] # first param is one of those
+
     sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
     sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
     sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
@@ -31,7 +32,10 @@ def parse_generation_parameters(infotext): # copied from modules.generation_para
 
     params = dict(re_param.findall(sanitized))
     params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    first_param = next(iter(params)) if params else None
+    first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
+    if first_param_idx > 0:
+        for _i in range(first_param_idx):
+            params.pop(next(iter(params)))
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
 
@@ -81,6 +85,8 @@ class Exif: # pylint: disable=single-string-used-for-slots
         try:
             exif_dict = dict(img._getexif().items()) # pylint: disable=protected-access
         except Exception:
+            pass
+        if not exif_dict:
             exif_dict = dict(img.info.items())
         for key, val in exif_dict.items():
             if isinstance(val, bytes): # decode bytestring

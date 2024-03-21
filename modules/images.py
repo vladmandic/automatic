@@ -548,6 +548,7 @@ def atomically_save_image():
             image = set_watermark(image, shared.opts.image_watermark)
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
         shared.log.info(f'Saving: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
+        exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         # additional metadata saved in files
         if shared.opts.save_txt and len(exifinfo) > 0:
             try:
@@ -557,7 +558,6 @@ def atomically_save_image():
             except Exception as e:
                 shared.log.warning(f'Saving failed: description={filename_txt} {e}')
         # actual save
-        exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
             for k, v in params.pnginfo.items():
@@ -569,19 +569,22 @@ def atomically_save_image():
                 image = image.convert("RGB")
             elif image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("L")
-            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None }
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality }
+            if shared.opts.image_metadata:
+                save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
         elif image_format == 'WEBP':
             if image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
-            exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
-            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'exif': exif_bytes if shared.opts.image_metadata else None, 'lossless': shared.opts.webp_lossless }
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'lossless': shared.opts.webp_lossless }
+            if shared.opts.image_metadata:
+                save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
         else:
             save_args = { 'quality': shared.opts.jpeg_quality }
         try:
             image.save(fn, format=image_format, **save_args)
         except Exception as e:
-            shared.log.error(f'Saving failed: file="{fn}" format={image_format} {e}')
+            shared.log.error(f'Saving failed: file="{fn}" format={image_format} args={save_args} {e}')
+            errors.display(e, 'Image save')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
