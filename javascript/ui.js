@@ -437,7 +437,8 @@ function currentImageResolutioncontrol(_a, _b, scaleBy) {
 }
 
 function updateImg2imgResizeToTextAfterChangingImage() {
-  setTimeout(() => gradioApp().getElementById('img2img_update_resize_to').click(), 500);
+  const el = gradioApp().getElementById('img2img_update_resize_to');
+  if (el) setTimeout(() => gradioApp().getElementById('img2img_update_resize_to').click(), 500);
   return [];
 }
 

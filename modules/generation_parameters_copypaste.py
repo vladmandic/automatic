@@ -159,13 +159,14 @@ def connect_paste_params_buttons():
             )
         if binding.source_text_component is not None and fields is not None:
             connect_paste(binding.paste_button, fields, binding.source_text_component, override_settings_component, binding.tabname)
-        if binding.source_tabname is not None and fields is not None:
+        if binding.source_tabname is not None and fields is not None and binding.source_tabname in paste_fields:
             paste_field_names = ['Prompt', 'Negative prompt', 'Steps', 'Face restoration'] + (["Seed"] if shared.opts.send_seed else []) + binding.paste_field_names
-            binding.paste_button.click(
-                fn=lambda *x: x,
-                inputs=[field for field, name in paste_fields[binding.source_tabname]["fields"] if name in paste_field_names],
-                outputs=[field for field, name in fields if name in paste_field_names],
-            )
+            if "fields" in paste_fields[binding.source_tabname] and paste_fields[binding.source_tabname]["fields"] is not None:
+                binding.paste_button.click(
+                    fn=lambda *x: x,
+                    inputs=[field for field, name in paste_fields[binding.source_tabname]["fields"] if name in paste_field_names],
+                    outputs=[field for field, name in fields if name in paste_field_names],
+                )
         binding.paste_button.click(
             fn=None,
             _js=f"switch_to_{binding.tabname}",
@@ -192,7 +193,7 @@ def parse_generation_parameters(infotext):
     debug(f'Parse infotext: {infotext}')
     re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
     re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
-    basic_params = ['steps', 'seed', 'width', 'height', 'sampler', 'size', 'cfg scale'] # first param is one of those
+    basic_params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
 
     sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
     sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
@@ -202,10 +203,16 @@ def parse_generation_parameters(infotext):
     params = dict(re_param.findall(sanitized))
     debug(f"Parse params: {params}")
     params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-    if first_param_idx > 0:
-        for _i in range(first_param_idx):
-            params.pop(next(iter(params)))
+    if len(list(params)) == 0:
+        first_param = None
+    else:
+        try:
+            first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
+        except Exception:
+            first_param, first_param_idx = next(iter(params)), 0
+        if first_param_idx > 0:
+            for _i in range(first_param_idx):
+                params.pop(next(iter(params)))
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
 

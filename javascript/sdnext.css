@@ -298,7 +298,12 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #tab-gallery-sortby { padding: 0; }
 #tab-gallery-status { align-content: center; text-align: right; background: var(--input-background-fill); padding-right: 1em; margin-left: -0.6em; color: var(--block-title-text-color); }
 div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(--input-background-fill); min-width: max-content !important; }
-.gallery-separator { background-color: var(--input-background-fill); font-size: larger; padding: 0.5em; display: block !important; } 
+.gallery-separator { background-color: var(--input-background-fill); font-size: larger; padding: 0.5em; display: block !important; }
+#html_log_gallery { font-size: 0.95em; }
+#gallery_gallery { height: 60vh; }
+#gallery_gallery .thumbnails { display: none; }
+#gallery_gallery .preview { display: grid; background: none; }
+#gallery_gallery img { object-fit: contain; }
 
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }

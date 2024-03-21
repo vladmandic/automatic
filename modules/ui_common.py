@@ -246,7 +246,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 if shared.backend == shared.Backend.ORIGINAL:
                     buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "extras"])
                 else:
-                    buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "control", "extras"])
+                    buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "control", "extras"])
 
             download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False, elem_id=f'download_files_{tabname}')
             with gr.Group():
@@ -257,15 +257,18 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 generation_info = gr.Textbox(visible=False, elem_id=f'generation_info_{tabname}')
                 generation_info_button = gr.Button(visible=False, elem_id=f"{tabname}_generation_info_button")
 
-                generation_info_button.click(fn=update_generation_info, _js="(x, y, z) => [x, y, selected_gallery_index()]", show_progress=False, # triggered on gallery change from js
+                generation_info_button.click(fn=update_generation_info, show_progress=False,
+                    _js="(x, y, z) => [x, y, selected_gallery_index()]", # triggered on gallery change from js
                     inputs=[generation_info, html_info, html_info],
                     outputs=[html_info, html_info_formatted],
                 )
-                save.click(fn=call_queue.wrap_gradio_call(save_files), _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]", show_progress=False,
+                save.click(fn=call_queue.wrap_gradio_call(save_files), show_progress=False,
+                    _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
                     inputs=[generation_info, result_gallery, html_info, html_info],
                     outputs=[download_files, html_log],
                 )
-                delete.click(fn=call_queue.wrap_gradio_call(delete_files), _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
+                delete.click(fn=call_queue.wrap_gradio_call(delete_files),show_progress=False,
+                    _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
                     inputs=[generation_info, result_gallery, html_info, html_info],
                     outputs=[result_gallery, html_log],
                 )
@@ -278,9 +281,13 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 paste_field_names = scripts.scripts_control.paste_field_names
             else:
                 paste_field_names = []
+            debug(f'Paste field: tab={tabname} fields={paste_field_names}')
             for paste_tabname, paste_button in buttons.items():
-                debug(f'Create output panel: button={paste_button} tabname={paste_tabname}')
-                bindings = generation_parameters_copypaste.ParamBinding(paste_button=paste_button, tabname=paste_tabname, source_tabname=("txt2img" if tabname == "txt2img" else None), source_image_component=result_gallery, paste_field_names=paste_field_names)
+                debug(f'Create output panel: source={tabname} target={paste_tabname} button={paste_button}')
+                bindings = generation_parameters_copypaste.ParamBinding(paste_button=paste_button, tabname=paste_tabname, source_tabname=tabname, source_image_component=result_gallery, paste_field_names=paste_field_names, source_text_component=generation_info)
+
+                # txt2img_bindings = generation_parameters_copypaste.ParamBinding(paste_button=txt2img_paste, tabname="txt2img", source_text_component=txt2img_prompt, source_image_component=None)
+
                 generation_parameters_copypaste.register_paste_params_button(bindings)
             return result_gallery, generation_info, html_info, html_info_formatted, html_log
 

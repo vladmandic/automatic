@@ -32,10 +32,16 @@ def parse_generation_parameters(infotext):
 
     params = dict(re_param.findall(sanitized))
     params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-    if first_param_idx > 0:
-        for _i in range(first_param_idx):
-            params.pop(next(iter(params)))
+    if len(list(params)) == 0:
+        first_param = None
+    else:
+        try:
+            first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
+        except Exception:
+            first_param, first_param_idx = next(iter(params)), 0
+        if first_param_idx > 0:
+            for _i in range(first_param_idx):
+                params.pop(next(iter(params)))
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
 

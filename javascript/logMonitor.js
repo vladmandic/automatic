@@ -37,7 +37,7 @@ async function logMonitor() {
     if (logMonitorEl && lines?.length > 0) logMonitorEl.parentElement.parentElement.style.display = opts.logmonitor_show ? 'block' : 'none';
     for (const line of lines) {
       try {
-        const l = JSON.parse(line);
+        const l = JSON.parse(line.replaceAll('\n', ' '));
         const row = document.createElement('tr');
         // row.style = 'padding: 10px; margin: 0;';
         const level = `<td style="color: var(--color-${l.level.toLowerCase()})">${l.level}</td>`;

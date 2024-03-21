@@ -2,12 +2,13 @@
 
 let ws;
 let url;
+let currentImage;
 const el = {
   folders: undefined,
   files: undefined,
-  image: undefined,
   search: undefined,
   status: undefined,
+  btnSend: undefined,
 };
 
 // HTML Elements
@@ -35,69 +36,6 @@ class GalleryFolder extends HTMLElement {
     div.className = 'gallery-folder';
     div.textContent = `\uf44a ${this.name}`;
     div.addEventListener('click', fetchFiles); // eslint-disable-line no-use-before-define
-    this.shadow.appendChild(div);
-  }
-}
-
-class GalleryImage extends HTMLElement {
-  constructor(folder, name, size, mtime) {
-    super();
-    this.folder = folder;
-    this.name = name;
-    this.size = size;
-    this.mtime = mtime;
-    this.shadow = this.attachShadow({ mode: 'open' });
-  }
-
-  async connectedCallback() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .gallery-image {
-        text-align: center;
-      }
-      .gallery-image > img {
-        cursor: pointer;
-        user-select: none;
-        max-width: 100%;
-        max-height: 60vh;
-      }
-      .gallery-image-text {
-        text-align: left;
-        padding: 8px;
-        line-height: 1.3em;
-      }
-    `;
-    this.shadow.appendChild(style);
-    const div = document.createElement('div');
-    div.className = 'gallery-image';
-
-    const text = document.createElement('div');
-    text.className = 'gallery-image-text';
-    text.innerHTML = `
-      <b>Folder:</b> ${this.folder}<br>
-      <b>File:</b> ${this.name}<br>
-      <b>Resolution:</b> <span id="gallery-resolution"></span><br>
-      <b>Size:</b> ${this.size.toLocaleString()} bytes<br>
-      <b>Modified:</b> ${this.mtime.toLocaleString()}<br>
-      <br>
-      <span id="gallery-exif"></span>
-    `;
-
-    const img = document.createElement('img');
-    img.id = 'gallery-image';
-    img.onload = async () => {
-      const resolutionEl = this.shadow.getElementById('gallery-resolution');
-      if (resolutionEl) resolutionEl.innerText = `${img.naturalWidth} x ${img.naturalHeight}`;
-      const exifData = await getExif(img);
-      const exifEl = this.shadow.getElementById('gallery-exif');
-      if (exifEl) exifEl.innerHTML = exifData;
-    };
-    img.loading = 'lazy';
-    img.src = `file=${this.folder}/${this.name}`;
-    img.title = `Folder: ${this.folder}\nFile: ${this.name}\nResolution: ${img.naturalWidth} x ${img.naturalHeight}\nSize: ${this.size.toLocaleString()} bytes\nModified: ${this.mtime.toLocaleString()}`;
-    img.addEventListener('click', galleryClickEventHandler, true);
-    div.appendChild(img);
-    div.appendChild(text);
     this.shadow.appendChild(div);
   }
 }
@@ -149,9 +87,8 @@ class GalleryFile extends HTMLElement {
     };
     img.src = `file=${this.folder}/${this.name}`;
     img.onclick = () => {
-      el.image.innerHTML = '';
-      const image = new GalleryImage(this.folder, this.name, this.size, this.mtime);
-      el.image.appendChild(image);
+      currentImage = `${this.folder}/${this.name}`;
+      el.btnSend.click();
     };
     this.title = img.title;
     this.style.display = this.title.toLowerCase().includes(el.search.value.toLowerCase()) ? 'unset' : 'none';
@@ -160,6 +97,8 @@ class GalleryFile extends HTMLElement {
 }
 
 // methods
+
+const gallerySendImage = (_images) => [currentImage]; // invoked by gadio button
 
 async function getHash(str, algo = 'SHA-256') {
   const strBuf = new TextEncoder().encode(str);
@@ -330,10 +269,10 @@ async function galleryObserve() { // triggered on gradio change to monitor when 
   log('initBrowser');
   el.folders = gradioApp().getElementById('tab-gallery-folders');
   el.files = gradioApp().getElementById('tab-gallery-files');
-  el.image = gradioApp().getElementById('tab-gallery-image');
   el.status = gradioApp().getElementById('tab-gallery-status');
   el.search = gradioApp().querySelector('#tab-gallery-search textarea');
   el.search.addEventListener('input', gallerySearch);
+  el.btnSend = gradioApp().getElementById('tab-gallery-send-image');
 
   const intersectionObserver = new IntersectionObserver((entries) => {
     if (entries[0].intersectionRatio <= 0) galleryHidden();
@@ -346,5 +285,4 @@ async function galleryObserve() { // triggered on gradio change to monitor when 
 
 customElements.define('gallery-folder', GalleryFolder);
 customElements.define('gallery-file', GalleryFile);
-customElements.define('gallery-image', GalleryImage);
 onUiLoaded(galleryObserve);
