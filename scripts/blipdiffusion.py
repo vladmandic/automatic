@@ -24,7 +24,7 @@ class Script(scripts.Script):
         return [source_subject, target_subject, prompt_strength]
 
     def run(self, p: processing.StableDiffusionProcessing, source_subject, target_subject, prompt_strength): # pylint: disable=arguments-differ, unused-argument
-        c = shared.sd_model.__class__.__name__ if shared.sd_model is not None else ''
+        c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
         if c != 'BlipDiffusionPipeline':
             shared.log.error(f'{title}: model selected={c} required=BLIPDiffusion')
             return None

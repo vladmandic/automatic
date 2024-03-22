@@ -132,6 +132,10 @@ def control_run(units: List[unit.Unit], inputs, inits, mask, unit_type: str, is_
     if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
         p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
 
+    if shared.sd_model is None:
+        shared.log.warning('Model not loaded')
+        return [], '', '', 'Error: model not loaded'
+
     t0 = time.time()
     num_units = 0
     for u in units:

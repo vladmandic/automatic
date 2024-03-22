@@ -170,9 +170,11 @@ class InterrogateModels:
                 devices.torch_gc()
             self.load()
             if isinstance(pil_image, list):
-                pil_image = pil_image[0]
+                pil_image = pil_image[0] if len(pil_image) > 0 else None
             if isinstance(pil_image, dict) and 'name' in pil_image:
                 pil_image = Image.open(pil_image['name'])
+            if pil_image is None:
+                return ''
             pil_image = pil_image.convert("RGB")
             caption = self.generate_caption(pil_image)
             self.send_blip_to_ram()

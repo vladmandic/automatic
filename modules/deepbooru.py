@@ -47,56 +47,40 @@ class DeepDanbooru:
         return res
 
     def tag_multi(self, pil_image, force_disable_ranks=False):
-        threshold = shared.opts.interrogate_deepbooru_score_threshold
-        use_spaces = shared.opts.deepbooru_use_spaces
-        use_escape = shared.opts.deepbooru_escape
-        alpha_sort = shared.opts.deepbooru_sort_alpha
-        include_ranks = shared.opts.interrogate_return_ranks and not force_disable_ranks
-
         if isinstance(pil_image, list):
-            pil_image = pil_image[0]
+            pil_image = pil_image[0] if len(pil_image) > 0 else None
         if isinstance(pil_image, dict) and 'name' in pil_image:
             pil_image = Image.open(pil_image['name'])
-
+        if pil_image is None:
+            return ''
         pic = images.resize_image(2, pil_image.convert("RGB"), 512, 512)
         a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
-
         with devices.inference_context(), devices.autocast():
             x = torch.from_numpy(a).to(devices.device)
             y = self.model(x)[0].detach().float().cpu().numpy()
-
         probability_dict = {}
-
         for tag, probability in zip(self.model.tags, y):
-            if probability < threshold:
+            if probability < shared.opts.interrogate_deepbooru_score_threshold:
                 continue
-
             if tag.startswith("rating:"):
                 continue
-
             probability_dict[tag] = probability
-
-        if alpha_sort:
+        if shared.opts.deepbooru_sort_alpha:
             tags = sorted(probability_dict)
         else:
             tags = [tag for tag, _ in sorted(probability_dict.items(), key=lambda x: -x[1])]
-
         res = []
-
         filtertags = {x.strip().replace(' ', '_') for x in shared.opts.deepbooru_filter_tags.split(",")}
-
         for tag in [x for x in tags if x not in filtertags]:
             probability = probability_dict[tag]
             tag_outformat = tag
-            if use_spaces:
+            if shared.opts.deepbooru_use_spaces:
                 tag_outformat = tag_outformat.replace('_', ' ')
-            if use_escape:
+            if shared.opts.deepbooru_escape:
                 tag_outformat = re.sub(re_special, r'\\\1', tag_outformat)
-            if include_ranks:
+            if shared.opts.interrogate_return_ranks and not force_disable_ranks:
                 tag_outformat = f"({tag_outformat}:{probability:.3f})"
-
             res.append(tag_outformat)
-
         return ", ".join(res)
 
 

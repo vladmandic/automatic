@@ -155,7 +155,7 @@ def create_ui():
                 with gr.Group(elem_id="img2img_script_container"):
                     img2img_script_inputs = modules.scripts.scripts_img2img.setup_ui(parent='img2img', accordion=True)
 
-            img2img_gallery, img2img_generation_info, img2img_html_info, _img2img_html_info_formatted, img2img_html_log = ui_common.create_output_panel("img2img", prompt=None)
+            img2img_gallery, img2img_generation_info, img2img_html_info, _img2img_html_info_formatted, img2img_html_log = ui_common.create_output_panel("img2img", prompt=img2img_prompt)
 
             ui_common.connect_reuse_seed(seed, reuse_seed, img2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, img2img_generation_info, is_subseed=True)

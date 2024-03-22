@@ -140,7 +140,7 @@ class EmbeddingDatabase:
     def get_expected_shape(self):
         if shared.backend == shared.Backend.DIFFUSERS:
             return 0
-        if shared.sd_model is None:
+        if shared.sd_loaded:
             shared.log.error('Model not loaded')
             return 0
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
@@ -151,7 +151,7 @@ class EmbeddingDatabase:
         embeddings_to_load = []
         loaded_embeddings = {}
         skipped_embeddings = []
-        if shared.sd_model is None:
+        if not shared.sd_loaded:
             return 0
         tokenizer   = getattr(shared.sd_model, 'tokenizer',   None)
         tokenizer_2 = getattr(shared.sd_model, 'tokenizer_2', None)
@@ -336,7 +336,7 @@ class EmbeddingDatabase:
                     continue
 
     def load_textual_inversion_embeddings(self, force_reload=False):
-        if shared.sd_model is None:
+        if not shared.sd_loaded:
             return
         t0 = time.time()
         if not force_reload:

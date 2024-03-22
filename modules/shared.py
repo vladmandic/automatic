@@ -1078,6 +1078,7 @@ sd_model: diffusers.DiffusionPipeline = None # dummy and overwritten by class
 sd_refiner: diffusers.DiffusionPipeline = None # dummy and overwritten by class
 sd_model_type: str = '' # dummy and overwritten by class
 sd_refiner_type: str = '' # dummy and overwritten by class
+sd_loaded: bool = False # dummy and overwritten by class
 compiled_model_state = None
 listfiles = listdir
 

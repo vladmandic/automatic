@@ -11,7 +11,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, input_images, trigger, 
         shared.log.warning('PhotoMaker: no input images')
         return None
 
-    c = shared.sd_model.__class__.__name__ if shared.sd_model is not None else ''
+    c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
     if c != 'StableDiffusionXLPipeline':
         shared.log.warning(f'PhotoMaker invalid base model: current={c} required=StableDiffusionXLPipeline')
         return None

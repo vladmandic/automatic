@@ -187,7 +187,7 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters(infotext):
+def parse_generation_parameters(infotext, no_prompt=False):
     if not isinstance(infotext, str):
         return {}
     debug(f'Parse infotext: {infotext}')
@@ -236,8 +236,9 @@ def parse_generation_parameters(infotext):
             params["Full quality"] = False
         else:
             params[k] = v
-    params["Prompt"] = prompt.replace('Prompt:', '').strip()
-    params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
+    if not no_prompt:
+        params["Prompt"] = prompt.replace('Prompt:', '').strip()
+        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
     debug(f"Parse: {params}")
     return params
 
@@ -314,7 +315,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                 prompt = ''
         else:
             shared.log.debug(f'Paste prompt: type="current" prompt="{prompt}"')
-        params = parse_generation_parameters(prompt)
+        params = parse_generation_parameters(prompt, no_prompt=False)
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []
         applied = {}
@@ -324,7 +325,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
             else:
                 v = params.get(key, None)
             if v is None:
-                res.append(gr.update())
+                res.append(gr.update()) # triggers update for each gradio component even if there are no updates
             elif isinstance(v, type_of_gr_update):
                 res.append(v)
                 applied[key] = v
@@ -344,6 +345,10 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
 
     if override_settings_component is not None:
         def paste_settings(params):
+            params.pop('Prompt', None)
+            params.pop('Negative prompt', None)
+            if not params:
+                gr.Dropdown.update(value=[], choices=[], visible=False)
             vals = {}
             for param_name, setting_name in infotext_to_setting_name_mapping:
                 v = params.get(param_name, None)
@@ -360,8 +365,10 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                     continue
                 vals[param_name] = v
             vals_pairs = [f"{k}: {v}" for k, v in vals.items()]
-            shared.log.debug(f'Settings overrides: {vals_pairs}')
+            if len(vals_pairs) > 0:
+                shared.log.debug(f'Settings overrides: {vals_pairs}')
             return gr.Dropdown.update(value=vals_pairs, choices=vals_pairs, visible=len(vals_pairs) > 0)
+
         local_paste_fields = local_paste_fields + [(override_settings_component, paste_settings)]
 
     button.click(

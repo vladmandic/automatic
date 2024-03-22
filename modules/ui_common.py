@@ -286,10 +286,14 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
             debug(f'Paste field: tab={tabname} fields={paste_field_names}')
             for paste_tabname, paste_button in buttons.items():
                 debug(f'Create output panel: source={tabname} target={paste_tabname} button={paste_button}')
-                bindings = generation_parameters_copypaste.ParamBinding(paste_button=paste_button, tabname=paste_tabname, source_tabname=tabname, source_image_component=result_gallery, paste_field_names=paste_field_names, source_text_component=generation_info)
-
-                # txt2img_bindings = generation_parameters_copypaste.ParamBinding(paste_button=txt2img_paste, tabname="txt2img", source_text_component=txt2img_prompt, source_image_component=None)
-
+                bindings = generation_parameters_copypaste.ParamBinding(
+                    paste_button=paste_button,
+                    tabname=paste_tabname,
+                    source_tabname=tabname,
+                    source_image_component=result_gallery,
+                    paste_field_names=paste_field_names,
+                    source_text_component=prompt or generation_info
+                )
                 generation_parameters_copypaste.register_paste_params_button(bindings)
             return result_gallery, generation_info, html_info, html_info_formatted, html_log
 
@@ -373,7 +377,7 @@ def update_token_counter(text, steps):
         from modules import sd_hijack
         token_count, max_length = max([sd_hijack.model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
     elif shared.backend == shared.Backend.DIFFUSERS:
-        if shared.sd_model is not None and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
+        if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
             has_bos_token = shared.sd_model.tokenizer.bos_token_id is not None
             has_eos_token = shared.sd_model.tokenizer.eos_token_id is not None
             ids = [shared.sd_model.tokenizer(prompt) for prompt in prompts]

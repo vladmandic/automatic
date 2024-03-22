@@ -48,14 +48,14 @@ orig_pipe = None # original sd_model pipeline
 
 
 def set_adapter(adapter_name: str = 'None'):
-    if shared.sd_model is None:
+    if not shared.sd_loaded:
         return
     if shared.backend != shared.Backend.DIFFUSERS:
         shared.log.warning('AnimateDiff: not in diffusers mode')
         return
     global motion_adapter, loaded_adapter, orig_pipe # pylint: disable=global-statement
     # adapter_name = name if name is not None and isinstance(name, str) else loaded_adapter
-    if adapter_name is None or adapter_name == 'None' or shared.sd_model is None:
+    if adapter_name is None or adapter_name == 'None' or not shared.sd_loaded:
         motion_adapter = None
         loaded_adapter = None
         if orig_pipe is not None:
