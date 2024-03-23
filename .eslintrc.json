@@ -97,7 +97,12 @@
     "removeSplash": "readonly",
     // nvml.js
     "initNVML": "readonly",
-    "disableNVML": "readonly"
+    "disableNVML": "readonly",
+    // indexdb.js
+    "idbGet": "readonly",
+    "idbPut": "readonly",
+    "idbDel": "readonly",
+    "idbAdd": "readonly"
   },
   "ignorePatterns": [
     "node_modules",

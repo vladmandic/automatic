@@ -741,7 +741,7 @@ def safe_decode_string(s: bytes):
     return None
 
 
-def read_info_from_image(image: Image):
+def read_info_from_image(image: Image, watermark: bool = False):
     items = image.info or {}
     geninfo = items.pop('parameters', None)
     if geninfo is None:
@@ -772,10 +772,11 @@ def read_info_from_image(image: Image):
                             items[ExifTags.TAGS[key]] = val
                     elif val is not None and key in ExifTags.GPSTAGS:
                         items[ExifTags.GPSTAGS[key]] = val
-    wm = get_watermark(image)
-    if wm != '':
-        # geninfo += f' Watermark: {wm}'
-        items['watermark'] = wm
+    if watermark:
+        wm = get_watermark(image)
+        if wm != '':
+            # geninfo += f' Watermark: {wm}'
+            items['watermark'] = wm
 
     for key, val in items.items():
         if isinstance(val, bytes): # decode bytestring

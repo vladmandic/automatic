@@ -1,10 +1,14 @@
+import io
 import os
+import time
+import base64
 from typing import List
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from starlette.websockets import WebSocket, WebSocketState, WebSocketDisconnect
 from pydantic import BaseModel, Field # pylint: disable=no-name-in-module
-from modules import shared, files_cache
+from PIL import Image
+from modules import shared, images, files_cache
 
 
 debug = shared.log.debug if os.environ.get('SD_BROWSER_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -83,13 +87,35 @@ def register_api(app: FastAPI): # register api
         debug(f'Browser folders: {folders}')
         return JSONResponse(content=folders)
 
+    @app.get("/sdapi/v1/browser/thumb", response_model=dict)
+    async def get_thumb(file: str):
+        image = Image.open(file)
+        geninfo, _items = images.read_info_from_image(image)
+        h = shared.opts.extra_networks_card_size
+        w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
+        width, height = image.width, image.height
+        image.thumbnail((w, h), Image.Resampling.HAMMING)
+        buffered = io.BytesIO()
+        image.save(buffered, format='jpeg')
+        data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
+        image.close()
+        content = {
+            'exif': geninfo,
+            'data': data_url,
+            'width': width,
+            'height': height,
+        }
+        return JSONResponse(content=content)
+
     @app.websocket("/sdapi/v1/browser/files")
     async def ws_files(ws: WebSocket):
         try:
             await manager.connect(ws)
             folder = await ws.receive_text()
-            debug(f'Browser WS folder: {folder}')
+            t0 = time.time()
+            numFiles = 0
             for f in files_cache.directory_files(folder, recursive=True):
+                numFiles += 1
                 file = os.path.relpath(f, folder)
                 stat = os.stat(f)
                 dct = {
@@ -100,15 +126,8 @@ def register_api(app: FastAPI): # register api
                 }
                 await manager.send(ws, dct)
             await manager.send(ws, '#END#')
+            t1 = time.time()
+            shared.log.debug(f'Gallery: folder={folder} files={numFiles} time={t1-t0:.3f}')
         except WebSocketDisconnect:
             debug('Browser WS unexpected disconnect')
         manager.disconnect(ws)
-
-    @app.websocket("/sdapi/v1/browser/file/{file}")
-    async def ws_file(ws: WebSocket, file: str):
-        try:
-            await manager.connect(ws)
-            with open(file, 'rb') as f:  # noqa: ASYNC101
-                await manager.send(ws, f.read())
-        except WebSocketDisconnect:
-            manager.disconnect(ws)

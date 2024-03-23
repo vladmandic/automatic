@@ -55,7 +55,13 @@ function modalKeyHandler(event) {
 }
 
 async function getExif(el) {
-  const exif = await window.exifr.parse(el, { userComment: true });
+  let exif = '';
+  try {
+    exif = await window.exifr.parse(el, { userComment: true });
+  } catch (e) {
+    log('getExif', el, e);
+    return exif;
+  }
   // let html = `<b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>`;
   let html = '';
   let params;

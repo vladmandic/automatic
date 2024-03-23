@@ -5,16 +5,14 @@
 - Include reference styles
 - Quick apply style
 - Add refine workflow in img2img
-- Gallery client-side caching? thumbnails, metadata
-- Gallery search by metadata
 - Control API/CLI
 
 ## Update for 2024-03-23
 
 - **Features**:
   - **Gallery**:
-      implemented as infinite-scroll with lazy-loading while being fully async and non-blocking  
-      search or sort by path, name, size, width, height, mtime with extended syntax like *width > 1000*  
+      implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
+      search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
       *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  

@@ -3,6 +3,8 @@
 let ws;
 let url;
 let currentImage;
+let pruneImagesTimer;
+let outstanding = 0;
 const el = {
   folders: undefined,
   files: undefined,
@@ -49,6 +51,32 @@ class GalleryFolder extends HTMLElement {
   }
 }
 
+async function createThumb(img) {
+  const height = opts.extra_networks_card_size;
+  const width = opts.browser_fixed_width ? opts.extra_networks_card_size : 0;
+  const canvas = document.createElement('canvas');
+  const scaleY = height / img.height;
+  const scaleX = width > 0 ? width / img.width : scaleY;
+  const scale = Math.min(scaleX, scaleY);
+  const scaledWidth = img.width * scale;
+  const scaledHeight = img.height * scale;
+  canvas.width = scaledWidth;
+  canvas.height = scaledHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+  const dataURL = canvas.toDataURL('image/jpeg', 0.5);
+  return dataURL;
+}
+
+async function delayFetchThumb(fn) {
+  while (outstanding > 10) await new Promise((resolve) => setTimeout(resolve, 50)); // eslint-disable-line no-promise-executor-return
+  outstanding++;
+  const res = await fetch(`/sdapi/v1/browser/thumb?file=${fn}`, { priority: 'low' });
+  const json = await res.json();
+  outstanding--;
+  return json;
+}
+
 class GalleryFile extends HTMLElement {
   constructor({ folder, file, size, mtime }) {
     super();
@@ -60,6 +88,7 @@ class GalleryFile extends HTMLElement {
     this.exif = '';
     this.width = 0;
     this.height = 0;
+    this.src = `${this.folder}/${this.name}`;
     this.shadow = this.attachShadow({ mode: 'open' });
   }
 
@@ -81,22 +110,54 @@ class GalleryFile extends HTMLElement {
       }
     `;
 
+    const cache = opts.browser_cache ? await idbGet(this.hash) : undefined;
     this.shadow.appendChild(style);
     const img = document.createElement('img');
     img.className = 'gallery-file';
     img.loading = 'lazy';
     img.title = `Folder: ${this.folder}\nFile: ${this.name}\nSize: ${this.size.toLocaleString()} bytes\nModified: ${this.mtime.toLocaleString()}`;
     img.onload = async () => {
-      this.width = img.naturalWidth;
-      this.height = img.naturalHeight;
       img.title += `\nResolution: ${this.width} x ${this.height}`;
       this.title = img.title;
-      // let exif = await getExif(img);
-      // if (exif) this.exif = exif.replaceAll('<br>', '\n').replace(/<\/?[^>]+(>|$)/g, "");
+      if (!cache && opts.browser_cache) {
+        if ((this.width === 0) || (this.height === 0)) { // fetch thumb failed so we use actual image
+          this.width = img.naturalWidth;
+          this.height = img.naturalHeight;
+        }
+      }
     };
-    img.src = `file=${this.folder}/${this.name}`;
+    if (cache) {
+      img.src = cache.img;
+      this.exif = cache.exif;
+      this.width = cache.width;
+      this.height = cache.height;
+    } else {
+      try {
+        const json = await delayFetchThumb(this.src);
+        img.src = json.data;
+        this.exif = json.exif;
+        this.width = json.width;
+        this.height = json.height;
+        await idbAdd({
+          hash: this.hash,
+          folder: this.folder,
+          file: this.name,
+          size: this.size,
+          mtime: this.mtime,
+          width: this.width,
+          height: this.height,
+          src: this.src,
+          exif: this.exif,
+          img: img.src,
+          // exif: await getExif(img), // alternative client-side exif
+          // img: await createThumb(img), // alternative client-side thumb
+        });
+      } catch (err) { // thumb fetch failed so assign actual image
+        img.src = `file=${this.src}`;
+      }
+    }
     img.onclick = () => {
-      currentImage = `${this.folder}/${this.name}`;
+      currentImage = this.src;
       el.btnSend.click();
     };
     this.title = img.title;
@@ -147,7 +208,6 @@ async function gallerySearch(evt) {
         const op = match[2].trim();
         let val = match[3].trim();
         if (key === 'mtime') val = new Date(val);
-        console.log('HERE', key, op, val, f[key]);
         if (((op === '=') && (f[key] === val)) || ((op === '>') && (f[key] > val)) || ((op === '<') && (f[key] < val))) {
           f.style.display = 'unset';
           numFound++;
@@ -229,6 +289,7 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
   const t0 = performance.now();
   let t1 = performance.now();
   let lastDir;
+  let fragment = document.createDocumentFragment();
   ws.onmessage = (event) => { // time is 20% list 80% create item
     numFiles++;
     t1 = performance.now();
@@ -246,17 +307,26 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
         el.files.appendChild(sep);
       }
       const file = new GalleryFile(json);
-      el.files.appendChild(file);
+      fragment.appendChild(file);
+      if (numFiles % 100 === 0) {
+        el.files.appendChild(fragment);
+        fragment = document.createDocumentFragment();
+      }
       el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
     }
   };
   ws.onclose = (event) => {
+    el.files.appendChild(fragment);
     // log('gallery ws file enum', event);
   };
   ws.onerror = (event) => {
     log('gallery ws error', event);
   };
   ws.send(evt.target.name);
+}
+
+async function pruneImages() {
+  // TODO replace img.src with placeholder for images that are not visible
 }
 
 async function galleryVisible() {
@@ -270,9 +340,12 @@ async function galleryVisible() {
     const f = new GalleryFolder(folder);
     el.folders.appendChild(f);
   }
+  pruneImagesTimer = setInterval(pruneImages, 1000);
 }
 
-async function galleryHidden() { /**/ }
+async function galleryHidden() {
+  if (pruneImagesTimer) clearInterval(pruneImagesTimer);
+}
 
 async function galleryObserve() { // triggered on gradio change to monitor when ui gets sufficiently constructed
   log('initBrowser');

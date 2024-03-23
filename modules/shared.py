@@ -529,7 +529,8 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "font": OptionInfo("", "Font file"),
     "font_color": OptionInfo("#FFFFFF", "Font color", gr.ColorPicker, {}),
 
-    "image_sep_browser": OptionInfo("<h2>Image Browser</h2>", "", gr.HTML),
+    "image_sep_browser": OptionInfo("<h2>Image Gallery</h2>", "", gr.HTML),
+    "browser_cache": OptionInfo(True, "Use image gallery cache"),
     "browser_folders": OptionInfo("", "Additional image browser folders"),
     "browser_fixed_width": OptionInfo(False, "Use fixed with thumbnails"),
     "viewer_show_metadata": OptionInfo(True, "Show metadata in full screen image browser"),
