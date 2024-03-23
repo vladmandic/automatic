@@ -19,7 +19,8 @@ import diffusers.models.lora
 from modules import shared, devices, sd_models, sd_models_compile, errors, scripts, files_cache
 
 
-debug = os.environ.get('SD_LORA_DEBUG', None) is not None
+debug = shared.log.trace if os.environ.get('SD_LORA_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug('Trace: LORA')
 originals: lora_patches.LoraPatches = None
 extra_network_lora = None
 available_networks = {}
@@ -47,22 +48,34 @@ convert_diffusers_name_to_compvis = lora_convert.convert_diffusers_name_to_compv
 def assign_network_names_to_compvis_modules(sd_model):
     network_layer_mapping = {}
     if shared.backend == shared.Backend.DIFFUSERS:
-        if not hasattr(shared.sd_model, 'text_encoder') or not hasattr(shared.sd_model, 'unet'):
-            return
-        for name, module in shared.sd_model.text_encoder.named_modules():
-            prefix = "lora_te1_" if shared.sd_model_type == "sdxl" else "lora_te_"
-            network_name = prefix + name.replace(".", "_")
-            network_layer_mapping[network_name] = module
-            module.network_layer_name = network_name
-        if shared.sd_model_type == "sdxl":
+        if hasattr(shared.sd_model, 'prior_text_encoder'):
+            for name, module in shared.sd_model.prior_text_encoder.named_modules():
+                prefix = "lora_prior_te_"
+                network_name = prefix + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'prior_prior'):
+            for name, module in shared.sd_model.prior_prior.named_modules():
+                prefix = "lora_prior_unet_"
+                network_name = prefix + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'text_encoder'):
+            for name, module in shared.sd_model.text_encoder.named_modules():
+                prefix = "lora_te1_" if shared.sd_model_type == "sdxl" else "lora_te_"
+                network_name = prefix + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'text_encoder_2'):
             for name, module in shared.sd_model.text_encoder_2.named_modules():
                 network_name = "lora_te2_" + name.replace(".", "_")
                 network_layer_mapping[network_name] = module
                 module.network_layer_name = network_name
-        for name, module in shared.sd_model.unet.named_modules():
-            network_name = "lora_unet_" + name.replace(".", "_")
-            network_layer_mapping[network_name] = module
-            module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'unet'):
+            for name, module in shared.sd_model.unet.named_modules():
+                network_name = "lora_unet_" + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
     else:
         if not hasattr(shared.sd_model, 'cond_stage_model'):
             return
@@ -143,7 +156,7 @@ def load_network(name, network_on_disk) -> network.Network:
     if len(keys_failed_to_match) > 0:
         shared.log.warning(f"LoRA file={network_on_disk.filename} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}")
         if debug:
-            shared.log.debug(f"LoRA file={network_on_disk.filename} unmatched={keys_failed_to_match}")
+            shared.log.debug(f"LoRA file={network_on_disk.filename} unmatched={set([key[0] for key in keys_failed_to_match.values()])}")
     elif debug:
         shared.log.debug(f"LoRA file={network_on_disk.filename} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}")
     lora_cache[name] = net
