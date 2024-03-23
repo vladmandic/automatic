@@ -7,6 +7,7 @@ let img2img_textarea;
 const wait_time = 800;
 const token_timeouts = {};
 let uiLoaded = false;
+let promptsInitialized = false;
 window.args_to_array = Array.from; // Compatibility with e.g. extensions that may expect this to be around
 
 function rememberGallerySelection(name) {
@@ -326,8 +327,6 @@ function sortUIElements() {
 }
 
 onAfterUiUpdate(async () => {
-  let promptsInitialized = false;
-
   async function registerTextarea(id, id_counter, id_button) {
     const prompt = gradioApp().getElementById(id);
     if (!prompt) return;
@@ -338,17 +337,18 @@ onAfterUiUpdate(async () => {
     prompt.parentElement.style.position = 'relative';
     promptTokenCountUpdateFuncs[id] = () => { update_token_counter(id_button); };
     localTextarea.addEventListener('input', promptTokenCountUpdateFuncs[id]);
-    if (!promptsInitialized) log('initPrompts');
-    promptsInitialized = true;
   }
 
   // sortUIElements();
+  if (promptsInitialized) return;
+  log('initPrompts');
   registerTextarea('txt2img_prompt', 'txt2img_token_counter', 'txt2img_token_button');
   registerTextarea('txt2img_neg_prompt', 'txt2img_negative_token_counter', 'txt2img_negative_token_button');
   registerTextarea('img2img_prompt', 'img2img_token_counter', 'img2img_token_button');
   registerTextarea('img2img_neg_prompt', 'img2img_negative_token_counter', 'img2img_negative_token_button');
   registerTextarea('control_prompt', 'control_token_counter', 'control_token_button');
   registerTextarea('control_neg_prompt', 'control_negative_token_counter', 'control_negative_token_button');
+  promptsInitialized = true;
 });
 
 function update_txt2img_tokens(...args) {

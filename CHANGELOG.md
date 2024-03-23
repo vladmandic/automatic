@@ -7,8 +7,9 @@
 - Add refine workflow in img2img
 - Gallery client-side caching? thumbnails, metadata
 - Gallery search by metadata
+- Control API/CLI
 
-## Update for 2024-03-21
+## Update for 2024-03-23
 
 - **Features**:
   - **Gallery**:
@@ -23,7 +24,7 @@
   - Styles apply wildcards to params
   - Make metadata in full screen viewer optional
 - **Fixes**:
-  - Propmpt params parser
+  - Prompt params parser
   - Fix image save without metadata
   - fix ROCm compatibility, thanks @Disty0
 
