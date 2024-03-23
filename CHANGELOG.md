@@ -6,6 +6,9 @@
 - Quick apply style
 - Add refine workflow in img2img
 - Control API/CLI
+- Model load from dropdown select variant
+- VAE preview
+- SC LoRA
 
 ## Update for 2024-03-23
 
