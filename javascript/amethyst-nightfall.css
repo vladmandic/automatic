@@ -228,7 +228,7 @@ svg.feather.feather-image, .feather .feather-image { display: none }
   --radius-md: 0;
   --radius-xl: 0;
   --radius-xxl: 0;
-  --font: 'Source Sans Pro', 'ui-sans-serif', 'system-ui', sans-serif;
+  --font: 'Source Sans Pro', 'ui-sans-serif', 'system-ui', sans-serif, 'NotoSans';
   --font-mono: 'IBM Plex Mono', 'ui-monospace', 'Consolas', monospace;
   --body-text-size: var(--text-md);
   --body-text-weight: 400;
