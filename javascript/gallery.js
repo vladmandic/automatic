@@ -230,50 +230,53 @@ async function gallerySort(btn) {
   const t0 = performance.now();
   document.querySelectorAll('.gallery-separator').forEach((node) => el.files.removeChild(node)); // cannot sort separators
   const arr = Array.from(el.files.children);
+  const fragment = document.createDocumentFragment();
+  el.files.innerHTML = '';
   switch (btn.charCodeAt(0)) {
     case 61789:
       arr
         .sort((a, b) => a.name.localeCompare(b.name))
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61790:
       arr
         .sort((b, a) => a.name.localeCompare(b.name))
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61792:
       arr
         .sort((a, b) => a.size - b.size)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61793:
       arr
         .sort((b, a) => a.size - b.size)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61794:
       arr
         .sort((a, b) => a.width * a.height - b.width * b.height)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61795:
       arr
         .sort((b, a) => a.width * a.height - b.width * b.height)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61662:
       arr
         .sort((a, b) => a.mtime - b.mtime)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     case 61661:
       arr
         .sort((b, a) => a.mtime - b.mtime)
-        .forEach((node) => el.files.appendChild(node));
+        .forEach((node) => fragment.appendChild(node));
       break;
     default:
       break;
   }
+  el.files.appendChild(fragment);
   const t1 = performance.now();
   el.status.innerText = `Sort | ${arr.length.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
 }
