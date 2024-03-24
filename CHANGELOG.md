@@ -9,6 +9,7 @@
 - Model load from dropdown select variant
 - VAE preview
 - SC LoRA
+- Gallery urlencode/decode
 
 ## Update for 2024-03-23
 
@@ -28,6 +29,7 @@
   - Prompt params parser
   - Fix image save without metadata
   - fix ROCm compatibility, thanks @Disty0
+  - Fix API generate save metadata
 
 ## Update for 2024-03-19
 

@@ -36,8 +36,7 @@ def encode_pil_to_base64(image):
         shared.log.error('API cannot encode image: not a PIL image')
         return ''
     buffered = io.BytesIO()
-    image_format = Image.registered_extensions()[f'.{shared.opts.samples_format}']
-    image.save(buffered, format=image_format)
+    save_image(image, fn=buffered, ext=shared.opts.samples_format)
     b64 = base64.b64encode(buffered.getvalue())
     return b64
 
