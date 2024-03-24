@@ -9,7 +9,6 @@
 - Model load from dropdown select variant
 - VAE preview
 - SC LoRA
-- Gallery urlencode/decode
 
 ## Update for 2024-03-23
 

@@ -574,7 +574,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
 
     with ui.tabs:
         def ui_tab_change(page):
-            scan_visible = page in ['Model', 'Lora', 'Hypernetwork', 'Embedding']
+            scan_visible = page in ['Model', 'Lora', 'VAE', 'Hypernetwork', 'Embedding']
             save_visible = page in ['Style']
             model_visible = page in ['Model']
             return [gr.update(visible=scan_visible), gr.update(visible=save_visible), gr.update(visible=model_visible)]
