@@ -436,15 +436,8 @@ class ControlNetXSModel(ModelMixin, ConfigMixin):
                 norm_num_groups = unet.config.norm_num_groups
             else:
                 norm_num_groups = min(block_out_channels)
-
-                if group_norms_match_channel_sizes(norm_num_groups, block_out_channels):
-                    print(
-                        f"`norm_num_groups` was set to `min(block_out_channels)` (={norm_num_groups}) so it divides all block_out_channels` ({block_out_channels}). Set it explicitly to remove this information."
-                    )
-                else:
-                    raise ValueError(
-                        f"`block_out_channels` ({block_out_channels}) don't match the base models `norm_num_groups` ({unet.config.norm_num_groups}). Setting `norm_num_groups` to `min(block_out_channels)` ({norm_num_groups}) didn't fix this. Pass `norm_num_groups` explicitly so it divides all block_out_channels."
-                    )
+                if not group_norms_match_channel_sizes(norm_num_groups, block_out_channels):
+                    raise ValueError(f'ControlNetXSModel mismatch: block_out_channels={block_out_channels} norm_num_groups={unet.config.norm_num_groups}')
 
         def get_time_emb_input_dim(unet: UNet2DConditionModel):
             return unet.time_embedding.linear_1.in_features

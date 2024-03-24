@@ -68,6 +68,27 @@ async function createThumb(img) {
   return dataURL;
 }
 
+async function addSeparators() {
+  document.querySelectorAll('.gallery-separator').forEach((node) => el.files.removeChild(node));
+  const all = Array.from(el.files.children);
+  let lastDir;
+  for (const f of all) {
+    let dir = f.name.match(/(.*)[\/\\]/);
+    if (!dir) dir = '';
+    else dir = dir[1];
+    if (dir !== lastDir) {
+      lastDir = dir;
+      if (dir.length > 0) {
+        const sep = document.createElement('div');
+        sep.className = 'gallery-separator';
+        sep.innerText = dir;
+        sep.title = dir;
+        el.files.insertBefore(sep, f);
+      }
+    }
+  }
+}
+
 async function delayFetchThumb(fn) {
   while (outstanding > 16) await new Promise((resolve) => setTimeout(resolve, 50)); // eslint-disable-line no-promise-executor-return
   outstanding++;
@@ -102,6 +123,7 @@ class GalleryFile extends HTMLElement {
   }
 
   async connectedCallback() {
+    if (this.shadow.children.length > 0) return;
     const ext = this.name.split('.').pop().toLowerCase();
     if (!['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return;
     this.hash = await getHash(`${this.folder}/${this.name}/${this.size}/${this.mtime}`); // eslint-disable-line no-use-before-define
@@ -243,7 +265,6 @@ async function gallerySearch(evt) {
 
 async function gallerySort(btn) {
   const t0 = performance.now();
-  document.querySelectorAll('.gallery-separator').forEach((node) => el.files.removeChild(node)); // cannot sort separators
   const arr = Array.from(el.files.children);
   const fragment = document.createDocumentFragment();
   el.files.innerHTML = '';
@@ -292,6 +313,7 @@ async function gallerySort(btn) {
       break;
   }
   el.files.appendChild(fragment);
+  addSeparators();
   const t1 = performance.now();
   el.status.innerText = `Sort | ${arr.length.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
 }
@@ -315,21 +337,13 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
       ws.close();
     } else {
       const json = JSON.parse(event.data);
-      const dir = json.file.match(/(.*)[\/\\]/) || '';
-      if (dir?.[1] !== lastDir) { // create separator
-        lastDir = dir[1];
-        const sep = document.createElement('div');
-        sep.className = 'gallery-separator';
-        sep.innerText = lastDir;
-        sep.title = lastDir;
-        el.files.appendChild(sep);
-      }
       const file = new GalleryFile(json);
       fragment.appendChild(file);
       if (numFiles % 100 === 0) {
         el.files.appendChild(fragment);
         fragment = document.createDocumentFragment();
       }
+      addSeparators();
       el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
     }
   };

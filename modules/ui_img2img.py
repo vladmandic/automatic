@@ -150,7 +150,7 @@ def create_ui():
                         for i, elem in enumerate(img2img_tabs):
                             elem.select(fn=lambda tab=i: select_img2img_tab(tab), inputs=[], outputs=[inpaint_controls, mask_alpha]) # pylint: disable=cell-var-from-loop
 
-                override_settings = ui_common.create_override_inputs('img2img')
+                    override_settings = ui_common.create_override_inputs('img2img')
 
                 with gr.Group(elem_id="img2img_script_container"):
                     img2img_script_inputs = modules.scripts.scripts_img2img.setup_ui(parent='img2img', accordion=True)

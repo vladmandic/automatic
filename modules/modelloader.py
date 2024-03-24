@@ -235,7 +235,6 @@ def load_diffusers_models(clear=True):
         place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
-    output = []
     try:
         for folder in os.listdir(place):
             try:
@@ -253,20 +252,20 @@ def load_diffusers_models(clear=True):
                 if len(snapshots) == 0:
                     shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
                     continue
-                commit = os.path.join(folder, 'snapshots', snapshots[-1])
-                mtime = os.path.getmtime(commit)
-                info = os.path.join(commit, "model_info.json")
-                diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
-                if os.path.exists(os.path.join(folder, 'hidden')):
-                    continue
-                output.append(name)
-            except Exception:
-                # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
-                pass
+                for snapshot in snapshots:
+                    commit = os.path.join(folder, 'snapshots', snapshot)
+                    mtime = os.path.getmtime(commit)
+                    info = os.path.join(commit, "model_info.json")
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info }
+                    diffuser_repos.append(repo)
+                    if os.path.exists(os.path.join(folder, 'hidden')):
+                        continue
+            except Exception as e:
+                debug(f"Error analyzing diffusers model: {folder} {e}")
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(output)} time={time.time()-t0:.2f}')
-    return output
+    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
+    return diffuser_repos
 
 
 def find_diffuser(name: str):

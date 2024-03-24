@@ -41,9 +41,9 @@ debug_load = os.environ.get('SD_LOAD_DEBUG', None)
 
 
 class CheckpointInfo:
-    def __init__(self, filename):
+    def __init__(self, filename, sha=None):
         self.name = None
-        self.hash = None
+        self.hash = sha
         self.filename = filename
         self.type = ''
         relname = filename
@@ -77,9 +77,11 @@ class CheckpointInfo:
             self.filename = filename
             self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{relname}")
             self.type = ext
-            # self.model_name = os.path.splitext(name.replace("/", "_").replace("\\", "_"))[0]
         else: # maybe a diffuser
-            repo = [r for r in modelloader.diffuser_repos if filename == r['name']]
+            if self.hash is None:
+                repo = [r for r in modelloader.diffuser_repos if self.filename == r['name']]
+            else:
+                repo = [r for r in modelloader.diffuser_repos if self.hash == r['hash']]
             if len(repo) == 0:
                 self.name = relname
                 self.filename = filename
@@ -140,17 +142,17 @@ def list_models():
     global checkpoints_list # pylint: disable=global-statement
     checkpoints_list.clear()
     checkpoint_aliases.clear()
-    if shared.opts.sd_disable_ckpt or shared.backend == shared.Backend.DIFFUSERS:
-        ext_filter = [".safetensors"]
-    else:
-        ext_filter = [".ckpt", ".safetensors"]
+    ext_filter = [".safetensors"] if shared.opts.sd_disable_ckpt or shared.backend == shared.Backend.DIFFUSERS else [".ckpt", ".safetensors"]
     model_list = list(modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.opts.ckpt_dir, ext_filter=ext_filter, download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"]))
-    if shared.backend == shared.Backend.DIFFUSERS:
-        model_list += modelloader.load_diffusers_models(clear=True)
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
         if checkpoint_info.name is not None:
             checkpoint_info.register()
+    if shared.backend == shared.Backend.DIFFUSERS:
+        for repo in modelloader.load_diffusers_models(clear=True):
+            checkpoint_info = CheckpointInfo(repo['name'], sha=repo['hash'])
+            if checkpoint_info.name is not None:
+                checkpoint_info.register()
     if shared.cmd_opts.ckpt is not None:
         if not os.path.exists(shared.cmd_opts.ckpt) and shared.backend == shared.Backend.ORIGINAL:
             if shared.cmd_opts.ckpt.lower() != "none":
@@ -920,18 +922,18 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 try: # this is horrible special-case handling for stable-cascade multi-stage pipeline with variants and non-standard revision
                     diffusers_load_config.pop("vae", None)
                     diffusers_load_config["variant"] = 'bf16'
-                    if 'lite' in checkpoint_info.name:
-                        decoder_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder="decoder_lite", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/44", **diffusers_load_config)
-                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/44", decoder=decoder_unet, **diffusers_load_config)
+                    if 'lite' in checkpoint_info.name or 'abc818bb0d' in checkpoint_info.hash:
+                        decoder_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder="decoder_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, **diffusers_load_config)
                         shared.log.debug(f'StableCascade lite decoder: scale={decoder.latent_dim_scale}')
-                        prior_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder="prior_lite", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/2", **diffusers_load_config)
-                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/2", prior=prior_unet, **diffusers_load_config)
+                        prior_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder="prior_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, **diffusers_load_config)
                         shared.log.debug(f'StableCascade lite prior: scale={prior.resolution_multiple}')
                     else:
-                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/44", **diffusers_load_config)
-                        shared.log.debug(f'StableCascade decoder: scale={decoder.latent_dim_scale}')
-                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, revision="refs/pr/2", **diffusers_load_config)
-                        shared.log.debug(f'StableCascade prior: scale={prior.resolution_multiple}')
+                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        shared.log.debug(f'StableCascade full decoder: scale={decoder.latent_dim_scale}')
+                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        shared.log.debug(f'StableCascade full prior: scale={prior.resolution_multiple}')
                     sd_model = diffusers.StableCascadeCombinedPipeline(
                         tokenizer=decoder.tokenizer,
                         text_encoder=decoder.text_encoder,

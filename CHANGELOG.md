@@ -6,17 +6,15 @@
 - Quick apply style
 - Add refine workflow in img2img
 - Control API/CLI
-- Model load from dropdown select variant
-- VAE preview
 - SC LoRA
 
 ## Update for 2024-03-23
 
 - **Features**:
   - **Gallery**:
-      implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
-      search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
-      *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+    implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
+    search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
+    *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native equivalents  
@@ -24,11 +22,13 @@
 - **Improvements**:
   - Styles apply wildcards to params
   - Make metadata in full screen viewer optional
+  - Add VAE civitai scan metadata/preview
 - **Fixes**:
   - Prompt params parser
   - Fix image save without metadata
   - fix ROCm compatibility, thanks @Disty0
   - Fix API generate save metadata
+  - Enumerate diffusers model with multiple variants
 
 ## Update for 2024-03-19
 
