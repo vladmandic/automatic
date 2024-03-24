@@ -18,7 +18,7 @@ const el = {
 class GalleryFolder extends HTMLElement {
   constructor(name) {
     super();
-    this.name = name;
+    this.name = decodeURI(name);
     this.shadow = this.attachShadow({ mode: 'open' });
   }
 
@@ -69,19 +69,28 @@ async function createThumb(img) {
 }
 
 async function delayFetchThumb(fn) {
-  while (outstanding > 10) await new Promise((resolve) => setTimeout(resolve, 50)); // eslint-disable-line no-promise-executor-return
+  while (outstanding > 16) await new Promise((resolve) => setTimeout(resolve, 50)); // eslint-disable-line no-promise-executor-return
   outstanding++;
-  const res = await fetch(`/sdapi/v1/browser/thumb?file=${fn}`, { priority: 'low' });
+  const res = await fetch(`/sdapi/v1/browser/thumb?file=${encodeURI(fn)}`, { priority: 'low' });
+  if (!res.ok) {
+    console.error(res.statusText);
+    outstanding--;
+    return undefined;
+  }
   const json = await res.json();
   outstanding--;
+  if (!res || !json || json.error) {
+    console.error(json.error);
+    return undefined;
+  }
   return json;
 }
 
 class GalleryFile extends HTMLElement {
   constructor({ folder, file, size, mtime }) {
     super();
-    this.folder = folder;
-    this.name = file;
+    this.folder = decodeURI(folder);
+    this.name = decodeURI(file);
     this.size = size;
     this.mtime = new Date(1000 * mtime);
     this.hash = undefined;
@@ -126,6 +135,7 @@ class GalleryFile extends HTMLElement {
         }
       }
     };
+    let ok = true;
     if (cache) {
       img.src = cache.img;
       this.exif = cache.exif;
@@ -134,28 +144,33 @@ class GalleryFile extends HTMLElement {
     } else {
       try {
         const json = await delayFetchThumb(this.src);
-        img.src = json.data;
-        this.exif = json.exif;
-        this.width = json.width;
-        this.height = json.height;
-        await idbAdd({
-          hash: this.hash,
-          folder: this.folder,
-          file: this.name,
-          size: this.size,
-          mtime: this.mtime,
-          width: this.width,
-          height: this.height,
-          src: this.src,
-          exif: this.exif,
-          img: img.src,
-          // exif: await getExif(img), // alternative client-side exif
-          // img: await createThumb(img), // alternative client-side thumb
-        });
+        if (!json) {
+          ok = false;
+        } else {
+          img.src = json.data;
+          this.exif = json.exif;
+          this.width = json.width;
+          this.height = json.height;
+          await idbAdd({
+            hash: this.hash,
+            folder: this.folder,
+            file: this.name,
+            size: this.size,
+            mtime: this.mtime,
+            width: this.width,
+            height: this.height,
+            src: this.src,
+            exif: this.exif,
+            img: img.src,
+            // exif: await getExif(img), // alternative client-side exif
+            // img: await createThumb(img), // alternative client-side thumb
+          });
+        }
       } catch (err) { // thumb fetch failed so assign actual image
         img.src = `file=${this.src}`;
       }
     }
+    if (!ok) return;
     img.onclick = () => {
       currentImage = this.src;
       el.btnSend.click();

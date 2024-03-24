@@ -3,6 +3,7 @@ import os
 import time
 import base64
 from typing import List
+from urllib.parse import quote, unquote
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from starlette.websockets import WebSocket, WebSocketState, WebSocketDisconnect
@@ -83,29 +84,36 @@ def register_api(app: FastAPI): # register api
             for f in folders:
                 if os.path.isabs(f) and f not in shared.demo.allowed_paths:
                     debug(f'Browser folders allow: {f}')
-                    shared.demo.allowed_paths.append(f)
+                    shared.demo.allowed_paths.append(quote(f))
         debug(f'Browser folders: {folders}')
         return JSONResponse(content=folders)
 
     @app.get("/sdapi/v1/browser/thumb", response_model=dict)
     async def get_thumb(file: str):
-        image = Image.open(file)
-        geninfo, _items = images.read_info_from_image(image)
-        h = shared.opts.extra_networks_card_size
-        w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
-        width, height = image.width, image.height
-        image.thumbnail((w, h), Image.Resampling.HAMMING)
-        buffered = io.BytesIO()
-        image.save(buffered, format='jpeg')
-        data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
-        image.close()
-        content = {
-            'exif': geninfo,
-            'data': data_url,
-            'width': width,
-            'height': height,
-        }
-        return JSONResponse(content=content)
+        try:
+            decoded = unquote(file)
+            image = Image.open(decoded)
+            geninfo, _items = images.read_info_from_image(image)
+            h = shared.opts.extra_networks_card_size
+            w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
+            width, height = image.width, image.height
+            image = image.convert('RGB')
+            image.thumbnail((w, h), Image.Resampling.HAMMING)
+            buffered = io.BytesIO()
+            image.save(buffered, format='jpeg')
+            data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
+            image.close()
+            content = {
+                'exif': geninfo,
+                'data': data_url,
+                'width': width,
+                'height': height,
+            }
+            return JSONResponse(content=content)
+        except Exception as e:
+            shared.log.error(f'Gallery: {file} {e}')
+            content = { 'error': str(e) }
+            return JSONResponse(content=content)
 
     @app.websocket("/sdapi/v1/browser/files")
     async def ws_files(ws: WebSocket):
@@ -119,8 +127,8 @@ def register_api(app: FastAPI): # register api
                 file = os.path.relpath(f, folder)
                 stat = os.stat(f)
                 dct = {
-                    'folder': folder,
-                    'file': file,
+                    'folder': quote(folder),
+                    'file': quote(file),
                     'size': stat.st_size,
                     'mtime': stat.st_mtime,
                 }
