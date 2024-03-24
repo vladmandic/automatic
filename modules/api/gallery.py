@@ -21,7 +21,7 @@ OPTS_FOLDERS = [
     "outdir_img2img_samples",
     "outdir_control_samples",
     "outdir_extras_samples",
-    "outdir_save"
+    "outdir_save",
     "outdir_video",
     "outdir_init_images",
     "outdir_grids",
@@ -73,6 +73,29 @@ class ConnectionManager:
 def register_api(app: FastAPI): # register api
     manager = ConnectionManager()
 
+    def get_video_thumbnail(filepath):
+        from modules.ui_control_helpers import get_video_params
+        try:
+            frames, fps, duration, width, height, codec, frame = get_video_params(filepath, capture=True)
+            h = shared.opts.extra_networks_card_size
+            w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else width * h // height
+            frame = frame.convert('RGB')
+            frame.thumbnail((w, h), Image.Resampling.HAMMING)
+            buffered = io.BytesIO()
+            frame.save(buffered, format='jpeg')
+            data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
+            frame.close()
+            content = {
+                'exif': f'Codec: {codec}, Frames: {frames}, Duration: {duration:.2f} sec, FPS: {fps:.2f}',
+                'data': data_url,
+                'width': width,
+                'height': height,
+            }
+            return content
+        except Exception as e:
+            shared.log.error(f'Gallery video: file="{filepath}" {e}')
+            return {}
+
     @app.get('/sdapi/v1/browser/folders', response_model=List[str])
     def get_folders():
         folders = [shared.opts.data.get(f, '') for f in OPTS_FOLDERS]
@@ -92,24 +115,28 @@ def register_api(app: FastAPI): # register api
     async def get_thumb(file: str):
         try:
             decoded = unquote(file)
-            image = Image.open(decoded)
-            geninfo, _items = images.read_info_from_image(image)
-            h = shared.opts.extra_networks_card_size
-            w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
-            width, height = image.width, image.height
-            image = image.convert('RGB')
-            image.thumbnail((w, h), Image.Resampling.HAMMING)
-            buffered = io.BytesIO()
-            image.save(buffered, format='jpeg')
-            data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
-            image.close()
-            content = {
-                'exif': geninfo,
-                'data': data_url,
-                'width': width,
-                'height': height,
-            }
-            return JSONResponse(content=content)
+            if decoded.lower().endswith('.mp4'):
+                content = get_video_thumbnail(decoded)
+                return JSONResponse(content=content)
+            else:
+                image = Image.open(decoded)
+                geninfo, _items = images.read_info_from_image(image)
+                h = shared.opts.extra_networks_card_size
+                w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
+                width, height = image.width, image.height
+                image = image.convert('RGB')
+                image.thumbnail((w, h), Image.Resampling.HAMMING)
+                buffered = io.BytesIO()
+                image.save(buffered, format='jpeg')
+                data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
+                image.close()
+                content = {
+                    'exif': geninfo,
+                    'data': data_url,
+                    'width': width,
+                    'height': height,
+                }
+                return JSONResponse(content=content)
         except Exception as e:
             shared.log.error(f'Gallery: {file} {e}')
             content = { 'error': str(e) }
@@ -135,7 +162,7 @@ def register_api(app: FastAPI): # register api
                 await manager.send(ws, dct)
             await manager.send(ws, '#END#')
             t1 = time.time()
-            shared.log.debug(f'Gallery: folder={folder} files={numFiles} time={t1-t0:.3f}')
+            shared.log.debug(f'Gallery: folder="{folder}" files={numFiles} time={t1-t0:.3f}')
         except WebSocketDisconnect:
             debug('Browser WS unexpected disconnect')
         manager.disconnect(ws)

@@ -11,7 +11,7 @@
 ## Update for 2024-03-23
 
 - **Features**:
-  - **Gallery**:
+  - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  

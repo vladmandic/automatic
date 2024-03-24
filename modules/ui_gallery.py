@@ -2,25 +2,39 @@ import os
 from datetime import datetime
 import gradio as gr
 from PIL import Image
-from modules import ui_symbols, ui_common, images
+from modules import ui_symbols, ui_common, images, ui_control_helpers
 from modules.ui_components import ToolButton
 
 
-def read_image(fn):
+def read_media(fn):
     if not os.path.isfile(fn):
-        return [[], '', f'Image not found: {fn}']
+        return [[], None, '', f'Image not found: {fn}']
     stat = os.stat(fn)
-    image = Image.open(fn)
-    image.already_saved_as = fn
-    geninfo, _items = images.read_info_from_image(image)
-    log = f'''
-        <p>Image <b>{image.width} x {image.height}</b>
-         | Format <b>{image.format}</b>
-         | Mode <b>{image.mode}</b>
-         | Size <b>{stat.st_size:,}</b>
-         | Modified <b>{datetime.fromtimestamp(stat.st_mtime)}</b></p><br>
-        '''
-    return [[image], geninfo, geninfo, log]
+    if fn.lower().endswith('.mp4'):
+        frames, fps, duration, w, h, codec, _frame = ui_control_helpers.get_video_params(fn)
+        geninfo = ''
+        log = f'''
+            <p>Video <b>{w} x {h}</b>
+            | Codec <b>{codec}</b>
+            | Frames <b>{frames:,}</b>
+            | FPS <b>{fps}</b>
+            | Duration <b>{duration:,}</b>
+            | Size <b>{stat.st_size:,}</b>
+            | Modified <b>{datetime.fromtimestamp(stat.st_mtime)}</b></p><br>
+            '''
+        return [gr.update(visible=False, value=[]), gr.update(visible=True, value=fn), geninfo, geninfo, log]
+    else:
+        image = Image.open(fn)
+        image.already_saved_as = fn
+        geninfo, _items = images.read_info_from_image(image)
+        log = f'''
+            <p>Image <b>{image.width} x {image.height}</b>
+            | Format <b>{image.format}</b>
+            | Mode <b>{image.mode}</b>
+            | Size <b>{stat.st_size:,}</b>
+            | Modified <b>{datetime.fromtimestamp(stat.st_mtime)}</b></p><br>
+            '''
+        return [gr.update(visible=True, value=[image]), gr.update(visible=False), geninfo, geninfo, log]
 
 
 def create_ui():
@@ -46,6 +60,7 @@ def create_ui():
                 gr.HTML('', elem_id='tab-gallery-files')
             with gr.Column():
                 btn_gallery_image = gr.Button('', elem_id='tab-gallery-send-image', visible=False, interactive=True)
+                gallery_video = gr.Video(None, elem_id='tab-gallery-video', show_label=False, visible=False)
                 gallery_images, gen_info, html_info, _html_info_formatted, html_log = ui_common.create_output_panel("gallery")
-                btn_gallery_image.click(fn=read_image, _js='gallerySendImage', inputs=[html_info], outputs=[gallery_images, html_info, gen_info, html_log])
+                btn_gallery_image.click(fn=read_media, _js='gallerySendImage', inputs=[html_info], outputs=[gallery_images, gallery_video, html_info, gen_info, html_log])
     return [(tab, 'Gallery', 'tab-gallery')]

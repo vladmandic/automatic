@@ -778,6 +778,14 @@ class Options:
                 return
         return super(Options, self).__setattr__(key, value) # pylint: disable=super-with-arguments
 
+    def get(self, item):
+        if self.data is not None:
+            if item in self.data:
+                return self.data[item]
+        if item in self.data_labels:
+            return self.data_labels[item].default
+        return super(Options, self).__getattribute__(item) # pylint: disable=super-with-arguments
+
     def __getattr__(self, item):
         if self.data is not None:
             if item in self.data:
