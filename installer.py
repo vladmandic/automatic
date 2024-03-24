@@ -526,8 +526,8 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         else:
             if rocm_ver == "6.0":
-                # mpmath 1.3.0 crashes at import
-                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision mpmath==1.2.1 --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+                # mpmath 1.4.0a0 crashes at import
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision mpmath==1.3.0 --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
             elif rocm_ver == "5.7":
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
             elif rocm_ver in {"5.5", "5.6"}:
