@@ -17,8 +17,8 @@ def read_media(fn):
             <p>Video <b>{w} x {h}</b>
             | Codec <b>{codec}</b>
             | Frames <b>{frames:,}</b>
-            | FPS <b>{fps}</b>
-            | Duration <b>{duration:,}</b>
+            | FPS <b>{fps:.2f}</b>
+            | Duration <b>{duration:.2f}</b>
             | Size <b>{stat.st_size:,}</b>
             | Modified <b>{datetime.fromtimestamp(stat.st_mtime)}</b></p><br>
             '''
@@ -41,14 +41,14 @@ def create_ui():
     with gr.Blocks() as tab:
         with gr.Row():
             sort_buttons = []
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_asc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_dsc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_size_asc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_size_dsc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_num_asc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_num_dsc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_time_asc, show_label=False))
-            sort_buttons.append(ToolButton(value=ui_symbols.sort_time_dsc, show_label=False))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_asc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_dsc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_size_asc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_size_dsc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_num_asc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_num_dsc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_time_asc, show_label=False, elem_classes=['gallery-sort']))
+            sort_buttons.append(ToolButton(value=ui_symbols.sort_time_dsc, show_label=False, elem_classes=['gallery-sort']))
             gr.Textbox(show_label=False, placeholder='Search', elem_id='tab-gallery-search')
             gr.HTML('', elem_id='tab-gallery-status')
             for btn in sort_buttons:
