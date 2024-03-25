@@ -8,13 +8,15 @@
 - Control API/CLI
 - SC LoRA
 
-## Update for 2024-03-23
+## Update for 2024-03-25
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+  - **OneDiff**: new optimization/compile engine, thanks @aifartist  
+    as with all other compile engines, enable via *settings -> compute settings -> compile*  
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native equivalents  
