@@ -2,13 +2,14 @@ import os
 from datetime import datetime
 import gradio as gr
 from PIL import Image
-from modules import ui_symbols, ui_common, images, ui_control_helpers
+from modules import shared, ui_symbols, ui_common, images, ui_control_helpers
 from modules.ui_components import ToolButton
 
 
 def read_media(fn):
     if not os.path.isfile(fn):
-        return [[], None, '', f'Image not found: {fn}']
+        shared.log.error(f'Gallery not found: file="{fn}"')
+        return [[], None, '', '', f'Media not found: {fn}']
     stat = os.stat(fn)
     if fn.lower().endswith('.mp4'):
         frames, fps, duration, w, h, codec, _frame = ui_control_helpers.get_video_params(fn)

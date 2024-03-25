@@ -302,8 +302,8 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 #html_log_gallery { font-size: 0.95em; }
 #gallery_gallery { height: 60vh; }
 #gallery_gallery .thumbnails { display: none; }
-#gallery_gallery .preview { display: grid; background: none; }
-#gallery_gallery img { object-fit: contain; }
+#gallery_gallery .preview { background: none; }
+#gallery_gallery img { object-fit: contain; height: 100% !important; }
 .gallery-sort { background: var(--input-background-fill) !important; margin: 0 !important; padding: 6px !important; }
 .gallery-sort:hover { background: var(--button-primary-background-fill-hover) !important; }
 
