@@ -56,6 +56,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
 
 
 def ar_change(ar, width, height):
+    """
     if ar == 'AR':
         return gr.update(interactive=True), gr.update(interactive=True)
     try:
@@ -69,6 +70,20 @@ def ar_change(ar, width, height):
         return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
     else:
         return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
+    """
+    if ar == 'AR':
+        return gr.update(), gr.update()
+    try:
+        (w, h) = [float(x) for x in ar.split(':')]
+    except Exception as e:
+        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
+        return gr.update(), gr.update()
+    if w > h:
+        return gr.update(), gr.update(value=int(width * h / w))
+    elif w < h:
+        return gr.update(value=int(height * w / h)), gr.update()
+    else:
+        return gr.update(), gr.update()
 
 
 def create_resolution_inputs(tab):

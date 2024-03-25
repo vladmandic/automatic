@@ -105,7 +105,7 @@ def register_api(app: FastAPI): # register api
         folders = [f for f in folders if os.path.isdir(f)]
         if shared.demo is not None:
             for f in folders:
-                if os.path.isabs(f) and f not in shared.demo.allowed_paths:
+                if f not in shared.demo.allowed_paths:
                     debug(f'Browser folders allow: {f}')
                     shared.demo.allowed_paths.append(quote(f))
         debug(f'Browser folders: {folders}')
