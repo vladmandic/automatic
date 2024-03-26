@@ -305,6 +305,14 @@ class ResInterrogate(BaseModel):
     trending: Optional[str] = Field(default=None, title="Medium", description="Image trending.")
     flavor: Optional[str] = Field(default=None, title="Medium", description="Image flavor.")
 
+class ReqVQA(BaseModel):
+    image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
+    model: str = Field(default="Moondream 2", title="Model", description="The interrogate model used.")
+    question: str = Field(default="describe the image", title="Question", description="Question to ask the model.")
+
+class ResVQA(BaseModel):
+    answer: Optional[str] = Field(default=None, title="Answer", description="The generated answer for the image.")
+
 class ResTrain(BaseModel):
     info: str = Field(title="Train info", description="Response string from train embedding or hypernetwork task.")
 

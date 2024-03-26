@@ -100,6 +100,16 @@ def post_interrogate(req: models.ReqInterrogate):
             medium, artist, movement, trending, flavor = analyze_image(image, model=req.model)
             return models.ResInterrogate(caption=caption, medium=medium, artist=artist, movement=movement, trending=trending, flavor=flavor)
 
+def post_vqa(req: models.ReqVQA):
+    if req.image is None or len(req.image) < 64:
+        raise HTTPException(status_code=404, detail="Image not found")
+    image = helpers.decode_base64_to_image(req.image)
+    image = image.convert('RGB')
+    from modules import vqa
+    print('HERE', req.question, req.model)
+    answer = vqa.interrogate(req.question, image, req.model)
+    return models.ResVQA(answer=answer)
+
 def post_unload_checkpoint():
     from modules import sd_models
     sd_models.unload_model_weights(op='model')

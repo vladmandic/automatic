@@ -23,6 +23,7 @@
     both can still be installed by user if desired  
 - **Improvements**:
   - Styles apply wildcards to params
+  - Add API endpoint `/sdapi/v1/vqa` and util `cli/simple-vqa.py`
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
 - **Fixes**:
