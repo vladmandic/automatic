@@ -6,6 +6,7 @@
 - Quick apply style
 - SC LoRA
 - DoRA
+- SDXS VAE: https://huggingface.co/IDKiro/sdxs-512-0.9
 - Control API/CLI
   - scripts
   - units

@@ -403,6 +403,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=infotext(-1), p=p, grid=True, suffix="-grid") # main save grid
 
     if shared.backend == shared.Backend.DIFFUSERS:
+        from modules import ipadapter
         ipadapter.unapply(shared.sd_model)
 
     if not p.disable_extra_networks:

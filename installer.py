@@ -390,6 +390,8 @@ def check_python():
 
 # check onnx version
 def check_onnx():
+    if not installed('onnx', quiet=True):
+        install('onnx', 'onnx', ignore=True)
     if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
         install('onnxruntime', 'onnxruntime', ignore=True)
 
