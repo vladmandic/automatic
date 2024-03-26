@@ -21,6 +21,11 @@ async function tooltipShow(e) {
   if (e.target.dataset.hint) {
     localeData.el.classList.add('tooltip-show');
     localeData.el.innerHTML = `<b>${e.target.textContent}</b><br>${e.target.dataset.hint}`;
+    if (e.clientX > window.innerWidth / 2) {
+      localeData.el.classList.add('tooltip-left');
+    } else {
+      localeData.el.classList.remove('tooltip-left');
+    }
   }
 }
 
