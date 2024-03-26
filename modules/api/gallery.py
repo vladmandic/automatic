@@ -76,6 +76,7 @@ def register_api(app: FastAPI): # register api
     def get_video_thumbnail(filepath):
         from modules.ui_control_helpers import get_video_params
         try:
+            stat = os.stat(filepath)
             frames, fps, duration, width, height, codec, frame = get_video_params(filepath, capture=True)
             h = shared.opts.extra_networks_card_size
             w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else width * h // height
@@ -90,10 +91,39 @@ def register_api(app: FastAPI): # register api
                 'data': data_url,
                 'width': width,
                 'height': height,
+                'size': stat.st_size,
+                'mtime': stat.st_mtime,
             }
             return content
         except Exception as e:
             shared.log.error(f'Gallery video: file="{filepath}" {e}')
+            return {}
+
+    def get_image_thumbnail(filepath):
+        try:
+            stat = os.stat(filepath)
+            image = Image.open(filepath)
+            geninfo, _items = images.read_info_from_image(image)
+            h = shared.opts.extra_networks_card_size
+            w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
+            width, height = image.width, image.height
+            image = image.convert('RGB')
+            image.thumbnail((w, h), Image.Resampling.HAMMING)
+            buffered = io.BytesIO()
+            image.save(buffered, format='jpeg')
+            data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
+            image.close()
+            content = {
+                'exif': geninfo,
+                'data': data_url,
+                'width': width,
+                'height': height,
+                'size': stat.st_size,
+                'mtime': stat.st_mtime,
+            }
+            return content
+        except Exception as e:
+            shared.log.error(f'Gallery image: file="{filepath}" {e}')
             return {}
 
     @app.get('/sdapi/v1/browser/folders', response_model=List[str])
@@ -114,29 +144,11 @@ def register_api(app: FastAPI): # register api
     @app.get("/sdapi/v1/browser/thumb", response_model=dict)
     async def get_thumb(file: str):
         try:
-            decoded = unquote(file)
+            decoded = unquote(file).replace('%3A', ':')
             if decoded.lower().endswith('.mp4'):
-                content = get_video_thumbnail(decoded)
-                return JSONResponse(content=content)
+                return JSONResponse(content=get_video_thumbnail(decoded))
             else:
-                image = Image.open(decoded)
-                geninfo, _items = images.read_info_from_image(image)
-                h = shared.opts.extra_networks_card_size
-                w = shared.opts.extra_networks_card_size if shared.opts.browser_fixed_width else image.width * h // image.height
-                width, height = image.width, image.height
-                image = image.convert('RGB')
-                image.thumbnail((w, h), Image.Resampling.HAMMING)
-                buffered = io.BytesIO()
-                image.save(buffered, format='jpeg')
-                data_url = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
-                image.close()
-                content = {
-                    'exif': geninfo,
-                    'data': data_url,
-                    'width': width,
-                    'height': height,
-                }
-                return JSONResponse(content=content)
+                return JSONResponse(content=get_image_thumbnail(decoded))
         except Exception as e:
             shared.log.error(f'Gallery: {file} {e}')
             content = { 'error': str(e) }
@@ -147,19 +159,14 @@ def register_api(app: FastAPI): # register api
         try:
             await manager.connect(ws)
             folder = await ws.receive_text()
+            folder = unquote(folder).replace('%3A', ':')
             t0 = time.time()
             numFiles = 0
             for f in files_cache.directory_files(folder, recursive=True):
                 numFiles += 1
                 file = os.path.relpath(f, folder)
-                stat = os.stat(f)
-                dct = {
-                    'folder': quote(folder),
-                    'file': quote(file),
-                    'size': stat.st_size,
-                    'mtime': stat.st_mtime,
-                }
-                await manager.send(ws, dct)
+                msg = quote(folder) + '##F##' + quote(file)
+                await manager.send(ws, msg)
             await manager.send(ws, '#END#')
             t1 = time.time()
             shared.log.debug(f'Gallery: folder="{folder}" files={numFiles} time={t1-t0:.3f}')

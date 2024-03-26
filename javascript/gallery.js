@@ -108,12 +108,12 @@ async function delayFetchThumb(fn) {
 }
 
 class GalleryFile extends HTMLElement {
-  constructor({ folder, file, size, mtime }) {
+  constructor(folder, file) {
     super();
     this.folder = decodeURI(folder);
     this.name = decodeURI(file);
-    this.size = size;
-    this.mtime = new Date(1000 * mtime);
+    this.size = 0;
+    this.mtime = 0;
     this.hash = undefined;
     this.exif = '';
     this.width = 0;
@@ -163,6 +163,8 @@ class GalleryFile extends HTMLElement {
       this.exif = cache.exif;
       this.width = cache.width;
       this.height = cache.height;
+      this.size = cache.size;
+      this.mtime = new Date(1000 * cache.mtime);
     } else {
       try {
         const json = await delayFetchThumb(this.src);
@@ -173,6 +175,8 @@ class GalleryFile extends HTMLElement {
           this.exif = json.exif;
           this.width = json.width;
           this.height = json.height;
+          this.size = json.size;
+          this.mtime = new Date(1000 * json.mtime);
           await idbAdd({
             hash: this.hash,
             folder: this.folder,
@@ -324,37 +328,37 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
   if (ws && ws.readyState === WebSocket.OPEN) ws.close(); // abort previous request
   ws = new WebSocket(`${url}/sdapi/v1/browser/files`);
   await wsConnect(ws);
-  let numFiles = 0;
   el.status.innerText = `Folder | ${evt.target.name}`;
   const t0 = performance.now();
+  let numFiles = 0;
   let t1 = performance.now();
-  let lastDir;
   let fragment = document.createDocumentFragment();
-  ws.onmessage = (event) => { // time is 20% list 80% create item
+  ws.onmessage = (event) => {
     numFiles++;
     t1 = performance.now();
-    if (event.data === '#END#') {
+    const data = event.data.split('##F##');
+    if (data[0] === '#END#') {
       ws.close();
     } else {
-      const json = JSON.parse(event.data);
-      const file = new GalleryFile(json);
+      const file = new GalleryFile(data[0], data[1]);
       fragment.appendChild(file);
       if (numFiles % 100 === 0) {
+        el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
         el.files.appendChild(fragment);
         fragment = document.createDocumentFragment();
       }
-      addSeparators();
-      el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
     }
   };
   ws.onclose = (event) => {
     el.files.appendChild(fragment);
-    // log('gallery ws file enum', event);
+    log(`gallery: folder=${evt.target.name} num=${numFiles} time=${Math.floor(t1 - t0)}ms`);
+    el.status.innerText = `Folder | ${evt.target.name} | ${numFiles.toLocaleString()} images | ${Math.floor(t1 - t0).toLocaleString()}ms`;
+    addSeparators();
   };
   ws.onerror = (event) => {
     log('gallery ws error', event);
   };
-  ws.send(evt.target.name);
+  ws.send(encodeURI(evt.target.name));
 }
 
 async function pruneImages() {
