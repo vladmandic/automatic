@@ -15,6 +15,7 @@
 .tooltip { display: block; position: fixed; top: 1em; right: 1em; padding: 0.5em; background: var(--input-background-fill); color: var(--body-text-color); border: 1pt solid var(--button-primary-border-color);
   width: 22em; min-height: 1.3em; font-size: 0.8em; transition: opacity 0.2s ease-in; pointer-events: none; opacity: 0; z-index: 999; }
 .tooltip-show { opacity: 0.9; }
+.tooltip-left { right: unset; left: 1em; }
 .toolbutton-selected { background: var(--background-fill-primary) !important; }
 
 /* live preview */
