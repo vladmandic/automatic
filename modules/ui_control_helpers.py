@@ -125,7 +125,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
     if selected_input is None:
         input_source = None
         busy = False
-        debug('Control input: none')
+        # debug('Control input: none')
         return [gr.Tabs.update(), '']
     debug(f'Control select input: source={selected_input} init={init_image} type={init_type} mode={input_mode}')
     input_type = type(selected_input)

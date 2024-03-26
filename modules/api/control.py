@@ -1,19 +1,16 @@
-from typing import Optional, List
+from typing import List
 from threading import Lock
 from pydantic import BaseModel, Field # pylint: disable=no-name-in-module
-from modules import errors, shared, scripts, ui
-from modules.api import script, helpers
-from modules.processing import StableDiffusionProcessingControl
-from modules.control import run as run_control
+from modules import errors, shared
+from modules.api import models, helpers
+from modules.control import run
 
-# TODO control api
-# should use control.run, not process_images directly
 
 errors.install()
 
 
-class ReqControl(BaseModel):
-    pass
+ReqControl = models.create_model_from_signature(run.control_run, "StableDiffusionProcessingControl")
+
 
 class ResControl(BaseModel):
     images: List[str] = Field(default=None, title="Image", description="The generated images in base64 format.")
@@ -28,6 +25,7 @@ class APIControl():
 
     def sanitize_args(self, args: dict):
         args = vars(args)
+        """
         args.pop('include_init_images', None) # this is meant to be done by "exclude": True in model
         args.pop('script_name', None)
         args.pop('script_args', None) # will refeed them to the pipeline directly after initializing them
@@ -36,6 +34,7 @@ class APIControl():
         args.pop('face_id', None)
         args.pop('ip_adapter', None)
         args.pop('save_images', None)
+        """
         return args
 
     def sanitize_b64(self, request):
@@ -76,21 +75,15 @@ class APIControl():
     def post_control(self, req: ReqControl):
         self.prepare_face_module(req)
 
-        # prepare script
-        script_runner = scripts.scripts_control
-        if not script_runner.scripts:
-            script_runner.initialize_scripts(False)
-            ui.create_ui(None)
-        if not self.default_script_arg:
-            self.default_script_arg = script.init_default_script_args(script_runner)
-
         # prepare args
         args = req.copy(update={  # Override __init__ params
-            "sampler_name": helpers.validate_sampler_name(req.sampler_name or req.sampler_index),
-            "sampler_index": None,
-            "do_not_save_samples": not req.save_images,
-            "do_not_save_grid": not req.save_images,
-            "init_images": [helpers.decode_base64_to_image(x) for x in req.init_images] if req.init_images else None,
+            # "sampler_name": helpers.validate_sampler_name(req.sampler_name or req.sampler_index),
+            # "sampler_index": processing_helpers.get_sampler_index(req.sampler_name),
+            # "do_not_save_samples": not req.save_images,
+            # "do_not_save_grid": not req.save_images,
+            "is_generator": False,
+            "inputs": [helpers.decode_base64_to_image(x) for x in req.inputs] if req.inputs else None,
+            "inits": [helpers.decode_base64_to_image(x) for x in req.inits] if req.inits else None,
             "mask": helpers.decode_base64_to_image(req.mask) if req.mask else None,
         })
         args = self.sanitize_args(args)
@@ -103,8 +96,14 @@ class APIControl():
             # selectable_scripts, selectable_script_idx = script.get_selectable_script(req.script_name, script_runner)
             # script_args = script.init_script_args(p, req, self.default_script_arg, selectable_scripts, selectable_script_idx, script_runner)
             # output_images, _processed_images, output_info = run_control(**args, **script_args)
-            output_images = None
-            output_info = None
+
+            output_images = []
+            output_info = ''
+            res = run.control_run(**args)
+            for item in res:
+                if len(item) > 0 and isinstance(item[0], list):
+                    output_images += item[0]
+                    output_info += item[2]
 
             shared.state.end(api=False)
 

@@ -106,7 +106,6 @@ def post_vqa(req: models.ReqVQA):
     image = helpers.decode_base64_to_image(req.image)
     image = image.convert('RGB')
     from modules import vqa
-    print('HERE', req.question, req.model)
     answer = vqa.interrogate(req.question, image, req.model)
     return models.ResVQA(answer=answer)
 

@@ -470,7 +470,7 @@ class ScriptRunner:
 
     def run(self, p, *args):
         s = ScriptSummary('run')
-        script_index = args[0]
+        script_index = args[0] if len(args) > 0 else 0
         if script_index == 0:
             return None
         script = self.selectable_scripts[script_index-1]

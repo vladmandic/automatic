@@ -70,7 +70,9 @@ class Script(scripts.Script):
     def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if shared.backend != shared.Backend.DIFFUSERS:
             return
-        args = list(args)
+        args = list(args) if args is not None else []
+        if len(args) == 0:
+            return
         units = args.pop(0)
         if getattr(p, 'ip_adapter_names', []) == []:
             p.ip_adapter_names = args[:MAX_ADAPTERS][:units]

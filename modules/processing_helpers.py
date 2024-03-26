@@ -89,6 +89,15 @@ def get_sampler_name(sampler_index: int, img: bool = False) -> str:
     return sampler_name
 
 
+def get_sampler_index(sampler_name: str) -> int:
+    sampler_index = 0
+    for i, sampler in enumerate(sd_samplers.samplers):
+        if sampler.name == sampler_name:
+            sampler_index = i
+            break
+    return sampler_index
+
+
 def slerp(val, low, high): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
     low_norm = low/torch.norm(low, dim=1, keepdim=True)
     high_norm = high/torch.norm(high, dim=1, keepdim=True)

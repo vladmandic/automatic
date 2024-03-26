@@ -4,11 +4,15 @@
 
 - Include reference styles
 - Quick apply style
-- Add refine workflow in img2img
-- Control API/CLI
 - SC LoRA
+- DoRA
+- Control API/CLI
+  - scripts
+  - units
+  - preprocess
 
-## Update for 2024-03-25
+
+## Update for 2024-03-26
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -23,6 +27,7 @@
     both can still be installed by user if desired  
 - **Improvements**:
   - Styles apply wildcards to params
+  - Add API endpoint `/sdapi/v1/control` and util `cli/simple-control.py`
   - Add API endpoint `/sdapi/v1/vqa` and util `cli/simple-vqa.py`
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview

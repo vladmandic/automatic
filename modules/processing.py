@@ -25,6 +25,7 @@ get_fixed_seed = processing_helpers.get_fixed_seed
 create_random_tensors = processing_helpers.create_random_tensors
 old_hires_fix_first_pass_dimensions = processing_helpers.old_hires_fix_first_pass_dimensions
 get_sampler_name = processing_helpers.get_sampler_name
+get_sampler_index = processing_helpers.get_sampler_index
 validate_sample = processing_helpers.validate_sample
 decode_first_stage = processing_helpers.decode_first_stage
 images_tensor_to_samples = processing_helpers.images_tensor_to_samples

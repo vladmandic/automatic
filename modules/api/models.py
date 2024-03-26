@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict, List, Type, Callable
 from pydantic import BaseModel, Field, create_model # pylint: disable=no-name-in-module
 from inflection import underscore
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
@@ -35,6 +35,7 @@ class PydanticModelGenerator:
         model_name: str = None,
         class_instance = None,
         additional_fields = None,
+        exclude_fields: List = [],
     ):
         def field_type_generator(_k, v):
             field_type = v.annotation
@@ -68,6 +69,8 @@ class PydanticModelGenerator:
                 field_type=fld["type"],
                 field_value=fld["default"],
                 field_exclude=fld["exclude"] if "exclude" in fld else False))
+        for fld in exclude_fields:
+            self._model_def = [x for x in self._model_def if x.field != fld]
 
     def generate_model(self):
         model_fields = { d.field: (d.field_type, Field(default=d.field_value, alias=d.field_alias, exclude=d.field_exclude)) for d in self._model_def }
@@ -374,3 +377,38 @@ class ResNVML(BaseModel): # definition of http response
 # compatibility items
 StableDiffusionTxt2ImgProcessingAPI = ResTxt2Img
 StableDiffusionImg2ImgProcessingAPI = ResImg2Img
+
+# helper function
+
+def create_model_from_signature(func: Callable, model_name: str, base_model: Type[BaseModel] = BaseModel, exclude_fields: List[str] = []):
+    from PIL import Image
+    args, _, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(func)
+    defaults = defaults or []
+    args = args or []
+    for arg in exclude_fields:
+        if arg in args:
+            args.remove(arg)
+    non_default_args = len(args) - len(defaults)
+    defaults = (...,) * non_default_args + defaults
+    keyword_only_params = {param: kwonlydefaults.get(param, Any) for param in kwonlyargs}
+    for k, v in annotations.items():
+        if v == List[Image.Image]:
+            annotations[k] = List[str]
+        elif v == Image.Image:
+            annotations[k] = str
+        elif str(v) == 'typing.List[modules.control.unit.Unit]':
+            annotations[k] = List[str]
+    params = {param: (annotations.get(param, Any), default) for param, default in zip(args, defaults)}
+
+    class Config:
+        extra = 'allow'
+
+    config = Config if varkw else None # Allow extra params if there is a **kwargs parameter in the function signature
+
+    return create_model(
+        model_name,
+        **params,
+        **keyword_only_params,
+        __base__=base_model,
+        __config__=config,
+    )
