@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
+from modules import errors, shared
 
-from modules import errors
 
 extra_network_registry = {}
 
@@ -15,7 +15,7 @@ def register_extra_network(extra_network):
 
 
 def register_default_extra_networks():
-    from modules.extra_networks_hypernet import ExtraNetworkHypernet
+    from modules.ui_extra_networks_hypernet import ExtraNetworkHypernet
     register_extra_network(ExtraNetworkHypernet())
     from modules.ui_extra_networks_styles import ExtraNetworkStyles
     register_extra_network(ExtraNetworkStyles())
@@ -62,17 +62,33 @@ class ExtraNetwork:
         raise NotImplementedError
 
 
-def activate(p, extra_network_data):
+def is_stepwise(en_obj):
+    all_args = []
+    for en in en_obj:
+        all_args.extend(en.positional[1:])
+        all_args.extend(en.named.values())
+    return any([len(str(x).split("@")) > 1 for x in all_args]) # noqa C419
+
+
+def activate(p, extra_network_data, step=0):
     """call activate for extra networks in extra_network_data in specified order, then call activate for all remaining registered networks with an empty argument list"""
     if extra_network_data is None:
         return
+    stepwise = False
+    for extra_network_args in extra_network_data.values():
+        stepwise = stepwise or is_stepwise(extra_network_args)
+    functional = shared.opts.lora_functional
+    if shared.opts.lora_force_diffusers and stepwise:
+        shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
+        stepwise = False
+    shared.opts.data['lora_functional'] = stepwise or functional
     for extra_network_name, extra_network_args in extra_network_data.items():
         extra_network = extra_network_registry.get(extra_network_name, None)
         if extra_network is None:
-            print(f"Skipping unknown extra network: {extra_network_name}")
+            errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
             continue
         try:
-            extra_network.activate(p, extra_network_args)
+            extra_network.activate(p, extra_network_args, step=step)
         except Exception as e:
             errors.display(e, f"activating extra network: name={extra_network_name} args:{extra_network_args}")
 
@@ -84,6 +100,9 @@ def activate(p, extra_network_data):
             extra_network.activate(p, [])
         except Exception as e:
             errors.display(e, f"activating extra network: name={extra_network_name}")
+    if stepwise:
+        p.extra_network_data = extra_network_data
+        shared.opts.data['lora_functional'] = functional
 
 
 def deactivate(p, extra_network_data):

@@ -1,5 +1,4 @@
 import torch
-
 import diffusers.models.lora as diffusers_lora
 import lyco_helpers
 import network
@@ -42,7 +41,7 @@ class NetworkModuleLora(network.NetworkModule):
         elif is_conv and key == "lora_up.weight" or key == "dyn_down":
             module = torch.nn.Conv2d(weight.shape[1], weight.shape[0], (1, 1), bias=False)
         else:
-            raise AssertionError(f'Lora layer {self.network_key} matched a layer with unsupported type: {type(self.sd_module).__name__}')
+            raise AssertionError(f'Lora unsupported: layer={self.network_key} type={type(self.sd_module).__name__}')
         with torch.no_grad():
             if weight.shape != module.weight.shape:
                 weight = weight.reshape(module.weight.shape)
@@ -51,20 +50,20 @@ class NetworkModuleLora(network.NetworkModule):
         module.weight.requires_grad_(False)
         return module
 
-    def calc_updown(self, orig_weight): # pylint: disable=W0237
-        up = self.up_model.weight.to(orig_weight.device, dtype=orig_weight.dtype)
-        down = self.down_model.weight.to(orig_weight.device, dtype=orig_weight.dtype)
+    def calc_updown(self, target): # pylint: disable=W0237
+        up = self.up_model.weight.to(target.device, dtype=target.dtype)
+        down = self.down_model.weight.to(target.device, dtype=target.dtype)
         output_shape = [up.size(0), down.size(1)]
         if self.mid_model is not None:
             # cp-decomposition
-            mid = self.mid_model.weight.to(orig_weight.device, dtype=orig_weight.dtype)
+            mid = self.mid_model.weight.to(target.device, dtype=target.dtype)
             updown = lyco_helpers.rebuild_cp_decomposition(up, down, mid)
             output_shape += mid.shape[2:]
         else:
             if len(down.shape) == 4:
                 output_shape += down.shape[2:]
             updown = lyco_helpers.rebuild_conventional(up, down, output_shape, self.network.dyn_dim)
-        return self.finalize_updown(updown, orig_weight, output_shape)
+        return self.finalize_updown(updown, target, output_shape)
 
     def forward(self, x, y):
         self.up_model.to(device=devices.device)

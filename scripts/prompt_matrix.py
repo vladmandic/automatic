@@ -42,16 +42,16 @@ class Script(scripts.Script):
         return "Prompt Matrix"
 
     def ui(self, is_img2img):
-        gr.HTML('<br />')
         with gr.Row():
-            with gr.Column():
-                put_at_start = gr.Checkbox(label='Set at prompt start', value=False, elem_id=self.elem_id("put_at_start"))
-                different_seeds = gr.Checkbox(label='Random seeds', value=False, elem_id=self.elem_id("different_seeds"))
-            with gr.Column():
-                prompt_type = gr.Radio(["positive", "negative"], label="Prompt type", elem_id=self.elem_id("prompt_type"), value="positive")
-                variations_delimiter = gr.Radio(["comma", "space"], label="Joining char", elem_id=self.elem_id("variations_delimiter"), value="comma")
-            with gr.Column():
-                margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
+            gr.HTML('<span">&nbsp Prompt matrix</span><br>')
+        with gr.Row():
+            put_at_start = gr.Checkbox(label='Set at prompt start', value=False, elem_id=self.elem_id("put_at_start"))
+            different_seeds = gr.Checkbox(label='Random seeds', value=False, elem_id=self.elem_id("different_seeds"))
+        with gr.Row():
+            prompt_type = gr.Radio(["positive", "negative"], label="Prompt type", elem_id=self.elem_id("prompt_type"), value="positive")
+            variations_delimiter = gr.Radio(["comma", "space"], label="Joining char", elem_id=self.elem_id("variations_delimiter"), value="comma")
+        with gr.Row():
+            margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
 
         return [put_at_start, different_seeds, prompt_type, variations_delimiter, margin_size]
 

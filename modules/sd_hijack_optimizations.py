@@ -2,16 +2,12 @@ from __future__ import annotations
 import sys
 import math
 import psutil
-
 import torch
 from torch import einsum
-
 from ldm.util import default
 from einops import rearrange
-
 from modules import shared, errors, devices
 from modules.hypernetworks import hypernetwork
-
 from .sub_quadratic_attention import efficient_dot_product_attention # pylint: disable=relative-beyond-top-level
 
 
@@ -313,9 +309,8 @@ def sub_quad_attention(q, k, v, q_chunk_size=1024, kv_chunk_size=None, kv_chunk_
 
 
 def get_xformers_flash_attention_op(q, k, v):
-    if 'xFormers enable flash Attention' not in shared.opts.cross_attention_options:
+    if 'Flash attention' not in shared.opts.xformers_options:
         return None
-
     try:
         flash_attention_op = xformers.ops.MemoryEfficientAttentionFlashAttentionOp # pylint: disable=used-before-assignment
         fw, _bw = flash_attention_op
@@ -323,7 +318,6 @@ def get_xformers_flash_attention_op(q, k, v):
             return flash_attention_op
     except Exception as e:
         errors.display_once(e, "enabling flash attention")
-
     return None
 
 

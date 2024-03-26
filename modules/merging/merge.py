@@ -1,7 +1,7 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Set
 import safetensors.torch
 import torch
 from tensordict import TensorDict
@@ -49,14 +49,14 @@ def fix_clip(model: Dict) -> Dict:
     return model
 
 
-def prune_sd_model(model: Dict) -> Dict:
+def prune_sd_model(model: Dict, keyset: Set) -> Dict:
     keys = list(model.keys())
     for k in keys:
         if (
             not k.startswith("model.diffusion_model.")
             # and not k.startswith("first_stage_model.")
             and not k.startswith("cond_stage_model.")
-        ):
+        ) or k not in keyset:
             del model[k]
     return model
 
@@ -78,10 +78,10 @@ def load_thetas(
     device: torch.device,
     precision: str,
 ) -> Dict:
+    thetas = {k: TensorDict.from_dict(read_state_dict(m, "cpu")) for k, m in models.items()}
     if prune:
-        thetas = {k: prune_sd_model(TensorDict.from_dict(read_state_dict(m, "cpu"))) for k, m in models.items()}
-    else:
-        thetas = {k: TensorDict.from_dict(read_state_dict(m, device)) for k, m in models.items()}
+        keyset = set.intersection(*[set(m.keys()) for m in thetas.values() if len(m.keys())])
+        thetas = {k: prune_sd_model(m, keyset) for k, m in thetas.items()}
 
     for model_key, model in thetas.items():
         for key, block in model.items():
@@ -99,7 +99,6 @@ def merge_models(
     merge_mode: str,
     precision: str = "fp16",
     weights_clip: bool = False,
-    re_basin: bool = False,
     device: torch.device = None,
     work_device: torch.device = None,
     prune: bool = False,
@@ -109,7 +108,7 @@ def merge_models(
     thetas = load_thetas(models, prune, device, precision)
     # log.info(f'Merge start: models={models.values()} precision={precision} clip={weights_clip} rebasin={re_basin} prune={prune} threads={threads}')
     weight_matcher = WeightClass(thetas["model_a"], **kwargs)
-    if re_basin:
+    if kwargs.get("re_basin", False):
         merged = rebasin_merge(
             thetas,
             weight_matcher,
@@ -246,7 +245,7 @@ def rebasin_merge(
         perm_spec = sdunet_permutation_spec()
 
     for it in range(iterations):
-        log_vram(f"rebasin: iteration={it}")
+        log_vram(f"rebasin: iteration={it+1}")
         weight_matcher.set_it(it)
 
         # normal block merge we already know and love

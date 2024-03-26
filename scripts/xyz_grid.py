@@ -10,10 +10,7 @@ from io import StringIO
 from PIL import Image
 import numpy as np
 import gradio as gr
-import modules.scripts as scripts
-import modules.shared as shared
-from modules import images, sd_samplers, processing, sd_models, sd_vae
-from modules.processing import process_images, Processed, StableDiffusionProcessingTxt2Img
+from modules import shared, errors, scripts, images, sd_samplers, processing, sd_models, sd_vae, ipadapter
 from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 
@@ -62,12 +59,12 @@ def apply_sampler(p, x, xs):
     else:
         p.sampler_name = sampler_name
 
-def apply_latent_sampler(p, x, xs):
-    latent_sampler = sd_samplers.samplers_map.get(x.lower(), None)
-    if latent_sampler is None:
+def apply_hr_sampler_name(p, x, xs):
+    hr_sampler_name = sd_samplers.samplers_map.get(x.lower(), None)
+    if hr_sampler_name is None:
         shared.log.warning(f"XYZ grid: unknown sampler: {x}")
     else:
-        p.latent_sampler = latent_sampler
+        p.hr_sampler_name = hr_sampler_name
 
 def confirm_samplers(p, xs):
     for x in xs:
@@ -88,6 +85,8 @@ def apply_checkpoint(p, x, xs):
 
 def apply_refiner(p, x, xs):
     if x == shared.opts.sd_model_refiner:
+        return
+    if x == 'None':
         return
     info = sd_models.get_closet_checkpoint_match(x)
     if info is None:
@@ -133,11 +132,11 @@ def apply_vae(p, x, xs):
     sd_vae.reload_vae_weights(shared.sd_model, vae_file=find_vae(x))
 
 
-def apply_styles(p: StableDiffusionProcessingTxt2Img, x: str, _):
+def apply_styles(p: processing.StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
 
 
-def apply_upscaler(p: StableDiffusionProcessingTxt2Img, opt, x):
+def apply_upscaler(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
     p.enable_hr = True
     p.hr_force = True
     p.denoising_strength = 0.0
@@ -231,9 +230,10 @@ axis_options = [
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
     AxisOption("CFG Scale", float, apply_field("cfg_scale")),
+    AxisOption("CFG End", float, apply_field("cfg_end")),
     AxisOption("Variation seed", int, apply_field("subseed")),
     AxisOption("Variation strength", float, apply_field("subseed_strength")),
-    AxisOption("Clip skip", int, apply_clip_skip),
+    AxisOption("Clip skip", float, apply_clip_skip),
     AxisOption("Denoising strength", float, apply_field("denoising_strength")),
     AxisOption("Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
     AxisOption("Model dictionary", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
@@ -246,10 +246,10 @@ axis_options = [
     AxisOption("[Sampler] Sigma tmax", float, apply_field("s_tmax")),
     AxisOption("[Sampler] Sigma Churn", float, apply_field("s_churn")),
     AxisOption("[Sampler] Sigma noise", float, apply_field("s_noise")),
-    AxisOption("[Sampler] ETA", float, apply_field("eta")),
+    AxisOption("[Sampler] ETA", float, apply_setting("scheduler_eta")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
     AxisOption("[Second pass] Upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
-    AxisOption("[Second pass] Sampler", str, apply_latent_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
+    AxisOption("[Second pass] Sampler", str, apply_hr_sampler_name, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
     AxisOption("[Second pass] Denoising Strength", float, apply_field("denoising_strength")),
     AxisOption("[Second pass] Hires steps", int, apply_field("hr_second_pass_steps")),
     AxisOption("[Second pass] CFG scale", float, apply_field("image_cfg_scale")),
@@ -257,18 +257,26 @@ axis_options = [
     AxisOption("[Refiner] Model", str, apply_refiner, fmt=format_value, cost=1.0, choices=lambda: ['None'] + sorted(sd_models.checkpoints_list)),
     AxisOption("[Refiner] Refiner start", float, apply_field("refiner_start")),
     AxisOption("[Refiner] Refiner steps", float, apply_field("refiner_steps")),
+    AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
+    AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),
+    AxisOption("[HDR] Color", float, apply_field("hdr_color")),
+    AxisOption("[HDR] Sharpen", float, apply_field("hdr_sharpen")),
     AxisOption("[HDR] Clamp boundary", float, apply_field("hdr_boundary")),
     AxisOption("[HDR] Clamp threshold", float, apply_field("hdr_threshold")),
-    AxisOption("[HDR] Center channel shift", float, apply_field("hdr_channel_shift")),
-    AxisOption("[HDR] Center full shift", float, apply_field("hdr_full_shift")),
     AxisOption("[HDR] Maximize center shift", float, apply_field("hdr_max_center")),
     AxisOption("[HDR] Maximize boundary", float, apply_field("hdr_max_boundry")),
+    AxisOption("[HDR] Tint Color Hex", str, apply_field("hdr_color_picker")),
+    AxisOption("[HDR] Tint Ratio", float, apply_field("hdr_tint_ratio")),
     AxisOption("[ToMe] Token merging ratio (txt2img)", float, apply_override('token_merging_ratio')),
     AxisOption("[ToMe] Token merging ratio (hires)", float, apply_override('token_merging_ratio_hr')),
     AxisOption("[FreeU] 1st stage backbone factor", float, apply_setting('freeu_b1')),
     AxisOption("[FreeU] 2nd stage backbone factor", float, apply_setting('freeu_b2')),
     AxisOption("[FreeU] 1st stage skip factor", float, apply_setting('freeu_s1')),
     AxisOption("[FreeU] 2nd stage skip factor", float, apply_setting('freeu_s2')),
+    AxisOption("[IP adapter] Name", str, apply_field('ip_adapter_names'), cost=1.0, choices=lambda: list(ipadapter.ADAPTERS)),
+    AxisOption("[IP adapter] Scale", float, apply_field('ip_adapter_scales')),
+    AxisOption("[IP adapter] Starts", float, apply_field('ip_adapter_starts')),
+    AxisOption("[IP adapter] Ends", float, apply_field('ip_adapter_ends')),
 ]
 
 
@@ -287,16 +295,19 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
             return ix + iy * len(xs) + iz * len(xs) * len(ys)
 
         shared.state.job = 'grid'
-        processed: Processed = cell(x, y, z, ix, iy, iz)
+        processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         if processed_result is None:
             processed_result = copy(processed)
+            if processed_result is None:
+                shared.log.error('XYZ grid: no processing results')
+                return processing.Processed(p, [])
             processed_result.images = [None] * list_size
             processed_result.all_prompts = [None] * list_size
             processed_result.all_seeds = [None] * list_size
             processed_result.infotexts = [None] * list_size
             processed_result.index_of_first_image = 1
         idx = index(ix, iy, iz)
-        if processed.images:
+        if processed is not None and processed.images:
             processed_result.images[idx] = processed.images[0]
             processed_result.all_prompts[idx] = processed.prompt
             processed_result.all_seeds[idx] = processed.seed
@@ -342,10 +353,10 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
 
     if not processed_result:
         shared.log.error("XYZ grid: Failed to initialize processing")
-        return Processed(p, [])
+        return processing.Processed(p, [])
     elif not any(processed_result.images):
         shared.log.error("XYZ grid: Failed to return processed image")
-        return Processed(p, [])
+        return processing.Processed(p, [])
 
     z_count = len(zs)
     for i in range(z_count):
@@ -406,10 +417,7 @@ class SharedSettingsStackHelper(object):
             sd_vae.reload_vae_weights()
 
 
-re_range = re.compile(r"\s*([+-]?\s*\d+)\s*-\s*([+-]?\s*\d+)(?:\s*\(([+-]\d+)\s*\))?\s*")
-re_range_float = re.compile(r"\s*([+-]?\s*\d+(?:.\d*)?)\s*-\s*([+-]?\s*\d+(?:.\d*)?)(?:\s*\(([+-]\d+(?:.\d*)?)\s*\))?\s*")
-re_range_count = re.compile(r"\s*([+-]?\s*\d+)\s*-\s*([+-]?\s*\d+)(?:\s*\[(\d+)\s*])?\s*")
-re_range_count_float = re.compile(r"\s*([+-]?\s*\d+(?:.\d*)?)\s*-\s*([+-]?\s*\d+(?:.\d*)?)(?:\s*\[(\d+(?:.\d*)?)\s*])?\s*")
+re_range = re.compile(r'([-+]?[0-9]*\.?[0-9]+)-([-+]?[0-9]*\.?[0-9]+):?([0-9]+)?')
 
 class Script(scripts.Script):
     current_axis_options = []
@@ -419,6 +427,8 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         self.current_axis_options = [x for x in axis_options if type(x) == AxisOption or x.is_img2img == is_img2img]
+        with gr.Row():
+            gr.HTML('<span">&nbsp X/Y/Z Grid</span><br>')
         with gr.Row():
             with gr.Column():
                 with gr.Row(variant='compact'):
@@ -542,38 +552,30 @@ class Script(scripts.Script):
                 valslist_ext = []
                 for val in valslist:
                     m = re_range.fullmatch(val)
-                    mc = re_range_count.fullmatch(val)
                     if m is not None:
-                        start = int(m.group(1))
-                        end = int(m.group(2))+1
-                        step = int(m.group(3)) if m.group(3) is not None else 1
-                        valslist_ext += list(range(start, end, step))
-                    elif mc is not None:
-                        start = int(mc.group(1))
-                        end   = int(mc.group(2))
-                        num   = int(mc.group(3)) if mc.group(3) is not None else 1
-                        valslist_ext += [int(x) for x in np.linspace(start=start, stop=end, num=num).tolist()]
+                        start_val = int(m.group(1)) if m.group(1) is not None else val
+                        end_val = int(m.group(2)) if m.group(2) is not None else val
+                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                        valslist_ext += [int(x) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
                     else:
-                        valslist_ext.append(val)
-                valslist = valslist_ext
+                        valslist_ext.append(int(val))
+                valslist.clear()
+                valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == float:
                 valslist_ext = []
                 for val in valslist:
-                    m = re_range_float.fullmatch(val)
-                    mc = re_range_count_float.fullmatch(val)
+                    m = re_range.fullmatch(val)
                     if m is not None:
-                        start = float(m.group(1))
-                        end = float(m.group(2))
-                        step = float(m.group(3)) if m.group(3) is not None else 1
-                        valslist_ext += np.arange(start, end + step, step).tolist()
-                    elif mc is not None:
-                        start = float(mc.group(1))
-                        end   = float(mc.group(2))
-                        num   = int(mc.group(3)) if mc.group(3) is not None else 1
-                        valslist_ext += np.linspace(start=start, stop=end, num=num).tolist()
+                        start_val = float(m.group(1)) if m.group(1) is not None else val
+                        end_val = float(m.group(2)) if m.group(2) is not None else val
+                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                        valslist_ext += [round(float(x), 2) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
                     else:
-                        valslist_ext.append(val)
-                valslist = valslist_ext
+                        valslist_ext.append(float(val))
+                valslist.clear()
+                valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == str_permutations: # pylint: disable=comparison-with-callable
                 valslist = list(permutations(valslist))
             valslist = [opt.type(x) for x in valslist]
@@ -615,7 +617,7 @@ class Script(scripts.Script):
             total_steps = sum(zs) * len(xs) * len(ys)
         else:
             total_steps = p.steps * len(xs) * len(ys) * len(zs)
-        if isinstance(p, StableDiffusionProcessingTxt2Img) and p.enable_hr:
+        if isinstance(p, processing.StableDiffusionProcessingTxt2Img) and p.enable_hr:
             if x_opt.label == "Hires steps":
                 total_steps += sum(xs) * len(ys) * len(zs)
             elif y_opt.label == "Hires steps":
@@ -658,14 +660,19 @@ class Script(scripts.Script):
 
         def cell(x, y, z, ix, iy, iz):
             if shared.state.interrupted:
-                return Processed(p, [], p.seed, "")
+                return processing.Processed(p, [], p.seed, "")
             pc = copy(p)
             pc.override_settings_restore_afterwards = False
             pc.styles = pc.styles[:]
             x_opt.apply(pc, x, xs)
             y_opt.apply(pc, y, ys)
             z_opt.apply(pc, z, zs)
-            res = process_images(pc)
+            try:
+                res = processing.process_images(pc)
+            except Exception as e:
+                shared.log.error(f"XYZ grid: Failed to process image: {e}")
+                errors.display(e, 'XYZ grid')
+                res = None
             subgrid_index = 1 + iz # Sets subgrid infotexts
             if grid_infotext[subgrid_index] is None and ix == 0 and iy == 0:
                 pc.extra_generation_params = copy(pc.extra_generation_params)

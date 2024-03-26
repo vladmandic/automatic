@@ -1,9 +1,11 @@
-from typing import Dict
+import os
 import re
 import bisect
+from typing import Dict
 from modules import shared
 
 
+debug = os.environ.get('SD_LORA_DEBUG', None) is not None
 suffix_conversion = {
     "attentions": {},
     "resnets": {
@@ -107,7 +109,6 @@ class KeyConvert:
         if shared.backend == shared.Backend.ORIGINAL:
             self.converter = self.original
             self.is_sd2 = 'model_transformer_resblocks' in shared.sd_model.network_layer_mapping
-
         else:
             self.converter = self.diffusers
             self.is_sdxl = True if shared.sd_model_type == "sdxl" else False
@@ -137,6 +138,28 @@ class KeyConvert:
             if sd_module is None:
                 key = key.replace("lora_te1_text_model", "transformer_text_model")
                 sd_module = shared.sd_model.network_layer_mapping.get(key, None)
+
+        # SegMoE begin
+        expert_key = key + "_experts_0"
+        expert_module = shared.sd_model.network_layer_mapping.get(expert_key, None)
+        if expert_module is not None:
+            sd_module = expert_module
+            key = expert_key
+        if sd_module is None:
+            key = key.replace("_net_", "_experts_0_net_")
+            sd_module = shared.sd_model.network_layer_mapping.get(key, None)
+        key = key if isinstance(key, list) else [key]
+        sd_module = sd_module if isinstance(sd_module, list) else [sd_module]
+        if "_experts_0" in key[0]:
+            i = expert_module = 1
+            while expert_module is not None:
+                expert_key = key[0].replace("_experts_0", f"_experts_{i}")
+                expert_module = shared.sd_model.network_layer_mapping.get(expert_key, None)
+                if expert_module is not None:
+                    key.append(expert_key)
+                    sd_module.append(expert_module)
+                    i += 1
+        # SegMoE end
         return key, sd_module
 
     def diffusers(self, key):
@@ -144,12 +167,34 @@ class KeyConvert:
             map_keys = list(self.UNET_CONVERSION_MAP.keys())  # prefix of U-Net modules
             map_keys.sort()
             search_key = key.replace(self.LORA_PREFIX_UNET, "").replace(self.OFT_PREFIX_UNET, "").replace(self.LORA_PREFIX_TEXT_ENCODER1, "").replace(self.LORA_PREFIX_TEXT_ENCODER2, "")
-
             position = bisect.bisect_right(map_keys, search_key)
             map_key = map_keys[position - 1]
             if search_key.startswith(map_key):
-                key = key.replace(map_key, self.UNET_CONVERSION_MAP[map_key]).replace("oft","lora") # pylint: disable=unsubscriptable-object
+                key = key.replace(map_key, self.UNET_CONVERSION_MAP[map_key]).replace("oft", "lora") # pylint: disable=unsubscriptable-object
         sd_module = shared.sd_model.network_layer_mapping.get(key, None)
+        # SegMoE begin
+        expert_key = key + "_experts_0"
+        expert_module = shared.sd_model.network_layer_mapping.get(expert_key, None)
+        if expert_module is not None:
+            sd_module = expert_module
+            key = expert_key
+        if sd_module is None:
+            key = key.replace("_net_", "_experts_0_net_")
+            sd_module = shared.sd_model.network_layer_mapping.get(key, None)
+        key = key if isinstance(key, list) else [key]
+        sd_module = sd_module if isinstance(sd_module, list) else [sd_module]
+        if "_experts_0" in key[0]:
+            i = expert_module = 1
+            while expert_module is not None:
+                expert_key = key[0].replace("_experts_0", f"_experts_{i}")
+                expert_module = shared.sd_model.network_layer_mapping.get(expert_key, None)
+                if expert_module is not None:
+                    key.append(expert_key)
+                    sd_module.append(expert_module)
+                    i += 1
+        # SegMoE end
+        if debug and sd_module is None:
+            raise RuntimeError(f"LoRA key not found in network_layer_mapping: key={key} mapping={shared.sd_model.network_layer_mapping.keys()}")
         return key, sd_module
 
     def __call__(self, key):

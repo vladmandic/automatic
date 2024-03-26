@@ -9,6 +9,7 @@ from functools import lru_cache
 import installer
 
 
+debug_install = installer.log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 commandline_args = os.environ.get('COMMANDLINE_ARGS', "")
 sys.argv += shlex.split(commandline_args)
 args = None
@@ -47,6 +48,16 @@ def get_custom_args():
         if current != default:
             custom[arg] = getattr(args, arg)
     installer.log.info(f'Command line args: {sys.argv[1:]} {installer.print_dict(custom)}')
+    if os.environ.get('SD_ENV_DEBUG', None) is not None:
+        env = os.environ.copy()
+        if 'PATH' in env:
+            del env['PATH']
+        if 'PS1' in env:
+            del env['PS1']
+        installer.log.trace(f'Environment: {installer.print_dict(env)}')
+    else:
+        env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
+        installer.log.debug(f'Env flags: {env}')
 
 
 @lru_cache()
@@ -101,8 +112,13 @@ def run_python(code, desc=None, errdesc=None): # compatbility function
 
 @lru_cache()
 def run_pip(pkg, desc=None): # compatbility function
+    forbidden = ['onnxruntime', 'opencv-python']
     if desc is None:
         desc = pkg
+    for f in forbidden:
+        if f in pkg:
+            debug_install('Blocked package installation: package={f}')
+            return True
     index_url_line = f' --index-url {index_url}' if index_url != '' else ''
     return run(f'"{sys.executable}" -m pip {pkg} --prefer-binary{index_url_line}', desc=f"Installing {desc}", errdesc=f"Couldn't install {desc}")
 
@@ -164,7 +180,8 @@ def start_server(immediate=True, server=None):
     return uvicorn, server
 
 
-if __name__ == "__main__":
+def main():
+    global args # pylint: disable=global-statement
     installer.ensure_base_requirements()
     init_args() # setup argparser and default folders
     installer.args = args
@@ -185,8 +202,10 @@ if __name__ == "__main__":
         installer.log.info('Skipping GIT operations')
     installer.check_version()
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
-    installer.set_environment()
+    if not args.skip_env:
+        installer.set_environment()
     installer.check_torch()
+    installer.check_onnx()
     installer.check_modified_files()
     if args.reinstall:
         installer.log.info('Forcing reinstall of all packages')
@@ -205,7 +224,6 @@ if __name__ == "__main__":
         installer.log.info('Startup: standard')
         installer.install_requirements()
         installer.install_packages()
-        installer.install_repositories()
         installer.install_submodules()
         init_paths()
         installer.install_extensions()
@@ -239,3 +257,7 @@ if __name__ == "__main__":
                 installer.log.info('Exiting...')
                 break
         time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,23 @@
 [tool.ruff]
-target-version = "py310"
+target-version = "py39"
+exclude = [
+  "/usr/lib",
+	"extensions",
+  "extensions-builtin",
+  "modules/dml",
+  "modules/k-diffusion",
+  "repositories/ldm",
+  "repositories/taming",
+  "repositories/blip",
+  "repositories/codeformer",
+  "modules/control/proc/normalbae/",
+  "modules/control/proc/leres/",
+  "modules/control/units/*_model.py",
+  "modules/control/units/*_pipe.py",
+  "modules/xadapter/*.py",
+  "modules/tcd/*.py",
+]
+[tool.ruff.lint]
 select = [
   "F",
   "E",
@@ -28,18 +46,6 @@ select = [
   # "S",
   # "PL",
 ]
-exclude = [
-  "/usr/lib",
-	"extensions",
-  "extensions-builtin",
-  "modules/lora",
-  "modules/dml",
-  "modules/k-diffusion",
-  "repositories/ldm",
-  "repositories/taming",
-  "repositories/blip",
-  "repositories/codeformer",
-]
 ignore = [
 	"A003", # Class attirbute shadowing builtin
 	"C901", # Function is too complex
@@ -47,20 +53,24 @@ ignore = [
 	"E731", # Do not assign a `lambda` expression, use a `def`
 	"I001", # Import block is un-sorted or un-formatted
 	"W605", # Invalid escape sequence, messes with some docstrings
+  "B006", # Do not use mutable data structures for argument defaults
+  "B028", # No explicit stacklevel
   "B905", # Without explicit scrict
   "C408", # Rewrite as a literal
   "E402", # Module level import not at top of file
   "E721", # Do not compare types, use `isinstance()`
-  "F401", # Imported but unused
+  "E741", # Do not use variables named `l`, `O`, or `I`
   "EXE001", # Shebang present
+  "F401", # Imported but unused
   "ISC003", # Implicit string concatenation
   "RUF005", # Consider concatenation
   "RUF012", # Mutable class attributes
   "RUF013", # Implict optional
   "RUF015", # Prefer `next`
+  "TID252", # Relative imports from parent modules
 ]
 
-[tool.ruff.flake8-bugbear]
+[tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.security.HTTPBasic"]
 
 [tool.pytest.ini_options]

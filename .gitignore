@@ -32,6 +32,7 @@ cache
 *.lock
 *.zip
 *.rar
+*.7z
 *.pyc
 /*.bat
 /*.sh
@@ -57,6 +58,8 @@ cache
 .vscode/
 .idea/
 /localizations
+
+.*/
 
 # force included
 !/models/VAE-approx

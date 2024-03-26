@@ -5,18 +5,22 @@ helper methods that creates HTTP session with managed connection pool
 provides async HTTP get/post methods and several helper methods
 """
 
+import io
 import os
 import sys
 import ssl
+import base64
 import asyncio
 import logging
 import aiohttp
 import requests
 import urllib3
+from PIL import Image
 from util import Map, log
+from rich import print # pylint: disable=redefined-builtin
 
 
-sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860") # automatic1111 api url root
+sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860") # api url root
 sd_username = os.environ.get('SDAPI_USR', None)
 sd_password = os.environ.get('SDAPI_PWD', None)
 
@@ -156,7 +160,12 @@ def interruptsync():
 
 
 async def progress():
-    res = await get('/sdapi/v1/progress?skip_current_image=true')
+    res = await get('/sdapi/v1/progress?skip_current_image=false')
+    try:
+        if res is not None and res.get('current_image', None) is not None:
+            res.current_image = Image.open(io.BytesIO(base64.b64decode(res['current_image'])))
+    except Exception:
+        pass
     log.debug({ 'progress': res })
     return res
 
@@ -225,25 +234,29 @@ async def close():
 
 
 if __name__ == "__main__":
+    sys.argv.pop(0)
     log.setLevel(logging.DEBUG)
     if 'interrupt' in sys.argv:
         asyncio.run(interrupt())
-    if 'progress' in sys.argv:
+    elif 'progress' in sys.argv:
         asyncio.run(progress())
-    if 'progresssync' in sys.argv:
+    elif 'progresssync' in sys.argv:
         progresssync()
-    if 'options' in sys.argv:
+    elif 'options' in sys.argv:
         opt = options()
         log.debug({ 'options' })
         import json
         print(json.dumps(opt['options'], indent = 2))
         log.debug({ 'cmd-flags' })
         print(json.dumps(opt['flags'], indent = 2))
-    if 'log' in sys.argv:
+    elif 'log' in sys.argv:
         get_log()
-    if 'info' in sys.argv:
+    elif 'info' in sys.argv:
         get_info()
-    if 'shutdown' in sys.argv:
+    elif 'shutdown' in sys.argv:
         shutdown()
+    else:
+        res = getsync(sys.argv[0])
+        print(res)
     asyncio.run(close(), debug=True)
     asyncio.run(asyncio.sleep(0.5))

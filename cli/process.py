@@ -22,7 +22,7 @@ all_images_by_type = {}
 
 
 class Result():
-    def __init__(self, typ: str, fn: str, tag: str = None, requested: list = []): # noqa: B006
+    def __init__(self, typ: str, fn: str, tag: str = None, requested: list = []):
         self.type = typ
         self.input = fn
         self.output = ''
@@ -262,7 +262,7 @@ def save_image(res: Result, folder: str):
     return res
 
 
-def file(filename: str, folder: str, tag = None, requested = []): # noqa: B006
+def file(filename: str, folder: str, tag = None, requested = []):
     # initialize result dict
     res = Result(fn = filename, typ='unknown', tag=tag, requested = requested)
     # open image

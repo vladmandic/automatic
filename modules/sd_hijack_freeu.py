@@ -2,7 +2,6 @@ import math
 import functools
 import torch
 from modules import shared
-from modules.sd_hijack_unet import th
 
 # based on <https://github.com/ljleb/sd-webui-freeu/blob/main/lib_free_u/unet.py>
 # official params are b1,b2,s1,s2
@@ -59,6 +58,8 @@ def free_u_cat_hijack(hs, *args, original_function, **kwargs):
     except ValueError:
         return original_function(hs, *args, **kwargs)
     dims = h.shape[1]
+    if dims not in [1280, 640, 320]:
+        return original_function(hs, *args, **kwargs)
     index = [1280, 640, 320].index(dims)
     if index > 1: # not 1st or 2nd stage
         return original_function([h, h_skip], *args, **kwargs)
@@ -127,6 +128,7 @@ def ratio_to_region(width: float, offset: float, n: int):
 
 
 def apply_freeu(p, backend_original):
+    from modules.sd_hijack_unet import th
     global state_enabled # pylint: disable=global-statement
     global cat_original # pylint: disable=global-statement
     if backend_original:

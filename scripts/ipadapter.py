@@ -1,104 +1,85 @@
-"""
-Lightweight IP-Adapter applied to existing pipeline in Diffusers
-- Downloads image_encoder or first usage (2.5GB)
-- Introduced via: https://github.com/huggingface/diffusers/pull/5713
-- IP adapters: https://huggingface.co/h94/IP-Adapter
-TODO:
-- Additional IP addapters
-- SD/SDXL autodetect
-"""
-
+from PIL import Image
 import gradio as gr
-from modules import scripts, processing, shared, devices
+from modules import scripts, processing, shared, ipadapter
 
 
-image_encoder = None
-loaded = None
-ADAPTERS = [
-    'none',
-    'models/ip-adapter_sd15',
-    'models/ip-adapter_sd15_light',
-    # 'models/ip-adapter_sd15_vit-G', # RuntimeError: mat1 and mat2 shapes cannot be multiplied (2x1024 and 1280x3072)
-    # 'models/ip-adapter-plus_sd15', # KeyError: 'proj.weight'
-    # 'models/ip-adapter-plus-face_sd15', # KeyError: 'proj.weight'
-    # 'models/ip-adapter-full-face_sd15', # KeyError: 'proj.weight'
-    'sdxl_models/ip-adapter_sdxl',
-    # 'sdxl_models/ip-adapter_sdxl_vit-h',
-    # 'sdxl_models/ip-adapter-plus_sdxl_vit-h',
-    # 'sdxl_models/ip-adapter-plus-face_sdxl_vit-h',
-]
+MAX_ADAPTERS = 4
 
 
 class Script(scripts.Script):
+    standalone = True
+
     def title(self):
-        return 'IP Adapter'
+        return 'IP Adapters'
 
     def show(self, is_img2img):
         return scripts.AlwaysVisible if shared.backend == shared.Backend.DIFFUSERS else False
 
+    def load_images(self, files):
+        init_images = []
+        for file in files or []:
+            try:
+                if isinstance(file, str):
+                    from modules.api.api import decode_base64_to_image
+                    image = decode_base64_to_image(file)
+                elif isinstance(file, Image.Image):
+                    image = file
+                elif isinstance(file, dict) and 'name' in file:
+                    image = Image.open(file['name']) # _TemporaryFileWrapper from gr.Files
+                elif hasattr(file, 'name'):
+                    image = Image.open(file.name) # _TemporaryFileWrapper from gr.Files
+                else:
+                    raise ValueError(f'IP adapter unknown input: {file}')
+                init_images.append(image)
+            except Exception as e:
+                shared.log.warning(f'IP adapter failed to load image: {e}')
+        return init_images
+
+    def display_units(self, num_units):
+        num_units = num_units or 1
+        return (num_units * [gr.update(visible=True)]) + ((MAX_ADAPTERS - num_units) * [gr.update(visible=False)])
+
     def ui(self, _is_img2img):
-        with gr.Accordion('IP Adapter', open=False, elem_id='ipadapter'):
+        with gr.Accordion('IP Adapters', open=False, elem_id='ipadapter'):
+            units = []
+            adapters = []
+            scales = []
+            starts = []
+            ends = []
+            files = []
+            galleries = []
             with gr.Row():
-                adapter = gr.Dropdown(label='Adapter', choices=ADAPTERS, value='none')
-                scale = gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
-            with gr.Row():
-                image = gr.Image(image_mode='RGB', label='Image', source='upload', type='pil', width=512)
-        return [adapter, scale, image]
+                num_adapters = gr.Slider(label="Active IP adapters", minimum=1, maximum=MAX_ADAPTERS, step=1, value=1, scale=1)
+            for i in range(MAX_ADAPTERS):
+                with gr.Accordion(f'Adapter {i+1}', visible=i==0) as unit:
+                    with gr.Row():
+                        adapters.append(gr.Dropdown(label='Adapter', choices=list(ipadapter.ADAPTERS), value='None'))
+                        scales.append(gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                    with gr.Row():
+                        starts.append(gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.1, value=0))
+                        ends.append(gr.Slider(label='End', minimum=0.0, maximum=1.0, step=0.1, value=1))
+                    with gr.Row():
+                        files.append(gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100))
+                    with gr.Row():
+                        galleries.append(gr.Gallery(show_label=False, value=[]))
+                    files[i].change(fn=self.load_images, inputs=[files[i]], outputs=[galleries[i]])
+                units.append(unit)
+            num_adapters.change(fn=self.display_units, inputs=[num_adapters], outputs=units)
+        return [num_adapters] + adapters + scales + files + starts + ends
 
-    def process(self, p: processing.StableDiffusionProcessing, adapter, scale, image): # pylint: disable=arguments-differ
-        import torch
-        from transformers import CLIPVisionModelWithProjection
-
-        # init code
-        global loaded, image_encoder # pylint: disable=global-statement
-        if shared.sd_model is None:
-            return
+    def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if shared.backend != shared.Backend.DIFFUSERS:
-            shared.log.warning('IP adapter: not in diffusers mode')
             return
-        if adapter == 'none':
-            if hasattr(shared.sd_model, 'set_ip_adapter_scale'):
-                shared.sd_model.set_ip_adapter_scale(0)
-            if loaded is not None:
-                shared.log.debug('IP adapter: unload attention processor')
-                shared.sd_model.unet.set_default_attn_processor()
-                shared.sd_model.unet.config.encoder_hid_dim_type = None
-                loaded = None
-            return
-        if image is None:
-            shared.log.error('IP adapter: no image')
-            return
-        if not hasattr(shared.sd_model, 'load_ip_adapter'):
-            shared.log.error(f'IP adapter: pipeline not supported: {shared.sd_model.__class__.__name__}')
-            return
-        if getattr(shared.sd_model, 'image_encoder', None) is None:
-            if shared.sd_model_type == 'sd':
-                subfolder = 'models/image_encoder'
-            elif shared.sd_model_type == 'sdxl':
-                subfolder = 'sdxl_models/image_encoder'
-            else:
-                shared.log.error(f'IP adapter: unsupported model type: {shared.sd_model_type}')
-                return
-            if image_encoder is None:
-                try:
-                    image_encoder = CLIPVisionModelWithProjection.from_pretrained("h94/IP-Adapter", subfolder=subfolder, torch_dtype=torch.float16, cache_dir=shared.opts.diffusers_dir, use_safetensors=True).to(devices.device)
-                except Exception as e:
-                    shared.log.error(f'IP adapter: failed to load image encoder: {e}')
-                    return
-
-        # main code
-        subfolder, model = adapter.split('/')
-        if model != loaded or getattr(shared.sd_model.unet.config, 'encoder_hid_dim_type', None) is None:
-            if loaded is not None:
-                shared.log.debug('IP adapter: reset attention processor')
-                shared.sd_model.unet.set_default_attn_processor()
-                loaded = None
-            shared.log.info(f'IP adapter load: adapter="{model}" scale={scale} image={image}')
-            shared.sd_model.image_encoder = image_encoder
-            shared.sd_model.load_ip_adapter("h94/IP-Adapter", subfolder=subfolder, weight_name=f'{model}.safetensors')
-            loaded = model
-        else:
-            shared.log.debug(f'IP adapter cache: adapter="{model}" scale={scale} image={image}')
-        shared.sd_model.set_ip_adapter_scale(scale)
-        p.task_args['ip_adapter_image'] = p.batch_size * [image]
-        p.extra_generation_params["IP Adapter"] = f'{adapter}:{scale}'
+        args = list(args)
+        units = args.pop(0)
+        if getattr(p, 'ip_adapter_names', []) == []:
+            p.ip_adapter_names = args[:MAX_ADAPTERS][:units]
+        if getattr(p, 'ip_adapter_scales', [0.0]) == [0.0]:
+            p.ip_adapter_scales = args[MAX_ADAPTERS:MAX_ADAPTERS*2][:units]
+        if getattr(p, 'ip_adapter_images', []) == []:
+            p.ip_adapter_images = args[MAX_ADAPTERS*2:MAX_ADAPTERS*3][:units]
+        if getattr(p, 'ip_adapter_starts', [0.0]) == [0.0]:
+            p.ip_adapter_starts = args[MAX_ADAPTERS*3:MAX_ADAPTERS*4][:units]
+        if getattr(p, 'ip_adapter_ends', [1.0]) == [1.0]:
+            p.ip_adapter_ends = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
+        # ipadapter.apply(shared.sd_model, p, p.ip_adapter_names, p.ip_adapter_scales, p.ip_adapter_starts, p.ip_adapter_ends, p.ip_adapter_images) # called directly from processing.process_images_inner

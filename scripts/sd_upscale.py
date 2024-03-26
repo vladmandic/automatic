@@ -15,14 +15,17 @@ class Script(scripts.Script):
         return is_img2img
 
     def ui(self, is_img2img):
-        info = gr.HTML("<p style=\"margin-bottom:0.75em\">Will upscale the image by the selected scale factor; use width and height sliders to set tile size</p>")
-        overlap = gr.Slider(minimum=0, maximum=256, step=16, label='Tile overlap', value=64, elem_id=self.elem_id("overlap"))
-        scale_factor = gr.Slider(minimum=1.0, maximum=4.0, step=0.05, label='Scale Factor', value=2.0, elem_id=self.elem_id("scale_factor"))
-        upscaler_index = gr.Dropdown(label='Upscaler', choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name, type="index", elem_id=self.elem_id("upscaler_index"))
+        with gr.Row():
+            info = gr.HTML("<span>&nbsp SD Upscale</span><br>")
+        with gr.Row():
+            overlap = gr.Slider(minimum=0, maximum=256, step=16, label='Tile overlap', value=64, elem_id=self.elem_id("overlap"))
+            scale_factor = gr.Slider(minimum=1.0, maximum=4.0, step=0.05, label='Scale Factor', value=2.0, elem_id=self.elem_id("scale_factor"))
+        with gr.Row():
+            upscaler_index = gr.Dropdown(label='Upscaler', choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name, type="index", elem_id=self.elem_id("upscaler_index"))
 
         return [info, overlap, upscaler_index, scale_factor]
 
-    def run(self, p, _, overlap, upscaler_index, scale_factor):
+    def run(self, p, _, overlap, upscaler_index, scale_factor): # pylint: disable=arguments-differ
         if isinstance(upscaler_index, str):
             upscaler_index = [x.name.lower() for x in shared.sd_upscalers].index(upscaler_index.lower())
         processing.fix_seed(p)

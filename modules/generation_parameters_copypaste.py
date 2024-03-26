@@ -6,17 +6,14 @@ import json
 from PIL import Image
 import gradio as gr
 from modules.paths import data_path
-from modules import shared, ui_tempdir, script_callbacks, images
+from modules import shared, gr_tempdir, script_callbacks, images
 
 
-re_param_code = r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)'
-re_param = re.compile(re_param_code)
-re_imagesize = re.compile(r"^(\d+)x(\d+)$")
-re_hypernet_hash = re.compile("\(([0-9a-f]+)\)$") # pylint: disable=anomalous-backslash-in-string
 type_of_gr_update = type(gr.update())
 paste_fields = {}
 registered_param_bindings = []
-debug = shared.log.info if os.environ.get('SD_PASTE_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug = shared.log.trace if os.environ.get('SD_PASTE_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug('Trace: PASTE')
 
 
 class ParamBinding:
@@ -28,6 +25,7 @@ class ParamBinding:
         self.source_tabname = source_tabname
         self.override_settings_component = override_settings_component
         self.paste_field_names = paste_field_names or []
+        debug(f'ParamBinding: {vars(self)}')
 
 
 def reset():
@@ -56,7 +54,7 @@ def image_from_url_text(filedata):
         filedata = filedata[0]
     if type(filedata) == dict and filedata.get("is_file", False):
         filename = filedata["name"]
-        is_in_right_dir = ui_tempdir.check_tmp_file(shared.demo, filename)
+        is_in_right_dir = gr_tempdir.check_tmp_file(shared.demo, filename)
         if is_in_right_dir:
             filename = filename.rsplit('?', 1)[0]
             if not os.path.exists(filename):
@@ -112,6 +110,8 @@ def create_buttons(tabs_list):
             name = 'Inpaint'
         elif name == 'extras':
             name = 'Process'
+        elif name == 'control':
+            name = 'Control'
         buttons[tab] = gr.Button(f"➠ {name}", elem_id=f"{tab}_tab")
     return buttons
 
@@ -121,7 +121,8 @@ def bind_buttons(buttons, send_image, send_generate_info):
     for tabname, button in buttons.items():
         source_text_component = send_generate_info if isinstance(send_generate_info, gr.components.Component) else None
         source_tabname = send_generate_info if isinstance(send_generate_info, str) else None
-        register_paste_params_button(ParamBinding(paste_button=button, tabname=tabname, source_text_component=source_text_component, source_image_component=send_image, source_tabname=source_tabname))
+        bindings = ParamBinding(paste_button=button, tabname=tabname, source_text_component=source_text_component, source_image_component=send_image, source_tabname=source_tabname)
+        register_paste_params_button(bindings)
 
 
 def register_paste_params_button(binding: ParamBinding):
@@ -131,6 +132,9 @@ def register_paste_params_button(binding: ParamBinding):
 def connect_paste_params_buttons():
     binding: ParamBinding
     for binding in registered_param_bindings:
+        if binding.tabname not in paste_fields:
+            debug(f"Not not registered: tab={binding.tabname}")
+            continue
         destination_image_component = paste_fields[binding.tabname]["init_img"]
         fields = paste_fields[binding.tabname]["fields"]
         override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]
@@ -180,61 +184,48 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def find_hypernetwork_key(hypernet_name, hypernet_hash=None):
-    """Determines the config parameter name to use for the hypernet based on the parameters in the infotext.
-    Example: an infotext provides "Hypernet: ke-ta" and "Hypernet hash: 1234abcd". For the "Hypernet" config
-    parameter this means there should be an entry that looks like "ke-ta-10000(1234abcd)" to set it to.
-    If the infotext has no hash, then a hypernet with the same name will be selected instead.
-    """
-    hypernet_name = hypernet_name.lower()
-    if hypernet_hash is not None:
-        # Try to match the hash in the name
-        for hypernet_key in shared.hypernetworks.keys():
-            result = re_hypernet_hash.search(hypernet_key)
-            if result is not None and result[1] == hypernet_hash:
-                return hypernet_key
-    else:
-        # Fall back to a hypernet with the same name
-        for hypernet_key in shared.hypernetworks.keys():
-            if hypernet_key.lower().startswith(hypernet_name):
-                return hypernet_key
+def parse_generation_parameters(infotext):
+    if not isinstance(infotext, str):
+        return {}
+    debug(f'Parse infotext: {infotext}')
+    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
+    re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
+    sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
+    sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
+    sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
 
-    return None
+    params = dict(re_param.findall(sanitized))
+    debug(f"Parse params: {params}")
+    params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
+    first_param = next(iter(params)) if params else None
+    params_idx = sanitized.find(f'{first_param}:') if first_param else -1
+    negative_idx = infotext.find("Negative prompt:")
 
+    prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
+    negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
 
-def parse_generation_parameters(x: str):
-    res = {}
-    if x is None:
-        return res
-    remaining = x.replace('\n', ' ').strip()
-    if len(remaining) == 0:
-        return res
-    remaining = x[7:] if x.startswith('Prompt: ') else x
-    remaining = x[11:] if x.startswith('parameters: ') else x
-    if 'Steps: ' in remaining and 'Negative prompt: ' not in remaining:
-        remaining = remaining.replace('Steps: ', 'Negative prompt: Steps: ')
-    prompt, remaining = remaining.strip().split('Negative prompt: ', maxsplit=1) if 'Negative prompt: ' in remaining else (remaining, '')
-    res["Prompt"] = prompt.strip()
-    negative, remaining = remaining.strip().split('Steps: ', maxsplit=1) if 'Steps: ' in remaining else (remaining, None)
-    res["Negative prompt"] = negative.strip()
-    if remaining is None:
-        return res
-    remaining = f'Steps: {remaining}'
-    for k, v in re_param.findall(remaining.strip()):
-        try:
-            if v[0] == '"' and v[-1] == '"':
-                v = unquote(v)
-            m = re_imagesize.match(v)
-            if m is not None:
-                res[f"{k}-1"] = m.group(1)
-                res[f"{k}-2"] = m.group(2)
-            else:
-                res[k] = v
-        except Exception:
-            pass
-    res["Full quality"] = res.get('VAE', None) != 'TAESD'
-    debug(f"Parse prompt: {res}")
-    return res
+    for k, v in params.copy().items(): # avoid dict-has-changed
+        if len(v) > 0 and v[0] == '"' and v[-1] == '"':
+            v = unquote(v)
+        m = re_size.match(v)
+        if v.replace('.', '', 1).isdigit():
+            params[k] = float(v) if '.' in v else int(v)
+        elif v == "True":
+            params[k] = True
+        elif v == "False":
+            params[k] = False
+        elif m is not None:
+            params[f"{k}-1"] = int(m.group(1))
+            params[f"{k}-2"] = int(m.group(2))
+        elif k == 'VAE' and v == 'TAESD':
+            params["Full quality"] = False
+        else:
+            params[k] = v
+    params["Prompt"] = prompt.replace('Prompt:', '').strip()
+    params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
+    debug(f"Parse: {params}")
+    return params
 
 
 settings_map = {}

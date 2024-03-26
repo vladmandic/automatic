@@ -28,15 +28,17 @@ models_config = cli.models_dir or config.get('models_dir') or 'models'
 models_path = models_config if os.path.isabs(models_config) else os.path.join(data_path, models_config)
 extensions_dir = os.path.join(data_path, "extensions")
 extensions_builtin_dir = "extensions-builtin"
+onnx_dir = os.path.join(models_path, "ONNX")
 sd_configs_path = os.path.join(script_path, "configs")
 sd_default_config = os.path.join(sd_configs_path, "v1-inference.yaml")
 sd_model_file = cli.ckpt or os.path.join(script_path, 'model.ckpt') # not used
 default_sd_model_file = sd_model_file # not used
-debug = log.info if os.environ.get('SD_PATH_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug = log.trace if os.environ.get('SD_PATH_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug('Trace: PATH')
 paths = {}
 
 if os.environ.get('SD_PATH_DEBUG', None) is not None:
-    print(f'Paths: script-path="{script_path}" data-dir="{data_path}" models-dir="{models_path}" config="{config_path}"')
+    log.debug(f'Paths: script-path="{script_path}" data-dir="{data_path}" models-dir="{models_path}" config="{config_path}"')
 
 
 def register_paths():
@@ -93,6 +95,7 @@ def create_paths(opts):
     create_path(sd_configs_path)
     create_path(extensions_dir)
     create_path(extensions_builtin_dir)
+    create_path(onnx_dir)
     create_path(fix_path('temp_dir'))
     create_path(fix_path('ckpt_dir'))
     create_path(fix_path('diffusers_dir'))
@@ -103,11 +106,15 @@ def create_paths(opts):
     create_path(fix_path('outdir_samples'))
     create_path(fix_path('outdir_txt2img_samples'))
     create_path(fix_path('outdir_img2img_samples'))
+    create_path(fix_path('outdir_control_samples'))
     create_path(fix_path('outdir_extras_samples'))
+    create_path(fix_path('outdir_init_images'))
     create_path(fix_path('outdir_grids'))
     create_path(fix_path('outdir_txt2img_grids'))
     create_path(fix_path('outdir_img2img_grids'))
+    create_path(fix_path('outdir_control_grids'))
     create_path(fix_path('outdir_save'))
+    create_path(fix_path('outdir_video'))
     create_path(fix_path('styles_dir'))
 
 

@@ -9,12 +9,13 @@ extension-pkg-whitelist=
 fail-on=
 fail-under=10
 ignore=CVS
-ignore-paths=^repositories/.*$,
+ignore-paths=/usr/lib/.*$,
+             ^repositories/.*$,
              ^extensions/.*$,
              ^extensions-builtin/.*$,
-             /usr/lib/.*$,
              ^modules/dml/.*$,
-             ^modules/models/diffusion/.*$,
+             ^modules/tcd/.*$,
+             ^modules/xadapters/.*$,
 ignore-patterns=
 ignored-modules=
 jobs=0

@@ -7,6 +7,7 @@ from installer import setup_logging, args
 
 
 preloaded = []
+debug = os.environ.get('SD_SCRIPT_DEBUG', None)
 
 
 def load_module(path):
@@ -17,12 +18,15 @@ def load_module(path):
         pr = cProfile.Profile()
         pr.enable()
     try:
-        if '/sd-extension-' in path: # safe extensions without stdout intercept
+        if '/sd-extension-' in path or '/Lora' in path: # safe extensions without stdout intercept
             module_spec.loader.exec_module(module)
         else:
-            # stdout = io.StringIO()
-            with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            if debug:
                 module_spec.loader.exec_module(module)
+                stdout = io.StringIO()
+            else:
+                with contextlib.redirect_stdout(io.StringIO()) as stdout:
+                    module_spec.loader.exec_module(module)
             setup_logging() # reset since scripts can hijaack logging
             for line in stdout.getvalue().splitlines():
                 if len(line) > 0:

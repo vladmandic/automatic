@@ -85,7 +85,7 @@ const appendContextMenuOption = initResponse[0];
 const removeContextMenuOption = initResponse[1];
 const addContextMenuEventListener = initResponse[2];
 
-function initContextMenu() {
+async function initContextMenu() {
   const generateForever = (genbuttonid, interruptbuttonid) => {
     if (window.generateOnRepeatInterval) {
       log('generateForever: cancel');
@@ -103,7 +103,7 @@ function initContextMenu() {
     }
   };
 
-  for (const tab of ['txt2img', 'img2img']) {
+  for (const tab of ['txt2img', 'img2img', 'control']) {
     for (const el of ['generate', 'interrupt', 'skip', 'pause', 'paste', 'clear_prompt', 'extra_networks_btn']) {
       const id = `#${tab}_${el}`;
       appendContextMenuOption(id, 'Copy to clipboard', () => navigator.clipboard.writeText(document.querySelector(`#${tab}_prompt > label > textarea`).value));

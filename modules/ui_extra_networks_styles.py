@@ -1,7 +1,6 @@
 import os
 import html
 import json
-import concurrent
 from modules import shared, extra_networks, ui_extra_networks, styles
 
 
@@ -14,7 +13,7 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
 
     def parse_desc(self, desc):
         lines = desc.strip().split("\n")
-        params = { 'name': '', 'description': '', 'prompt': '', 'negative': '', 'extra': ''}
+        params = { 'name': '', 'description': '', 'prompt': '', 'negative': '', 'extra': '', 'wildcards': ''}
         found = ''
         for line in lines:
             line = line.strip()
@@ -33,6 +32,9 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
             elif line.lower().startswith('extra:'):
                 found = 'extra'
                 params['extra'] = line[6:].strip()
+            elif line.lower().startswith('wildcards:'):
+                found = 'wildcards'
+                params['wildcards'] = line[10:].strip()
             elif found != '':
                 params[found] += '\n' + line
         if params['name'] == '':
@@ -53,12 +55,12 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
             "name": name,
             "title": name,
             "filename": fn,
-            "search_term": f'{self.search_terms_from_path(name)}',
             "preview": self.find_preview(name),
-            "description": '',
+            "description": params.get('Description', ''),
             "prompt": params.get('Prompt', ''),
             "negative": params.get('Negative prompt', ''),
-            "extra": '',
+            "extra": params.get('Extra', ''),
+            "wildcards": params.get('Wildcards', ''),
             "local_preview": f"{name}.{shared.opts.samples_format}",
         }
         return item
@@ -79,12 +81,12 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
                 "name": name,
                 "title": k,
                 "filename": style.filename,
-                "search_term": f'{txt} {self.search_terms_from_path(name)}',
-                "preview": style.preview if getattr(style, 'preview', None) is not None and style.preview.startswith('data:') else self.find_preview(fn),
+                "preview": style.preview if getattr(style, 'preview', None) is not None and style.preview.startswith('data:') else None,
                 "description": style.description if getattr(style, 'description', None) is not None and len(style.description) > 0 else txt,
                 "prompt": getattr(style, 'prompt', ''),
                 "negative": getattr(style, 'negative_prompt', ''),
                 "extra": getattr(style, 'extra', ''),
+                "wildcards": getattr(style, 'wildcards', ''),
                 "local_preview": f"{fn}.{shared.opts.samples_format}",
                 "onclick": '"' + html.escape(f"""return selectStyle({json.dumps(name)})""") + '"',
                 "mtime": getattr(style, 'mtime', 0),
@@ -95,12 +97,9 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
         return item
 
     def list_items(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=shared.max_workers) as executor:
-            future_items = {executor.submit(self.create_item, style): style for style in list(shared.prompt_styles.styles)}
-            for future in concurrent.futures.as_completed(future_items):
-                item = future.result()
-                if item is not None:
-                    yield item
+        items = [self.create_item(k) for k in list(shared.prompt_styles.styles)]
+        self.update_all_previews(items)
+        return items
 
     def allowed_directories_for_previews(self):
         return [v for v in [shared.opts.styles_dir] if v is not None] + ['html']

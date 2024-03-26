@@ -1,24 +1,24 @@
 import base64
 import json
-import numpy as np
 import zlib
-from PIL import Image, PngImagePlugin, ImageDraw, ImageFont
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 import torch
 from modules.shared import opts
 
 
 class EmbeddingEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, torch.Tensor):
-            return {'TORCHTENSOR': obj.cpu().detach().numpy().tolist()}
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, torch.Tensor):
+            return {'TORCHTENSOR': o.cpu().detach().numpy().tolist()}
+        return json.JSONEncoder.default(self, o)
 
 
 class EmbeddingDecoder(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, *args, object_hook=self.object_hook, **kwargs)
 
-    def object_hook(self, d):
+    def object_hook(self, d): # pylint: disable=E0202
         if 'TORCHTENSOR' in d:
             return torch.from_numpy(np.array(d['TORCHTENSOR']))
         return d
@@ -41,8 +41,8 @@ def lcg(m=2**32, a=1664525, c=1013904223, seed=0):
 
 
 def xor_block(block):
-    g = lcg()
-    randblock = np.array([next(g) for _ in range(np.prod(block.shape))]).astype(np.uint8).reshape(block.shape)
+    blk = lcg()
+    randblock = np.array([next(blk) for _ in range(np.prod(block.shape))]).astype(np.uint8).reshape(block.shape)
     return np.bitwise_xor(block.astype(np.uint8), randblock & 0x0F)
 
 
@@ -110,7 +110,7 @@ def crop_black(img, tol=0):
 
 def extract_image_data_embed(image):
     d = 3
-    outarr = crop_black(np.array(image.convert('RGB').getdata()).reshape(image.size[1], image.size[0], d).astype(np.uint8)) & 0x0F
+    outarr = crop_black(np.array(image.convert('RGB').getdata()).reshape(image.size[1], image.size[0], d).astype(np.uint8)) & 0x0F # pylint: disable=E1121
     black_cols = np.where(np.sum(outarr, axis=(0, 2)) == 0)
     if black_cols[0].shape[0] < 2:
         return None
@@ -133,7 +133,7 @@ def caption_image_overlay(srcimage, title, footerLeft, footerMid, footerRight, t
     image = srcimage.copy()
     fontsize = 32
     if textfont is None:
-        textfont = opts.font or 'javascript/roboto.ttf'
+        textfont = opts.font or 'javascript/notosans-nerdfont-regular.ttf'
 
     factor = 1.5
     gradient = Image.new('RGBA', (1, image.size[1]), color=(0, 0, 0, 0))
@@ -148,17 +148,17 @@ def caption_image_overlay(srcimage, title, footerLeft, footerMid, footerRight, t
     font = ImageFont.truetype(textfont, fontsize)
     padding = 10
 
-    _, _, w, h = draw.textbbox((0, 0), title, font=font)
+    _, _, w, _h = draw.textbbox((0, 0), title, font=font)
     fontsize = min(int(fontsize * (((image.size[0]*0.75)-(padding*4))/w)), 72)
     font = ImageFont.truetype(textfont, fontsize)
-    _, _, w, h = draw.textbbox((0, 0), title, font=font)
+    _, _, w, _h = draw.textbbox((0, 0), title, font=font)
     draw.text((padding, padding), title, anchor='lt', font=font, fill=(255, 255, 255, 230))
 
-    _, _, w, h = draw.textbbox((0, 0), footerLeft, font=font)
+    _, _, w, _h = draw.textbbox((0, 0), footerLeft, font=font)
     fontsize_left = min(int(fontsize * (((image.size[0]/3)-(padding))/w)), 72)
-    _, _, w, h = draw.textbbox((0, 0), footerMid, font=font)
+    _, _, w, _h = draw.textbbox((0, 0), footerMid, font=font)
     fontsize_mid = min(int(fontsize * (((image.size[0]/3)-(padding))/w)), 72)
-    _, _, w, h = draw.textbbox((0, 0), footerRight, font=font)
+    _, _, w, _h = draw.textbbox((0, 0), footerRight, font=font)
     fontsize_right = min(int(fontsize * (((image.size[0]/3)-(padding))/w)), 72)
 
     font = ImageFont.truetype(textfont, min(fontsize_left, fontsize_mid, fontsize_right))
@@ -173,16 +173,16 @@ def caption_image_overlay(srcimage, title, footerLeft, footerMid, footerRight, t
 if __name__ == '__main__':
 
     testEmbed = Image.open('test_embedding.png')
-    data = extract_image_data_embed(testEmbed)
-    assert data is not None
+    test_data = extract_image_data_embed(testEmbed)
+    assert test_data is not None
 
-    data = embedding_from_b64(testEmbed.text['sd-ti-embedding'])
-    assert data is not None
+    test_data = embedding_from_b64(testEmbed.text['sd-ti-embedding'])
+    assert test_data is not None
 
-    image = Image.new('RGBA', (512, 512), (255, 255, 200, 255))
-    cap_image = caption_image_overlay(image, 'title', 'footerLeft', 'footerMid', 'footerRight')
+    new_image = Image.new('RGBA', (512, 512), (255, 255, 200, 255))
+    cap_image = caption_image_overlay(new_image, 'title', 'footerLeft', 'footerMid', 'footerRight')
 
-    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}}
+    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}} # noqa: NPY002
 
     embedded_image = insert_image_data_embed(cap_image, test_embed)
 

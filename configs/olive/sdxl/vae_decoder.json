@@ -1,0 +1,148 @@
+{
+  "input_model": {
+    "type": "PyTorchModel",
+    "config": {
+      "model_path": "",
+      "model_loader": "vae_decoder_load",
+      "model_script": "modules/olive_script.py",
+      "io_config": {
+        "input_names": ["latent_sample", "return_dict"],
+        "output_names": ["sample"],
+        "dynamic_axes": {
+          "latent_sample": {
+            "0": "batch_size",
+            "1": "num_channels_latent",
+            "2": "height_latent",
+            "3": "width_latent"
+          },
+          "sample": {
+            "0": "batch_size",
+            "1": "num_channels",
+            "2": "height",
+            "3": "width"
+          }
+        }
+      },
+      "dummy_inputs_func": "vae_decoder_conversion_inputs"
+    }
+  },
+  "systems": {
+    "local_system": {
+      "type": "LocalSystem",
+      "config": {
+        "accelerators": ["gpu"]
+      }
+    }
+  },
+  "evaluators": {
+    "common_evaluator": {
+      "metrics": [
+        {
+          "name": "latency",
+          "type": "latency",
+          "sub_types": [{ "name": "avg" }],
+          "user_config": {
+            "user_script": "modules/olive_script.py",
+            "dataloader_func": "vae_decoder_data_loader",
+            "batch_size": 1
+          }
+        }
+      ]
+    }
+  },
+  "passes": {
+    "optimize_DmlExecutionProvider": {
+      "type": "OrtTransformersOptimization",
+      "disable_search": true,
+      "config": {
+        "model_type": "vae",
+        "opt_level": 0,
+        "float16": true,
+        "use_gpu": true,
+        "keep_io_types": true,
+        "optimization_options": {
+          "enable_gelu": true,
+          "enable_layer_norm": true,
+          "enable_attention": true,
+          "use_multi_head_attention": true,
+          "enable_skip_layer_norm": false,
+          "enable_embed_layer_norm": true,
+          "enable_bias_skip_layer_norm": false,
+          "enable_bias_gelu": true,
+          "enable_gelu_approximation": false,
+          "enable_qordered_matmul": false,
+          "enable_shape_inference": true,
+          "enable_gemm_fast_gelu": false,
+          "enable_nhwc_conv": false,
+          "enable_group_norm": true,
+          "enable_bias_splitgelu": false,
+          "enable_packed_qkv": true,
+          "enable_packed_kv": true,
+          "enable_bias_add": false,
+          "group_norm_channels_last": false
+        },
+        "force_fp32_ops": ["RandomNormalLike"],
+        "force_fp32_nodes": [
+          "/decoder/up_blocks.2/upsamplers.0/conv/Conv",
+          "/decoder/up_blocks.3/resnets.0/conv_shortcut/Conv",
+          "GroupNorm_22",
+          "/decoder/up_blocks.3/resnets.0/conv1/Conv",
+          "GroupNorm_23",
+          "/decoder/up_blocks.3/resnets.0/conv2/Conv",
+          "/decoder/up_blocks.3/resnets.0/Add",
+          "GroupNorm_24",
+          "/decoder/up_blocks.3/resnets.1/conv1/Conv",
+          "GroupNorm_25",
+          "/decoder/up_blocks.3/resnets.1/conv2/Conv",
+          "/decoder/up_blocks.3/resnets.1/Add",
+          "GroupNorm_26",
+          "/decoder/up_blocks.3/resnets.2/conv1/Conv",
+          "GroupNorm_27",
+          "/decoder/up_blocks.3/resnets.2/conv2/Conv",
+          "/decoder/up_blocks.3/resnets.2/Add",
+          "GroupNorm_28",
+          "/decoder/conv_out/Conv",
+          "graph_output_cast0"
+        ],
+        "force_fp16_inputs": {
+          "GroupNorm": [0, 1, 2]
+        }
+      }
+    },
+    "optimize_CUDAExecutionProvider": {
+      "type": "OrtTransformersOptimization",
+      "disable_search": true,
+      "config": {
+        "model_type": "vae",
+        "opt_level": 0,
+        "float16": false,
+        "use_gpu": true
+      }
+    },
+    "optimize_ROCMExecutionProvider": {
+      "type": "OrtTransformersOptimization",
+      "disable_search": true,
+      "config": {
+        "model_type": "vae",
+        "opt_level": 0,
+        "float16": false,
+        "use_gpu": true
+      }
+    }
+  },
+  "pass_flows": [["optimize_AutoExecutionProvider"]],
+  "engine": {
+    "search_strategy": {
+      "execution_order": "joint",
+      "search_algorithm": "exhaustive"
+    },
+    "evaluator": "common_evaluator",
+    "evaluate_input_model": false,
+    "host": "local_system",
+    "target": "local_system",
+    "cache_dir": "cache",
+    "output_name": "vae_decoder",
+    "output_dir": "footprints",
+    "execution_providers": ["DmlExecutionProvider"]
+  }
+}

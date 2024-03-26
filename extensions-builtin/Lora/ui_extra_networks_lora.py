@@ -17,9 +17,8 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def create_item(self, name):
         l = networks.available_networks.get(name)
         try:
-            path, _ext = os.path.splitext(l.filename)
+            # path, _ext = os.path.splitext(l.filename)
             name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
-
             if shared.backend == shared.Backend.ORIGINAL:
                 if l.sd_version == network.SdVersion.SDXL:
                     return None
@@ -38,9 +37,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                 "name": name,
                 "filename": l.filename,
                 "hash": l.shorthash,
-                "preview": self.find_preview(l.filename),
                 "prompt": json.dumps(f" <lora:{l.get_alias()}:{shared.opts.extra_networks_default_multiplier}>"),
-                "local_preview": f"{path}.{shared.opts.samples_format}",
                 "metadata": json.dumps(l.metadata, indent=4) if l.metadata else None,
                 "mtime": os.path.getmtime(l.filename),
                 "size": os.path.getsize(l.filename),
@@ -56,47 +53,70 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                 words = [str(w).replace('.json', '') for w in words]
                 if words[0] == '{}':
                     words[0] = 0
-                tag = ' '.join(words[1:])
+                tag = ' '.join(words[1:]).lower()
                 tags[tag] = words[0]
-            versions = info.get('modelVersions', []) # trigger words from info json
-            for v in versions:
+
+
+            def find_version():
+                found_versions = []
+                current_hash = l.hash[:8].upper()
+                all_versions = info.get('modelVersions', [])
+                for v in info.get('modelVersions', []):
+                    for f in v.get('files', []):
+                        if any(h.startswith(current_hash) for h in f.get('hashes', {}).values()):
+                            found_versions.append(v)
+                if len(found_versions) == 0:
+                    found_versions = all_versions
+                return found_versions
+
+            find_version()
+            for v in find_version():  # trigger words from info json
                 possible_tags = v.get('trainedWords', [])
                 if isinstance(possible_tags, list):
-                    for tag in possible_tags:
-                        if tag not in tags:
-                            tags[tag] = 0
-            search = {}
+                    for tag_str in possible_tags:
+                        for tag in tag_str.split(','):
+                            tag = tag.strip().lower()
+                            if tag not in tags:
+                                tags[tag] = 0
+
             possible_tags = info.get('tags', []) # tags from info json
             if not isinstance(possible_tags, list):
                 possible_tags = [v for v in possible_tags.values()]
-            for v in possible_tags:
-                search[v] = 0
-            if len(list(tags)) == 0:
-                tags = search
+            for tag in possible_tags:
+                tag = tag.strip().lower()
+                if tag not in tags:
+                    tags[tag] = 0
 
-            bad_chars = [';', ':', '<', ">", "*", '?', '\'', '\"']
+            bad_chars = [';', ':', '<', ">", "*", '?', '\'', '\"', '(', ')', '[', ']', '{', '}', '\\', '/']
             clean_tags = {}
             for k, v in tags.items():
-                tag = ''.join(i for i in k if not i in bad_chars)
+                tag = ''.join(i for i in k if not i in bad_chars).strip()
                 clean_tags[tag] = v
+
+            clean_tags.pop('img', None)
+            clean_tags.pop('dataset', None)
 
             item["info"] = info
             item["description"] = self.find_description(l.filename, info) # use existing info instead of double-read
             item["tags"] = clean_tags
-            item["search_term"] = f'{self.search_terms_from_path(l.filename)} {" ".join(tags.keys())} {" ".join(search.keys())}'
 
             return item
         except Exception as e:
             shared.log.debug(f"Extra networks error: type=lora file={name} {e}")
+            from modules import errors
+            errors.display('e', 'Lora')
             return None
 
     def list_items(self):
+        items = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=shared.max_workers) as executor:
             future_items = {executor.submit(self.create_item, net): net for net in networks.available_networks}
             for future in concurrent.futures.as_completed(future_items):
                 item = future.result()
                 if item is not None:
-                    yield item
+                    items.append(item)
+        self.update_all_previews(items)
+        return items
 
     def allowed_directories_for_previews(self):
         return [shared.cmd_opts.lora_dir, shared.cmd_opts.lyco_dir]

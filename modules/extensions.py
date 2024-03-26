@@ -6,8 +6,6 @@ from modules.paths import extensions_dir, extensions_builtin_dir
 
 
 extensions = []
-
-
 if not os.path.exists(extensions_dir):
     os.makedirs(extensions_dir)
 
@@ -57,6 +55,9 @@ class Extension:
         else:
             try:
                 self.status = 'unknown'
+                if len(repo.remotes) == 0:
+                    shared.log.debug(f"Extension: no remotes info repo={self.name}")
+                    return
                 self.git_name = repo.remotes.origin.url.split('.git')[0].split('/')[-1]
                 self.description = repo.description
                 if self.description is None or self.description.startswith("Unnamed repository"):
@@ -72,7 +73,7 @@ class Extension:
                 self.commit_hash = head.hexsha
                 self.version = f"<p>{self.commit_hash[:8]}</p><p>{datetime.fromtimestamp(self.commit_date).strftime('%a %b%d %Y %H:%M')}</p>"
             except Exception as ex:
-                shared.log.error(f"Failed reading extension data from Git repository: {self.name}: {ex}")
+                shared.log.error(f"Extension: failed reading data from git repo={self.name}: {ex}")
                 self.remote = None
 
     def list_files(self, subdir, extension):
@@ -153,3 +154,4 @@ def list_extensions():
     for dirname, path, is_builtin in extension_paths:
         extension = Extension(name=dirname, path=path, enabled=dirname not in disabled_extensions, is_builtin=is_builtin)
         extensions.append(extension)
+    shared.log.info(f'Disabled extensions: {[e.name for e in extensions if not e.enabled]}')

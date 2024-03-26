@@ -8,26 +8,33 @@ const monitoredOpts = [
 ];
 
 const AppyOpts = [
-  { compact_view: (val) => toggleCompact(val) },
+  { compact_view: (val, old) => toggleCompact(val, old) },
+  { gradio_theme: (val, old) => setTheme(val, old) },
+  { font_size: (val, old) => setFontSize(val, old) },
 ];
 
-function updateOpts(json_string) {
+async function updateOpts(json_string) {
   const settings_data = JSON.parse(json_string);
+  const new_opts = settings_data.values;
+  opts_metadata = settings_data.metadata;
+
   for (const op of monitoredOpts) {
     const key = Object.keys(op)[0];
     const callback = op[key];
     if (opts[key] && opts[key] !== settings_data.values[key]) {
       log('updateOpts', key, opts[key], settings_data.values[key]);
-      if (callback) callback();
+      if (callback) callback(new_opts[key], opts[key]);
     }
   }
+
   for (const op of AppyOpts) {
     const key = Object.keys(op)[0];
     const callback = op[key];
-    if (callback) callback(settings_data.values[key]);
+    if (callback) callback(new_opts[key], opts[key]);
   }
-  opts = settings_data.values;
-  opts_metadata = settings_data.metadata;
+
+  opts = new_opts;
+
   Object.entries(opts_metadata).forEach(([opt, meta]) => {
     if (!opts_tabs[meta.tab_name]) opts_tabs[meta.tab_name] = {};
     if (!opts_tabs[meta.tab_name].unsaved_keys) opts_tabs[meta.tab_name].unsaved_keys = new Set();
@@ -77,7 +84,8 @@ function markIfModified(setting_name, value) {
   tab_nav_indicator.classList.toggle('saved', saved.size > 0);
   if (changed_items.size > 0) tab_nav_indicator.title += `click to reset ${changed_items.size} unapplied changes in this tab\n`;
   if (saved.size > 0) tab_nav_indicator.title += `${saved.size} custom values\n${unsaved.size} default values}`;
-  // elem.scrollIntoView({ behavior: 'smooth', block: 'center' }); // TODO why is scroll happening on every change if all pages are visible?
+  // TODO why is scroll happening on every change if all pages are visible?
+  // elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 onAfterUiUpdate(async () => {
@@ -108,7 +116,7 @@ onAfterUiUpdate(async () => {
   const settingsSearch = gradioApp().querySelectorAll('#settings_search > label > textarea')[0];
   settingsSearch.oninput = (e) => {
     setTimeout(() => {
-      log('settingsSearch', e.target.value)
+      log('settingsSearch', e.target.value);
       showAllSettings();
       gradioApp().querySelectorAll('#tab_settings .tabitem').forEach((section) => {
         section.querySelectorAll('.dirtyable').forEach((setting) => {
@@ -129,7 +137,41 @@ onOptionsChanged(() => {
   });
 });
 
-function initSettings() {
+async function initModels() {
+  const warn = () => `
+    <p style='color: white'>No models available</p>
+    - Select a model from reference list to download or<br>
+    - Set model path to a folder containing your models<br>
+    Current model path: ${opts.ckpt_dir}<br>
+  `;
+  const el = gradioApp().getElementById('main_info');
+  const en = gradioApp().getElementById('txt2img_extra_networks');
+  if (!el || !en) return;
+  const req = await fetch('/sdapi/v1/sd-models');
+  const res = req.ok ? await req.json() : [];
+  log('initModels', res.length);
+  const ready = () => `
+    <p style='color: white'>Ready</p>
+    ${res.length} models available<br>
+  `;
+  el.innerHTML = res.length > 0 ? ready() : warn();
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', res.length === 0 ? 30000 : 1500);
+  if (res.length === 0) {
+    if (en.classList.contains('hide')) gradioApp().getElementById('txt2img_extra_networks_btn').click();
+    const repeat = setInterval(() => {
+      const buttons = Array.from(gradioApp().querySelectorAll('#txt2img_model_subdirs > button')) || [];
+      const reference = buttons.find((b) => b.innerText === 'Reference');
+      if (reference) {
+        clearInterval(repeat);
+        reference.click();
+        log('enReferenceSelect');
+      }
+    }, 100);
+  }
+}
+
+async function initSettings() {
   if (settingsInitialized) return;
   settingsInitialized = true;
   const tabNavElements = gradioApp().querySelector('#settings > .tab-nav');
@@ -138,7 +180,7 @@ function initSettings() {
   const observer = new MutationObserver((mutations) => {
     const showAllPages = gradioApp().getElementById('settings_show_all_pages');
     if (showAllPages.style.display === 'none') return;
-    const mutation = (mut) => mut.type === 'attributes' && mut.attributeName === 'style'
+    const mutation = (mut) => mut.type === 'attributes' && mut.attributeName === 'style';
     if (mutations.some(mutation)) showAllSettings();
   });
   const tabContentWrapper = document.createElement('div');
@@ -155,3 +197,4 @@ function initSettings() {
 }
 
 onUiLoaded(initSettings);
+onUiLoaded(initModels);

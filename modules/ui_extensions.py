@@ -1,15 +1,13 @@
+import os
 import json
-import os.path
 import shutil
 import errno
 import html
 from datetime import datetime, timedelta
-import git
 import gradio as gr
-from modules import extensions, shared, paths, errors
-from modules.call_queue import wrap_gradio_gpu_call
+from modules import extensions, shared, paths, errors, ui_symbols
 
-
+debug = shared.log.debug if os.environ.get('SD_EXT_DEBUG', None) is not None else lambda *args, **kwargs: None
 extensions_index = "https://vladmandic.github.io/sd-data/pages/extensions.json"
 hide_tags = ["localization"]
 extensions_list = []
@@ -37,10 +35,12 @@ def get_installed(ext) -> extensions.Extension:
 def list_extensions():
     global extensions_list # pylint: disable=global-statement
     fn = os.path.join(paths.script_path, "html", "extensions.json")
-    extensions_list = shared.readfile(fn) or []
+    extensions_list = shared.readfile(fn, silent=True) or []
     if type(extensions_list) != list:
         shared.log.warning(f'Invalid extensions list: file={fn}')
         extensions_list = []
+    if len(extensions_list) == 0:
+        shared.log.info('Extension list is empty: refresh required')
     found = []
     for ext in extensions.extensions:
         ext.read_info()
@@ -48,6 +48,7 @@ def list_extensions():
         installed = get_installed(ext)
         if installed:
             found.append(installed)
+            debug(f'Extension installed from index: {ext}')
     for ext in [e for e in extensions.extensions if e not in found]: # installed but not in index
         entry = {
             "name": ext.name or "",
@@ -64,6 +65,7 @@ def list_extensions():
             "updated": ext.mtime,
         }
         extensions_list.append(entry)
+        debug(f'Extension installed without index: {entry}')
 
 
 def check_access():
@@ -154,6 +156,7 @@ def install_extension_from_url(dirname, url, branch_name, search_text, sort_colu
     if url.endswith('.git'):
         url = url.replace('.git', '')
     try:
+        import git
         shutil.rmtree(tmpdir, True)
         if not branch_name: # if no branch is specified, use the default branch
             with git.Repo.clone_from(url, tmpdir, filter=['blob:none']) as repo:
@@ -250,13 +253,14 @@ def refresh_extensions_list(search_text, sort_column):
     global extensions_list # pylint: disable=global-statement
     import urllib.request
     try:
-        with urllib.request.urlopen(extensions_index) as response:
+        shared.log.debug(f'Updating extensions list: url={extensions_index}')
+        with urllib.request.urlopen(extensions_index, timeout=3.0) as response:
             text = response.read()
         extensions_list = json.loads(text)
         with open(os.path.join(paths.script_path, "html", "extensions.json"), "w", encoding="utf-8") as outfile:
             json_object = json.dumps(extensions_list, indent=2)
             outfile.write(json_object)
-            shared.log.debug(f'Updated extensions list: {len(extensions_list)} {extensions_index}')
+            shared.log.info(f'Updated extensions list: items={len(extensions_list)} url={extensions_index}')
     except Exception as e:
         shared.log.warning(f'Updated extensions list failed: {extensions_index} {e}')
     list_extensions()
@@ -322,12 +326,15 @@ def create_html(search_text, sort_column):
         updated = datetime.timestamp(datetime.now())
         try:
             if 'github' in ext['url']:
-                author = ext['url'].split('/')[-2].split(':')[-1] if '/' in ext['url'] else ext['url'].split(':')[1].split('/')[0]
-                author = f"Author: {author}"
+                author = 'Author: ' + ext['url'].split('/')[-2].split(':')[-1] if '/' in ext['url'] else ext['url'].split(':')[1].split('/')[0]
                 updated = datetime.timestamp(datetime.fromisoformat(ext.get('updated', '2000-01-01T00:00:00.000Z').rstrip('Z')))
-        except Exception:
-            updated = datetime.timestamp(datetime.now())
-        update_available = (installed is not None) and (ext['remote'] is not None) and (ext['commit_date'] + 60 * 60 < updated)
+            else:
+                debug(f'Extension not from github: name={ext["name"]} url={ext["url"]}')
+        except Exception as e:
+            debug(f'Extension get updated error: name={ext["name"]} url={ext["url"]} {e}')
+        update_available = (installed is not None) and (ext['remote'] is not None) and (ext['commit_date'] > updated)
+        if update_available:
+            debug(f'Extension update available: name={ext["name"]} updated={updated}/{datetime.utcfromtimestamp(updated)} commit={ext["commit_date"]}/{datetime.utcfromtimestamp(ext["commit_date"])}')
         ext['sort_user'] = f"{'0' if ext['is_builtin'] else '1'}{'1' if ext['installed'] else '0'}{ext.get('name', '')}"
         ext['sort_enabled'] = f"{'0' if ext['enabled'] else '1'}{'1' if ext['is_builtin'] else '0'}{'1' if ext['installed'] else '0'}{ext.get('updated', '2000-01-01T00:00')}"
         ext['sort_update'] = f"{'1' if update_available else '0'}{'1' if ext['installed'] else '0'}{ext.get('updated', '2000-01-01T00:00')}"
@@ -370,27 +377,27 @@ def create_html(search_text, sort_column):
         if ext.get('status', None) is None or type(ext['status']) == str: # old format
             ext['status'] = 0
         if ext['url'] is None or ext['url'] == '':
-            status = "<span style='cursor:pointer;color:#00C0FD' title='Local'>⬤</span>"
+            status = f"<span style='cursor:pointer;color:#00C0FD' title='Local'>{ui_symbols.bullet}</span>"
         elif ext['status'] > 0:
             if ext['status'] == 1:
-                status = "<span style='cursor:pointer;color:#00FD9C ' title='Verified'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#00FD9C ' title='Verified'>{ui_symbols.bullet}</span>"
             elif ext['status'] == 2:
-                status = "<span style='cursor:pointer;color:#FFC300' title='Supported only with backend:Original'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#FFC300' title='Supported only with backend:Original'>{ui_symbols.bullet}</span>"
             elif ext['status'] == 3:
-                status = "<span style='cursor:pointer;color:#FFC300' title='Supported only with backend:Diffusers'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#FFC300' title='Supported only with backend:Diffusers'>{ui_symbols.bullet}</span>"
             elif ext['status'] == 4:
-                status = f"<span style='cursor:pointer;color:#4E22FF' title=\"{ext.get('note', 'custom value')}\">⬤</span>"
+                status = f"<span style='cursor:pointer;color:#4E22FF' title=\"{ext.get('note', 'custom value')}\">{ui_symbols.bullet}</span>"
             elif ext['status'] == 5:
-                status = "<span style='cursor:pointer;color:#CE0000' title='Not supported'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#CE0000' title='Not supported'>{ui_symbols.bullet}</span>"
             elif ext['status'] == 6:
-                status = "<span style='cursor:pointer;color:#AEAEAE' title='Just discovered'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#AEAEAE' title='Just discovered'>{ui_symbols.bullet}</span>"
             else:
-                status = "<span style='cursor:pointer;color:#008EBC' title='Unknown status'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#008EBC' title='Unknown status'>{ui_symbols.bullet}</span>"
         else:
             if updated < datetime.timestamp(datetime.now() - timedelta(6*30)):
-                status = "<span style='cursor:pointer;color:#C000CF' title='Unmaintained'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#C000CF' title='Unmaintained'>{ui_symbols.bullet}</span>"
             else:
-                status = "<span style='cursor:pointer;color:#7C7C7C' title='No info'>⬤</span>"
+                status = f"<span style='cursor:pointer;color:#7C7C7C' title='No info'>{ui_symbols.bullet}</span>"
 
         code += f"""
             <tr style="display: {visible}">
@@ -432,12 +439,17 @@ def create_ui():
                         check = gr.Button(value="Update all installed", variant="primary")
                         apply = gr.Button(value="Apply changes", variant="primary")
                 list_extensions()
-                gr.HTML('<span style="color: var(--body-text-color)"><h2>Extension list</h2>⯀ Refesh extension list to download latest list with status<br>⯀ Check status of an extension by looking at status icon before installing it<br>⯀ After any operation such as install/uninstall or enable/disable, please restart the server<br></span>')
+                gr.HTML('''<span style="color: var(--body-text-color)">
+                            <h2>Extension list</h2>
+                            - Refesh extension list to download latest list with status<br>
+                            - Check status of an extension by looking at status icon before installing it<br>
+                            - After any operation such as install/uninstall or enable/disable, please restart the server<br>
+                        </span>''')
                 gr.HTML('')
                 info = gr.HTML('')
                 extensions_table = gr.HTML(create_html(search_text.value, sort_column.value))
                 check.click(
-                    fn=wrap_gradio_gpu_call(check_updates, extra_outputs=[gr.update()]),
+                    fn=modules.ui.wrap_gradio_call(check_updates, extra_outputs=[gr.update()]),
                     _js="extensions_check",
                     inputs=[info, extensions_disabled_list, search_text, sort_column],
                     outputs=[extensions_table, info],
