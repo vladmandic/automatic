@@ -685,7 +685,12 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 shared.opts.diffusers_move_refiner = False
                 shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
             if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                sd_model.enable_model_cpu_offload()
+                if "Combined" in sd_model.__class__.__name__:
+                    # remove after new diffusers release:
+                    # https://github.com/huggingface/diffusers/pull/7471
+                    sd_model.enable_model_cpu_offload()
+                else:
+                    sd_model.enable_model_cpu_offload(device=devices.device)
             else:
                 sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = True
