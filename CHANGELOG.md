@@ -6,14 +6,10 @@
 - Quick apply style
 - SC LoRA
 - DoRA
-- SDXS VAE: https://huggingface.co/IDKiro/sdxs-512-0.9
-- Control API/CLI
-  - scripts
-  - units
-  - preprocess
+- Control API scripts compatibility
 
 
-## Update for 2024-03-26
+## Update for 2024-03-27
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -28,7 +24,10 @@
     both can still be installed by user if desired  
 - **Improvements**:
   - Styles apply wildcards to params
-  - Add API endpoint `/sdapi/v1/control` and util `cli/simple-control.py`
+  - Add API endpoint `/sdapi/v1/control` and util `cli/simple-control.py`  
+    (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
+    example:
+    > simple-control.py --prompt cat --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png --type controlnet --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8'
   - Add API endpoint `/sdapi/v1/vqa` and util `cli/simple-vqa.py`
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview

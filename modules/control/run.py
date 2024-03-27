@@ -56,6 +56,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
                 hr_scale: float = 1.0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0.0, refiner_prompt: str = '', refiner_negative: str = '',
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
+                no_save: bool = False,
                 *input_script_args
         ):
     global instance, pipe, original_pipeline # pylint: disable=global-statement
@@ -133,6 +134,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     p.refiner_start = refiner_start
     p.refiner_prompt = refiner_prompt
     p.refiner_negative = refiner_negative
+    p.do_not_save_grid = no_save
+    p.do_not_save_samples = no_save
     if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
         p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
 
@@ -305,8 +308,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 try:
                     video = cv2.VideoCapture(inputs)
                     if not video.isOpened():
-                        if is_generator:
-                            yield terminate(f'Control: video open failed: path={inputs}')
+                        yield terminate(f'Control: video open failed: path={inputs}')
                         return
                     frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
                     fps = int(video.get(cv2.CAP_PROP_FPS))
@@ -317,8 +319,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     shared.log.debug(f'Control: input video: path={inputs} frames={frames} fps={fps} size={w}x{h} codec={codec}')
                 except Exception as e:
-                    if is_generator:
-                        yield terminate(f'Control: video open failed: path={inputs} {e}')
+                    yield terminate(f'Control: video open failed: path={inputs} {e}')
                     return
 
             while status:
@@ -332,8 +333,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         continue
                     if shared.state.interrupted:
                         shared.state.interrupted = False
-                        if is_generator:
-                            yield terminate('Control interrupted')
+                        yield terminate('Control interrupted')
                         return
                     # get input
                     if isinstance(input_image, str):
@@ -416,8 +416,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         if len(p.extra_generation_params["Control process"]) == 0:
                             p.extra_generation_params["Control process"] = None
                         if any(img is None for img in processed_images):
-                            if is_generator:
-                                yield terminate('Control: attempting process but output is none')
+                            yield terminate('Control: attempting process but output is none')
                             return
                         if len(processed_images) > 1:
                             processed_image = [np.array(i) for i in processed_images]
@@ -429,8 +428,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             debug(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
                             p.init_images = processed_images
                         elif isinstance(selected_models, list) and len(processed_images) != len(selected_models):
-                            if is_generator:
-                                yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
+                            yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
                             return
                         elif selected_models is not None:
                             if len(processed_images) > 1:
@@ -446,8 +444,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         p.task_args['ref_image'] = p.ref_image
                         debug(f'Control: process=None image={p.ref_image}')
                         if p.ref_image is None:
-                            if is_generator:
-                                yield terminate('Control: attempting reference mode but image is none')
+                            yield terminate('Control: attempting reference mode but image is none')
                             return
                     elif unit_type == 'controlnet' and input_type == 1: # Init image same as control
                         p.task_args['control_image'] = p.init_images # switch image and control_image
@@ -507,8 +504,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     # final check
                     if has_models:
                         if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None and getattr(p, 'init_images', None) is None:
-                            if is_generator:
-                                yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
+                            yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
                             return
 
                     # resize mask

@@ -71,22 +71,45 @@ def generate(args): # pylint: disable=redefined-outer-name
     options['steps'] = int(args.steps)
     options['seed'] = int(args.seed)
     options['sampler_name'] = args.sampler
+
+    if args.control is not None:
+        options['unit_type'] = args.type
+        options['control'] = []
+        for control in args.control.split(','):
+            u = control.split(':')
+            if len(u) < 2:
+                log.error(f'invalid control: {control}')
+                continue
+            options['control'].append({
+                'process': u[0].strip(),
+                'model': u[1].strip(),
+                'strength': float(u[2].strip()) if len(u) > 2 else 1.0,
+                'start': float(u[3].strip()) if len(u) > 3 else 0.0,
+                'end': float(u[4].strip()) if len(u) > 4 else 1.0,
+            })
+        log.info(f"control options: {options['control']}")
+
     if args.mask is not None:
         options['mask'] = encode(args.mask)
     data = post('/sdapi/v1/control', options)
     t1 = time.time()
-    if 'images' in data:
-        for i in range(len(data['images'])):
-            b64 = data['images'][i].split(',',1)[0]
+    if 'info' in data:
+        log.info(f'info: {data["info"]}')
+
+    def get_image(encoded, output):
+        if not isinstance(encoded, list):
+            return
+        for i in range(len(encoded)):
+            b64 = encoded[i].split(',',1)[0]
             info = data['info']
             image = Image.open(io.BytesIO(base64.b64decode(b64)))
             log.info(f'received image: size={image.size} time={t1-t0:.2f} info="{info}"')
-            if args.output:
-                image.save(args.output)
-                log.info(f'image saved: size={image.size} filename={args.output}')
+            if output:
+                image.save(output)
+                log.info(f'image saved: size={image.size} filename={output}')
 
-    else:
-        log.warning(f'no images received: {data}')
+    get_image(data['images'], args.output)
+    get_image(data['processed'], args.processed)
 
 
 if __name__ == "__main__":
@@ -98,9 +121,12 @@ if __name__ == "__main__":
     parser.add_argument('--negative', required=False, default='', help='negative prompt text')
     parser.add_argument('--steps', required=False, default=20, help='number of steps')
     parser.add_argument('--seed', required=False, default=-1, help='initial seed')
-    parser.add_argument('--sampler', required=False, default='Euler a', help='sampler name')
+    parser.add_argument('--sampler', required=False, default='UniPC', help='sampler name')
     parser.add_argument('--output', required=False, default=None, help='output image file')
+    parser.add_argument('--processed', required=False, default=None, help='processed output file')
     parser.add_argument('--model', required=False, help='model name')
+    parser.add_argument('--type', required=False, help='control type')
+    parser.add_argument('--control', required=False, help='control units')
     args = parser.parse_args()
     log.info(f'img2img: {args}')
     generate(args)

@@ -1,7 +1,7 @@
-from typing import List
+from typing import Optional, List
 from threading import Lock
 from pydantic import BaseModel, Field # pylint: disable=no-name-in-module
-from modules import errors, shared
+from modules import errors, shared, processing_helpers
 from modules.api import models, helpers
 from modules.control import run
 
@@ -9,13 +9,37 @@ from modules.control import run
 errors.install()
 
 
-ReqControl = models.create_model_from_signature(run.control_run, "StableDiffusionProcessingControl")
+class ItemControl(BaseModel):
+    process: str = Field(title="Preprocessor", default="", description="")
+    model: str = Field(title="Control Model", default="", description="")
+    strength: float = Field(title="Control model strength", default=1.0, description="")
+    start: float = Field(title="Control model start", default=0.0, description="")
+    end: float = Field(title="Control model end", default=1.0, description="")
+    override: str = Field(title="Override image", default=None, description="")
+
+
+ReqControl = models.create_model_from_signature(
+    func = run.control_run,
+    model_name = "StableDiffusionProcessingControl",
+    additional_fields = [
+        {"key": "sampler_name", "type": str, "default": "UniPC"},
+        {"key": "script_name", "type": str, "default": None},
+        {"key": "script_args", "type": list, "default": []},
+        {"key": "send_images", "type": bool, "default": True},
+        {"key": "save_images", "type": bool, "default": False},
+        {"key": "alwayson_scripts", "type": dict, "default": {}},
+        {"key": "ip_adapter", "type": Optional[models.ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "face", "type": Optional[models.ItemFace], "default": None, "exclude": True},
+        {"key": "control", "type": Optional[List[ItemControl]], "default": [], "exclude": True},
+    ]
+)
 
 
 class ResControl(BaseModel):
-    images: List[str] = Field(default=None, title="Image", description="The generated images in base64 format.")
-    params: dict = Field(default={}, title="Settings", description="Process settings")
-    info: str = Field(default="", title="Info", description="Process info")
+    images: List[str] = Field(default=None, title="Images", description="")
+    processed: List[str] = Field(default=None, title="Processed", description="")
+    params: dict = Field(default={}, title="Settings", description="")
+    info: str = Field(default="", title="Info", description="")
 
 
 class APIControl():
@@ -25,8 +49,7 @@ class APIControl():
 
     def sanitize_args(self, args: dict):
         args = vars(args)
-        """
-        args.pop('include_init_images', None) # this is meant to be done by "exclude": True in model
+        args.pop('sampler_name', None)
         args.pop('script_name', None)
         args.pop('script_args', None) # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
@@ -34,7 +57,6 @@ class APIControl():
         args.pop('face_id', None)
         args.pop('ip_adapter', None)
         args.pop('save_images', None)
-        """
         return args
 
     def sanitize_b64(self, request):
@@ -42,7 +64,6 @@ class APIControl():
             for idx in range(0, len(args)):
                 if isinstance(args[idx], str) and len(args[idx]) >= 1000:
                     args[idx] = f"<str {len(args[idx])}>"
-
         if hasattr(request, "alwayson_scripts") and request.alwayson_scripts:
             for script_name in request.alwayson_scripts.keys():
                 script_obj = request.alwayson_scripts[script_name]
@@ -51,36 +72,57 @@ class APIControl():
         if hasattr(request, "script_args") and request.script_args:
             sanitize_str(request.script_args)
 
-    def prepare_face_module(self, request):
-        if hasattr(request, "face") and request.face and not request.script_name and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
-            request.script_name = "face"
-            request.script_args = [
-                request.face.mode,
-                request.face.source_images,
-                request.face.ip_model,
-                request.face.ip_override_sampler,
-                request.face.ip_cache_model,
-                request.face.ip_strength,
-                request.face.ip_structure,
-                request.face.id_strength,
-                request.face.id_conditioning,
-                request.face.id_cache,
-                request.face.pm_trigger,
-                request.face.pm_strength,
-                request.face.pm_start,
-                request.face.fs_cache
+    def prepare_face_module(self, req):
+        if hasattr(req, "face") and req.face and not req.script_name and (not req.alwayson_scripts or "face" not in req.alwayson_scripts.keys()):
+            req.script_name = "face"
+            req.script_args = [
+                req.face.mode,
+                req.face.source_images,
+                req.face.ip_model,
+                req.face.ip_override_sampler,
+                req.face.ip_cache_model,
+                req.face.ip_strength,
+                req.face.ip_structure,
+                req.face.id_strength,
+                req.face.id_conditioning,
+                req.face.id_cache,
+                req.face.pm_trigger,
+                req.face.pm_strength,
+                req.face.pm_start,
+                req.face.fs_cache
             ]
-            del request.face
+            del req.face
+
+    def prepare_control(self, req):
+        from modules.control.unit import Unit, unit_types
+        req.units = []
+        if req.unit_type not in unit_types:
+            shared.log.error(f'Control uknown unit type: type={req.unit_type} available={unit_types}')
+            return req.control
+        for u in req.control:
+            unit = Unit(
+                enabled = True,
+                unit_type = req.unit_type,
+                model_id = u.model,
+                process_id = u.process,
+                strength = u.strength,
+                start = u.start,
+                end = u.end,
+            )
+            if u.override is not None:
+                unit.override = helpers.decode_base64_to_image(u.override)
+            req.units.append(unit)
+        return req.control
 
     def post_control(self, req: ReqControl):
         self.prepare_face_module(req)
+        orig_control = self.prepare_control(req)
+        del req.control
 
         # prepare args
         args = req.copy(update={  # Override __init__ params
-            # "sampler_name": helpers.validate_sampler_name(req.sampler_name or req.sampler_index),
-            # "sampler_index": processing_helpers.get_sampler_index(req.sampler_name),
-            # "do_not_save_samples": not req.save_images,
-            # "do_not_save_grid": not req.save_images,
+            "sampler_index": processing_helpers.get_sampler_index(req.sampler_name),
+            "no_save": not req.save_images,
             "is_generator": False,
             "inputs": [helpers.decode_base64_to_image(x) for x in req.inputs] if req.inputs else None,
             "inits": [helpers.decode_base64_to_image(x) for x in req.inits] if req.inits else None,
@@ -93,21 +135,23 @@ class APIControl():
         with self.queue_lock:
             shared.state.begin('api-control', api=True)
 
-            # selectable_scripts, selectable_script_idx = script.get_selectable_script(req.script_name, script_runner)
-            # script_args = script.init_script_args(p, req, self.default_script_arg, selectable_scripts, selectable_script_idx, script_runner)
-            # output_images, _processed_images, output_info = run_control(**args, **script_args)
-
             output_images = []
+            output_processed = []
             output_info = ''
             res = run.control_run(**args)
             for item in res:
-                if len(item) > 0 and isinstance(item[0], list):
-                    output_images += item[0]
-                    output_info += item[2]
+                if len(item) > 0 and (isinstance(item[0], list) or item[0] is None): # output_images
+                    output_images += item[0] if item[0] is not None else []
+                    output_processed += [item[1]] if item[1] is not None else []
+                    output_info += item[2] if len(item) > 2 and item[2] is not None else ''
+                else:
+                    output_info += item
 
             shared.state.end(api=False)
 
         # return
         b64images = list(map(helpers.encode_pil_to_base64, output_images)) if send_images else []
+        b64processed = list(map(helpers.encode_pil_to_base64, output_processed)) if send_images else []
         self.sanitize_b64(req)
-        return ResControl(images=b64images, params=vars(req), info=output_info)
+        req.units = orig_control
+        return ResControl(images=b64images, processed=b64processed, params=vars(req), info=output_info)

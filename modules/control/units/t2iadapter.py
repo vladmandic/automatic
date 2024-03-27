@@ -86,6 +86,9 @@ class Adapter():
             if model_id is None or model_id == 'None':
                 self.reset()
                 return
+            if model_id not in all_models:
+                log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                return
             model_path = all_models[model_id]
             if model_path is None:
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
@@ -117,6 +120,8 @@ class AdapterPipeline():
         if isinstance(adapter, list) and len(adapter) > 1:
             adapter = MultiAdapter(adapter)
         adapter.to(device=pipeline.device, dtype=pipeline.dtype)
+        if pipeline.__class__.__name__ == 'StableDiffusionAdapterPipeline' or pipeline.__class__.__name__ == 'StableDiffusionXLAdapterPipeline':
+            pass # already initialized
         if detect.is_sdxl(pipeline):
             self.pipeline = StableDiffusionXLAdapterPipeline(
                 vae=pipeline.vae,

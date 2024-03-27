@@ -85,6 +85,9 @@ class ControlLLLite():
             if model_id is None or model_id == 'None':
                 self.reset()
                 return
+            if model_id not in all_models:
+                log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                return
             model_path = all_models[model_id]
             if model_path == '':
                 return

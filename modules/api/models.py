@@ -380,9 +380,14 @@ StableDiffusionImg2ImgProcessingAPI = ResImg2Img
 
 # helper function
 
-def create_model_from_signature(func: Callable, model_name: str, base_model: Type[BaseModel] = BaseModel, exclude_fields: List[str] = []):
+def create_model_from_signature(func: Callable, model_name: str, base_model: Type[BaseModel] = BaseModel, additional_fields: List = [], exclude_fields: List[str] = []):
     from PIL import Image
+
+    class Config:
+        extra = 'allow'
+
     args, _, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(func)
+    config = Config if varkw else None # Allow extra params if there is a **kwargs parameter in the function signature
     defaults = defaults or []
     args = args or []
     for arg in exclude_fields:
@@ -398,17 +403,28 @@ def create_model_from_signature(func: Callable, model_name: str, base_model: Typ
             annotations[k] = str
         elif str(v) == 'typing.List[modules.control.unit.Unit]':
             annotations[k] = List[str]
-    params = {param: (annotations.get(param, Any), default) for param, default in zip(args, defaults)}
+    model_fields = {param: (annotations.get(param, Any), default) for param, default in zip(args, defaults)}
 
-    class Config:
-        extra = 'allow'
+    for fld in additional_fields:
+        model_def = ModelDef(
+            field=underscore(fld["key"]),
+            field_alias=fld["key"],
+            field_type=fld["type"],
+            field_value=fld["default"],
+            field_exclude=fld["exclude"] if "exclude" in fld else False)
+        model_fields[model_def.field] = (model_def.field_type, Field(default=model_def.field_value, alias=model_def.field_alias, exclude=model_def.field_exclude))
 
-    config = Config if varkw else None # Allow extra params if there is a **kwargs parameter in the function signature
+    for fld in exclude_fields:
+        if fld in model_fields:
+            del model_fields[fld]
 
-    return create_model(
+    model = create_model(
         model_name,
-        **params,
+        **model_fields,
         **keyword_only_params,
         __base__=base_model,
         __config__=config,
     )
+    model.__config__.allow_population_by_field_name = True
+    model.__config__.allow_mutation = True
+    return model
