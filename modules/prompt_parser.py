@@ -121,9 +121,15 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
         class AtStep(lark.Transformer):
             def scheduled(self, args):
                 before, after, _, when = args
-                yield before or () if step <= when else after
+                try:
+                    yield before or () if step <= when else after
+                except StopIteration:
+                    yield ''
             def alternate(self, args):
-                yield next(args[(step - 1)%len(args)]) # pylint: disable=stop-iteration-return
+                try:
+                    yield next(args[(step - 1) % len(args)]) # pylint: disable=stop-iteration-return
+                except StopIteration:
+                    yield ''
             def start(self, args):
                 def flatten(x):
                     if type(x) == str:
