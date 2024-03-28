@@ -9,7 +9,7 @@
 - Control API scripts compatibility
 
 
-## Update for 2024-03-27
+## Update for 2024-03-28
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -36,6 +36,7 @@
   - Fix image save without metadata
   - fix ROCm compatibility, thanks @Disty0
   - Fix API generate save metadata
+  - Fix Face/InstantID
   - Enumerate diffusers model with multiple variants
 
 ## Update for 2024-03-19

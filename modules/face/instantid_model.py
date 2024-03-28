@@ -26,7 +26,7 @@ from diffusers import StableDiffusionXLControlNetPipeline
 from diffusers.image_processor import PipelineImageInput
 from diffusers.models import ControlNetModel
 from diffusers.pipelines.controlnet.multicontrolnet import MultiControlNetModel
-from diffusers.pipelines.stable_diffusion_xl import StableDiffusionXLPipelineOutput
+from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 from diffusers.utils import (
     deprecate,
     logging,
@@ -746,6 +746,7 @@ class StableDiffusionXLInstantIDPipeline(StableDiffusionXLControlNetPipeline):
             )
 
         # 1. Check inputs. Raise error if not correct
+        """
         self.check_inputs(
             prompt,
             prompt_2,
@@ -762,6 +763,7 @@ class StableDiffusionXLInstantIDPipeline(StableDiffusionXLControlNetPipeline):
             control_guidance_end,
             callback_on_step_end_tensor_inputs,
         )
+        """
 
         self._guidance_scale = guidance_scale
         self._clip_skip = clip_skip
