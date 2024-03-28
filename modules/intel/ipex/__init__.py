@@ -32,6 +32,7 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.FloatTensor = torch.xpu.FloatTensor
             torch.Tensor.cuda = torch.Tensor.xpu
             torch.Tensor.is_cuda = torch.Tensor.is_xpu
+            torch.nn.Module.cuda = torch.nn.Module.xpu
             torch.UntypedStorage.cuda = torch.UntypedStorage.xpu
             torch.cuda._initialization_lock = torch.xpu.lazy_init._initialization_lock
             torch.cuda._initialized = torch.xpu.lazy_init._initialized
@@ -147,9 +148,9 @@ def ipex_init(): # pylint: disable=too-many-statements
 
             # C
             torch._C._cuda_getCurrentRawStream = ipex._C._getCurrentStream
-            ipex._C._DeviceProperties.multi_processor_count = ipex._C._DeviceProperties.gpu_eu_count
-            ipex._C._DeviceProperties.major = 2023
-            ipex._C._DeviceProperties.minor = 2
+            ipex._C._DeviceProperties.multi_processor_count = ipex._C._DeviceProperties.gpu_subslice_count
+            ipex._C._DeviceProperties.major = 2024
+            ipex._C._DeviceProperties.minor = 0
 
             # Fix functions with ipex:
             torch.cuda.mem_get_info = lambda device=None: [(torch.xpu.get_device_properties(device).total_memory - torch.xpu.memory_reserved(device)), torch.xpu.get_device_properties(device).total_memory]
