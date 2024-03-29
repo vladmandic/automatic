@@ -9,7 +9,7 @@
 - Control API scripts compatibility
 
 
-## Update for 2024-03-28
+## Update for 2024-03-29
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -24,11 +24,14 @@
     both can still be installed by user if desired  
 - **Improvements**:
   - Styles apply wildcards to params
-  - Add API endpoint `/sdapi/v1/control` and util `cli/simple-control.py`  
+  - Add API endpoint `/sdapi/v1/control` and CLI util `cli/simple-control.py`  
     (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
     example:
-    > simple-control.py --prompt cat --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png --type controlnet --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8'
-  - Add API endpoint `/sdapi/v1/vqa` and util `cli/simple-vqa.py`
+    > simple-control.py --prompt 'woman in the city' --sampler UniPC --steps 20  
+    > --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
+    > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
+    > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
+  - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
 - **Fixes**:

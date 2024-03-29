@@ -149,9 +149,11 @@ class ItemEmbedding(BaseModel):
     vectors: int = Field(title="Vectors", description="The number of vectors in the embedding")
 
 class ItemIPAdapter(BaseModel):
-    adapter: str = Field(title="Adapter", default="Base", description="Adapter to use")
-    image: str = Field(title="Image", default="", description="Adapter image, must be a base64 string containing the image's data.")
-    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="Scale of the adapter image, must be between 0 and 1.")
+    adapter: str = Field(title="Adapter", default="Base", description="")
+    images: List[str] = Field(title="Image", default=[], description="")
+    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="")
+    start: float = Field(title="Start", default=0.0, gt=0, le=1, description="")
+    end: float = Field(title="End", default=1.0, gt=0, le=1, description="")
 
 class ItemFace(BaseModel):
     mode: str = Field(title="Mode", default="FaceID", description="The mode to use (available values: FaceID, FaceSwap, PhotoMaker, InstantID).")
@@ -204,7 +206,7 @@ ReqTxt2Img = PydanticModelGenerator(
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "ip_adapter", "type": Optional[ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[ItemFace], "default": None, "exclude": True},
     ]
 ).generate_model()
@@ -229,7 +231,7 @@ ReqImg2Img = PydanticModelGenerator(
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "ip_adapter", "type": Optional[ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face_id", "type": Optional[ItemFace], "default": None, "exclude": True},
     ]
 ).generate_model()

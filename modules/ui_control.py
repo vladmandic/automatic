@@ -460,7 +460,6 @@ def create_ui(_blocks: gr.Blocks=None):
                 input_script_args = scripts.scripts_current.setup_ui(parent='control', accordion=True)
 
             # handlers
-
             for btn in input_buttons:
                 btn.click(fn=helpers.copy_input, inputs=[input_mode, btn, input_image, input_resize, input_inpaint], outputs=[input_image, input_resize, input_inpaint], _js='controlInputMode')
                 btn.click(fn=helpers.transfer_input, inputs=[btn], outputs=[input_image, input_resize, input_inpaint] + input_buttons)
@@ -570,7 +569,6 @@ def create_ui(_blocks: gr.Blocks=None):
             bindings = generation_parameters_copypaste.ParamBinding(paste_button=btn_paste, tabname="control", source_text_component=prompt, source_image_component=output_gallery)
             generation_parameters_copypaste.register_paste_params_button(bindings)
             masking.bind_controls([input_image, input_inpaint, input_resize], preview_process, output_image)
-
 
             if os.environ.get('SD_CONTROL_DEBUG', None) is not None: # debug only
                 from modules.control.test import test_processors, test_controlnets, test_adapters, test_xs, test_lite

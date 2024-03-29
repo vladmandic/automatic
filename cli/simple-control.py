@@ -87,7 +87,24 @@ def generate(args): # pylint: disable=redefined-outer-name
                 'start': float(u[3].strip()) if len(u) > 3 else 0.0,
                 'end': float(u[4].strip()) if len(u) > 4 else 1.0,
             })
-        log.info(f"control options: {options['control']}")
+
+    if args.ipadapter is not None:
+        options['ip_adapter'] = []
+        for ipadapter in args.ipadapter.split(','):
+            u = ipadapter.split(':')
+            if len(u) < 2:
+                log.error(f'invalid ipadapter: {ipadapter}')
+                continue
+            if not os.path.exists(u[1].strip()):
+                log.error(f'invalid ipadapter image: {u[1]}')
+                continue
+            options['ip_adapter'].append({
+                'adapter': u[0].strip(),
+                'images': [encode(u[1].strip())],
+                'scale': float(u[2].strip()) if len(u) > 2 else 1.0,
+                'start': float(u[3].strip()) if len(u) > 3 else 0.1,
+                'end': float(u[4].strip()) if len(u) > 4 else 1.0,
+            })
 
     if args.mask is not None:
         options['mask'] = encode(args.mask)
@@ -108,8 +125,10 @@ def generate(args): # pylint: disable=redefined-outer-name
                 image.save(output)
                 log.info(f'image saved: size={image.size} filename={output}')
 
-    get_image(data['images'], args.output)
-    get_image(data['processed'], args.processed)
+    if 'images' in data:
+        get_image(data['images'], args.output)
+    if 'processed' in data:
+        get_image(data['processed'], args.processed)
 
 
 if __name__ == "__main__":
@@ -127,6 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', required=False, help='model name')
     parser.add_argument('--type', required=False, help='control type')
     parser.add_argument('--control', required=False, help='control units')
+    parser.add_argument('--ipadapter', required=False, help='ipadapter units')
     args = parser.parse_args()
     log.info(f'img2img: {args}')
     generate(args)

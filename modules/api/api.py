@@ -105,34 +105,6 @@ class Api:
         shared.log.info(f'Browser session: user={user} client={req.client.host} agent={agent}')
         return {}
 
-    def prepare_img_gen_request(self, request):
-        if hasattr(request, "face") and request.face and not request.script_name and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
-            request.script_name = "face"
-            request.script_args = [
-                request.face.mode,
-                request.face.source_images,
-                request.face.ip_model,
-                request.face.ip_override_sampler,
-                request.face.ip_cache_model,
-                request.face.ip_strength,
-                request.face.ip_structure,
-                request.face.id_strength,
-                request.face.id_conditioning,
-                request.face.id_cache,
-                request.face.pm_trigger,
-                request.face.pm_strength,
-                request.face.pm_start,
-                request.face.fs_cache
-            ]
-            del request.face
-
-        if hasattr(request, "ip_adapter") and request.ip_adapter and request.script_name != "IP Adapter" and (not request.alwayson_scripts or "IP Adapter" not in request.alwayson_scripts.keys()):
-            request.alwayson_scripts = {} if request.alwayson_scripts is None else request.alwayson_scripts
-            request.alwayson_scripts["IP Adapter"] = {
-                "args": [request.ip_adapter.adapter, request.ip_adapter.scale, request.ip_adapter.image]
-            }
-            del request.ip_adapter
-
     def set_upscalers(self, req: dict):
         reqDict = vars(req)
         reqDict['extras_upscaler_1'] = reqDict.pop('upscaler_1', None)

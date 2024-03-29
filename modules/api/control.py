@@ -28,7 +28,7 @@ ReqControl = models.create_model_from_signature(
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "ip_adapter", "type": Optional[models.ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "ip_adapter", "type": Optional[List[models.ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[models.ItemFace], "default": None, "exclude": True},
         {"key": "control", "type": Optional[List[ItemControl]], "default": [], "exclude": True},
     ]
@@ -93,9 +93,27 @@ class APIControl():
             ]
             del req.face
 
+    def prepare_ip_adapter(self, request):
+        if hasattr(request, "ip_adapter") and request.ip_adapter:
+            args = { 'ip_adapter_names': [], 'ip_adapter_scales': [], 'ip_adapter_starts': [], 'ip_adapter_ends': [], 'ip_adapter_images': [] }
+            for ipadapter in request.ip_adapter:
+                if not ipadapter.images or len(ipadapter.images) == 0:
+                    continue
+                args['ip_adapter_names'].append(ipadapter.adapter)
+                args['ip_adapter_scales'].append(ipadapter.scale)
+                args['ip_adapter_starts'].append(ipadapter.start)
+                args['ip_adapter_ends'].append(ipadapter.end)
+                args['ip_adapter_images'].append([helpers.decode_base64_to_image(x) for x in ipadapter.images])
+            del request.ip_adapter
+            return args
+        else:
+            return {}
+
     def prepare_control(self, req):
         from modules.control.unit import Unit, unit_types
         req.units = []
+        if req.unit_type is None:
+            return req.control
         if req.unit_type not in unit_types:
             shared.log.error(f'Control uknown unit type: type={req.unit_type} available={unit_types}')
             return req.control
@@ -122,7 +140,6 @@ class APIControl():
         # prepare args
         args = req.copy(update={  # Override __init__ params
             "sampler_index": processing_helpers.get_sampler_index(req.sampler_name),
-            "no_save": not req.save_images,
             "is_generator": False,
             "inputs": [helpers.decode_base64_to_image(x) for x in req.inputs] if req.inputs else None,
             "inits": [helpers.decode_base64_to_image(x) for x in req.inits] if req.inits else None,
@@ -134,10 +151,10 @@ class APIControl():
         # run
         with self.queue_lock:
             shared.state.begin('api-control', api=True)
-
             output_images = []
             output_processed = []
             output_info = ''
+            run.control_set({ 'do_not_save_grid': not req.save_images, 'do_not_save_samples': not req.save_images, **self.prepare_ip_adapter(req) })
             res = run.control_run(**args)
             for item in res:
                 if len(item) > 0 and (isinstance(item[0], list) or item[0] is None): # output_images
@@ -146,7 +163,6 @@ class APIControl():
                     output_info += item[2] if len(item) > 2 and item[2] is not None else ''
                 else:
                     output_info += item
-
             shared.state.end(api=False)
 
         # return

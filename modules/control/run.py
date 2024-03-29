@@ -22,6 +22,7 @@ debug('Trace: CONTROL')
 pipe = None
 instance = None
 original_pipeline = None
+p_extra_args = {}
 
 
 def restore_pipeline():
@@ -42,8 +43,19 @@ def terminate(msg):
     return msg
 
 
-def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True, input_type: int = 0,
-                prompt: str = '', negative: str = '', styles: List[str] = [], steps: int = 20, sampler_index: int = None,
+def control_set(kwargs):
+    if kwargs:
+        global p_extra_args # pylint: disable=global-statement
+        p_extra_args = {}
+        debug(f'Control extra args: {kwargs}')
+    for k, v in kwargs.items():
+        p_extra_args[k] = v
+
+
+def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
+                input_type: int = 0,
+                prompt: str = '', negative: str = '', styles: List[str] = [],
+                steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, sag_scale: float = 0.0, cfg_end: float = 1.0,
                 full_quality: bool = True, restore_faces: bool = False, tiling: bool = False,
@@ -56,7 +68,6 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
                 hr_scale: float = 1.0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0.0, refiner_prompt: str = '', refiner_negative: str = '',
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
-                no_save: bool = False,
                 *input_script_args
         ):
     global instance, pipe, original_pipeline # pylint: disable=global-statement
@@ -134,10 +145,13 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     p.refiner_start = refiner_start
     p.refiner_prompt = refiner_prompt
     p.refiner_negative = refiner_negative
-    p.do_not_save_grid = no_save
-    p.do_not_save_samples = no_save
     if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
         p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
+
+    global p_extra_args # pylint: disable=global-statement
+    for k, v in p_extra_args.items():
+        setattr(p, k, v)
+    p_extra_args = {}
 
     if shared.sd_model is None:
         shared.log.warning('Model not loaded')

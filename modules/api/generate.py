@@ -22,7 +22,6 @@ class APIGenerate():
         args.pop('alwayson_scripts', None)
         args.pop('face', None)
         args.pop('face_id', None)
-        args.pop('ip_adapter', None)
         args.pop('save_images', None)
         return args
 
@@ -61,6 +60,23 @@ class APIGenerate():
             ]
             del request.face
 
+    def prepare_ip_adapter(self, request, p):
+        if hasattr(request, "ip_adapter") and request.ip_adapter:
+            p.ip_adapter_names = []
+            p.ip_adapter_scales = []
+            p.ip_adapter_starts = []
+            p.ip_adapter_ends = []
+            p.ip_adapter_images = []
+            for ipadapter in request.ip_adapter:
+                if not ipadapter.images or len(ipadapter.images) == 0:
+                    continue
+                p.ip_adapter_names.append(ipadapter.adapter)
+                p.ip_adapter_scales.append(ipadapter.scale)
+                p.ip_adapter_starts.append(ipadapter.start)
+                p.ip_adapter_ends.append(ipadapter.end)
+                p.ip_adapter_images.append([helpers.decode_base64_to_image(x) for x in ipadapter.images])
+            del request.ip_adapter
+
     def post_text2img(self, txt2imgreq: models.ReqTxt2Img):
         self.prepare_face_module(txt2imgreq)
         script_runner = scripts.scripts_txt2img
@@ -81,6 +97,7 @@ class APIGenerate():
         send_images = args.pop('send_images', True)
         with self.queue_lock:
             p = StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)
+            self.prepare_ip_adapter(txt2imgreq, p)
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
             p.outpath_samples = shared.opts.outdir_samples or shared.opts.outdir_txt2img_samples
@@ -123,6 +140,7 @@ class APIGenerate():
         send_images = args.pop('send_images', True)
         with self.queue_lock:
             p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
+            self.prepare_ip_adapter(img2imgreq, p)
             p.init_images = [helpers.decode_base64_to_image(x) for x in init_images]
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_img2img_grids
