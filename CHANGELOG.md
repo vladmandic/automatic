@@ -34,6 +34,9 @@
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
+- **IPEX**
+  - update to *IPEX 2.1.20* on Linux  
+    requires removing the venv folder to update properly  
 - **Fixes**:
   - Prompt params parser
   - Fix image save without metadata

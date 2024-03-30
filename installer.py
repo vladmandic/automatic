@@ -547,11 +547,13 @@ def check_torch():
         os.environ.setdefault('NEOReadDebugKeys', '1')
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
         if "linux" in sys.platform:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0a0 torchvision==0.16.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-            os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.14.0 intel-extension-for-tensorflow[xpu]==2.14.0.1')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post0 torchvision==0.16.0.post0 intel-extension-for-pytorch==2.1.20+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+            os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')
             if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.0.0'), 'mkl')
-                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.0.0'), 'mkl-dpcpp')
+                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.1.0'), 'mkl')
+                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.1.0'), 'mkl-dpcpp')
+                install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.12.0'), 'oneccl-devel')
+                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.0'), 'impi-devel')
         else:
             if sys.version_info.minor == 11:
                 pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
