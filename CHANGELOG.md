@@ -37,6 +37,7 @@
 - **IPEX**
   - update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
+  - remove 1024x1024 workaround  
 - **Fixes**:
   - Prompt params parser
   - Fix image save without metadata
