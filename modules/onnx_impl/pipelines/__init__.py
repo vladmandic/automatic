@@ -64,6 +64,10 @@ class PipelineBase(TorchCompatibleModule, diffusers.DiffusionPipeline, metaclass
                 log.debug(f"Component device/dtype conversion failed: module={name} args={args}, kwargs={kwargs}")
         return self
 
+    @property
+    def components(self):
+        return {}
+
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, **_): # pylint: disable=arguments-differ
         return OnnxRawPipeline(
