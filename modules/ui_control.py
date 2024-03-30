@@ -118,12 +118,12 @@ def create_ui(_blocks: gr.Blocks=None):
                     with gr.Row():
                         video_skip_frames = gr.Slider(minimum=0, maximum=100, step=1, label='Skip input frames', value=0, elem_id="control_video_skip_frames")
                     with gr.Row():
-                        video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-                        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False)
+                        video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None', elem_id="control_video_type")
+                        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False, elem_id="control_video_duration")
                     with gr.Row():
-                        video_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-                        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-                        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+                        video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id="control_video_loop")
+                        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False, elem_id="control_video_pad")
+                        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id="control_video_interpolate")
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
                 enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
