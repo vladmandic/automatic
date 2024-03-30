@@ -37,77 +37,102 @@ def refresh_themes(no_update=False):
 
 
 def list_themes():
-    builtin = list_builtin_themes()
     extensions = [e.name for e in modules.extensions.extensions if e.enabled]
-    engines = []
-    if 'sdnext-ui-ux' in extensions:
+    if 'sd-webui-lobe-theme' in extensions and modules.shared.opts.gradio_theme == 'lobe':
+        themes = ['lobe']
+        modules.shared.opts.data['gradio_theme'] = themes[0]
+        modules.shared.opts.data['theme_type'] = 'None'
+        modules.shared.log.info('UI theme: extension="lobe"')
+    elif 'Cozy-Nest' in extensions and modules.shared.opts.gradio_theme == 'cozy-nest':
+        themes = ['cozy-nest']
+        modules.shared.opts.data['gradio_theme'] = themes[0]
+        modules.shared.opts.data['theme_type'] = 'None'
+        modules.shared.log.info('UI theme: extension="cozy-nest"')
+    elif modules.shared.opts.theme_type == 'None':
+        gradio = ["gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
+        huggingface = refresh_themes(no_update=True)
+        huggingface = {x['id'] for x in huggingface if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()}
+        huggingface = [f'huggingface/{x}' for x in huggingface]
+        themes = sorted(gradio) + sorted(huggingface, key=str.casefold)
+        modules.shared.log.debug(f'UI themes available: type=={modules.shared.opts.theme_type} gradio={len(gradio)} huggingface={len(huggingface)}')
+    elif modules.shared.opts.theme_type == 'Standard':
+        builtin = list_builtin_themes()
+        themes = sorted(builtin)
+        modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(builtin)}')
+    elif modules.shared.opts.theme_type == 'Modern':
         ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
         folder = os.path.join(ext.path, 'themes')
+        themes = []
         if os.path.exists(folder):
             for f in os.listdir(folder):
                 if f.endswith('.css'):
-                    engines.append(f'modern/{os.path.splitext(f)[0]}')
-        if len(engines) == 0:
-            engines.append('modern/sdxl_alpha')
-    if 'sd-webui-lobe-theme' in extensions:
-        modules.shared.log.info('Theme: installed="lobe"')
-        engines.append('lobe')
-    if 'Cozy-Nest' in extensions:
-        modules.shared.log.info('Theme: installed="cozy-nest"')
-        engines.append('cozy-nest')
-    gradio = ["gradio/default", "gradio/base", "gradio/glass", "gradio/monochrome", "gradio/soft"]
-    huggingface = refresh_themes(no_update=True)
-    huggingface = {x['id'] for x in huggingface if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()}
-    huggingface = [f'huggingface/{x}' for x in huggingface]
-    modules.shared.log.debug(f'Themes: builtin={len(builtin)} gradio={len(gradio)} huggingface={len(huggingface)}')
-    themes = sorted(engines) + sorted(builtin) + sorted(gradio) + sorted(huggingface, key=str.casefold)
+                    themes.append(os.path.splitext(f)[0])
+        if len(themes) == 0:
+            themes.append('modern/sdxl_alpha')
+        themes = sorted(themes)
+        modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(themes)}')
+    else:
+        modules.shared.log.error(f'UI themes: type={modules.shared.opts.theme_type} unknown')
+        themes = []
     return themes
 
 
-def reload_gradio_theme(theme_name=None):
+def reload_gradio_theme():
     global gradio_theme # pylint: disable=global-statement
-    theme_name = theme_name or modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme
-    if theme_name == 'default':
-        theme_name = 'black-teal'
-    if theme_name == 'modern':
-        theme_name = 'modern/sdxl_alpha'
-    modules.shared.opts.data['gradio_theme'] = theme_name
+    theme_name = modules.shared.opts.gradio_theme
     default_font_params = {
         'font':['Helvetica', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'font_mono':['IBM Plex Mono', 'ui-monospace', 'Consolas', 'monospace']
     }
-    base = 'base.css'
-    if theme_name.lower() in list_builtin_themes():
-        base = 'sdnext.css'
+    gradio_theme = gr.themes.Base(**default_font_params)
+
+    available_themes = list_themes()
+    if theme_name not in available_themes:
+        modules.shared.log.error(f'UI theme invalid: type={modules.shared.opts.theme_type} theme="{theme_name}" available={available_themes}')
+        if modules.shared.opts.theme_type == 'Standard':
+            theme_name = 'black-teal'
+        elif modules.shared.opts.theme_type == 'Modern':
+            theme_name = 'sdxl_alpha'
+
+    modules.shared.opts.data['gradio_theme'] = theme_name
+
+    if theme_name.lower() in ['lobe', 'cozy-nest']:
+        modules.shared.log.info(f'UI theme extension: name="{theme_name}" style={modules.shared.opts.theme_style}')
+        return None
+    elif modules.shared.opts.theme_type == 'Standard':
         gradio_theme = gr.themes.Base(**default_font_params)
-        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
-        return True
-    elif theme_name.lower() in ['lobe', 'cozy-nest']:
+        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}" style={modules.shared.opts.theme_style}')
+        return 'sdnext.css'
+    elif modules.shared.opts.theme_type == 'Modern':
         gradio_theme = gr.themes.Base(**default_font_params)
-        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
-    elif theme_name.lower() == 'modern' or theme_name.lower().startswith('modern/'):
-        gradio_theme = gr.themes.Base(**default_font_params)
-        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
-    elif theme_name.startswith("gradio/"):
-        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
-        modules.shared.log.warning('UI theme: using Gradio default theme which is not optimized for SD.Next')
-        if theme_name == "gradio/default":
-            gradio_theme = gr.themes.Default(**default_font_params)
-        if theme_name == "gradio/base":
-            gradio_theme = gr.themes.Base(**default_font_params)
-        if theme_name == "gradio/glass":
-            gradio_theme = gr.themes.Glass(**default_font_params)
-        if theme_name == "gradio/monochrome":
-            gradio_theme = gr.themes.Monochrome(**default_font_params)
-        if theme_name == "gradio/soft":
-            gradio_theme = gr.themes.Soft(**default_font_params)
-    else:
-        modules.shared.log.info(f'UI theme: name="{theme_name}" style={modules.shared.opts.theme_style} base={base}')
-        try:
-            hf_theme_name = theme_name.replace('huggingface/', '')
-            modules.shared.log.warning('UI Theme: using 3rd party theme which is not optimized for SD.Next')
-            gradio_theme = gr.themes.ThemeClass.from_hub(hf_theme_name)
-        except Exception as e:
-            modules.shared.log.error(f"UI theme: download error accessing HuggingFace {e}")
-            gradio_theme = gr.themes.Default(**default_font_params)
-    return False
+        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}" style={modules.shared.opts.theme_style}')
+        return 'base.css'
+    elif modules.shared.opts.theme_type == 'None':
+        if theme_name.startswith('gradio/'):
+            modules.shared.log.warning('UI theme: using Gradio default theme which is not optimized for SD.Next')
+            if theme_name == "gradio/default":
+                gradio_theme = gr.themes.Default(**default_font_params)
+            elif theme_name == "gradio/base":
+                gradio_theme = gr.themes.Base(**default_font_params)
+            elif theme_name == "gradio/glass":
+                gradio_theme = gr.themes.Glass(**default_font_params)
+            elif theme_name == "gradio/monochrome":
+                gradio_theme = gr.themes.Monochrome(**default_font_params)
+            elif theme_name == "gradio/soft":
+                gradio_theme = gr.themes.Soft(**default_font_params)
+            else:
+                modules.shared.log.warning('UI theme: unknown Gradio theme')
+                theme_name = "gradio/default"
+                gradio_theme = gr.themes.Default(**default_font_params)
+        elif theme_name.startswith('huggingface/'):
+            modules.shared.log.warning('UI theme: using 3rd party theme which is not optimized for SD.Next')
+            try:
+                hf_theme_name = theme_name.replace('huggingface/', '')
+                gradio_theme = gr.themes.ThemeClass.from_hub(hf_theme_name)
+            except Exception as e:
+                modules.shared.log.error(f"UI theme: download error accessing HuggingFace {e}")
+                gradio_theme = gr.themes.Default(**default_font_params)
+        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}" style={modules.shared.opts.theme_style}')
+        return 'base.css'
+    modules.shared.log.error(f'UI theme: type={modules.shared.opts.theme_type} unknown')
+    return None

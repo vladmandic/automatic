@@ -9,7 +9,7 @@
 - Control API scripts compatibility
 
 
-## Update for 2024-03-29
+## Update for 2024-03-30
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -18,6 +18,10 @@
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
     as with all other compile engines, enable via *settings -> compute settings -> compile*  
+- **UI**:
+  - Theme types: **Standard*, **Modern** *(experimental)*, **None** (used for Gradio and Huggingface 3rd party themes)  
+    Specifying a theme type updates list of available themes  
+  - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native equivalents  

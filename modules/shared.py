@@ -288,30 +288,59 @@ def list_samplers():
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
     disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
-    disable_themes = []
+    disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-ui-ux']
     disable_original = []
     disabled = []
-    theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme
-    if theme_name.lower() != 'modern' and not theme_name.lower().startswith('modern/'):
-        disable_themes.append('sdnext-ui-ux')
-    if theme_name.lower() != 'lobe':
-        disable_themes.append('sd-webui-lobe-theme')
-    if theme_name.lower() != 'cozy-nest':
-        disable_themes.append('Cozy-Nest')
+    if modules.shared.cmd_opts.theme is not None:
+        theme_name = modules.shared.cmd_opts.theme.lower()
+    else:
+        theme_name = f'{modules.shared.opts.theme_type}/{modules.shared.opts.gradio_theme}'.lower()
+
+    if theme_name == 'lobe':
+        disable_themes.remove('sd-webui-lobe-theme')
+    elif theme_name == 'cozy-nest' or theme_name == 'cozy':
+        disable_themes.remove('cozy-nest')
+    elif '/' not in theme_name: # set default themes per type
+        if theme_name == 'standard' or theme_name == 'default':
+            theme_name = 'standard/black-teal'
+        if theme_name == 'modern':
+            theme_name = 'modern/sdxl_alpha'
+        if theme_name == 'gradio':
+            theme_name = 'gradio/default'
+        if theme_name == 'huggingface':
+            theme_name = 'huggingface/blaaa'
+
+    if theme_name.startswith('standard'):
+        modules.shared.opts.data['theme_type'] = 'Standard'
+        modules.shared.opts.data['gradio_theme'] = theme_name[9:]
+    elif theme_name.startswith('modern'):
+        modules.shared.opts.data['theme_type'] = 'Modern'
+        modules.shared.opts.data['gradio_theme'] = theme_name[7:]
+        disable_themes.remove('sdnext-ui-ux')
+    elif theme_name.startswith('gradio'):
+        modules.shared.opts.data['theme_type'] = 'None'
+        modules.shared.opts.data['gradio_theme'] = theme_name
+    elif theme_name.startswith('huggingface'):
+        modules.shared.opts.data['theme_type'] = 'None'
+        modules.shared.opts.data['gradio_theme'] = theme_name
+    else:
+        modules.shared.opts.data['theme_type'] = 'None'
+        modules.shared.opts.data['gradio_theme'] = theme_name
+
     for ext in disable_themes:
-        if ext not in opts.disabled_extensions:
+        if ext.lower() not in opts.disabled_extensions:
             disabled.append(ext)
     if cmd_opts.safe:
         for ext in disable_safe:
-            if ext not in opts.disabled_extensions:
+            if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
     if backend == Backend.DIFFUSERS:
         for ext in disable_diffusers:
-            if ext not in opts.disabled_extensions:
+            if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
     if backend == Backend.ORIGINAL:
         for ext in disable_original:
-            if ext not in opts.disabled_extensions:
+            if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
@@ -582,12 +611,13 @@ options_templates.update(options_section(('saving-paths', "Image Naming & Paths"
 }))
 
 options_templates.update(options_section(('ui', "User Interface Options"), {
-    "motd": OptionInfo(True, "Show MOTD"),
-    "gradio_theme": OptionInfo("black-teal", "UI theme", gr.Dropdown, lambda: {"choices": theme.list_themes()}, refresh=theme.refresh_themes),
+    "theme_type": OptionInfo("Standard", "Theme type", gr.Radio, {"choices": ["Modern", "Standard", "None"]}),
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
+    "gradio_theme": OptionInfo("black-teal", "UI theme", gr.Dropdown, lambda: {"choices": theme.list_themes()}, refresh=theme.refresh_themes),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "tooltips": OptionInfo("UI Tooltips", "UI tooltips", gr.Radio, {"choices": ["None", "Browser default", "UI tooltips"], "visible": False}),
     "aspect_ratios": OptionInfo("1:1, 4:3, 16:9, 16:10, 21:9, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
+    "motd": OptionInfo(True, "Show MOTD"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),
