@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Tuple, List
 import onnxruntime as ort
 from installer import log
+from modules import devices
 
 
 class ExecutionProvider(str, Enum):
@@ -21,18 +22,18 @@ EP_TO_NAME = {
     ExecutionProvider.CUDA: "gpu-cuda", # test required
     ExecutionProvider.ROCm: "gpu-rocm", # test required
     ExecutionProvider.MIGraphX: "gpu-migraphx", # test required
-    ExecutionProvider.OpenVINO: "gpu-openvino??", # test required
+    ExecutionProvider.OpenVINO: "gpu-openvino", # test required
 }
 TORCH_DEVICE_TO_EP = {
-    "cpu": ExecutionProvider.CPU,
+    "cpu": ExecutionProvider.CPU if devices.backend != "openvino" else ExecutionProvider.OpenVINO,
     "cuda": ExecutionProvider.CUDA,
+    "xpu": ExecutionProvider.OpenVINO,
     "privateuseone": ExecutionProvider.DirectML,
     "meta": None,
 }
 
 
 def get_default_execution_provider() -> ExecutionProvider:
-    from modules import devices
     if devices.backend == "cpu":
         return ExecutionProvider.CPU
     elif devices.backend == "directml":
@@ -55,10 +56,29 @@ def get_execution_provider_options():
             execution_provider_options["tunable_op_tuning_enable"] = 1
     elif opts.onnx_execution_provider == ExecutionProvider.OpenVINO:
         from modules.intel.openvino import get_device as get_raw_openvino_device
-        raw_openvino_device = get_raw_openvino_device()
-        if opts.olive_float16 and not opts.openvino_hetero_gpu:
-            raw_openvino_device = f"{raw_openvino_device}_FP16"
-        execution_provider_options["device_type"] = raw_openvino_device
+        device = get_raw_openvino_device()
+        if "HETERO:" not in device:
+            if opts.olive_float16:
+                device = f"{device}_FP16"
+            else:
+                device = f"{device}_FP32"
+        else:
+            device = ""
+            available_devices = opts.openvino_devices.copy()
+            available_devices.remove("CPU")
+            for hetero_device in available_devices:
+                if opts.olive_float16:
+                    device = f"{device},{hetero_device}_FP16"
+                else:
+                    device = f"{device},{hetero_device}_FP32"
+            if "CPU" in opts.openvino_devices:
+                if opts.olive_float16:
+                    device = f"{device},CPU_FP16"
+                else:
+                    device = f"{device},CPU_FP32"
+            device = f"HETERO:{device[1:]}"
+
+        execution_provider_options["device_type"] = device
         del execution_provider_options["device_id"]
     return execution_provider_options
 

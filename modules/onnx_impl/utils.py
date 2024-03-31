@@ -20,8 +20,9 @@ def extract_device(args: List, kwargs: Dict):
 
 def move_inference_session(session: ort.InferenceSession, device: torch.device):
     from modules.devices import device as default_device
+    from modules.devices import backend as default_backend
 
-    if default_device.type == "cpu": # CPU-only torch without any other external ops overriding. This transfer will be led to mistake.
+    if default_device.type == "cpu" and default_backend != "openvino": # CPU-only torch without any other external ops overriding. This transfer will be led to mistake.
         return session
 
     from . import DynamicSessionOptions, TemporalModule

@@ -392,7 +392,12 @@ def check_python():
 def check_onnx():
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
-    if not installed('onnxruntime', quiet=True) and not installed('onnxruntime-gpu', quiet=True): # allow either
+    if not installed('onnxruntime', quiet=True) and not (
+        installed('onnxruntime-gpu', quiet=True) or
+        installed('onnxruntime-openvino', quiet=True) or
+        installed('onnxruntime-training', quiet=True)
+        ): # allow either
+
         install('onnxruntime', 'onnxruntime', ignore=True)
 
 
@@ -573,12 +578,12 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
         install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino', ignore=True)
         install('nncf==2.7.0', 'nncf', ignore=True)
-        install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True)
+        install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     elif allow_openvino and args.use_openvino:
         log.info('Using OpenVINO')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
         install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
-        install('onnxruntime-openvino', 'onnxruntime-openvino', ignore=True)
+        install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
         install('nncf==2.8.1', 'nncf')
         os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
         os.environ.setdefault('NEOReadDebugKeys', '1')
