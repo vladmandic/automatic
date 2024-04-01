@@ -40,7 +40,7 @@ def read_media(fn):
 
 def create_ui():
     with gr.Blocks() as tab:
-        with gr.Row():
+        with gr.Row(elem_id='tab-gallery-sort-buttons'):
             sort_buttons = []
             sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_asc, show_label=False, elem_classes=['gallery-sort']))
             sort_buttons.append(ToolButton(value=ui_symbols.sort_alpha_dsc, show_label=False, elem_classes=['gallery-sort']))
