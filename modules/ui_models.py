@@ -700,7 +700,10 @@ def create_ui():
                     from modules.ui_extra_networks import get_pages
                     from modules.modelloader import download_civit_meta
                     res = []
-                    page: modules.ui_extra_networks.ExtraNetworksPage = get_pages('model')[0]
+                    pages = get_pages('Model')
+                    if len(pages) == 0:
+                        return 'CivitAI update metadata: no models found'
+                    page: modules.ui_extra_networks.ExtraNetworksPage = pages[0]
                     table_data = []
                     update_data.clear()
                     all_hashes = [(item.get('hash', None) or 'XXXXXXXX').upper()[:8] for item in page.list_items()]

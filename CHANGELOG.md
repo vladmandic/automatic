@@ -50,6 +50,7 @@
   - fix ROCm compatibility, thanks @Disty0
   - Fix API generate save metadata
   - Fix Face/InstantID
+  - Fix CivitAI update model info for all models
   - Enumerate diffusers model with multiple variants
 
 ## Update for 2024-03-19
