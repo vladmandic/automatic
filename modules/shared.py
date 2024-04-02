@@ -292,9 +292,9 @@ def temp_disable_extensions():
     disable_original = []
     disabled = []
     if modules.shared.cmd_opts.theme is not None:
-        theme_name = modules.shared.cmd_opts.theme.lower()
+        theme_name = modules.shared.cmd_opts.theme
     else:
-        theme_name = f'{modules.shared.opts.theme_type}/{modules.shared.opts.gradio_theme}'.lower()
+        theme_name = f'{modules.shared.opts.theme_type.lower()}/{modules.shared.opts.gradio_theme}'
 
     if theme_name == 'lobe':
         disable_themes.remove('sd-webui-lobe-theme')
@@ -354,7 +354,6 @@ elif devices.backend == "directml":
     cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
 else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
-
 if devices.backend == "rocm":
     sdp_options_default =  ['Memory attention', 'Math attention']
 #elif devices.backend == "zluda":
@@ -561,7 +560,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "image_sep_browser": OptionInfo("<h2>Image Gallery</h2>", "", gr.HTML),
     "browser_cache": OptionInfo(True, "Use image gallery cache"),
     "browser_folders": OptionInfo("", "Additional image browser folders"),
-    "browser_fixed_width": OptionInfo(False, "Use fixed with thumbnails"),
+    "browser_fixed_width": OptionInfo(False, "Use fixed width thumbnails"),
     "viewer_show_metadata": OptionInfo(True, "Show metadata in full screen image browser"),
 
     "save_sep_options": OptionInfo("<h2>Intermediate Image Saving</h2>", "", gr.HTML),

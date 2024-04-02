@@ -9,7 +9,7 @@
 - Control API scripts compatibility
 
 
-## Update for 2024-03-30
+## Update for 2024-04-02
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
