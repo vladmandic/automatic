@@ -33,7 +33,6 @@ then
     venv_dir="venv"
 fi
 
-
 # read any command line flags to the webui.sh script
 while getopts "f" flag > /dev/null 2>&1
 do
@@ -65,15 +64,16 @@ then
     exit 1
 fi
 
-echo "Create and activate python venv"
 if [[ ! -d "${venv_dir}" ]]
 then
+    echo "Create python venv"
     "${PYTHON}" -m venv "${venv_dir}"
     first_launch=1
 fi
 
 if [[ -f "${venv_dir}"/bin/activate ]]
 then
+    echo "Activate python venv"
     source "${venv_dir}"/bin/activate
 else
     echo "Error: Cannot activate python venv"
@@ -87,13 +87,13 @@ fi
 
 if [[ ! -z "${ACCELERATE}" ]] && [ ${ACCELERATE}="True" ] && [ -x "$(command -v accelerate)" ]
 then
-    echo "Launching accelerate launch.py..."
+    echo "Launch: accelerate"
     exec accelerate launch --num_cpu_threads_per_process=6 launch.py "$@"
 elif [[ ! -z "${IPEXRUN}" ]] && [ ${IPEXRUN}="True" ] && [ -x "$(command -v ipexrun)" ]
 then
-    echo "Launching ipexrun launch.py..."
+    echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
 else
-    echo "Launching launch.py..."
+    echo "Launch"
     exec "${PYTHON}" launch.py "$@"
 fi
