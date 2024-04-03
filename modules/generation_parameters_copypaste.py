@@ -195,7 +195,9 @@ def parse_generation_parameters(infotext, no_prompt=False):
     re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
     basic_params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
 
-    sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    infotext = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    infotext = infotext.replace(' Steps: ', ', Steps: ').replace('\nSteps: ', ', Steps: ') # fix cases where there is no delimiter between prompt and steps
+    sanitized = infotext
     sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
     sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
     sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
@@ -208,7 +210,7 @@ def parse_generation_parameters(infotext, no_prompt=False):
     else:
         try:
             first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-        except Exception:
+        except Exception as e:
             first_param, first_param_idx = next(iter(params)), 0
         if first_param_idx > 0:
             for _i in range(first_param_idx):
@@ -218,6 +220,7 @@ def parse_generation_parameters(infotext, no_prompt=False):
 
     prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
     negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
+    negative = negative.strip().strip(',')
 
     for k, v in params.copy().items(): # avoid dict-has-changed
         if len(v) > 0 and v[0] == '"' and v[-1] == '"':
