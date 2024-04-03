@@ -604,7 +604,8 @@ def check_torch():
             log.info('Using CPU-only Torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
-        log.debug(f'Installing torch: {torch_command}')
+        if not installed('torch', quiet=True):
+            log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
         if zluda_need_dll_patch:
             patch_zluda()

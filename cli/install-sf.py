@@ -78,6 +78,8 @@ def install_stable_fast():
 
     ok = install_pip(url)
     if ok:
+        install_pip('triton')
+    if ok:
         import sfast
         print(f'StableFast installed: {sfast.__version__}')
     else:
