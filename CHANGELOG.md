@@ -8,7 +8,6 @@
 - DoRA
 - Control API scripts compatibility
 
-
 ## Update for 2024-04-03
 
 - **Features**:
@@ -19,15 +18,12 @@
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
     as with all other compile engines, enable via *settings -> compute settings -> compile*  
 - **UI**:
-  - Theme types: **Standard*, **Modern** *(experimental)*, **None** (used for Gradio and Huggingface 3rd party themes)  
+  - Theme types:  
+    **Standard* (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
     Specifying a theme type updates list of available themes  
+    For example, *Gradio* themes will not appear as available if theme type is set to *Standard*  
   - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
-- **Changes**:
-  - Removed built-in extensions: *ControlNet* and *Image-Browser*  
-    as both *image-browser* and *controlnet* have native equivalents  
-    both can still be installed by user if desired  
-- **Improvements**:
-  - Styles apply wildcards to params
+- **API**:
   - Add API endpoint `/sdapi/v1/control` and CLI util `cli/simple-control.py`  
     (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
     example:
@@ -36,6 +32,12 @@
     > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
+- **Changes**:
+  - Removed built-in extensions: *ControlNet* and *Image-Browser*  
+    as both *image-browser* and *controlnet* have native equivalents  
+    both can still be installed by user if desired  
+- **Improvements**:
+  - Styles apply wildcards to params
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
 - **IPEX**
