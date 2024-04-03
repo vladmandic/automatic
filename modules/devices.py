@@ -369,7 +369,10 @@ def randn(seed, shape):
         torch.xpu.manual_seed_all(seed)
     if device.type == 'mps':
         return torch.randn(shape, device=cpu).to(device)
-    return torch.randn(shape, device=device)
+    elif shared.opts.diffusers_generator_device == "CPU":
+        return torch.randn(shape, device=cpu)
+    else:
+        return torch.randn(shape, device=device)
 
 
 def randn_without_seed(shape):

@@ -98,17 +98,22 @@ def get_sampler_index(sampler_name: str) -> int:
     return sampler_index
 
 
-def slerp(val, low, high): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
-    low_norm = low/torch.norm(low, dim=1, keepdim=True)
-    high_norm = high/torch.norm(high, dim=1, keepdim=True)
-    dot = (low_norm*high_norm).sum(1)
-
-    if dot.mean() > 0.9995:
-        return low * val + high * (1 - val)
-
+def slerp(val, lo, hi): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
+    lo_norm = lo / torch.norm(lo, dim=1, keepdim=True)
+    hi_norm = hi / torch.norm(hi, dim=1, keepdim=True)
+    dot = (lo_norm * hi_norm).sum(1)
+    dot_mean = dot.mean()
+    if dot_mean > 0.9995: # simplifies slerp to lerp if vectors are nearly parallel
+        return lo * val + hi * (1 - val)
+    if dot_mean < 0.0005: # also simplifies slerp to lerp to avoid division-by-zero later on
+        return lo * (1.0 - val) + hi * val
     omega = torch.acos(dot)
     so = torch.sin(omega)
-    res = (torch.sin((1.0-val)*omega)/so).unsqueeze(1)*low + (torch.sin(val*omega)/so).unsqueeze(1) * high
+    lo_res = (torch.sin((1.0 - val) * omega) / so).unsqueeze(1)
+    hi_res = (torch.sin(val * omega) / so).unsqueeze(1)
+    # lo_res[lo_res != lo_res] = 0 # replace nans with zeros, but should not happen with dot_mean filtering
+    # hi_res[hi_res != hi_res] = 0
+    res = lo * lo_res + hi * hi_res
     return res
 
 

@@ -52,6 +52,7 @@
   - Fix Face/InstantID
   - Fix CivitAI update model info for all models
   - Fix FP16/BF16 test on model load
+  - Fix variation seed possible NaNs
   - Enumerate diffusers model with multiple variants
 
 ## Update for 2024-03-19
