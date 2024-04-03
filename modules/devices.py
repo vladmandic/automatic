@@ -184,11 +184,15 @@ def set_cuda_sync_mode(mode):
 
 def test_fp16():
     if shared.cmd_opts.experimental:
+        if debug:
+            log.debug('Torch FP16 test skip')
         return True
     try:
         x = torch.tensor([[1.5,.0,.0,.0]]).to(device=device, dtype=torch.float16)
         layerNorm = torch.nn.LayerNorm(4, eps=0.00001, elementwise_affine=True, dtype=torch.float16, device=device)
         _y = layerNorm(x)
+        if debug:
+            log.debug('Torch FP16 test pass')
         return True
     except Exception as ex:
         log.warning(f'Torch FP16 test failed: Forcing FP32 operations: {ex}')
@@ -197,13 +201,18 @@ def test_fp16():
         shared.opts.no_half_vae = True
         return False
 
+
 def test_bf16():
     if shared.cmd_opts.experimental:
+        if debug:
+            log.debug('Torch BF16 test skip')
         return True
     try:
         import torch.nn.functional as F
         image = torch.randn(1, 4, 32, 32).to(device=device, dtype=torch.bfloat16)
         _out = F.interpolate(image, size=(64, 64), mode="nearest")
+        if debug:
+            log.debug('Torch BF16 test pass')
         return True
     except Exception:
         log.warning('Torch BF16 test failed: Fallback to FP16 operations')
@@ -211,7 +220,8 @@ def test_bf16():
 
 
 def set_cuda_params():
-    # log.debug('Verifying Torch settings')
+    if debug:
+        log.debug(f'Verifying Torch settings: cuda={cuda_ok}')
     if cuda_ok:
         try:
             torch.backends.cuda.matmul.allow_tf32 = True
@@ -257,7 +267,7 @@ def set_cuda_params():
         pass
     if shared.cmd_opts.profile:
         shared.log.debug(f'Torch info: {torch.__config__.show()}')
-    global dtype, dtype_vae, dtype_unet, unet_needs_upcast, inference_context # pylint: disable=global-statement
+    global dtype, dtype_vae, dtype_unet, unet_needs_upcast, inference_context, fp16_ok, bf16_ok # pylint: disable=global-statement
     if shared.opts.cuda_dtype == 'FP32':
         dtype = torch.float32
         dtype_vae = torch.float32
@@ -265,13 +275,13 @@ def set_cuda_params():
         fp16_ok = None
         bf16_ok = None
     elif shared.opts.cuda_dtype == 'BF16' or dtype == torch.bfloat16:
-        fp16_ok = test_fp16()
-        bf16_ok = test_bf16()
+        fp16_ok = test_fp16() if fp16_ok is None else fp16_ok
+        bf16_ok = test_bf16() if bf16_ok is None else bf16_ok
         dtype = torch.bfloat16 if bf16_ok else torch.float16
         dtype_vae = torch.bfloat16 if bf16_ok else torch.float16
         dtype_unet = torch.bfloat16 if bf16_ok else torch.float16
     elif shared.opts.cuda_dtype == 'FP16' or dtype == torch.float16:
-        fp16_ok = test_fp16()
+        fp16_ok = test_fp16() if fp16_ok is None else fp16_ok
         bf16_ok = None
         dtype = torch.float16 if fp16_ok else torch.float32
         dtype_vae = torch.float16 if fp16_ok else torch.float32
@@ -328,6 +338,7 @@ elif sys.platform == 'darwin':
 else:
     backend = 'cpu'
 
+
 inference_context = torch.no_grad
 cuda_ok = torch.cuda.is_available()
 cpu = torch.device("cpu")
@@ -335,6 +346,8 @@ device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer 
 dtype = torch.float16
 dtype_vae = torch.float16
 dtype_unet = torch.float16
+fp16_ok = None
+bf16_ok = None
 unet_needs_upcast = False
 onnx = None
 if args.profile:

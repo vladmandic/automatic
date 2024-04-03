@@ -210,7 +210,7 @@ def parse_generation_parameters(infotext, no_prompt=False):
     else:
         try:
             first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-        except Exception as e:
+        except Exception:
             first_param, first_param_idx = next(iter(params)), 0
         if first_param_idx > 0:
             for _i in range(first_param_idx):
