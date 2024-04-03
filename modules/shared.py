@@ -437,6 +437,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "directml_memory_provider": OptionInfo(default_memory_provider, 'DirectML memory stats provider', gr.Radio, {"choices": memory_providers, "visible": devices.backend == "directml"}),
     "directml_catch_nan": OptionInfo(False, "DirectML retry ops for NaN", gr.Checkbox, {"visible": devices.backend == "directml"}),
 
+    "zluda_sep": OptionInfo("<h2>ZLUDA</h2>", "", gr.HTML, {"visible": devices.backend == "cuda"}),
+    "zluda_enable_dnn": OptionInfo(False, "Enable ZLUDA DNN (please read wiki, restart required)", gr.Checkbox, {"visible": devices.backend == "cuda"}),
+
     "olive_sep": OptionInfo("<h2>Olive</h2>", "", gr.HTML),
     "olive_float16": OptionInfo(True, 'Olive use FP16 on optimization'),
     "olive_vae_encoder_float32": OptionInfo(False, 'Olive force FP32 for VAE Encoder'),
