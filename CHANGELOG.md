@@ -8,7 +8,7 @@
 - DoRA
 - Control API scripts compatibility
 
-## Update for 2024-04-03
+## Update for 2024-04-04
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -47,15 +47,16 @@
   - disable ipexrun by default  
     export `IPEXRUN=True` if you want to use ipexrun.  
 - **Fixes**:
-  - Prompt params parser
-  - Fix image save without metadata
-  - fix ROCm compatibility, thanks @Disty0
-  - Fix API generate save metadata
-  - Fix Face/InstantID
-  - Fix CivitAI update model info for all models
-  - Fix FP16/BF16 test on model load
-  - Fix variation seed possible NaNs
-  - Enumerate diffusers model with multiple variants
+  - update requirements
+  - prompt params parser
+  - image save without metadata
+  - ROCm compatibility, thanks @Disty0
+  - API generate save metadata
+  - Face/InstantID faults
+  - CivitAI update model info for all models
+  - FP16/BF16 test on model load
+  - variation seed possible NaNs
+  - enumerate diffusers model with multiple variants
 
 ## Update for 2024-03-19
 
