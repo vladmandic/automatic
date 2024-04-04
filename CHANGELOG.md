@@ -40,6 +40,7 @@
   - Styles apply wildcards to params
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
+  - More efficient in-browser callbacks
 - **IPEX**
   - update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  

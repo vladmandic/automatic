@@ -492,11 +492,9 @@ async function browseFolder() {
 
 async function reconnectUI() {
   const gallery = gradioApp().getElementById('txt2img_gallery');
-  if (!gallery) return;
   const task_id = localStorage.getItem('task');
   const api_logo = Array.from(gradioApp().querySelectorAll('img')).filter((el) => el?.src?.endsWith('api-logo.svg'));
   if (api_logo.length > 0) api_logo[0].remove();
-  clearInterval(start_check); // eslint-disable-line no-use-before-define
   if (task_id) {
     debug('task check:', task_id);
     requestProgress(task_id, null, gallery, null, null, true);
@@ -524,5 +522,3 @@ async function reconnectUI() {
   sd_model_observer.observe(sd_model, { attributes: true, childList: true, subtree: true });
   log('reconnectUI');
 }
-
-const start_check = setInterval(reconnectUI, 100);

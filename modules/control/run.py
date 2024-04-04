@@ -530,6 +530,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
 
                     # pipeline
                     output = None
+                    script_run = False
                     if pipe is not None: # run new pipeline
                         pipe.restore_pipeline = restore_pipeline
                         debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
@@ -549,6 +550,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         processed = p.scripts.run(p, *p.script_args)
                         if processed is None:
                             processed: processing.Processed = processing.process_images(p) # run actual pipeline
+                        else:
+                            script_run = True
                         output = processed.images if processed is not None else None
                         # output = pipe(**vars(p)).images # alternative direct pipe exec call
                     else: # blend all processed images and return
@@ -570,7 +573,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                                 output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after)
 
                             output_images.append(output_image)
-                            if shared.opts.include_mask:
+                            if shared.opts.include_mask and not script_run:
                                 if processed_image is not None and isinstance(processed_image, Image.Image):
                                     output_images.append(processed_image)
 

@@ -195,6 +195,3 @@ async function initSettings() {
   });
   log('initSettings');
 }
-
-onUiLoaded(initSettings);
-onUiLoaded(initModels);

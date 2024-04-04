@@ -481,5 +481,3 @@ async function setupExtraNetworks() {
   registerPrompt('control', 'control_neg_prompt');
   log('initExtraNetworks');
 }
-
-onUiLoaded(setupExtraNetworks);

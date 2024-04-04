@@ -42,5 +42,3 @@ async function setupControlUI() {
 
   log('initControlUI');
 }
-
-onUiLoaded(setupControlUI);

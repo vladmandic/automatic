@@ -74,10 +74,3 @@ async function put(record) {
     request.onerror = (evt) => reject(evt);
   });
 }
-
-window.idbAdd = add;
-window.idbDel = del;
-window.idbGet = get;
-window.idbPut = put;
-
-onUiLoaded(initIndexDB);

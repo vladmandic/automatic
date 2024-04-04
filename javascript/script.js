@@ -10,6 +10,10 @@ const debug = (...msg) => {
   console.debug(ts, ...msg); // eslint-disable-line no-console
 };
 
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms)); // eslint-disable-line no-promise-executor-return
+}
+
 function gradioApp() {
   const elems = document.getElementsByTagName('gradio-app');
   const elem = elems.length === 0 ? document : elems[0];
@@ -30,6 +34,7 @@ const get_uiCurrentTab = getUICurrentTab;
 const uiAfterUpdateCallbacks = [];
 const uiUpdateCallbacks = [];
 const uiLoadedCallbacks = [];
+const uiReadyCallbacks = [];
 const uiTabChangeCallbacks = [];
 const optionsChangedCallbacks = [];
 let uiCurrentTab = null;
@@ -45,6 +50,10 @@ function onUiUpdate(callback) {
 
 function onUiLoaded(callback) {
   uiLoadedCallbacks.push(callback);
+}
+
+function onUiReady(callback) {
+  uiReadyCallbacks.push(callback);
 }
 
 function onUiTabChange(callback) {
@@ -72,23 +81,34 @@ function scheduleAfterUiUpdateCallbacks() {
 }
 
 let executedOnLoaded = false;
+const ignoreElements = ['logMonitorData', 'logWarnings', 'logErrors', 'tooltip-container'];
+const ignoreClasses = ['wrap'];
+
+async function mutationCallback(mutations) {
+  let validMutations = mutations;
+  validMutations = validMutations.filter((m) => m.target.nodeName !== 'LABEL');
+  validMutations = validMutations.filter((m) => ignoreElements.indexOf(m.target.id) === -1);
+  validMutations = validMutations.filter((m) => m.target.id !== 'logWarnings' && m.target.id !== 'logErrors');
+  validMutations = validMutations.filter((m) => !m.target.classList?.contains('wrap'));
+  if (validMutations.length < 1) return;
+
+  if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) { // execute once
+    executedOnLoaded = true;
+    executeCallbacks(uiLoadedCallbacks);
+  }
+  if (executedOnLoaded) { // execute on each mutation
+    executeCallbacks(uiUpdateCallbacks, mutations);
+    scheduleAfterUiUpdateCallbacks();
+  }
+  const newTab = getUICurrentTab();
+  if (newTab && (newTab !== uiCurrentTab)) {
+    uiCurrentTab = newTab;
+    executeCallbacks(uiTabChangeCallbacks);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const mutationObserver = new MutationObserver((m) => {
-    if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) {
-      executedOnLoaded = true;
-      executeCallbacks(uiLoadedCallbacks);
-    }
-    if (executedOnLoaded) {
-      executeCallbacks(uiUpdateCallbacks, m);
-      scheduleAfterUiUpdateCallbacks();
-    }
-    const newTab = getUICurrentTab();
-    if (newTab && (newTab !== uiCurrentTab)) {
-      uiCurrentTab = newTab;
-      executeCallbacks(uiTabChangeCallbacks);
-    }
-  });
+  const mutationObserver = new MutationObserver(mutationCallback);
   mutationObserver.observe(gradioApp(), { childList: true, subtree: true });
 });
 

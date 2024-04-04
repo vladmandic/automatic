@@ -50,6 +50,7 @@
     "optionsChangedCallbacks": "readonly",
     "onUiLoaded": "readonly",
     "onUiUpdate": "readonly",
+    "onUiTabChange": "readonly",
     "uiCurrentTab": "writable",
     "uiElementIsVisible": "readonly",
     "uiElementInSight": "readonly",

@@ -159,8 +159,6 @@ function modalResetInstance(event) {
   previewInstance = panzoom(modalImage, { zoomSpeed: 0.05, minZoom: 0.1, maxZoom: 5.0, filterKey: (/* e, dx, dy, dz */) => true });
 }
 
-let imageViewerInitialized = false;
-
 function galleryClickEventHandler(event) {
   if (event.button !== 0) return;
   if (event.target.nodeName === 'IMG' && !event.target.parentNode.classList.contains('thumbnail-item')) {
@@ -183,9 +181,6 @@ async function initImageViewer() {
       }
     }
   }
-  if (imageViewerInitialized) return;
-  imageViewerInitialized = true;
-
   // main elements
   const modal = document.createElement('div');
   modal.id = 'lightboxModal';
@@ -286,5 +281,3 @@ async function initImageViewer() {
   gradioApp().appendChild(modal);
   log('initImageViewer');
 }
-
-onAfterUiUpdate(initImageViewer);

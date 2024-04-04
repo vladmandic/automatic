@@ -1981,6 +1981,7 @@ class Script(scripts.Script):
         # run pipeline
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
         if shared.opts.include_mask:
+            p.image_mask = image_mask
             if image_mask is not None and isinstance(image_mask, Image.Image):
                 processed.images.append(image_mask)
 

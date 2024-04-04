@@ -113,7 +113,5 @@ async function initContextMenu() {
       appendContextMenuOption(id, 'nVidia overlay', initNVML);
     }
   }
+  addContextMenuEventListener();
 }
-
-onUiLoaded(initContextMenu);
-onAfterUiUpdate(() => addContextMenuEventListener());

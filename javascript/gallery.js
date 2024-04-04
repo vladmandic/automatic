@@ -383,8 +383,8 @@ async function galleryHidden() {
   if (pruneImagesTimer) clearInterval(pruneImagesTimer);
 }
 
-async function galleryObserve() { // triggered on gradio change to monitor when ui gets sufficiently constructed
-  log('initBrowser');
+async function initGallery() { // triggered on gradio change to monitor when ui gets sufficiently constructed
+  log('initGallery');
   el.folders = gradioApp().getElementById('tab-gallery-folders');
   el.files = gradioApp().getElementById('tab-gallery-files');
   el.status = gradioApp().getElementById('tab-gallery-status');
@@ -403,4 +403,3 @@ async function galleryObserve() { // triggered on gradio change to monitor when 
 
 customElements.define('gallery-folder', GalleryFolder);
 customElements.define('gallery-file', GalleryFile);
-onUiLoaded(galleryObserve);

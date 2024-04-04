@@ -59,13 +59,9 @@ async function logMonitor() {
   }
 }
 
-let logMonitorInitialized = false;
-
 async function initLogMonitor() {
-  if (logMonitorInitialized) return;
   const el = document.getElementsByTagName('footer')[0];
   if (!el) return;
-  logMonitorInitialized = true;
   el.classList.add('log-monitor');
   el.innerHTML = `
     <table id="logMonitor" style="width: 100%;">
@@ -89,5 +85,3 @@ async function initLogMonitor() {
   logMonitor();
   log('initLogMonitor');
 }
-
-onAfterUiUpdate(initLogMonitor);

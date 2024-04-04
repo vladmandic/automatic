@@ -16,10 +16,8 @@ function attachGalleryListeners(tab_name) {
 let txt2img_gallery;
 let img2img_gallery;
 let modal;
-let generationParamsInitialized = false;
 
 async function initiGenerationParams() {
-  if (generationParamsInitialized) return;
   if (!modal) modal = gradioApp().getElementById('lightboxModal');
   if (!modal) return;
 
@@ -33,10 +31,6 @@ async function initiGenerationParams() {
 
   if (!txt2img_gallery) txt2img_gallery = attachGalleryListeners('txt2img');
   if (!img2img_gallery) img2img_gallery = attachGalleryListeners('img2img');
-  if (txt2img_gallery && img2img_gallery) generationParamsInitialized = true;
-  else return;
   modalObserver.observe(modal, { attributes: true, attributeFilter: ['style'] });
   log('initGenerationParams');
 }
-
-onAfterUiUpdate(initiGenerationParams);
