@@ -4,11 +4,10 @@
 
 - Include reference styles
 - Quick apply style
-- SC LoRA
-- DoRA
+- LoRA: SC LoRA, DoRA, etc
 - Control API scripts compatibility
 
-## Update for 2024-04-04
+## Update for 2024-04-05
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -18,6 +17,7 @@
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
     as with all other compile engines, enable via *settings -> compute settings -> compile*  
 - **UI**:
+  - Faster **UI** load times
   - Theme types:  
     **Standard* (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
     Specifying a theme type updates list of available themes  
@@ -34,7 +34,7 @@
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
-    as both *image-browser* and *controlnet* have native equivalents  
+    as both *image-browser* and *controlnet* have native built-in equivalents  
     both can still be installed by user if desired  
 - **Improvements**:
   - Add **MIGraphX** torch optimization engine, thanks @Disty0
