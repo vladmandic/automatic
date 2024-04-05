@@ -58,6 +58,7 @@
   - FP16/BF16 test on model load
   - variation seed possible NaNs
   - enumerate diffusers model with multiple variants
+  - diffusers skip non-models on enum
 
 ## Update for 2024-03-19
 

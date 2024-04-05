@@ -226,9 +226,8 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 
 def load_diffusers_models(clear=True):
-    excluded_models = [
-        'PhotoMaker', 'inswapper_128', 'IP-Adapter'
-    ]
+    # excluded_models = ['PhotoMaker', 'inswapper_128', 'IP-Adapter']
+    excluded_models = []
     t0 = time.time()
     place = shared.opts.diffusers_dir
     if place is None or len(place) == 0 or not os.path.isdir(place):
@@ -256,7 +255,11 @@ def load_diffusers_models(clear=True):
                     commit = os.path.join(folder, 'snapshots', snapshot)
                     mtime = os.path.getmtime(commit)
                     info = os.path.join(commit, "model_info.json")
-                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info }
+                    index = os.path.join(commit, "model_index.json")
+                    if not os.path.exists(index):
+                        debug(f'Diffusers skip model no info: {name}')
+                        continue
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index }
                     diffuser_repos.append(repo)
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue
