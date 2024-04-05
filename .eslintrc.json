@@ -51,10 +51,12 @@
     "onUiLoaded": "readonly",
     "onUiUpdate": "readonly",
     "onUiTabChange": "readonly",
+    "onUiReady": "readonly",
     "uiCurrentTab": "writable",
     "uiElementIsVisible": "readonly",
     "uiElementInSight": "readonly",
     "getUICurrentTabContent": "readonly",
+    "waitForFlag": "readonly",
     //ui.js
     "opts": "writable",
     "sortUIElements": "readonly",

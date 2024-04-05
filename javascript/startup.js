@@ -2,6 +2,7 @@
 
 async function initStartup() {
   log('initStartup');
+  if (window.setupLogger) await setupLogger();
 
   // all items here are non-blocking async calls
   initModels();
@@ -26,7 +27,7 @@ async function initStartup() {
   executeCallbacks(uiReadyCallbacks);
 
   // optinally wait for modern ui
-  if (window.waitForUiUxReady) await window.waitForUiUxReady();
+  if (window.waitForUiReady) await waitForUiReady();
   removeSplash();
 
   // post startup tasks that may take longer but are not critical

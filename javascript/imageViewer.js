@@ -169,18 +169,17 @@ function galleryClickEventHandler(event) {
   }
 }
 
-async function initImageViewer() {
+async function bindImageViewer() {
   // Each tab has its own gradio-gallery
   const galleryPreviews = gradioApp().querySelectorAll('.gradio-gallery > div.preview');
-  if (galleryPreviews.length > 0) {
-    for (const galleryPreview of galleryPreviews) {
-      const fullImgPreview = galleryPreview.querySelectorAll('img');
-      if (fullImgPreview.length > 0) {
-        galleryPreview.addEventListener('click', galleryClickEventHandler, true);
-        fullImgPreview.forEach(setupImageForLightbox);
-      }
-    }
+  for (const galleryPreview of galleryPreviews) {
+    if (!galleryPreview.hasAttribute('data-listener')) galleryPreview.addEventListener('click', galleryClickEventHandler, true);
+    galleryPreview.setAttribute('data-listener', true);
+    galleryPreview.querySelectorAll('img').forEach(setupImageForLightbox);
   }
+}
+
+async function initImageViewer() {
   // main elements
   const modal = document.createElement('div');
   modal.id = 'lightboxModal';
@@ -281,3 +280,5 @@ async function initImageViewer() {
   gradioApp().appendChild(modal);
   log('initImageViewer');
 }
+
+onAfterUiUpdate(bindImageViewer);
