@@ -257,6 +257,8 @@ def compile_torch(sd_model):
             if shared.compiled_model_state is None:
                 shared.compiled_model_state = CompiledModelState()
             return sd_model
+        elif shared.opts.cuda_compile_backend ==  "migraphx":
+            import torch_migraphx
         log_level = logging.WARNING if shared.opts.cuda_compile_verbose else logging.CRITICAL # pylint: disable=protected-access
         if hasattr(torch, '_logging'):
             torch._logging.set_logs(dynamo=log_level, aot=log_level, inductor=log_level) # pylint: disable=protected-access
