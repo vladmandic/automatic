@@ -105,7 +105,10 @@ class VAEConfig:
         self.config = config
 
     def __getattr__(self, key):
-        return self.config.get(key, VAEConfig.DEFAULTS[key])
+        return self.config.get(key, VAEConfig.DEFAULTS.get(key, None))
+
+    def get(self, key, default):
+        return self.config.get(key, VAEConfig.DEFAULTS.get(key, default))
 
 
 class VAE(TorchCompatibleModule):
