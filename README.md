@@ -55,7 +55,7 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
 - **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
   This backend and is fully compatible with most existing functionality and extensions written for *A1111 SDWebUI*  
   Supports **SD 1.x** and **SD 2.x** models  
-  All other model types such as *SD-XL, LCM, PixArt, Segmind, Kandinsky, etc.* require backend **Diffusers**  
+  All other model types such as *SD-XL, LCM, Stable Cascade, PixArt, Playground, Segmind, Kandinsky, etc.* require backend **Diffusers**  
 
 ## Model support
 
@@ -126,9 +126,9 @@ Also supported are modifiers such as:
 - [Advanced install notes](https://github.com/vladmandic/automatic/wiki/Advanced-Install)
 - [Common installation errors](https://github.com/vladmandic/automatic/discussions/1627)  
 - [FAQ](https://github.com/vladmandic/automatic/discussions/1011)
-- If you can't run us locally, try our friends at [RunDuffusion!](https://rundiffusion.com?utm_source=github&utm_medium=referral&utm_campaign=SDNext)
 
 > [!TIP]
+> - If you can't run SD.Next locally, try cloud deployment using [RunDiffusion](https://rundiffusion.com?utm_source=github&utm_medium=referral&utm_campaign=SDNext)!
 > - Server can run with or without virtual environment,  
   Recommended to use `VENV` to avoid library version conflicts with other applications  
 > - **nVidia/CUDA** / **AMD/ROCm** / **Intel/OneAPI** are auto-detected if present and available,  
