@@ -69,14 +69,19 @@ cache_dir = 'models/control/controlnet'
 def find_models():
     path = os.path.join(opts.control_dir, 'controlnet')
     files = listdir(path)
+    folders = [f for f in files if os.path.isdir(f) if os.path.exists(os.path.join(f, 'config.json'))]
     files = [f for f in files if f.endswith('.safetensors')]
     downloaded_models = {}
     for f in files:
         basename = os.path.splitext(os.path.relpath(f, path))[0]
         downloaded_models[basename] = os.path.join(path, f)
+    for f in folders:
+        basename = os.path.relpath(f, path)
+        downloaded_models[basename] = f
     all_models.update(downloaded_models)
     return downloaded_models
 
+find_models()
 
 def list_models(refresh=False):
     import modules.shared

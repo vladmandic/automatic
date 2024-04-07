@@ -4,17 +4,31 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Candidates for next release
 
+### Logistics
+
 - defork
+
+### Models
+
 - stable diffusion 3.0
+- pixart-sigma: <https://github.com/PixArt-alpha/PixArt-sigma> <https://pixart-alpha.github.io/PixArt-sigma-project/>
+- powerpaint: <https://github.com/zhuang2002/PowerPaint>
+
+### Pipelines
+
+- instant style: <https://github.com/huggingface/diffusers/pull/7586> <https://github.com/InstantStyle/InstantStyle>
 - ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
 - x-adapter: <https://github.com/showlab/X-Adapter>
+
+### Features
+
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - init latents: variations, img2img
 - diffusers public callbacks  
-- remove builtin: controlnet
-- remove builtin: image-browser
+- include reference styles
+- quick apply style
+- lora: sc lora, dora, etc
 
-## Control missing features
+### Missing
 
-- second pass: <https://github.com/vladmandic/automatic/issues/2783>  
-- control api  
+- control api scripts compatibility

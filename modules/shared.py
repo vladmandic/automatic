@@ -975,7 +975,10 @@ if cmd_opts.use_xformers:
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility
 opts.data['uni_pc_order'] = opts.schedulers_solver_order # compatibility
 log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.get_optimal_device_name()} attention="{opts.cross_attention_optimization}" mode={devices.inference_context.__name__}')
-log.info(f'Device: {print_dict(devices.get_gpu_info())}')
+try:
+    log.info(f'Device: {print_dict(devices.get_gpu_info())}')
+except Exception as ex:
+    log.error(f'Device: {ex}')
 
 prompt_styles = modules.styles.StyleDatabase(opts)
 reference_models = readfile(os.path.join('html', 'reference.json'))

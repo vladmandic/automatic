@@ -1,13 +1,6 @@
 # Change Log for SD.Next
 
-## TODO
-
-- Include reference styles
-- Quick apply style
-- LoRA: SC LoRA, DoRA, etc
-- Control API scripts compatibility
-
-## Update for 2024-04-05
+## Update for 2024-04-07
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -42,6 +35,10 @@
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview
   - More efficient in-browser callbacks
+  - Support controlnet manually downloads models in both standalone and diffusers format  
+    For standalone, simply copy safetensors file to `models/control/controlnet` folder  
+    For diffusers format, create folder with model name in `models/control/controlnet/`  
+    and copy `model.json` and `diffusion_pytorch_model.safetensors` to that folder  
 - **IPEX**
   - update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
