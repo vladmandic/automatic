@@ -82,6 +82,7 @@ def setup_logging():
         def get(self):
             return self.buffer
 
+    install('rich', 'rich')
     from functools import partial, partialmethod
     from logging.handlers import RotatingFileHandler
     from rich.theme import Theme

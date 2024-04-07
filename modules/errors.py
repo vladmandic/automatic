@@ -1,14 +1,15 @@
 import logging
 import warnings
-from rich.console import Console
-from rich.theme import Theme
-from rich.pretty import install as pretty_install
-from rich.traceback import install as traceback_install
 from installer import log as installer_log, setup_logging
-
 
 setup_logging()
 log = installer_log
+
+from rich.console import Console # pylint: disable=wrong-import-order
+from rich.theme import Theme # pylint: disable=wrong-import-order
+from rich.pretty import install as pretty_install # pylint: disable=wrong-import-order
+from rich.traceback import install as traceback_install # pylint: disable=wrong-import-order
+
 console = Console(log_time=True, tab_size=4, log_time_format='%H:%M:%S-%f', soft_wrap=True, safe_box=True, theme=Theme({
     "traceback.border": "black",
     "traceback.border.syntax_error": "black",
