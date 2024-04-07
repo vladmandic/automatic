@@ -81,6 +81,12 @@ def initialize():
     log.debug('Initializing')
     check_rollback_vae()
 
+    if shared.opts.cuda_compile_backend == "olive-ai":
+        from modules.onnx_impl import initialize_olive, install_olive
+        install_olive()
+        initialize_olive()
+        timer.startup.record("olive")
+
     modules.sd_samplers.list_samplers()
     timer.startup.record("samplers")
 
