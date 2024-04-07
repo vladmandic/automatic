@@ -74,7 +74,7 @@ def find_models():
     downloaded_models = {}
     for f in files:
         basename = os.path.splitext(os.path.relpath(f, path))[0]
-        downloaded_models[basename] = os.path.join(path, f)
+        downloaded_models[basename] = f
     for f in folders:
         basename = os.path.relpath(f, path)
         downloaded_models[basename] = f
