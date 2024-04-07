@@ -7,6 +7,8 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ### Logistics
 
 - defork
+- test upgrades due to submodule changes
+- integrate uiux
 
 ### Models
 

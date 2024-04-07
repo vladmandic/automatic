@@ -146,7 +146,6 @@ class GalleryFile extends HTMLElement {
     const img = document.createElement('img');
     img.className = 'gallery-file';
     img.loading = 'lazy';
-    img.title = `Folder: ${this.folder}\nFile: ${this.name}\nSize: ${this.size.toLocaleString()} bytes\nModified: ${this.mtime.toLocaleString()}`;
     img.onload = async () => {
       img.title += `\nResolution: ${this.width} x ${this.height}`;
       this.title = img.title;
@@ -201,6 +200,7 @@ class GalleryFile extends HTMLElement {
       currentImage = this.src;
       el.btnSend.click();
     };
+    img.title = `Folder: ${this.folder}\nFile: ${this.name}\nSize: ${this.size.toLocaleString()} bytes\nModified: ${this.mtime.toLocaleString()}`;
     this.title = img.title;
     this.style.display = this.title.toLowerCase().includes(el.search.value.toLowerCase()) ? 'unset' : 'none';
     this.shadow.appendChild(img);

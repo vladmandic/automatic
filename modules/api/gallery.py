@@ -162,7 +162,10 @@ def register_api(app: FastAPI): # register api
             folder = unquote(folder).replace('%3A', ':')
             t0 = time.time()
             numFiles = 0
-            for f in files_cache.directory_files(folder, recursive=True):
+            files = files_cache.directory_files(folder, recursive=True)
+            # files = list(files_cache.directory_files(folder, recursive=True))
+            # files.sort(key=os.path.getmtime)
+            for f in files:
                 numFiles += 1
                 file = os.path.relpath(f, folder)
                 msg = quote(folder) + '##F##' + quote(file)
