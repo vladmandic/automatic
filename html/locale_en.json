@@ -130,7 +130,7 @@
   {"id":"","label":"Resize width to","localized":"","hint":"Resizes image to this width. If 0, width is inferred from either of two nearby sliders"},
   {"id":"","label":"Resize height to","localized":"","hint":"Resizes image to this height. If 0, height is inferred from either of two nearby sliders"},
   {"id":"","label":"Secondary sampler","localized":"","hint":"Use specific sampler as fallback sampler if primary is not supported for specific operation"},
-  {"id":"","label":"Refiner start","localized":"","hint":"Refiner pass will start when base model is this much complete (set to 0 or 1 to run after full base model run)"},
+  {"id":"","label":"Refiner start","localized":"","hint":"Refiner pass will start when base model is this much complete (set to larger than 0 and smaller than 1 to run after full base model run)"},
   {"id":"","label":"Refiner steps","localized":"","hint":"Number of steps to use for refiner pass"},
   {"id":"","label":"Secondary CFG Scale","localized":"","hint":"CFG scale used for refiner pass"},
   {"id":"","label":"Rescale guidance","localized":"","hint":"Rescale CFG generated noise to avoid overexposed images"},
