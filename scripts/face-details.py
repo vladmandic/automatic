@@ -91,6 +91,8 @@ class FaceRestorerYolo(FaceRestoration):
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
         from modules import devices, processing_class
+        if hasattr(p, 'recursion'):
+            return
         if not hasattr(p, 'facehires'):
             p.facehires = 0
         if np_image is None or p.facehires >= p.batch_size * p.n_iter:
@@ -128,6 +130,10 @@ class FaceRestorerYolo(FaceRestoration):
             'inpaint_full_res_padding': 15,
             'restore_faces': True,
         }
+        if getattr(p, 'is_control', False):
+            from modules.control import run
+            run.restore_pipeline()
+
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
         p.facehires += 1 # set flag to avoid recursion
 
@@ -139,6 +145,7 @@ class FaceRestorerYolo(FaceRestoration):
             p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
 
         shared.log.debug(f'Face HiRes: faces={[f.__dict__ for f in faces]} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding} steps={p.steps}')
+
         for face in faces:
             if face.mask is None:
                 continue

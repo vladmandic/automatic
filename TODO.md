@@ -31,6 +31,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - include reference styles
 - quick apply style
 - lora: sc lora, dora, etc
+- samplers: smea <https://github.com/Koishi-Star/Euler-Smea-Dyn-Sampler>, restart <https://github.com/Newbeeer/diffusion_restart_sampling>
 
 ### Missing
 

@@ -332,8 +332,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
 
             for i, x_sample in enumerate(x_samples_ddim):
-                if hasattr(p, 'recursion'):
-                    continue
                 debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
                 if type(x_sample) == Image.Image:
@@ -347,11 +345,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
                     p.ops.append('face')
                     x_sample = face_restoration.restore_faces(x_sample, p)
-                    image = Image.fromarray(x_sample)
+                    if x_sample is not None:
+                        image = Image.fromarray(x_sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
                     p.scripts.postprocess_image(p, pp)
-                    image = pp.image
+                    if pp.image is not None:
+                        image = pp.image
                 if p.color_corrections is not None and i < len(p.color_corrections):
                     if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
                         orig = p.color_corrections
@@ -376,7 +376,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image2 = Image.new('RGBa', image.size)
                     mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
                     image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
-                    image_mask_composite.save('/tmp/composite.png')
                     if shared.opts.save_mask:
                         images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:
