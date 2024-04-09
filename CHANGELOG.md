@@ -59,6 +59,7 @@
   - variation seed possible NaNs
   - enumerate diffusers model with multiple variants
   - diffusers skip non-models on enum
+  - css fixes
 
 ## Update for 2024-03-19
 
