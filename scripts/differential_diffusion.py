@@ -1970,6 +1970,9 @@ class Script(scripts.Script):
             p.task_args['map'] = image_map
             if shared.sd_model_type == 'sdxl':
                 p.task_args['original_image'] = image_init
+            if p.batch_size > 1:
+                shared.log.warning(f'Differential-diffusion: batch-size={p.batch_size} parallel processing not supported')
+                p.batch_size = 1
             shared.log.debug(f'Differential-diffusion: pipeline={pipe.__class__.__name__} strength={strength} model={model} auto={image is None}')
             shared.sd_model = pipe
             sd_models.move_model(pipe.vae, devices.device, force=True)
