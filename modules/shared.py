@@ -470,8 +470,10 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "hypertile_vae_tile": OptionInfo(128, "HyperTile VAE tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_vae_swap_size": OptionInfo(1, "HyperTile VAE swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
-    "inference_other_sep": OptionInfo("<h2>Other</h2>", "", gr.HTML),
+    "inference_batch_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
+    "sequential_seed": OptionInfo(True, "Batch mode uses sequential seeds"),
     "batch_frame_mode": OptionInfo(False, "Parallel process images in batch"),
+    "inference_other_sep": OptionInfo("<h2>Other</h2>", "", gr.HTML),
     "inference_mode": OptionInfo("no-grad", "Torch inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode"),
 }))

@@ -31,7 +31,7 @@ except Exception:
 def check_grid_size(imgs):
     mp = 0
     for img in imgs:
-        mp += img.width * img.height
+        mp += img.width * img.height if img is not None else 0
     mp = round(mp / 1000000)
     ok = mp <= shared.opts.img_max_size_mp
     if not ok:
