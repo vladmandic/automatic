@@ -44,6 +44,12 @@
     "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
     "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
   },
+  "SDXS DreamShaper 512": {
+    "path": "IDKiro/sdxs-512-dreamshaper",
+    "preview": "IDKiro--sdxs-512-dreamshaper.jpg",
+    "desc": "SDXS: Real-Time One-Step Latent Diffusion Models with Image Conditions",
+    "extras": "width: 512, height: 512, sampler: CMSI, steps: 1, cfg_scale: 0.0"
+  },
 
   "RunwayML SD 1.5": {
     "original": true,

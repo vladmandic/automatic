@@ -25,6 +25,10 @@
     > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
+- **Models**:
+  - support for [SDXS](https://github.com/IDKiro/sdxs) 1-step generation models  
+    simply select from *networks -> models -> SDXS*  
+    set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native built-in equivalents  
