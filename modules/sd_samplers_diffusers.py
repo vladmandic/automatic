@@ -10,6 +10,7 @@ debug('Trace: SAMPLER')
 
 try:
     from diffusers import (
+        CMStochasticIterativeScheduler,
         DDIMScheduler,
         DDPMScheduler,
         UniPCMultistepScheduler,
@@ -17,14 +18,17 @@ try:
         DPMSolverMultistepScheduler,
         DPMSolverSinglestepScheduler,
         DPMSolverSDEScheduler,
+        EDMDPMSolverMultistepScheduler,
+        EDMEulerScheduler,
         EulerAncestralDiscreteScheduler,
         EulerDiscreteScheduler,
         HeunDiscreteScheduler,
+        IPNDMScheduler,
         KDPM2DiscreteScheduler,
         KDPM2AncestralDiscreteScheduler,
+        LCMScheduler,
         LMSDiscreteScheduler,
         PNDMScheduler,
-        LCMScheduler,
         SASolverScheduler,
     )
 except Exception as e:
@@ -38,9 +42,11 @@ config = {
     'DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
     'UniPC': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'predict_x0': 'bh2', 'lower_order_final': True },
     'DEIS': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "deis", 'solver_type': "logrho", 'lower_order_final': True },
-    'DPM++ 1S': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'sigma_min' },
+    'DPM++': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'sigma_min' },
     'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero' },
-    'DPM SDE': { 'use_karras_sigmas': False },
+    'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
+    'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
+    'Euler EDM': { },
     'Euler a': { 'rescale_betas_zero_snr': False },
     'Euler': { 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False },
     'Heun': { 'use_karras_sigmas': False },
@@ -49,9 +55,11 @@ config = {
     'KDPM2 a': { 'steps_offset': 0 },
     'LMSD': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
     'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0 },
+    'IPNDM': { },
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False },
-    'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace'},
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
+    'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
+    'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace'},
 }
 
 samplers_data_diffusers = [
@@ -59,30 +67,25 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('UniPC', lambda model: DiffusionSampler('UniPC', UniPCMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DEIS', lambda model: DiffusionSampler('DEIS', DEISMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('PNDM', lambda model: DiffusionSampler('PNDM', PNDMScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('IPNDM', lambda model: DiffusionSampler('IPNDM', IPNDMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DDPM', lambda model: DiffusionSampler('DDPM', DDPMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DDIM', lambda model: DiffusionSampler('DDIM', DDIMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('LMSD', lambda model: DiffusionSampler('LMSD', LMSDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('KDPM2', lambda model: DiffusionSampler('KDPM2', KDPM2DiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('KDPM2 a', lambda model: DiffusionSampler('KDPM2 a', KDPM2AncestralDiscreteScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('DPM++ 1S', lambda model: DiffusionSampler('DPM++ 1S', DPMSolverSinglestepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++', lambda model: DiffusionSampler('DPM++', DPMSolverSinglestepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ 2M', lambda model: DiffusionSampler('DPM++ 2M', DPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM SDE', lambda model: DiffusionSampler('DPM SDE', DPMSolverSDEScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler', lambda model: DiffusionSampler('Euler', EulerDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler a', lambda model: DiffusionSampler('Euler a', EulerAncestralDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', TCDScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
 ]
-
-try: # diffusers==0.27.0
-    from diffusers import EDMDPMSolverMultistepScheduler, EDMEulerScheduler
-    config['DPM++ 2M EDM'] = { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero' } # 'algorithm_type': 'dpmsolver++'
-    config['Euler EDM'] = { }
-    samplers_data_diffusers.append(sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}))
-    samplers_data_diffusers.append(sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}))
-except Exception:
-    pass
 
 
 class DiffusionSampler:
@@ -134,7 +137,7 @@ class DiffusionSampler:
             self.config['rescale_betas_zero_snr'] = shared.opts.schedulers_rescale_betas
         if 'num_train_timesteps' in self.config:
             self.config['num_train_timesteps'] = shared.opts.schedulers_timesteps_range
-        if name == 'DPM++ 2M':
+        if name in {'DPM++ 2M', 'DPM++ 2M EDM'}:
             self.config['algorithm_type'] = shared.opts.schedulers_dpm_solver
         if name == 'DEIS':
             self.config['algorithm_type'] = 'deis'
@@ -142,6 +145,11 @@ class DiffusionSampler:
             del self.config['beta_start']
             del self.config['beta_end']
             del self.config['beta_schedule']
+        if name in {'IPNDM', 'CMSI'}:
+            del self.config['beta_start']
+            del self.config['beta_end']
+            del self.config['beta_schedule']
+            del self.config['prediction_type']
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
