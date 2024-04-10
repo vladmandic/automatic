@@ -26,8 +26,9 @@
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Models**:
-  - support for [SDXS](https://github.com/IDKiro/sdxs) 1-step generation models  
-    simply select from *networks -> models -> SDXS*  
+  - support for [SDXS](https://github.com/IDKiro/sdxs)
+    sdxs is an extremely fast 1-step generation model that also uses TAESD as quick VAE out-of-the-box  
+    to use, simply select from *networks -> models -> SDXS*  
     set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
