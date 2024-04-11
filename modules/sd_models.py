@@ -602,14 +602,18 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as SegMoE model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'SegMoE'
-            if 'pixart' in f.lower():
+            if 'pixart-xl' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
-                guess = 'PixArt Alpha'
+                guess = 'PixArt-Alpha'
             if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Cascade'
+            if 'pixart_sigma' in f.lower():
+                if shared.backend == shared.Backend.ORIGINAL:
+                    warn(f'Model detected as PixArt-Sigma model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                guess = 'PixArt-Sigma'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -971,6 +975,20 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     from modules.segmoe.segmoe_model import SegMoEPipeline
                     sd_model = SegMoEPipeline(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                     sd_model = sd_model.pipe # segmoe pipe does its stuff in __init__ and __call__ is the original pipeline
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
+            elif model_type in ['PixArt-Sigma']: # forced pipeline
+                try:
+                    from modules.sd_hijack_pixart import PixArtSigmaPipeline, patch_pixart_sigma_transformer
+                    sd_model = PixArtSigmaPipeline.from_pretrained(
+                        checkpoint_info.path,
+                        transformer=patch_pixart_sigma_transformer(),
+                        use_safetensors=True,
+                        cache_dir=shared.opts.diffusers_dir,
+                        **diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:

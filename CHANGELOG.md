@@ -1,5 +1,9 @@
 # Change Log for SD.Next
 
+## Pending
+
+- PixArt-Σ requires `diffusers-0.28.0.dev0`
+
 ## Update for 2024-04-11
 
 - **Features**:
@@ -26,7 +30,12 @@
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Models**:
-  - support for [SDXS](https://github.com/IDKiro/sdxs)
+  - [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/)
+    pixart-Σ is a high end diffusion Transformer model (DiT) with a T5 encoder/decoder capable of directly generating images at 4K resolution  
+    to use, simply select from *networks -> models -> PixArt-Σ*  
+    *note*: this is a very large model at ~22GB  
+    set parameters: *precision: fp32*, *sampler: Default*  
+  - [SDXS](https://github.com/IDKiro/sdxs)
     sdxs is an extremely fast 1-step generation model that also uses TAESD as quick VAE out-of-the-box  
     to use, simply select from *networks -> models -> SDXS*  
     set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*

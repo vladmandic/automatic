@@ -13,7 +13,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ### Models
 
 - stable diffusion 3.0
-- pixart-sigma: <https://github.com/PixArt-alpha/PixArt-sigma> <https://pixart-alpha.github.io/PixArt-sigma-project/>
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
 - ella: <https://github.com/TencentQQGYLab/ELLA>
 

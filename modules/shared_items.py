@@ -53,7 +53,7 @@ def get_pipelines():
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),
         'Latent Consistency Model': getattr(diffusers, 'LatentConsistencyModelPipeline', None),
-        'PixArt Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
+        'PixArt-Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
         'UniDiffuser': getattr(diffusers, 'UniDiffuserPipeline', None),
         'Wuerstchen': getattr(diffusers, 'WuerstchenCombinedPipeline', None),
         'Kandinsky 2.1': getattr(diffusers, 'KandinskyPipeline', None),
@@ -77,6 +77,9 @@ def get_pipelines():
 
     if hasattr(diffusers, 'StableCascadeCombinedPipeline'):
         pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
+
+    from modules.sd_hijack_pixart import PixArtSigmaPipeline
+    pipelines['PixArt-Sigma'] = PixArtSigmaPipeline
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

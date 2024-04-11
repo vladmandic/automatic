@@ -145,6 +145,12 @@
     "preview": "PixArt-alpha--PixArt-XL-2-1024-MS.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
+  "Pixart-Σ": {
+    "path": "PixArt-alpha/pixart_sigma_sdxlvae_T5_diffusers",
+    "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
+    "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+  },
 
   "Kandinsky 2.1": {
     "path": "kandinsky-community/kandinsky-2-1",
