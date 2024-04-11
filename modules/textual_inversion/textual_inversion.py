@@ -199,6 +199,8 @@ class EmbeddingDatabase:
                             embeddings_dict[k] = f.get_tensor(k)
                 else:  # fallback for sd1.5 pt embeddings
                     embeddings_dict["clip_l"] = self.load_from_file(embedding.filename, embedding.filename)
+                if 'emb_params' in embeddings_dict and 'clip_l' not in embeddings_dict:
+                    embeddings_dict["clip_l"] = embeddings_dict["emb_params"]
                 if 'clip_l' not in embeddings_dict:
                     raise ValueError('Invalid Embedding, dict missing required key `clip_l`')
                 if 'clip_g' not in embeddings_dict and model_type == "SDXL" and shared.opts.diffusers_convert_embed:

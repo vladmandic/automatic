@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-04-09
+## Update for 2024-04-11
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -65,6 +65,7 @@
   - enumerate diffusers model with multiple variants
   - diffusers skip non-models on enum
   - face-hires compatibility with control modules
+  - loading safetensors embeddings
   - css fixes
 
 ## Update for 2024-03-19
