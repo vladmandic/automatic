@@ -1,1 +1,1 @@
-from .autocast_mode import *
+from .autocast_mode import autocast

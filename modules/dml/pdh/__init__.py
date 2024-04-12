@@ -1,9 +1,9 @@
-from ctypes import *
-from ctypes.wintypes import *
+from ctypes import byref, cast, c_size_t
+from ctypes.wintypes import LPCWSTR, DWORD, WCHAR
 from typing import NamedTuple, TypeVar
 from .apis import PdhExpandWildCardPathW, PdhOpenQueryW, PdhAddEnglishCounterW, PdhCollectQueryData, PdhGetFormattedCounterValue, PdhGetFormattedCounterArrayW, PdhCloseQuery
 from .structures import PDH_HQUERY, PDH_HCOUNTER, PDH_FMT_COUNTERVALUE, PPDH_FMT_COUNTERVALUE_ITEM_W
-from .defines import *
+from .defines import PDH_FMT_LARGE, PDH_FMT_DOUBLE, PDH_FMT_NOSCALE, PDH_NOEXPANDCOUNTERS, PDH_MORE_DATA, PDH_OK
 from .msvcrt import malloc
 from .errors import PDHError
 
