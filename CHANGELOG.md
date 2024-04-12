@@ -4,7 +4,7 @@
 
 - PixArt-Σ requires `diffusers-0.28.0.dev0`
 
-## Update for 2024-04-11
+## Update for 2024-04-12
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
