@@ -25,7 +25,8 @@ const getENActiveTab = () => {
 
 const getENActivePage = () => {
   const tabname = getENActiveTab();
-  const page = gradioApp().querySelector(`#${tabname}_extra_networks > .tabs > .tab-nav > .selected`);
+  let page = gradioApp().querySelector(`#${tabname}_extra_networks > .tabs > .tab-nav > .selected`);
+  if (!page) page = gradioApp().querySelector(`#${tabname}_extra_tabs > .tab-nav > .selected`);
   const pageName = page ? page.innerText : '';
   const btnApply = gradioApp().getElementById(`${tabname}_extra_apply`);
   if (btnApply) btnApply.style.display = pageName === 'Style' ? 'inline-flex' : 'none';
