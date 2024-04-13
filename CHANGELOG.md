@@ -4,7 +4,7 @@
 
 - PixArt-Σ requires `diffusers-0.28.0.dev0`
 
-## Update for 2024-04-12
+## Update for 2024-04-13
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -36,7 +36,7 @@
     *note*: this is a very large model at ~22GB  
     set parameters: *precision: fp32*, *sampler: Default*  
   - [SDXS](https://github.com/IDKiro/sdxs)
-    sdxs is an extremely fast 1-step generation model that also uses TAESD as quick VAE out-of-the-box  
+    sdxs is an extremely fast 1-step generation consistency model that also uses TAESD as quick VAE out-of-the-box  
     to use, simply select from *networks -> models -> SDXS*  
     set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
 - **Changes**:
@@ -56,6 +56,11 @@
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  
     and copy `model.json` and `diffusion_pytorch_model.safetensors` to that folder  
+- **Samplers**
+  - Add *Euler SGM* variation (e.g. SGM Uniform), optimized for SDXL-Lightning models  
+    *note*: you can use other samplers as well with SDXL-Lightning models  
+  - Add *CMSI* sampler, optimized for consistency models  
+  - Add option *timestep spacing* to sampler settings  
 - **IPEX**
   - update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
