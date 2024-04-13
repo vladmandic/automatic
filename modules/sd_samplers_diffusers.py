@@ -139,7 +139,6 @@ class DiffusionSampler:
         if 'rescale_betas_zero_snr' in self.config:
             self.config['rescale_betas_zero_snr'] = shared.opts.schedulers_rescale_betas
         if 'timestep_spacing' in self.config and shared.opts.schedulers_timestep_spacing != 'default':
-            print('HERE', shared.opts.schedulers_timestep_spacing)
             self.config['timestep_spacing'] = shared.opts.schedulers_timestep_spacing
         if 'num_train_timesteps' in self.config:
             self.config['num_train_timesteps'] = shared.opts.schedulers_timesteps_range
