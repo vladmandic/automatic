@@ -1269,7 +1269,10 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
     # skip specific pipelines
-    if pipe.__class__.__name__ == 'StableDiffusionReferencePipeline' or pipe.__class__.__name__ == 'StableDiffusionAdapterPipeline' or 'Onnx' in pipe.__class__.__name__:
+    n = pipe.__class__.__name__
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline']:
+        return pipe
+    if 'Onnx' in pipe.__class__.__name__:
         return pipe
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
@@ -1311,6 +1314,10 @@ def set_diffuser_pipe(pipe, new_pipe_type):
 
 
 def set_diffusers_attention(pipe, attention):
+    if attention is None:
+        return
+    if not hasattr(pipe, "_get_signature_keys"):
+        return
     module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
     modules = [getattr(pipe, n, None) for n in module_names]
     modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]

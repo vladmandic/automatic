@@ -4,7 +4,7 @@
 
 - PixArt-Σ requires `diffusers-0.28.0.dev0`
 
-## Update for 2024-04-13
+## Update for 2024-04-15
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -81,6 +81,7 @@
   - face-hires compatibility with control modules
   - loading safetensors embeddings
   - css fixes
+  - check if attention processor is compatible with model
 
 ## Update for 2024-03-19
 
