@@ -82,6 +82,7 @@
   - loading safetensors embeddings
   - css fixes
   - check if attention processor is compatible with model
+  - sdupscale when used with control module
 
 ## Update for 2024-03-19
 
