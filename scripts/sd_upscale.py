@@ -55,12 +55,9 @@ class Script(scripts.Script):
         p.do_not_save_grid = True
         p.do_not_save_samples = True
         work = []
-        i = 1
         for _y, _h, row in grid.tiles:
             for tiledata in row:
                 work.append(tiledata[2])
-                tiledata[2].save(f'/tmp/tile{i}.png')
-                i += 1
 
         batch_count = math.ceil(len(work) / batch_size)
         state.job_count = batch_count * upscale_count
