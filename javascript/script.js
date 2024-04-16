@@ -23,6 +23,16 @@ function gradioApp() {
   return elem.shadowRoot ? elem.shadowRoot : elem;
 }
 
+function logFn(func) {
+  return async function () { // eslint-disable-line func-names
+    const t0 = performance.now();
+    const returnValue = func(...arguments);
+    const t1 = performance.now();
+    log(func.name, Math.round(t1 - t0) / 1000);
+    return returnValue;
+  };
+}
+
 function getUICurrentTab() {
   return gradioApp().querySelector('#tabs button.selected');
 }
