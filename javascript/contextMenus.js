@@ -85,24 +85,24 @@ const appendContextMenuOption = initResponse[0];
 const removeContextMenuOption = initResponse[1];
 const addContextMenuEventListener = initResponse[2];
 
-async function initContextMenu() {
-  const generateForever = (genbuttonid, interruptbuttonid) => {
-    if (window.generateOnRepeatInterval) {
-      log('generateForever: cancel');
-      clearInterval(window.generateOnRepeatInterval);
-      window.generateOnRepeatInterval = null;
-    } else {
-      log('generateForever: start');
-      const genbutton = gradioApp().querySelector(genbuttonid);
-      const busy = document.getElementById('progressbar')?.style.display === 'block';
-      if (!busy) genbutton.click();
-      window.generateOnRepeatInterval = setInterval(() => {
-        const pbBusy = document.getElementById('progressbar')?.style.display === 'block';
-        if (!pbBusy) genbutton.click();
-      }, 500);
-    }
-  };
+const generateForever = (genbuttonid) => {
+  if (window.generateOnRepeatInterval) {
+    log('generateForever: cancel');
+    clearInterval(window.generateOnRepeatInterval);
+    window.generateOnRepeatInterval = null;
+  } else {
+    log('generateForever: start');
+    const genbutton = gradioApp().querySelector(genbuttonid);
+    const busy = document.getElementById('progressbar')?.style.display === 'block';
+    if (!busy) genbutton.click();
+    window.generateOnRepeatInterval = setInterval(() => {
+      const pbBusy = document.getElementById('progressbar')?.style.display === 'block';
+      if (!pbBusy) genbutton.click();
+    }, 500);
+  }
+};
 
+async function initContextMenu() {
   for (const tab of ['txt2img', 'img2img', 'control']) {
     for (const el of ['generate', 'interrupt', 'skip', 'pause', 'paste', 'clear_prompt', 'extra_networks_btn']) {
       const id = `#${tab}_${el}`;
