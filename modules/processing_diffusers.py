@@ -225,9 +225,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args['negative_prompt'] = negative_prompts
         if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
             model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
-            model.scheduler.noise_sampler_seed = p.seeds[0] # some schedulers have internal noise generator and do not use pipeline generator
+            model.scheduler.noise_sampler_seed = p.seeds # some schedulers have internal noise generator and do not use pipeline generator
         if 'noise_sampler_seed' in possible:
-            args['noise_sampler_seed'] = p.seeds[0]
+            args['noise_sampler_seed'] = p.seeds
         if 'guidance_scale' in possible:
             args['guidance_scale'] = p.cfg_scale
         if 'generator' in possible and generator is not None:
@@ -399,6 +399,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
     shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
+    update_sampler(shared.sd_model)
     base_args = set_pipeline_args(
         model=shared.sd_model,
         prompts=p.prompts,
@@ -415,7 +416,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
-    update_sampler(shared.sd_model)
     shared.state.sampling_steps = base_args.get('num_inference_steps', p.steps)
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
