@@ -62,28 +62,29 @@
   - Add *CMSI* sampler, optimized for consistency models  
   - Add option *timestep spacing* to sampler settings  
 - **IPEX**
-  - update to *IPEX 2.1.20* on Linux  
+  - Update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
-  - removed 1024x1024 workaround  
-  - disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`.  
+  - Removed 1024x1024 workaround  
+  - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`.  
 - **Fixes**:
-  - update requirements
-  - prompt params parser
-  - image save without metadata
+  - Update requirements
+  - Prompt params parser
+  - Image save without metadata
   - ROCm compatibility, thanks @Disty0
   - API generate save metadata
   - Face/InstantID faults
   - CivitAI update model info for all models
   - FP16/BF16 test on model load
-  - variation seed possible NaNs
-  - enumerate diffusers model with multiple variants
-  - diffusers skip non-models on enum
-  - face-hires compatibility with control modules
-  - loading safetensors embeddings
-  - css fixes
-  - check if attention processor is compatible with model
-  - sdupscale when used with control module
-  - noise sampler seed, thanks @leppie
+  - Variation seed possible NaNs
+  - Enumerate diffusers model with multiple variants
+  - Diffusers skip non-models on enum
+  - Face-HiRes compatibility with control modules
+  - Loading safetensors embeddings
+  - CSS fixes
+  - Check if attention processor is compatible with model
+  - SD Upscale when used with control module
+  - Noise sampler seed, thanks @leppie
+  - Control module with ADetailer and active ControlNet
 
 ## Update for 2024-03-19
 

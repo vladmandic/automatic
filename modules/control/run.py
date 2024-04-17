@@ -30,7 +30,7 @@ def restore_pipeline():
     if instance is not None and hasattr(instance, 'restore'):
         instance.restore()
     if original_pipeline is not None and (original_pipeline.__class__.__name__ != shared.sd_model.__class__.__name__):
-        shared.log.debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__} to={original_pipeline.__class__.__name__}')
+        debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__} to={original_pipeline.__class__.__name__}')
         shared.sd_model = original_pipeline
     pipe = None
     instance = None

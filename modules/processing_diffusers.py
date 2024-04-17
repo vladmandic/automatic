@@ -283,6 +283,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             else:
                 debug(f'Diffusers unknown task args: {k}={v}')
 
+        # handle implicit controlnet
+        if 'control_image' in possible and 'control_image' not in args and 'image' in args:
+            debug('Diffusers: set control image')
+            args['control_image'] = args['image']
+
         sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
 
         # debug info
