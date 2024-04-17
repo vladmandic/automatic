@@ -4,7 +4,7 @@
 
 - PixArt-Σ requires `diffusers-0.28.0.dev0`
 
-## Update for 2024-04-15
+## Update for 2024-04-17
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -83,6 +83,7 @@
   - css fixes
   - check if attention processor is compatible with model
   - sdupscale when used with control module
+  - noise sampler seed, thanks @leppie
 
 ## Update for 2024-03-19
 
