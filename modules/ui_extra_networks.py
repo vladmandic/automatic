@@ -831,6 +831,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         for page in get_pages():
             if title is None or title == '' or title == page.title or len(page.html) == 0:
                 shared.opts.extra_networks_view = page.view
+                # shared.opts.save(shared.config_filename)
                 page.view = 'gallery' if page.view == 'list' else 'list'
                 page.card = card_full if page.view == 'gallery' else card_list
                 page.html = ''

@@ -108,8 +108,22 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_images'):
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
+    if hasattr(p, 'ip_adapter_masks'):
+        adapter_masks = p.ip_adapter_masks
+    adapter_masks = get_images(adapter_masks)
+    if len(adapter_masks) > 0:
+        from diffusers.image_processor import IPAdapterMaskProcessor
+        mask_processor = IPAdapterMaskProcessor()
+        for i in range(len(adapter_masks)):
+            adapter_masks[i] = mask_processor.preprocess(adapter_masks[i], height=p.height, width=p.width)
+        adapter_masks = mask_processor.preprocess(adapter_masks, height=p.height, width=p.width)
     if len(adapters) < len(adapter_images):
         adapter_images = adapter_images[:len(adapters)]
+    if len(adapters) < len(adapter_masks):
+        adapter_masks = adapter_masks[:len(adapters)]
+    if len(adapter_masks) > 0 and len(adapter_masks) != len(adapter_images):
+        shared.log.error('IP adapter: image and mask count mismatch')
+        return False
     adapter_scales = get_scales(adapter_scales, adapter_images)
     p.ip_adapter_scales = adapter_scales.copy()
     adapter_starts = get_scales(adapter_starts, adapter_images)
@@ -179,10 +193,12 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                 adapter_scales[i] = 0.00
         pipe.set_ip_adapter_scale(adapter_scales)
         p.task_args['ip_adapter_image'] = adapter_images
+        if len(adapter_masks) > 0:
+            p.cross_attention_kwargs = { 'ip_adapter_masks': adapter_masks }
         t1 = time.time()
         ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
         p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)
-        shared.log.info(f'IP adapter: {ip_str} image={adapter_images} time={t1-t0:.2f}')
+        shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
         shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} names={adapter_names} {e}')
     return True

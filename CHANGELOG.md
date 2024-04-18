@@ -2,15 +2,22 @@
 
 ## Pending
 
-- PixArt-Σ requires `diffusers-0.28.0.dev0`
+### requires `diffusers-0.28.0.dev0`
 
-## Update for 2024-04-17
+- PixArt-Σ
+- IP adapter masking
+
+## Update for 2024-04-18
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+  - **IP Adapter Masking**:  
+    powerful method of using masking with ip-adapters  
+    when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
+    *hint*: to create masks, you can use manually created masks or control->mask module with auto-segment to create masks and later upload them  
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
     as with all other compile engines, enable via *settings -> compute settings -> compile*  
 - **UI**:
@@ -47,6 +54,7 @@
   - Faster server startup  
   - Add **MIGraphX** torch optimization engine, thanks @Disty0
   - Styles apply wildcards to params
+  - Extra networks persistent sort order in settings  
   - Add option to make batch generations use fully random seed vs sequential  
   - Make metadata in full screen viewer optional
   - Add VAE civitai scan metadata/preview

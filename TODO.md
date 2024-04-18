@@ -14,13 +14,11 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - stable diffusion 3.0
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
-- ella: <https://github.com/TencentQQGYLab/ELLA>
 
 ### Pipelines
 
-- instant style: <https://github.com/huggingface/diffusers/pull/7586> <https://github.com/InstantStyle/InstantStyle>
+- instant style: <https://github.com/huggingface/diffusers/pull/7668> <https://github.com/InstantStyle/InstantStyle>
 - ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
-- x-adapter: <https://github.com/showlab/X-Adapter>
 
 ### Features
 
@@ -30,8 +28,13 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - include reference styles
 - quick apply style
 - lora: sc lora, dora, etc
-- samplers: smea <https://github.com/Koishi-Star/Euler-Smea-Dyn-Sampler>, restart <https://github.com/Newbeeer/diffusion_restart_sampling>
 
 ### Missing
 
 - control api scripts compatibility
+
+### Defer
+
+- ella: <https://github.com/TencentQQGYLab/ELLA>
+- x-adapter: <https://github.com/showlab/X-Adapter>
+- samplers: smea <https://github.com/Koishi-Star/Euler-Smea-Dyn-Sampler>, restart <https://github.com/Newbeeer/diffusion_restart_sampling>

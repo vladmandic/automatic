@@ -282,6 +282,12 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args[k] = v
             else:
                 debug(f'Diffusers unknown task args: {k}={v}')
+        cross_attention_args = getattr(p, 'cross_attention_kwargs', {})
+        debug(f'Diffusers cross-attention args: {cross_attention_args}')
+        for k, v in cross_attention_args.items():
+            if args.get('cross_attention_kwargs', None) is None:
+                args['cross_attention_kwargs'] = {}
+            args['cross_attention_kwargs'][k] = v
 
         # handle implicit controlnet
         if 'control_image' in possible and 'control_image' not in args and 'image' in args:
@@ -292,6 +298,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
         # debug info
         clean = args.copy()
+        clean.pop('cross_attention_kwargs', None)
         clean.pop('callback', None)
         clean.pop('callback_steps', None)
         clean.pop('callback_on_step_end', None)
