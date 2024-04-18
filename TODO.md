@@ -10,18 +10,15 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - test upgrades due to submodule changes
 - integrate uiux
 
-### Models
+### Models & Pipelines
 
 - stable diffusion 3.0
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
-
-### Pipelines
-
 - instant style: <https://github.com/huggingface/diffusers/pull/7668> <https://github.com/InstantStyle/InstantStyle>
-- ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
 
 ### Features
 
+- outpaint without changing original image
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - init latents: variations, img2img
 - diffusers public callbacks  
