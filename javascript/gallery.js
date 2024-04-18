@@ -110,8 +110,8 @@ async function delayFetchThumb(fn) {
 class GalleryFile extends HTMLElement {
   constructor(folder, file) {
     super();
-    this.folder = decodeURI(folder);
-    this.name = decodeURI(file);
+    this.folder = folder;
+    this.name = file;
     this.size = 0;
     this.mtime = 0;
     this.hash = undefined;
@@ -336,7 +336,7 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
   ws.onmessage = (event) => {
     numFiles++;
     t1 = performance.now();
-    const data = event.data.split('##F##');
+    const data = decodeURI(event.data).split('##F##');
     if (data[0] === '#END#') {
       ws.close();
     } else {

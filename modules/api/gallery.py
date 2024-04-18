@@ -169,6 +169,7 @@ def register_api(app: FastAPI): # register api
                 numFiles += 1
                 file = os.path.relpath(f, folder)
                 msg = quote(folder) + '##F##' + quote(file)
+                msg = msg[:1] + ":" + msg[4:] if msg[1:4] == "%3A" else msg
                 await manager.send(ws, msg)
             await manager.send(ws, '#END#')
             t1 = time.time()
