@@ -489,8 +489,7 @@ def check_torch():
         try:
             command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             arr = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-            if len(arr) >= 2:
-                rocm_ver = f'{arr[0]}.{arr[1]}'
+            rocm_ver = f'{arr[0]}.{arr[1]}' if len(arr) >= 2 else None
             log.debug(f'ROCm version detected: {rocm_ver}')
         except Exception as e:
             log.debug(f'ROCm hipconfig failed: {e}')

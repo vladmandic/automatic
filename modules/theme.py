@@ -74,7 +74,7 @@ def list_themes():
                 if f.endswith('.css'):
                     themes.append(os.path.splitext(f)[0])
         if len(themes) == 0:
-            themes.append('modern/sdxl_alpha')
+            themes.append('modern/Default')
         themes = sorted(themes)
         modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(themes)}')
     else:
@@ -98,7 +98,7 @@ def reload_gradio_theme():
         if modules.shared.opts.theme_type == 'Standard':
             theme_name = 'black-teal'
         elif modules.shared.opts.theme_type == 'Modern':
-            theme_name = 'sdxl_alpha'
+            theme_name = 'Default'
 
     modules.shared.opts.data['gradio_theme'] = theme_name
 

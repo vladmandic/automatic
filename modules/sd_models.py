@@ -242,10 +242,10 @@ def select_checkpoint(op='model'):
         return checkpoint_info
     if len(checkpoints_list) == 0:
         shared.log.warning("Cannot generate without a checkpoint")
-        shared.log.info("Set system paths to use existing folders in a different location")
+        shared.log.info("Set system paths to use existing folders")
         shared.log.info("  or use --models-dir <path-to-folder> to specify base folder with all models")
         shared.log.info("  or use --ckpt-dir <path-to-folder> to specify folder with sd models")
-        shared.log.info("  or use --ckpt <path-to-checkpoint> to force using existing model")
+        shared.log.info("  or use --ckpt <path-to-checkpoint> to force using specific model")
         return None
     checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:

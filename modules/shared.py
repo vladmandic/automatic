@@ -118,6 +118,8 @@ def readfile(filename, silent=False, lock=False):
         t1 = time.time()
         if not silent:
             log.debug(f'Read: file="{filename}" json={len(data)} bytes={os.path.getsize(filename)} time={t1-t0:.3f}')
+    except FileNotFoundError as e:
+        log.debug(f'Reading failed: {filename} {e}')
     except Exception as e:
         if not silent:
             log.error(f'Reading failed: {filename} {e}')
@@ -304,7 +306,7 @@ def temp_disable_extensions():
         if theme_name == 'standard' or theme_name == 'default':
             theme_name = 'standard/black-teal'
         if theme_name == 'modern':
-            theme_name = 'modern/sdxl_alpha'
+            theme_name = 'modern/Default'
         if theme_name == 'gradio':
             theme_name = 'gradio/default'
         if theme_name == 'huggingface':
