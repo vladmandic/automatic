@@ -7,7 +7,7 @@
 - PixArt-Σ
 - IP adapter masking
 
-## Update for 2024-04-18
+## Update for 2024-04-20
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  

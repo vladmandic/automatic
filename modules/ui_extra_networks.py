@@ -245,14 +245,29 @@ class ExtraNetworksPage:
         self.create_items(tabname)
         self.create_xyz_grid()
         htmls = []
+
         if len(self.items) > 0 and self.items[0].get('mtime', None) is not None:
-            self.items.sort(key=lambda x: x["mtime"], reverse=True)
+            if shared.opts.extra_networks_sort == 'Default':
+                pass
+            elif shared.opts.extra_networks_sort == 'Name [A-Z]':
+                self.items.sort(key=lambda x: x["name"])
+            elif shared.opts.extra_networks_sort == 'Name [Z-A]':
+                self.items.sort(key=lambda x: x["name"], reverse=True)
+            elif shared.opts.extra_networks_sort == 'Date [Newest]':
+                self.items.sort(key=lambda x: x["mtime"], reverse=True)
+            elif shared.opts.extra_networks_sort == 'Date [Oldest]':
+                self.items.sort(key=lambda x: x["mtime"])
+            elif shared.opts.extra_networks_sort == 'Size [Largest]':
+                self.items.sort(key=lambda x: x["size"], reverse=True)
+            elif shared.opts.extra_networks_sort == 'Size [Smallest]':
+                self.items.sort(key=lambda x: x["size"])
+
         for item in self.items:
             htmls.append(self.create_html(item, tabname))
         self.html += ''.join(htmls)
         self.page_time = time.time()
         self.html = f"<div id='{tabname}_{self_name_id}_subdirs' class='extra-network-subdirs'>{subdirs_html}</div><div id='{tabname}_{self_name_id}_cards' class='extra-network-cards'>{self.html}</div>"
-        shared.log.debug(f"Extra networks: page='{self.name}' items={len(self.items)} subfolders={len(subdirs)} tab={tabname} folders={self.allowed_directories_for_previews()} list={self.list_time:.2f} thumb={self.preview_time:.2f} desc={self.desc_time:.2f} info={self.info_time:.2f} workers={shared.max_workers}")
+        shared.log.debug(f"Extra networks: page='{self.name}' items={len(self.items)} subfolders={len(subdirs)} tab={tabname} folders={self.allowed_directories_for_previews()} list={self.list_time:.2f} thumb={self.preview_time:.2f} desc={self.desc_time:.2f} info={self.info_time:.2f} workers={shared.max_workers} sort={shared.opts.extra_networks_sort}")
         if len(self.missing_thumbs) > 0:
             threading.Thread(target=self.create_thumb).start()
         return self.html
@@ -883,9 +898,11 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         else:
             shared.log.warning(f"Extra network quick save model: item={name} filename='{fn}' prompt is empty")
 
-    def ui_sort_cards(msg):
-        shared.log.debug(f'Extra networks: {msg}')
-        return msg
+    def ui_sort_cards(sort_order):
+        if shared.opts.extra_networks_sort != sort_order:
+            shared.opts.extra_networks_sort = sort_order
+            shared.opts.save(shared.config_filename)
+        return f'Extra networks sort={sort_order}'
 
     dummy = gr.State(value=False) # pylint: disable=abstract-class-instantiated
     button_parent.click(fn=toggle_visibility, inputs=[ui.visible], outputs=[ui.visible, container, button_parent])
