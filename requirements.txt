@@ -22,9 +22,7 @@ psutil
 pyyaml
 resize-right
 rich
-safetensors
 scipy
-tensordict==0.1.2
 toml
 torchdiffeq
 voluptuous
@@ -33,8 +31,10 @@ scikit-image
 fasteners
 dctorch
 pymatting
-peft
 orjson
+safetensors==0.4.3
+tensordict==0.1.2
+peft==0.10.0
 httpx==0.24.1
 compel==2.0.2
 torchsde==0.2.6
@@ -42,7 +42,7 @@ clip-interrogator==0.6.0
 antlr4-python3-runtime==4.9.3
 requests==2.31.0
 tqdm==4.66.2
-accelerate==0.29.1
+accelerate==0.29.3
 opencv-contrib-python-headless==4.9.0.80
 diffusers==0.27.2
 einops==0.4.1
@@ -54,11 +54,11 @@ numba==0.59.1
 pandas
 protobuf==3.20.3
 pytorch_lightning==1.9.4
-tokenizers==0.15.2
-transformers==4.39.3
+tokenizers==0.19.1
+transformers==4.40.0
 tomesd==0.1.3
 urllib3==1.26.18
 Pillow==10.3.0
 timm==0.9.16
-pydantic==1.10.13
+pydantic==1.10.15
 typing-extensions==4.11.0

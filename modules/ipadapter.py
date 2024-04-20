@@ -45,7 +45,9 @@ def get_images(input_images):
     if not isinstance(input_images, list):
         input_images = [input_images]
     for image in input_images:
-        if isinstance(image, list):
+        if image is None:
+            continue
+        elif isinstance(image, list):
             output_images.append(get_images(image)) # recursive
         elif isinstance(image, Image.Image):
             output_images.append(image)
@@ -108,9 +110,11 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_images'):
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
-    if hasattr(p, 'ip_adapter_masks'):
+    if hasattr(p, 'ip_adapter_masks') and len(p.ip_adapter_masks) > 0:
         adapter_masks = p.ip_adapter_masks
-    adapter_masks = get_images(adapter_masks)
+        adapter_masks = get_images(adapter_masks)
+    else:
+        adapter_masks = []
     if len(adapter_masks) > 0:
         from diffusers.image_processor import IPAdapterMaskProcessor
         mask_processor = IPAdapterMaskProcessor()

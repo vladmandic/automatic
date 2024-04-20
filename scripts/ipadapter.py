@@ -93,4 +93,5 @@ class Script(scripts.Script):
             p.ip_adapter_ends = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
         if getattr(p, 'ip_adapter_masks', []) == []:
             p.ip_adapter_masks = args[MAX_ADAPTERS*5:MAX_ADAPTERS*6][:units]
+            p.ip_adapter_masks = [x for x in p.ip_adapter_masks if x]
         # ipadapter.apply(shared.sd_model, p, p.ip_adapter_names, p.ip_adapter_scales, p.ip_adapter_starts, p.ip_adapter_ends, p.ip_adapter_images) # called directly from processing.process_images_inner
