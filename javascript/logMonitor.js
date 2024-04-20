@@ -17,45 +17,61 @@ function dateToStr(ts) {
 }
 
 async function logMonitor() {
-  if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
-  if (!opts.logmonitor_show) return;
-  logMonitorStatus = false;
-  let res;
-  try { res = await fetch('/sdapi/v1/log?clear=True'); } catch {}
-  if (res?.ok) {
-    logMonitorStatus = true;
-    if (!logMonitorEl) {
-      logMonitorEl = document.getElementById('logMonitorData');
-      logMonitorEl.onscrollend = () => {
-        const at_bottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
-        if (at_bottom) logMonitorEl.parentElement.style = '';
-      };
+  const addLogLine = (line) => {
+    try {
+      const l = JSON.parse(line.replaceAll('\n', ' '));
+      const row = document.createElement('tr');
+      // row.style = 'padding: 10px; margin: 0;';
+      const level = `<td style="color: var(--color-${l.level.toLowerCase()})">${l.level}</td>`;
+      if (l.level === 'WARNING') logWarnings++;
+      if (l.level === 'ERROR') logErrors++;
+      const module = `<td style="color: var(--var(--neutral-400))">${l.module}</td>`;
+      row.innerHTML = `<td>${dateToStr(l.created)}</td>${level}<td>${l.facility}</td>${module}<td>${l.msg}</td>`;
+      logMonitorEl.appendChild(row);
+    } catch (e) {
+      console.log('logMonitor', e);
+      console.error('logMonitor line', line);
     }
-    if (!logMonitorEl) return;
-    const at_bottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
-    const lines = await res.json();
-    if (logMonitorEl && lines?.length > 0) logMonitorEl.parentElement.parentElement.style.display = opts.logmonitor_show ? 'block' : 'none';
-    for (const line of lines) {
-      try {
-        const l = JSON.parse(line.replaceAll('\n', ' '));
-        const row = document.createElement('tr');
-        // row.style = 'padding: 10px; margin: 0;';
-        const level = `<td style="color: var(--color-${l.level.toLowerCase()})">${l.level}</td>`;
-        if (l.level === 'WARNING') logWarnings++;
-        if (l.level === 'ERROR') logErrors++;
-        const module = `<td style="color: var(--var(--neutral-400))">${l.module}</td>`;
-        row.innerHTML = `<td>${dateToStr(l.created)}</td>${level}<td>${l.facility}</td>${module}<td>${l.msg}</td>`;
-        logMonitorEl.appendChild(row);
-      } catch (e) {
-        console.log('logMonitor', e);
-        console.error('logMonitor line', line);
-      }
-    }
+  };
+
+  const cleanupLog = (atBottom) => {
     while (logMonitorEl.childElementCount > 100) logMonitorEl.removeChild(logMonitorEl.firstChild);
-    if (at_bottom) logMonitorEl.scrollTop = logMonitorEl.scrollHeight;
-    else if (lines?.length > 0) logMonitorEl.parentElement.style = 'border-bottom: 2px solid var(--highlight-color);';
+    if (atBottom) logMonitorEl.scrollTop = logMonitorEl.scrollHeight;
+    else logMonitorEl.parentElement.style = 'border-bottom: 2px solid var(--highlight-color);';
     document.getElementById('logWarnings').innerText = logWarnings;
     document.getElementById('logErrors').innerText = logErrors;
+  };
+
+  // addLogLine(`{ "created": ${Date.now() / 1000}, "level":"DEBUG", "module":"ui", "facility":"logMonitor", "msg":"Log refresh" }`);
+  if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
+  else setTimeout(logMonitor, 10 * opts.logmonitor_refresh_period);
+  if (!opts.logmonitor_show) return;
+  logMonitorStatus = false;
+  if (!logMonitorEl) {
+    logMonitorEl = document.getElementById('logMonitorData');
+    logMonitorEl.onscrollend = () => {
+      const atBottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
+      if (atBottom) logMonitorEl.parentElement.style = '';
+    };
+  }
+  if (!logMonitorEl) return;
+  const atBottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
+  try {
+    const res = await fetch('/sdapi/v1/log?clear=False');
+    if (res?.ok) {
+      logMonitorStatus = true;
+      const lines = await res.json();
+      if (logMonitorEl && lines?.length > 0) logMonitorEl.parentElement.parentElement.style.display = opts.logmonitor_show ? 'block' : 'none';
+      for (const line of lines) addLogLine(line);
+    } else {
+      addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: ${res?.status} ${res?.statusText}" }`);
+      logErrors++;
+    }
+    cleanupLog(atBottom);
+  } catch (err) {
+    addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: server unreachable" }`);
+    logErrors++;
+    cleanupLog(atBottom);
   }
 }
 

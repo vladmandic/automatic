@@ -60,6 +60,7 @@
   - Add VAE civitai scan metadata/preview
   - More efficient in-browser callbacks
   - Updated all system requirements  
+  - UI log monitor will auto-reconnect to server on server restart  
   - Support controlnet manually downloads models in both standalone and diffusers format  
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  
