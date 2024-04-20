@@ -93,6 +93,7 @@
   - SD Upscale when used with control module
   - Noise sampler seed, thanks @leppie
   - Control module with ADetailer and active ControlNet
+  - Control module restore button full functionality
 
 ## Update for 2024-03-19
 

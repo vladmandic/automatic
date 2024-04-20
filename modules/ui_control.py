@@ -126,7 +126,7 @@ def create_ui(_blocks: gr.Blocks=None):
                         video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id="control_video_interpolate")
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
-                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
@@ -531,7 +531,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (negative, "Negative prompt"),
                 # input
                 (denoising_strength, "Denoising strength"),
-                # resize # TODO resize params
+                # resize
                 (width_before, "Size-1"),
                 (height_before, "Size-2"),
                 (resize_mode_before, "Resize mode"),
@@ -544,6 +544,8 @@ def create_ui(_blocks: gr.Blocks=None):
                 (batch_size, "Batch-2"),
                 # seed
                 (seed, "Seed"),
+                (subseed, "Variation seed"),
+                (subseed_strength, "Variation strength"),
                 # mask
                 (mask_controls[1], "Mask only"),
                 (mask_controls[2], "Mask invert"),
@@ -559,7 +561,21 @@ def create_ui(_blocks: gr.Blocks=None):
                 (full_quality, "Full quality"),
                 (restore_faces, "Face restoration"),
                 (tiling, "Tiling"),
-                # second pass # TODO second pass params
+                # second pass
+                (enable_hr, "Second pass"),
+                (hr_sampler_index, "Hires sampler"),
+                (denoising_strength, "Denoising strength"),
+                (hr_upscaler, "Hires upscaler"),
+                (hr_force, "Hires force"),
+                (hr_second_pass_steps, "Hires steps"),
+                (hr_scale, "Hires upscale"),
+                (hr_resize_x, "Hires resize-1"),
+                (hr_resize_y, "Hires resize-2"),
+                # refiner
+                (refiner_start, "Refiner start"),
+                (refiner_steps, "Refiner steps"),
+                (refiner_prompt, "Prompt2"),
+                (refiner_negative, "Negative2"),
                 # hidden
                 (seed_resize_from_w, "Seed resize from-1"),
                 (seed_resize_from_h, "Seed resize from-2"),
