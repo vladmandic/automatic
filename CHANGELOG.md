@@ -50,6 +50,13 @@
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native built-in equivalents  
     both can still be installed by user if desired  
+  - Different defaults depending on available GPU, thanks @Disty0
+    - 4GB and below: *lowvram*
+    - 8GB and below: *medvram*
+    - Use Dynamic Attention SDP with *medvram* or *lowvram*  
+    - Enable VAE Tiling for *medvram* and *lowvram*
+    - Disable Extract EMA by default
+    - Disable forced VAE Slicing for *lowvram*
 - **Improvements**:
   - Faster server startup  
   - Add **MIGraphX** torch optimization engine, thanks @Disty0
