@@ -545,8 +545,10 @@ def check_torch():
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
         log.info('Intel OneAPI Toolkit detected')
-        os.environ.setdefault('NEOReadDebugKeys', '1')
-        os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+        if os.environ.get("NEOReadDebugKeys", None) is None:
+            os.environ.setdefault('NEOReadDebugKeys', '1')
+        if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
+            os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
         if "linux" in sys.platform:
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post0 torchvision==0.16.0.post0 intel-extension-for-pytorch==2.1.20+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
             os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')

@@ -19,6 +19,7 @@ from modules.paths import models_path, script_path, data_path, sd_configs_path, 
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
 from modules.zluda import initialize_zluda
+from modules.memstats import memory_stats
 import modules.interrogate
 import modules.memmon
 import modules.styles
@@ -348,14 +349,31 @@ def temp_disable_extensions():
     return disabled
 
 
-if devices.backend == "cpu":
+if not (cmd_opts.lowvram or cmd_opts.medvram):
+    mem_stat = memory_stats()
+    if "gpu" in mem_stat:
+        if mem_stat['gpu']['total'] <= 4:
+            cmd_opts.lowvram = True
+            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=lowvram")
+        elif mem_stat['gpu']['total'] <= 8:
+            cmd_opts.medvram = True
+            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=medvram")
+        else:
+            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=none")
+
+
+if devices.backend == "directml": # Force BMM for DirectML instead of SDP
+    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
+elif backend == Backend.DIFFUSERS and (cmd_opts.lowvram or cmd_opts.medvram):
+    cross_attention_optimization_default = "Dynamic Attention SDP"
+elif devices.backend == "cpu":
     cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
 elif devices.backend == "mps":
     cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
-elif devices.backend == "directml":
-    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
 else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
+
+
 if devices.backend == "rocm":
     sdp_options_default =  ['Memory attention', 'Math attention']
 #elif devices.backend == "zluda":
@@ -485,13 +503,13 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
     "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE"),
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
-    "diffusers_extract_ema": OptionInfo(True, "Use model EMA weights when possible"),
+    "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_model_cpu_offload": OptionInfo(False, "Model CPU offload (--medvram)"),
-    "diffusers_seq_cpu_offload": OptionInfo(False, "Sequential CPU offload (--lowvram)"),
+    "diffusers_model_cpu_offload": OptionInfo(cmd_opts.medvram, "Model CPU offload (--medvram)"),
+    "diffusers_seq_cpu_offload": OptionInfo(cmd_opts.lowvram, "Sequential CPU offload (--lowvram)"),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
-    "diffusers_vae_tiling": OptionInfo(False, "VAE tiling"),
+    "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),

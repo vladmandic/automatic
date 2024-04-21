@@ -709,13 +709,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
             sd_model.enable_sequential_cpu_offload()
             sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_vae_slicing"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_vae_slicing:
+        if shared.opts.diffusers_vae_slicing:
             shared.log.debug(f'Setting {op}: enable VAE slicing')
             sd_model.enable_vae_slicing()
         else:
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_vae_tiling:
+        if shared.opts.diffusers_vae_tiling:
             shared.log.debug(f'Setting {op}: enable VAE tiling')
             sd_model.enable_vae_tiling()
         else:
