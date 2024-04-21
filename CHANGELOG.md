@@ -88,6 +88,7 @@
   - Enumerate diffusers model with multiple variants
   - Diffusers skip non-models on enum
   - Face-HiRes compatibility with control modules
+  - Face-HiRes avoid doule save in some scenarios
   - Loading safetensors embeddings
   - CSS fixes
   - Check if attention processor is compatible with model

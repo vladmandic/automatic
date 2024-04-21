@@ -368,7 +368,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 infotexts.append(text)
                 image.info["parameters"] = text
                 output_images.append(image)
-                if shared.opts.samples_save and not p.do_not_save_samples:
+                if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')

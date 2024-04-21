@@ -125,7 +125,7 @@ class FaceRestorerYolo(FaceRestoration):
             'denoising_strength': shared.opts.facehires_strength if shared.opts.facehires_strength > 0 else orig_p.get('denoising_strength', 0.3),
             'styles': [],
             'prompt': orig_p.get('refiner_prompt', ''),
-            # TODO facehires expose as tunable
+            # TODO facehires expose additional params as tunable
             'mask_blur': 10,
             'inpaint_full_res_padding': 15,
             'restore_faces': True,
