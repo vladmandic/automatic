@@ -7,7 +7,7 @@
 - PixArt-Σ
 - IP adapter masking
 
-## Update for 2024-04-20
+## Update for 2024-04-21
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -95,6 +95,7 @@
   - Noise sampler seed, thanks @leppie
   - Control module with ADetailer and active ControlNet
   - Control module restore button full functionality
+  - Control add correct metadata to image
 
 ## Update for 2024-03-19
 

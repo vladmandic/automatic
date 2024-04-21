@@ -217,23 +217,29 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
             selected_models = None
         elif len(active_model) == 1:
             selected_models = active_model[0].model if active_model[0].model is not None else None
-            p.extra_generation_params["Control model"] = (active_model[0].model_id or '') if active_model[0].model is not None else None
             has_models = selected_models is not None
             control_conditioning = active_strength[0] if len(active_strength) > 0 else 1 # strength or list[strength]
             control_guidance_start = active_start[0] if len(active_start) > 0 else 0
             control_guidance_end = active_end[0] if len(active_end) > 0 else 1
         else:
             selected_models = [m.model for m in active_model if m.model is not None]
-            p.extra_generation_params["Control model"] = ', '.join([(m.model_id or '') for m in active_model if m.model is not None])
             has_models = len(selected_models) > 0
             control_conditioning = active_strength[0] if len(active_strength) == 1 else list(active_strength) # strength or list[strength]
             control_guidance_start = active_start[0] if len(active_start) == 1 else list(active_start)
             control_guidance_end = active_end[0] if len(active_end) == 1 else list(active_end)
-        p.extra_generation_params["Control conditioning"] = control_conditioning
     else:
         pass
 
     debug(f'Control: run type={unit_type} models={has_models}')
+    if has_models:
+        p.extra_generation_params["Control mode"] = unit_type # overriden later with pretty-print
+        p.extra_generation_params["Control conditioning"] = control_conditioning if isinstance(control_conditioning, list) else [control_conditioning]
+        p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
+        p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
+        p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
+        p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in control_conditioning])
+        p.extra_generation_params['Control start'] = ';'.join([str(c) for c in control_guidance_start])
+        p.extra_generation_params['Control end'] = ';'.join([str(c) for c in control_guidance_end])
     if unit_type == 't2i adapter' and has_models:
         p.extra_generation_params["Control mode"] = 'T2I-Adapter'
         p.task_args['adapter_conditioning_scale'] = control_conditioning
@@ -426,9 +432,10 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
 
                     debug(f'Control processed: {len(processed_images)}')
                     if len(processed_images) > 0:
-                        p.extra_generation_params["Control process"] = [p.processor_id for p in active_process if p.processor_id is not None]
                         if len(p.extra_generation_params["Control process"]) == 0:
                             p.extra_generation_params["Control process"] = None
+                        else:
+                            p.extra_generation_params["Control process"] = ';'.join([p.processor_id for p in active_process if p.processor_id is not None])
                         if any(img is None for img in processed_images):
                             yield terminate('Control: attempting process but output is none')
                             return
