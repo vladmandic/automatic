@@ -32,6 +32,8 @@ fasteners
 dctorch
 pymatting
 orjson
+invisible-watermark
+pi-heif
 safetensors==0.4.3
 tensordict==0.1.2
 peft==0.10.0
