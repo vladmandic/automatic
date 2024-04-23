@@ -9,6 +9,7 @@ TODO ipadapter items:
 
 import os
 import time
+import json
 from PIL import Image
 from modules import processing, shared, devices, sd_models
 
@@ -192,16 +193,20 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     ip_subfolder = 'models' if shared.sd_model_type == 'sd' else 'sdxl_models'
     try:
         pipe.load_ip_adapter([base_repo], subfolder=[ip_subfolder], weight_name=adapters)
-        for i in range(len(adapter_scales)):
-            if adapter_starts[i] > 0:
-                adapter_scales[i] = 0.00
-        pipe.set_ip_adapter_scale(adapter_scales)
+        if hasattr(p, 'ip_adapter_layers'):
+            pipe.set_ip_adapter_scale(p.ip_adapter_layers)
+            ip_str = ';'.join(adapter_names) + ':' + json.dumps(p.ip_adapter_layers)
+        else:
+            for i in range(len(adapter_scales)):
+                if adapter_starts[i] > 0:
+                    adapter_scales[i] = 0.00
+            pipe.set_ip_adapter_scale(adapter_scales)
+            ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
         p.task_args['ip_adapter_image'] = adapter_images
         if len(adapter_masks) > 0:
             p.cross_attention_kwargs = { 'ip_adapter_masks': adapter_masks }
-        t1 = time.time()
-        ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
         p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)
+        t1 = time.time()
         shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
         shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} names={adapter_names} {e}')

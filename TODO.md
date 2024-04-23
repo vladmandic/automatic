@@ -14,7 +14,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - stable diffusion 3.0
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
-- instant style: <https://github.com/huggingface/diffusers/pull/7668> <https://github.com/InstantStyle/InstantStyle>
 
 ### Features
 
@@ -34,4 +33,4 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - ella: <https://github.com/TencentQQGYLab/ELLA>
 - x-adapter: <https://github.com/showlab/X-Adapter>
-- samplers: smea <https://github.com/Koishi-Star/Euler-Smea-Dyn-Sampler>, restart <https://github.com/Newbeeer/diffusion_restart_sampling>
+- samplers: [smea](https://github.com/Koishi-Star/Euler-Smea-Dyn-Sampler), [restart](https://github.com/Newbeeer/diffusion_restart_sampling), [vdm](https://github.com/huggingface/diffusers/pull/7737)

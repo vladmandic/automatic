@@ -6,8 +6,9 @@
 
 - PixArt-Σ
 - IP adapter masking
+- InstantStyle
 
-## Update for 2024-04-21
+## Update for 2024-04-23
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -18,6 +19,9 @@
     powerful method of using masking with ip-adapters  
     when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
     *hint*: to create masks, you can use manually created masks or control->mask module with auto-segment to create masks and later upload them  
+  - **IP Adapter advanced layer configuration**:  
+    allows for more control over how each layer of ip-adapter is applied, requires a valid dict to be passed as input  
+    see [InstantStyle](https://github.com/InstantStyle/InstantStyle) for details  
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
     as with all other compile engines, enable via *settings -> compute settings -> compile*  
 - **UI**:
