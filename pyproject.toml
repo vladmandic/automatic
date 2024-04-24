@@ -15,6 +15,7 @@ exclude = [
   "modules/control/units/*_model.py",
   "modules/control/units/*_pipe.py",
   "modules/xadapter/*.py",
+  "modules/hidiffusion/*.py",
   "modules/tcd/*.py",
 ]
 [tool.ruff.lint]

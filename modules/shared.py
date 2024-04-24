@@ -313,17 +313,17 @@ def temp_disable_extensions():
         if theme_name == 'huggingface':
             theme_name = 'huggingface/blaaa'
 
-    if theme_name.startswith('standard'):
+    if theme_name.lower().startswith('standard') or theme_name.lower().startswith('default'):
         modules.shared.opts.data['theme_type'] = 'Standard'
         modules.shared.opts.data['gradio_theme'] = theme_name[9:]
-    elif theme_name.startswith('modern'):
+    elif theme_name.lower().startswith('modern'):
         modules.shared.opts.data['theme_type'] = 'Modern'
         modules.shared.opts.data['gradio_theme'] = theme_name[7:]
         disable_themes.remove('sdnext-ui-ux')
-    elif theme_name.startswith('gradio'):
+    elif theme_name.lower().startswith('gradio'):
         modules.shared.opts.data['theme_type'] = 'None'
         modules.shared.opts.data['gradio_theme'] = theme_name
-    elif theme_name.startswith('huggingface'):
+    elif theme_name.lower().startswith('huggingface'):
         modules.shared.opts.data['theme_type'] = 'None'
         modules.shared.opts.data['gradio_theme'] = theme_name
     else:
@@ -439,6 +439,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
+    "nncf_sep": OptionInfo("<h2>Model Compress</h2>", "", gr.HTML),
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": backend == Backend.DIFFUSERS}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
@@ -489,6 +490,11 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "hypertile_vae_enabled": OptionInfo(False, "HyperTile VAE", gr.Checkbox),
     "hypertile_vae_tile": OptionInfo(128, "HyperTile VAE tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_vae_swap_size": OptionInfo(1, "HyperTile VAE swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+
+    "hidiffusion_sep": OptionInfo("<h2>HiDiffusion</h2>", "", gr.HTML),
+    "hidiffusion_raunet": OptionInfo(True, "Apply RAU-Net"),
+    "hidiffusion_aggressive": OptionInfo(True, "Aggressive RAU-Net"),
+    "hidiffusion_attn": OptionInfo(True, "Apply MSW-MSA"),
 
     "inference_batch_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
     "sequential_seed": OptionInfo(True, "Batch mode uses sequential seeds"),

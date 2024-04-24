@@ -8,13 +8,18 @@
 - IP adapter masking
 - InstantStyle
 
-## Update for 2024-04-23
+## Update for 2024-04-24
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+  - **HiDiffusion**:  
+    generate high-resolution images using your standard models without duplicates/distorsions  
+    simply enable checkbox in advanced menu and set desired resolution  
+    additional settings are available in settings -> inference settings -> hidiffusion  
+    for example 1024x1024 using sd15 or 2024x2024 using sdxl  
   - **IP Adapter Masking**:  
     powerful method of using masking with ip-adapters  
     when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  

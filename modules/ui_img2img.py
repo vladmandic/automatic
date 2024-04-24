@@ -130,7 +130,7 @@ def create_ui():
                             denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.50, elem_id="img2img_denoising_strength")
                             refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Denoise start', value=0.0, elem_id="img2img_refiner_start")
 
-                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling = ui_sections.create_advanced_inputs('img2img')
+                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_advanced_inputs('img2img')
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
@@ -177,7 +177,7 @@ def create_ui():
                 sampler_index,
                 mask_blur, mask_alpha,
                 inpainting_fill,
-                full_quality, restore_faces, tiling,
+                full_quality, restore_faces, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale,
                 diffusers_guidance_rescale, sag_scale, cfg_end,
@@ -263,6 +263,7 @@ def create_ui():
                 (full_quality, "Full quality"),
                 (restore_faces, "Face restoration"),
                 (tiling, "Tiling"),
+                (hidiffusion, "HiDiffusion"),
                 # inpaint
                 (mask_blur, "Mask blur"),
                 (mask_alpha, "Mask alpha"),

@@ -58,7 +58,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, sag_scale: float = 0.0, cfg_end: float = 1.0,
-                full_quality: bool = True, restore_faces: bool = False, tiling: bool = False,
+                full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, hidiffusion: bool = False,
                 hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95,
                 hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0,
                 resize_mode_before: int = 0, resize_name_before: str = 'None', width_before: int = 512, height_before: int = 512, scale_by_before: float = 1.0, selected_scale_tab_before: int = 0,
@@ -107,6 +107,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         full_quality = full_quality,
         restore_faces = restore_faces,
         tiling = tiling,
+        hidiffusion = hidiffusion,
         # resize
         resize_mode = resize_mode_before if resize_name_before != 'None' else 0,
         resize_name = resize_name_before,
@@ -237,9 +238,9 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
         p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
         p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
-        p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in control_conditioning])
-        p.extra_generation_params['Control start'] = ';'.join([str(c) for c in control_guidance_start])
-        p.extra_generation_params['Control end'] = ';'.join([str(c) for c in control_guidance_end])
+        p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in p.extra_generation_params["Control conditioning"]])
+        p.extra_generation_params['Control start'] = ';'.join([str(c) for c in p.extra_generation_params['Control start']])
+        p.extra_generation_params['Control end'] = ';'.join([str(c) for c in p.extra_generation_params['Control end']])
     if unit_type == 't2i adapter' and has_models:
         p.extra_generation_params["Control mode"] = 'T2I-Adapter'
         p.task_args['adapter_conditioning_scale'] = control_conditioning

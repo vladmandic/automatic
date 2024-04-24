@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 import diffusers
-from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks
+from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks, hidiffusion
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 
@@ -437,9 +437,16 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
         sd_models.move_model(shared.sd_model, devices.device)
+        if p.hidiffusion:
+            hidiffusion.hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_aggressive
+            hidiffusion.apply_hidiffusion(shared.sd_model, apply_raunet=shared.opts.hidiffusion_raunet, apply_window_attn=shared.opts.hidiffusion_attn)
+            shared.log.debug(f'Applying HiDiffusion: raunet={shared.opts.hidiffusion_raunet} aggressive={shared.opts.hidiffusion_aggressive} attn={shared.opts.hidiffusion_attn}')
+            p.extra_generation_params['HiDiffusion'] = f'{shared.opts.hidiffusion_raunet}/{shared.opts.hidiffusion_aggressive}/{shared.opts.hidiffusion_attn}'
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
+        if p.hidiffusion:
+            hidiffusion.remove_hidiffusion(shared.sd_model)
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
         sd_models_compile.check_deepcache(enable=False)
         if shared.cmd_opts.profile:
