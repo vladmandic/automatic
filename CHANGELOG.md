@@ -15,7 +15,7 @@
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
-  - **HiDiffusion**:  
+  - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
     generate high-resolution images using your standard models without duplicates/distorsions  
     simply enable checkbox in advanced menu and set desired resolution  
     additional settings are available in settings -> inference settings -> hidiffusion  
