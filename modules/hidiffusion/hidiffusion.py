@@ -83,7 +83,7 @@ surppoted_official_model = [
 # T2_ratio: see T2 introduced in the appendix, used in extreme resolution image generation. T2 = number_inference_step * T2_ratio. A higher T2_ratio can better mitigate object duplication. Only active when apply_raunet=True
 switching_threshold_ratio_dict = {
     'sd15_1024': {'T1_ratio': 0.4, 'T2_ratio': 0.0},
-    'sd15_2048': {'T1_ratio': 0.7, 'T2_ratio': 0.3},
+    'sd15_2048': {'T1_ratio': 0.5, 'T2_ratio': 0.3},
     'sdxl_2048': {'T1_ratio': 0.4, 'T2_ratio': 0.0},
     'sdxl_4096': {'T1_ratio': 0.7, 'T2_ratio': 0.3},
     'sdxl_turbo_1024': {'T1_ratio': 0.5, 'T2_ratio': 0.0},
