@@ -6,7 +6,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ### Logistics
 
-- defork
+- notes on deforking: 3443 commits ahead of, 3342 commits behind
 - test upgrades due to submodule changes
 - integrate uiux
 
@@ -14,7 +14,9 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - stable diffusion 3.0
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
-- hidiffusion: <https://github.com/megvii-research/HiDiffusion/tree/main/hidiffusion>
+- hidiffusion: add new defaults, update codebase
+- hyper-sd: <https://huggingface.co/ByteDance/Hyper-SD>
+  
 
 ### Features
 
