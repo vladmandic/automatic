@@ -493,8 +493,10 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
 
     "hidiffusion_sep": OptionInfo("<h2>HiDiffusion</h2>", "", gr.HTML),
     "hidiffusion_raunet": OptionInfo(True, "Apply RAU-Net"),
-    "hidiffusion_aggressive": OptionInfo(True, "Aggressive RAU-Net"),
     "hidiffusion_attn": OptionInfo(True, "Apply MSW-MSA"),
+    "hidiffusion_steps": OptionInfo(8, "Aggressive at step", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "hidiffusion_t1": OptionInfo(-1, "Override T1 ratio", gr.Slider, {"minimum": -1, "maximum": 1.0, "step": 0.05}),
+    "hidiffusion_t2": OptionInfo(-1, "Override T2 ratio", gr.Slider, {"minimum": -1, "maximum": 1.0, "step": 0.05}),
 
     "inference_batch_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
     "sequential_seed": OptionInfo(True, "Batch mode uses sequential seeds"),
@@ -569,7 +571,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "samples_save": OptionInfo(True, "Save all generated images"),
     "samples_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
     "jpeg_quality": OptionInfo(90, "Image quality", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
-    "img_max_size_mp": OptionInfo(250, "Maximum image size (MP)", gr.Slider, {"minimum": 100, "maximum": 2000, "step": 1}),
+    "img_max_size_mp": OptionInfo(500, "Maximum image size (MP)", gr.Slider, {"minimum": 100, "maximum": 2000, "step": 1}),
     "webp_lossless": OptionInfo(False, "WebP lossless compression"),
     "save_selected_only": OptionInfo(True, "Save only saves selected image"),
     "include_mask": OptionInfo(False, "Include mask in outputs"),

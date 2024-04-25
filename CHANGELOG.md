@@ -11,7 +11,8 @@
 ### Note
 
 *Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
-Given huge number of changes (+3443/-3342 commits) over the past year and complete focus on different backend/engine, it is time to give credit to original authors and move on!  
+Given huge number of changes with *+3443/-3342 commits diff over the past year and complete focus on different backend/engine,  
+it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
 ## Update for 2024-04-25
 
@@ -22,9 +23,10 @@ Given huge number of changes (+3443/-3342 commits) over the past year and comple
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
   - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
     generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
-    simply enable checkbox in advanced menu and set desired resolution  
-    additional settings are available in settings -> inference settings -> hidiffusion  
     for example, SD15 can now go up to 2024x2048 and SDXL up to 4k natively
+    simply enable checkbox in advanced menu and set desired resolution  
+    additional settings are available in *settings -> inference settings -> hidiffusion*  
+    and can also be set and used via *xyz grid*  
   - **IP Adapter Masking**:  
     powerful method of using masking with ip-adapters  
     when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  

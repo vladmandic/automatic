@@ -387,6 +387,30 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             orig_pipeline = sd_model # processed ONNX pipeline should not be replaced with original pipeline.
         return sd_model
 
+    def apply_hidiffusion():
+        if p.hidiffusion:
+            hidiffusion.hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_steps > 0
+            hidiffusion.hidiffusion.aggressive_step = shared.opts.hidiffusion_steps
+            if shared.opts.hidiffusion_t1 >= 0:
+                t1 = shared.opts.hidiffusion_t1
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sd15_1024']['T1_ratio'] = t1
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sd15_2048']['T1_ratio'] = t1
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_2048']['T1_ratio'] = t1
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_4096']['T1_ratio'] = t1
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_turbo_1024']['T1_ratio'] = t1
+                p.extra_generation_params['HiDiffusion Ratios'] = f'{shared.opts.hidiffusion_t1}/{shared.opts.hidiffusion_t2}'
+            if shared.opts.hidiffusion_t2 >= 0:
+                t2 =shared.opts.hidiffusion_t2
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sd15_1024']['T2_ratio'] = t2
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sd15_2048']['T2_ratio'] = t2
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_2048']['T2_ratio'] = t2
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_4096']['T2_ratio'] = t2
+                hidiffusion.hidiffusion.switching_threshold_ratio_dict['sdxl_turbo_1024']['T2_ratio'] = t2
+                p.extra_generation_params['HiDiffusion Ratios'] = f'{shared.opts.hidiffusion_t1}/{shared.opts.hidiffusion_t2}'
+            hidiffusion.apply_hidiffusion(shared.sd_model, apply_raunet=shared.opts.hidiffusion_raunet, apply_window_attn=shared.opts.hidiffusion_attn)
+            shared.log.debug(f'Applying HiDiffusion: raunet={shared.opts.hidiffusion_raunet} attn={shared.opts.hidiffusion_attn} aggressive={shared.opts.hidiffusion_steps > 0}:{shared.opts.hidiffusion_steps} t1={shared.opts.hidiffusion_t1} t2={shared.opts.hidiffusion_t2}')
+            p.extra_generation_params['HiDiffusion'] = f'{shared.opts.hidiffusion_raunet}/{shared.opts.hidiffusion_attn}/{shared.opts.hidiffusion_steps > 0}:{shared.opts.hidiffusion_steps}'
+
     # sanitize init_images
     if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
         del p.init_images
@@ -444,11 +468,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
         sd_models.move_model(shared.sd_model, devices.device)
-        if p.hidiffusion:
-            hidiffusion.hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_aggressive
-            hidiffusion.apply_hidiffusion(shared.sd_model, apply_raunet=shared.opts.hidiffusion_raunet, apply_window_attn=shared.opts.hidiffusion_attn)
-            shared.log.debug(f'Applying HiDiffusion: raunet={shared.opts.hidiffusion_raunet} aggressive={shared.opts.hidiffusion_aggressive} attn={shared.opts.hidiffusion_attn}')
-            p.extra_generation_params['HiDiffusion'] = f'{shared.opts.hidiffusion_raunet}/{shared.opts.hidiffusion_aggressive}/{shared.opts.hidiffusion_attn}'
+        apply_hidiffusion()
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)

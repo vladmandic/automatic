@@ -277,6 +277,9 @@ axis_options = [
     AxisOption("[IP adapter] Scale", float, apply_field('ip_adapter_scales')),
     AxisOption("[IP adapter] Starts", float, apply_field('ip_adapter_starts')),
     AxisOption("[IP adapter] Ends", float, apply_field('ip_adapter_ends')),
+    AxisOption("[HiDiffusion] T1", float, apply_override('hidiffusion_t1')),
+    AxisOption("[HiDiffusion] T2", float, apply_override('hidiffusion_t2')),
+    AxisOption("[HiDiffusion] Agression step", float, apply_field('hidiffusion_steps')),
 ]
 
 

@@ -82,10 +82,10 @@ surppoted_official_model = [
 # T1_ratio: see T1 introduced in the main paper. T1 = number_inference_step * T1_ratio. A higher T1_ratio can better mitigate object duplication. We set T1_ratio=0.4 by default. You'd better adjust it to fit your prompt. Only active when apply_raunet=True.
 # T2_ratio: see T2 introduced in the appendix, used in extreme resolution image generation. T2 = number_inference_step * T2_ratio. A higher T2_ratio can better mitigate object duplication. Only active when apply_raunet=True
 switching_threshold_ratio_dict = {
-    'sd15_1024': {'T1_ratio': 0.4, 'T2_ratio': 0.0},
-    'sd15_2048': {'T1_ratio': 0.5, 'T2_ratio': 0.3},
-    'sdxl_2048': {'T1_ratio': 0.4, 'T2_ratio': 0.0},
-    'sdxl_4096': {'T1_ratio': 0.7, 'T2_ratio': 0.3},
+    'sd15_1024': {'T1_ratio': 0.4, 'T2_ratio': 0.1},
+    'sd15_2048': {'T1_ratio': 0.7, 'T2_ratio': 0.3},
+    'sdxl_2048': {'T1_ratio': 0.5, 'T2_ratio': 0.1},
+    'sdxl_4096': {'T1_ratio': 0.9, 'T2_ratio': 0.3},
     'sdxl_turbo_1024': {'T1_ratio': 0.5, 'T2_ratio': 0.0},
 }
 
@@ -1750,7 +1750,8 @@ def make_diffusers_upsampler_block(block_class: Type[torch.nn.Module]) -> Type[t
             else:            
                 self.T1 = int(self.max_timestep * self.T1_ratio)
             if self.timestep < self.T1:
-                hidden_states = F.interpolate(hidden_states, scale_factor=2.0, mode='bicubic')
+                if ori_H != hidden_states.shape[2] and ori_W != hidden_states.shape[3]:
+                    hidden_states = F.interpolate(hidden_states, scale_factor=2.0, mode='bicubic')
             self.timestep += 1
             if self.timestep == self.max_timestep:
                 self.timestep = 0
