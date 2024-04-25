@@ -433,10 +433,13 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
 
                     debug(f'Control processed: {len(processed_images)}')
                     if len(processed_images) > 0:
-                        if len(p.extra_generation_params["Control process"]) == 0:
-                            p.extra_generation_params["Control process"] = None
-                        else:
-                            p.extra_generation_params["Control process"] = ';'.join([p.processor_id for p in active_process if p.processor_id is not None])
+                        try:
+                            if len(p.extra_generation_params["Control process"]) == 0:
+                                p.extra_generation_params["Control process"] = None
+                            else:
+                                p.extra_generation_params["Control process"] = ';'.join([p.processor_id for p in active_process if p.processor_id is not None])
+                        except Exception:
+                            pass
                         if any(img is None for img in processed_images):
                             yield terminate('Control: attempting process but output is none')
                             return
