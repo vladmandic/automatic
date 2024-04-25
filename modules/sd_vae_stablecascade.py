@@ -82,7 +82,7 @@ def decode(latents):
     try:
         with devices.inference_context():
             latents = latents.detach().clone().unsqueeze(0).to(devices.device, devices.dtype_vae)
-            image = preview_model(latents)[0].clamp(0, 1)
+            image = preview_model(latents)[0].clamp(0, 1).float()
             return image
     except Exception as e:
         shared.log.error(f'Stable Cascade previewer: {e}')

@@ -251,9 +251,16 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 args["decoder_guidance_scale"] = p.image_cfg_scale
 
         # set callbacks
-        if 'callback_steps' in possible:
+        if 'prior_callback_steps' in possible:  # Wuerstchen / Cascade
+            args['prior_callback_steps'] = 1
+        elif 'callback_steps' in possible:
             args['callback_steps'] = 1
-        if 'callback_on_step_end' in possible:
+
+        if 'prior_callback_on_step_end' in possible: # Wuerstchen / Cascade
+            args['prior_callback_on_step_end'] = diffusers_callback
+            if 'prior_callback_on_step_end_tensor_inputs' in possible:
+                args['prior_callback_on_step_end_tensor_inputs'] = ['latents']
+        elif 'callback_on_step_end' in possible:
             args['callback_on_step_end'] = diffusers_callback
             if 'callback_on_step_end_tensor_inputs' in possible:
                 if 'prompt_embeds' in possible and 'negative_prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):

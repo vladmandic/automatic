@@ -606,7 +606,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Alpha'
-            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower():
+            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Cascade'
@@ -788,6 +788,8 @@ def move_model(model, device=None, force=False):
         return
     try:
         model.to(device)
+        if hasattr(model, "prior_pipe"):
+            model.prior_pipe.to(device)
     except Exception as e:
         shared.log.error(f'Model move: device={device} {e}')
     devices.torch_gc()
@@ -930,31 +932,29 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             if model_type in ['Stable Cascade']: # forced pipeline
                 try: # this is horrible special-case handling for stable-cascade multi-stage pipeline with variants and non-standard revision
                     diffusers_load_config.pop("vae", None)
-                    diffusers_load_config["variant"] = 'bf16'
-                    if 'lite' in checkpoint_info.name or 'abc818bb0d' in checkpoint_info.hash:
+                    if 'stabilityai' in checkpoint_info.name:
+                        diffusers_load_config["variant"] = 'bf16'
+                    if 'stabilityai' in checkpoint_info.name and ('lite' in checkpoint_info.name or (checkpoint_info.hash is not None and 'abc818bb0d' in checkpoint_info.hash)):
                         decoder_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder="decoder_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                         decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, **diffusers_load_config)
                         shared.log.debug(f'StableCascade lite decoder: scale={decoder.latent_dim_scale}')
                         prior_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder="prior_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                         prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, **diffusers_load_config)
                         shared.log.debug(f'StableCascade lite prior: scale={prior.resolution_multiple}')
+                        sd_model = diffusers.StableCascadeCombinedPipeline(
+                            tokenizer=decoder.tokenizer,
+                            text_encoder=decoder.text_encoder,
+                            decoder=decoder.decoder,
+                            scheduler=decoder.scheduler,
+                            vqgan=decoder.vqgan,
+                            prior_prior=prior.prior,
+                            prior_text_encoder=prior.text_encoder,
+                            prior_tokenizer=prior.tokenizer,
+                            prior_scheduler=prior.scheduler,
+                            prior_feature_extractor=prior.feature_extractor,
+                            prior_image_encoder=prior.image_encoder)
                     else:
-                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        shared.log.debug(f'StableCascade full decoder: scale={decoder.latent_dim_scale}')
-                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        shared.log.debug(f'StableCascade full prior: scale={prior.resolution_multiple}')
-                    sd_model = diffusers.StableCascadeCombinedPipeline(
-                        tokenizer=decoder.tokenizer,
-                        text_encoder=decoder.text_encoder,
-                        decoder=decoder.decoder,
-                        scheduler=decoder.scheduler,
-                        vqgan=decoder.vqgan,
-                        prior_prior=prior.prior,
-                        prior_text_encoder=prior.text_encoder,
-                        prior_tokenizer=prior.tokenizer,
-                        prior_scheduler=prior.scheduler,
-                        prior_feature_extractor=prior.feature_extractor,
-                        prior_image_encoder=prior.image_encoder)
+                        sd_model = diffusers.StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
