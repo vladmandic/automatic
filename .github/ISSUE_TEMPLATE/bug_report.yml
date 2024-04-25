@@ -67,8 +67,8 @@ body:
       label: Backend
       description: What is the backend you're using?
       options:
-        - Original
         - Diffusers
+        - Original
       default: 0
     validations:
       required: true
@@ -92,9 +92,8 @@ body:
         - SD 1.5
         - SD 2.1
         - SD-XL
-        - LCM
         - PixArt
-        - SSD
+        - Stable Cascade
         - Kandinsky
         - Other
       default: 0
