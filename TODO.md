@@ -6,8 +6,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ### Logistics
 
-- notes on deforking: 3443 commits ahead of, 3342 commits behind
-- test upgrades due to submodule changes
 - integrate uiux
 
 ### Models & Pipelines

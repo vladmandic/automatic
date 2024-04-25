@@ -8,7 +8,12 @@
 - IP adapter masking
 - InstantStyle
 
-## Update for 2024-04-24
+### Note
+
+*Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
+Given huge number of changes (+3443/-3342 commits) over the past year and complete focus on different backend/engine, it is time to give credit to original authors and move on!  
+
+## Update for 2024-04-25
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -16,10 +21,10 @@
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
   - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
-    generate high-resolution images using your standard models without duplicates/distorsions  
+    generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
     simply enable checkbox in advanced menu and set desired resolution  
     additional settings are available in settings -> inference settings -> hidiffusion  
-    for example 1024x1024 using sd15 or 2024x2024 using sdxl  
+    for example, SD15 can now go up to 2024x2048 and SDXL up to 4k natively
   - **IP Adapter Masking**:  
     powerful method of using masking with ip-adapters  
     when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
@@ -69,6 +74,7 @@
 - **Improvements**:
   - Faster server startup  
   - Add **MIGraphX** torch optimization engine, thanks @Disty0
+  - More **ZLUDA** updates and optimizations, thanks @lshqqytiger
   - Styles apply wildcards to params
   - Extra networks persistent sort order in settings  
   - Add option to make batch generations use fully random seed vs sequential  
@@ -113,6 +119,7 @@
   - Control module with ADetailer and active ControlNet
   - Control module restore button full functionality
   - Control add correct metadata to image
+  - MOTD exception handling
 
 ## Update for 2024-03-19
 

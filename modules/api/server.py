@@ -16,11 +16,16 @@ def get_motd():
     if ver.get('updated', None) is not None:
         motd = f"version <b>{ver['hash']} {ver['updated']}</b> <span style='color: var(--primary-500)'>{ver['url'].split('/')[-1]}</span><br>"
     if shared.opts.motd:
-        res = requests.get('https://vladmandic.github.io/automatic/motd', timeout=10)
-        if res.status_code == 200:
-            msg = (res.text or '').strip()
-            shared.log.info(f'MOTD: {msg if len(msg) > 0 else "N/A"}')
-            motd += res.text
+        try:
+            res = requests.get('https://vladmandic.github.io/automatic/motd', timeout=3)
+            if res.status_code == 200:
+                msg = (res.text or '').strip()
+                shared.log.info(f'MOTD: {msg if len(msg) > 0 else "N/A"}')
+                motd += res.text
+            else:
+                shared.log.error(f'MOTD: {res.status_code}')
+        except Exception as err:
+            shared.log.error(f'MOTD: {err}')
     return motd
 
 def get_version():
