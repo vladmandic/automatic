@@ -291,7 +291,7 @@ def list_samplers():
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
     disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
-    disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-ui-ux']
+    disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
     disabled = []
     if modules.shared.cmd_opts.theme is not None:
@@ -319,7 +319,7 @@ def temp_disable_extensions():
     elif theme_name.lower().startswith('modern'):
         modules.shared.opts.data['theme_type'] = 'Modern'
         modules.shared.opts.data['gradio_theme'] = theme_name[7:]
-        disable_themes.remove('sdnext-ui-ux')
+        disable_themes.remove('sdnext-modernui')
     elif theme_name.lower().startswith('gradio'):
         modules.shared.opts.data['theme_type'] = 'None'
         modules.shared.opts.data['gradio_theme'] = theme_name

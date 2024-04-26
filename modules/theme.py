@@ -60,7 +60,7 @@ def list_themes():
         themes = sorted(builtin)
         modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(builtin)}')
     elif modules.shared.opts.theme_type == 'Modern':
-        ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
+        ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-modernui'), None)
         if ext is None:
             modules.shared.log.error('UI themes: ModernUI not found')
             builtin = list_builtin_themes()
