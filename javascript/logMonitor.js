@@ -44,7 +44,7 @@ async function logMonitor() {
 
   // addLogLine(`{ "created": ${Date.now() / 1000}, "level":"DEBUG", "module":"ui", "facility":"logMonitor", "msg":"Log refresh" }`);
   if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
-  else setTimeout(logMonitor, 10 * opts.logmonitor_refresh_period);
+  else setTimeout(logMonitor, 10 * 1000); // on failure try to reconnect every 10sec
   if (!opts.logmonitor_show) return;
   logMonitorStatus = false;
   if (!logMonitorEl) {
