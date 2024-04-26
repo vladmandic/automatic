@@ -100,6 +100,9 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
 
         def upload_image(image_file):
             if image_file is None:
+                self.process.override = None
+                self.override = None
+                log.debug('Control process clear image')
                 return gr.update(value=None)
             try:
                 self.process.override = Image.open(image_file.name)
@@ -115,6 +118,11 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
             self.process.override = image
             self.override = self.process.override
             return gr.update(visible=self.process.override is not None, value=self.process.override)
+
+        def set_image(image):
+            self.process.override = image
+            self.override = image
+            return gr.update(visible=image is not None)
 
         # actual init
         if self.type == 't2i adapter':
@@ -189,6 +197,8 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
             image_upload.upload(fn=upload_image, inputs=[image_upload], outputs=[image_preview]) # return list of images for gallery
         if image_reuse is not None:
             image_reuse.click(fn=reuse_image, inputs=[preview_process], outputs=[image_preview]) # return list of images for gallery
+        if image_preview is not None:
+            image_preview.change(fn=set_image, inputs=[image_preview], outputs=[image_preview])
         if control_start is not None and control_end is not None:
             control_start.change(fn=control_change, inputs=[control_start, control_end])
             control_end.change(fn=control_change, inputs=[control_start, control_end])

@@ -432,6 +432,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             process.model = None
 
                     debug(f'Control processed: {len(processed_images)}')
+                    blended_image = None
                     if len(processed_images) > 0:
                         try:
                             if len(p.extra_generation_params["Control process"]) == 0:
@@ -443,12 +444,18 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         if any(img is None for img in processed_images):
                             yield terminate('Control: attempting process but output is none')
                             return
-                        if len(processed_images) > 1:
+                        if len(processed_images) > 1 and len(active_process) != len(active_model):
                             processed_image = [np.array(i) for i in processed_images]
                             processed_image = util.blend(processed_image) # blend all processed images into one
                             processed_image = Image.fromarray(processed_image)
+                            blended_image = processed_image
+                        elif len(processed_images) == 1:
+                            processed_image = processed_images
+                            blended_image = processed_image[0]
                         else:
-                            processed_image = processed_images[0]
+                            blended_image = [np.array(i) for i in processed_images]
+                            blended_image = util.blend(blended_image) # blend all processed images into one
+                            blended_image = Image.fromarray(blended_image)
                         if isinstance(selected_models, list) and len(processed_images) == len(selected_models):
                             debug(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
                             p.init_images = processed_images
@@ -456,9 +463,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
                             return
                         elif selected_models is not None:
-                            if len(processed_images) > 1:
-                                debug('Control: using blended image for single model')
-                            p.init_images = [processed_image]
+                            p.init_images = processed_image
                     else:
                         debug('Control processed: using input direct')
                         processed_image = input_image
@@ -484,11 +489,11 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         p.init_images = [init_image] * len(active_model)
 
                     if is_generator:
-                        image_txt = f'{processed_image.width}x{processed_image.height}' if processed_image is not None else 'None'
+                        image_txt = f'{blended_image.width}x{blended_image.height}' if blended_image is not None else 'None'
                         msg = f'process | {index} of {frames if video is not None else len(inputs)} | {"Image" if video is None else "Frame"} {image_txt}'
                         debug(f'Control yield: {msg}')
                         if is_generator:
-                            yield (None, processed_image, f'Control {msg}')
+                            yield (None, blended_image, f'Control {msg}')
                     t2 += time.time() - t2
 
                     # determine txt2img, img2img, inpaint pipeline
@@ -499,10 +504,10 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         if mask is not None:
                             p.task_args['strength'] = p.denoising_strength
                             p.image_mask = mask
-                            p.init_images = [input_image]
+                            p.init_images = input_image if isinstance(input_image, list) else [input_image]
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.INPAINTING)
                         elif processed_image is not None:
-                            p.init_images = [processed_image]
+                            p.init_images = processed_image if isinstance(processed_image, list) else [processed_image]
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
                         else:
                             p.init_hr(p.scale_by, p.resize_name, force=True)
@@ -595,7 +600,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                                 else:
                                     msg = f'Control output | {index} of {len(inputs)} | Image {image_txt}'
                                 if is_generator:
-                                    yield (output_image, processed_image, msg) # result is control_output, proces_output
+                                    yield (output_image, blended_image, msg) # result is control_output, proces_output
 
                 if video is not None and frame is not None:
                     status, frame = video.read()
@@ -630,7 +635,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     restore_pipeline()
     debug(f'Control ready: {image_txt}')
     if is_generator:
-        yield (output_images, processed_image, f'Control ready {image_txt}', output_filename)
+        yield (output_images, blended_image, f'Control ready {image_txt}', output_filename)
     else:
-        yield (output_images, processed_image, f'Control ready {image_txt}', output_filename)
+        yield (output_images, blended_image, f'Control ready {image_txt}', output_filename)
         return

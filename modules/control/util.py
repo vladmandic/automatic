@@ -146,10 +146,14 @@ def ade_palette():
 def blend(images):
     if images is None or len(images) == 0:
         return images
-    y = np.zeros(images[0].shape, dtype=np.float32)
+    y = np.zeros((images[0].shape[0], images[0].shape[1], 3), dtype=np.float32)
     for img in images:
-        if img.shape != y.shape:
+        if img.shape[0] != y.shape[0] or img.shape[1] != y.shape[1]:
             img = cv2.resize(img, (y.shape[1], y.shape[0]), interpolation=cv2.INTER_CUBIC)
+        if len(img.shape) == 3 and img.shape[2] == 4: # rgba to rgb
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+        if len(img.shape) == 2: # grayscale to rgb
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         y = cv2.add(y, img.astype(np.float32))
     y = y.clip(0, 255).astype(np.uint8)
     return y

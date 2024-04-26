@@ -14,7 +14,7 @@
 Given huge number of changes with *+3443/-3342 commits diff over the past year and complete focus on different backend/engine,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-04-25
+## Update for 2024-04-26
 
 - **Features**:
   - **Gallery**: list, preview, search through all your images and videos!  
@@ -120,6 +120,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Noise sampler seed, thanks @leppie
   - Control module with ADetailer and active ControlNet
   - Control module restore button full functionality
+  - Control improved handling with multiple control units and different init images
   - Control add correct metadata to image
   - MOTD exception handling
 
