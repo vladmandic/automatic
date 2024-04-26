@@ -4,6 +4,7 @@ import safetensors
 from modules import devices, paths
 
 preview_model = None
+dtype = devices.dtype_vae
 
 # Fast Decoder for Stage C latents. E.g. 16 x 24 x 24 -> 3 x 192 x 192
 # https://github.com/Stability-AI/StableCascade/blob/master/modules/previewer.py
@@ -76,12 +77,12 @@ def decode(latents):
             preview_model = Previewer()
             previewer_checkpoint = load_model(model_path)
             preview_model.load_state_dict(previewer_checkpoint if 'state_dict' not in previewer_checkpoint else previewer_checkpoint['state_dict'])
-            preview_model.eval().requires_grad_(False).to(devices.device, devices.dtype_vae)
+            preview_model.eval().requires_grad_(False).to(devices.device, dtype)
             del previewer_checkpoint
             shared.log.info(f"Load Stable Cascade previewer: model={model_path}")
     try:
         with devices.inference_context():
-            latents = latents.detach().clone().unsqueeze(0).to(devices.device, devices.dtype_vae)
+            latents = latents.detach().clone().unsqueeze(0).to(devices.device, dtype)
             image = preview_model(latents)[0].clamp(0, 1).float()
             return image
     except Exception as e:
