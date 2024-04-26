@@ -232,6 +232,7 @@ SD.Next comes with several extensions pre-installed:
 - [chaiNNer](https://github.com/vladmandic/sd-extension-chainner)
 - [RemBg](https://github.com/vladmandic/sd-extension-rembg)
 - [Agent Scheduler](https://github.com/ArtVentureX/sd-webui-agent-scheduler)
+- [Modern UI](https://github.com/BinaryQuantumSoul/sdnext-modernui)
 
 ### **Collab**
 
