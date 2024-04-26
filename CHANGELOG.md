@@ -11,7 +11,7 @@
 ### Note
 
 *Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
-Given huge number of changes with *+3443/-3342 commits diff over the past year and complete focus on different backend/engine,  
+Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
 ## Update for 2024-04-26
@@ -57,7 +57,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     pixart-Σ is a high end diffusion Transformer model (DiT) with a T5 encoder/decoder capable of directly generating images at 4K resolution  
     to use, simply select from *networks -> models -> PixArt-Σ*  
     *note*: this is a very large model at ~22GB  
-    set parameters: *precision: fp32*, *sampler: Default*  
+    set parameters: *sampler: Default*  
   - [SDXS](https://github.com/IDKiro/sdxs)
     sdxs is an extremely fast 1-step generation consistency model that also uses TAESD as quick VAE out-of-the-box  
     to use, simply select from *networks -> models -> SDXS*  

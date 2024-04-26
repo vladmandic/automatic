@@ -125,6 +125,7 @@ class NoWatermark:
 def setup_model():
     list_models()
     sd_hijack_accelerate.hijack_hfhub()
+    # sd_hijack_accelerate.hijack_torch_conv()
     if shared.backend == shared.Backend.ORIGINAL:
         enable_midas_autodownload()
 
@@ -983,6 +984,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
                     from modules.sd_hijack_pixart import PixArtSigmaPipeline, patch_pixart_sigma_transformer
+                    shared.opts.data['cuda_dtype'] = 'FP32' # override
+                    shared.opts.data['set_diffuser_options'] = True # override
+                    devices.set_cuda_params()
                     sd_model = PixArtSigmaPipeline.from_pretrained(
                         checkpoint_info.path,
                         transformer=patch_pixart_sigma_transformer(),

@@ -168,7 +168,7 @@ ASPECT_RATIO_512_BIN = {
 def pipeline_pixart_alpha_call(
         self,
         prompt: Union[str, List[str]] = None,
-        negative_prompt: str = "",
+        negative_prompt: Union[str, List[str]] = None,
         num_inference_steps: int = 20,
         timesteps: List[int] = None,
         guidance_scale: float = 4.5,
@@ -462,6 +462,8 @@ class PixArtSigmaPipeline(PixArtAlphaPipeline):
 
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
+
+PixArtSigmaPipeline.__call__ = pipeline_pixart_alpha_call
 
 
 def pixart_sigma_init_patched_inputs(self, norm_type):
