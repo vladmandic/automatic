@@ -1,5 +1,6 @@
 import os
 import io
+import random
 import re
 import time
 import json
@@ -26,7 +27,7 @@ extra_pages = shared.extra_networks
 debug = shared.log.trace if os.environ.get('SD_EN_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: EN')
 card_full = '''
-    <div class='card' onclick={card_click} title='{name}' data-tab='{tabname}' data-page='{page}' data-name='{name}' data-filename='{filename}' data-tags='{tags}' data-mtime='{mtime}' data-size='{size}' data-search='{search}'>
+    <div class='card' onclick={card_click} title='{name}' data-tab='{tabname}' data-page='{page}' data-name='{name}' data-filename='{filename}' data-tags='{tags}' data-mtime='{mtime}' data-size='{size}' data-search='{search}' style='--data-color: {color}'>
         <div class='overlay'>
             <div class='tags'></div>
             <div class='name'>{title}</div>
@@ -279,6 +280,12 @@ class ExtraNetworksPage:
         return []
 
     def create_html(self, item, tabname):
+        def random_bright_color():
+            r = random.randint(100, 255)
+            g = random.randint(100, 255)
+            b = random.randint(100, 255)
+            return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
         try:
             args = {
                 "tabname": tabname,
@@ -297,6 +304,7 @@ class ExtraNetworksPage:
                 "card_click": item.get("onclick", '"' + html.escape(f'return cardClicked({item.get("prompt", None)}, {"true" if self.allow_negative_prompt else "false"})') + '"'),
                 "mtime": item.get("mtime", 0),
                 "size": item.get("size", 0),
+                "color": random_bright_color(),
             }
             alias = item.get("alias", None)
             if alias is not None:
