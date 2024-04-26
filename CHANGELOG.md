@@ -10,6 +10,11 @@
 
 ### Note
 
+This version of [SD.Next](https://github.com/vladmandic/automatic) ships with a preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
+For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
+ModernUI is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
+Thanks to @BinaryQuantumSoul for his hard work on this project!
+
 *Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
 Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
