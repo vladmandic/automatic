@@ -19,16 +19,17 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-04-26
+## Update for 2024-04-27
 
 - **Features**:
+  - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
   - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
     *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
   - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
     generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
-    for example, SD15 can now go up to 2024x2048 and SDXL up to 4k natively
+    for example, *SD15* can now go up to *2024x2048* and *SDXL* up to *4k* natively
     simply enable checkbox in advanced menu and set desired resolution  
     additional settings are available in *settings -> inference settings -> hidiffusion*  
     and can also be set and used via *xyz grid*  
