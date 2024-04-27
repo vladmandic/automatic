@@ -84,6 +84,8 @@ def create_ui(_blocks: gr.Blocks=None):
 
             with gr.Row(elem_id='control_settings'):
 
+                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('control')
+
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
                     with gr.Row():
                         show_preview = gr.Checkbox(label="Show preview", value=True, elem_id="control_show_preview")
@@ -104,14 +106,15 @@ def create_ui(_blocks: gr.Blocks=None):
                 with gr.Accordion(open=False, label="Sampler", elem_id="control_sampler", elem_classes=["small-accordion"]):
                     sd_samplers.set_samplers()
                     steps, sampler_index = ui_sections.create_sampler_and_steps_selection(sd_samplers.samplers, "control")
+                    ui_sections.create_sampler_options('control')
 
-                batch_count, batch_size = ui_sections.create_batch_inputs('control')
+                batch_count, batch_size = ui_sections.create_batch_inputs('control', accordion=True)
 
                 seed, _reuse_seed, subseed, _reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('control', reuse_visible=False)
 
                 mask_controls = masking.create_segment_ui()
 
-                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_advanced_inputs('control')
+                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end = ui_sections.create_advanced_inputs('control')
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('control')
 
                 with gr.Accordion(open=False, label="Video", elem_id="control_video", elem_classes=["small-accordion"]):

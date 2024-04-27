@@ -114,11 +114,11 @@ def create_sampler_inputs(tab, accordion=True):
     return steps, sampler_index
 
 
-def create_batch_inputs(tab):
-    with gr.Accordion(open=False, label="Batch", elem_id=f"{tab}_batch", elem_classes=["small-accordion"]):
+def create_batch_inputs(tab, accordion=True):
+    with gr.Accordion(open=False, label="Batch", elem_id=f"{tab}_batch", elem_classes=["small-accordion"]) if accordion else gr.Group():
         with gr.Row(elem_id=f"{tab}_row_batch"):
-            batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id=f"{tab}_batch_count")
-            batch_size = gr.Slider(minimum=1, maximum=32, step=1, label='Batch size', value=1, elem_id=f"{tab}_batch_size")
+            batch_count = gr.Slider(minimum=1, step=1, label='Batch count', value=1, elem_id=f"{tab}_batch_count", scale=5)
+            batch_size = gr.Slider(minimum=1, maximum=32, step=1, label='Batch size', value=1, elem_id=f"{tab}_batch_size", scale=5)
     return batch_count, batch_size
 
 
@@ -141,26 +141,37 @@ def create_seed_inputs(tab, reuse_visible=True):
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
 
 
-def create_advanced_inputs(tab):
+def create_options(tab):
+    with gr.Row(elem_id=f"{tab}_advanced_options"):
+        full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
+        restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
+        tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
+        hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
+    return full_quality, restore_faces, tiling, hidiffusion
+
+
+def create_cfg_inputs(tab):
+    with gr.Row():
+        cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='CFG scale', value=6.0, elem_id=f"{tab}_cfg_scale")
+        cfg_end = gr.Slider(minimum=0.0, maximum=1.0, step=0.1, label='CFG end', value=1.0, elem_id=f"{tab}_cfg_end")
+    return cfg_scale, cfg_end
+
+
+def create_advanced_inputs(tab, base=True):
     with gr.Accordion(open=False, label="Advanced", elem_id=f"{tab}_advanced", elem_classes=["small-accordion"]):
         with gr.Group():
-            with gr.Row():
-                cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='CFG scale', value=6.0, elem_id=f"{tab}_cfg_scale")
-                cfg_end = gr.Slider(minimum=0.0, maximum=1.0, step=0.1, label='CFG end', value=1.0, elem_id=f"{tab}_cfg_end")
+            if base:
+                cfg_scale, cfg_end = create_cfg_inputs(tab)
+            else:
+                cfg_scale, cfg_end = None, None
             with gr.Row():
                 image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Secondary guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
                 diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.backend == shared.Backend.DIFFUSERS)
                 diffusers_sag_scale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_image_sag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
-        with gr.Group():
-            gr.HTML('<br>')
-            with gr.Row(elem_id=f"{tab}_advanced_options"):
-                full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-                restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
-                tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling", visible=True)
-                hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion", visible=True)
-    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_sag_scale, cfg_end, full_quality, restore_faces, tiling, hidiffusion
+    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_sag_scale, cfg_end
+
 
 def create_correction_inputs(tab):
     with gr.Accordion(open=False, label="Corrections", elem_id=f"{tab}_corrections", elem_classes=["small-accordion"], visible=shared.backend == shared.Backend.DIFFUSERS):
@@ -187,6 +198,15 @@ def create_correction_inputs(tab):
 
 
 def create_sampler_and_steps_selection(choices, tabname):
+    if choices is None:
+        choices = sd_samplers.samplers
+    with gr.Row(elem_classes=['flex-break']):
+        steps = gr.Slider(minimum=1, maximum=99, step=1, label="Sampling steps", elem_id=f"{tabname}_steps", value=20)
+        sampler_index = gr.Dropdown(label='Sampling method', elem_id=f"{tabname}_sampling", choices=[x.name for x in choices], value='Default', type="index")
+    return steps, sampler_index
+
+
+def create_sampler_options(tabname):
     def set_sampler_original_options(sampler_options, sampler_algo):
         shared.opts.data['schedulers_brownian_noise'] = 'brownian noise' in sampler_options
         shared.opts.data['schedulers_discard_penultimate'] = 'discard penultimate sigma' in sampler_options
@@ -200,16 +220,13 @@ def create_sampler_and_steps_selection(choices, tabname):
         shared.opts.data['schedulers_rescale_betas'] = 'rescale beta' in sampler_options
         shared.opts.save(shared.config_filename, silent=True)
 
-    with gr.Row(elem_classes=['flex-break']):
-        sampler_index = gr.Dropdown(label='Sampling method', elem_id=f"{tabname}_sampling", choices=[x.name for x in choices], value='Default', type="index")
-        steps = gr.Slider(minimum=1, maximum=99, step=1, label="Sampling steps", elem_id=f"{tabname}_steps", value=20)
     if shared.backend == shared.Backend.ORIGINAL:
         with gr.Row(elem_classes=['flex-break']):
-            choices = ['brownian noise', 'discard penultimate sigma']
+            options = ['brownian noise', 'discard penultimate sigma']
             values = []
             values += ['brownian noise'] if shared.opts.data.get('schedulers_brownian_noise', False) else []
             values += ['discard penultimate sigma'] if shared.opts.data.get('schedulers_discard_penultimate', True) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=choices, value=values, type='value')
+            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
         with gr.Row(elem_classes=['flex-break']):
             shared.opts.data['schedulers_sigma'] = shared.opts.data.get('schedulers_sigma', 'default')
             sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
@@ -217,15 +234,14 @@ def create_sampler_and_steps_selection(choices, tabname):
         sampler_algo.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
     else:
         with gr.Row(elem_classes=['flex-break']):
-            choices = ['karras', 'dynamic threshold', 'low order', 'rescale beta']
+            options = ['karras', 'dynamic threshold', 'low order', 'rescale beta']
             values = []
             values += ['karras'] if shared.opts.data.get('schedulers_use_karras', True) else []
             values += ['dynamic threshold'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
             values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
             values += ['rescale beta'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=choices, value=values, type='value')
+            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
         sampler_options.change(fn=set_sampler_diffuser_options, inputs=[sampler_options], outputs=[])
-    return steps, sampler_index
 
 
 def create_hires_inputs(tab):

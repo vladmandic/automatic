@@ -18,8 +18,6 @@ span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
 input[type='color'] { width: 64px; height: 32px; }
 
-
-
 /* gradio elements */
 .block .padded:not(.gradio-accordion) { padding: 0 !important; margin-right: 0; min-width: 90px !important; }
 .compact { gap: 1em 0.2em; background: transparent !important; padding: 0 !important; }
@@ -125,6 +123,8 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
 .tooltip-show { opacity: 0.9; }
 .toolbutton-selected { background: var(--background-fill-primary) !important; }
 #txt2img_hdr_color_row > div { min-width: unset !important; max-width: unset !important; }
+#txt2img_advanced_options, #img2img_advanced_options, #control_advanced_options { min-width: 100%; }
+#txt2img_advanced_options .gradio-checkbox, #img2img_advanced_options .gradio-checkbox, #control_advanced_options .gradio-checkbox { min-width: unset !important; max-width: fit-content; }
 
 /* settings */
 #si-sparkline-memo, #si-sparkline-load { background-color: #111; }

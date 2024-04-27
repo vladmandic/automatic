@@ -120,9 +120,11 @@ def create_ui():
 
                 with gr.Group(elem_classes="settings-accordion"):
 
-                    steps, sampler_index = ui_sections.create_sampler_inputs('img2img')
+                    with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
+                        steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
+                        ui_sections.create_sampler_options('img2img')
                     resize_mode, resize_name, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
-                    batch_count, batch_size = ui_sections.create_batch_inputs('img2img')
+                    batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 
                     with gr.Accordion(open=False, label="Denoise", elem_classes=["small-accordion"], elem_id="img2img_denoise_group"):
@@ -130,7 +132,8 @@ def create_ui():
                             denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.50, elem_id="img2img_denoising_strength")
                             refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Denoise start', value=0.0, elem_id="img2img_refiner_start")
 
-                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_advanced_inputs('img2img')
+                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end = ui_sections.create_advanced_inputs('img2img')
+                    full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('img2img')
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:

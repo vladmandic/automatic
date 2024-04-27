@@ -48,6 +48,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     **Standard* (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
     Specifying a theme type updates list of available themes  
     For example, *Gradio* themes will not appear as available if theme type is set to *Standard*  
+  - Redesign of base txt2img interface  
   - Minor tweaks to styles: refresh/apply/save
   - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
 - **API**:

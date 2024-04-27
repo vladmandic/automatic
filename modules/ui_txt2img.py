@@ -37,12 +37,16 @@ def create_ui():
                 with gr.Row():
                     width, height = ui_sections.create_resolution_inputs('txt2img')
 
-                with gr.Group(elem_classes="settings-accordion"):
+                batch_count, batch_size = ui_sections.create_batch_inputs('txt2img', accordion=False)
+                cfg_scale, cfg_end = ui_sections.create_cfg_inputs('txt2img')
+                steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "txt2img")
+                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('txt2img')
 
-                    steps, sampler_index = ui_sections.create_sampler_inputs('txt2img')
-                    batch_count, batch_size = ui_sections.create_batch_inputs('txt2img')
+                with gr.Group(elem_classes="settings-accordion"):
+                    with gr.Accordion(open=False, label="Samplers", elem_classes=["small-accordion"], elem_id="txt2img_sampler_group"):
+                        ui_sections.create_sampler_options('txt2img')
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('txt2img')
-                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_advanced_inputs('txt2img')
+                    _cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, _cfg_end = ui_sections.create_advanced_inputs('txt2img', base=False)
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('txt2img')
                     enable_hr, hr_sampler_index, denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
                     override_settings = ui_common.create_override_inputs('txt2img')

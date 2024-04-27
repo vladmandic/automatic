@@ -77,7 +77,7 @@ input[type=range]::-moz-range-track              { width: 100% !important; heigh
 input[type=range]::-webkit-slider-thumb { border: 0px solid #000000 !important; height: var(--line-xs) !important; width: var(--line-md) !important; border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -4px !important; }
 input[type=range]::-moz-range-thumb     { border: 0px solid #000000 !important; height: var(--line-xs) !important; width: var(--line-md) !important; border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -4px !important; }
 */
-input[type='range'] { display: block; margin: 0; padding: 0; height: 1em; background-color: transparent; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 0 transparent; -webkit-appearance: none; }
+input[type='range'] { display: block; margin: 0; padding: 0; height: 1em; background-color: transparent; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 0 transparent; -webkit-appearance: none; appearance: none; }
 input[type='range']::-webkit-slider-thumb { height: .9em; width: .9em; background-color: hsl(180, 54%, 61%); box-shadow: var(--range-shadow); border-radius: var(--radius-sm); }
 input[type='range']::-webkit-slider-runnable-track, input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; }
 input[type='range']::-moz-range-thumb { height: .9em; width: .9em; background-color: hsl(180, 54%, 61%); box-shadow: var(--range-shadow); }
@@ -106,6 +106,7 @@ fieldset .gr-block.gr-box, label.block span { padding: 0; margin-top: -4px; }
 .gr-input-label { color: lightyellow; border-width: 0; background: transparent; padding: 2px !important; }
 .gr-panel { background-color: var(--background-color); }
 .eta-bar { display: none !important }
+.gradio-slider { max-width: 200px; }
 .gradio-slider input[type="number"] { background: var(--neutral-950); margin-top: 2px; }
 svg.feather.feather-image, .feather .feather-image { display: none }
 .gap-2 { padding-top: 8px; }
