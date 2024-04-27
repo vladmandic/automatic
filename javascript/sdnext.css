@@ -18,6 +18,8 @@ span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
 input[type='color'] { width: 64px; height: 32px; }
 
+
+
 /* gradio elements */
 .block .padded:not(.gradio-accordion) { padding: 0 !important; margin-right: 0; min-width: 90px !important; }
 .compact { gap: 1em 0.2em; background: transparent !important; padding: 0 !important; }
