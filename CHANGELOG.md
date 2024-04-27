@@ -23,6 +23,8 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
+  - **PWA** [SD.Next](https://github.com/vladmandic/automatic) now also includes valid manifest making it installable as PWA
+  - **Gallery
   - **Gallery**: list, preview, search through all your images and videos!  
     implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
     search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
