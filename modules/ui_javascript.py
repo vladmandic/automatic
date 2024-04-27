@@ -81,11 +81,21 @@ def reload_javascript():
     head = html_head()
     css = html_css(base_css)
     body = html_body()
+    title = '<title>SD.Next</title>'
+    manifest = f'<link rel="manifest" href="{webpath(os.path.join(script_path, "html", "manifest.json"))}">'
 
     def template_response(*args, **kwargs):
         res = shared.GradioTemplateResponseOriginal(*args, **kwargs)
+        res.body = res.body.replace(b'<head>', f'<head>{title}'.encode("utf8"))
         res.body = res.body.replace(b'</head>', f'{head}</head>'.encode("utf8"))
+        res.body = res.body.replace(b'</head>', f'{manifest}</head>'.encode("utf8"))
         res.body = res.body.replace(b'</body>', f'{css}{body}</body>'.encode("utf8"))
+        lines = res.body.decode("utf8").split('\n')
+        for line in lines:
+            if 'meta name="twitter:' in line:
+                res.body = res.body.replace(line.encode("utf8"), b'')
+            # if 'iframeResizer.contentWindow.min.js' in line:
+            #    res.body = res.body.replace(line.encode("utf8"), b'<script src="/javascript/iframeResizer.js" async=""></script>')
         res.init_headers()
         return res
 
