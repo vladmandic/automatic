@@ -223,6 +223,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-network-cards .card .actions>span:hover { color: var(--highlight-color); }
 .extra-network-cards .card:hover .actions { display: block; }
 .extra-network-cards .card:hover .overlay .tags { display: block; }
+.extra-network-cards .card:has(>img[src*="card-no-preview.png"])::before { content: ''; position: absolute; width: 100%; height: 100%; mix-blend-mode: multiply; background-color: var(--data-color); }
 .extra-network-cards .card .actions { font-size: 3em; display: none; text-align-last: right; cursor: pointer; font-variant: unicase; position: absolute; z-index: 80; right: 0; height: 0.7em; width: 100%; background: rgba(0, 0, 0, 0.40); }
 .extra-network-cards .card-list { display: flex; margin: 0.3em; padding: 0.3em; background: var(--input-background-fill); cursor: pointer; border-radius: var(--button-large-radius); }
 .extra-network-cards .card-list .tag { color: var(--primary-500); margin-left: 0.8em; }

@@ -104,7 +104,6 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-network-cards .card:hover .actions { display: block; }
 .extra-network-cards .card:hover .overlay .tags { display: block; }
 .extra-network-cards .card .actions { font-size: 3em; display: none; text-align-last: right; cursor: pointer; font-variant: unicase; position: absolute; z-index: 100; right: 0; height: 0.7em; width: 100%; background: rgba(0, 0, 0, 0.40); }
-.extra-network-cards .card:has(>img[src*="card-no-preview.png"])::after { content: ''; position: absolute; width: 100%; height: 100%; opacity: 0.5; mix-blend-mode: multiply; background-color: var(--data-color); }
 #txt2img_description, #img2img_description { max-height: 63px; overflow-y: auto !important; }
 #txt2img_description > label > textarea, #img2img_description > label > textarea { font-size: 0.9em }
 
