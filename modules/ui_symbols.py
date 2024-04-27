@@ -37,6 +37,8 @@ sort_num_asc = '\uf162'
 sort_num_dsc = '\uf163'
 sort_time_asc = '\uf0de'
 sort_time_dsc = '\uf0dd'
+style_apply = '↶'
+style_save = '↷'
 """
 refresh = '🔄'
 close = '🛗'

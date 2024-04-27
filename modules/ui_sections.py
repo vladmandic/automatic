@@ -48,10 +48,12 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
             with gr.Row(elem_id=f"{id_part}_styles_row"):
                 styles = gr.Dropdown(label="Styles", elem_id=f"{id_part}_styles", choices=[style.name for style in shared.prompt_styles.styles.values()], value=[], multiselect=True)
                 _styles_btn_refresh = ui_common.create_refresh_button(styles, shared.prompt_styles.reload, lambda: {"choices": [style.name for style in shared.prompt_styles.styles.values()]}, f"{id_part}_styles_refresh")
-                styles_btn_select = gr.Button('Select', elem_id=f"{id_part}_styles_select", visible=False)
+                styles_btn_select = ToolButton('Select', elem_id=f"{id_part}_styles_select", visible=False)
+                styles_btn_apply = ToolButton(ui_symbols.style_apply, elem_id=f"{id_part}_styles_apply", visible=True)
+                styles_btn_save = ToolButton(ui_symbols.style_save, elem_id=f"{id_part}_styles_save", visible=True)
                 styles_btn_select.click(_js="applyStyles", fn=parse_style, inputs=[styles], outputs=[styles])
-                styles_btn_apply = ToolButton(ui_symbols.apply, elem_id=f"{id_part}_extra_apply", visible=False)
                 styles_btn_apply.click(fn=apply_styles, inputs=[prompt, negative_prompt, styles], outputs=[prompt, negative_prompt, styles])
+                styles_btn_save.click(fn=lambda: None, _js='() => quickSaveStyle()', inputs=[], outputs=[])
     return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 

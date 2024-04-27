@@ -284,7 +284,7 @@ class ExtraNetworksPage:
             r = random.randint(100, 255)
             g = random.randint(100, 255)
             b = random.randint(100, 255)
-            return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+            return '#{:02x}{:02x}{:02x}'.format(r, g, b) # pylint: disable=consider-using-f-string
 
         try:
             args = {
@@ -883,6 +883,8 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return res
 
     def ui_quicksave_click(name):
+        if name is None:
+            return
         from modules import generation_parameters_copypaste
         fn = os.path.join(paths.data_path, "params.txt")
         if os.path.exists(fn):

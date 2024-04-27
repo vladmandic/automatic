@@ -308,6 +308,7 @@ function quickApplyStyle() {
 }
 
 function quickSaveStyle() {
+  console.log('HERE');
   const tabname = getENActiveTab();
   const btnSave = gradioApp().getElementById(`${tabname}_extra_quicksave`);
   if (btnSave) btnSave.click();
