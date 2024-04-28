@@ -13,6 +13,14 @@
 </div>
 </br>
 
+## Table of contents
+1. [Notable features](#notable-features)
+2. [Backend support](#backend-support)
+3. [Model support](#model-support)
+4. [Platform support](#platform-support)
+5. [Installation](#install)
+6. [Notes](#notes)
+
 ## Notable features
 
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
