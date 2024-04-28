@@ -1,4 +1,5 @@
 <div align="center">
+
 <img src="https://github.com/vladmandic/automatic/blob/dev/html/favicon.png" width=200 alt="SD.Next">
 
 **Stable Diffusion implementation with advanced features**
@@ -14,14 +15,15 @@
 </br>
 
 ## Table of contents
-1. [Notable features](#notable-features)
-2. [Backend support](#backend-support)
-3. [Model support](#model-support)
-4. [Platform support](#platform-support)
-5. [Installation](#install)
-6. [Notes](#notes)
+1. [SD.Next features](#sdnext-features)
+1. [Backend support](#backend-support)
+1. [Model support](#model-support)
+1. [Platform support](#platform-support)
+1. [Themes](#themes)
+1. [Installation](#install)
+1. [Notes](#notes)
 
-## Notable features
+## SD.Next features
 
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
 - Multiple backends!  
@@ -40,7 +42,8 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Built-in queue management  
 - Enterprise level logging and hardened API  
 - Built in installer with automatic updates and dependency management  
-- Modernized UI with theme support and number of built-in themes *(dark and light)*  
+- Modernized UI with theme support and number of built-in themes *(dark and light)*
+- Mobile compatible
 
 <br>
 
@@ -97,7 +100,7 @@ Also supported are modifiers such as:
 - **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
 - **AnimateDiff** for SD 1.5
 
-## Examples
+### Examples
 
 *IP Adapters*:
 ![Screenshot-IPAdapter](html/screenshot-ipadapter.jpg)
@@ -126,6 +129,21 @@ Also supported are modifiers such as:
 - Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
 - *ONNX/Olive*  
+
+## Themes
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/a5351c20-6d46-4ecd-9557-2c02567af287" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/07417c96-b498-4f25-8f23-a57bd83391b8" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/f712399d-62b0-4ab5-ba8b-80b68c30386d" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/1268a35b-cb64-496b-823a-796778d7d174" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/72fcd3b5-42db-44a2-8b04-5e3d17990783" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/f7dd1fe7-2639-4068-9b99-3f11940abb71" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/22b69104-25d9-4047-a6fb-4180465fe795" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/e0ff0889-b73f-484d-80b5-17590c09cc1c" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/c54f978f-ff4b-4f97-a6be-93ce5bacb507" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/04d8747e-e3f2-4eda-b68e-3123866e9781" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/dc6b277e-20ca-4d82-a2f5-bb63b329743d" width="45%"/>
+<image src="https://github.com/BinaryQuantumSoul/automatic/assets/19613657/086d0288-057f-48f2-99ea-06c1efb168de" width="45%"/>
+
 
 ## Install
 
