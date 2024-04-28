@@ -31,12 +31,12 @@ def test(device: DeviceLikeType):
 def initialize_zluda():
     device = devices.get_optimal_device()
     if platform.system() == "Windows" and devices.cuda_ok and is_zluda(device):
-        torch.backends.cudnn.enabled = shared.opts.zluda_enable_dnn
+        torch.backends.cudnn.enabled = shared.cmd_opts.use_zluda_dnn
         torch.backends.cuda.enable_flash_sdp(False)
         torch.backends.cuda.enable_math_sdp(True)
         torch.backends.cuda.enable_mem_efficient_sdp(False)
         shared.opts.sdp_options = ['Math attention']
-        if shared.opts.zluda_enable_dnn:
+        if shared.cmd_opts.use_zluda_dnn:
             torch.nn.functional.conv2d = conv2d_cudnn_disabled
         devices.device_codeformer = devices.cpu
 

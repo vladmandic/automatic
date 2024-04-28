@@ -419,7 +419,6 @@ def check_torch():
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
-    zluda_need_dll_patch = False
 
     def is_rocm_available():
         if not allow_rocm:
@@ -496,31 +495,21 @@ def check_torch():
             rocm_ver = None
         if args.use_zluda:
             log.warning("ZLUDA support: experimental")
-            zluda_need_dll_patch = is_windows and not installed('torch')
-            zluda_path = find_zluda()
-            if zluda_path is None:
-                import urllib.request
-                import zipfile
-                import tarfile
-                archive_type = zipfile.ZipFile if is_windows else tarfile.TarFile
-                try:
-                    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.9e97c717c3fef536d3116f39a15d95626c1dfe39/ZLUDA-{platform.system().lower()}-amd64.{"zip" if is_windows else "tar.gz"}', '_zluda')
-                    with archive_type('_zluda', 'r') as f:
-                        f.extractall('.zluda')
-                    zluda_path = os.path.abspath('./.zluda')
-                    os.remove('_zluda')
-                except Exception as e:
-                    log.warning(f'Failed to install ZLUDA: {e}')
-            if os.path.exists(os.path.join(zluda_path, 'nvcuda.dll')):
-                log.info(f'Using ZLUDA in {zluda_path}')
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.2 torchvision --index-url https://download.pytorch.org/whl/cu118')
-                paths = os.environ.get('PATH', '.')
-                if zluda_path not in paths:
-                    os.environ['PATH'] = paths + ';' + zluda_path
-            else:
+            try:
+                from modules import zluda_installer
+                if args.use_zluda_dnn:
+                    if zluda_installer.check_dnn_dependency():
+                        zluda_installer.enable_dnn()
+                    else:
+                        log.warning("Couldn't find the required dependency of ZLUDA DNN.")
+                zluda_installer.install()
+                zluda_installer.resolve_path()
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                log.info(f'Using ZLUDA in {zluda_installer.ZLUDA_PATH}')
+            except Exception as e:
+                log.warning(f'Failed to install ZLUDA: {e}')
                 log.info('Using CPU-only torch')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-                zluda_need_dll_patch = False
         elif is_windows: # TODO TBD after ROCm for Windows is released
             log.warning("HIP SDK is detected, but no Torch release for Windows available")
             log.info("For ZLUDA support specify '--use-zluda'")
@@ -605,8 +594,11 @@ def check_torch():
         if not installed('torch', quiet=True):
             log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
-        if zluda_need_dll_patch:
-            patch_zluda()
+        try:
+            from modules.zluda_installer import patch as patch_torch
+            patch_torch()
+        except Exception as e:
+            log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
     else:
         try:
             import torch
@@ -942,39 +934,6 @@ def get_version():
         except Exception:
             version = { 'app': 'sd.next', 'version': 'unknown' }
     return version
-
-
-def find_zluda():
-    zluda_path = os.environ.get('ZLUDA', None)
-    if zluda_path is None:
-        paths = os.environ.get('PATH', '').split(';')
-        for path in paths:
-            if os.path.exists(os.path.join(path, 'zluda_redirect.dll')):
-                zluda_path = path
-                break
-    return zluda_path
-
-
-def patch_zluda():
-    zluda_path = find_zluda()
-    if zluda_path is None:
-        log.warning('Failed to automatically patch torch with ZLUDA. Could not find ZLUDA from PATH.')
-        return
-    python_dir = os.path.dirname(shutil.which('python'))
-    if shutil.which('conda') is None:
-        python_dir = os.path.dirname(python_dir)
-    venv_dir = os.environ.get('VENV_DIR', python_dir)
-    dlls_to_patch = {
-        'cublas.dll': 'cublas64_11.dll',
-        #'cudnn.dll': 'cudnn64_8.dll',
-        'cusparse.dll': 'cusparse64_11.dll',
-        'nvrtc.dll': 'nvrtc64_112_0.dll',
-    }
-    try:
-        for k, v in dlls_to_patch.items():
-            shutil.copyfile(os.path.join(zluda_path, k), os.path.join(venv_dir, 'Lib', 'site-packages', 'torch', 'lib', v))
-    except Exception as e:
-        log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
 
 
 # check version of the main repo and optionally upgrade it
