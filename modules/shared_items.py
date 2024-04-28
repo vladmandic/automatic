@@ -13,6 +13,16 @@ def refresh_vae_list():
     modules.sd_vae.refresh_vae_list()
 
 
+def sd_unet_items():
+    import modules.sd_unet
+    return ["None"] + list(modules.sd_unet.unet_dict)
+
+
+def refresh_unet_list():
+    import modules.sd_unet
+    modules.sd_unet.refresh_unet_list()
+
+
 def list_crossattention(diffusers=False):
     if diffusers:
         return [

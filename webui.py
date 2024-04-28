@@ -23,6 +23,7 @@ import modules.lowvram
 import modules.scripts
 import modules.sd_models
 import modules.sd_vae
+import modules.sd_unet
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -93,6 +94,9 @@ def initialize():
     modules.sd_vae.refresh_vae_list()
     timer.startup.record("vae")
 
+    modules.sd_unet.refresh_unet_list()
+    timer.startup.record("unet")
+
     extensions.list_extensions()
     timer.startup.record("extensions")
 
@@ -117,6 +121,7 @@ def initialize():
     timer.startup.record("upscalers")
 
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
+    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
     shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
     timer.startup.record("onchange")
 

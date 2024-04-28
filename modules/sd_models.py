@@ -20,7 +20,7 @@ from omegaconf import OmegaConf
 import tomesd
 from transformers import logging as transformers_logging
 from ldm.util import instantiate_from_config
-from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, errors, hashes, sd_models_config, sd_models_compile, sd_hijack_accelerate
+from modules import paths, shared, shared_items, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, hashes, sd_models_config, sd_models_compile, sd_hijack_accelerate
 from modules.timer import Timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
@@ -1113,6 +1113,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
+        sd_unet.load_unet(sd_model)
         set_diffuser_options(sd_model, vae, op)
 
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
@@ -1134,15 +1135,14 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
 
-    if sd_model is not None:
-        from modules.textual_inversion import textual_inversion
-        sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
-        if op == 'refiner':
-            model_data.sd_refiner = sd_model
-        else:
-            model_data.sd_model = sd_model
-        sd_model.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
-        sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
+    from modules.textual_inversion import textual_inversion
+    sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
+    if op == 'refiner':
+        model_data.sd_refiner = sd_model
+    else:
+        model_data.sd_model = sd_model
+    sd_model.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
+    sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
 
     timer.record("load")
     devices.torch_gc(force=True)

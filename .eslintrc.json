@@ -2,7 +2,7 @@
   "parserOptions": {
     "ecmaVersion": 2020
   },
-  "plugins": ["html", "json", "markdown"],
+  "plugins": ["html", "json"],
   "extends": [
     "plugin:json/recommended",
     "eslint:recommended",

@@ -63,6 +63,11 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Models**:
+  - **Load UNET**: ability to override/load external UNET to a selected model  
+    Works similar to how VAE is selected and loaded: Set UNet folder and UNet model in settings  
+    Can be replaced on-the-fly, not just during initial model load  
+    Enables usage of fine-tunes such as [DPO-SD15](https://huggingface.co/mhdang/dpo-sd1.5-text2image-v1) or [DPO-SDXL](https://huggingface.co/mhdang/dpo-sdxl-text2image-v1)  
+    *Note*: if there is a `JSON` file with the same name as the model it will be used as Unet config, otherwise Unet config from currently loaded model will be used  
   - [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/)
     pixart-Σ is a high end diffusion Transformer model (DiT) with a T5 encoder/decoder capable of directly generating images at 4K resolution  
     to use, simply select from *networks -> models -> PixArt-Σ*  
