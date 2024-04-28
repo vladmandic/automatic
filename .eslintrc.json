@@ -2,8 +2,9 @@
   "parserOptions": {
     "ecmaVersion": 2020
   },
-  "plugins": ["html", "json"],
+  "plugins": ["html", "json", "markdown"],
   "extends": [
+    "plugin:json/recommended",
     "eslint:recommended",
     "airbnb-base"
   ],
@@ -118,6 +119,8 @@
     "extensions-builtin",
     "repositories",
     "venv",
-    "panzoom.js"
+    "panzoom.js",
+    "split.js",
+    "exifr.js"
   ]
 }
