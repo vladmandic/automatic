@@ -594,11 +594,12 @@ def check_torch():
         if not installed('torch', quiet=True):
             log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
-        try:
-            from modules.zluda_installer import patch as patch_torch
-            patch_torch()
-        except Exception as e:
-            log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
+        if args.use_zluda:
+            try:
+                from modules.zluda_installer import patch as patch_torch
+                patch_torch()
+            except Exception as e:
+                log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
     else:
         try:
             import torch
