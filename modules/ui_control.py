@@ -9,7 +9,7 @@ from modules.control.units import xs # vislearn ControlNet-XS
 from modules.control.units import lite # vislearn ControlNet-XS
 from modules.control.units import t2iadapter # TencentARC T2I-Adapter
 from modules.control.units import reference # reference pipeline
-from modules import errors, shared, progress, sd_samplers, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images # pylint: disable=ungrouped-imports
+from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images # pylint: disable=ungrouped-imports
 from modules import ui_control_helpers as helpers
 
 
@@ -104,8 +104,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False)
 
                 with gr.Accordion(open=False, label="Sampler", elem_id="control_sampler", elem_classes=["small-accordion"]):
-                    sd_samplers.set_samplers()
-                    steps, sampler_index = ui_sections.create_sampler_and_steps_selection(sd_samplers.samplers, "control")
+                    steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "control")
                     ui_sections.create_sampler_options('control')
 
                 batch_count, batch_size = ui_sections.create_batch_inputs('control', accordion=True)

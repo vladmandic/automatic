@@ -199,6 +199,7 @@ def create_correction_inputs(tab):
 
 def create_sampler_and_steps_selection(choices, tabname):
     if choices is None:
+        sd_samplers.set_samplers()
         choices = sd_samplers.samplers
     with gr.Row(elem_classes=['flex-break']):
         steps = gr.Slider(minimum=1, maximum=99, step=1, label="Sampling steps", elem_id=f"{tabname}_steps", value=20)
