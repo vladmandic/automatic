@@ -1,6 +1,5 @@
 <div align="center">
-
-# SD.Next
+<img src="https://github.com/vladmandic/automatic/blob/dev/html/favicon.png" width=200 alt="SD.Next">
 
 **Stable Diffusion implementation with advanced features**
 
