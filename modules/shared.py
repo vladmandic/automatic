@@ -468,9 +468,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
 options_templates.update(options_section(('advanced', "Inference Settings"), {
     "token_merging_sep": OptionInfo("<h2>Token merging</h2>", "", gr.HTML),
-    "token_merging_ratio": OptionInfo(0.0, "Token merging ratio for txt2img", gr.Slider, {"minimum": 0.0, "maximum": 0.9, "step": 0.1}),
-    "token_merging_ratio_img2img": OptionInfo(0.0, "Token merging ratio for img2img", gr.Slider, {"minimum": 0.0, "maximum": 0.9, "step": 0.1}),
-    "token_merging_ratio_hr": OptionInfo(0.0, "Token merging ratio for hires", gr.Slider, {"minimum": 0.0, "maximum": 0.9, "step": 0.1}),
+    "token_merging_method": OptionInfo("None", "Token merging method", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
+    "tome_ratio": OptionInfo(0.0, "ToMe token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
+    "todo_ratio": OptionInfo(0.0, "ToDo token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
 
     "freeu_sep": OptionInfo("<h2>FreeU</h2>", "", gr.HTML),
     "freeu_enabled": OptionInfo(False, "FreeU"),

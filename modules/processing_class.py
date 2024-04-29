@@ -63,8 +63,6 @@ class StableDiffusionProcessing:
         self.override_settings_restore_afterwards = override_settings_restore_afterwards
         self.is_using_inpainting_conditioning = False # a111 compatibility
         self.disable_extra_networks = False
-        self.token_merging_ratio = 0
-        self.token_merging_ratio_hr = 0
         # self.scripts = scripts.ScriptRunner() # set via property
         # self.script_args = script_args or [] # set via property
         self.per_script_args = {}
@@ -183,11 +181,6 @@ class StableDiffusionProcessing:
 
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
-
-    def get_token_merging_ratio(self, for_hr=False):
-        if for_hr:
-            return self.token_merging_ratio_hr or shared.opts.token_merging_ratio_hr or self.token_merging_ratio or shared.opts.token_merging_ratio
-        return self.token_merging_ratio or shared.opts.token_merging_ratio
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
@@ -449,8 +442,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         from modules import processing_original
         return processing_original.sample_img2img(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts)
 
-    def get_token_merging_ratio(self, for_hr=False):
-        return self.token_merging_ratio or ("token_merging_ratio" in self.override_settings and shared.opts.token_merging_ratio) or shared.opts.token_merging_ratio_img2img or shared.opts.token_merging_ratio
 
 class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def __init__(self, **kwargs):

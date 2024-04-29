@@ -135,10 +135,10 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
                     p.sampler.initialize(p)
                 samples = samples[:, :, p.truncate_y//2:samples.shape[2]-(p.truncate_y+1)//2, p.truncate_x//2:samples.shape[3]-(p.truncate_x+1)//2]
                 noise = create_random_tensors(samples.shape[1:], seeds=seeds, subseeds=subseeds, subseed_strength=subseed_strength, p=p)
-                sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio(for_hr=True))
+                sd_models.apply_token_merging(p.sd_model)
                 hypertile_set(p, hr=True)
                 samples = p.sampler.sample_img2img(p, samples, noise, conditioning, unconditional_conditioning, steps=p.hr_second_pass_steps or p.steps, image_conditioning=image_conditioning)
-                sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
+                sd_models.apply_token_merging(p.sd_model)
             else:
                 p.ops.append('upscale')
         x = None
@@ -149,7 +149,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
     return samples
 
 
-def sample_img2img(p, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
+def sample_img2img(p, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # pylint: disable=unused-argument
     hypertile_set(p)
     x = create_random_tensors([4, p.height // 8, p.width // 8], seeds=seeds, subseeds=subseeds, subseed_strength=p.subseed_strength, seed_resize_from_h=p.seed_resize_from_h, seed_resize_from_w=p.seed_resize_from_w, p=p)
     x *= p.initial_noise_multiplier

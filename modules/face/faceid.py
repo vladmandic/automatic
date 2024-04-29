@@ -68,8 +68,8 @@ def face_id(
     try:
         shared.prompt_styles.apply_styles_to_extra(p)
 
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
 
         script_callbacks.before_process_callback(p)
@@ -236,8 +236,8 @@ def face_id(
     finally:
         if faceid_model is not None and original_load_ip_adapter is not None:
             faceid_model.__class__.load_ip_adapter = original_load_ip_adapter
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, 0)
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.remove_token_merging(p.sd_model)
         script_callbacks.after_process_callback(p)
 
     return processed_images

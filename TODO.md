@@ -12,8 +12,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 - stable diffusion 3.0
 - powerpaint: <https://github.com/zhuang2002/PowerPaint>
-- hyper-sd: <https://huggingface.co/ByteDance/Hyper-SD>
-  
 
 ### Features
 

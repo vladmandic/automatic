@@ -26,24 +26,28 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - **PWA** [SD.Next](https://github.com/vladmandic/automatic) now also includes valid manifest making it installable as PWA
   - **Gallery
   - **Gallery**: list, preview, search through all your images and videos!  
-    implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
-    search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
-    *settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+    Implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
+    Search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
+    *Settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
   - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
-    generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
-    for example, *SD15* can now go up to *2024x2048* and *SDXL* up to *4k* natively
-    simply enable checkbox in advanced menu and set desired resolution  
-    additional settings are available in *settings -> inference settings -> hidiffusion*  
-    and can also be set and used via *xyz grid*  
+    Generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
+    For example, *SD15* can now go up to *2024x2048* and *SDXL* up to *4k* natively
+    Simply enable checkbox in advanced menu and set desired resolution  
+    Additional settings are available in *settings -> inference settings -> hidiffusion*  
+    And can also be set and used via *xyz grid*  
   - **IP Adapter Masking**:  
-    powerful method of using masking with ip-adapters  
-    when combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
-    *hint*: to create masks, you can use manually created masks or control->mask module with auto-segment to create masks and later upload them  
+    Powerful method of using masking with ip-adapters  
+    When combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
+    *Hint*: to create masks, you can use manually created masks or control->mask module with auto-segment to create masks and later upload them  
   - **IP Adapter advanced layer configuration**:  
-    allows for more control over how each layer of ip-adapter is applied, requires a valid dict to be passed as input  
-    see [InstantStyle](https://github.com/InstantStyle/InstantStyle) for details  
+    Allows for more control over how each layer of ip-adapter is applied, requires a valid dict to be passed as input  
+    See [InstantStyle](https://github.com/InstantStyle/InstantStyle) for details  
   - **OneDiff**: new optimization/compile engine, thanks @aifartist  
-    as with all other compile engines, enable via *settings -> compute settings -> compile*  
+    As with all other compile engines, enable via *settings -> compute settings -> compile*  
+  - [ToDo](https://arxiv.org/html/2402.13573v2) Token Downsampling for Efficient Generation of High-Resolution Images  
+    Newer alternative method to [ToMe](https://github.com/dbolya/tomesd) that can provide speed-up with minimal quality loss  
+    Enable in *settings -> inference settings -> token merging*  
+    Also available in XYZ grid  
 - **UI**:
   - Faster **UI** load times
   - Theme types:  

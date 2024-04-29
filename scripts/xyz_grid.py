@@ -267,8 +267,8 @@ axis_options = [
     AxisOption("[HDR] Maximize boundary", float, apply_field("hdr_max_boundry")),
     AxisOption("[HDR] Tint Color Hex", str, apply_field("hdr_color_picker")),
     AxisOption("[HDR] Tint Ratio", float, apply_field("hdr_tint_ratio")),
-    AxisOption("[ToMe] Token merging ratio (txt2img)", float, apply_override('token_merging_ratio')),
-    AxisOption("[ToMe] Token merging ratio (hires)", float, apply_override('token_merging_ratio_hr')),
+    AxisOption("[Token Merging] ToMe ratio", float, apply_setting('tome_ratio')),
+    AxisOption("[Token Merging] ToDo ratio", float, apply_setting('todo_ratio')),
     AxisOption("[FreeU] 1st stage backbone factor", float, apply_setting('freeu_b1')),
     AxisOption("[FreeU] 2nd stage backbone factor", float, apply_setting('freeu_b2')),
     AxisOption("[FreeU] 1st stage skip factor", float, apply_setting('freeu_s1')),
@@ -388,8 +388,8 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
 class SharedSettingsStackHelper(object):
     vae = None
     schedulers_solver_order = None
-    token_merging_ratio_hr = None
-    token_merging_ratio = None
+    tome_ratio = None
+    todo_ratio = None
     sd_model_checkpoint = None
     sd_model_dict = None
     sd_vae_checkpoint = None
@@ -398,8 +398,8 @@ class SharedSettingsStackHelper(object):
         #Save overridden settings so they can be restored later.
         self.vae = shared.opts.sd_vae
         self.schedulers_solver_order = shared.opts.schedulers_solver_order
-        self.token_merging_ratio_hr = shared.opts.token_merging_ratio_hr
-        self.token_merging_ratio = shared.opts.token_merging_ratio
+        self.tome_ratio = shared.opts.tome_ratio
+        self.todo_ratio = shared.opts.todo_ratio
         self.sd_model_checkpoint = shared.opts.sd_model_checkpoint
         self.sd_model_dict = shared.opts.sd_model_dict
         self.sd_vae_checkpoint = shared.opts.sd_vae
@@ -408,8 +408,8 @@ class SharedSettingsStackHelper(object):
         #Restore overriden settings after plot generation.
         shared.opts.data["sd_vae"] = self.vae
         shared.opts.data["schedulers_solver_order"] = self.schedulers_solver_order
-        shared.opts.data["token_merging_ratio_hr"] = self.token_merging_ratio_hr
-        shared.opts.data["token_merging_ratio"] = self.token_merging_ratio
+        shared.opts.data["tome_ratio"] = self.tome_ratio
+        shared.opts.data["todo_ratio"] = self.todo_ratio
         if self.sd_model_dict != shared.opts.sd_model_dict:
             shared.opts.data["sd_model_dict"] = self.sd_model_dict
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:

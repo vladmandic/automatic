@@ -284,10 +284,8 @@ infotext_to_setting_name_mapping = [
     ('UniPC variant', 'uni_pc_variant'),
     # Token Merging
     ('Mask weight', 'inpainting_mask_weight'),
-    ('Token merging ratio', 'token_merging_ratio'),
-    ('ToMe', 'token_merging_ratio'),
-    ('ToMe hires', 'token_merging_ratio_hr'),
-    ('ToMe img2img', 'token_merging_ratio_img2img'),
+    ('ToMe', 'tome_ratio'),
+    ('ToDo', 'todo_ratio'),
 ]
 
 

@@ -75,8 +75,6 @@ class Processed:
         self.all_negative_prompts = all_negative_prompts or p.all_negative_prompts or [self.negative_prompt]
         self.all_seeds = all_seeds or p.all_seeds or [self.seed]
         self.all_subseeds = all_subseeds or p.all_subseeds or [self.subseed]
-        self.token_merging_ratio = p.token_merging_ratio
-        self.token_merging_ratio_hr = p.token_merging_ratio_hr
         self.infotexts = infotexts or [info]
 
     def js(self):
@@ -113,9 +111,6 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
-
-    def get_token_merging_ratio(self, for_hr=False):
-        return self.token_merging_ratio_hr if for_hr else self.token_merging_ratio
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
@@ -161,8 +156,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
 
         if p.width is not None:
@@ -194,8 +189,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 processed = process_images_inner(p)
 
     finally:
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, 0)
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.remove_token_merging(p.sd_model)
 
         script_callbacks.after_process_callback(p)
 
