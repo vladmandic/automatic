@@ -238,7 +238,7 @@ async function initImageViewer() {
   // exif
   const modalExif = document.createElement('div');
   modalExif.id = 'modalExif';
-  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em;';
+  modalExif.style = 'position: absolute; bottom: 0px; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em; z-index: 1';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });

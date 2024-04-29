@@ -33,7 +33,8 @@ function clip_gallery_urls(gallery) {
 }
 
 function all_gallery_buttons() {
-  const allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
+  let allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
+  if (allGalleryButtons.length === 0) allGalleryButtons = gradioApp().querySelectorAll('.gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
   const visibleGalleryButtons = [];
   allGalleryButtons.forEach((elem) => {
     if (elem.parentElement.offsetParent) visibleGalleryButtons.push(elem);
@@ -42,7 +43,8 @@ function all_gallery_buttons() {
 }
 
 function selected_gallery_button() {
-  const allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
+  let allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
+  if (allCurrentButtons.length === 0) allCurrentButtons = gradioApp().querySelectorAll('.gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small.selected');
   let visibleCurrentButton = null;
   allCurrentButtons.forEach((elem) => {
     if (elem.parentElement.offsetParent) visibleCurrentButton = elem;

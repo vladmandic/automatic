@@ -86,7 +86,7 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 #control_results { margin: 0; padding: 0; }
 #control_gallery { height: calc(100vw/3 + 60px); }
 #txt2img_gallery, #img2img_gallery { height: 50vh; }
-#control-result { padding: 0 0.2em 0 0.2em; background: var(--input-background-fill); line-height: 2em; }
+#control-result { padding: 0 0.2em 0 0.2em; background: var(--input-background-fill); line-height: 2em; white-space: pre-wrap; }
 #control-inputs { margin-top: 1em; }
 #txt2img_prompt_container, #img2img_prompt_container, #control_prompt_container { margin-right: var(--layout-gap) }
 #txt2img_footer, #img2img_footer, #control_footer { height: fit-content; display: none; }
@@ -159,7 +159,7 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
 .popup-metadata { color: white; background: #0000; display: inline-block; white-space: pre-wrap; font-size: var(--text-xxs); }
 
 /* fullpage image viewer */
-#lightboxModal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(20, 20, 20, 0.75); backdrop-filter: blur(6px);
+#lightboxModal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(20, 20, 20, 0.75); backdrop-filter: blur(6px);
   user-select: none; -webkit-user-select: none; flex-direction: row; font-family: 'NotoSans';}
 .modalControls { display: flex; justify-content: space-evenly; background-color: transparent; position: absolute; width: 99%; z-index: 1; }
 .modalControls:hover { background-color: #50505050; }
