@@ -80,9 +80,18 @@ else
     exit 1
 fi
 
+# Add venv lib folder to PATH
+# IPEX needs this
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath "$venv_dir")/lib/
+fi
+
+# Add ROCm to PATH if it's not already
+if  [ ! -x "$(command -v rocminfo)" ] && [ -f '/opt/rocm/bin/rocminfo' ]
+then
+    export PATH=$PATH:/opt/rocm/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
 fi
 
 if [[ ! -z "${ACCELERATE}" ]] && [ ${ACCELERATE}="True" ] && [ -x "$(command -v accelerate)" ]
