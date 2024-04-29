@@ -6,7 +6,7 @@ import platform
 import urllib.request
 
 
-RELEASE = 'rel.9e97c717c3fef536d3116f39a15d95626c1dfe39'
+RELEASE = 'rel.2804604c29b5fa36deca9ece219d3970b61d4c27'
 TARGETS = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
