@@ -141,7 +141,7 @@ class GalleryFile extends HTMLElement {
       }
     `;
 
-    const cache = opts.browser_cache ? await idbGet(this.hash) : undefined;
+    const cache = (this.hash && opts.browser_cache) ? await idbGet(this.hash) : undefined;
     this.shadow.appendChild(style);
     const img = document.createElement('img');
     img.className = 'gallery-file';
@@ -212,12 +212,16 @@ class GalleryFile extends HTMLElement {
 const gallerySendImage = (_images) => [currentImage]; // invoked by gadio button
 
 async function getHash(str, algo = 'SHA-256') {
-  const strBuf = new TextEncoder().encode(str);
-  const hash = await crypto.subtle.digest(algo, strBuf);
-  let hex = '';
-  const view = new DataView(hash);
-  for (let i = 0; i < hash.byteLength; i += 4) hex += (`00000000${view.getUint32(i).toString(16)}`).slice(-8);
-  return hex;
+  try {
+    let hex = '';
+    const strBuf = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest(algo, strBuf);
+    const view = new DataView(hash);
+    for (let i = 0; i < hash.byteLength; i += 4) hex += (`00000000${view.getUint32(i).toString(16)}`).slice(-8);
+    return hex;
+  } catch {
+    return undefined;
+  }
 }
 
 async function wsConnect(socket, timeout = 2000) {
