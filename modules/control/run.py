@@ -158,6 +158,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         shared.log.warning('Model not loaded')
         return [], '', '', 'Error: model not loaded'
 
+    unit_type = unit_type.strip().lower() if unit_type is not None else ''
     t0 = time.time()
     num_units = 0
     for u in units:

@@ -19,7 +19,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-04-28
+## Update for 2024-04-30
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
