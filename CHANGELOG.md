@@ -113,7 +113,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Add *CMSI* sampler, optimized for consistency models  
   - Add option *timestep spacing* to sampler settings  
 - **IPEX**, thanks @Disty0
-  - Update to *IPEX 2.1.30* on Linux  
+  - Update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
   - Removed 1024x1024 workaround  
   - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`  
