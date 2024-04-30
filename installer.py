@@ -526,16 +526,14 @@ def check_torch():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         else:
-            if rocm_ver == "6.0":
-                # mpmath 1.4.0a0 crashes at import
-                install("mpmath==1.3.0", "mpmath")
-                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-            elif rocm_ver == "5.7":
-                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
-            elif rocm_ver in {"5.5", "5.6"}:
-                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm{rocm_ver}')
+            if rocm_ver is None or rocm_ver == "6.1": # assume the latest if version check fails + torch for 6.1 doesn't exist yet
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
+            elif int(rocm_ver.rsplit(".")[0]) <= 4 or (int(rocm_ver.rsplit(".")[0]) == 5 and int(rocm_ver.rsplit(".")[1]) <= 5): # oldest supported version is 5.5
+                log.warning(f"Unsupported ROCm version detected: {rocm_ver}")
+                log.warning("Minimum supported ROCm version is 5.5")
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
             else:
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5') # ROCm 5.5 is oldest for PyTorch 2.1
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm_ver}')
             if rocm_ver is not None:
                 ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
                 ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
@@ -583,8 +581,10 @@ def check_torch():
         install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
         install('nncf==2.8.1', 'nncf')
         os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
-        os.environ.setdefault('NEOReadDebugKeys', '1')
-        os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+        if os.environ.get("NEOReadDebugKeys", None) is None:
+            os.environ.setdefault('NEOReadDebugKeys', '1')
+        if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
+            os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     else:
         machine = platform.machine()
         if sys.platform == 'darwin':
