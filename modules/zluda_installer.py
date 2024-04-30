@@ -12,7 +12,7 @@ DLL_MAPPING = {
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ('rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',)
+HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
@@ -32,6 +32,7 @@ def check_dnn_dependency():
 def enable_dnn():
     global RELEASE # pylint: disable=global-statement
     DLL_MAPPING['cudnn.dll'] = 'cudnn64_8.dll'
+    HIP_TARGETS.append('MIOpen.dll')
     RELEASE = 'v3.8-pre2-dnn'
 
 
