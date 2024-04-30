@@ -29,7 +29,7 @@ async function logMonitor() {
       row.innerHTML = `<td>${dateToStr(l.created)}</td>${level}<td>${l.facility}</td>${module}<td>${l.msg}</td>`;
       logMonitorEl.appendChild(row);
     } catch (e) {
-      console.log('logMonitor', e);
+      // console.log('logMonitor', e);
       console.error('logMonitor line', line);
     }
   };
