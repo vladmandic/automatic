@@ -64,7 +64,8 @@ def make_copy(zluda_path: os.PathLike):
 
 
 def load(zluda_path: os.PathLike):
-    hip_path_default = r'C:\Program Files\AMD\ROCm\5.7'
+    program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
+    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
     if not os.path.exists(hip_path_default):
         hip_path_default = None
     hip_path = os.environ.get('HIP_PATH', hip_path_default)
