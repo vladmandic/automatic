@@ -76,7 +76,7 @@ def create_ui():
                     with gr.Row():
                         vqa_image = gr.Image(type='pil', label="Image")
                     with gr.Row():
-                        vqa_question = gr.Textbox(label="Question", placeholder="Descirbe the image")
+                        vqa_question = gr.Textbox(label="Question", placeholder="Describe the image")
                     with gr.Row():
                         vqa_answer = gr.Textbox(label="Answer", lines=3)
                     with gr.Row(elem_id='interrogate_buttons_query'):
