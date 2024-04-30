@@ -94,7 +94,6 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     - Disable forced VAE Slicing for *lowvram*
 - **Improvements**:
   - Faster server startup  
-  - Add **MIGraphX** torch optimization engine, thanks @Disty0
   - More **ZLUDA** updates and optimizations, thanks @lshqqytiger
   - Styles apply wildcards to params
   - Extra networks persistent sort order in settings  
@@ -113,16 +112,19 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     *note*: you can use other samplers as well with SDXL-Lightning models  
   - Add *CMSI* sampler, optimized for consistency models  
   - Add option *timestep spacing* to sampler settings  
-- **IPEX**
-  - Update to *IPEX 2.1.20* on Linux  
+- **IPEX**, thanks @Disty0
+  - Update to *IPEX 2.1.30* on Linux  
     requires removing the venv folder to update properly  
   - Removed 1024x1024 workaround  
-  - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`.  
+  - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`  
+- **ROCm**, thanks @Disty0  
+  - Switch to stable branch of PyTorch  
+  - Compatibility improvenments  
+  - Add **MIGraphX** torch compile engine  
 - **Fixes**:
   - Update requirements
   - Prompt params parser
   - Image save without metadata
-  - ROCm compatibility, thanks @Disty0
   - API generate save metadata
   - Face/InstantID faults
   - CivitAI update model info for all models

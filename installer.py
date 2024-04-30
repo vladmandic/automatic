@@ -547,29 +547,31 @@ def check_torch():
         if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
             os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
         if "linux" in sys.platform:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post0 torchvision==0.16.0.post0 intel-extension-for-pytorch==2.1.20+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post2 torchvision==0.16.0.post2 intel-extension-for-pytorch==2.1.30+xpu oneccl_bind_pt==2.1.300+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
             os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')
             if os.environ.get('DISABLE_VENV_LIBS', None) is None:
                 install(os.environ.get('MKL_PACKAGE', 'mkl==2024.1.0'), 'mkl')
                 install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.1.0'), 'mkl-dpcpp')
                 install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.12.0'), 'oneccl-devel')
-                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.0'), 'impi-devel')
+                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.1'), 'impi-devel')
         else:
             if sys.version_info.minor == 11:
                 pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
                 torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
                 ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl'
+                torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
             elif sys.version_info.minor == 10:
                 pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
                 torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
                 ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp310-cp310-win_amd64.whl'
+                torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
             else:
-                pytorch_pip = 'torch==2.1.0a0'
-                torchvision_pip = 'torchvision==0.16.0a0'
-                ipex_pip = 'intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/'
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post2 torchvision==0.16.0.post2 intel-extension-for-pytorch==2.1.30 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
                 if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-                    install(os.environ.get('MKL_PACKAGE', 'mkl==2024.0.0'), 'mkl')
-                    install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.0.0'), 'mkl-dpcpp')
+                    install(os.environ.get('MKL_PACKAGE', 'mkl==2024.1.0'), 'mkl')
+                    install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.1.0'), 'mkl-dpcpp')
+                    install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.12.0'), 'oneccl-devel')
+                    install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.1'), 'impi-devel')
             torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
         install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino', ignore=True)
         install('nncf==2.7.0', 'nncf', ignore=True)
