@@ -495,19 +495,29 @@ def check_torch():
             rocm_ver = None
         if args.use_zluda:
             log.warning("ZLUDA support: experimental")
+            error = None
+            from modules import zluda_installer
             try:
-                from modules import zluda_installer
                 if args.use_zluda_dnn:
                     if zluda_installer.check_dnn_dependency():
                         zluda_installer.enable_dnn()
                     else:
                         log.warning("Couldn't find the required dependency of ZLUDA DNN.")
                 zluda_installer.install()
-                zluda_installer.resolve_path()
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
-                log.info(f'Using ZLUDA in {zluda_installer.ZLUDA_PATH}')
+                zluda_path = zluda_installer.find()
+                zluda_installer.make_copy(zluda_path)
             except Exception as e:
+                error = e
                 log.warning(f'Failed to install ZLUDA: {e}')
+            if error is None:
+                try:
+                    zluda_installer.load(zluda_path)
+                    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                    log.info(f'Using ZLUDA in {zluda_path}')
+                except Exception as e:
+                    error = e
+                    log.warning(f'Failed to load ZLUDA: {e}')
+            if error is not None:
                 log.info('Using CPU-only torch')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         elif is_windows: # TODO TBD after ROCm for Windows is released
@@ -594,12 +604,6 @@ def check_torch():
         if not installed('torch', quiet=True):
             log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
-        if args.use_zluda:
-            try:
-                from modules.zluda_installer import patch as patch_torch
-                patch_torch()
-            except Exception as e:
-                log.warning(f'ZLUDA: failed to automatically patch torch: {e}')
     else:
         try:
             import torch
