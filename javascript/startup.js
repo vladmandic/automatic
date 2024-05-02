@@ -8,7 +8,6 @@ async function initStartup() {
   initModels();
   getUIDefaults();
   initiGenerationParams();
-  initNotifications();
   initPromptChecker();
   initLogMonitor();
   initContextMenu();

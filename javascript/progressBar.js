@@ -109,6 +109,7 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     setProgress();
     if (parentGallery && livePreview) parentGallery.removeChild(livePreview);
     checkPaused(true);
+    sendNotification();
     if (atEnd) atEnd();
   };
 

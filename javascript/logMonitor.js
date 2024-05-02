@@ -41,7 +41,7 @@ async function logMonitor() {
     document.getElementById('logWarnings').innerText = logWarnings;
     document.getElementById('logErrors').innerText = logErrors;
     const modenUIBtn = document.getElementById('btn_console');
-    if (modenUIBtn) modenUIBtn.setAttribute('error-count', logErrors);
+    if (modenUIBtn) modenUIBtn.setAttribute('error-count', logErrors > 0 ? logErrors : '');
   };
 
   if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);

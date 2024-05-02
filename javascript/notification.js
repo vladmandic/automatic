@@ -3,14 +3,15 @@
 let lastHeadImg = null;
 let notificationButton = null;
 
-async function initNotifications() {
+async function sendNotification() {
   if (!notificationButton) {
     notificationButton = gradioApp().getElementById('request_notifications');
     if (notificationButton) notificationButton.addEventListener('click', (evt) => Notification.requestPermission(), true);
   }
   if (document.hasFocus()) return; // window is in focus so don't send notifications
-  const galleryPreviews = gradioApp().querySelectorAll('div[id^="tab_"][style*="display: block"] div[id$="_results"] .thumbnail-item > img');
-  if (!galleryPreviews) return;
+  let galleryPreviews = gradioApp().querySelectorAll('div[id^="tab_"][style*="display: block"] div[id$="_results"] .thumbnail-item > img');
+  if (!galleryPreviews || galleryPreviews.length === 0) galleryPreviews = gradioApp().querySelectorAll('.thumbnail-item > img');
+  if (!galleryPreviews || galleryPreviews.length === 0) return;
   const headImg = galleryPreviews[0]?.src;
   if (!headImg || headImg === lastHeadImg || headImg.includes('logo-bg-')) return;
   const audioNotification = gradioApp().querySelector('#audio_notification audio');
@@ -26,5 +27,5 @@ async function initNotifications() {
     parent.focus();
     this.close();
   };
-  log('sendNotification');
+  log('sendNotifications');
 }

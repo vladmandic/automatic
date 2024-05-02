@@ -111,7 +111,9 @@
     "idbGet": "readonly",
     "idbPut": "readonly",
     "idbDel": "readonly",
-    "idbAdd": "readonly"
+    "idbAdd": "readonly",
+    // notification.js
+    "sendNotification": "readonly"
   },
   "ignorePatterns": [
     "node_modules",
