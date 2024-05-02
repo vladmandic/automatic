@@ -147,7 +147,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                     torch.cuda.amp.GradScaler = ipex.cpu.autocast._grad_scaler.GradScaler
 
             # C
-            torch._C._cuda_getCurrentRawStream = ipex._C._getCurrentStream
+            #torch._C._cuda_getCurrentRawStream = ipex._C._getCurrentRawStream
             ipex._C._DeviceProperties.multi_processor_count = ipex._C._DeviceProperties.gpu_subslice_count
             ipex._C._DeviceProperties.major = 2024
             ipex._C._DeviceProperties.minor = 0
