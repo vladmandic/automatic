@@ -40,9 +40,10 @@ async function logMonitor() {
     else logMonitorEl.parentElement.style = 'border-bottom: 2px solid var(--highlight-color);';
     document.getElementById('logWarnings').innerText = logWarnings;
     document.getElementById('logErrors').innerText = logErrors;
+    const modenUIBtn = document.getElementById('btn_console');
+    if (modenUIBtn) modenUIBtn.setAttribute('error-count', logErrors);
   };
 
-  // addLogLine(`{ "created": ${Date.now() / 1000}, "level":"DEBUG", "module":"ui", "facility":"logMonitor", "msg":"Log refresh" }`);
   if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
   else setTimeout(logMonitor, 10 * 1000); // on failure try to reconnect every 10sec
   if (!opts.logmonitor_show) return;
@@ -57,7 +58,7 @@ async function logMonitor() {
   if (!logMonitorEl) return;
   const atBottom = logMonitorEl.scrollHeight <= (logMonitorEl.scrollTop + logMonitorEl.clientHeight);
   try {
-    const res = await fetch('/sdapi/v1/log?clear=False');
+    const res = await fetch('/sdapi/v1/log?clear=True');
     if (res?.ok) {
       logMonitorStatus = true;
       const lines = await res.json();
