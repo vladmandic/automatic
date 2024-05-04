@@ -43,13 +43,13 @@ torchsde==0.2.6
 clip-interrogator==0.6.0
 antlr4-python3-runtime==4.9.3
 requests==2.31.0
-tqdm==4.66.2
-accelerate==0.29.3
+tqdm==4.66.4
+accelerate==0.30.0
 opencv-contrib-python-headless==4.9.0.80
 diffusers==0.27.2
 einops==0.4.1
 gradio==3.43.2
-huggingface_hub==0.22.2
+huggingface_hub==0.23.0
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.1
@@ -57,7 +57,7 @@ pandas
 protobuf==3.20.3
 pytorch_lightning==1.9.4
 tokenizers==0.19.1
-transformers==4.40.0
+transformers==4.40.1
 tomesd==0.1.3
 urllib3==1.26.18
 Pillow==10.3.0

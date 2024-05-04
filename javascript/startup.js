@@ -31,6 +31,7 @@ async function initStartup() {
 
   // post startup tasks that may take longer but are not critical
   setHints();
+  applyStyles();
   initIndexDB();
 }
 

@@ -294,10 +294,20 @@ function selectStyle(name) {
 
 function applyStyles(styles) {
   let newStyles = [];
-  if (styles) newStyles = Array.isArray(styles) ? styles : [styles];
+  if (styles) {
+    newStyles = Array.isArray(styles) ? styles : [styles];
+  } else {
+    const tabname = getENActiveTab();
+    styles = gradioApp().querySelectorAll(`#${tabname}_styles .token span`);
+    newStyles = Array.from(styles).map((el) => el.textContent).filter((el) => el.length > 0);
+  }
   const index = newStyles.indexOf(desiredStyle);
   if (index > -1) newStyles.splice(index, 1);
   else newStyles.push(desiredStyle);
+  gradioApp().querySelectorAll('.extra-network-cards .card').forEach((el) => {
+    if (newStyles.includes(el.getAttribute('data-name'))) el.style.boxShadow = '0 0 2px 4px var(--button-primary-border-color)';
+    else el.style.boxShadow = 'none';
+  });
   return newStyles.join('|');
 }
 

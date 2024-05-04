@@ -19,7 +19,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-05-02
+## Update for 2024-05-04
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -103,6 +103,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - More efficient in-browser callbacks
   - Updated all system requirements  
   - UI log monitor will auto-reconnect to server on server restart  
+  - UI styles includes indicator for active styles  
   - Support controlnet manually downloads models in both standalone and diffusers format  
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  
