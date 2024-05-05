@@ -90,7 +90,7 @@ def get_provider() -> Tuple:
 
 def install_execution_provider(ep: ExecutionProvider):
     import imp  # pylint: disable=deprecated-module
-    from installer import installed, install, uninstall, get_onnxruntime_source_for_rocm
+    from installer import installed, install, uninstall
     res = "<br><pre>"
     res += uninstall(["onnxruntime", "onnxruntime-directml", "onnxruntime-gpu", "onnxruntime-training", "onnxruntime-openvino"], quiet=True)
     installed("onnxruntime", reload=True)
@@ -103,7 +103,7 @@ def install_execution_provider(ep: ExecutionProvider):
         if "linux" not in sys.platform:
             log.warning("ROCMExecutionProvider is not supported on Windows.")
             return
-        packages.append(get_onnxruntime_source_for_rocm(None))
+        packages.append("--pre onnxruntime-training --index-url https://pypi.lsh.sh/60 --extra-index-url https://pypi.org/simple")
     elif ep == ExecutionProvider.OpenVINO:
         packages.append("openvino")
         packages.append("onnxruntime-openvino")
