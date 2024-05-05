@@ -44,11 +44,6 @@ import onnxruntime
 onnxruntime.set_default_logger_severity(3)
 timer.startup.record("onnx")
 
-# moved to webui.py:initialize()
-# from modules.onnx_impl import initialize_olive # pylint: disable=ungrouped-imports
-# initialize_olive()
-# timer.startup.record("olive")
-
 from fastapi import FastAPI # pylint: disable=W0611,C0411
 import gradio # pylint: disable=W0611,C0411
 timer.startup.record("gradio")
