@@ -17,6 +17,7 @@ exclude = [
   "modules/xadapter/*.py",
   "modules/hidiffusion/*.py",
   "modules/tcd/*.py",
+  "modules/pag/pipe_*.py",
 ]
 [tool.ruff.lint]
 select = [

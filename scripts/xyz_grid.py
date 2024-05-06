@@ -21,6 +21,12 @@ def apply_field(field):
     return fun
 
 
+def apply_task_args(field):
+    def fun(p, x, xs):
+        p.task_args[field] = x
+    return fun
+
+
 def apply_setting(field):
     def fun(p, x, xs):
         shared.opts.data[field] = x
@@ -280,6 +286,9 @@ axis_options = [
     AxisOption("[HiDiffusion] T1", float, apply_override('hidiffusion_t1')),
     AxisOption("[HiDiffusion] T2", float, apply_override('hidiffusion_t2')),
     AxisOption("[HiDiffusion] Agression step", float, apply_field('hidiffusion_steps')),
+    AxisOption("[PAG] Attention scale", float, apply_field('pag_scale')),
+    AxisOption("[PAG] Adaptive scaling", float, apply_field('pag_adaptive')),
+    AxisOption("[PAG] Applied layers", str, apply_setting('pag_apply_layers')),
 ]
 
 

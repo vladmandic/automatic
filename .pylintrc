@@ -17,6 +17,7 @@ ignore-paths=/usr/lib/.*$,
              ^modules/tcd/.*$,
              ^modules/xadapters/.*$,
              ^modules/hidiffusion/.*$,
+             ^modules/pag/.*$,
 ignore-patterns=
 ignored-modules=
 jobs=0

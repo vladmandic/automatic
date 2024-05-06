@@ -167,10 +167,12 @@ def create_advanced_inputs(tab, base=True):
             with gr.Row():
                 image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Secondary guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
                 diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.backend == shared.Backend.DIFFUSERS)
-                diffusers_sag_scale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_image_sag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
+            with gr.Row():
+                diffusers_pag_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_image_pag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
+                diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_image_pag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
-    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_sag_scale, cfg_end
+    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
 
 
 def create_correction_inputs(tab):

@@ -8,6 +8,7 @@ from modules import shared, devices, errors, images, scripts, memstats, lowvram,
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
+from modules import pag
 
 
 opt_C = 4
@@ -156,6 +157,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
+        pag.apply(p)
         if shared.opts.cuda_compile_backend == 'none':
             sd_models.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
@@ -189,6 +191,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 processed = process_images_inner(p)
 
     finally:
+        pag.unapply()
         if shared.opts.cuda_compile_backend == 'none':
             sd_models.remove_token_merging(p.sd_model)
 

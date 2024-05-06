@@ -310,7 +310,8 @@
   {"id":"","label":"include watermark","localized":"","hint":"Add invisible watermark to image by altering some pixel values"},
   {"id":"","label":"watermark string","localized":"","hint":"Watermark string to add to image. Keep very short to avoid image corruption."},
   {"id":"","label":"show log view","localized":"","hint":"Show log view at the bottom of the main window"},
-  {"id":"","label":"Log view update period","localized":"","hint":"Log view update period, in miliseconds"}
+  {"id":"","label":"Log view update period","localized":"","hint":"Log view update period, in miliseconds"},
+  {"id":"","label":"PAG layer names","localized":"","hint":"Space separated list of layers<br>Available: d[0-5], m[0], u[0-8]<br>Default: m0"}
 ],
 "scripts": [
   {"id":"","label":"X values","localized":"","hint":"Separate values for X axis using commas"},

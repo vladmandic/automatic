@@ -365,6 +365,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)
 
     def update_pipeline(sd_model, p: processing.StableDiffusionProcessing):
+        """
         if p.sag_scale > 0 and is_txt2img():
             update_sampler(shared.sd_model)
             supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
@@ -376,6 +377,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 p.task_args['sag_scale'] = p.sag_scale
             else:
                 shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
+        """
         if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
             shared.log.warning('Processing: mode=inpaint mask=None')
             sd_model = sd_models.set_diffuser_pipe(sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)

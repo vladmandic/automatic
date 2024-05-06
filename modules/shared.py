@@ -479,6 +479,9 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "freeu_s1": OptionInfo(0.9, "1st stage skip factor", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "freeu_s2": OptionInfo(0.2, "2nd stage skip factor", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
+    "pag_sep": OptionInfo("<h2>Perturbed-Attention Guidance</h2>", "", gr.HTML),
+    "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
+
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
     "hypertile_hires_only": OptionInfo(False, "HyperTile hires pass only"),
     "hypertile_unet_enabled": OptionInfo(False, "HyperTile UNet"),
