@@ -19,7 +19,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-05-04
+## Update for 2024-05-06
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -81,6 +81,9 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     sdxs is an extremely fast 1-step generation consistency model that also uses TAESD as quick VAE out-of-the-box  
     to use, simply select from *networks -> models -> SDXS*  
     set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
+  - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD)  
+    sd15 and sdxl 1-step, 2-step, 4-step and 8-step optimized models using lora  
+    set parameters: *sampler: TCD or LCM, steps: 1/2/4/8, cfg_scale: 0.0*
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native built-in equivalents  
