@@ -351,6 +351,7 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
         mask = cv2.cvtColor(np.array(mask), cv2.COLOR_BGR2GRAY)
         mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
         sigmaX, sigmaY = int((h0-h1)/3), int((w0-w1)/3)
+        sigmaX, sigmaY = max(1, sigmaX), max(1, sigmaY)
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=max(sigmaX, sigmaY) // 3) # increase overlap area
         mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmaX, sigmaY=sigmaY) # blur mask
@@ -365,6 +366,8 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
         # h, w = cropped.shape[:2]
         # noised[y1:y1 + h, x1:x1 + w] = cropped # overlay original over initialized
         # image = noised
+
+    # mask = Image.new('L', (w0, h0), 0)
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(image)

@@ -179,7 +179,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 with gr.Column(scale=9, elem_id='control-preview-column', visible=True) as column_preview:
                     gr.HTML('<span id="control-preview-button">Preview</p>')
                     with gr.Tabs(elem_classes=['control-tabs'], elem_id='control-tab-preview'):
-                        with gr.Tab('Preview', id='preview-image') as tab_image:
+                        with gr.Tab('Preview', id='preview-image') as _tab_preview:
                             preview_process = gr.Image(label="Preview", show_label=False, type="pil", source="upload", interactive=False, height=gr_height, visible=True, elem_id='control_preview', elem_classes=['control-image'])
 
             with gr.Accordion('Control elements', open=False, elem_id="control_elements"):
@@ -474,7 +474,7 @@ def create_ui(_blocks: gr.Blocks=None):
             btn_interrogate_booru.click(fn=helpers.interrogate_booru, inputs=[], outputs=[prompt])
 
             select_fields = [input_mode, input_image, init_image, input_type, input_resize, input_inpaint, input_video, input_batch, input_folder]
-            select_output = [output_tabs, result_txt]
+            select_output = [output_tabs, preview_process, result_txt]
             select_dict = dict(
                 fn=helpers.select_input,
                 _js="controlInputMode",

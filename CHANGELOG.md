@@ -16,10 +16,10 @@ ModernUI is still in early development and not all features are available yet, p
 Thanks to @BinaryQuantumSoul for his hard work on this project!
 
 *Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
-Given huge number of changes with *+3443/-3342 commits diff over the past year, a completely different backend/engine and a change of focus,  
+Given huge number of changes with *+3443/-3342* commits diff (at the time of fork detach) over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-05-06
+## Update for 2024-05-07
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -53,24 +53,13 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     Newer alternative method to [ToMe](https://github.com/dbolya/tomesd) that can provide speed-up with minimal quality loss  
     Enable in *settings -> inference settings -> token merging*  
     Also available in XYZ grid  
-- **UI**:
-  - Faster **UI** load times
-  - Theme types:  
-    **Standard* (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
-    Specifying a theme type updates list of available themes  
-    For example, *Gradio* themes will not appear as available if theme type is set to *Standard*  
-  - Redesign of base txt2img interface  
-  - Minor tweaks to styles: refresh/apply/save
-  - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
-- **API**:
-  - Add API endpoint `/sdapi/v1/control` and CLI util `cli/simple-control.py`  
-    (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
-    example:
-    > simple-control.py --prompt 'woman in the city' --sampler UniPC --steps 20  
-    > --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
-    > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
-    > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
-  - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
+  - **Outpaint**:  
+    New method of outpainting that uses a combination of auto-masking and edge generation to create seamless transitions between original and generated image  
+    Use on control tab:
+    - *input -> denoising strength: 0.5 or higher*
+    - *select image -> outpaint -> expand edges or zoom out to desired size*
+    - *size -> mode: outpaint, method: nearest*
+    - *mask -> inpaint masked only (if you want to keep original image)*
 - **Models**:
   - **Load UNET**: ability to override/load external UNET to a selected model  
     Works similar to how VAE is selected and loaded: Set UNet folder and UNet model in settings  
@@ -89,6 +78,24 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD)  
     sd15 and sdxl 1-step, 2-step, 4-step and 8-step optimized models using lora  
     set parameters: *sampler: TCD or LCM, steps: 1/2/4/8, cfg_scale: 0.0*
+- **UI**:
+  - Faster **UI** load times
+  - Theme types:  
+    **Standard** (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
+    Specifying a theme type updates list of available themes  
+    For example, *Gradio* themes will not appear as available if theme type is set to *Standard*  
+  - Redesign of base txt2img interface  
+  - Minor tweaks to styles: refresh/apply/save
+  - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
+- **API**:
+  - Add API endpoint `/sdapi/v1/control` and CLI util `cli/simple-control.py`  
+    (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
+    example:
+    > simple-control.py --prompt 'woman in the city' --sampler UniPC --steps 20  
+    > --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
+    > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
+    > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
+  - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Changes**:
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native built-in equivalents  

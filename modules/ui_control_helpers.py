@@ -126,12 +126,12 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         input_source = None
         busy = False
         # debug('Control input: none')
-        return [gr.Tabs.update(), '']
+        return [gr.Tabs.update(), None, '']
     debug(f'Control select input: source={selected_input} init={init_image} type={init_type} mode={input_mode}')
     input_type = type(selected_input)
     input_mask = None
     status = 'Control input | Unknown'
-    res = [gr.Tabs.update(selected='out-gallery'), status]
+    res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     # control inputs
     if isinstance(selected_input, Image.Image): # image via upload -> image
         if input_mode == 'Outpaint':
@@ -140,23 +140,23 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         input_source = [selected_input]
         input_type = 'PIL.Image'
         status = f'Control input | Image | Size {selected_input.width}x{selected_input.height} | Mode {selected_input.mode}'
-        res = [gr.Tabs.update(selected='out-gallery'), status]
+        res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     elif isinstance(selected_input, dict): # inpaint -> dict image+mask
         input_mask = selected_input['mask']
         selected_input = selected_input['image']
         input_source = [selected_input]
         input_type = 'PIL.Image'
         status = f'Control input | Image | Size {selected_input.width}x{selected_input.height} | Mode {selected_input.mode}'
-        res = [gr.Tabs.update(selected='out-gallery'), status]
+        res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     elif isinstance(selected_input, gr.components.image.Image): # not likely
         input_source = [selected_input.value]
         input_type = 'gr.Image'
-        res = [gr.Tabs.update(selected='out-gallery'), status]
+        res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     elif isinstance(selected_input, str): # video via upload > tmp filepath to video
         input_source = selected_input
         input_type = 'gr.Video'
         status = get_video(input_source)
-        res = [gr.Tabs.update(selected='out-video'), status]
+        res = [gr.Tabs.update(selected='out-video'), input_mask, status]
     elif isinstance(selected_input, list): # batch or folder via upload -> list of tmp filepaths
         if hasattr(selected_input[0], 'name'):
             input_type = 'tempfiles'
@@ -165,7 +165,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
             input_type = 'files'
             input_source = selected_input
         status = f'Control input | Images | Files {len(input_source)}'
-        res = [gr.Tabs.update(selected='out-gallery'), status]
+        res = [gr.Tabs.update(selected='out-gallery'), input_mask, status]
     else: # unknown
         input_source = None
     shared.log.debug(f'Control input: type={input_type} input={input_source}')
@@ -176,7 +176,7 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
         input_init = None
     elif init_type == 2: # Separate init image
         input_init = [init_image]
-    debug(f'Control select input: source={input_source} init={input_init} mode={input_mode}')
+    debug(f'Control select input: source={input_source} init={input_init} mask={input_mask} mode={input_mode}')
     busy = False
     return res
 
