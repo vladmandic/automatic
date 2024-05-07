@@ -78,9 +78,9 @@ def ipex_optimize(sd_model):
                 sd_model.prior_text_encoder = ipex_optimize_model(sd_model.prior_text_encoder)
         t1 = time.time()
         shared.log.info(f"IPEX Optimize: time={t1-t0:.2f}")
-        return sd_model
     except Exception as e:
         shared.log.warning(f"IPEX Optimize: error: {e}")
+    return sd_model
 
 
 def nncf_compress_weights(sd_model):
@@ -132,9 +132,9 @@ def nncf_compress_weights(sd_model):
                 sd_model.prior_text_encoder = nncf_compress_model(sd_model.prior_text_encoder)
         t1 = time.time()
         shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
-        return sd_model
     except Exception as e:
         shared.log.warning(f"Compress Weights: error: {e}")
+    return sd_model
 
 
 def optimize_openvino(sd_model):
@@ -258,7 +258,7 @@ def compile_torch(sd_model):
                 shared.compiled_model_state = CompiledModelState()
             return sd_model
         elif shared.opts.cuda_compile_backend ==  "migraphx":
-            import torch_migraphx
+            import torch_migraphx # pylint: disable=unused-import
         log_level = logging.WARNING if shared.opts.cuda_compile_verbose else logging.CRITICAL # pylint: disable=protected-access
         if hasattr(torch, '_logging'):
             torch._logging.set_logs(dynamo=log_level, aot=log_level, inductor=log_level) # pylint: disable=protected-access

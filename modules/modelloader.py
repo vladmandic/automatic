@@ -237,7 +237,7 @@ def load_diffusers_models(clear=True):
     try:
         for folder in os.listdir(place):
             try:
-                if any([x in folder for x in excluded_models]): # noqa:C419
+                if any([x in folder for x in excluded_models]): # noqa:C419 # pylint: disable=use-a-generator
                     continue
                 if "--" not in folder:
                     continue

@@ -83,7 +83,7 @@ class InterrogateModels:
         from repositories.blip.models import blip
         import modules.modelloader as modelloader
         model_path = os.path.join(paths.models_path, "BLIP")
-        download_name='model_base_caption_capfilt_large.pth',
+        download_name='model_base_caption_capfilt_large.pth'
         shared.log.debug(f'Model interrogate load: type=BLiP model={download_name} path={model_path}')
         files = modelloader.load_models(
             model_path=model_path,

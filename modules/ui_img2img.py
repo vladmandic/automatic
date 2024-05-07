@@ -134,7 +134,7 @@ def create_ui():
 
                     cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
                     full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('img2img')
-                    hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('img2img')
+                    hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
                     with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:

@@ -35,6 +35,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     Simply enable checkbox in advanced menu and set desired resolution  
     Additional settings are available in *settings -> inference settings -> hidiffusion*  
     And can also be set and used via *xyz grid*  
+    *Note*: HiDiffusion resolution sensitive, so if you get error, set resolution to be multiples of 128  
   - [Perturbed-Attention Guidance](https://github.com/KU-CVLAB/Perturbed-Attention-Guidance)  
     PAG enhances sample quality by utilizing self-attention in formation of latent in addition to standard CFG scale  
     Simply set *advanced -> attention guidance* and *advanced -> adaptive scaling*  

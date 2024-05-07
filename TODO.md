@@ -11,11 +11,11 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ### Models & Pipelines
 
 - stable diffusion 3.0
-- powerpaint: <https://github.com/zhuang2002/PowerPaint>
 
 ### Features
 
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
+- fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
 - init latents: variations, img2img
 - diffusers public callbacks  
 - include reference styles

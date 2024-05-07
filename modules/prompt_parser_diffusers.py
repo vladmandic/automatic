@@ -98,9 +98,9 @@ def get_prompt_schedule(prompt, steps):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
-    if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion':
+    if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
-        return None, None, None, None
+        return
     else:
         t0 = time.time()
         positive_schedule, scheduled = get_prompt_schedule(prompts[0], steps)

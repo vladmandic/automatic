@@ -500,8 +500,7 @@ def run_mask_live(input_image: gr.Image):
             res = run_mask(input_image)
             busy = False
             return res
-    else:
-        return None
+    return None
 
 
 def create_segment_ui():

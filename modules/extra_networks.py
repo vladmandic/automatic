@@ -67,7 +67,7 @@ def is_stepwise(en_obj):
     for en in en_obj:
         all_args.extend(en.positional[1:])
         all_args.extend(en.named.values())
-    return any([len(str(x).split("@")) > 1 for x in all_args]) # noqa C419
+    return any([len(str(x).split("@")) > 1 for x in all_args]) # noqa C419 # pylint: disable=use-a-generator
 
 
 def activate(p, extra_network_data, step=0):

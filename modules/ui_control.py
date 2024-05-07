@@ -59,7 +59,7 @@ def generate_click(job_id: str, active_tab: str, *args):
         except Exception as e:
             shared.log.error(f"Control exception: {e}")
             errors.display(e, 'Control')
-            return None, None, None, None, f'Control: Exception: {e}'
+            yield [None, None, None, None, f'Control: Exception: {e}']
         progress.finish_task(job_id)
     shared.state.end()
 
@@ -114,7 +114,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 mask_controls = masking.create_segment_ui()
 
                 cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
-                hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('control')
+                hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('control')
 
                 with gr.Accordion(open=False, label="Video", elem_id="control_video", elem_classes=["small-accordion"]):
                     with gr.Row():
@@ -579,6 +579,9 @@ def create_ui(_blocks: gr.Blocks=None):
                 (refiner_steps, "Refiner steps"),
                 (refiner_prompt, "Prompt2"),
                 (refiner_negative, "Negative2"),
+                # pag
+                (pag_scale, "PAG scale"),
+                (pag_adaptive, "PAG adaptive"),
                 # hidden
                 (seed_resize_from_w, "Seed resize from-1"),
                 (seed_resize_from_h, "Seed resize from-2"),

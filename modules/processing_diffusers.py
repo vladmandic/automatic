@@ -7,7 +7,6 @@ import typing
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-import diffusers
 from modules import shared, devices, processing, sd_samplers, sd_models, images, errors, prompt_parser_diffusers, sd_hijack_hypertile, processing_correction, processing_vae, sd_models_compile, extra_networks, hidiffusion
 from modules.processing_helpers import resize_init_images, resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
@@ -366,6 +365,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def update_pipeline(sd_model, p: processing.StableDiffusionProcessing):
         """
+        import diffusers
         if p.sag_scale > 0 and is_txt2img():
             update_sampler(shared.sd_model)
             supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']

@@ -701,7 +701,7 @@ def save_video_atomic(images, filename, video_type: str = 'none', duration: floa
 
 def save_video(p, images, filename = None, video_type: str = 'none', duration: float = 2.0, loop: bool = False, interpolate: int = 0, scale: float = 1.0, pad: int = 1, change: float = 0.3, sync: bool = False):
     if images is None or len(images) < 2 or video_type is None or video_type.lower() == 'none':
-        return
+        return None
     image = images[0]
     if p is not None:
         namegen = FilenameGenerator(p, seed=p.all_seeds[0], prompt=p.all_prompts[0], image=image)

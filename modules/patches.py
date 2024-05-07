@@ -40,7 +40,7 @@ def undo(key, obj, field):
     patch_key = (obj, field)
     if patch_key not in originals[key]:
         log.error(f"Patch no patch to undo: field={field}")
-        return
+        return None
     original_func = originals[key].pop(patch_key)
     if original_func is None:
         delattr(obj, field)

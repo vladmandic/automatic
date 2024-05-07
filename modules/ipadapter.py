@@ -48,7 +48,7 @@ def get_images(input_images):
     for image in input_images:
         if image is None:
             continue
-        elif isinstance(image, list):
+        if isinstance(image, list):
             output_images.append(get_images(image)) # recursive
         elif isinstance(image, Image.Image):
             output_images.append(image)
@@ -185,7 +185,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                 clip_loaded = f'{clip_repo}/{clip_subfolder}'
             except Exception as e:
                 shared.log.error(f'IP adapter: failed to load image encoder: {e}')
-                return
+                return False
         sd_models.move_model(pipe.image_encoder, devices.device)
 
     # main code

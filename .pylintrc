@@ -18,6 +18,7 @@ ignore-paths=/usr/lib/.*$,
              ^modules/xadapters/.*$,
              ^modules/hidiffusion/.*$,
              ^modules/pag/.*$,
+             ^modules/olive_script.py,
 ignore-patterns=
 ignored-modules=
 jobs=0
@@ -140,6 +141,7 @@ disable=bad-inline-option,
         consider-using-get,
         consider-using-in,
         consider-using-min-builtin,
+        consider-merging-isinstance,
         dangerous-default-value,
         deprecated-pragma,
         duplicate-code,
