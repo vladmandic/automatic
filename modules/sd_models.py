@@ -652,6 +652,7 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
+    new_pipe.default_scheduler = getattr(orig_pipe, 'default_scheduler', None)
 
 
 def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
@@ -666,8 +667,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
 
     if hasattr(sd_model, "watermark"):
         sd_model.watermark = NoWatermark()
-    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
-        sd_model.has_accelerate = False
+    sd_model.has_accelerate = False
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
@@ -681,6 +681,34 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 devices.dtype_vae = torch.float32
                 sd_model.vae.to(devices.dtype_vae)
             shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.get("force_upcast", None)}')
+    if hasattr(sd_model, "enable_model_cpu_offload"):
+        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
+            shared.log.debug(f'Setting {op}: enable model CPU offload')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
+            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                if "Combined" in sd_model.__class__.__name__:
+                    # remove after new diffusers release:
+                    # https://github.com/huggingface/diffusers/pull/7471
+                    sd_model.enable_model_cpu_offload()
+                else:
+                    sd_model.enable_model_cpu_offload(device=devices.device)
+            else:
+                sd_model.maybe_free_model_hooks()
+            sd_model.has_accelerate = True
+    if hasattr(sd_model, "enable_sequential_cpu_offload"):
+        if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
+            shared.log.debug(f'Setting {op}: enable sequential CPU offload')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
+            sd_model.enable_sequential_cpu_offload()
+            sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
             shared.log.debug(f'Setting {op}: enable VAE slicing')
@@ -732,47 +760,6 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.debug(f'Setting {op}: enable channels last')
         sd_model.unet.to(memory_format=torch.channels_last)
-
-    if hasattr(sd_model, "enable_model_cpu_offload"):
-        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
-            shared.log.debug(f'Setting {op}: enable model CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                if "Combined" in sd_model.__class__.__name__:
-                    # remove after new diffusers release:
-                    # https://github.com/huggingface/diffusers/pull/7471
-                    sd_model.enable_model_cpu_offload()
-                else:
-                    sd_model.enable_model_cpu_offload(device=devices.device)
-            else:
-                sd_model.maybe_free_model_hooks()
-            sd_model.has_accelerate = True
-    if hasattr(sd_model, "enable_sequential_cpu_offload"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
-            shared.log.debug(f'Setting {op}: enable sequential CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
-            if sd_model.has_accelerate:
-                if op == "vae": # reapply sequential offload to vae
-                    from accelerate import cpu_offload
-                    sd_model.vae.to("cpu")
-                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0)
-                else:
-                    pass # do nothing if offload is already applied
-            elif "Combined" in sd_model.__class__.__name__:
-                # remove after new diffusers release:
-                # https://github.com/huggingface/diffusers/pull/7471
-                sd_model.enable_sequential_cpu_offload()
-            else:
-                sd_model.enable_sequential_cpu_offload(device=devices.device)
-            sd_model.has_accelerate = True
 
 
 def move_model(model, device=None, force=False):
@@ -1118,6 +1105,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
         sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
         sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
+        sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
         sd_model.is_sdxl = False # a1111 compatibility item
         sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
         sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
@@ -1127,12 +1115,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
         sd_unet.load_unet(sd_model)
-
-        from modules.textual_inversion import textual_inversion
-        sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
-        sd_model.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
-        sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
-
         set_diffuser_options(sd_model, vae, op)
 
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
@@ -1154,10 +1136,14 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
 
+    from modules.textual_inversion import textual_inversion
+    sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
     if op == 'refiner':
         model_data.sd_refiner = sd_model
     else:
         model_data.sd_model = sd_model
+    sd_model.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
+    sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
 
     timer.record("load")
     devices.torch_gc(force=True)
@@ -1301,6 +1287,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     embedding_db = getattr(pipe, "embedding_db", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
+    default_scheduler = getattr(pipe, "default_scheduler", None)
 
     try:
         if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
@@ -1322,6 +1309,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.embedding_db = embedding_db
     new_pipe.image_encoder = image_encoder
     new_pipe.feature_extractor = feature_extractor
+    new_pipe.default_scheduler = default_scheduler
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
