@@ -33,7 +33,7 @@ class StableDiffusionProcessing:
         self.seed_resize_from_h: int = seed_resize_from_h
         self.seed_resize_from_w: int = seed_resize_from_w
         self.sampler_name: str = sampler_name
-        self.hr_sampler_name: str = hr_sampler_name
+        self.hr_sampler_name: str = hr_sampler_name if hr_sampler_name != 'Same as primary' else sampler_name
         self.batch_size: int = batch_size
         self.n_iter: int = n_iter
         self.steps: int = steps
@@ -141,7 +141,6 @@ class StableDiffusionProcessing:
         self.positive_pooleds = []
         self.negative_embeds = []
         self.negative_pooleds = []
-
 
     @property
     def sd_model(self):

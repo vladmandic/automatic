@@ -1,4 +1,5 @@
 import os
+import copy
 from modules import shared
 from modules.sd_samplers_common import samples_to_image_grid, sample_to_image # pylint: disable=unused-import
 
@@ -47,6 +48,8 @@ def visible_sampler_names():
 
 def create_sampler(name, model):
     if name == 'Default' and hasattr(model, 'scheduler'):
+        if getattr(model, "default_scheduler", None) is not None:
+            model.scheduler = copy.deepcopy(model.default_scheduler)
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
         shared.log.debug(f'Sampler default {type(model.scheduler).__name__}: {config}')
         return model.scheduler
