@@ -666,7 +666,8 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
 
     if hasattr(sd_model, "watermark"):
         sd_model.watermark = NoWatermark()
-    sd_model.has_accelerate = False
+    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
+        sd_model.has_accelerate = False
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
@@ -680,34 +681,6 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 devices.dtype_vae = torch.float32
                 sd_model.vae.to(devices.dtype_vae)
             shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.get("force_upcast", None)}')
-    if hasattr(sd_model, "enable_model_cpu_offload"):
-        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
-            shared.log.debug(f'Setting {op}: enable model CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                if "Combined" in sd_model.__class__.__name__:
-                    # remove after new diffusers release:
-                    # https://github.com/huggingface/diffusers/pull/7471
-                    sd_model.enable_model_cpu_offload()
-                else:
-                    sd_model.enable_model_cpu_offload(device=devices.device)
-            else:
-                sd_model.maybe_free_model_hooks()
-            sd_model.has_accelerate = True
-    if hasattr(sd_model, "enable_sequential_cpu_offload"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
-            shared.log.debug(f'Setting {op}: enable sequential CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
-            sd_model.enable_sequential_cpu_offload()
-            sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
             shared.log.debug(f'Setting {op}: enable VAE slicing')
@@ -759,6 +732,47 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.debug(f'Setting {op}: enable channels last')
         sd_model.unet.to(memory_format=torch.channels_last)
+
+    if hasattr(sd_model, "enable_model_cpu_offload"):
+        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
+            shared.log.debug(f'Setting {op}: enable model CPU offload')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
+            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                if "Combined" in sd_model.__class__.__name__:
+                    # remove after new diffusers release:
+                    # https://github.com/huggingface/diffusers/pull/7471
+                    sd_model.enable_model_cpu_offload()
+                else:
+                    sd_model.enable_model_cpu_offload(device=devices.device)
+            else:
+                sd_model.maybe_free_model_hooks()
+            sd_model.has_accelerate = True
+    if hasattr(sd_model, "enable_sequential_cpu_offload"):
+        if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
+            shared.log.debug(f'Setting {op}: enable sequential CPU offload')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
+            if sd_model.has_accelerate:
+                if op == "vae": # reapply sequential offload to vae
+                    from accelerate import cpu_offload
+                    sd_model.vae.to("cpu")
+                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0)
+                else:
+                    pass # do nothing if offload is already applied
+            elif "Combined" in sd_model.__class__.__name__:
+                # remove after new diffusers release:
+                # https://github.com/huggingface/diffusers/pull/7471
+                sd_model.enable_sequential_cpu_offload()
+            else:
+                sd_model.enable_sequential_cpu_offload(device=devices.device)
+            sd_model.has_accelerate = True
 
 
 def move_model(model, device=None, force=False):
