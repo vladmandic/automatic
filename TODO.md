@@ -14,6 +14,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ### Features
 
+- hidiffusion img2img: <https://github.com/megvii-research/HiDiffusion/commit/1050418bef914b3bd1f2de6faa162abf36b52fb3>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
 - init latents: variations, img2img
