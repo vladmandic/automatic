@@ -15,12 +15,10 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ### Features
 
-- outpaint without changing original image
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - init latents: variations, img2img
 - diffusers public callbacks  
 - include reference styles
-- quick apply style
 - lora: sc lora, dora, etc
 
 ### Missing
