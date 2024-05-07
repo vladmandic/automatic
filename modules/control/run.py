@@ -83,6 +83,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     processed_image: Image.Image = None # last processed image
     if mask is not None and input_type == 0:
         input_type = 1 # inpaint always requires control_image
+    if sampler_index != 0:
+        sampler_index = sampler_index + 1 # Remove "Same as primary"
 
     p = StableDiffusionProcessingControl(
         prompt = prompt,

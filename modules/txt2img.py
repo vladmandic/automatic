@@ -35,6 +35,8 @@ def txt2img(id_task,
         sampler_index = 0
     if hr_sampler_index is None:
         hr_sampler_index = 0
+    if shared.backend == shared.Backend.DIFFUSERS and sampler_index != 0:
+        sampler_index = sampler_index + 1 # Remove "Same as primary"
 
     p = processing.StableDiffusionProcessingTxt2Img(
         sd_model=shared.sd_model,

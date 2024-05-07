@@ -649,6 +649,7 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.embedding_db = getattr(orig_pipe, 'embedding_db', None)
     new_pipe.sd_model_hash = getattr(orig_pipe, 'sd_model_hash', None)
     new_pipe.has_accelerate = getattr(orig_pipe, 'has_accelerate', False)
+    new_pipe.default_scheduler = getattr(orig_pipe, 'default_scheduler', False)
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
@@ -1135,6 +1136,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         set_diffuser_options(sd_model, vae, op)
 
+        if hasattr(sd_model, "scheduler"):
+            sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler)
+        else:
+            sd_model.default_scheduler = None
+
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
             move_model(sd_model, devices.cpu)
@@ -1301,6 +1307,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     embedding_db = getattr(pipe, "embedding_db", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
+    default_scheduler = getattr(pipe, "default_scheduler", None)
 
     try:
         if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
@@ -1322,6 +1329,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.embedding_db = embedding_db
     new_pipe.image_encoder = image_encoder
     new_pipe.feature_extractor = feature_extractor
+    new_pipe.default_scheduler = default_scheduler
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)

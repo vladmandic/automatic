@@ -336,8 +336,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return args
 
     def update_sampler(sd_model, second_pass=False):
-        sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
-        if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
+        if second_pass:
+            if p.hr_sampler_name == "Same as primary":
+                sampler_selection = p.sampler_name
+            else:
+                sampler_selection = p.hr_sampler_name
+        else:
+            sampler_selection = p.sampler_name
+        if hasattr(sd_model, 'scheduler'):
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
             if sampler is None:
                 sampler = sd_samplers.all_samplers_map.get("UniPC")

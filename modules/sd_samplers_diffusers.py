@@ -65,6 +65,7 @@ config = {
 
 samplers_data_diffusers = [
     sd_samplers_common.SamplerData('Default', None, [], {}),
+    sd_samplers_common.SamplerData('Same as primary', None, [], {}),
     sd_samplers_common.SamplerData('UniPC', lambda model: DiffusionSampler('UniPC', UniPCMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DEIS', lambda model: DiffusionSampler('DEIS', DEISMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),

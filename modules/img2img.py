@@ -153,6 +153,8 @@ def img2img(id_task: str, mode: int,
 
     if sampler_index is None:
         sampler_index = 0
+    if shared.backend == shared.Backend.DIFFUSERS and sampler_index != 0:
+        sampler_index = sampler_index + 1 # Remove "Same as primary"
 
     override_settings = create_override_settings_dict(override_settings_texts)
 
