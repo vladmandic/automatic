@@ -80,6 +80,7 @@ compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
 console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
+sampler_choices = []
 
 
 class Backend(Enum):

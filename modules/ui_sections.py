@@ -206,8 +206,9 @@ def create_sampler_and_steps_selection(choices, tabname):
     with gr.Row(elem_classes=['flex-break']):
         steps = gr.Slider(minimum=1, maximum=99, step=1, label="Sampling steps", elem_id=f"{tabname}_steps", value=20)
         sampler_choices = [x.name for x in choices]
-        if shared.backend == shared.Backend.DIFFUSERS:
-            sampler_choices.pop(1) # Remove "Same as primary"
+        shared.sampler_choices = sampler_choices.copy()
+        if shared.backend == shared.Backend.DIFFUSERS and "Same as primary" in sampler_choices:
+            sampler_choices.remove("Same as primary") # Remove "Same as primary"
         sampler_index = gr.Dropdown(label='Sampling method', elem_id=f"{tabname}_sampling", choices=sampler_choices, value='Default', type="index")
     return steps, sampler_index
 
