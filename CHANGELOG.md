@@ -133,6 +133,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
 - **Fixes**:
   - Update requirements
   - Prompt params parser
+  - Allowing forcing LoRA loading method for some or all models
   - Image save without metadata
   - API generate save metadata
   - Face/InstantID faults

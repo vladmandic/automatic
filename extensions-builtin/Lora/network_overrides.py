@@ -20,6 +20,8 @@ force_diffusers = [
 ]
 
 def check_override(shorthash):
+    if not shared.opts.lora_maybe_diffusers:
+        return False
     if len(shorthash) < 4:
         return False
     force = any([x.startswith(shorthash) for x in force_diffusers])
