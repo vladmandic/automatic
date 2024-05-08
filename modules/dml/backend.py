@@ -78,3 +78,6 @@ class DirectML:
 
     def reset_peak_memory_stats(device: Optional[rDevice]=None):
         return
+
+    def synchronize_tensor(tensor: torch.Tensor) -> None:
+        tensor.__str__()

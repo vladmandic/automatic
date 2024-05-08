@@ -62,6 +62,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
         latents = kwargs.get('latents', None)
+        if torch.is_tensor(latents) and latents.device.type == "privateuseone":
+            torch.dml.synchronize_tensor(latents) # DML synchronize
         debug_callback(f'Callback: step={step} timestep={timestep} latents={latents.shape if latents is not None else None} kwargs={list(kwargs)}')
         shared.state.sampling_step = step
         if shared.state.interrupted or shared.state.skipped:
