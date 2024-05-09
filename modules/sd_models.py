@@ -764,7 +764,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
                 if op == "vae": # reapply sequential offload to vae
                     from accelerate import cpu_offload
                     sd_model.vae.to("cpu")
-                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0)
+                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0) # pylint: disable=protected-access
                 else:
                     pass # do nothing if offload is already applied
             elif "Combined" in sd_model.__class__.__name__:
@@ -1290,8 +1290,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
     # skip specific pipelines
-    n = pipe.__class__.__name__
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline']:
+    n = getattr(pipe.__class__, '__name__', '')
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline']:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe

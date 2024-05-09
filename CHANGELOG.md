@@ -78,7 +78,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
   - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD)  
     sd15 and sdxl 1-step, 2-step, 4-step and 8-step optimized models using lora  
-    set parameters: *sampler: TCD or LCM, steps: 1/2/4/8, cfg_scale: 0.0*
+    set parameters: *sampler: TCD or LCM, steps: 1/2/4/8, cfg_scale: 0.0*  
 - **UI**:
   - Faster **UI** load times
   - Theme types:  
