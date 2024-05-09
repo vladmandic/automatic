@@ -36,13 +36,14 @@ def initialize_zluda():
     if platform.system() == "Windows" and devices.cuda_ok and is_zluda(device):
         torch.backends.cudnn.enabled = shared.cmd_opts.use_zluda_dnn
         torch.backends.cuda.enable_flash_sdp(False)
-        torch.backends.cuda.enable_math_sdp(True)
-        torch.backends.cuda.enable_mem_efficient_sdp(False)
-        torch.backends.cuda.enable_cudnn_sdp(shared.cmd_opts.use_zluda_dnn and shared.cmd_opts.experimental)
         torch.backends.cuda.enable_flash_sdp = do_nothing
+        torch.backends.cuda.enable_math_sdp(True)
         torch.backends.cuda.enable_math_sdp = do_nothing
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
         torch.backends.cuda.enable_mem_efficient_sdp = do_nothing
-        torch.backends.cuda.enable_cudnn_sdp = do_nothing
+        if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
+            torch.backends.cuda.enable_cudnn_sdp(shared.cmd_opts.use_zluda_dnn and shared.cmd_opts.experimental)
+            torch.backends.cuda.enable_cudnn_sdp = do_nothing
         shared.opts.sdp_options = ['Math attention']
         if shared.cmd_opts.use_zluda_dnn and not shared.cmd_opts.experimental:
             torch.nn.functional.conv2d = conv2d_cudnn_disabled
