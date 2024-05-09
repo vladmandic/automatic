@@ -888,7 +888,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         # sd15 specific but we cant know ahead of time
         "safety_checker": None,
         "requires_safety_checker": False,
-        "load_safety_checker": False,
         # "use_safetensors": True,
     }
     if shared.opts.diffusers_model_load_variant != 'default':
@@ -1076,6 +1075,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type)
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
+                    # diffusers_load_config['cache_dir'] = shared.opts.diffusers_dir
+                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
                     if shared.opts.disable_accelerate:
                         from diffusers.utils import import_utils
                         import_utils._accelerate_available = False # pylint: disable=protected-access
@@ -1096,12 +1097,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     diffusers_load_config.pop('vae', None)
                     diffusers_load_config.pop('safety_checker', None)
                     diffusers_load_config.pop('requires_safety_checker', None)
-                    diffusers_load_config.pop('load_safety_checker', None)
                     diffusers_load_config.pop('config_files', None)
                     diffusers_load_config.pop('local_files_only', None)
                     shared.log.debug(f'Setting {op}: pipeline={sd_model.__class__.__name__} config={diffusers_load_config}') # pylint: disable=protected-access
             except Exception as e:
-                shared.log.error(f'Diffusers failed loading: {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} {e}')
+                shared.log.error(f'Diffusers failed loading: {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} config={diffusers_load_config} {e}')
                 errors.display(e, f'loading {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__}')
                 return
         else:

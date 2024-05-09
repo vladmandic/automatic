@@ -374,7 +374,7 @@ class StableDiffusionPAGPipeline(
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPImageProcessor,
         image_encoder: CLIPVisionModelWithProjection = None,
-        requires_safety_checker: bool = True,
+        requires_safety_checker: bool = False,
     ):
         super().__init__()
 

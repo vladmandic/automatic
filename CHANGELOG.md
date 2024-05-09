@@ -7,6 +7,7 @@
 - PixArt-Σ
 - IP adapter masking
 - InstantStyle
+- <https://github.com/huggingface/diffusers/issues/7902>
 
 ### Note
 
