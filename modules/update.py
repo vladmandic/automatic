@@ -33,7 +33,7 @@ def get_version():
     # except Exception as e:
     #    i.log.error(f'Version check failed: {e}')
     i.log.info(f'Version: {vars(version)}')
-    latest = f'<div style="color: var(--secondary-500)">You\'re up to date!</div>' if version.chash == version.lhash else f'<div style="color: var(--secondary-500)">Update available!</div>'
+    latest = '<div style="color: var(--secondary-500)">You\'re up to date!</div>' if version.chash == version.lhash else '<div style="color: var(--secondary-500)">Update available!</div>'
     html = f'''
         <div>URL: <a href="{version.url}" target="_blank">{version.url}</a></div>
         <div>Current branch: <span style="color: var(--highlight-color)">{version.branch}</span></div>
