@@ -120,6 +120,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Updated all system requirements  
   - UI log monitor will auto-reconnect to server on server restart  
   - UI styles includes indicator for active styles  
+  - Secondary sampler add option "same as primary"
   - Support controlnet manually downloads models in both standalone and diffusers format  
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  

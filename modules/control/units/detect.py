@@ -9,5 +9,6 @@ def is_sd15(model):
 def is_sdxl(model):
     if model is None:
         return False
-    return model.__name__ == p.StableDiffusionXLPipeline.__name__ or model.__name__ == p.StableDiffusionXLImg2ImgPipeline.__name__ or model.__name__ == p.StableDiffusionXLInpaintPipeline.__name__
-    # return isinstance(model, p.StableDiffusionXLPipeline) or isinstance(model, p.StableDiffusionXLImg2ImgPipeline) or isinstance(model, p.StableDiffusionXLInpaintPipeline)
+    if hasattr(model, '__name__'):
+        return model.__name__ == p.StableDiffusionXLPipeline.__name__ or model.__name__ == p.StableDiffusionXLImg2ImgPipeline.__name__ or model.__name__ == p.StableDiffusionXLInpaintPipeline.__name__
+    return isinstance(model, p.StableDiffusionXLPipeline) or isinstance(model, p.StableDiffusionXLImg2ImgPipeline) or isinstance(model, p.StableDiffusionXLInpaintPipeline)
