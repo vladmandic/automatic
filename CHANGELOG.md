@@ -7,7 +7,6 @@
 - PixArt-Σ
 - IP adapter masking
 - InstantStyle
-- <https://github.com/huggingface/diffusers/issues/7902>
 
 ### Note
 
@@ -166,6 +165,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Control module restore button full functionality
   - Control improved handling with multiple control units and different init images
   - Control add correct metadata to image
+  - Time embeddings load part of model load
   - A1111 update OptionInfo properties
   - MOTD exception handling
   - Notifications not triggering
