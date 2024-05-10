@@ -389,6 +389,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_model = preprocess_onnx_pipeline(p)
             nonlocal orig_pipeline
             orig_pipeline = sd_model # processed ONNX pipeline should not be replaced with original pipeline.
+        if getattr(sd_model, "current_attn_name", None) != shared.opts.cross_attention_optimization:
+            shared.log.info(f"Setting attention optimization: {shared.opts.cross_attention_optimization}")
+            sd_models.set_diffusers_attention(sd_model)
         return sd_model
 
     def apply_hidiffusion():

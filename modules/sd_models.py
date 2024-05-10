@@ -649,10 +649,11 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.embedding_db = getattr(orig_pipe, 'embedding_db', None)
     new_pipe.sd_model_hash = getattr(orig_pipe, 'sd_model_hash', None)
     new_pipe.has_accelerate = getattr(orig_pipe, 'has_accelerate', False)
+    new_pipe.current_attn_name = getattr(orig_pipe, 'current_attn_name', None)
+    new_pipe.default_scheduler = getattr(orig_pipe, 'default_scheduler', None)
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
-    new_pipe.default_scheduler = getattr(orig_pipe, 'default_scheduler', None)
 
 
 def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
@@ -697,19 +698,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
     if hasattr(sd_model, "vqvae"):
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
-    if shared.opts.cross_attention_optimization == "Split attention" and hasattr(sd_model, "enable_attention_slicing"):
-        sd_model.enable_attention_slicing()
-    elif shared.opts.cross_attention_optimization == "xFormers" and hasattr(sd_model, 'enable_xformers_memory_efficient_attention'):
-        sd_model.enable_xformers_memory_efficient_attention()
-    elif shared.opts.cross_attention_optimization == "Batch matrix-matrix":
-        from diffusers.models.attention_processor import AttnProcessor
-        set_diffusers_attention(sd_model, AttnProcessor())
-    elif shared.opts.cross_attention_optimization == "Dynamic Attention BMM":
-        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorBMM
-        set_diffusers_attention(sd_model, DynamicAttnProcessorBMM())
-    elif shared.opts.cross_attention_optimization == "Dynamic Attention SDP":
-        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorSDP
-        set_diffusers_attention(sd_model, DynamicAttnProcessorSDP())
+    set_diffusers_attention(sd_model)
 
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
         try:
@@ -1303,12 +1292,13 @@ def set_diffuser_pipe(pipe, new_pipe_type):
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)
+    embedding_db = getattr(pipe, "embedding_db", None)
     sd_model_hash = getattr(pipe, "sd_model_hash", None)
     has_accelerate = getattr(pipe, "has_accelerate", None)
-    embedding_db = getattr(pipe, "embedding_db", None)
+    current_attn_name = getattr(pipe, "current_attn_name", None)
+    default_scheduler = getattr(pipe, "default_scheduler", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
-    default_scheduler = getattr(pipe, "default_scheduler", None)
 
     try:
         if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
@@ -1325,12 +1315,13 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     #    return pipe
     new_pipe.sd_checkpoint_info = sd_checkpoint_info
     new_pipe.sd_model_checkpoint = sd_model_checkpoint
+    new_pipe.embedding_db = embedding_db
     new_pipe.sd_model_hash = sd_model_hash
     new_pipe.has_accelerate = has_accelerate
-    new_pipe.embedding_db = embedding_db
+    new_pipe.current_attn_name = current_attn_name
+    new_pipe.default_scheduler = default_scheduler
     new_pipe.image_encoder = image_encoder
     new_pipe.feature_extractor = feature_extractor
-    new_pipe.default_scheduler = default_scheduler
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
@@ -1341,16 +1332,38 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     return pipe
 
 
-def set_diffusers_attention(pipe, attention):
-    if attention is None:
-        return
-    if not hasattr(pipe, "_get_signature_keys"):
-        return
-    module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
-    modules = [getattr(pipe, n, None) for n in module_names]
-    modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
-    for module in modules:
-        module.set_attn_processor(attention)
+def set_diffusers_attention(pipe):
+    def set_attn(pipe, attention):
+        if attention is None:
+            return
+        if not hasattr(pipe, "_get_signature_keys"):
+            return
+        module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
+        modules = [getattr(pipe, n, None) for n in module_names]
+        modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
+        for module in modules:
+            module.set_attn_processor(attention)
+
+    if shared.opts.cross_attention_optimization == "Disabled":
+        pass # do nothing
+    elif shared.opts.cross_attention_optimization == "Scaled-Dot-Product": # The default set by Diffusers
+        from diffusers.models.attention_processor import AttnProcessor2_0
+        set_attn(pipe, AttnProcessor2_0())
+    elif shared.opts.cross_attention_optimization == "xFormers" and hasattr(pipe, 'enable_xformers_memory_efficient_attention'):
+        pipe.enable_xformers_memory_efficient_attention()
+    elif shared.opts.cross_attention_optimization == "Split attention" and hasattr(pipe, "enable_attention_slicing"):
+        pipe.enable_attention_slicing()
+    elif shared.opts.cross_attention_optimization == "Batch matrix-matrix":
+        from diffusers.models.attention_processor import AttnProcessor
+        set_attn(pipe, AttnProcessor())
+    elif shared.opts.cross_attention_optimization == "Dynamic Attention BMM":
+        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorBMM
+        set_attn(pipe, DynamicAttnProcessorBMM())
+    elif shared.opts.cross_attention_optimization == "Dynamic Attention SDP":
+        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorSDP
+        set_attn(pipe, DynamicAttnProcessorSDP())
+
+    pipe.current_attn_name = shared.opts.cross_attention_optimization
 
 
 def get_native(pipe: diffusers.DiffusionPipeline):
