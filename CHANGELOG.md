@@ -20,7 +20,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 Given huge number of changes with *+3443/-3342* commits diff (at the time of fork detach) over the past year, a completely different backend/engine and a change of focus,  
 it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-## Update for 2024-05-09
+## Update for 2024-05-10
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -99,14 +99,17 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
 - **Changes**:
+  - Due to change in Diffusers model loading  
+    initial model load will now fetch config files required for the model  
+    from the Huggingface site instead of using predefined YAML files
   - Removed built-in extensions: *ControlNet* and *Image-Browser*  
     as both *image-browser* and *controlnet* have native built-in equivalents  
     both can still be installed by user if desired  
   - Different defaults depending on available GPU, thanks @Disty0
     - 4GB and below: *lowvram*
     - 8GB and below: *medvram*
-    - Use Dynamic Attention SDP with *medvram* or *lowvram*  
-    - Enable VAE Tiling for *medvram* and *lowvram*
+    - Cross-attention: Dynamic Attention SDP with *medvram* or *lowvram*, otherwise SDP  
+    - VAE Tiling enabled with *medvram* and *lowvram*
     - Disable Extract EMA by default
     - Disable forced VAE Slicing for *lowvram*
 - **Improvements**:
@@ -163,6 +166,7 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Control module restore button full functionality
   - Control improved handling with multiple control units and different init images
   - Control add correct metadata to image
+  - A1111 update OptionInfo properties
   - MOTD exception handling
   - Notifications not triggering
 

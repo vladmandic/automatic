@@ -222,6 +222,9 @@ class OptionInfo:
         self.comment_after = comment_after # HTML text that will be added before label in UI
         self.submit = submit
 
+    def needs_reload_ui(self):
+        return self
+
     def link(self, label, uri):
         self.comment_before += f"[<a href='{uri}' target='_blank'>{label}</a>]"
         return self
