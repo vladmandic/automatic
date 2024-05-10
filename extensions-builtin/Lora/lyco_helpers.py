@@ -65,4 +65,3 @@ def factorization(dimension: int, factor:int=-1) -> tuple[int, int]:
     if m > n:
         n, m = m, n
     return m, n
-

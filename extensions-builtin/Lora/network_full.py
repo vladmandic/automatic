@@ -9,7 +9,7 @@ class ModuleTypeFull(network.ModuleType):
         return None
 
 
-class NetworkModuleFull(network.NetworkModule):
+class NetworkModuleFull(network.NetworkModule): # pylint: disable=abstract-method
     def __init__(self,  net: network.Network, weights: network.NetworkWeights):
         super().__init__(net, weights)
 

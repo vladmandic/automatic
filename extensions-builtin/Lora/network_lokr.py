@@ -19,7 +19,7 @@ def make_kron(orig_shape, w1, w2):
     return torch.kron(w1, w2).reshape(orig_shape)
 
 
-class NetworkModuleLokr(network.NetworkModule):
+class NetworkModuleLokr(network.NetworkModule): # pylint: disable=abstract-method
     def __init__(self,  net: network.Network, weights: network.NetworkWeights):
         super().__init__(net, weights)
         self.w1 = weights.w.get("lokr_w1")

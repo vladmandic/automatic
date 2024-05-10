@@ -13,31 +13,48 @@
 </div>
 </br>
 
-## Notable features
+## Table of contents
+
+- [Table of contents](#table-of-contents)
+- [SD.Next Features](#sdnext-features)
+- [Backend support](#backend-support)
+- [Model support](#model-support)
+- [Platform support](#platform-support)
+- [Examples](#examples)
+- [Install](#install)
+- [Notes](#notes)
+
+## SD.Next Features
 
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
 - Multiple backends!  
   ▹ **Diffusers | Original**  
+- Multiple UIs!  
+  ▹ **Standard | Modern**  
 - Multiple diffusion models!  
   ▹ **Stable Diffusion 1.5/2.1 | SD-XL | LCM | Segmind | Kandinsky | Pixart-α | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
- ▹ **Windows | Linux | MacOS with CPU | nVidia | AMD | IntelArc | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
+ ▹ **Windows | Linux | MacOS with CPU | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
 - Platform specific autodetection and tuning performed on install
 - Optimized processing with latest `torch` developments with built-in support for `torch.compile`  
-  and multiple compile backends: *Triton, ZLUDA, StableFast, DeepCache, OpenVINO, NNCF, IPEX*  
+  and multiple compile backends: *Triton, ZLUDA, StableFast, DeepCache, OpenVINO, NNCF, IPEX, OneDiff*  
 - Improved prompt parser  
 - Enhanced *Lora*/*LoCon*/*Lyco* code supporting latest trends in training  
 - Built-in queue management  
 - Enterprise level logging and hardened API  
 - Built in installer with automatic updates and dependency management  
 - Modernized UI with theme support and number of built-in themes *(dark and light)*  
+- Mobile compatible
 
 <br>
 
-*Main text2image interface*:  
+*Main interface using **StandardUI***:  
 ![Screenshot-Dark](html/screenshot-text2image.jpg)
+
+*Main interface using **ModernUI***:  
+![Screenshot-Dark](html/screenshot-modernui.jpg)
 
 For screenshots and informations on other available themes, see [Themes Wiki](https://github.com/vladmandic/automatic/wiki/Themes)
 
@@ -89,6 +106,18 @@ Also supported are modifiers such as:
 - **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
 - **AnimateDiff** for SD 1.5
 
+## Platform support
+
+- *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*  
+- *AMD* GPUs using **ROCm** libraries on *Linux*  
+  Support will be extended to *Windows* once AMD releases ROCm for Windows  
+- *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*  
+- Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries  
+  This includes support for AMD GPUs that are not supported by native ROCm libraries  
+- Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
+- *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
+- *ONNX/Olive*  
+
 ## Examples
 
 *IP Adapters*:
@@ -106,18 +135,6 @@ Also supported are modifiers such as:
 > - Loading manually download model `.safetensors` files is supported for specified models only (typically SD 1.x / SD 2.x / SD-XL models only)  
 > - For all other model types, use backend **Diffusers** and use built in Model downloader or  
   select model from Networks -> Models -> Reference list in which case it will be auto-downloaded and loaded  
-
-## Platform support
-
-- *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*  
-- *AMD* GPUs using **ROCm** libraries on *Linux*  
-  Support will be extended to *Windows* once AMD releases ROCm for Windows  
-- *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*  
-- Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries  
-  This includes support for AMD GPUs that are not supported by native ROCm libraries  
-- Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
-- *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
-- *ONNX/Olive*  
 
 ## Install
 
@@ -223,7 +240,7 @@ List of available parameters, run `webui --help` for the full & up-to-date list:
 *Masking*:
 ![Screenshot-Mask](html/screenshot-mask.jpg)
 
-### **Extensions**
+### Extensions
 
 SD.Next comes with several extensions pre-installed:
 
@@ -233,19 +250,19 @@ SD.Next comes with several extensions pre-installed:
 - [Agent Scheduler](https://github.com/ArtVentureX/sd-webui-agent-scheduler)
 - [Modern UI](https://github.com/BinaryQuantumSoul/sdnext-modernui)
 
-### **Collab**
+### Collab
 
 - We'd love to have additional maintainers (with comes with full repo rights). If you're interested, ping us!  
 - In addition to general cross-platform code, desire is to have a lead for each of the main platforms  
 This should be fully cross-platform, but we'd really love to have additional contributors and/or maintainers to join and help lead the efforts on different platforms  
 
-### **Credits**
+### Credits
 
 - Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for original codebase  
 - Additional credits are listed in [Credits](https://github.com/AUTOMATIC1111/stable-diffusion-webui/#credits)  
 - Licenses for modules are listed in [Licenses](html/licenses.html)  
 
-### **Evolution**
+### Evolution
 
 <a href="https://star-history.com/#vladmandic/automatic&Date">
   <picture width=640>
@@ -256,7 +273,7 @@ This should be fully cross-platform, but we'd really love to have additional con
 
 - [OSS Stats](https://ossinsight.io/analyze/vladmandic/automatic#overview)
 
-### **Docs**
+### Docs
 
 If you're unsure how to use a feature, best place to start is [Wiki](https://github.com/vladmandic/automatic/wiki) and if its not there,  
 check [ChangeLog](CHANGELOG.md) for when feature was first introduced as it will always have a short note on how to use it  
@@ -267,7 +284,7 @@ check [ChangeLog](CHANGELOG.md) for when feature was first introduced as it will
 - [ChangeLog](CHANGELOG.md)
 - [CLI Tools](cli/README.md)
 
-### **Sponsors**
+### Sponsors
 
 <div align="center">
 <!-- sponsors --><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/BrentOzar"><img src="https://github.com/BrentOzar.png" width="60px" alt="Brent Ozar" /></a><a href="https://github.com/inktomi"><img src="https://github.com/inktomi.png" width="60px" alt="Matthew Runo" /></a><a href="https://github.com/HELLO-WORLD-SAS"><img src="https://github.com/HELLO-WORLD-SAS.png" width="60px" alt="HELLO WORLD SAS" /></a><a href="https://github.com/4joeknight4"><img src="https://github.com/4joeknight4.png" width="60px" alt="" /></a><a href="https://github.com/SaladTechnologies"><img src="https://github.com/SaladTechnologies.png" width="60px" alt="Salad Technologies" /></a><a href="https://github.com/mantzaris"><img src="https://github.com/mantzaris.png" width="60px" alt="a.v.mantzaris" /></a><a href="https://github.com/JohnnyStreet"><img src="https://github.com/JohnnyStreet.png" width="60px" alt="Johnny Street" /></a><!-- sponsors -->

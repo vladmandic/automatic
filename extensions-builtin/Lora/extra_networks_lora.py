@@ -1,6 +1,6 @@
+import re
 import time
 import numpy as np
-import re
 import networks
 import lora_patches
 from modules import extra_networks, shared
@@ -30,8 +30,6 @@ def get_stepwise(param, step, steps):
                     step = (step) / (max_steps - step_offset)
                 else:
                     step = 1.0
-            else:
-                step = step
             v = np.interp(step, m[1], m[0])
             return v
         else:
