@@ -1,25 +1,5 @@
 # Change Log for SD.Next
 
-## Pending
-
-### requires `diffusers-0.28.0.dev0`
-
-- PixArt-Σ
-- IP adapter masking
-- InstantStyle
-
-### Note
-
-This version of [SD.Next](https://github.com/vladmandic/automatic) ships with a preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
-For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
-**ModernUI** is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
-Thanks to @BinaryQuantumSoul for his hard work on this project!
-
-*Note*: [SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
-Given huge number of changes with *+3443/-3342* commits diff (at the time of fork detach) over the past year,  
-a completely different backend/engine and a change of focus,  
-it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
-
 ## Update for 2024-05-11
 
 - **Features**:
@@ -135,7 +115,12 @@ it is time to give credit to original [author](https://github.com/auTOMATIC1111)
   - Add *Euler SGM* variation (e.g. SGM Uniform), optimized for SDXL-Lightning models  
     *note*: you can use other samplers as well with SDXL-Lightning models  
   - Add *CMSI* sampler, optimized for consistency models  
-  - Add option *timestep spacing* to sampler settings  
+  - Add option *timestep spacing* to sampler settings and sampler section in main ui
+    Note: changing timestep spacing changes behavior of sampler and can help to make any sampler turbo/lightning compatibile
+  - Add option *timesteps* to manually set timesteps instead of relying on steps+spacing  
+    Additionally, presets from nVidia's align-you-steps reasearch are provided  
+    Result is that perfectly aligned steps can drastically reduce number of steps needed!  
+    For example, AIY preset alows DPM++2M to run in ~10 steps with quality equallying ~30 steps!  
 - **IPEX**, thanks @Disty0
   - Update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  

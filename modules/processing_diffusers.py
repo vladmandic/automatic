@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+import re
 import os
 import time
 import math
@@ -80,7 +81,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             return kwargs
         elif shared.opts.nan_skip:
             assert not torch.isnan(latents[..., 0, 0]).all(), f'NaN detected at step {step}: Skipping...'
-        if len(getattr(p, "ip_adapter_names", [])) > 0:
+        if len(getattr(p, 'ip_adapter_names', [])) > 0:
             ip_adapter_scales = list(p.ip_adapter_scales)
             ip_adapter_starts = list(p.ip_adapter_starts)
             ip_adapter_ends = list(p.ip_adapter_ends)
@@ -112,7 +113,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     def task_specific_kwargs(model):
         task_args = {}
         is_img2img_model = bool('Zero123' in shared.sd_model.__class__.__name__)
-        if len(getattr(p, 'init_images' ,[])) > 0:
+        if len(getattr(p, 'init_images', [])) > 0:
             p.init_images = [p.convert('RGB') for p in p.init_images]
         if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE and not is_img2img_model:
             p.ops.append('txt2img')
@@ -121,13 +122,13 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                     'width': 8 * math.ceil(p.width / 8),
                     'height': 8 * math.ceil(p.height / 8),
                 }
-        elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE or is_img2img_model) and len(getattr(p, 'init_images' ,[])) > 0:
+        elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
             p.ops.append('img2img')
             task_args = {
                 'image': p.init_images,
                 'strength': p.denoising_strength,
             }
-        elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INSTRUCT and len(getattr(p, 'init_images' ,[])) > 0:
+        elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INSTRUCT and len(getattr(p, 'init_images', [])) > 0:
             p.ops.append('instruct')
             task_args = {
                 'width': 8 * math.ceil(p.width / 8) if hasattr(p, 'width') else None,
@@ -135,7 +136,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 'image': p.init_images,
                 'strength': p.denoising_strength,
             }
-        elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images' ,[])) > 0:
+        elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
             p.ops.append('inpaint')
             width, height = resize_init_images(p)
             task_args = {
@@ -196,7 +197,23 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
         parser = 'Fixed attention'
         clip_skip = kwargs.pop("clip_skip", 1)
-        steps = kwargs.get("num_inference_steps", 1)
+
+        steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
+        if 'timesteps' in possible:
+            try:
+                timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+                timesteps = [int(x) for x in timesteps if x.isdigit()]
+                # AYS SD15: [999, 850, 736, 645, 545, 455, 343, 233, 124, 24]
+                # AYS SDXL: [999, 845, 730, 587, 443, 310, 193, 116, 53, 13]
+
+                if len(timesteps) > 0:
+                    args['timesteps'] = timesteps
+                    p.steps = len(timesteps)
+                    p.timesteps = timesteps
+                    steps = p.steps
+                    shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
+            except Exception as e:
+                shared.log.error(f'Sampler timesteps: {e}')
         if shared.opts.prompt_attention != 'Fixed attention' and 'StableDiffusion' in model.__class__.__name__ and 'Onnx' not in model.__class__.__name__:
             try:
                 prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
@@ -343,6 +360,11 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
             if sampler is None:
                 sampler = sd_samplers.all_samplers_map.get("UniPC")
+            if len(getattr(p, 'timesteps', [])) > 0:
+                if 'schedulers_use_karras' in shared.opts.data:
+                    shared.opts.data['schedulers_use_karras'] = False
+                else:
+                    shared.opts.schedulers_use_karras = False
             sampler = sd_samplers.create_sampler(sampler.name, sd_model)
             sampler_options = []
             if sampler.config.get('use_karras_sigmas', False):
@@ -438,7 +460,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE) # reset pipeline
     if hasattr(shared.sd_model, 'unet') and hasattr(shared.sd_model.unet, 'config') and hasattr(shared.sd_model.unet.config, 'in_channels') and shared.sd_model.unet.config.in_channels == 9 and not is_control:
         shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.INPAINTING) # force pipeline
-        if len(getattr(p, 'init_images' ,[])) == 0:
+        if len(getattr(p, 'init_images', [])) == 0:
             p.init_images = [TF.to_pil_image(torch.rand((3, getattr(p, 'height', 512), getattr(p, 'width', 512))))]
 
     sd_models.move_model(shared.sd_model, devices.device)
@@ -449,7 +471,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
     shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
-    update_sampler(shared.sd_model)
     base_args = set_pipeline_args(
         model=shared.sd_model,
         prompts=p.prompts,
@@ -466,6 +487,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
+    update_sampler(shared.sd_model)
     shared.state.sampling_steps = base_args.get('num_inference_steps', p.steps)
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
@@ -546,7 +568,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if p.hr_force:
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
-            update_sampler(shared.sd_model, second_pass=True)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
@@ -571,6 +592,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 strength=p.denoising_strength,
                 desc='Hires',
             )
+            update_sampler(shared.sd_model, second_pass=True)
             shared.state.job = 'hires'
             shared.state.sampling_steps = hires_args['num_inference_steps']
             try:
@@ -607,7 +629,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         sd_models_compile.openvino_recompile_model(p, hires=False, refiner=True)
         shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         shared.sd_refiner = sd_models.set_diffuser_pipe(shared.sd_refiner, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
-        update_sampler(shared.sd_refiner, second_pass=True)
         for i in range(len(output.images)):
             image = output.images[i]
             noise_level = round(350 * p.denoising_strength)
@@ -636,6 +657,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 clip_skip=p.clip_skip,
                 desc='Refiner',
             )
+            update_sampler(shared.sd_refiner, second_pass=True)
             shared.state.sampling_steps = refiner_args['num_inference_steps']
             try:
                 if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true

@@ -701,11 +701,12 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     # managed from ui.py for backend diffusers
     "schedulers_sep_diffusers": OptionInfo("<h2>Diffusers specific config</h2>", "", gr.HTML),
     "schedulers_dpm_solver": OptionInfo("sde-dpmsolver++", "DPM solver algorithm", gr.Radio, {"choices": ['dpmsolver++', 'sde-dpmsolver++']}),
-    "schedulers_beta_schedule": OptionInfo("default", "Beta schedule", gr.Radio, {"choices": ['default', 'linear', 'scaled_linear', 'squaredcos_cap_v2']}),
+    "schedulers_beta_schedule": OptionInfo("default", "Beta schedule", gr.Dropdown, {"choices": ['default', 'linear', 'scaled_linear', 'squaredcos_cap_v2']}),
     'schedulers_beta_start': OptionInfo(0, "Beta start", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.00001}),
     'schedulers_beta_end': OptionInfo(0, "Beta end", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.00001}),
-    "schedulers_timestep_spacing": OptionInfo("default", "Timestep spacing", gr.Radio, {"choices": ['default', 'linspace', 'leading', 'trailing']}),
+    "schedulers_timestep_spacing": OptionInfo("default", "Timestep spacing", gr.Dropdown, {"choices": ['default', 'linspace', 'leading', 'trailing']}),
     'schedulers_timesteps_range': OptionInfo(1000, "Timesteps range", gr.Slider, {"minimum": 250, "maximum": 4000, "step": 1}),
+    'schedulers_timesteps': OptionInfo('', "Timesteps"),
     "schedulers_rescale_betas": OptionInfo(False, "Rescale betas with zero terminal SNR", gr.Checkbox),
 
     # managed from ui.py for backend original k-diffusion

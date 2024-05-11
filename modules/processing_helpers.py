@@ -420,6 +420,8 @@ def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
     return prompts, negative_prompts, prompts_2, negative_prompts_2
 
 def calculate_base_steps(p, use_denoise_start, use_refiner_start):
+    if len(getattr(p, 'timesteps', [])) > 0:
+        return None
     is_txt2img = sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
     if not is_txt2img:
         if use_denoise_start and shared.sd_model_type == 'sdxl':
@@ -436,6 +438,8 @@ def calculate_base_steps(p, use_denoise_start, use_refiner_start):
     return max(1, int(steps))
 
 def calculate_hires_steps(p):
+    if len(getattr(p, 'timesteps', [])) > 0:
+        return None
     if p.hr_second_pass_steps > 0:
         steps = (p.hr_second_pass_steps // p.denoising_strength) + 1
     elif p.denoising_strength > 0:
@@ -446,6 +450,8 @@ def calculate_hires_steps(p):
     return max(1, int(steps))
 
 def calculate_refiner_steps(p):
+    if len(getattr(p, 'timesteps', [])) > 0:
+        return None
     if "StableDiffusionXL" in shared.sd_refiner.__class__.__name__:
         if p.refiner_start > 0 and p.refiner_start < 1:
             #steps = p.refiner_steps // (1 - p.refiner_start) # SDXL with denoise strenght

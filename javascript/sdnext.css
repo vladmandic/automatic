@@ -256,6 +256,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #ui_defaults_review { margin: 1em; }
 .ar-dropdown { font-size: 0.9em; min-width: 5.5em !important; max-width: 5.5em !important; margin: 0 !important; padding: 0 !important; align-content: center; }
 .ar-dropdown div { margin: 0; background: var(--background-color)}
+#txt2img_sampler_timesteps, #img2img_sampler_timesteps { max-width: calc(var(--left-column) - 50px); }
 
 /* extras */
 .extras { gap: 0.2em 1em !important }

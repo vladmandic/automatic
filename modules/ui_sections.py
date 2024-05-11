@@ -221,7 +221,27 @@ def create_sampler_options(tabname):
         shared.opts.data['schedulers_use_thresholding'] = 'dynamic thresholding' in sampler_options
         shared.opts.data['schedulers_use_loworder'] = 'low order' in sampler_options
         shared.opts.data['schedulers_rescale_betas'] = 'rescale beta' in sampler_options
+        shared.log.debug(f'Sampler set options: {sampler_options}')
         shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_timesteps(spacing, timesteps):
+        shared.log.debug(f'Sampler set options: spacing={spacing} timesteps={timesteps}')
+        if 'schedulers_timestep_spacing' in shared.opts.data:
+            shared.opts.data['schedulers_timestep_spacing'] = spacing
+        else:
+            shared.opts.schedulers_timestep_spacing = spacing
+        if 'schedulers_timesteps' in shared.opts.data:
+            shared.opts.data['schedulers_timesteps'] = timesteps
+        else:
+            shared.opts.schedulers_timesteps = timesteps
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_preset(preset):
+        if preset == 'AYS SD15':
+            return '999,850,736,645,545,455,343,233,124,24'
+        if preset == 'AYS SDXL':
+            return '999,845,730,587,443,310,193,116,53,13'
+        return ''
 
     if shared.backend == shared.Backend.ORIGINAL:
         with gr.Row(elem_classes=['flex-break']):
@@ -244,7 +264,15 @@ def create_sampler_options(tabname):
             values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
             values += ['rescale beta'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
             sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_spacing = gr.Dropdown(label='Timestep spacing', elem_id=f"{tabname}_sampler_spacing", choices=['default', 'linspace', 'leading', 'trailing'], value=shared.opts.schedulers_timestep_spacing, type='value')
+            sampler_presets = gr.Dropdown(label='Presets', elem_id=f"{tabname}_sampler_presets", choices=['None', 'AYS SD15', 'AYS SDXL'], value='None', type='value')
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_timesteps = gr.Textbox(label='Timesteps override', elem_id=f"{tabname}_sampler_timesteps", value=shared.opts.schedulers_timesteps)
         sampler_options.change(fn=set_sampler_diffuser_options, inputs=[sampler_options], outputs=[])
+        sampler_spacing.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
+        sampler_timesteps.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
+        sampler_presets.change(fn=set_sampler_preset, inputs=[sampler_presets], outputs=[sampler_timesteps])
 
 
 def create_hires_inputs(tab):

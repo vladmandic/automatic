@@ -8,6 +8,7 @@ from modules.tcd import TCDScheduler
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: SAMPLER')
 
+
 try:
     from diffusers import (
         CMStochasticIterativeScheduler,
@@ -34,6 +35,7 @@ try:
 except Exception as e:
     import diffusers
     shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+
 
 config = {
     # beta_start, beta_end are typically per-scheduler, but we don't want them as they should be taken from the model itself as those are values model was trained on
