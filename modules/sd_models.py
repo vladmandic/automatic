@@ -37,6 +37,7 @@ sd_metadata_pending = 0
 sd_metadata_timer = 0
 debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug_load = os.environ.get('SD_LOAD_DEBUG', None)
+diffusers_version = int(diffusers.__version__.split('.')[1])
 
 
 class CheckpointInfo:
@@ -1052,7 +1053,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     shared.log.error(f'Failed loading {op}: {checkpoint_info.path} auto={err1} diffusion={err2}')
                     return
         elif os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
-            diffusers_load_config["local_files_only"] = False # TODO causes online check on model load
+            diffusers_load_config["local_files_only"] = True # avoid online check on model load
             diffusers_load_config["extract_ema"] = shared.opts.diffusers_extract_ema
             if pipeline is None:
                 shared.log.error(f'Diffusers {op} pipeline not initialized: {shared.opts.diffusers_pipeline}')
@@ -1061,11 +1062,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 if model_type.startswith('Stable Diffusion'):
                     if shared.opts.diffusers_force_zeros:
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
-                    diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type)
+                    if diffusers_version < 28:
+                        diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type) # disabled as not used in diffusers 0.28
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
-                    # diffusers_load_config['cache_dir'] = shared.opts.diffusers_dir
-                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
+                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
                     if shared.opts.disable_accelerate:
                         from diffusers.utils import import_utils
                         import_utils._accelerate_available = False # pylint: disable=protected-access
@@ -1076,6 +1077,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
                     sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
                 elif hasattr(pipeline, 'from_ckpt'):
+                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
                     sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
                 else:
                     shared.log.error(f'Diffusers {op} cannot load safetensor model: {checkpoint_info.path} {shared.opts.diffusers_pipeline}')
