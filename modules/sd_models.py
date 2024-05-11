@@ -1292,6 +1292,12 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     if 'Onnx' in pipe.__class__.__name__:
         return pipe
 
+    if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING: # in some cases we want to reset the pipeline as they dont have their own variants
+        if n == 'StableDiffusionPAGPipeline':
+            pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
+        if n == 'StableDiffusionXLPAGPipeline':
+            pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
+
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)
     embedding_db = getattr(pipe, "embedding_db", None)
