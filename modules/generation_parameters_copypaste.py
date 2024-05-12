@@ -218,8 +218,14 @@ def parse_generation_parameters(infotext, no_prompt=False):
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
 
-    prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
-    negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
+    if negative_idx == -1: # prompt can be without negative prompt
+        prompt = infotext[:params_idx] if params_idx > 0 else infotext
+    else:
+        prompt = infotext[:negative_idx]
+    if negative_idx >= 0:
+        negative = infotext[negative_idx:params_idx] if params_idx > 0 else infotext[negative_idx:]
+    else:
+        negative = ''
     negative = negative.strip().strip(',')
 
     for k, v in params.copy().items(): # avoid dict-has-changed
