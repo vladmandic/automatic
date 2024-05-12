@@ -44,10 +44,8 @@ def apply_styles_to_prompt(prompt, styles):
 
 def apply_file_wildcards(prompt, replaced = [], not_found = []):
     def check_files(prompt, wildcard, files):
-        found = False
         for file in files:
             if wildcard == os.path.splitext(os.path.basename(file))[0] if os.path.sep not in wildcard else wildcard in file:
-                found = True
                 with open(file, 'r', encoding='utf-8') as f:
                     lines = f.readlines()
                     if len(lines) > 0:
@@ -57,23 +55,23 @@ def apply_file_wildcards(prompt, replaced = [], not_found = []):
                         prompt = prompt.replace(f"__{wildcard}__", choice)
                         shared.log.debug(f'Wildcards apply: wildcard="{wildcard}" choice="{choice}" file="{file}" choices={len(lines)}')
                         replaced.append(wildcard)
-                    if m in not_found:
-                        not_found.remove(m)
-                break
-        if not found and m not in not_found:
-            prompt = prompt.replace(f"__{m}__", f"_{m}_") # replace to avoid infinite loop
-            not_found.append(m)
-        return prompt
+                return prompt, True
+        return prompt, False
 
     if not shared.opts.wildcards_enabled:
         return prompt, replaced, not_found
     matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
+    matches = [m for m in matches if m not in not_found]
+    matches = [m.replace('/', os.path.sep) for m in matches if m not in replaced]
     if len(matches) == 0:
         return prompt, replaced, not_found
-    matches = [m.replace('/', os.path.sep) for m in matches if m not in replaced]
-    files = files_cache.list_files(shared.opts.wildcards_dir, ext_filter=[".txt"], recursive=True)
+    files = list(files_cache.list_files(shared.opts.wildcards_dir, ext_filter=[".txt"], recursive=True))
     for m in matches:
-        prompt = check_files(prompt, m, files)
+        prompt, found = check_files(prompt, m, files)
+        if found and m in not_found:
+            not_found.remove(m)
+        elif not found and m not in not_found:
+            not_found.append(m)
     prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found) # recursive until we get early return
     return prompt, replaced, not_found
 
