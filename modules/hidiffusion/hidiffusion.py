@@ -1542,6 +1542,7 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                 res_hidden_states_tuple = res_hidden_states_tuple[:-1]
 
                 # FreeU: Only operate on the first two stages
+                """ # TODO disable hidiffusion usage of freeu
                 if is_freeu_enabled:
                     hidden_states, res_hidden_states = apply_freeu(
                         self.resolution_idx,
@@ -1552,6 +1553,7 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                         b1=self.b1,
                         b2=self.b2,
                     )
+                """
 
                 hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
 
