@@ -80,19 +80,25 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
     if len(prompt) == 0:
         return prompt
     replaced = {}
+    t0 = time.time()
     for style_wildcards in all_wildcards:
         wildcards = [x.strip() for x in style_wildcards.replace('\n', ' ').split(";") if len(x.strip()) > 0]
         for wildcard in wildcards:
-            what, words = wildcard.split("=", 1)
-            words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
-            word = random.choice(words)
-            prompt = prompt.replace(what, word)
-            replaced[what] = word
-    t0 = time.time()
-    prompt, replaced, not_found = apply_file_wildcards(prompt, [], [])
+            try:
+                what, words = wildcard.split("=", 1)
+                words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
+                word = random.choice(words)
+                prompt = prompt.replace(what, word)
+                replaced[what] = word
+            except Exception as e:
+                shared.log.error(f'Wildcards: wildcard="{wildcard}" error={e}')
     t1 = time.time()
-    if len(replaced) > 0 or len(not_found) > 0:
-        shared.log.info(f'Wildcards applied: {replaced} missing: {not_found} path="{shared.opts.wildcards_dir}" time={t1-t0:.2f}')
+    prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [])
+    t2 = time.time()
+    if replaced:
+        shared.log.info(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
+    if len(replaced_file) > 0 or len(not_found) > 0:
+        shared.log.info(f'Wildcards applied: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
     return prompt
 
 
