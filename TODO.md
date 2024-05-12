@@ -32,7 +32,10 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 - Token Downsampling (ToDO) provides significant speedups with minimal-to-none quality loss  
 - Samplers optimizations that allow normal samplers to complete work in 1/3 of the steps!  
   Yup, even popular DPM++2M can now run in 10 steps with quality equaling 30 steps  
+- Native wildcards support  
 - Better outpainting  
+- And much more...  
+  For details of above features and full list, see [Changelog](https://github.com/vladmandic/automatic/blob/dev/CHANGELOG.md)
 
 ### New models
 
