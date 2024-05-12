@@ -439,7 +439,6 @@ def register_page(page: ExtraNetworksPage):
 
 def register_pages():
     from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
-    from modules.ui_extra_networks_hypernets import ExtraNetworksPageHypernetworks
     from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
     from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
     from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
@@ -447,29 +446,32 @@ def register_pages():
     register_page(ExtraNetworksPageCheckpoints())
     register_page(ExtraNetworksPageStyles())
     register_page(ExtraNetworksPageTextualInversion())
-    register_page(ExtraNetworksPageHypernetworks())
     register_page(ExtraNetworksPageVAEs())
+    if shared.opts.hypernetwork_enabled:
+        from modules.ui_extra_networks_hypernets import ExtraNetworksPageHypernetworks
+        register_page(ExtraNetworksPageHypernetworks())
 
 
 def get_pages(title=None):
+    visible = shared.opts.extra_networks
     pages = []
-    if 'All' in shared.opts.extra_networks:
-        pages = shared.extra_networks
-    else:
-        titles = [page.title for page in shared.extra_networks]
-        if title is None:
-            for page in shared.opts.extra_networks:
-                try:
-                    idx = titles.index(page)
-                    pages.append(shared.extra_networks[idx])
-                except ValueError:
-                    continue
-        else:
+    if 'All' in visible or visible == []: # default en sort order
+        visible = ['Model', 'Lora', 'Style', 'Embedding', 'VAE', 'Hypernetwork']
+
+    titles = [page.title for page in shared.extra_networks]
+    if title is None:
+        for page in visible:
             try:
-                idx = titles.index(title)
+                idx = titles.index(page)
                 pages.append(shared.extra_networks[idx])
             except ValueError:
-                pass
+                continue
+    else:
+        try:
+            idx = titles.index(title)
+            pages.append(shared.extra_networks[idx])
+        except ValueError:
+            pass
     return pages
 
 

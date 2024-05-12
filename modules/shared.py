@@ -815,6 +815,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use merge when using alternative method"),
     "lora_in_memory_limit": OptionInfo(1 if not cmd_opts.use_openvino else 0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple LoRA", gr.Checkbox, { "visible": False }),
+    "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support"),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, { "choices": ["None"], "visible": False }),
 }))
 

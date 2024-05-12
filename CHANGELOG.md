@@ -92,7 +92,8 @@
     - VAE Tiling enabled with *medvram* and *lowvram*
     - Disable Extract EMA by default
     - Disable forced VAE Slicing for *lowvram*
-  - Upscaler compile is no longer enabled by default with OpenVINO backend.  
+  - Upscaler compile disabled by default with OpenVINO backend  
+  - Hypernetwork support disabled by default, can be enabled in settings  
 - **Improvements**:
   - Faster server startup  
   - More **ZLUDA** updates and optimizations, thanks @lshqqytiger
@@ -158,6 +159,7 @@
   - A1111 update OptionInfo properties
   - MOTD exception handling
   - Notifications not triggering
+  - Prompt cropping on copy
 
 ## Update for 2024-03-19
 
