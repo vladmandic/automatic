@@ -551,6 +551,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "lora_dir": OptionInfo(os.path.join(paths.models_path, 'Lora'), "Folder with LoRA network(s)", folder=True),
     "lyco_dir": OptionInfo(os.path.join(paths.models_path, 'LyCORIS'), "Folder with LyCORIS network(s)", gr.Text, {"visible": False}),
     "styles_dir": OptionInfo(os.path.join(paths.data_path, 'styles.csv'), "File or Folder with user-defined styles", folder=True),
+    "wildcards_dir": OptionInfo(os.path.join(paths.models_path, 'wildcards'), "Folder with user-defined wildcards", folder=True),
     "embeddings_dir": OptionInfo(os.path.join(paths.models_path, 'embeddings'), "Folder with textual inversion embeddings", folder=True),
     "hypernetwork_dir": OptionInfo(os.path.join(paths.models_path, 'hypernetworks'), "Folder with Hypernetwork models", folder=True),
     "control_dir": OptionInfo(os.path.join(paths.models_path, 'control'), "Folder with Control models", folder=True),
@@ -817,6 +818,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple LoRA", gr.Checkbox, { "visible": False }),
     "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support"),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, { "choices": ["None"], "visible": False }),
+    "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
 }))
 
 options_templates.update(options_section((None, "Hidden options"), {
@@ -918,7 +920,7 @@ class Options:
                     if self.data_labels[k].default != v:
                         diff[k] = v
                 else:
-                    if k not in compatibility_opts:
+                    if k not in compatibility_opts and not k.startswith('uiux_'):
                         unused_settings.append(k)
                     diff[k] = v
             writefile(diff, filename, silent=silent)

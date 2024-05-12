@@ -116,7 +116,7 @@
 ],
 "txt2img tab": [
   {"id":"","label":"Sampling method","localized":"","hint":"Which algorithm to use to produce the image"},
-  {"id":"","label":"Sampling steps","localized":"","hint":"How many times to improve the generated image iteratively; higher values take longer; very low values can produce bad results"},
+  {"id":"","label":"Steps","localized":"","hint":"How many times to improve the generated image iteratively; higher values take longer; very low values can produce bad results"},
   {"id":"","label":"Tiling","localized":"","hint":"Produce an image that can be tiled"},
   {"id":"","label":"full quality","localized":"","hint":"Use full quality VAE to decode latent samples"},
   {"id":"","label":"face restore","localized":"","hint":"Run processed image through additional face restoration model"},

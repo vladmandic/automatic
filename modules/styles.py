@@ -9,7 +9,6 @@ import random
 from modules import files_cache, shared
 
 
-
 class Style():
     def __init__(self, name: str, desc: str = "", prompt: str = "", negative_prompt: str = "", extra: str = "", wildcards: str = "", filename: str = "", preview: str = "", mtime: float = 0):
         self.name = name
@@ -43,7 +42,45 @@ def apply_styles_to_prompt(prompt, styles):
     return prompt
 
 
+def apply_file_wildcards(prompt, replaced = [], not_found = []):
+    def check_files(prompt, wildcard, files):
+        found = False
+        for file in files:
+            if wildcard == os.path.splitext(os.path.basename(file))[0] if os.path.sep not in wildcard else wildcard in file:
+                found = True
+                with open(file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    if len(lines) > 0:
+                        choice = random.choice(lines).strip(' \n')
+                        if '|' in choice:
+                            choice = random.choice(choice.split('|')).strip(' []{}\n')
+                        prompt = prompt.replace(f"__{wildcard}__", choice)
+                        shared.log.debug(f'Wildcards apply: wildcard="{wildcard}" choice="{choice}" file="{file}" choices={len(lines)}')
+                        replaced.append(wildcard)
+                    if m in not_found:
+                        not_found.remove(m)
+                break
+        if not found and m not in not_found:
+            prompt = prompt.replace(f"__{m}__", f"_{m}_") # replace to avoid infinite loop
+            not_found.append(m)
+        return prompt
+
+    if not shared.opts.wildcards_enabled:
+        return prompt, replaced, not_found
+    matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
+    if len(matches) == 0:
+        return prompt, replaced, not_found
+    matches = [m.replace('/', os.path.sep) for m in matches if m not in replaced]
+    files = files_cache.list_files(shared.opts.wildcards_dir, ext_filter=[".txt"], recursive=True)
+    for m in matches:
+        prompt = check_files(prompt, m, files)
+    prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found) # recursive until we get early return
+    return prompt, replaced, not_found
+
+
 def apply_wildcards_to_prompt(prompt, all_wildcards):
+    if len(prompt) == 0:
+        return prompt
     replaced = {}
     for style_wildcards in all_wildcards:
         wildcards = [x.strip() for x in style_wildcards.replace('\n', ' ').split(";") if len(x.strip()) > 0]
@@ -53,8 +90,11 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
             word = random.choice(words)
             prompt = prompt.replace(what, word)
             replaced[what] = word
-    # if replaced:
-    #    shared.log.debug(f'Applying style wildcards: {replaced}')
+    t0 = time.time()
+    prompt, replaced, not_found = apply_file_wildcards(prompt, [], [])
+    t1 = time.time()
+    if len(replaced) > 0 or len(not_found) > 0:
+        shared.log.info(f'Wildcards applied: {replaced} missing: {not_found} path="{shared.opts.wildcards_dir}" time={t1-t0:.2f}')
     return prompt
 
 

@@ -42,6 +42,15 @@
     - *select image -> outpaint -> expand edges or zoom out to desired size*
     - *size -> mode: outpaint, method: nearest*
     - *mask -> inpaint masked only (if you want to keep original image)*
+  - **Wildcards**:
+    - native support of standard file-based wildcards in prompt  
+    - enabled by default, can be disabled in *settings -> extra networks* if you want to use 3rd party extension  
+    - wildcards folder is set in *settings -> system paths* and can be flat-file list or complex folder structure  
+    - matches strings `"__*__"` in positive and negative prompts  
+    - supports filename and path-based wildcards  
+    - supports nested wildcards (wildcard can refer to another wildcard, etc.)  
+    - supports wildcards files in one-choice per line or multiple choices per line separated by `|` format  
+    - *note*: this is in addition to previously released style-based wildcards  
 - **Models**:
   - **Load UNET**: ability to override/load external UNET to a selected model  
     Works similar to how VAE is selected and loaded: Set UNet folder and UNet model in settings  
