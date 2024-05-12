@@ -15,7 +15,6 @@
 
 ## Table of contents
 
-- [Table of contents](#table-of-contents)
 - [SD.Next Features](#sdnext-features)
 - [Backend support](#backend-support)
 - [Model support](#model-support)
