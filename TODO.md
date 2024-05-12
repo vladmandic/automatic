@@ -12,14 +12,14 @@ Requires `diffusers-0.28.0.dev0`:
 
 ## Dev Release Notes
 
-New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive...
+New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 250 commits...
 
-Startiong with the new UI - yup, this version ships with a preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
+Starting with the new UI - yup, this version ships with a *preview* of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
 **ModernUI** is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
 Thanks to @BinaryQuantumSoul for his hard work on this project!  
 
-[!screenshot]()
+![Screenshot-ModernUI](html/screenshot-modernui.jpg)
 
 *What else?*
 
@@ -41,7 +41,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 
 While still waiting for *Stable Diffusion 3.0*, there have been some significant models released in the meantime:
 - [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/), high end diffusion transformer model (DiT) capable of directly generating images at 4K resolution  
-- [SDXS](https://github.com/IDKiro/sdxs), an extremely fast 1-step generation consistency model  
+- [SDXS](https://github.com/IDKiro/sdxs), extremely fast 1-step generation consistency model  
 - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD), 1-step, 2-step, 4-step and 8-step optimized models  
 
 *Note*  
