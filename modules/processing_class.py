@@ -324,7 +324,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
         if self.image_mask is not None:
             self.ops.append('inpaint')
-        else:
+        elif hasattr(self, 'init_images') and self.init_images is not None:
             self.ops.append('img2img')
         crop_region = None
 
