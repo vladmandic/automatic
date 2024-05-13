@@ -33,7 +33,7 @@ def color_to_df(param):
 
 def palette(img, params, output):
     size = 1024
-    img.thumbnail((size, size), Image.HAMMING)
+    img.thumbnail((size, size), Image.Resampling.HAMMING)
 
     #crate dataframe
     colors_x = extcolors.extract_from_image(img, tolerance = params.color, limit = 13)
