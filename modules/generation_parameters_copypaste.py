@@ -226,7 +226,6 @@ def parse_generation_parameters(infotext, no_prompt=False):
         negative = infotext[negative_idx:params_idx] if params_idx > 0 else infotext[negative_idx:]
     else:
         negative = ''
-    negative = negative.strip().strip(',')
 
     for k, v in params.copy().items(): # avoid dict-has-changed
         if len(v) > 0 and v[0] == '"' and v[-1] == '"':
@@ -246,8 +245,8 @@ def parse_generation_parameters(infotext, no_prompt=False):
         else:
             params[k] = v
     if not no_prompt:
-        params["Prompt"] = prompt.replace('Prompt:', '').strip()
-        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
+        params["Prompt"] = prompt.replace('Prompt:', '').strip(' ,')
+        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip(' ,')
     debug(f"Parse: {params}")
     return params
 

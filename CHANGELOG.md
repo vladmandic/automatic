@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-11
+## Update for 2024-05-13
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -107,6 +107,7 @@
   - Faster server startup  
   - More **ZLUDA** updates and optimizations, thanks @lshqqytiger
   - Styles apply wildcards to params
+  - Face HiRes fully configurable and higher quality when using high-resolution models  
   - Extra networks persistent sort order in settings  
   - Add option to make batch generations use fully random seed vs sequential  
   - Make metadata in full screen viewer optional

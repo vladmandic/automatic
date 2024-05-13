@@ -414,7 +414,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     if shared.opts.include_mask:
         if getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
-            output_images.append(p.image_mask)
+            if getattr(p, 'mask_for_facehires', None) is not None:
+                output_images.append(p.mask_for_facehires)
+            else:
+                output_images.append(p.image_mask)
 
     processed = Processed(
         p,
