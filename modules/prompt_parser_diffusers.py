@@ -71,7 +71,7 @@ class DiffusersTextualInversionManager(BaseTextualInversionManager):
                 prompt = prompt.replace(token, replacement)
         if hasattr(self.pipe, 'embedding_db'):
             self.pipe.embedding_db.embeddings_used = list(set(self.pipe.embedding_db.embeddings_used))
-        debug(f'Prompt: convert={prompt}')
+        debug(f'Prompt: convert="{prompt}"')
         return prompt
 
     def expand_textual_inversion_token_ids_if_necessary(self, token_ids: typing.List[int]) -> typing.List[int]:
@@ -79,7 +79,7 @@ class DiffusersTextualInversionManager(BaseTextualInversionManager):
             return token_ids
         prompt = self.pipe.tokenizer.decode(token_ids)
         prompt = self.maybe_convert_prompt(prompt, self.pipe.tokenizer)
-        debug(f'Prompt: expand={prompt}')
+        debug(f'Prompt: expand="{prompt}"')
         return self.pipe.tokenizer.encode(prompt, add_special_tokens=False)
 
 
@@ -93,7 +93,7 @@ def get_prompt_schedule(prompt, steps):
         for s in range(steps):
             if len(temp) < s + 1 <= chunk[0]:
                 temp.append(chunk[1])
-    debug(f'Prompt: schedule={temp} time={time.time() - t0}')
+    debug(f'Prompt: schedule={temp} time={(time.time() - t0):.3f}')
     return temp, len(schedule) > 1
 
 
@@ -130,21 +130,22 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                 p.positive_pooleds.append(torch.cat([positive_pooled] * len(prompts), dim=0))
             if negative_pooled is not None:
                 p.negative_pooleds.append(torch.cat([negative_pooled] * len(negative_prompts), dim=0))
-        debug(f"Prompt Parser: Elapsed Time {time.time() - t0}")
+        debug(f"Prompt encode: time={(time.time() - t0):.3f}")
         return
 
 
 def get_prompts_with_weights(prompt: str):
+    t0 = time.time()
     manager = DiffusersTextualInversionManager(shared.sd_model,
                                                shared.sd_model.tokenizer or shared.sd_model.tokenizer_2)
     prompt = manager.maybe_convert_prompt(prompt, shared.sd_model.tokenizer or shared.sd_model.tokenizer_2)
     texts_and_weights = prompt_parser.parse_prompt_attention(prompt)
     texts, text_weights = zip(*texts_and_weights)
-    debug(f'Prompt: weights={texts_and_weights}')
+    debug(f'Prompt: weights={texts_and_weights} time={(time.time() - t0):.3f}')
     return texts, text_weights
 
 
-def prepare_embedding_providers(pipe, clip_skip):
+def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     embeddings_providers = []
     if 'XL' in pipe.__class__.__name__:
@@ -180,14 +181,21 @@ def pad_to_same_length(pipe, embeds):
 
 def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    prompt_2 = prompt.split("TE2:")[-1]
-    neg_prompt_2 = neg_prompt.split("TE2:")[-1]
-    prompt = prompt.split("TE2:")[0]
-    neg_prompt = neg_prompt.split("TE2:")[0]
+    prompt_split = prompt.split("TE2:")
+    prompt = prompt_split[0]
+    prompt_2 = prompt_split[-1]
+    neg_prompt_split = neg_prompt.split("TE2:")
+    neg_prompt_2 = neg_prompt_split[-1]
+    neg_prompt = neg_prompt_split[0]
 
-    ps = [get_prompts_with_weights(p) for p in [prompt, prompt_2]]
+    if prompt != prompt_2:
+        ps = [get_prompts_with_weights(p) for p in [prompt, prompt_2]]
+        ns = [get_prompts_with_weights(p) for p in [neg_prompt, neg_prompt_2]]
+    else:
+        ps = 2 * [get_prompts_with_weights(prompt)]
+        ns = 2 * [get_prompts_with_weights(neg_prompt)]
+
     positives, positive_weights = zip(*ps)
-    ns = [get_prompts_with_weights(p) for p in [neg_prompt, neg_prompt_2]]
     negatives, negative_weights = zip(*ns)
     if hasattr(pipe, "tokenizer_2") and not hasattr(pipe, "tokenizer"):
         positives.pop(0)
@@ -201,12 +209,13 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     pooled_prompt_embeds = None
     negative_pooled_prompt_embeds = None
     for i in range(len(embedding_providers)):
-        # add BREAK keyword that splits the prompt into multiple fragments
+        t0 = time.time()
         text = list(positives[i])
         weights = list(positive_weights[i])
         text.append('BREAK')
         weights.append(-1)
         provider_embed = []
+        ptokens = 0
         while 'BREAK' in text:
             pos = text.index('BREAK')
             debug(f'Prompt: section="{text[:pos]}" len={len(text[:pos])} weights={weights[:pos]}')
@@ -218,16 +227,13 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
             text = text[pos + 1:]
             weights = weights[pos + 1:]
         prompt_embeds.append(torch.cat(provider_embed, dim=1))
-        debug(f'Prompt: positive unpadded shape = {prompt_embeds[0].shape}')
         # negative prompt has no keywords
-        embed, ntokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[negatives[i]],
-                                                                                             fragment_weights_batch=[
-                                                                                                 negative_weights[i]],
-                                                                                             device=device,
-                                                                                             should_return_tokens=True)
+        embed, ntokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[negatives[i]], fragment_weights_batch=[negative_weights[i]], device=device, should_return_tokens=True)
         negative_prompt_embeds.append(embed)
+        debug(f'Prompt: unpadded shape={prompt_embeds[0].shape} TE{i+1} ptokens={torch.count_nonzero(ptokens)} ntokens={torch.count_nonzero(ntokens)} time={(time.time() - t0):.3f}')
 
     if prompt_embeds[-1].shape[-1] > 768:
+        t0 = time.time()
         if shared.opts.diffusers_pooled == "weighted":
             pooled_prompt_embeds = prompt_embeds[-1][
                 torch.arange(prompt_embeds[-1].shape[0], device=device),
@@ -248,11 +254,12 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
             except Exception:
                 pooled_prompt_embeds = None
                 negative_pooled_prompt_embeds = None
+        debug(f'Prompt: pooled shape={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
 
     prompt_embeds = torch.cat(prompt_embeds, dim=-1) if len(prompt_embeds) > 1 else prompt_embeds[0]
     negative_prompt_embeds = torch.cat(negative_prompt_embeds, dim=-1) if len(negative_prompt_embeds) > 1 else \
         negative_prompt_embeds[0]
-    debug(f'Prompt: shape={prompt_embeds.shape} negative={negative_prompt_embeds.shape}')
+    debug(f'Prompt: positive={prompt_embeds.shape if prompt_embeds is not None else None} pooled={pooled_prompt_embeds.shape if pooled_prompt_embeds is not None else None} negative={negative_prompt_embeds.shape if negative_prompt_embeds is not None else None} pooled={negative_pooled_prompt_embeds.shape if negative_pooled_prompt_embeds is not None else None}')
     if prompt_embeds.shape[1] != negative_prompt_embeds.shape[1]:
         [prompt_embeds, negative_prompt_embeds] = pad_to_same_length(pipe, [prompt_embeds, negative_prompt_embeds])
     return prompt_embeds, pooled_prompt_embeds, negative_prompt_embeds, negative_pooled_prompt_embeds
