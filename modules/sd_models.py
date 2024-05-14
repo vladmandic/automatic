@@ -943,30 +943,34 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 diffusers_load_config['variant'] = 'fp16'
             if model_type in ['Stable Cascade']: # forced pipeline
                 try: # this is horrible special-case handling for stable-cascade multi-stage pipeline with variants and non-standard revision
+                    shared.opts.data['diffusers_model_cpu_offload'] = True # override
                     diffusers_load_config.pop("vae", None)
                     if 'stabilityai' in checkpoint_info.name:
                         diffusers_load_config["variant"] = 'bf16'
                     if 'stabilityai' in checkpoint_info.name and ('lite' in checkpoint_info.name or (checkpoint_info.hash is not None and 'abc818bb0d' in checkpoint_info.hash)):
-                        decoder_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder="decoder_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, **diffusers_load_config)
-                        shared.log.debug(f'StableCascade lite decoder: scale={decoder.latent_dim_scale}')
-                        prior_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder="prior_lite", cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, **diffusers_load_config)
-                        shared.log.debug(f'StableCascade lite prior: scale={prior.resolution_multiple}')
-                        sd_model = diffusers.StableCascadeCombinedPipeline(
-                            tokenizer=decoder.tokenizer,
-                            text_encoder=decoder.text_encoder,
-                            decoder=decoder.decoder,
-                            scheduler=decoder.scheduler,
-                            vqgan=decoder.vqgan,
-                            prior_prior=prior.prior,
-                            prior_text_encoder=prior.text_encoder,
-                            prior_tokenizer=prior.tokenizer,
-                            prior_scheduler=prior.scheduler,
-                            prior_feature_extractor=prior.feature_extractor,
-                            prior_image_encoder=prior.image_encoder)
+                        decoder_folder = 'decoder_lite'
+                        prior_folder = 'prior_lite'
                     else:
-                        sd_model = diffusers.StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        decoder_folder = 'decoder'
+                        prior_folder = 'prior'
+                    decoder_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder=decoder_folder, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    decoder = diffusers.StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, **diffusers_load_config)
+                    shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
+                    prior_unet = diffusers.models.StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder=prior_folder, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    prior = diffusers.StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, **diffusers_load_config)
+                    shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
+                    sd_model = diffusers.StableCascadeCombinedPipeline(
+                        tokenizer=decoder.tokenizer,
+                        text_encoder=decoder.text_encoder,
+                        decoder=decoder.decoder,
+                        scheduler=decoder.scheduler,
+                        vqgan=decoder.vqgan,
+                        prior_prior=prior.prior,
+                        prior_text_encoder=prior.text_encoder,
+                        prior_tokenizer=prior.tokenizer,
+                        prior_scheduler=prior.scheduler,
+                        prior_feature_extractor=prior.feature_extractor,
+                        prior_image_encoder=prior.image_encoder)
                     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
@@ -994,15 +998,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
-                    from modules.sd_hijack_pixart import PixArtSigmaPipeline, patch_pixart_sigma_transformer
+                    # from modules.sd_hijack_pixart import PixArtSigmaPipeline, patch_pixart_sigma_transformer
                     shared.opts.data['cuda_dtype'] = 'FP32' # override
-                    shared.opts.data['set_diffuser_options'] = True # override
+                    shared.opts.data['diffusers_model_cpu_offload'] = True # override
                     devices.set_cuda_params()
-                    sd_model = PixArtSigmaPipeline.from_pretrained(
+                    sd_model = diffusers.PixArtSigmaPipeline.from_pretrained(
                         checkpoint_info.path,
-                        transformer=patch_pixart_sigma_transformer(),
                         use_safetensors=True,
                         cache_dir=shared.opts.diffusers_dir,
+                        # transformer=patch_pixart_sigma_transformer(),
                         **diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
@@ -1061,7 +1065,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     shared.log.error(f'Failed loading {op}: {checkpoint_info.path} auto={err1} diffusion={err2}')
                     return
         elif os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
-            diffusers_load_config["local_files_only"] = False # TODO avoid online check on model load
+            diffusers_load_config["local_files_only"] = diffusers_version < 28 # TODO avoid online check on model load
             diffusers_load_config["extract_ema"] = shared.opts.diffusers_extract_ema
             if pipeline is None:
                 shared.log.error(f'Diffusers {op} pipeline not initialized: {shared.opts.diffusers_pipeline}')
