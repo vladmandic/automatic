@@ -844,29 +844,27 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     def ui_refresh_click(title):
         pages = []
         for page in get_pages():
-            if title is None or title == '' or title == page.title or len(page.html) == 0:
-                page.page_time = 0
-                page.refresh_time = 0
-                page.refresh()
-                page.create_page(ui.tabname)
-                shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname}")
+            page.page_time = 0
+            page.refresh_time = 0
+            page.refresh()
+            page.create_page(ui.tabname)
+            shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname}")
             pages.append(page.html)
-        ui.search.update(value = ui.search.value)
+        ui.search.update(title)
         return pages
 
     def ui_view_cards(title):
         pages = []
         for page in get_pages():
-            if title is None or title == '' or title == page.title or len(page.html) == 0:
-                shared.opts.extra_networks_view = page.view
-                # shared.opts.save(shared.config_filename)
-                page.view = 'gallery' if page.view == 'list' else 'list'
-                page.card = card_full if page.view == 'gallery' else card_list
-                page.html = ''
-                page.create_page(ui.tabname)
-                shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname} view={page.view}")
+            shared.opts.extra_networks_view = page.view
+            # shared.opts.save(shared.config_filename)
+            page.view = 'gallery' if page.view == 'list' else 'list'
+            page.card = card_full if page.view == 'gallery' else card_list
+            page.html = ''
+            page.create_page(ui.tabname)
+            shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname} view={page.view}")
             pages.append(page.html)
-        ui.search.update(value = ui.search.value)
+        ui.search.update(title)
         return pages
 
     def ui_scan_click(title):
