@@ -42,7 +42,7 @@ def apply_styles_to_prompt(prompt, styles):
     return prompt
 
 
-def apply_file_wildcards(prompt, replaced = [], not_found = []):
+def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0):
     def check_files(prompt, wildcard, files):
         for file in files:
             if wildcard == os.path.splitext(os.path.basename(file))[0] if os.path.sep not in wildcard else wildcard in file:
@@ -58,7 +58,8 @@ def apply_file_wildcards(prompt, replaced = [], not_found = []):
                 return prompt, True
         return prompt, False
 
-    if not shared.opts.wildcards_enabled:
+    recursion += 1
+    if not shared.opts.wildcards_enabled or recursion >= 10:
         return prompt, replaced, not_found
     matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
     matches = [m for m in matches if m not in not_found]
@@ -72,7 +73,7 @@ def apply_file_wildcards(prompt, replaced = [], not_found = []):
             not_found.remove(m)
         elif not found and m not in not_found:
             not_found.append(m)
-    prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found) # recursive until we get early return
+    prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found, recursion) # recursive until we get early return
     return prompt, replaced, not_found
 
 

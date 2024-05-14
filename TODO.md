@@ -25,16 +25,18 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 
 ### New built-in features
 
-- HiDiffusion allows generating very-high resolution images out-of-the-box using standard models  
-- Perturbed-Attention Guidance (PAG) enhances sample quality in addition to standard CFG scale  
-- IP adapter masking allows to use multiple input images for each segment of the input image  
-- IP adapter InstantStyle implementation  
-- Token Downsampling (ToDO) provides significant speedups with minimal-to-none quality loss  
-- Samplers optimizations that allow normal samplers to complete work in 1/3 of the steps!  
+- **Gallery**: extremely fast built-in gallery viewer  
+  List, preview, search through all your images and videos!  
+- **HiDiffusion** allows generating very-high resolution images out-of-the-box using standard models  
+- **Perturbed-Attention Guidance** (PAG) enhances sample quality in addition to standard CFG scale  
+- **IP adapter masking** allows to use multiple input images for each segment of the input image  
+- IP adapter **InstantStyle** implementation  
+- **Token Downsampling** (ToDO) provides significant speedups with minimal-to-none quality loss  
+- **Samplers optimizations** that allow normal samplers to complete work in 1/3 of the steps!  
   Yup, even popular DPM++2M can now run in 10 steps with quality equaling 30 steps  
-- Native wildcards support  
-- Improved built-in Face HiRes  
-- Better outpainting  
+- Native **wildcards** support  
+- Improved built-in **Face HiRes**  
+- Better **outpainting**  
 - And much more...  
   For details of above features and full list, see [Changelog](https://github.com/vladmandic/automatic/blob/dev/CHANGELOG.md)
 
