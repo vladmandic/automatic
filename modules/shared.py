@@ -512,6 +512,7 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
 
 options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_pipeline": OptionInfo('Autodetect', 'Diffusers pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()) }),
+    "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
     "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
     "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE"),
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),

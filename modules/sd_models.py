@@ -800,20 +800,28 @@ def move_model(model, device=None, force=False):
     devices.torch_gc()
 
 
-def get_load_config(model_file, model_type):
-    yaml = os.path.splitext(model_file)[0] + '.yaml'
-    if os.path.exists(yaml):
-        return yaml
-    elif model_type == 'Stable Diffusion':
-        return 'configs/v1-inference.yaml'
-    elif model_type == 'Stable Diffusion XL':
-        return 'configs/sd_xl_base.yaml'
-    elif model_type == 'Stable Diffusion XL Refiner':
-        return 'configs/sd_xl_refiner.yaml'
-    elif model_type == 'Stable Diffusion 2':
-        return None # dont know if its eps or v so let diffusers sort it out
-        # return 'configs/v2-inference-512-base.yaml'
-        # return 'configs/v2-inference-768-v.yaml'
+def get_load_config(model_file, model_type, config_type='yaml'):
+    if config_type == 'yaml':
+        yaml = os.path.splitext(model_file)[0] + '.yaml'
+        if os.path.exists(yaml):
+            return yaml
+        if model_type == 'Stable Diffusion':
+            return 'configs/v1-inference.yaml'
+        if model_type == 'Stable Diffusion XL':
+            return 'configs/sd_xl_base.yaml'
+        if model_type == 'Stable Diffusion XL Refiner':
+            return 'configs/sd_xl_refiner.yaml'
+        if model_type == 'Stable Diffusion 2':
+            return None # dont know if its eps or v so let diffusers sort it out
+            # return 'configs/v2-inference-512-base.yaml'
+            # return 'configs/v2-inference-768-v.yaml'
+    elif config_type == 'json':
+        if not shared.opts.diffuser_cache_config:
+            return None
+        if model_type == 'Stable Diffusion':
+            return 'configs/sd15'
+        if model_type == 'Stable Diffusion XL':
+            return 'configs/sdxl'
     return None
 
 
@@ -1063,7 +1071,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if shared.opts.diffusers_force_zeros:
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
                     if diffusers_version < 28:
-                        diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type) # disabled as not used in diffusers 0.28
+                        diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type, config_type='yaml')
+                    else:
+                        diffusers_load_config['config'] = get_load_config(checkpoint_info.path, model_type, config_type='json')
                 if hasattr(pipeline, 'from_single_file'):
                     diffusers_load_config['use_safetensors'] = True
                     diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
