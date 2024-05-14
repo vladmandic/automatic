@@ -427,8 +427,8 @@ def check_torch():
             log.debug('DirectML installation is detected. Skipping HIP SDK check.')
             return False
         if platform.system() == 'Windows':
-            hip_path = os.environ.get('HIP_PATH', None)
-            return hip_path is not None and os.path.exists(os.path.join(hip_path, 'bin'))
+            from modules.zluda_installer import find_hip_sdk
+            return find_hip_sdk() is not None
         else:
             return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
 

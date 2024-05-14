@@ -4,6 +4,7 @@ import shutil
 import zipfile
 import platform
 import urllib.request
+from typing import Union
 
 
 RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '2804604c29b5fa36deca9ece219d3970b61d4c27')}"
@@ -16,11 +17,19 @@ HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
-def find():
+def find() -> str:
     return os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 
 
-def check_dnn_dependency():
+def find_hip_sdk() -> Union[str, None]:
+    program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
+    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
+    if not os.path.exists(hip_path_default):
+        hip_path_default = None
+    return os.environ.get('HIP_PATH', hip_path_default)
+
+
+def check_dnn_dependency() -> bool:
     hip_path = os.environ.get("HIP_PATH", None)
     if hip_path is None: # unable to check
         return True
@@ -29,14 +38,14 @@ def check_dnn_dependency():
     return False
 
 
-def enable_dnn():
+def enable_dnn() -> None:
     global RELEASE # pylint: disable=global-statement
     DLL_MAPPING['cudnn.dll'] = 'cudnn64_8.dll'
     HIP_TARGETS.append('MIOpen.dll')
     RELEASE = 'v3.8-pre2-dnn'
 
 
-def install():
+def install() -> None:
     zluda_path = find()
 
     if os.path.exists(zluda_path):
@@ -55,7 +64,7 @@ def install():
     os.remove('_zluda')
 
 
-def make_copy(zluda_path: os.PathLike):
+def make_copy(zluda_path: os.PathLike) -> None:
     for k, v in DLL_MAPPING.items():
         if not os.path.exists(os.path.join(zluda_path, v)):
             try:
@@ -64,12 +73,8 @@ def make_copy(zluda_path: os.PathLike):
                 shutil.copyfile(os.path.join(zluda_path, k), os.path.join(zluda_path, v))
 
 
-def load(zluda_path: os.PathLike):
-    program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
-    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
-    if not os.path.exists(hip_path_default):
-        hip_path_default = None
-    hip_path = os.environ.get('HIP_PATH', hip_path_default)
+def load(zluda_path: os.PathLike) -> None:
+    hip_path = find_hip_sdk()
     if hip_path is None:
         raise RuntimeError('Could not find %HIP_PATH%. Please install AMD HIP SDK.')
     for v in HIP_TARGETS:
