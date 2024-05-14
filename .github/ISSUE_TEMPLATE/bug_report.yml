@@ -39,6 +39,7 @@ body:
     attributes:
       value: |
         Please follow these guidelines when creating an issue:  
+        - If issue is related to ModernUI, create issue at [ModernUI issues](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)
         - If possible update to latest version before reporting the issue as older versions cannot be properly supported  
           And search existing **issues** and **discussions** before creating a new one  
         - If issue cannot be clearly seen in the provided log, run SD.Next with debug logging enabled by adding `--debug` to your command line parameters
