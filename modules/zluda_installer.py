@@ -76,7 +76,7 @@ def make_copy(zluda_path: os.PathLike) -> None:
 def load(zluda_path: os.PathLike) -> None:
     hip_path = find_hip_sdk()
     if hip_path is None:
-        raise RuntimeError('Could not find %HIP_PATH%. Please install AMD HIP SDK.')
+        raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
     for v in HIP_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(hip_path, 'bin', v))
     for v in ZLUDA_TARGETS:
