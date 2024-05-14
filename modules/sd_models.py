@@ -998,15 +998,13 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
-                    # from modules.sd_hijack_pixart import PixArtSigmaPipeline, patch_pixart_sigma_transformer
-                    shared.opts.data['cuda_dtype'] = 'FP32' # override
+                    # shared.opts.data['cuda_dtype'] = 'FP32' # override
                     shared.opts.data['diffusers_model_cpu_offload'] = True # override
                     devices.set_cuda_params()
                     sd_model = diffusers.PixArtSigmaPipeline.from_pretrained(
                         checkpoint_info.path,
                         use_safetensors=True,
                         cache_dir=shared.opts.diffusers_dir,
-                        # transformer=patch_pixart_sigma_transformer(),
                         **diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
@@ -1065,7 +1063,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     shared.log.error(f'Failed loading {op}: {checkpoint_info.path} auto={err1} diffusion={err2}')
                     return
         elif os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
-            diffusers_load_config["local_files_only"] = diffusers_version < 28 # TODO avoid online check on model load
+            diffusers_load_config["local_files_only"] = diffusers_version < 28 # must be true for old diffusers, otherwise false but we override config for sd15/sdxl
             diffusers_load_config["extract_ema"] = shared.opts.diffusers_extract_ema
             if pipeline is None:
                 shared.log.error(f'Diffusers {op} pipeline not initialized: {shared.opts.diffusers_pipeline}')
