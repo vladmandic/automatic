@@ -530,6 +530,8 @@ def update_sampler(p, sd_model, second_pass=False):
             else:
                 shared.opts.schedulers_use_karras = False
         sampler = sd_samplers.create_sampler(sampler.name, sd_model)
+        if sampler is None:
+            return
         sampler_options = []
         if sampler.config.get('use_karras_sigmas', False):
             sampler_options.append('karras')

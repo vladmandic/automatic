@@ -54,9 +54,8 @@ def create_sampler(name, model):
         shared.log.debug(f'Sampler default {type(model.scheduler).__name__}: {config}')
         return model.scheduler
     config = find_sampler_config(name)
-    if config is None:
-        shared.log.error(f'Attempting to use unknown sampler: {name}')
-        config = all_samplers[0]
+    if config is None or config.constructor is None:
+        return None
     if shared.backend == shared.Backend.ORIGINAL:
         sampler = config.constructor(model)
         sampler.config = config
