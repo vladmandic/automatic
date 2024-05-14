@@ -72,6 +72,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 *input_script_args
         ):
     global instance, pipe, original_pipeline # pylint: disable=global-statement
+    t_start = time.time()
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
     if inputs is None or (type(inputs) is list and len(inputs) == 0):
         inputs = [None]
@@ -621,12 +622,14 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         shared.log.error(f'Control pipeline failed: type={unit_type} units={len(active_model)} error={e}')
         errors.display(e, 'Control')
 
+    t_end = time.time()
+
     if len(output_images) == 0:
         output_images = None
-        image_txt = 'images=None'
+        image_txt = '| Images None'
     else:
         image_str = [f'{image.width}x{image.height}' for image in output_images]
-        image_txt = f'| Images {len(output_images)} | Size {" ".join(image_str)}'
+        image_txt = f'| Time {t_end-t_start:.2f}s | Images {len(output_images)} | Size {" ".join(image_str)}'
         p.init_images = output_images # may be used for hires
 
     if video_type != 'None' and isinstance(output_images, list):

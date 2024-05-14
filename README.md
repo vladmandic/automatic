@@ -226,6 +226,9 @@ List of available parameters, run `webui --help` for the full & up-to-date list:
 
 ## Notes
 
+> [!TIP]
+> If you don't want to use built-in `venv` support and prefer to run SD.Next in your own environment such as *Docker* container, *Conda* environment or any other virtual environment, you can skip `venv` create/activate and launch SD.Next directly using `python launch.py` (command line flags noted above still apply).
+
 ### Control
 
 **SD.Next** comes with built-in control for all types of text2image, image2image, video2video and batch processing
