@@ -154,6 +154,8 @@ def save_files(js_data, files, html_info, index):
         else:
             image = generation_parameters_copypaste.image_from_url_text(filedata)
             info = p.infotexts[i + 1] if len(p.infotexts) > len(p.all_seeds) else p.infotexts[i] # infotexts may be offset by 1 because the first image is the grid
+            if len(info) == 0:
+                info = None
             fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:
                 continue

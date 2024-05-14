@@ -632,6 +632,8 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
         forced_filename += suffix if suffix is not None else ''
         filename = os.path.join(path, f"{forced_filename}.{extension}") if basename == '' else os.path.join(path, f"{basename}-{forced_filename}.{extension}")
     pnginfo = existing_info or {}
+    if info is None:
+        info = image.info.get(pnginfo_section_name, '')
     if info is not None:
         pnginfo[pnginfo_section_name] = info
     params = script_callbacks.ImageSaveParams(image, p, filename, pnginfo)
@@ -644,7 +646,8 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
     # callbacks
     script_callbacks.before_image_saved_callback(params)
     exifinfo = params.pnginfo.get('UserComment', '')
-    exifinfo = (exifinfo + ', ' if len(exifinfo) > 0 else '') + params.pnginfo.get(pnginfo_section_name, '')
+    exifinfo = exifinfo + ', ' if len(exifinfo) > 0 else ''
+    exifinfo += params.pnginfo.get(pnginfo_section_name, '')
     filename, extension = os.path.splitext(params.filename)
     filename_txt = f"{filename}.txt" if shared.opts.save_txt and len(exifinfo) > 0 else None
     save_queue.put((params.image, filename, extension, params, exifinfo, filename_txt)) # actual save is executed in a thread that polls data from queue
