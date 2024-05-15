@@ -62,10 +62,8 @@ def get_pipelines():
         'Stable Diffusion XL Img2Img': getattr(diffusers, 'StableDiffusionXLImg2ImgPipeline', None),
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),
-        'Stable Cascade': getattr(diffusers, 'StableCascadeCombinedPipeline', None),
         'Latent Consistency Model': getattr(diffusers, 'LatentConsistencyModelPipeline', None),
         'PixArt-Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
-        'PixArt-Sigma': getattr(diffusers, 'PixArtSigmaPipeline', None),
         'UniDiffuser': getattr(diffusers, 'UniDiffuserPipeline', None),
         'Wuerstchen': getattr(diffusers, 'WuerstchenCombinedPipeline', None),
         'Kandinsky 2.1': getattr(diffusers, 'KandinskyPipeline', None),
@@ -86,6 +84,12 @@ def get_pipelines():
             'ONNX Stable Diffusion XL Img2Img': getattr(diffusers, 'OnnxStableDiffusionXLImg2ImgPipeline', None),
         }
         pipelines.update(onnx_pipelines)
+
+    # items that may rely on diffusers dev version
+    if hasattr(diffusers, 'StableCascadeCombinedPipeline'):
+        pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
+    if hasattr(diffusers, 'PixArtSigmaPipeline'):
+        pipelines['PixArt-Sigma'] = getattr(diffusers, 'PixArtSigmaPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

@@ -520,7 +520,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_model_cpu_offload": OptionInfo(cmd_opts.medvram, "Model CPU offload (--medvram)"),
     "diffusers_seq_cpu_offload": OptionInfo(cmd_opts.lowvram, "Sequential CPU offload (--lowvram)"),
-    "diffusers_vae_upcast": OptionInfo("false", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
+    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),

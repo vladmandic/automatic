@@ -12,7 +12,7 @@ Requires `diffusers-0.28.0.dev0`:
 
 ## Dev Release Notes
 
-New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 270 commits...
+New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 280 commits...
 
 Starting with the new UI - yup, this version ships with a *preview* of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
@@ -59,12 +59,8 @@ For more details see: [Changelog](https://github.com/vladmandic/automatic/blob/d
 
 ## Future Candidates
 
-### Models & Pipelines
-
-- stable diffusion 3.0
-
-### Features
-
+- stable diffusion 3.0: unreleased
+- boxdiff <https://github.com/huggingface/diffusers/pull/7947>
 - animatediff-sdxl <https://github.com/huggingface/diffusers/pull/6721>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
