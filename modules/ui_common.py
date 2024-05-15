@@ -89,23 +89,33 @@ def save_files(js_data, files, html_info, index):
 
     class PObject: # pylint: disable=too-few-public-methods
         def __init__(self, d=None):
+            # 'Parser': 'Full parser', 'Model': 'lyriel_v16', 'Model hash': 'ec6f68ea63', 'Backend': 'Diffusers', 'App': 'SD.Next', 'Version': '69d7fef', 'Operations': 'txt2img', 'Sampler options': 'order 2/low order', 'Pipeline': 'StableDiffusionPipeline'
+            # <pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>
             if d is not None:
                 for k, v in d.items():
                     setattr(self, k, v)
-            self.prompt = getattr(self, 'prompt', None) or getattr(self, 'Prompt', None)
-            self.all_prompts = getattr(self, 'all_prompts', [self.prompt])
-            self.negative_prompt = getattr(self, 'negative_prompt', None)
-            self.all_negative_prompt = getattr(self, 'all_negative_prompts', [self.negative_prompt])
-            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None)
-            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
-            self.subseed = getattr(self, 'subseed', None)
-            self.all_subseeds = getattr(self, 'all_subseeds', [self.subseed])
-            self.width = getattr(self, 'width', None)
-            self.height = getattr(self, 'height', None)
+            self.prompt = getattr(self, 'prompt', None) or getattr(self, 'Prompt', None) or ''
+            self.negative_prompt = getattr(self, 'negative_prompt', None) or getattr(self, 'Negative_prompt', None) or ''
+            self.sampler = getattr(self, 'sampler', None) or getattr(self, 'Sampler', None) or ''
+            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None) or 0
+            self.steps = getattr(self, 'steps', None) or getattr(self, 'Steps', None) or 0
+            self.width = getattr(self, 'width', None) or getattr(self, 'Width', None) or getattr(self, 'Size-1', None) or 0
+            self.height = getattr(self, 'height', None) or getattr(self, 'Height', None) or getattr(self, 'Size-2', None) or 0
+            self.cfg_scale = getattr(self, 'cfg_scale', None) or getattr(self, 'CFG scale', None) or 0
+            self.clip_skip = getattr(self, 'clip_skip', None) or getattr(self, 'Clip skip', None) or 1
+            self.denoising_strength = getattr(self, 'denoising_strength', None) or getattr(self, 'Denoising', None) or 0
             self.index_of_first_image = getattr(self, 'index_of_first_image', 0)
+            self.subseed = getattr(self, 'subseed', None) or getattr(self, 'Subseed', None)
+            self.styles = getattr(self, 'styles', None) or getattr(self, 'Styles', None) or []
+            self.styles = [s.strip() for s in self.styles.split(',')] if isinstance(self.styles, str) else self.styles
+
+            self.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
             self.infotexts = getattr(self, 'infotexts', [html_info])
             self.infotext = self.infotexts[0] if len(self.infotexts) > 0 else html_info
-            self.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
+            self.all_negative_prompt = getattr(self, 'all_negative_prompts', [self.negative_prompt])
+            self.all_prompts = getattr(self, 'all_prompts', [self.prompt])
+            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
+            self.all_subseeds = getattr(self, 'all_subseeds', [self.subseed])
     try:
         data = json.loads(js_data)
     except Exception:
@@ -156,6 +166,11 @@ def save_files(js_data, files, html_info, index):
             info = p.infotexts[i + 1] if len(p.infotexts) > len(p.all_seeds) else p.infotexts[i] # infotexts may be offset by 1 because the first image is the grid
             if len(info) == 0:
                 info = None
+            if (js_data is None or len(js_data) == 0) and image is not None and image.info is not None:
+                info = image.info.pop('parameters', None) or image.info.pop('UserComment', None)
+                geninfo, _ = images.read_info_from_image(image)
+                items = generation_parameters_copypaste.parse_generation_parameters(geninfo)
+                p = PObject(items)
             fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:
                 continue

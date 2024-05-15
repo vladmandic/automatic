@@ -339,7 +339,10 @@ class FilenameGenerator:
 
         'sampler': lambda self: self.p and self.p.sampler_name,
         'seed': lambda self: self.seed and str(self.seed) or '',
-        'steps': lambda self: self.p and self.p.steps,
+        'steps': lambda self: self.p and getattr(self.p, 'steps', 0),
+        'cfg': lambda self: self.p and getattr(self.p, 'cfg_scale', 0),
+        'clip_skip': lambda self: self.p and getattr(self.p, 'clip_skip', 0),
+        'denoising': lambda self: self.p and getattr(self.p, 'denoising_strength', 0),
         'styles': lambda self: self.p and ", ".join([style for style in self.p.styles if not style == "None"]) or "None",
         'uuid': lambda self: str(uuid.uuid4()),
     }
@@ -746,9 +749,7 @@ def safe_decode_string(s: bytes):
 
 def read_info_from_image(image: Image, watermark: bool = False):
     items = image.info or {}
-    geninfo = items.pop('parameters', None)
-    if geninfo is None:
-        geninfo = items.pop('UserComment', None)
+    geninfo = items.pop('parameters', None) or items.pop('UserComment', None)
     if geninfo is not None and len(geninfo) > 0:
         if 'UserComment' in geninfo:
             geninfo = geninfo['UserComment']

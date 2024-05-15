@@ -222,6 +222,8 @@ def parse_generation_parameters(infotext, no_prompt=False):
         prompt = infotext[:params_idx] if params_idx > 0 else infotext
     else:
         prompt = infotext[:negative_idx]
+    if prompt.startswith('Steps: '):
+        prompt = ''
     if negative_idx >= 0:
         negative = infotext[negative_idx:params_idx] if params_idx > 0 else infotext[negative_idx:]
     else:

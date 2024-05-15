@@ -676,10 +676,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
             sd_model.vae = vae
             shared.log.debug(f'Setting {op} VAE: name={sd_vae.loaded_vae_file}')
         if shared.opts.diffusers_vae_upcast != 'default':
-            if shared.opts.diffusers_vae_upcast == 'true':
-                sd_model.vae.config.force_upcast = True
-            else:
-                sd_model.vae.config.force_upcast = False
+            sd_model.vae.config.force_upcast = True if shared.opts.diffusers_vae_upcast == 'true' else False
             if shared.opts.no_half_vae:
                 devices.dtype_vae = torch.float32
                 sd_model.vae.to(devices.dtype_vae)
