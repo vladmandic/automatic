@@ -63,6 +63,7 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0):
         return prompt, replaced, not_found
     matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
     matches = [m for m in matches if m not in not_found]
+    matches = [m.replace('\\', os.path.sep) for m in matches if m not in replaced]
     matches = [m.replace('/', os.path.sep) for m in matches if m not in replaced]
     if len(matches) == 0:
         return prompt, replaced, not_found
