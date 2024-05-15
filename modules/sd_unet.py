@@ -24,9 +24,11 @@ def load_unet(model):
         if "StableCascade" in model.__class__.__name__:
             from modules.sd_cascade import load_prior
             prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet], config_file=config_file)
-            model.prior_pipe.prior = prior_unet.to(devices.device, dtype=devices.dtype_unet)
+            model.prior_pipe.prior = model.prior_prior = None # Prevent OOM
+            model.prior_pipe.prior = model.prior_prior = prior_unet.to(devices.device, dtype=devices.dtype_unet)
             if prior_text_encoder is not None:
-                model.prior_pipe.text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
+                model.prior_pipe.text_encoder = model.prior_text_encoder = None # Prevent OOM
+                model.prior_pipe.text_encoder = model.prior_text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
         else:
             shared.log.info(f'Loading UNet: name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" config="{config_file}"')
             from diffusers import UNet2DConditionModel

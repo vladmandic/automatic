@@ -69,3 +69,59 @@ def load_prior(path, config_file="default"):
 
     return prior_unet, prior_text_encoder
 
+
+def load_cascade_combined(checkpoint_info, diffusers_load_config):
+    from diffusers import StableCascadeUNet, StableCascadeDecoderPipeline, StableCascadePriorPipeline, StableCascadeCombinedPipeline
+    from modules.sd_unet import unet_dict
+
+    diffusers_load_config.pop("vae", None)
+    if 'stabilityai' in checkpoint_info.name:
+        diffusers_load_config["variant"] = 'bf16'
+
+    if shared.opts.sd_unet != "None" or 'stabilityai' in checkpoint_info.name:
+        if 'stabilityai' in checkpoint_info.name and ('lite' in checkpoint_info.name or (checkpoint_info.hash is not None and 'abc818bb0d' in checkpoint_info.hash)):
+            decoder_folder = 'decoder_lite'
+            prior_folder = 'prior_lite'
+        else:
+            decoder_folder = 'decoder'
+            prior_folder = 'prior'
+
+        if 'stabilityai' in checkpoint_info.name:
+            decoder_unet = StableCascadeUNet.from_pretrained("stabilityai/stable-cascade", subfolder=decoder_folder, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+            decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, **diffusers_load_config)
+        else:
+            decoder = StableCascadeDecoderPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+
+        shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
+
+        prior_text_encoder = None
+        if shared.opts.sd_unet != "None":
+            prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet])
+        else:
+            prior_unet = StableCascadeUNet.from_pretrained("stabilityai/stable-cascade-prior", subfolder=prior_folder, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+
+        if prior_text_encoder is not None:
+            prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, text_encoder=prior_text_encoder, **diffusers_load_config)
+        else:
+            prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, **diffusers_load_config)
+
+        shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
+
+        sd_model = StableCascadeCombinedPipeline(
+            tokenizer=decoder.tokenizer,
+            text_encoder=decoder.text_encoder,
+            decoder=decoder.decoder,
+            scheduler=decoder.scheduler,
+            vqgan=decoder.vqgan,
+            prior_prior=prior.prior,
+            prior_text_encoder=prior.text_encoder,
+            prior_tokenizer=prior.tokenizer,
+            prior_scheduler=prior.scheduler,
+            prior_feature_extractor=prior.feature_extractor,
+            prior_image_encoder=prior.image_encoder)
+    else:
+        sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+
+    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
+
+    return sd_model
