@@ -380,11 +380,8 @@ def randn_without_seed(shape):
         return torch.randn(shape, device=cpu).to(device)
     return torch.randn(shape, device=device)
 
-
 def autocast(disable=False):
-    if disable:
-        return contextlib.nullcontext()
-    if dtype == torch.float32 or shared.cmd_opts.precision == "Full":
+    if disable or dtype == torch.float32 or shared.cmd_opts.precision == "Full":
         return contextlib.nullcontext()
     if shared.cmd_opts.use_directml:
         return torch.dml.amp.autocast(dtype)

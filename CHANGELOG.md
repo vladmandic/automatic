@@ -120,6 +120,8 @@
   - Secondary sampler add option "same as primary"  
   - Change attention mechanism on-the-fly without model reload, thanks @Disty0  
   - Update stable-fast with support for torch 2.2.2 and 2.3.0, thanks @Aptronymist
+  - Add torch *cudaMallocAsync* in compute options  
+    Can improve memory utilization on compatible GPUs (RTX and newer)  
   - Support controlnet manually downloads models in both standalone and diffusers format  
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  

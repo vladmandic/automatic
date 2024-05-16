@@ -430,7 +430,8 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
     "cudnn_deterministic": OptionInfo(False, "Use deterministic options for cuDNN"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
-    "torch_gc_threshold": OptionInfo(80, "Memory usage threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
+    "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
+    "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 
     "cuda_compile_sep": OptionInfo("<h2>Model Compile</h2>", "", gr.HTML),
     "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
@@ -962,7 +963,7 @@ class Options:
             info = self.data_labels.get(k, None)
             if info is not None and not self.same_type(info.default, v):
                 log.error(f"Error: bad setting value: {k}: {v} ({type(v).__name__}; expected {type(info.default).__name__})")
-            if info is None and k not in compatibility_opts:
+            if info is None and k not in compatibility_opts and not k.startswith('uiux_'):
                 unknown_settings.append(k)
         if len(unknown_settings) > 0:
             log.debug(f"Unknown settings: {unknown_settings}")

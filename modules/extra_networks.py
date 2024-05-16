@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from modules import errors, shared
+from modules import errors, shared, devices
 
 
 extra_network_registry = {}
@@ -82,24 +82,26 @@ def activate(p, extra_network_data, step=0):
         shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
         stepwise = False
     shared.opts.data['lora_functional'] = stepwise or functional
-    for extra_network_name, extra_network_args in extra_network_data.items():
-        extra_network = extra_network_registry.get(extra_network_name, None)
-        if extra_network is None:
-            errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
-            continue
-        try:
-            extra_network.activate(p, extra_network_args, step=step)
-        except Exception as e:
-            errors.display(e, f"activating extra network: name={extra_network_name} args:{extra_network_args}")
+    with devices.autocast():
+        for extra_network_name, extra_network_args in extra_network_data.items():
+            extra_network = extra_network_registry.get(extra_network_name, None)
+            if extra_network is None:
+                errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
+                continue
+            try:
+                extra_network.activate(p, extra_network_args, step=step)
+            except Exception as e:
+                errors.display(e, f"activating extra network: name={extra_network_name} args:{extra_network_args}")
 
-    for extra_network_name, extra_network in extra_network_registry.items():
-        args = extra_network_data.get(extra_network_name, None)
-        if args is not None:
-            continue
-        try:
-            extra_network.activate(p, [])
-        except Exception as e:
-            errors.display(e, f"activating extra network: name={extra_network_name}")
+        for extra_network_name, extra_network in extra_network_registry.items():
+            args = extra_network_data.get(extra_network_name, None)
+            if args is not None:
+                continue
+            try:
+                extra_network.activate(p, [])
+            except Exception as e:
+                errors.display(e, f"activating extra network: name={extra_network_name}")
+
     if stepwise:
         p.extra_network_data = extra_network_data
         shared.opts.data['lora_functional'] = functional

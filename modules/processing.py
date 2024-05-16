@@ -265,8 +265,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
         if not hasattr(p, 'skip_init'):
-            with devices.autocast():
-                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
@@ -293,8 +292,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 break
             p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
             if not p.disable_extra_networks:
-                with devices.autocast():
-                    extra_networks.activate(p, extra_network_data)
+                extra_networks.activate(p, extra_network_data)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
