@@ -153,7 +153,7 @@ class APIControl():
 
         # run
         with self.queue_lock:
-            shared.state.begin('api-control', api=True)
+            shared.state.begin('API-CTL', api=True)
             output_images = []
             output_processed = []
             output_info = ''

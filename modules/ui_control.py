@@ -46,7 +46,7 @@ def generate_click(job_id: str, active_tab: str, *args):
         time.sleep(0.01)
     from modules.control.run import control_run
     debug(f'Control: tab="{active_tab}" job={job_id} args={args}')
-    shared.state.begin('control')
+    shared.state.begin('Generate')
     progress.add_task_to_queue(job_id)
     with call_queue.queue_lock:
         yield [None, None, None, None, 'Control: starting']

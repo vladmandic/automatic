@@ -54,7 +54,7 @@ def to_half(tensor, enable):
 
 
 def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
-    shared.state.begin('merge')
+    shared.state.begin('Merge')
     t0 = time.time()
 
     def fail(message):
@@ -284,7 +284,7 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
         "vae": vae_conv,
         "other": others_conv
     }
-    shared.state.begin('convert')
+    shared.state.begin('Convert')
     model_info = sd_models.checkpoints_list[model]
     shared.state.textinfo = f"Loading {model_info.filename}..."
     shared.log.info(f"Model convert loading: {model_info.filename}")

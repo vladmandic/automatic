@@ -163,7 +163,7 @@ class InterrogateModels:
 
     def interrogate(self, pil_image):
         res = ""
-        shared.state.begin('interrogate')
+        shared.state.begin('Interrogate')
         try:
             if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
@@ -267,8 +267,7 @@ def interrogate(image, mode, caption=None):
 
 
 def interrogate_image(image, model, mode):
-    shared.state.begin()
-    shared.state.job = 'interrogate'
+    shared.state.begin('Interrogate')
     try:
         if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
             lowvram.send_everything_to_cpu()
@@ -295,8 +294,7 @@ def interrogate_batch(batch_files, batch_folder, batch_str, model, mode, write):
     if len(files) == 0:
         shared.log.error('Interrogate batch no images')
         return ''
-    shared.state.begin()
-    shared.state.job = 'batch interrogate'
+    shared.state.begin('Batch interrogate')
     prompts = []
     try:
         if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):

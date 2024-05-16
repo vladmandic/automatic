@@ -109,7 +109,7 @@ def taesd_vae_encode(image):
 def vae_decode(latents, model, output_type='np', full_quality=True):
     t0 = time.time()
     prev_job = shared.state.job
-    shared.state.job = 'vae'
+    shared.state.job = 'VAE'
     if not torch.is_tensor(latents): # already decoded
         return latents
     if latents.shape[0] == 0:

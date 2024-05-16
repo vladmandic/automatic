@@ -159,7 +159,7 @@ def load_model():
     if not opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
         log.debug('Model auto load disabled')
     else:
-        shared.state.begin('load')
+        shared.state.begin('Load')
         thread_model = Thread(target=lambda: shared.sd_model)
         thread_model.start()
         thread_refiner = Thread(target=lambda: shared.sd_refiner)

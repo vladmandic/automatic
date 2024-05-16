@@ -169,7 +169,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             p.ops.append('upscale')
             if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
-            shared.state.job = 'upscale'
+            shared.state.job = 'Upscale'
             output.images = resize_hires(p, latents=output.images)
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
@@ -211,7 +211,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 desc='Hires',
             )
             update_sampler(p, shared.sd_model, second_pass=True)
-            shared.state.job = 'hires'
+            shared.state.job = 'HiRes'
             shared.state.sampling_steps = hires_args.get('num_inference_steps', None) or p.steps
             try:
                 sd_models_compile.check_deepcache(enable=True)
@@ -230,7 +230,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     # optional refiner pass or decode
     if is_refiner_enabled():
         prev_job = shared.state.job
-        shared.state.job = 'refine'
+        shared.state.job = 'Refine'
         shared.state.job_count +=1
         if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):
             save_intermediate(p, latents=output.images, suffix="-before-refiner")

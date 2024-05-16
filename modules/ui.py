@@ -278,6 +278,7 @@ def create_ui(startup_timer = None):
             shutdown_submit = gr.Button(value="Shutdown server", variant='primary', elem_id="shutdown_submit")
             unload_sd_model = gr.Button(value='Unload checkpoint', variant='primary', elem_id="sett_unload_sd_model")
             reload_sd_model = gr.Button(value='Reload checkpoint', variant='primary', elem_id="sett_reload_sd_model")
+            enable_profiling = gr.Button(value='Start profiling', variant='primary', elem_id="start_profiling")
 
         with gr.Tabs(elem_id="system") as system_tabs:
             global ui_system_tabs # pylint: disable=global-statement
@@ -363,8 +364,13 @@ def create_ui(startup_timer = None):
         def reload_sd_weights():
             modules.sd_models.reload_model_weights()
 
+        def switch_profiling():
+            shared.cmd_opts.profile = not shared.cmd_opts.profile
+            shared.log.warning(f'Profiling: {shared.cmd_opts.profile}')
+
         unload_sd_model.click(fn=unload_sd_weights, inputs=[], outputs=[])
         reload_sd_model.click(fn=reload_sd_weights, inputs=[], outputs=[])
+        enable_profiling.click(fn=switch_profiling, inputs=[], outputs=[])
         request_notifications.click(fn=lambda: None, inputs=[], outputs=[], _js='function(){}')
         preview_theme.click(fn=None, _js='previewTheme', inputs=[], outputs=[])
 

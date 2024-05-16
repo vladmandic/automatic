@@ -45,7 +45,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     block_size = 16384 # 16KB blocks
     written = 0
     img = None
-    shared.state.begin('civitai')
+    shared.state.begin('CivitAI')
     try:
         with open(preview_file, 'wb') as f:
             with p.Progress(p.TextColumn('[cyan]{task.description}'), p.DownloadColumn(), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TransferSpeedColumn(), console=shared.console) as progress:
@@ -107,7 +107,7 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
     total_size = int(r.headers.get('content-length', 0))
     res += f' size={round((starting_pos + total_size)/1024/1024, 2)}Mb'
     shared.log.info(res)
-    shared.state.begin('civitai')
+    shared.state.begin('CivitAI')
     block_size = 16384 # 16KB blocks
     written = starting_pos
     global download_pbar # pylint: disable=global-statement
@@ -162,7 +162,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         return None
     from diffusers import DiffusionPipeline
     import huggingface_hub as hf
-    shared.state.begin('huggingface')
+    shared.state.begin('HuggingFace')
     if download_config is None:
         download_config = {
             "force_download": False,

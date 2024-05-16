@@ -97,7 +97,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
                 p.extra_generation_params, p.restore_faces = bak_extra_generation_params, bak_restore_faces
                 images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], shared.opts.samples_format, info=info, suffix="-before-hires")
         if latent_scale_mode is None or p.hr_force: # non-latent upscaling
-            shared.state.job = 'upscale'
+            shared.state.job = 'Upscale'
             if decoded_samples is None:
                 decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
                 decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
@@ -126,7 +126,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
             if p.hr_sampler_name == "PLMS":
                 p.hr_sampler_name = 'UniPC'
         if p.hr_force or latent_scale_mode is not None:
-            shared.state.job = 'hires'
+            shared.state.job = 'HiRes'
             if p.denoising_strength > 0:
                 p.ops.append('hires')
                 devices.torch_gc() # GC now before running the next img2img to prevent running out of memory

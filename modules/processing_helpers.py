@@ -191,7 +191,7 @@ def decode_first_stage(model, x, full_quality=True):
         x_sample = torch.zeros((len(x), 3, x.shape[2] * 8, x.shape[3] * 8), dtype=devices.dtype_vae, device=devices.device)
         return x_sample
     prev_job = shared.state.job
-    shared.state.job = 'vae'
+    shared.state.job = 'VAE'
     with devices.autocast(disable = x.dtype==devices.dtype_vae):
         try:
             if full_quality:

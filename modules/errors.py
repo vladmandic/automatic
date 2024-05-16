@@ -89,8 +89,18 @@ def profile(profiler, msg: str):
 
 def profile_torch(profiler, msg: str):
     profiler.stop()
+    lines = profiler.key_averages().table(sort_by="cpu_time_total", row_limit=12)
+    lines = lines.split('\n')
+    lines = [x for x in lines if '/profiler' not in x and '---' not in x]
+    txt = '\n'.join(lines)
+    log.debug(f'Torch profile CPU-total {msg}: \n{txt}')
     lines = profiler.key_averages().table(sort_by="self_cpu_time_total", row_limit=12)
     lines = lines.split('\n')
     lines = [x for x in lines if '/profiler' not in x and '---' not in x]
     txt = '\n'.join(lines)
-    log.debug(f'Torch profile {msg}: \n{txt}')
+    log.debug(f'Torch profile CPU-self {msg}: \n{txt}')
+    lines = profiler.key_averages().table(sort_by="cuda_time_total", row_limit=12)
+    lines = lines.split('\n')
+    lines = [x for x in lines if '/profiler' not in x and '---' not in x]
+    txt = '\n'.join(lines)
+    log.debug(f'Torch profile CUDA {msg}: \n{txt}')
