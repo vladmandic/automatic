@@ -1,7 +1,7 @@
 from typing import Type
 import torch
-import tomesd
 from modules.dml.hijack.utils import catch_nan
+
 
 def make_tome_block(block_class: Type[torch.nn.Module]) -> Type[torch.nn.Module]:
     class ToMeBlock(block_class):
@@ -19,4 +19,9 @@ def make_tome_block(block_class: Type[torch.nn.Module]) -> Type[torch.nn.Module]
             return x
 
     return ToMeBlock
-tomesd.patch.make_tome_block = make_tome_block
+
+try:
+    import tomesd
+    tomesd.patch.make_tome_block = make_tome_block
+except Exception:
+    pass

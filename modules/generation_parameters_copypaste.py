@@ -247,8 +247,8 @@ def parse_generation_parameters(infotext, no_prompt=False):
         else:
             params[k] = v
     if not no_prompt:
-        params["Prompt"] = prompt.replace('Prompt:', '').strip(' ,')
-        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip(' ,')
+        params["Prompt"] = prompt.replace('Prompt:', '').strip(' ,\n')
+        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip(' ,\n')
     debug(f"Parse: {params}")
     return params
 

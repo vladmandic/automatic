@@ -1620,6 +1620,8 @@ def apply_token_merging(sd_model):
             shared.log.warning('Token merging not supported with HyperTile for UNet')
             return
         try:
+            import installer
+            installer.install('tomesd', 'tomesd', ignore=False)
             import tomesd
             tomesd.apply_patch(
                 sd_model,
