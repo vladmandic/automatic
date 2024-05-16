@@ -59,9 +59,11 @@ function setProgress(res) {
     const el = document.getElementById(elId);
     if (el) {
       el.innerText = (res ? `${job} ${perc} ${eta}` : 'Generate');
-      el.style.background = res && (progress > 0)
-        ? `linear-gradient(to right, var(--primary-500) 0%, var(--primary-800) ${perc}, var(--neutral-700) ${perc})`
-        : 'var(--button-primary-background-fill)';
+      if (!window.waitForUiReady) {
+        el.style.background = res && (progress > 0)
+          ? `linear-gradient(to right, var(--primary-500) 0%, var(--primary-800) ${perc}, var(--neutral-700) ${perc})`
+          : 'var(--button-primary-background-fill)';
+      }
     }
   }
 }

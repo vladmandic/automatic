@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-15
+## Update for 2024-05-16
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -116,6 +116,7 @@
   - Updated all system requirements  
   - UI log monitor will auto-reconnect to server on server restart  
   - UI styles includes indicator for active styles  
+  - UI reduce load on browser  
   - Secondary sampler add option "same as primary"  
   - Change attention mechanism on-the-fly without model reload, thanks @Disty0  
   - Update stable-fast with support for torch 2.2.2 and 2.3.0, thanks @Aptronymist

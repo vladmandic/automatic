@@ -96,27 +96,35 @@ let executedOnLoaded = false;
 const ignoreElements = ['logMonitorData', 'logWarnings', 'logErrors', 'tooltip-container', 'logger'];
 const ignoreClasses = ['wrap'];
 
+let mutationTimer = null;
+let validMutations = [];
 async function mutationCallback(mutations) {
-  let validMutations = mutations;
-  validMutations = validMutations.filter((m) => m.target.nodeName !== 'LABEL');
-  validMutations = validMutations.filter((m) => ignoreElements.indexOf(m.target.id) === -1);
-  validMutations = validMutations.filter((m) => m.target.id !== 'logWarnings' && m.target.id !== 'logErrors');
-  validMutations = validMutations.filter((m) => !m.target.classList?.contains('wrap'));
+  let newMutations = mutations;
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => m.target.nodeName !== 'LABEL');
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => ignoreElements.indexOf(m.target.id) === -1);
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => m.target.id !== 'logWarnings' && m.target.id !== 'logErrors');
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => !m.target.classList?.contains('wrap'));
+  if (newMutations.length > 0) validMutations = validMutations.concat(newMutations);
   if (validMutations.length < 1) return;
 
-  if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) { // execute once
-    executedOnLoaded = true;
-    executeCallbacks(uiLoadedCallbacks);
-  }
-  if (executedOnLoaded) { // execute on each mutation
-    executeCallbacks(uiUpdateCallbacks, mutations);
-    scheduleAfterUiUpdateCallbacks();
-  }
-  const newTab = getUICurrentTab();
-  if (newTab && (newTab !== uiCurrentTab)) {
-    uiCurrentTab = newTab;
-    executeCallbacks(uiTabChangeCallbacks);
-  }
+  if (mutationTimer) clearTimeout(mutationTimer);
+  mutationTimer = setTimeout(async () => {
+    if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) { // execute once
+      executedOnLoaded = true;
+      executeCallbacks(uiLoadedCallbacks);
+    }
+    if (executedOnLoaded) { // execute on each mutation
+      executeCallbacks(uiUpdateCallbacks, mutations);
+      scheduleAfterUiUpdateCallbacks();
+    }
+    const newTab = getUICurrentTab();
+    if (newTab && (newTab !== uiCurrentTab)) {
+      uiCurrentTab = newTab;
+      executeCallbacks(uiTabChangeCallbacks);
+    }
+    validMutations = [];
+    mutationTimer = null;
+  }, 50);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
