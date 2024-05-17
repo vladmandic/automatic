@@ -367,10 +367,11 @@ def create_ui(startup_timer = None):
         def switch_profiling():
             shared.cmd_opts.profile = not shared.cmd_opts.profile
             shared.log.warning(f'Profiling: {shared.cmd_opts.profile}')
+            return 'Stop profiling' if shared.cmd_opts.profile else 'Start profiling'
 
         unload_sd_model.click(fn=unload_sd_weights, inputs=[], outputs=[])
         reload_sd_model.click(fn=reload_sd_weights, inputs=[], outputs=[])
-        enable_profiling.click(fn=switch_profiling, inputs=[], outputs=[])
+        enable_profiling.click(fn=switch_profiling, inputs=[], outputs=[enable_profiling])
         request_notifications.click(fn=lambda: None, inputs=[], outputs=[], _js='function(){}')
         preview_theme.click(fn=None, _js='previewTheme', inputs=[], outputs=[])
 

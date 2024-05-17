@@ -98,7 +98,7 @@ def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
             except Exception as e:
                 shared.log.error(f'Wildcards: wildcard="{wildcard}" error={e}')
     t1 = time.time()
-    prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [], seed)
+    prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [], recursion=0, seed=seed)
     t2 = time.time()
     if replaced and not silent:
         shared.log.debug(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
