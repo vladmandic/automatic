@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-16
+## Update for 2024-05-17
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -143,6 +143,7 @@
   - Removed 1024x1024 workaround  
   - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`  
 - **ROCm**, thanks @Disty0  
+  - Add support for ROCm 6.1 nighthly builds  
   - Switch to stable branch of PyTorch  
   - Compatibility improvenments  
   - Add **MIGraphX** torch compile engine  

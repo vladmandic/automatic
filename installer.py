@@ -528,8 +528,10 @@ def check_torch():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         else:
-            if rocm_ver is None or rocm_ver == "6.1": # assume the latest if version check fails + torch for 6.1 doesn't exist yet
+            if rocm_ver is None: # assume the latest if version check fails
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
+            elif rocm_ver == 6.1: # need nighlies
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
             elif int(rocm_ver.rsplit(".")[0]) <= 4 or (int(rocm_ver.rsplit(".")[0]) == 5 and int(rocm_ver.rsplit(".")[1]) <= 5): # oldest supported version is 5.5
                 log.warning(f"Unsupported ROCm version detected: {rocm_ver}")
                 log.warning("Minimum supported ROCm version is 5.5")
