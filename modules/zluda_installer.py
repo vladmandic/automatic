@@ -14,7 +14,7 @@ DLL_MAPPING = {
     'cudart.dll': 'cudart64_110.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ['amdhip64.dll', 'rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
+HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
