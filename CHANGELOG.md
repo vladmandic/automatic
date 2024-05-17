@@ -105,7 +105,6 @@
   - Hypernetwork support disabled by default, can be enabled in settings  
 - **Improvements**:
   - Faster server startup  
-  - More **ZLUDA** updates and optimizations, thanks @lshqqytiger
   - Styles apply wildcards to params
   - Face HiRes fully configurable and higher quality when using high-resolution models  
   - Extra networks persistent sort order in settings  
@@ -147,6 +146,10 @@
   - Switch to stable branch of PyTorch  
   - Compatibility improvenments  
   - Add **MIGraphX** torch compile engine  
+- **ZLUDA**, thanks @lshqqytiger
+  - Rewrite ZLUDA installer
+  - ZLUDA **v3.8** updates: Runtime API support
+  - Add `--reinstall-zluda` (to download the latest ZLUDA)
 - **Fixes**:
   - Update requirements
   - Prompt params parser
