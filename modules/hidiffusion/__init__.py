@@ -1,8 +1,10 @@
 from modules import shared
 from modules.hidiffusion import hidiffusion
+# from modules.hidiffusion import hidiffusion_orig as hidiffusion
 
 
 def apply_hidiffusion(p):
+    hidiffusion.remove_hidiffusion(shared.sd_model)
     if p.hidiffusion:
         hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_steps > 0
         hidiffusion.aggressive_step = shared.opts.hidiffusion_steps
@@ -25,8 +27,6 @@ def apply_hidiffusion(p):
         shared.log.debug(f'Applying HiDiffusion: raunet={shared.opts.hidiffusion_raunet} attn={shared.opts.hidiffusion_attn} aggressive={shared.opts.hidiffusion_steps > 0}:{shared.opts.hidiffusion_steps} t1={shared.opts.hidiffusion_t1} t2={shared.opts.hidiffusion_t2}')
         p.extra_generation_params['HiDiffusion'] = f'{shared.opts.hidiffusion_raunet}/{shared.opts.hidiffusion_attn}/{shared.opts.hidiffusion_steps > 0}:{shared.opts.hidiffusion_steps}'
         hidiffusion.apply_hidiffusion(shared.sd_model, apply_raunet=shared.opts.hidiffusion_raunet, apply_window_attn=shared.opts.hidiffusion_attn)
-    elif hasattr(shared.sd_model, "named_modules"):
-        hidiffusion.remove_hidiffusion(shared.sd_model)
 
 
 remove_hidiffusion = hidiffusion.remove_hidiffusion
