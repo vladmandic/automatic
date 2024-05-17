@@ -42,7 +42,7 @@ def apply_styles_to_prompt(prompt, styles):
     return prompt
 
 
-def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0):
+def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, seed=-1):
     def check_files(prompt, wildcard, files):
         for file in files:
             if wildcard == os.path.splitext(os.path.basename(file))[0] if os.path.sep not in wildcard else wildcard in file:
@@ -74,13 +74,15 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0):
             not_found.remove(m)
         elif not found and m not in not_found:
             not_found.append(m)
-    prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found, recursion) # recursive until we get early return
+    prompt, replaced, not_found = apply_file_wildcards(prompt, replaced, not_found, recursion, seed) # recursive until we get early return
     return prompt, replaced, not_found
 
 
-def apply_wildcards_to_prompt(prompt, all_wildcards):
+def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
     if len(prompt) == 0:
         return prompt
+    if seed > 0:
+        random.seed(seed)
     replaced = {}
     t0 = time.time()
     for style_wildcards in all_wildcards:
@@ -88,19 +90,20 @@ def apply_wildcards_to_prompt(prompt, all_wildcards):
         for wildcard in wildcards:
             try:
                 what, words = wildcard.split("=", 1)
-                words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
-                word = random.choice(words)
-                prompt = prompt.replace(what, word)
-                replaced[what] = word
+                if what in prompt:
+                    words = [x.strip() for x in words.split(",") if len(x.strip()) > 0]
+                    word = random.choice(words)
+                    prompt = prompt.replace(what, word)
+                    replaced[what] = word
             except Exception as e:
                 shared.log.error(f'Wildcards: wildcard="{wildcard}" error={e}')
     t1 = time.time()
-    prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [])
+    prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [], seed)
     t2 = time.time()
-    if replaced:
-        shared.log.info(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
-    if len(replaced_file) > 0 or len(not_found) > 0:
-        shared.log.info(f'Wildcards applied: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
+    if replaced and not silent:
+        shared.log.debug(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
+    if (len(replaced_file) > 0 or len(not_found) > 0) and not silent:
+        shared.log.debug(f'Wildcards applied: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
     return prompt
 
 
@@ -129,7 +132,7 @@ def apply_styles_to_extra(p, style: Style):
     reference_style = get_reference_style()
     extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
 
-    style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards])
+    style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards], silent=True)
     extra.update(parse_generation_parameters(style_extra))
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
@@ -246,19 +249,42 @@ class StyleDatabase:
 
     def get_style_prompts(self, styles):
         if styles is None or not isinstance(styles, list):
-            shared.log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).prompt for x in styles]
 
     def get_negative_style_prompts(self, styles):
         if styles is None or not isinstance(styles, list):
-            shared.log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).negative_prompt for x in styles]
 
+    def apply_styles_to_prompts(self, prompts, negatives, styles, seeds):
+        if styles is None or not isinstance(styles, list):
+            shared.log.error(f'Styles invalid styles: {styles}')
+            return prompts
+        if prompts is None or not isinstance(prompts, list):
+            shared.log.error(f'Styles invalid prompts: {prompts}')
+            return prompts
+        if seeds is None or not isinstance(prompts, list):
+            shared.log.error(f'Styles invalid seeds: {seeds}')
+            return prompts
+        parsed_positive = []
+        parsed_negative = []
+        for i in range(len(prompts)):
+            prompt = prompts[i]
+            prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
+            prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles], seeds[i])
+            parsed_positive.append(prompt)
+            prompt = negatives[i]
+            prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
+            prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles], seeds[i])
+            parsed_negative.append(prompt)
+        return parsed_positive, parsed_negative
+
     def apply_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
-            shared.log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
         prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
@@ -266,7 +292,7 @@ class StyleDatabase:
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
         if styles is None or not isinstance(styles, list):
-            shared.log.error(f'Invalid styles: {styles}')
+            shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
         prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
@@ -274,7 +300,7 @@ class StyleDatabase:
 
     def apply_styles_to_extra(self, p):
         if p.styles is None or not isinstance(p.styles, list):
-            shared.log.error(f'Invalid styles: {p.styles}')
+            shared.log.error(f'Styles invalid: {p.styles}')
             return
         for style in p.styles:
             s = self.find_style(style)

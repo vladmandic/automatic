@@ -212,6 +212,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 def process_init(p: StableDiffusionProcessing):
     seed = get_fixed_seed(p.seed)
     subseed = get_fixed_seed(p.subseed)
+    """
     if type(p.prompt) == list:
         p.all_prompts = [shared.prompt_styles.apply_styles_to_prompt(x, p.styles) for x in p.prompt]
     else:
@@ -220,20 +221,32 @@ def process_init(p: StableDiffusionProcessing):
         p.all_negative_prompts = [shared.prompt_styles.apply_negative_styles_to_prompt(x, p.styles) for x in p.negative_prompt]
     else:
         p.all_negative_prompts = p.batch_size * p.n_iter * [shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)]
-    if type(seed) == list:
-        p.all_seeds = seed
-    else:
-        if shared.opts.sequential_seed:
-            p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
+    """
+    reset_prompts = False
+    if p.all_prompts is None:
+        p.all_prompts = p.prompt if isinstance(p.prompt, list) else p.batch_size * p.n_iter * [p.prompt]
+        reset_prompts = True
+    if p.all_negative_prompts is None:
+        p.all_negative_prompts = p.negative_prompt if isinstance(p.negative_prompt, list) else p.batch_size * p.n_iter * [p.negative_prompt]
+        reset_prompts = True
+    if p.all_seeds is None:
+        reset_prompts = True
+        if type(seed) == list:
+            p.all_seeds = seed
         else:
-            p.all_seeds = []
-            for i in range(len(p.all_prompts)):
-                seed = get_fixed_seed(p.seed)
-                p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
-    if type(subseed) == list:
-        p.all_subseeds = subseed
-    else:
-        p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
+            if shared.opts.sequential_seed:
+                p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
+            else:
+                p.all_seeds = []
+                for i in range(len(p.all_prompts)):
+                    seed = get_fixed_seed(p.seed)
+                    p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
+        if type(subseed) == list:
+            p.all_subseeds = subseed
+        else:
+            p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
+    if reset_prompts:
+        p.all_prompts, p.all_negative_prompts = shared.prompt_styles.apply_styles_to_prompts(p.all_prompts, p.all_negative_prompts, p.styles, p.all_seeds)
 
 
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:

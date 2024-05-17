@@ -278,7 +278,7 @@ def create_ui(startup_timer = None):
             shutdown_submit = gr.Button(value="Shutdown server", variant='primary', elem_id="shutdown_submit")
             unload_sd_model = gr.Button(value='Unload checkpoint', variant='primary', elem_id="sett_unload_sd_model")
             reload_sd_model = gr.Button(value='Reload checkpoint', variant='primary', elem_id="sett_reload_sd_model")
-            enable_profiling = gr.Button(value='Start profiling', variant='primary', elem_id="start_profiling")
+            enable_profiling = gr.Button(value='Start profiling', variant='primary', elem_id="enable_profiling")
 
         with gr.Tabs(elem_id="system") as system_tabs:
             global ui_system_tabs # pylint: disable=global-statement
