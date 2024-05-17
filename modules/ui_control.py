@@ -608,4 +608,5 @@ def create_ui(_blocks: gr.Blocks=None):
                     run_test_adapters_btn.click(fn=test_adapters, inputs=[prompt, negative, input_image], outputs=[preview_process, output_image, output_video, output_gallery])
                     run_test_lite_btn.click(fn=test_lite, inputs=[prompt, negative, input_image], outputs=[preview_process, output_image, output_video, output_gallery])
 
+    ui_extra_networks.setup_ui(extra_networks_ui, output_gallery)
     return [(control_ui, 'Control', 'control')]

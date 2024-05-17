@@ -641,7 +641,9 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     def fn_save_img(image):
         if ui.last_item is None or ui.last_item.local_preview is None:
             return 'html/card-no-preview.png'
-        images = list(ui.gallery.temp_files) # gallery cannot be used as input component so looking at most recently registered temp files
+        images = []
+        if ui.gallery is not None:
+            images = list(ui.gallery.temp_files) # gallery cannot be used as input component so looking at most recently registered temp files
         if len(images) < 1:
             shared.log.warning(f'Extra network no image: item={ui.last_item.name}')
             return 'html/card-no-preview.png'
