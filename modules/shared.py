@@ -141,7 +141,7 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
     locked = False
 
     def default(obj):
-        log.error(f'Saving: file="{filename}" not a valid object: {obj}')
+        log.error(f'Save: file="{filename}" not a valid object: {obj}')
         return str(obj)
 
     try:
@@ -160,7 +160,7 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
         else:
             raise ValueError('not a valid object')
     except Exception as e:
-        log.error(f'Saving failed: file="{filename}" {e}')
+        log.error(f'Save failed: file="{filename}" {e}')
         return
     try:
         if locking_available:
@@ -186,7 +186,7 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
         if not silent:
             log.debug(f'Save: file="{filename}" json={len(data)} bytes={len(output)} time={t1-t0:.3f}')
     except Exception as e:
-        log.error(f'Saving failed: file="{filename}" {e}')
+        log.error(f'Save failed: file="{filename}" {e}')
     try:
         if locking_available and lock_file is not None:
             lock_file.release_write_lock()
@@ -936,7 +936,7 @@ class Options:
             if len(unused_settings) > 0:
                 log.debug(f"Unused settings: {unused_settings}")
         except Exception as e:
-            log.error(f'Saving settings failed: {filename} {e}')
+            log.error(f'Save settings failed: {filename} {e}')
 
     def save(self, filename=None, silent=False):
         threading.Thread(target=self.save_atomic, args=(filename, silent)).start()

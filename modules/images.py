@@ -545,21 +545,19 @@ def atomically_save_image():
         try:
             image_format = Image.registered_extensions()[extension]
         except Exception:
-            shared.log.warning(f'Saving: unknown image format: {extension}')
+            shared.log.warning(f'Save: unknown image format: {extension}')
             image_format = 'JPEG'
         if shared.opts.image_watermark_enabled or (shared.opts.image_watermark_position != 'none' and shared.opts.image_watermark_image != ''):
             image = set_watermark(image, shared.opts.image_watermark)
-        size = os.path.getsize(fn) if os.path.exists(fn) else 0
-        shared.log.info(f'Saving: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
         exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         # additional metadata saved in files
         if shared.opts.save_txt and len(exifinfo) > 0:
             try:
                 with open(filename_txt, "w", encoding="utf8") as file:
                     file.write(f"{exifinfo}\n")
-                shared.log.info(f'Saving: text="{filename_txt}" len={len(exifinfo)}')
+                shared.log.info(f'Save: text="{filename_txt}" len={len(exifinfo)}')
             except Exception as e:
-                shared.log.warning(f'Saving failed: description={filename_txt} {e}')
+                shared.log.warning(f'Save failed: description={filename_txt} {e}')
         # actual save
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
@@ -568,7 +566,7 @@ def atomically_save_image():
             save_args = { 'compress_level': 6, 'pnginfo': pnginfo_data if shared.opts.image_metadata else None }
         elif image_format == 'JPEG':
             if image.mode == 'RGBA':
-                shared.log.warning('Saving: removing alpha channel')
+                shared.log.warning('Save: removing alpha channel')
                 image = image.convert("RGB")
             elif image.mode == 'I;16':
                 image = image.point(lambda p: p * 0.0038910505836576).convert("L")
@@ -586,8 +584,10 @@ def atomically_save_image():
         try:
             image.save(fn, format=image_format, **save_args)
         except Exception as e:
-            shared.log.error(f'Saving failed: file="{fn}" format={image_format} args={save_args} {e}')
+            shared.log.error(f'Save failed: file="{fn}" format={image_format} args={save_args} {e}')
             errors.display(e, 'Image save')
+        size = os.path.getsize(fn) if os.path.exists(fn) else 0
+        shared.log.info(f'Save: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -599,7 +599,7 @@ def atomically_save_image():
             entry = { 'id': idx, 'filename': filename, 'time': datetime.datetime.now().isoformat(), 'info': exifinfo }
             entries.append(entry)
             shared.writefile(entries, fn, mode='w', silent=True)
-            shared.log.info(f'Saving: json="{fn}" records={len(entries)}')
+            shared.log.info(f'Save: json="{fn}" records={len(entries)}')
         save_queue.task_done()
 
 

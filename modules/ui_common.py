@@ -157,7 +157,7 @@ def save_files(js_data, files, html_info, index):
                     filename_txt = f"{os.path.splitext(tgt_filename)[0]}.txt"
                     with open(filename_txt, "w", encoding="utf8") as file:
                         file.write(f"{info}\n")
-                    shared.log.debug(f'Saving: text="{filename_txt}"')
+                    shared.log.debug(f'Save: text="{filename_txt}"')
                 except Exception as e:
                     shared.log.warning(f'Image description save failed: {filename_txt} {e}')
             script_callbacks.image_save_btn_callback(tgt_filename)
