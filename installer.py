@@ -498,13 +498,15 @@ def check_torch():
             error = None
             from modules import zluda_installer
             try:
+                if args.reinstall_zluda:
+                    zluda_installer.uninstall()
                 if args.use_zluda_dnn:
                     if zluda_installer.check_dnn_dependency():
                         zluda_installer.enable_dnn()
                     else:
                         log.warning("Couldn't find the required dependency of ZLUDA DNN.")
-                zluda_installer.install()
-                zluda_path = zluda_installer.find()
+                zluda_path = zluda_installer.get_path()
+                zluda_installer.install(zluda_path)
                 zluda_installer.make_copy(zluda_path)
             except Exception as e:
                 error = e
@@ -1062,6 +1064,7 @@ def add_args(parser):
     group.add_argument('--skip-env', default = os.environ.get("SD_SKIPENV",False), action='store_true', help = "Skips setting of env variables during startup, default: %(default)s")
     group.add_argument('--experimental', default = os.environ.get("SD_EXPERIMENTAL",False), action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
     group.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
+    group.add_argument('--reinstall-zluda', default = os.environ.get("SD_REINSTALL_ZLUDA",False), action='store_true', help = "Force reinstallation of ZLUDA, default: %(default)s")
     group.add_argument('--test', default = os.environ.get("SD_TEST",False), action='store_true', help = "Run test only and exit")
     group.add_argument('--version', default = False, action='store_true', help = "Print version information")
     group.add_argument('--ignore', default = os.environ.get("SD_IGNORE",False), action='store_true', help = "Ignore any errors and attempt to continue")

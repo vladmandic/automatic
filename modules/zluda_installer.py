@@ -11,13 +11,14 @@ RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '11cc5844514f93161e0e74387f04e2c53
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
+    'cudart.dll': 'cudart64_110.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
+HIP_TARGETS = ['amdhip64.dll', 'rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
-def find() -> str:
+def get_path() -> str:
     return os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 
 
@@ -45,9 +46,7 @@ def enable_dnn() -> None:
     HIP_TARGETS.append('MIOpen.dll')
 
 
-def install() -> None:
-    zluda_path = find()
-
+def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
@@ -62,6 +61,11 @@ def install() -> None:
                 info.filename = os.path.basename(info.filename)
                 archive.extract(info, '.zluda')
     os.remove('_zluda')
+
+
+def uninstall() -> None:
+    if os.path.exists('.zluda'):
+        shutil.rmtree('.zluda')
 
 
 def make_copy(zluda_path: os.PathLike) -> None:
