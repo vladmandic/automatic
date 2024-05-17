@@ -4,7 +4,8 @@ from modules.hidiffusion import hidiffusion
 
 
 def apply_hidiffusion(p):
-    hidiffusion.remove_hidiffusion(shared.sd_model)
+    if hasattr(shared.sd_model, "named_modules"): # Some pipelines doesn't have named_modules
+        hidiffusion.remove_hidiffusion(shared.sd_model)
     if p.hidiffusion:
         hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_steps > 0
         hidiffusion.aggressive_step = shared.opts.hidiffusion_steps
