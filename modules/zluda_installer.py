@@ -7,7 +7,7 @@ import urllib.request
 from typing import Union
 
 
-RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '2804604c29b5fa36deca9ece219d3970b61d4c27')}"
+RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '11cc5844514f93161e0e74387f04e2c537705a82')}"
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
@@ -30,6 +30,8 @@ def find_hip_sdk() -> Union[str, None]:
 
 
 def check_dnn_dependency() -> bool:
+    if os.environ.get("ZLUDA", None) is None:
+        return False
     hip_path = os.environ.get("HIP_PATH", None)
     if hip_path is None: # unable to check
         return True
@@ -39,10 +41,8 @@ def check_dnn_dependency() -> bool:
 
 
 def enable_dnn() -> None:
-    global RELEASE # pylint: disable=global-statement
     DLL_MAPPING['cudnn.dll'] = 'cudnn64_8.dll'
     HIP_TARGETS.append('MIOpen.dll')
-    RELEASE = 'v3.8-pre2-dnn'
 
 
 def install() -> None:
