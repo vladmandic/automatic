@@ -8,14 +8,6 @@ from modules import shared, devices
 do_nothing = lambda _: None # pylint: disable=unnecessary-lambda-assignment
 
 
-conv2d = torch.nn.functional.conv2d
-def conv2d_cudnn_disabled(*args, **kwargs):
-    torch.backends.cudnn.enabled = False
-    R = conv2d(*args, **kwargs)
-    torch.backends.cudnn.enabled = True
-    return R
-
-
 def is_zluda(device: DeviceLikeType):
     device = torch.device(device)
     return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
@@ -46,8 +38,6 @@ def initialize_zluda():
             torch.backends.cuda.enable_cudnn_sdp(shared.cmd_opts.use_zluda_dnn and shared.cmd_opts.experimental)
             torch.backends.cuda.enable_cudnn_sdp = do_nothing
         shared.opts.sdp_options = ['Math attention']
-        if shared.cmd_opts.use_zluda_dnn and not shared.cmd_opts.experimental:
-            torch.nn.functional.conv2d = conv2d_cudnn_disabled
         devices.device_codeformer = devices.cpu
 
         result = test(device)
