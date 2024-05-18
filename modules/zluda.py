@@ -27,7 +27,7 @@ def test(device: DeviceLikeType) -> Union[Exception, None]:
 def initialize_zluda():
     device = devices.get_optimal_device()
     if platform.system() == "Windows" and devices.cuda_ok and is_zluda(device):
-        torch.backends.cudnn.enabled = shared.cmd_opts.use_zluda_dnn
+        torch.backends.cudnn.enabled = False
         torch.backends.cuda.enable_flash_sdp(False)
         torch.backends.cuda.enable_flash_sdp = do_nothing
         torch.backends.cuda.enable_math_sdp(True)
@@ -35,7 +35,7 @@ def initialize_zluda():
         torch.backends.cuda.enable_mem_efficient_sdp(False)
         torch.backends.cuda.enable_mem_efficient_sdp = do_nothing
         if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
-            torch.backends.cuda.enable_cudnn_sdp(shared.cmd_opts.use_zluda_dnn and shared.cmd_opts.experimental)
+            torch.backends.cuda.enable_cudnn_sdp(False)
             torch.backends.cuda.enable_cudnn_sdp = do_nothing
         shared.opts.sdp_options = ['Math attention']
         devices.device_codeformer = devices.cpu

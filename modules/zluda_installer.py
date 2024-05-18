@@ -30,22 +30,6 @@ def find_hip_sdk() -> Union[str, None]:
     return os.environ.get('HIP_PATH', hip_path_default)
 
 
-def check_dnn_dependency() -> bool:
-    if os.environ.get("ZLUDA", None) is None:
-        return False
-    hip_path = os.environ.get("HIP_PATH", None)
-    if hip_path is None: # unable to check
-        return True
-    if os.path.exists(os.path.join(hip_path, 'bin', 'MIOpen.dll')):
-        return True
-    return False
-
-
-def enable_dnn() -> None:
-    DLL_MAPPING['cudnn.dll'] = 'cudnn64_8.dll'
-    HIP_TARGETS.append('MIOpen.dll')
-
-
 def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return

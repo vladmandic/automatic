@@ -500,11 +500,6 @@ def check_torch():
             try:
                 if args.reinstall_zluda:
                     zluda_installer.uninstall()
-                if args.use_zluda_dnn:
-                    if zluda_installer.check_dnn_dependency():
-                        zluda_installer.enable_dnn()
-                    else:
-                        log.warning("Couldn't find the required dependency of ZLUDA DNN.")
                 zluda_path = zluda_installer.get_path()
                 zluda_installer.install(zluda_path)
                 zluda_installer.make_copy(zluda_path)
