@@ -153,7 +153,7 @@ def create_options(tab):
 def create_cfg_inputs(tab):
     with gr.Row():
         cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='CFG scale', value=6.0, elem_id=f"{tab}_cfg_scale")
-        cfg_end = gr.Slider(minimum=0.0, maximum=1.0, step=0.1, label='CFG end', value=1.0, elem_id=f"{tab}_cfg_end")
+        cfg_end = gr.Slider(minimum=0.0, maximum=1.0, step=0.1, label='Guidance end', value=1.0, elem_id=f"{tab}_cfg_end")
     return cfg_scale, cfg_end
 
 

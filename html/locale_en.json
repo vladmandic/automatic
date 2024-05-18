@@ -144,6 +144,7 @@
   {"id":"","label":"Batch count","localized":"","hint":"How many batches of images to create (has no impact on generation performance or VRAM usage)"},
   {"id":"","label":"Batch size","localized":"","hint":"How many image to create in a single batch (increases generation performance at cost of higher VRAM usage)"},
   {"id":"","label":"cfg scale","localized":"","hint":"Classifier Free Guidance scale: how strongly the image should conform to prompt. Lower values produce more creative results, higher values make it follow the prompt more strictly; recommended values between 5-10"},
+  {"id":"","label":"Guidance End","localized":"","hint":"Ends the effect of CFG and PAG early: A value of 1 acts as normal, 0.5 stops guidance at 50% of steps"},
   {"id":"","label":"CLIP skip","localized":"","hint":"Clip skip is a feature that allows users to control the level of specificity of the prompt, the higher the CLIP skip value, the less deep the prompt will be interpreted. CLIP Skip 1 is typical while some anime models produce better results at  CLIP skip 2"},
   {"id":"","label":"Initial seed","localized":"","hint":"A value that determines the output of random number generator - if you create an image with same parameters and seed as another image, you'll get the same result"},
   {"id":"","label":"Variation","localized":"","hint":"Second seed to be mixed with primary seed"},
