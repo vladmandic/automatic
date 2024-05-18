@@ -500,6 +500,8 @@ def check_torch():
             try:
                 if args.reinstall_zluda:
                     zluda_installer.uninstall()
+                if args.experimental:
+                    zluda_installer.enable_runtime_api()
                 zluda_path = zluda_installer.get_path()
                 zluda_installer.install(zluda_path)
                 zluda_installer.make_copy(zluda_path)

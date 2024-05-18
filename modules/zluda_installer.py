@@ -11,7 +11,6 @@ RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '11cc5844514f93161e0e74387f04e2c53
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
-    'cudart.dll': 'cudart64_110.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
 HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
@@ -50,6 +49,10 @@ def install(zluda_path: os.PathLike) -> None:
 def uninstall() -> None:
     if os.path.exists('.zluda'):
         shutil.rmtree('.zluda')
+
+
+def enable_runtime_api():
+    DLL_MAPPING['cudart.dll'] = 'cudart64_110.dll'
 
 
 def make_copy(zluda_path: os.PathLike) -> None:
