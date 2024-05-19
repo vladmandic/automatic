@@ -56,10 +56,10 @@ def ipex_optimize(sd_model):
                 sd_model.unet = ipex_optimize_model(sd_model.unet)
             if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
                 sd_model.transformer = ipex_optimize_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder, 'config'):
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
                 sd_model.decoder = None
                 sd_model.decoder = sd_model.decoder_pipe.decoder = ipex_optimize_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model.prior_prior, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
                 sd_model.prior_prior = None
                 sd_model.prior_prior = sd_model.prior_pipe.prior = ipex_optimize_model(sd_model.prior_pipe.prior)
         if "VAE" in shared.opts.ipex_optimize:
@@ -80,7 +80,7 @@ def ipex_optimize(sd_model):
                     sd_model.text_encoder = ipex_optimize_model(sd_model.text_encoder)
             if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
                 sd_model.text_encoder_2 = ipex_optimize_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
                 sd_model.prior_text_encoder = None
                 sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = ipex_optimize_model(sd_model.prior_pipe.text_encoder)
         t1 = time.time()
@@ -117,10 +117,10 @@ def nncf_compress_weights(sd_model):
                 sd_model.unet = nncf_compress_model(sd_model.unet)
             if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
                 sd_model.transformer = nncf_compress_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
                 sd_model.decoder = None
                 sd_model.decoder = sd_model.decoder_pipe.decoder = nncf_compress_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
                 sd_model.prior_prior = None
                 sd_model.prior_prior = sd_model.prior_pipe.prior = nncf_compress_model(sd_model.prior_pipe.prior)
         if "VAE" in shared.opts.nncf_compress_weights:
@@ -141,7 +141,7 @@ def nncf_compress_weights(sd_model):
                     sd_model.text_encoder = nncf_compress_model(sd_model.text_encoder)
             if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
                 sd_model.text_encoder_2 = nncf_compress_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
                 sd_model.prior_text_encoder = None
                 sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = nncf_compress_model(sd_model.prior_pipe.text_encoder)
         t1 = time.time()
@@ -294,10 +294,10 @@ def compile_torch(sd_model):
                 sd_model.unet = torch_compile_model(sd_model.unet)
             if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
                 sd_model.transformer = torch_compile_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder') and hasattr(sd_model.decoder, 'config'):
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
                 sd_model.decoder = None
                 sd_model.decoder = sd_model.decoder_pipe.decoder = torch_compile_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_prior') and hasattr(sd_model.prior_prior, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
                 sd_model.prior_prior = None
                 sd_model.prior_prior = sd_model.prior_pipe.prior = torch_compile_model(sd_model.prior_pipe.prior)
         if "VAE" in shared.opts.cuda_compile:
@@ -318,7 +318,7 @@ def compile_torch(sd_model):
                     sd_model.text_encoder = torch_compile_model(sd_model.text_encoder)
             if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
                 sd_model.text_encoder_2 = torch_compile_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_text_encoder') and hasattr(sd_model.prior_text_encoder, 'config'):
+            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
                 sd_model.prior_text_encoder = None
                 sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = torch_compile_model(sd_model.prior_pipe.text_encoder)
         setup_logging() # compile messes with logging so reset is needed
