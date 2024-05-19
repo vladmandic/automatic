@@ -76,9 +76,13 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
         except Exception as e:
             shared.log.debug(f"Callback: {e}")
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
-        pipe._guidance_scale = 0.0 # pylint: disable=protected-access
-        for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
-            kwargs[key] = kwargs[key].chunk(2)[-1]
+        if "PAG" in shared.sd_model.__class__.__name__:
+            pipe._guidance_scale = 1.001 if pipe._guidance_scale > 1 else pipe._guidance_scale  # pylint: disable=protected-access
+            pipe._pag_scale = 0.001  # pylint: disable=protected-access
+        else:
+            pipe._guidance_scale = 0.0  # pylint: disable=protected-access
+            for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
+                kwargs[key] = kwargs[key].chunk(2)[-1]
     shared.state.current_latent = kwargs['latents']
     if shared.cmd_opts.profile and shared.profiler is not None:
         shared.profiler.step()

@@ -234,7 +234,7 @@ axis_options = [
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
     AxisOption("CFG Scale", float, apply_field("cfg_scale")),
-    AxisOption("CFG End", float, apply_field("cfg_end")),
+    AxisOption("Guidance End", float, apply_field("cfg_end")),
     AxisOption("Variation seed", int, apply_field("subseed")),
     AxisOption("Variation strength", float, apply_field("subseed_strength")),
     AxisOption("Clip skip", float, apply_clip_skip),
