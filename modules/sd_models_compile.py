@@ -27,6 +27,43 @@ class CompiledModelState:
 deepcache_worker = None
 
 
+def apply_compile_to_model(sd_model, function, options):
+    if "Model" in options:
+        if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
+            sd_model.unet = function(sd_model.unet)
+        if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
+            sd_model.transformer = function(sd_model.transformer)
+        if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
+            sd_model.decoder = None
+            sd_model.decoder = sd_model.decoder_pipe.decoder = function(sd_model.decoder_pipe.decoder)
+        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
+            sd_model.prior_prior = None
+            sd_model.prior_prior = sd_model.prior_pipe.prior = function(sd_model.prior_pipe.prior)
+    if "VAE" in options:
+        if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
+            sd_model.vae = function(sd_model.vae)
+        if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
+            sd_model.movq = function(sd_model.movq)
+        if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
+            sd_model.vqgan = function(sd_model.vqgan)
+        if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
+            sd_model.image_encoder = function(sd_model.image_encoder)
+    if "Text Encoder" in options:
+        if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
+            if hasattr(sd_model, 'decoder_pipe'):
+                sd_model.text_encoder = None
+                sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = function(sd_model.decoder_pipe.text_encoder)
+            else:
+                sd_model.text_encoder = function(sd_model.text_encoder)
+        if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
+            sd_model.text_encoder_2 = function(sd_model.text_encoder_2)
+        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
+            sd_model.prior_text_encoder = None
+            sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder)
+
+    return sd_model
+
+
 def ipex_optimize(sd_model):
     try:
         t0 = time.time()
@@ -51,38 +88,8 @@ def ipex_optimize(sd_model):
             devices.torch_gc()
             return model
 
-        if "Model" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-                sd_model.unet = ipex_optimize_model(sd_model.unet)
-            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-                sd_model.transformer = ipex_optimize_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
-                sd_model.decoder = None
-                sd_model.decoder = sd_model.decoder_pipe.decoder = ipex_optimize_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
-                sd_model.prior_prior = None
-                sd_model.prior_prior = sd_model.prior_pipe.prior = ipex_optimize_model(sd_model.prior_pipe.prior)
-        if "VAE" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-                sd_model.vae = ipex_optimize_model(sd_model.vae)
-            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-                sd_model.movq = ipex_optimize_model(sd_model.movq)
-            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-                sd_model.vqgan = ipex_optimize_model(sd_model.vqgan)
-            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
-                sd_model.image_encoder = ipex_optimize_model(sd_model.image_encoder)
-        if "Text Encoder" in shared.opts.ipex_optimize:
-            if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-                if hasattr(sd_model, 'decoder_pipe'):
-                    sd_model.text_encoder = None
-                    sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = ipex_optimize_model(sd_model.decoder_pipe.text_encoder)
-                else:
-                    sd_model.text_encoder = ipex_optimize_model(sd_model.text_encoder)
-            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                sd_model.text_encoder_2 = ipex_optimize_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
-                sd_model.prior_text_encoder = None
-                sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = ipex_optimize_model(sd_model.prior_pipe.text_encoder)
+        sd_model = apply_compile_to_model(sd_model, ipex_optimize_model, shared.opts.ipex_optimize)
+
         t1 = time.time()
         shared.log.info(f"IPEX Optimize: time={t1-t0:.2f}")
     except Exception as e:
@@ -112,38 +119,8 @@ def nncf_compress_weights(sd_model):
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
 
-        if "Model" in shared.opts.nncf_compress_weights:
-            if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-                sd_model.unet = nncf_compress_model(sd_model.unet)
-            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-                sd_model.transformer = nncf_compress_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
-                sd_model.decoder = None
-                sd_model.decoder = sd_model.decoder_pipe.decoder = nncf_compress_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
-                sd_model.prior_prior = None
-                sd_model.prior_prior = sd_model.prior_pipe.prior = nncf_compress_model(sd_model.prior_pipe.prior)
-        if "VAE" in shared.opts.nncf_compress_weights:
-            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-                sd_model.vae = nncf_compress_model(sd_model.vae)
-            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-                sd_model.movq = nncf_compress_model(sd_model.movq)
-            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-                sd_model.vqgan = nncf_compress_model(sd_model.vqgan)
-            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
-                sd_model.image_encoder = nncf_compress_model(sd_model.image_encoder)
-        if "Text Encoder" in shared.opts.nncf_compress_weights:
-            if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-                if hasattr(sd_model, 'decoder_pipe'):
-                    sd_model.text_encoder = None
-                    sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = nncf_compress_model(sd_model.decoder_pipe.text_encoder)
-                else:
-                    sd_model.text_encoder = nncf_compress_model(sd_model.text_encoder)
-            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                sd_model.text_encoder_2 = nncf_compress_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
-                sd_model.prior_text_encoder = None
-                sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = nncf_compress_model(sd_model.prior_pipe.text_encoder)
+        sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights)
+
         t1 = time.time()
         shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
     except Exception as e:
@@ -289,38 +266,8 @@ def compile_torch(sd_model):
         except Exception as e:
             shared.log.error(f"Torch inductor config error: {e}")
 
-        if "Model" in shared.opts.cuda_compile:
-            if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-                sd_model.unet = torch_compile_model(sd_model.unet)
-            if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-                sd_model.transformer = torch_compile_model(sd_model.transformer)
-            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
-                sd_model.decoder = None
-                sd_model.decoder = sd_model.decoder_pipe.decoder = torch_compile_model(sd_model.decoder_pipe.decoder)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
-                sd_model.prior_prior = None
-                sd_model.prior_prior = sd_model.prior_pipe.prior = torch_compile_model(sd_model.prior_pipe.prior)
-        if "VAE" in shared.opts.cuda_compile:
-            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-                sd_model.vae = torch_compile_model(sd_model.vae)
-            if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-                sd_model.movq = torch_compile_model(sd_model.movq)
-            if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-                sd_model.vqgan = torch_compile_model(sd_model.vqgan)
-            if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
-                sd_model.image_encoder = torch_compile_model(sd_model.image_encoder)
-        if "Text Encoder" in shared.opts.cuda_compile:
-            if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-                if hasattr(sd_model, 'decoder_pipe'):
-                    sd_model.text_encoder = None
-                    sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = torch_compile_model(sd_model.decoder_pipe.text_encoder)
-                else:
-                    sd_model.text_encoder = torch_compile_model(sd_model.text_encoder)
-            if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-                sd_model.text_encoder_2 = torch_compile_model(sd_model.text_encoder_2)
-            if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
-                sd_model.prior_text_encoder = None
-                sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = torch_compile_model(sd_model.prior_pipe.text_encoder)
+        sd_model = apply_compile_to_model(sd_model, torch_compile_model, shared.opts.cuda_compile)
+
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
