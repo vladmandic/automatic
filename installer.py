@@ -287,12 +287,16 @@ def git(arg: str, folder: str = None, ignore: bool = False):
     return txt
 
 # switch to main branch as head can get detached
-def branch(folder):
-    if args.experimental:
+def branch(folder=None):
+    # if args.experimental:
+    #    return None
+    if not os.path.exists(os.path.join(folder or os.curdir, '.git')):
         return None
-    if not os.path.exists(os.path.join(folder, '.git')):
-        return None
-    b = git('branch', folder)
+    b = ''
+    try:
+        b = git('branch --show-current', folder)
+    except Exception:
+        b = git('git rev-parse --abbrev-ref HEAD', folder)
     if 'main' in b:
         b = 'main'
     elif 'master' in b:
@@ -1111,12 +1115,15 @@ def git_reset():
     log.warning('Running GIT reset')
     global quick_allowed # pylint: disable=global-statement
     quick_allowed = False
+    b = branch('.')
+    if b is None or b == '':
+        b = 'master'
     git('add .')
     git('stash')
     git('merge --abort', folder=None, ignore=True)
     git('fetch --all')
-    git('reset --hard origin/master')
-    git('checkout master')
+    git(f'reset --hard origin/{b}')
+    git(f'checkout {b}')
     git('submodule update --init --recursive')
     git('submodule sync --recursive')
     log.info('GIT reset complete')
