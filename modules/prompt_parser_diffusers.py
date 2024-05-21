@@ -120,7 +120,11 @@ def get_tokens(msg, prompt):
         ids = getattr(ids, 'input_ids', [])
         tokens = []
         for i in ids:
-            tokens.append(list(token_dict.keys())[list(token_dict.values()).index(i)])
+            try:
+                key = list(token_dict.keys())[list(token_dict.values()).index(i)]
+                tokens.append(key)
+            except Exception:
+                tokens.append(f'UNK_{i}')
         token_count = len(ids) - int(has_bos_token) - int(has_eos_token)
         shared.log.trace(f'Prompt tokenizer: type={msg} tokens={token_count} {tokens}')
 
