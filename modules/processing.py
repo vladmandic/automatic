@@ -114,6 +114,7 @@ class Processed:
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
 
 
+
 def process_images(p: StableDiffusionProcessing) -> Processed:
     debug(f'Process images: {vars(p)}')
     if not hasattr(p.sd_model, 'sd_checkpoint_info'):
@@ -212,16 +213,6 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 def process_init(p: StableDiffusionProcessing):
     seed = get_fixed_seed(p.seed)
     subseed = get_fixed_seed(p.subseed)
-    """
-    if type(p.prompt) == list:
-        p.all_prompts = [shared.prompt_styles.apply_styles_to_prompt(x, p.styles) for x in p.prompt]
-    else:
-        p.all_prompts = p.batch_size * p.n_iter * [shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)]
-    if type(p.negative_prompt) == list:
-        p.all_negative_prompts = [shared.prompt_styles.apply_negative_styles_to_prompt(x, p.styles) for x in p.negative_prompt]
-    else:
-        p.all_negative_prompts = p.batch_size * p.n_iter * [shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)]
-    """
     reset_prompts = False
     if p.all_prompts is None:
         p.all_prompts = p.prompt if isinstance(p.prompt, list) else p.batch_size * p.n_iter * [p.prompt]

@@ -123,6 +123,9 @@
     Can improve memory utilization on compatible GPUs (RTX and newer)  
   - Torch dynamic profiling  
     You can enable/disable full torch profiling in settings top menu on-the-fly  
+  - Prompt caching - if you use the same prompt multiple times, no need to re-parse and encode it  
+    Useful for batches as prompt processing is ~0.1sec on each pass  
+  - Enhance `SD_PROMPT_DEBUG` to show actual tokens used
   - Support controlnet manually downloads models in both standalone and diffusers format  
     For standalone, simply copy safetensors file to `models/control/controlnet` folder  
     For diffusers format, create folder with model name in `models/control/controlnet/`  

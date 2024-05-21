@@ -382,24 +382,23 @@ def update_token_counter(text, steps):
         shared.log.info('Tokenizer busy')
         return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
     from modules import extra_networks
-    try:
-        text, _ = extra_networks.parse_prompt(text)
-        _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
-        prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
-    except Exception:
-        prompt_schedules = [[[steps, text]]]
-    flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
-    prompts = [prompt_text for step, prompt_text in flat_prompts]
+    prompt, _ = extra_networks.parse_prompt(text)
     if shared.backend == shared.Backend.ORIGINAL:
         from modules import sd_hijack
+        try:
+            _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
+            prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
+        except Exception:
+            prompt_schedules = [[[steps, text]]]
+        flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
+        prompts = [prompt_text for _step, prompt_text in flat_prompts]
         token_count, max_length = max([sd_hijack.model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
     elif shared.backend == shared.Backend.DIFFUSERS:
         if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
             has_bos_token = shared.sd_model.tokenizer.bos_token_id is not None
             has_eos_token = shared.sd_model.tokenizer.eos_token_id is not None
-            ids = [shared.sd_model.tokenizer(prompt) for prompt in prompts]
-            if len(ids) > 0 and hasattr(ids[0], 'input_ids'):
-                ids = [x.input_ids for x in ids]
-            token_count = max([len(x) for x in ids]) - int(has_bos_token) - int(has_eos_token)
+            ids = shared.sd_model.tokenizer(prompt)
+            ids = getattr(ids, 'input_ids', [])
+            token_count = len(ids) - int(has_bos_token) - int(has_eos_token)
             max_length = shared.sd_model.tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
     return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
