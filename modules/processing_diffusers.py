@@ -112,14 +112,13 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
         sd_models.move_model(shared.sd_model, devices.device)
-        hidiffusion.apply_hidiffusion(p)
+        hidiffusion.apply_hidiffusion(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
         output = shared.sd_model(**base_args) # pylint: disable=not-callable
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
-        if p.hidiffusion:
-            hidiffusion.remove_hidiffusion(shared.sd_model)
+        hidiffusion.remove_hidiffusion(p)
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
         sd_models_compile.check_deepcache(enable=False)
         if shared.cmd_opts.profile:
