@@ -48,7 +48,7 @@ def load_text_encoder(path):
 
 
 def load_prior(path, config_file="default"):
-    from diffusers import StableCascadeUNet
+    from diffusers.models.unets import StableCascadeUNet
     prior_text_encoder = None
 
     if config_file == "default":
@@ -71,7 +71,8 @@ def load_prior(path, config_file="default"):
 
 
 def load_cascade_combined(checkpoint_info, diffusers_load_config):
-    from diffusers import StableCascadeUNet, StableCascadeDecoderPipeline, StableCascadePriorPipeline, StableCascadeCombinedPipeline
+    from diffusers import StableCascadeDecoderPipeline, StableCascadePriorPipeline, StableCascadeCombinedPipeline
+    from diffusers.models.unets import StableCascadeUNet
     from modules.sd_unet import unet_dict
 
     diffusers_load_config.pop("vae", None)

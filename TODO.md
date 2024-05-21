@@ -12,7 +12,7 @@ Requires `diffusers-0.28.0.dev0`:
 
 ## Dev Release Notes
 
-New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 300 commits...
+New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 320 commits...
 
 Starting with the new UI - yup, this version ships with a *preview* of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
@@ -43,7 +43,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 ### New models
 
 While still waiting for *Stable Diffusion 3.0*, there have been some significant models released in the meantime:
-- [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/), high end diffusion transformer model (DiT) capable of directly generating images at 4K resolution  
+- [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/), high end diffusion transformer model (*DiT*) capable of directly generating images at 4K resolution  
 - [SDXS](https://github.com/IDKiro/sdxs), extremely fast 1-step generation consistency model  
 - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD), 1-step, 2-step, 4-step and 8-step optimized models  
 
@@ -52,7 +52,7 @@ While still waiting for *Stable Diffusion 3.0*, there have been some significant
 Given huge number of changes with *+3443/-3342* commits diff (at the time of fork detach) over the past year,  
 a completely different backend/engine and a change of focus, it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
 
-And best place to post questions is on our [Discord](https://discord.gg/VjvR2tabEX) server which now has over 2k active members!
+And best place to post questions is on our [Discord](https://discord.gg/VjvR2tabEX) server which now has **over 2k active members**!
 
 For more details see: [Changelog](https://github.com/vladmandic/automatic/blob/dev/CHANGELOG.md) | [ReadMe](https://github.com/vladmandic/automatic) | [Wiki](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.gg/VjvR2tabEX)
 
@@ -69,6 +69,10 @@ For more details see: [Changelog](https://github.com/vladmandic/automatic/blob/d
 - diffusers public callbacks  
 - include reference styles
 - lora: sc lora, dora, etc
+- [SDXL Flash Mini](https://huggingface.co/sd-community/sdxl-flash-mini)  
+  SDXL type that weighs less, consumes less video memory, and the quality has not dropped much  
+  to use, simply select from *networks -> models -> reference -> SDXL Flash Mini*  
+  recommended parameters: steps: 6-9, cfg scale: 2.5-3.5, sampler: DPM++ SDE  
 
 ### Missing
 

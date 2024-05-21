@@ -789,11 +789,27 @@ def move_model(model, device=None, force=False):
     if getattr(model, 'has_accelerate', False) and not force:
         return
     try:
-        model.to(device)
+        try:
+            model.to(device)
+        except Exception as e0:
+            if 'Cannot copy out of meta tensor' in str(e0):
+                if hasattr(model, "components"):
+                    for _name, component in model.components.items():
+                        if hasattr(component, 'modules'):
+                            for module in component.modules():
+                                try:
+                                    module.to(device)
+                                except Exception as e2:
+                                    if 'Cannot copy out of meta tensor' in str(e2):
+                                        if os.environ.get('SD_MOVE_DEBUG', None):
+                                            shared.log.warning(f'Model move meta: module={module.__class__}')
+                                        module.to_empty(device=device)
+            else:
+                raise e0
         if hasattr(model, "prior_pipe"):
             model.prior_pipe.to(device)
-    except Exception as e:
-        shared.log.error(f'Model move: device={device} {e}')
+    except Exception as e1:
+        shared.log.error(f'Model move: device={device} {e1}')
     devices.torch_gc()
 
 
