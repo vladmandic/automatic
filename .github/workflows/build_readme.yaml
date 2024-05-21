@@ -3,7 +3,7 @@ name: update-readme
 on:
   workflow_dispatch:
   schedule:
-  - cron: '0 * * * *'
+  - cron: '0 */4 * * *'
 
 jobs:
   deploy:
@@ -12,12 +12,12 @@ jobs:
       - name: checkout-code
         uses: actions/checkout@main
       - name: update-readme
-        uses: JamesIves/github-sponsors-readme-action@v1.3.1
+        uses: JamesIves/github-sponsors-readme-action@v1.4.0
         with:
           token: ${{ secrets.PAT }}
           file: 'README.md'
       - name: deploy-readme
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           branch: master
           folder: '.'
