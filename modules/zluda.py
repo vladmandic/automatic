@@ -20,6 +20,7 @@ def test(device: DeviceLikeType) -> Union[Exception, None]:
         ten2 = torch.randn((4, 8,), device=device)
         out = torch.mm(ten1, ten2)
         assert out.sum().is_nonzero()
+        return None
     except Exception as e:
         return e
 
