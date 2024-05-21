@@ -34,4 +34,5 @@ def apply_hidiffusion(p, model_type):
 
 
 def remove_hidiffusion(p):
-    hidiffusion.remove_hidiffusion(shared.sd_model)
+    if hasattr(shared.sd_model, "unet"):
+        hidiffusion.remove_hidiffusion(shared.sd_model)
