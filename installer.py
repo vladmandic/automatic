@@ -286,15 +286,22 @@ def git(arg: str, folder: str = None, ignore: bool = False):
         log.debug(f'Git output: {txt}')
     return txt
 
-# switch to main branch as head can get detached
+# reattach as needed as head can get detached
 def branch(folder=None):
     # if args.experimental:
     #    return None
     if not os.path.exists(os.path.join(folder or os.curdir, '.git')):
         return None
-    b = ''
+    branches = []
     try:
         b = git('branch --show-current', folder)
+        if b == '':
+            branches = git('branch', folder).split('\n')
+        if len(branches) > 0:
+            b = [x for x in branches if x.startswith('*')][0]
+            if 'detached' in b and len(branches) > 1:
+                b = branches[1].strip()
+                log.debug(f'Git detached head detected: folder={folder} reattach={b}')
     except Exception:
         b = git('git rev-parse --abbrev-ref HEAD', folder)
     if 'main' in b:
