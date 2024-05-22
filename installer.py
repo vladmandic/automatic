@@ -301,7 +301,7 @@ def branch(folder=None):
             b = [x for x in branches if x.startswith('*')][0]
             if 'detached' in b and len(branches) > 1:
                 b = branches[1].strip()
-                log.debug(f'Git detached head detected: folder={folder} reattach={b}')
+                log.debug(f'Git detached head detected: folder="{folder}" reattach={b}')
     except Exception:
         b = git('git rev-parse --abbrev-ref HEAD', folder)
     if 'main' in b:

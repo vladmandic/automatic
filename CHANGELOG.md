@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-32
+## Update for 2024-05-22
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
@@ -156,6 +156,7 @@
   - Add `--reinstall-zluda` (to download the latest ZLUDA)
 - **Fixes**:
   - Update requirements
+  - Installer automatically handle detached git states  
   - Prompt params parser
   - Allowing forcing LoRA loading method for some or all models
   - Image save without metadata
