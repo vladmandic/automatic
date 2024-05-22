@@ -800,15 +800,9 @@ def install_submodules(force=True):
     log.info('Verifying submodules')
     txt = git('submodule')
     # log.debug(f'Submodules list: {txt}')
-    if force and 'no submodule mapping found' in txt and 'sd-webui-controlnet' not in txt:
-        log.warning('Attempting repository recover')
-        git('add .')
-        git('stash')
-        git('merge --abort', folder=None, ignore=True)
-        git('fetch --all')
-        git('reset --hard origin/master')
-        git('checkout master')
+    if force and 'no submodule mapping found' in txt and 'extension-builtin' not in txt:
         txt = git('submodule')
+        git_reset()
         log.info('Continuing setup')
     git('submodule --quiet update --init --recursive')
     git('submodule --quiet sync --recursive')
@@ -1111,11 +1105,11 @@ def extensions_preload(parser):
         print_profile(pr, 'Preload')
 
 
-def git_reset():
+def git_reset(folder='.'):
     log.warning('Running GIT reset')
     global quick_allowed # pylint: disable=global-statement
     quick_allowed = False
-    b = branch('.')
+    b = branch(folder)
     if b is None or b == '':
         b = 'master'
     git('add .')
