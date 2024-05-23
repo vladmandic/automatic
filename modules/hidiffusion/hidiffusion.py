@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from diffusers.utils.torch_utils import is_torch_version
 from diffusers.pipelines import auto_pipeline
+from modules.shared import log
 
 
 def sd15_hidiffusion_key():
@@ -240,6 +241,7 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
                 hidden_states = hidden_states.squeeze(1)
             return hidden_states
 
+        _patched_forward = forward
     return transformer_block
 
 
@@ -253,7 +255,6 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
         T1_ratio = 0
         T1_start = 0
         T1_end = 0
-        aggressive_raunet = False
         T1 = 0 # to avoid confict with sdxl-turbo
         max_timestep = 50
 
@@ -267,7 +268,6 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
             additional_residuals: Optional[torch.FloatTensor] = None,
         ) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, ...]]:
-
             self.max_timestep = self.info['pipeline']._num_timesteps
             # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
@@ -369,6 +369,8 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
                 self.timestep = 0
 
             return hidden_states, output_states
+
+        _patched_forward = forward
     return cross_attn_down_block
 
 
@@ -383,7 +385,6 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
         T1_ratio = 0
         T1_start = 0
         T1_end = 0
-        aggressive_raunet = False
         T1 = 0 # to avoid confict with sdxl-turbo
         max_timestep = 50
 
@@ -398,8 +399,14 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
             attention_mask: Optional[torch.FloatTensor] = None,
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
         ) -> torch.FloatTensor:
+
+            # TODO hidiffusion breaking hidden_shapes on 3-rd generate
+            if self.timestep == 0 and (hidden_states.shape[-1] != res_hidden_states_tuple[0].shape[-1] or hidden_states.shape[-2] != res_hidden_states_tuple[0].shape[-2]):
+                rescale = min(res_hidden_states_tuple[0].shape[-2] / hidden_states.shape[-2], res_hidden_states_tuple[0].shape[-1] / hidden_states.shape[-1])
+                log.debug(f"HiDiffusion rescale: {hidden_states.shape} => {res_hidden_states_tuple[0].shape} scale={rescale}")
+                hidden_states = F.interpolate(hidden_states, scale_factor=rescale, mode='bicubic')
+
             self.max_timestep = self.info['pipeline']._num_timesteps
-            # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
             if self.model == 'sd15':
                 if ori_H < 256 or ori_W < 256:
@@ -428,14 +435,11 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                 raise RuntimeError('HiDiffusion: unsupported model type')
 
             if self.aggressive_raunet:
-                # self.T1_start = min(int(self.max_timestep * self.T1_ratio * 0.4), int(8/50 * self.max_timestep))
                 self.T1_start = int(aggressive_step/50 * self.max_timestep)
                 self.T1_end = int(self.max_timestep * self.T1_ratio)
                 self.T1 = 0 # to avoid confict with sdxl-turbo
             else:
                 self.T1 = int(self.max_timestep * self.T1_ratio)
-
-            # cross_attention_kwargs.get("scale", 1.0) if cross_attention_kwargs is not None else 1.0
 
             for i, (resnet, attn) in enumerate(zip(self.resnets, self.attentions)):
                 # pop res hidden states
@@ -466,6 +470,8 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
             if self.timestep == self.max_timestep:
                 self.timestep = 0
             return hidden_states
+
+        _patched_forward = forward
     return cross_attn_up_block
 
 
@@ -532,6 +538,8 @@ def make_diffusers_downsampler_block(block_class: Type[torch.nn.Module]) -> Type
             if self.timestep == self.max_timestep:
                 self.timestep = 0
             return hidden_states
+
+        _patched_forward = forward
     return downsampler_block
 
 
@@ -588,6 +596,8 @@ def make_diffusers_upsampler_block(block_class: Type[torch.nn.Module]) -> Type[t
                 self.timestep = 0
 
             return F.conv2d(hidden_states, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+
+        _patched_forward = forward
     return upsampler_block
 
 
@@ -654,6 +664,7 @@ def apply_hidiffusion(
             module.model = 'sd15'
             module.info = diffusion_model.info
 
+
     elif model_type == 'sdxl':
         modified_key = sdxl_hidiffusion_key()
         for key, module in diffusion_model.named_modules():
@@ -671,6 +682,8 @@ def apply_hidiffusion(
                 module.switching_threshold_ratio = 'T2_ratio'
             if apply_window_attn and key in modified_key['windown_attn_module_key']:
                 module.__class__ = make_diffusers_transformer_block(module.__class__)
+            if hasattr(module, "_patched_forward"):
+                module.forward = module._patched_forward
             module.model = 'sdxl'
             module.info = diffusion_model.info
     else:
