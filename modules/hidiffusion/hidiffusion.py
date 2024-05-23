@@ -400,11 +400,12 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
         ) -> torch.FloatTensor:
 
-            # TODO hidiffusion breaking hidden_shapes on 3-rd generate
-            if self.timestep == 0 and (hidden_states.shape[-1] != res_hidden_states_tuple[0].shape[-1] or hidden_states.shape[-2] != res_hidden_states_tuple[0].shape[-2]):
-                rescale = min(res_hidden_states_tuple[0].shape[-2] / hidden_states.shape[-2], res_hidden_states_tuple[0].shape[-1] / hidden_states.shape[-1])
-                log.debug(f"HiDiffusion rescale: {hidden_states.shape} => {res_hidden_states_tuple[0].shape} scale={rescale}")
-                hidden_states = F.interpolate(hidden_states, scale_factor=rescale, mode='bicubic')
+            def fix_scale(first, second): # TODO hidiffusion breaks hidden_scale.shape on 3rd generate with sdxl
+                if (first.shape[-1] != second.shape[-1] or first.shape[-2] != second.shape[-2]):
+                    rescale = min(second.shape[-2] / first.shape[-2], second.shape[-1] / first.shape[-1])
+                    # log.debug(f"HiDiffusion rescale: {hidden_states.shape} => {res_hidden_states_tuple[0].shape} scale={rescale}")
+                    return F.interpolate(first, scale_factor=rescale, mode='bicubic')
+                return first
 
             self.max_timestep = self.info['pipeline']._num_timesteps
             ori_H, ori_W = self.info['size']
@@ -445,6 +446,7 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                 # pop res hidden states
                 res_hidden_states = res_hidden_states_tuple[-1]
                 res_hidden_states_tuple = res_hidden_states_tuple[:-1]
+                hidden_states = fix_scale(hidden_states, res_hidden_states)
                 hidden_states = torch.cat([hidden_states, res_hidden_states], dim=1)
                 hidden_states = resnet(hidden_states, temb)
                 hidden_states = attn(
