@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-22
+## Update for 2024-05-24
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  

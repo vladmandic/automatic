@@ -1,10 +1,10 @@
 from __future__ import annotations
+from functools import partial
 import re
 import sys
 import logging
 import warnings
 import urllib3
-from functools import partial
 from modules import timer, errors
 
 initialized = False

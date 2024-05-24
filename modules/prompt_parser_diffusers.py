@@ -154,7 +154,11 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         for i in range(max(len(positive_schedule), len(negative_schedule))):
             positive_prompt = positive_schedule[i % len(positive_schedule)]
             negative_prompt = negative_schedule[i % len(negative_schedule)]
-            results = cache.get(positive_prompt + negative_prompt, None)
+            if cache.get('model_type', None) != shared.sd_model_type:
+                cache[positive_prompt + negative_prompt] = None
+                results = None
+            else:
+                results = cache.get(positive_prompt + negative_prompt, None)
 
             if results is None:
                 results = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
