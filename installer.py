@@ -833,7 +833,7 @@ def ensure_base_requirements():
     try:
         import setuptools # pylint: disable=unused-import
     except ImportError:
-        install('setuptools', 'setuptools')
+        install('setuptools==69.5.1', 'setuptools')
     try:
         import setuptools # pylint: disable=unused-import
     except ImportError:
