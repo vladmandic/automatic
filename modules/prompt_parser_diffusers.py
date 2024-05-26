@@ -133,7 +133,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
-    elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and cache.get('model_type', None) == shared.sd_model_type:
+    elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type:
         p.prompt_embeds = cache.get('prompt_embeds', None)
         p.positive_pooleds = cache.get('positive_pooleds', None)
         p.negative_embeds = cache.get('negative_embeds', None)
@@ -157,8 +157,10 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
             if cache.get('model_type', None) != shared.sd_model_type:
                 cache[positive_prompt + negative_prompt] = None
                 results = None
-            else:
+            elif clip_skip == cache.get('clip_skip', None):
                 results = cache.get(positive_prompt + negative_prompt, None)
+            else:
+                results = None
 
             if results is None:
                 results = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
@@ -180,6 +182,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
 
         cache['prompts'] = prompts
         cache['negative_prompts'] = negative_prompts
+        cache['clip_skip'] = clip_skip
         cache['model_type'] = shared.sd_model_type
         if debug_enabled:
             get_tokens('positive', prompts[0])
