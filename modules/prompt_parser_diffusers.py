@@ -130,7 +130,7 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
-    if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__:
+    if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
     elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and cache.get('model_type', None) == shared.sd_model_type:
@@ -202,11 +202,16 @@ def get_prompts_with_weights(prompt: str):
 def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     embeddings_providers = []
-    if 'XL' in pipe.__class__.__name__:
+    if 'StableCascade' in pipe.__class__.__name__:
+        embedding_type = -(clip_skip)
+    elif 'XL' in pipe.__class__.__name__:
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
-    if getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
+    if getattr(pipe, "prior_pipe", None) is not None and getattr(pipe.prior_pipe, "tokenizer", None) is not None and getattr(pipe.prior_pipe, "text_encoder", None) is not None:
+        provider = EmbeddingsProvider(tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        embeddings_providers.append(provider)
+    elif getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
@@ -216,11 +221,14 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
 
 
 def pad_to_same_length(pipe, embeds):
-    if not hasattr(pipe, 'encode_prompt'):
+    if not hasattr(pipe, 'encode_prompt') and not (hasattr(pipe, "prior_pipe") and hasattr(pipe.prior_pipe, "encode_prompt")):
         return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    try: # SDXL
-        empty_embed = pipe.encode_prompt("")
+    try:
+        if getattr(pipe, "prior_pipe", None) and getattr(pipe.prior_pipe, "text_encoder", None) is not None: # Cascade
+            empty_embed = pipe.prior_pipe.encode_prompt(device, 1, 1, False, "")
+        else: # SDXL
+            empty_embed = pipe.encode_prompt("")
     except TypeError:  # SD1.5
         empty_embed = pipe.encode_prompt("", device, 1, False)
     max_token_count = max([embed.shape[1] for embed in embeds])

@@ -103,7 +103,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
         except Exception as e:
             shared.log.error(f'Sampler timesteps: {e}')
-    if shared.opts.prompt_attention != 'Fixed attention' and 'StableDiffusion' in model.__class__.__name__ and 'Onnx' not in model.__class__.__name__:
+    if shared.opts.prompt_attention != 'Fixed attention' and ('StableDiffusion' in model.__class__.__name__ or 'StableCascade' in model.__class__.__name__) and 'Onnx' not in model.__class__.__name__:
         try:
             prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
             parser = shared.opts.prompt_attention
@@ -119,13 +119,17 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'prompt' in possible:
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
-            if 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
+            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
+                args['prompt_embeds_pooled'] = p.positive_pooleds[0].unsqueeze(0)
+            elif 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
         if hasattr(model, 'text_encoder') and 'negative_prompt_embeds' in possible and len(p.negative_embeds) > 0 and p.negative_embeds[0] is not None:
             args['negative_prompt_embeds'] = p.negative_embeds[0]
+            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
+                args['negative_prompt_embeds_pooled'] = p.negative_pooleds[0].unsqueeze(0)
             if 'XL' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
         else:
