@@ -17,6 +17,7 @@ Thanks to @BinaryQuantumSoul for his hard work on this project!
 
 ### New built-in features
 
+- [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) SD.Next is now installable as a web-app
 - **Gallery**: extremely fast built-in gallery viewer  
   List, preview, search through all your images and videos!  
 - **HiDiffusion** allows generating very-high resolution images out-of-the-box using standard models  

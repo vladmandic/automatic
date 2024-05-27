@@ -4,7 +4,7 @@
 
 - **Features**:
   - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
-  - **PWA** [SD.Next](https://github.com/vladmandic/automatic) now also includes valid manifest making it installable as PWA
+  - [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) SD.Next is now installable as a web-app and includes verified manifest  
   - **Gallery
   - **Gallery**: list, preview, search through all your images and videos!  
     Implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
