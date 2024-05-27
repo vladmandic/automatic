@@ -404,10 +404,7 @@ def check_python():
 def check_diffusers():
     if args.experimental or args.skip_git:
         return
-    if args.use_zluda:
-        install('diffusers', 'diffusers==0.27.2')
-    else:
-        install('diffusers', 'diffusers==0.28.0')
+    # noop for now, can be used to force specific version based on conditions
 
 
 # check onnx version
