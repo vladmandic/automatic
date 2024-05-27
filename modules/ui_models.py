@@ -752,7 +752,7 @@ def create_ui():
                 def civit_update_select(evt: gr.SelectData, in_data):
                     nonlocal selected_model, update_data
                     try:
-                        selected_model = [m for m in update_data if m.fn == in_data[evt.index[0]][1]][0]
+                        selected_model = next([m for m in update_data if m.fn == in_data[evt.index[0]][1]])
                     except Exception:
                         selected_model = None
                     if selected_model is None or selected_model.url is None or selected_model.status != 'Available':

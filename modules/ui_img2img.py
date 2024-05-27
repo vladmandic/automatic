@@ -100,11 +100,7 @@ def create_ui():
 
                     with gr.TabItem('Batch', id='batch', elem_id="img2img_batch_tab") as tab_batch:
                         hidden = '<br>Disabled when launched with --hide-ui-dir-config.' if shared.cmd_opts.hide_ui_dir_config else ''
-                        gr.HTML(
-                            "<p style='padding-bottom: 1em;' class=\"text-gray-500\">Upload images or process images in a directory" +
-                            "<br>Add inpaint batch mask directory to enable inpaint batch processing"
-                            f"{hidden}</p>"
-                        )
+                        gr.HTML(f"<p style='padding-bottom: 1em;' class=\"text-gray-500\">Upload images or process images in a directory <br>Add inpaint batch mask directory to enable inpaint batch processing {hidden}</p>")
                         img2img_batch_files = gr.Files(label="Batch Process", interactive=True, elem_id="img2img_image_batch")
                         img2img_batch_input_dir = gr.Textbox(label="Inpaint batch input directory", **shared.hide_dirs, elem_id="img2img_batch_input_dir")
                         img2img_batch_output_dir = gr.Textbox(label="Inpaint batch output directory", **shared.hide_dirs, elem_id="img2img_batch_output_dir")

@@ -943,10 +943,7 @@ class StableDiffusionXLDiffImg2ImgPipeline(DiffusionPipeline, FromSingleFileMixi
             and denoising_value_valid(denoising_start)
             and denoising_start >= denoising_end
         ):
-            raise ValueError(
-                f"`denoising_start`: {denoising_start} cannot be larger than or equal to `denoising_end`: "
-                + f" {denoising_end} when using type float."
-            )
+            raise ValueError(f"`denoising_start`: {denoising_start} cannot be larger than or equal to `denoising_end`: {denoising_end} when using type float.")
         elif denoising_end is not None and denoising_value_valid(denoising_end):
             discrete_timestep_cutoff = int(
                 round(

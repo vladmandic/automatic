@@ -2,7 +2,7 @@ from modules import shared
 
 
 force_diffusers = [
-    'aaebf6360f7d', # sd15-lcm        
+    'aaebf6360f7d', # sd15-lcm
     '3d18b05e4f56', # sdxl-lcm
     'b71dcb732467', # sdxl-tcd
     '813ea5fb1c67', # sdxl-turbo
@@ -24,7 +24,7 @@ def check_override(shorthash):
         return False
     if len(shorthash) < 4:
         return False
-    force = any([x.startswith(shorthash) for x in force_diffusers])
+    force = any(x.startswith(shorthash) for x in force_diffusers)
     if force:
         shared.log.debug('LoRA override: force diffusers')
     return force

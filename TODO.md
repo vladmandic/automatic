@@ -2,17 +2,9 @@
 
 Main ToDo list can be found at [GitHub projects](https://github.com/users/vladmandic/projects)
 
-## Pending
-
-Requires `diffusers-0.28.0.dev0`:
-- PixArt-Σ
-- IP adapter masking
-- InstantStyle
-- Sampler timesteps
-
 ## Dev Release Notes
 
-New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - over 330 commits...
+New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - about 350 commits for core and 300 for UI...
 
 Starting with the new UI - yup, this version ships with a *preview* of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
