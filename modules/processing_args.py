@@ -92,20 +92,20 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     if 'timesteps' in possible:
-        if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
-            try:
-                timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
-                timesteps = [int(x) for x in timesteps if x.isdigit()]
-                if len(timesteps) > 0:
+        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+        timesteps = [int(x) for x in timesteps if x.isdigit()]
+        if len(timesteps) > 0:
+            if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
+                try:
                     args['timesteps'] = timesteps
                     p.steps = len(timesteps)
                     p.timesteps = timesteps
                     steps = p.steps
                     shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
-            except Exception as e:
-                shared.log.error(f'Sampler timesteps: {e}')
-        else:
-            shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
+                except Exception as e:
+                    shared.log.error(f'Sampler timesteps: {e}')
+            else:
+                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
     if shared.opts.prompt_attention != 'Fixed attention' and ('StableDiffusion' in model.__class__.__name__ or 'StableCascade' in model.__class__.__name__) and 'Onnx' not in model.__class__.__name__:
         try:
             prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
