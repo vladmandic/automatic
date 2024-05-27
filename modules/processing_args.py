@@ -136,7 +136,10 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             if 'XL' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
         else:
-            args['negative_prompt'] = negative_prompts
+            if 'PixArtSigmaPipeline' in model.__class__.__name__: # pixart-sigma pipeline throws list-of-list for negative prompt
+                args['negative_prompt'] = negative_prompts[0]
+            else:
+                args['negative_prompt'] = negative_prompts
     if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
         model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
         model.scheduler.noise_sampler_seed = p.seeds # some schedulers have internal noise generator and do not use pipeline generator
