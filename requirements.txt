@@ -34,6 +34,7 @@ pymatting
 orjson
 invisible-watermark
 pi-heif
+diffusers
 safetensors==0.4.3
 tensordict==0.1.2
 peft==0.11.1
@@ -46,7 +47,6 @@ requests==2.31.0
 tqdm==4.66.4
 accelerate==0.30.1
 opencv-contrib-python-headless==4.9.0.80
-diffusers==0.28.0
 einops==0.4.1
 gradio==3.43.2
 huggingface_hub==0.23.2

@@ -85,6 +85,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
     shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
+    update_sampler(p, shared.sd_model)
     base_args = set_pipeline_args(
         p=p,
         model=shared.sd_model,
@@ -102,7 +103,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
-    update_sampler(p, shared.sd_model)
     shared.state.sampling_steps = base_args.get('num_inference_steps', None) or p.steps
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
@@ -192,6 +192,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model, devices.device)
             orig_denoise = p.denoising_strength
             p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
+            update_sampler(p, shared.sd_model, second_pass=True)
             hires_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_model,
@@ -209,7 +210,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 strength=p.denoising_strength,
                 desc='Hires',
             )
-            update_sampler(p, shared.sd_model, second_pass=True)
             shared.state.job = 'HiRes'
             shared.state.sampling_steps = hires_args.get('num_inference_steps', None) or p.steps
             try:
@@ -257,6 +257,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
                 p.task_args['image'] = image
             shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
+            update_sampler(p, shared.sd_refiner, second_pass=True)
             refiner_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_refiner,
@@ -275,7 +276,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 clip_skip=p.clip_skip,
                 desc='Refiner',
             )
-            update_sampler(p, shared.sd_refiner, second_pass=True)
             shared.state.sampling_steps = refiner_args.get('num_inference_steps', None) or p.steps
             try:
                 if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true

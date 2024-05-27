@@ -610,6 +610,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
             if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                if devices.dtype == torch.float16:
+                    warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
             if 'pixart_sigma' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:

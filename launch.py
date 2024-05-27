@@ -206,6 +206,7 @@ def main():
         installer.set_environment()
     installer.check_torch()
     installer.check_onnx()
+    installer.check_diffusers()
     installer.check_modified_files()
     if args.reinstall:
         installer.log.info('Forcing reinstall of all packages')

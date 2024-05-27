@@ -6,6 +6,9 @@ from modules.hidiffusion import hidiffusion
 
 
 def apply_hidiffusion(p, model_type):
+    if model_type not in ['sd', 'sdxl'] and p.hidiffusion:
+        shared.log.warning(f'HiDiffusion: class={shared.sd_model.__class__.__name__} not supported')
+        return
     remove_hidiffusion(p)
     if p.hidiffusion:
         t0 = time.time()

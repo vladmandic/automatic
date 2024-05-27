@@ -67,6 +67,7 @@ ignore = [
   "RUF010", # Use explicit conversion flag
   "RUF012", # Mutable class attributes
   "RUF013", # PEP 484 prohibits implicit `Optional`
+  "RUF015", # Prefer `next(...)` over single element slice
 ]
 fixable = ["ALL"]
 unfixable = []

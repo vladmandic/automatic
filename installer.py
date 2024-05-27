@@ -400,6 +400,16 @@ def check_python():
         log.debug(f'Git {git_version.replace("git version", "").strip()}')
 
 
+# check diffusers version
+def check_diffusers():
+    if args.experimental or args.skip_git:
+        return
+    if args.use_zluda:
+        install('diffusers', 'diffusers==0.27.2')
+    else:
+        install('diffusers', 'diffusers==0.28.0')
+
+
 # check onnx version
 def check_onnx():
     if not installed('onnx', quiet=True):

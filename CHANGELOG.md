@@ -83,7 +83,7 @@
     (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
     example:
     > simple-control.py --prompt 'woman in the city' --sampler UniPC --steps 20  
-    > --input ~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
+    > --input \~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
     > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
     > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
   - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`

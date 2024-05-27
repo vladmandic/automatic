@@ -1,4 +1,5 @@
 import os
+import re
 import inspect
 from modules import shared
 from modules import sd_samplers_common
@@ -128,7 +129,9 @@ class DiffusionSampler:
         if shared.opts.schedulers_beta_schedule != 'default':
             self.config['beta_schedule'] = shared.opts.schedulers_beta_schedule
         if 'use_karras_sigmas' in self.config:
-            self.config['use_karras_sigmas'] = shared.opts.schedulers_use_karras
+            timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+            timesteps = [int(x) for x in timesteps if x.isdigit()]
+            self.config['use_karras_sigmas'] = shared.opts.schedulers_use_karras if len(timesteps) == 0 else False
         if 'thresholding' in self.config:
             self.config['thresholding'] = shared.opts.schedulers_use_thresholding
         if 'lower_order_final' in self.config:
