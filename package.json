@@ -15,6 +15,10 @@
     "type": "git",
     "url": "git+https://github.com/vladmandic/automatic.git"
   },
+  "scripts": {
+    "start": "python launch.py",
+    "lint": "ruff check; eslint javascript/ extensions-builtin/sdnext-modernui/javascript/; pylint *.py modules/ extensions-builtin/"
+  },
   "devDependencies": {
     "esbuild": "^0.18.15"
   },

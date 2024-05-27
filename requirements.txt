@@ -1,4 +1,4 @@
-setuptools
+setuptools==69.5.1
 patch-ng
 anyio
 addict
@@ -34,10 +34,9 @@ pymatting
 orjson
 invisible-watermark
 pi-heif
-setuptools==69.5.1
 safetensors==0.4.3
 tensordict==0.1.2
-peft==0.10.0
+peft==0.11.1
 httpx==0.24.1
 compel==2.0.2
 torchsde==0.2.6
@@ -50,15 +49,15 @@ opencv-contrib-python-headless==4.9.0.80
 diffusers==0.27.2
 einops==0.4.1
 gradio==3.43.2
-huggingface_hub==0.23.0
+huggingface_hub==0.23.2
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.1
 pandas
-protobuf==3.20.3
+protobuf==4.25.3
 pytorch_lightning==1.9.4
 tokenizers==0.19.1
-transformers==4.41.0
+transformers==4.41.1
 urllib3==1.26.18
 Pillow==10.3.0
 timm==0.9.16

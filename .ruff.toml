@@ -1,0 +1,75 @@
+exclude = [
+    "venv",
+    ".git",
+    ".ruff_cache",
+    ".vscode",
+    "modules/hidiffusion",
+    "modules/hijack",
+    "modules/k-diffusion",
+    "modules/ldsr",
+    "modules/pag",
+    "modules/rife",
+    "modules/taesd",
+    "modules/todo",
+    "modules/unipc",
+    "modules/xadapter",
+    "modules/intel/openvino",
+    "modules/intel/ipex",
+    "modules/dml",
+    "modules/control/proc",
+    "modules/control/units",
+    "repositories",
+    "extensions-builtin/sd-extension-chainner/nodes",
+    "extensions-builtin/sd-webui-agent-scheduler",
+    "extensions-builtin/sdnext-modernui/node_modules",
+]
+line-length = 250
+indent-width = 4
+target-version = "py39"
+
+[lint]
+select = [
+  "F",
+  "E",
+  "W",
+  "C",
+  "B",
+  "I",
+  "YTT",
+  "ASYNC",
+  "RUF",
+  "AIR",
+  "NPY",
+  "C4",
+  "T10",
+  "EXE",
+  "ISC",
+  "ICN",
+  "RSE",
+  "TCH",
+  "TID",
+  "INT",
+  "PLE",
+]
+ignore = [
+  "B006",   # Do not use mutable data structures for argument defaults
+  "I001",   # Import block is un-sorted or un-formatted
+  "E402",   # Module level import not at top of file
+  "E501",   # Line too long
+  "E721",   # Do not compare types, use `isinstance()`
+  "E731",   # Do not assign a `lambda` expression, use a `def`
+  "RUF013", # PEP 484 prohibits implicit `Optional`
+]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+
+[lint.mccabe]
+max-complexity = 99

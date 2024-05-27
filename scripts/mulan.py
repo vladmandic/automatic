@@ -3,13 +3,13 @@
 # https://huggingface.co/OpenGVLab/InternVL-14B-224px
 
 """
-- [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts - wirte your prompts in ~110 auto-detected languages!  
-  Compatible with SD15 and SDXL  
-  Enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder  
+- [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts - wirte your prompts in ~110 auto-detected languages!
+  Compatible with SD15 and SDXL
+  Enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder
   (that is currently only supported encoder, but others will be added)
-  Note: Model will be auto-downloaded on first use: note its huge size of 27GB  
-  Even executing it in FP16 context will require ~16GB of VRAM for text encoder alone  
-  *Note*: Uses fixed prompt parser, so no prompt attention will be used  
+  Note: Model will be auto-downloaded on first use: note its huge size of 27GB
+  Even executing it in FP16 context will require ~16GB of VRAM for text encoder alone
+  *Note*: Uses fixed prompt parser, so no prompt attention will be used
 
 Examples:
 - English: photo of a beautiful woman wearing a white bikini on a beach with a city skyline in the background
@@ -19,7 +19,7 @@ Examples:
 - German: Foto einer schönen Frau in einem weißen Bikini an einem Strand mit einer Skyline der Stadt im Hintergrund
 - Arabic: صورة لامرأة جميلة ترتدي بيكيني أبيض على شاطئ مع أفق المدينة في الخلفية
 - Japanese: 街のスカイラインを背景にビーチで白いビキニを着た美しい女性の写真
-- Chinese: 一个美丽的女人在海滩上穿着白色比基尼的照片，背景是城市天际线
+- Chinese: 一个美丽的女人在海滩上穿着白色比基尼的照片, 背景是城市天际线
 - Korean: 도시의 스카이라인을 배경으로 해변에서 흰색 비키니를 입은 아름 다운 여성의 사진
 """
 
