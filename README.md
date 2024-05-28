@@ -31,7 +31,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple diffusion models!  
-  ▹ **Stable Diffusion 1.5/2.1 | SD-XL | LCM | Segmind | Kandinsky | Pixart-α | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | etc.**
+  ▹ **Stable Diffusion 1.5/2.1 | SD-XL | LCM | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
@@ -88,6 +88,7 @@ Additional models will be added as they become available and there is public int
 - [Segmind SegMoE](https://github.com/segmind/segmoe) *SD and SD-XL*  
 - [Kandinsky](https://github.com/ai-forever/Kandinsky-2) *2.1 and 2.2 and latest 3.0*  
 - [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*  
+- [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)  
 - [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)  
 - [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
 - [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
@@ -96,6 +97,8 @@ Additional models will be added as they become available and there is public int
 - [BLIP-Diffusion](https://dxli94.github.io/BLIP-Diffusion-website/)  
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
 - [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- [SDXS](https://github.com/IDKiro/sdxs)
+- [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD) 
 
 
 Also supported are modifiers such as:
