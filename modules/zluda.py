@@ -1,25 +1,17 @@
 import os
 import sys
 from typing import Union
-import platform
 import torch
 from torch._prims_common import DeviceLikeType
 from modules import shared, devices
 
 
 PLATFORM = sys.platform
-sys.platform = ""
-import torch.utils.cpp_extension
-sys.platform = PLATFORM
-torch.utils.cpp_extension.IS_WINDOWS = True
+do_nothing = lambda _: None # pylint: disable=unnecessary-lambda-assignment
 
 
 def _join_rocm_home(*paths) -> str:
     return os.path.join(torch.utils.cpp_extension.ROCM_HOME, *paths)
-torch.utils.cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
-
-
-do_nothing = lambda _: None # pylint: disable=unnecessary-lambda-assignment
 
 
 def is_zluda(device: DeviceLikeType):
@@ -41,7 +33,7 @@ def test(device: DeviceLikeType) -> Union[Exception, None]:
 
 def initialize_zluda():
     device = devices.get_optimal_device()
-    if platform.system() == "Windows" and devices.cuda_ok and is_zluda(device):
+    if PLATFORM == "win32" and devices.cuda_ok and is_zluda(device):
         torch.version.hip = "5.7"
         torch.backends.cudnn.enabled = False
         torch.backends.cuda.enable_flash_sdp(False)
@@ -53,6 +45,13 @@ def initialize_zluda():
         if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
             torch.backends.cuda.enable_cudnn_sdp(False)
             torch.backends.cuda.enable_cudnn_sdp = do_nothing
+
+        sys.platform = ""
+        from torch.utils import cpp_extension
+        sys.platform = PLATFORM
+        cpp_extension.IS_WINDOWS = True
+        cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
+
         shared.opts.sdp_options = ['Math attention']
         devices.device_codeformer = devices.cpu
 
