@@ -13,6 +13,16 @@ def refresh_vae_list():
     modules.sd_vae.refresh_vae_list()
 
 
+def sd_unet_items():
+    import modules.sd_unet
+    return ["None"] + list(modules.sd_unet.unet_dict)
+
+
+def refresh_unet_list():
+    import modules.sd_unet
+    modules.sd_unet.refresh_unet_list()
+
+
 def list_crossattention(diffusers=False):
     if diffusers:
         return [
@@ -53,7 +63,7 @@ def get_pipelines():
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),
         'Latent Consistency Model': getattr(diffusers, 'LatentConsistencyModelPipeline', None),
-        'PixArt Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
+        'PixArt-Alpha': getattr(diffusers, 'PixArtAlphaPipeline', None),
         'UniDiffuser': getattr(diffusers, 'UniDiffuserPipeline', None),
         'Wuerstchen': getattr(diffusers, 'WuerstchenCombinedPipeline', None),
         'Kandinsky 2.1': getattr(diffusers, 'KandinskyPipeline', None),
@@ -75,8 +85,11 @@ def get_pipelines():
         }
         pipelines.update(onnx_pipelines)
 
+    # items that may rely on diffusers dev version
     if hasattr(diffusers, 'StableCascadeCombinedPipeline'):
         pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
+    if hasattr(diffusers, 'PixArtSigmaPipeline'):
+        pipelines['PixArt-Sigma'] = getattr(diffusers, 'PixArtSigmaPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

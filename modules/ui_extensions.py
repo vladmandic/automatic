@@ -403,7 +403,7 @@ def create_html(search_text, sort_column):
             <tr style="display: {visible}">
                 <td>{status}</td>
                 <td{' class="extension_status"' if ext['installed'] else ''}>{enabled_code}</td>
-                <td><a href="{html.escape(ext.get('url', ''))}" title={html.escape(ext.get('note', ''))} target="_blank" class="name">{html.escape(ext.get("name", "unknown"))}</a><br>{tags_text}</td>
+                <td><a href="{html.escape(ext.get('url', ''))}" title={html.escape(ext.get('url', ''))} target="_blank" class="name">{html.escape(ext.get("name", "unknown"))}</a><br>{tags_text}</td>
                 <td>{html.escape(ext.get("description", ""))}
                     <p class="info"><span class="date">Created {html.escape(dt('created'))} | Added {html.escape(dt('added'))} | Pushed {html.escape(dt('pushed'))} | Updated {html.escape(dt('updated'))}</span></p>
                     <p class="info"><span class="date">{author} | Stars {html.escape(str(ext.get('stars', 0)))} | Size {html.escape(str(ext.get('size', 0)))} | Commits {html.escape(str(ext.get('commits', 0)))} | Issues {html.escape(str(ext.get('issues', 0)))} | Trending {html.escape(str(ext['sort_trending']))}</span></p>

@@ -1,14 +1,11 @@
-import os
-from typing import Any, Dict, Callable, Optional
+from typing import Any, Dict, Optional
 import numpy as np
 import torch
 import diffusers
 import onnxruntime as ort
 import optimum.onnxruntime
 
-
 initialized = False
-run_olive_workflow = None
 
 
 class DynamicSessionOptions(ort.SessionOptions):
@@ -50,6 +47,9 @@ class TorchCompatibleModule:
     device = torch.device("cpu")
     dtype = torch.float32
 
+    def named_modules(self): # dummy
+        return ()
+
     def to(self, *_, **__):
         raise NotImplementedError
 
@@ -84,9 +84,6 @@ class TemporalModule(TorchCompatibleModule):
 class OnnxRuntimeModel(TorchCompatibleModule, diffusers.OnnxRuntimeModel):
     config = {} # dummy
 
-    def named_modules(self): # dummy
-        return ()
-
     def to(self, *args, **kwargs):
         from modules.onnx_impl.utils import extract_device, move_inference_session
 
@@ -105,7 +102,10 @@ class VAEConfig:
         self.config = config
 
     def __getattr__(self, key):
-        return self.config.get(key, VAEConfig.DEFAULTS[key])
+        return self.config.get(key, VAEConfig.DEFAULTS.get(key, None))
+
+    def get(self, key, default):
+        return self.config.get(key, VAEConfig.DEFAULTS.get(key, default))
 
 
 class VAE(TorchCompatibleModule):
@@ -240,28 +240,6 @@ def initialize_onnx():
     except Exception as e:
         log.error(f'ONNX failed to initialize: {e}')
     initialized = True
-
-
-def initialize_olive():
-    global run_olive_workflow # pylint: disable=global-statement
-    from installer import installed, log
-    if not installed('olive-ai', quiet=True) or not installed('onnx', quiet=True):
-        return
-    import sys
-    import importlib
-    orig_sys_path = sys.path
-    venv_dir = os.environ.get("VENV_DIR", os.path.join(os.getcwd(), 'venv'))
-    try:
-        spec = importlib.util.find_spec('onnxruntime.transformers')
-        sys.path = [d for d in spec.submodule_search_locations + sys.path if sys.path[1] not in d or venv_dir in d]
-        from onnxruntime.transformers import convert_generation # pylint: disable=unused-import
-        spec = importlib.util.find_spec('olive')
-        sys.path = spec.submodule_search_locations + sys.path
-        run_olive_workflow = importlib.import_module('olive.workflows').run
-    except Exception as e:
-        run_olive_workflow = None
-        log.error(f'Olive: Failed to load olive-ai: {e}')
-    sys.path = orig_sys_path
 
 
 def install_olive():

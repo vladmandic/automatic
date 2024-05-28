@@ -470,12 +470,15 @@ class ScriptRunner:
 
     def run(self, p, *args):
         s = ScriptSummary('run')
-        script_index = args[0]
+        script_index = args[0] if len(args) > 0 else 0
         if script_index == 0:
             return None
         script = self.selectable_scripts[script_index-1]
         if script is None:
             return None
+        if 'upscale' in script.title():
+            if not hasattr(p, 'init_images') and p.task_args.get('image', None) is not None:
+                p.init_images = p.task_args['image']
         parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
         processed = script.run(p, *parsed)
         s.record(script.title())

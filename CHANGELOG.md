@@ -1,9 +1,241 @@
 # Change Log for SD.Next
 
-## TODO
+## Update for 2024-05-28
 
-- reference styles
-- quick apply style
+### Highlights for 2024-05-28
+
+New [SD.Next](https://github.com/vladmandic/automatic) release has been baking in `dev` for a longer than usual, but changes are massive - about 350 commits for core and 300 for UI...
+
+Starting with the new UI - yup, this version ships with a *preview* of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
+For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
+**ModernUI** is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
+Thanks to @BinaryQuantumSoul for his hard work on this project!  
+
+![Screenshot-ModernUI](html/screenshot-modernui.jpg)
+![Screenshot-ModernUI-Img](html/screenshot-modernui-img2img.jpg)
+![Screenshot-ModernUI-Control](html/screenshot-modernui-control.jpg)
+
+*What else?*
+
+#### New built-in features
+
+- [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) SD.Next is now installable as a web-app
+- **Gallery**: extremely fast built-in gallery viewer  
+  List, preview, search through all your images and videos!  
+- **HiDiffusion** allows generating very-high resolution images out-of-the-box using standard models  
+- **Perturbed-Attention Guidance** (PAG) enhances sample quality in addition to standard CFG scale  
+- **LayerDiffuse** simply create transparent (foreground-only) images  
+- **IP adapter masking** allows to use multiple input images for each segment of the input image  
+- IP adapter **InstantStyle** implementation  
+- **Token Downsampling** (ToDo) provides significant speedups with minimal-to-none quality loss  
+- **Samplers optimizations** that allow normal samplers to complete work in 1/3 of the steps!  
+  Yup, even popular DPM++2M can now run in 10 steps with quality equaling 30 steps using **AYS** presets  
+- Native **wildcards** support  
+- Improved built-in **Face HiRes**  
+- Better **outpainting**  
+- And much more...  
+  For details of above features and full list, see [Changelog](https://github.com/vladmandic/automatic/blob/dev/CHANGELOG.md)
+
+#### New models
+
+While still waiting for *Stable Diffusion 3.0*, there have been some significant models released in the meantime:
+
+- [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/), high end diffusion transformer model (*DiT*) capable of directly generating images at 4K resolution  
+- [SDXS](https://github.com/IDKiro/sdxs), extremely fast 1-step generation consistency model  
+- [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD), 1-step, 2-step, 4-step and 8-step optimized models  
+
+*Note*  
+[SD.Next](https://github.com/vladmandic/automatic) is no longer marked as a fork of [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui/) and github project has been fully detached  
+Given huge number of changes with *+3443/-3342* commits diff (at the time of fork detach) over the past year,  
+a completely different backend/engine and a change of focus, it is time to give credit to original [author](https://github.com/auTOMATIC1111),  and move on!  
+
+### Full ChangeLog for 2024-05-28
+
+- **Features**:
+  - **ModernUI** preview of the new [ModernUI](https://github.com/BinaryQuantumSoul/sdnext-modernui)  
+  - [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) SD.Next is now installable as a web-app and includes verified manifest  
+  - **Gallery
+  - **Gallery**: list, preview, search through all your images and videos!  
+    Implemented as infinite-scroll with client-side-caching and lazy-loading while being fully async and non-blocking  
+    Search or sort by path, name, size, width, height, mtime or any image metadata item, also with extended syntax like *width > 1000*  
+    *Settings*: optional additional user-defined folders, thumbnails in fixed or variable aspect-ratio  
+  - [HiDiffusion](https://github.com/megvii-research/HiDiffusion):  
+    Generate high-resolution images using your standard models without duplicates/distorsions AND improved performance  
+    For example, *SD15* can now go up to *2024x2048* and *SDXL* up to *4k* natively
+    Simply enable checkbox in advanced menu and set desired resolution  
+    Additional settings are available in *settings -> inference settings -> hidiffusion*  
+    And can also be set and used via *xyz grid*  
+    *Note*: HiDiffusion resolution sensitive, so if you get error, set resolution to be multiples of 128  
+  - [Perturbed-Attention Guidance](https://github.com/KU-CVLAB/Perturbed-Attention-Guidance)  
+    PAG enhances sample quality by utilizing self-attention in formation of latent in addition to standard CFG scale  
+    Simply set *advanced -> attention guidance* and *advanced -> adaptive scaling*  
+    Additional options are available in *settings -> inference settings -> pag*  
+    *Note*: PAG has replaced SAG as attention guidance method in SD.Next  
+  - [LayerDiffuse](https://github.com/rootonchair/diffuser_layerdiffuse)
+    Create transparent images with foreground-only being generated  
+    Simply select from scripts -> apply to current model  
+    All necessary files will be auto-downloaded on first use  
+  - **IP Adapter Masking**:  
+    Powerful method of using masking with ip-adapters  
+    When combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
+    *Hint*: to create masks, you can use manually created masks or control->mask module with auto-segment to create masks and later upload them  
+  - **IP Adapter advanced layer configuration**:  
+    Allows for more control over how each layer of ip-adapter is applied, requires a valid dict to be passed as input  
+    See [InstantStyle](https://github.com/InstantStyle/InstantStyle) for details  
+  - **OneDiff**: new optimization/compile engine, thanks @aifartist  
+    As with all other compile engines, enable via *settings -> compute settings -> compile*  
+  - [ToDo](https://arxiv.org/html/2402.13573v2) Token Downsampling for Efficient Generation of High-Resolution Images  
+    Newer alternative method to [ToMe](https://github.com/dbolya/tomesd) that can provide speed-up with minimal quality loss  
+    Enable in *settings -> inference settings -> token merging*  
+    Also available in XYZ grid  
+  - **Outpaint**:  
+    New method of outpainting that uses a combination of auto-masking and edge generation to create seamless transitions between original and generated image  
+    Use on control tab:
+    - *input -> denoising strength: 0.5 or higher*
+    - *select image -> outpaint -> expand edges or zoom out to desired size*
+    - *size -> mode: outpaint, method: nearest*
+    - *mask -> inpaint masked only (if you want to keep original image)*
+  - **Wildcards**:
+    - native support of standard file-based wildcards in prompt  
+    - enabled by default, can be disabled in *settings -> extra networks* if you want to use 3rd party extension  
+    - wildcards folder is set in *settings -> system paths* and can be flat-file list or complex folder structure  
+    - matches strings `"__*__"` in positive and negative prompts  
+    - supports filename and path-based wildcards  
+    - supports nested wildcards (wildcard can refer to another wildcard, etc.)  
+    - supports wildcards files in one-choice per line or multiple choices per line separated by `|` format  
+    - *note*: this is in addition to previously released style-based wildcards  
+- **Models**:
+  - **Load UNET**: ability to override/load external UNET to a selected model  
+    Works similar to how VAE is selected and loaded: Set UNet folder and UNet model in settings  
+    Can be replaced on-the-fly, not just during initial model load  
+    Enables usage of fine-tunes such as [DPO-SD15](https://huggingface.co/mhdang/dpo-sd1.5-text2image-v1) or [DPO-SDXL](https://huggingface.co/mhdang/dpo-sdxl-text2image-v1)  
+    *Note*: if there is a `JSON` file with the same name as the model it will be used as Unet config, otherwise Unet config from currently loaded model will be used  
+  - [PixArt-Σ](https://pixart-alpha.github.io/PixArt-sigma-project/)
+    pixart-Σ is a high end diffusion Transformer model (DiT) with a T5 encoder/decoder capable of directly generating images at 4K resolution  
+    to use, simply select from *networks -> models -> reference -> PixArt-Σ*  
+    *note*: this is a very large model at ~22GB  
+    set parameters: *sampler: Default*  
+  - [SDXS](https://github.com/IDKiro/sdxs)
+    sdxs is an extremely fast 1-step generation consistency model that also uses TAESD as quick VAE out-of-the-box  
+    to use, simply select from *networks -> models -> reference -> SDXS*  
+    set parameters: *sampler: CMSI, steps: 1, cfg_scale: 0.0*
+  - [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD)  
+    sd15 and sdxl 1-step, 2-step, 4-step and 8-step optimized models using lora  
+    set parameters: *sampler: TCD or LCM, steps: 1/2/4/8, cfg_scale: 0.0*  
+- **UI**:
+  - Faster **UI** load times
+  - Theme types:  
+    **Standard** (built-in themes), **Modern** (experimental nextgen ui), **None** (used for Gradio and Huggingface 3rd party themes)  
+    Specifying a theme type updates list of available themes  
+    For example, *Gradio* themes will not appear as available if theme type is set to *Standard*  
+  - Redesign of base txt2img interface  
+  - Minor tweaks to styles: refresh/apply/save
+  - See details in [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)
+- **API**:
+  - Add API endpoint `/sdapi/v1/control` and CLI util `cli/simple-control.py`  
+    (in addition to previously added `/sdapi/v1/preprocessors` and `/sdapi/v1/masking`)  
+    example:
+    > simple-control.py --prompt 'woman in the city' --sampler UniPC --steps 20  
+    > --input \~/generative/Samples/cutie-512.png --output /tmp/test.png --processed /tmp/proc.png  
+    > --control 'Canny:Canny FP16:0.7, OpenPose:OpenPose FP16:0.8' --type controlnet  
+    > --ipadapter 'Plus:~/generative/Samples/cutie-512.png:0.5'  
+  - Add API endpoint `/sdapi/v1/vqa` and CLI util `cli/simple-vqa.py`
+- **Changes**:
+  - Due to change in Diffusers model loading  
+    initial model load will now fetch config files required for the model  
+    from the Huggingface site instead of using predefined YAML files
+  - Removed built-in extensions: *ControlNet* and *Image-Browser*  
+    as both *image-browser* and *controlnet* have native built-in equivalents  
+    both can still be installed by user if desired  
+  - Different defaults depending on available GPU, thanks @Disty0
+    - 4GB and below: *lowvram*
+    - 8GB and below: *medvram*
+    - Cross-attention: Dynamic Attention SDP with *medvram* or *lowvram*, otherwise SDP  
+    - VAE Tiling enabled with *medvram* and *lowvram*
+    - Disable Extract EMA by default
+    - Disable forced VAE Slicing for *lowvram*
+  - Upscaler compile disabled by default with OpenVINO backend  
+  - Hypernetwork support disabled by default, can be enabled in settings  
+- **Improvements**:
+  - Faster server startup  
+  - Styles apply wildcards to params
+  - Face HiRes fully configurable and higher quality when using high-resolution models  
+  - Extra networks persistent sort order in settings  
+  - Add option to make batch generations use fully random seed vs sequential  
+  - Make metadata in full screen viewer optional
+  - Add VAE civitai scan metadata/preview
+  - More efficient in-browser callbacks
+  - Updated all system requirements  
+  - UI log monitor will auto-reconnect to server on server restart  
+  - UI styles includes indicator for active styles  
+  - UI reduce load on browser  
+  - Secondary sampler add option "same as primary"  
+  - Change attention mechanism on-the-fly without model reload, thanks @Disty0  
+  - Update stable-fast with support for torch 2.2.2 and 2.3.0, thanks @Aptronymist
+  - Add torch *cudaMallocAsync* in compute options  
+    Can improve memory utilization on compatible GPUs (RTX and newer)  
+  - Torch dynamic profiling  
+    You can enable/disable full torch profiling in settings top menu on-the-fly  
+  - Prompt caching - if you use the same prompt multiple times, no need to re-parse and encode it  
+    Useful for batches as prompt processing is ~0.1sec on each pass  
+  - Enhance `SD_PROMPT_DEBUG` to show actual tokens used
+  - Support controlnet manually downloads models in both standalone and diffusers format  
+    For standalone, simply copy safetensors file to `models/control/controlnet` folder  
+    For diffusers format, create folder with model name in `models/control/controlnet/`  
+    and copy `model.json` and `diffusion_pytorch_model.safetensors` to that folder  
+- **Samplers**
+  - Add *Euler SGM* variation (e.g. SGM Uniform), optimized for SDXL-Lightning models  
+    *note*: you can use other samplers as well with SDXL-Lightning models  
+  - Add *CMSI* sampler, optimized for consistency models  
+  - Add option *timestep spacing* to sampler settings and sampler section in main ui
+    Note: changing timestep spacing changes behavior of sampler and can help to make any sampler turbo/lightning compatibile
+  - Add option *timesteps* to manually set timesteps instead of relying on steps+spacing  
+    Additionally, presets from nVidias align-you-steps reasearch are provided  
+    Result is that perfectly aligned steps can drastically reduce number of steps needed!  
+    For example, **AYS** preset alows DPM++2M to run in ~10 steps with quality equallying ~30 steps!  
+- **IPEX**, thanks @Disty0
+  - Update to *IPEX 2.1.20* on Linux  
+    requires removing the venv folder to update properly  
+  - Removed 1024x1024 workaround  
+  - Disable ipexrun by default, set `IPEXRUN=True` if you want to use `ipexrun`  
+- **ROCm**, thanks @Disty0  
+  - Add support for ROCm 6.1 nighthly builds  
+  - Switch to stable branch of PyTorch  
+  - Compatibility improvenments  
+  - Add **MIGraphX** torch compile engine  
+- **ZLUDA**, thanks @lshqqytiger
+  - Rewrite ZLUDA installer
+  - ZLUDA **v3.8** updates: Runtime API support
+  - Add `--reinstall-zluda` (to download the latest ZLUDA)
+- **Fixes**:
+  - Update requirements
+  - Installer automatically handle detached git states  
+  - Prompt params parser
+  - Allowing forcing LoRA loading method for some or all models
+  - Image save without metadata
+  - API generate save metadata
+  - Face/InstantID faults
+  - CivitAI update model info for all models
+  - FP16/BF16 test on model load
+  - Variation seed possible NaNs
+  - Enumerate diffusers model with multiple variants
+  - Diffusers skip non-models on enum
+  - Face-HiRes compatibility with control modules
+  - Face-HiRes avoid doule save in some scenarios
+  - Loading safetensors embeddings
+  - CSS fixes
+  - Check if attention processor is compatible with model
+  - SD Upscale when used with control module
+  - Noise sampler seed, thanks @leppie
+  - Control module with ADetailer and active ControlNet
+  - Control module restore button full functionality
+  - Control improved handling with multiple control units and different init images
+  - Control add correct metadata to image
+  - Time embeddings load part of model load
+  - A1111 update OptionInfo properties
+  - MOTD exception handling
+  - Notifications not triggering
+  - Prompt cropping on copy
 
 ## Update for 2024-03-19
 
@@ -31,8 +263,8 @@ What else?
 - **Reference models**: *Networks -> Models -> Reference*: All reference models now come with recommended settings that can be auto-applied if desired  
 - **Styles**: Not just for prompts! Styles can apply *generate parameters* as templates and can be used to *apply wildcards* to prompts  
 improvements, Additional API endpoints  
-- Given the high interest in [ZLUDA](https://github.com/vosen/ZLUDA) engine introduced in last release we've updated much more flexible/automatic install procedure (see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details)  
-- Plus Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow 
+- Given the high interest in [ZLUDA](https://github.com/vosen/ZLUDA) engine introduced in last release weve updated much more flexible/automatic install procedure (see [wiki](https://github.com/vladmandic/automatic/wiki/ZLUDA) for details)  
+- Plus Additional Improvements such as: Smooth tiling, Refine/HiRes workflow improvements, Control workflow  
 
 Further details:  
 - For basic instructions, see [README](https://github.com/vladmandic/automatic/blob/master/README.md)  
@@ -163,7 +395,7 @@ Further details:
   - Fully functional: SD15 + SD15, SDXL + SDXL, SDXL + SDXL-R
   - Functional, but result is not as good: SD15 + SDXL, SDXL + SD15, SD15 + SDXL-R
 - **SDXL Lightning** models just-work, just makes sure to set CFG Scale to 0  
-    and choose a best-suited sampler, it may not be the one you're used to (e.g. maybe even basic Euler)  
+    and choose a best-suited sampler, it may not be the one youre used to (e.g. maybe even basic Euler)  
 - **Fixes**
   - improve *model cpu offload* compatibility
   - improve *model sequential offload* compatibility
@@ -191,7 +423,7 @@ Further details:
 
 ## Update for 2024-02-22
 
-Only 3 weeks since last release, but here's another feature-packed one!
+Only 3 weeks since last release, but heres another feature-packed one!
 This time release schedule was shorter as we wanted to get some of the fixes out faster.
 
 ### Highlights 2024-02-22

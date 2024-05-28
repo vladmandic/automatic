@@ -121,7 +121,7 @@ class NetworkModule:
         return updown * self.calc_scale() * self.multiplier(), ex_bias
 
     def calc_updown(self, target):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def forward(self, x, y):
-        raise NotImplementedError()
+        raise NotImplementedError

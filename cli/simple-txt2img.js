@@ -20,6 +20,7 @@ const sd_options = {
   cfg_scale: 6,
   width: 512,
   height: 512,
+  /*
   // enable second pass
   enable_hr: true,
   // second pass: upscale
@@ -35,6 +36,7 @@ const sd_options = {
   refiner_start: 0.8,
   refiner_prompt: '',
   refiner_negative: '',
+  */
   // api return options
   save_images: false,
   send_images: true,

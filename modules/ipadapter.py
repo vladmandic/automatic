@@ -9,6 +9,7 @@ TODO ipadapter items:
 
 import os
 import time
+import json
 from PIL import Image
 from modules import processing, shared, devices, sd_models
 
@@ -45,6 +46,8 @@ def get_images(input_images):
     if not isinstance(input_images, list):
         input_images = [input_images]
     for image in input_images:
+        if image is None:
+            continue
         if isinstance(image, list):
             output_images.append(get_images(image)) # recursive
         elif isinstance(image, Image.Image):
@@ -108,8 +111,24 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_images'):
         adapter_images = p.ip_adapter_images
     adapter_images = get_images(adapter_images)
+    if hasattr(p, 'ip_adapter_masks') and len(p.ip_adapter_masks) > 0:
+        adapter_masks = p.ip_adapter_masks
+        adapter_masks = get_images(adapter_masks)
+    else:
+        adapter_masks = []
+    if len(adapter_masks) > 0:
+        from diffusers.image_processor import IPAdapterMaskProcessor
+        mask_processor = IPAdapterMaskProcessor()
+        for i in range(len(adapter_masks)):
+            adapter_masks[i] = mask_processor.preprocess(adapter_masks[i], height=p.height, width=p.width)
+        adapter_masks = mask_processor.preprocess(adapter_masks, height=p.height, width=p.width)
     if len(adapters) < len(adapter_images):
         adapter_images = adapter_images[:len(adapters)]
+    if len(adapters) < len(adapter_masks):
+        adapter_masks = adapter_masks[:len(adapters)]
+    if len(adapter_masks) > 0 and len(adapter_masks) != len(adapter_images):
+        shared.log.error('IP adapter: image and mask count mismatch')
+        return False
     adapter_scales = get_scales(adapter_scales, adapter_images)
     p.ip_adapter_scales = adapter_scales.copy()
     adapter_starts = get_scales(adapter_starts, adapter_images)
@@ -166,7 +185,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                 clip_loaded = f'{clip_repo}/{clip_subfolder}'
             except Exception as e:
                 shared.log.error(f'IP adapter: failed to load image encoder: {e}')
-                return
+                return False
         sd_models.move_model(pipe.image_encoder, devices.device)
 
     # main code
@@ -174,15 +193,21 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     ip_subfolder = 'models' if shared.sd_model_type == 'sd' else 'sdxl_models'
     try:
         pipe.load_ip_adapter([base_repo], subfolder=[ip_subfolder], weight_name=adapters)
-        for i in range(len(adapter_scales)):
-            if adapter_starts[i] > 0:
-                adapter_scales[i] = 0.00
-        pipe.set_ip_adapter_scale(adapter_scales)
+        if hasattr(p, 'ip_adapter_layers'):
+            pipe.set_ip_adapter_scale(p.ip_adapter_layers)
+            ip_str = ';'.join(adapter_names) + ':' + json.dumps(p.ip_adapter_layers)
+        else:
+            for i in range(len(adapter_scales)):
+                if adapter_starts[i] > 0:
+                    adapter_scales[i] = 0.00
+            pipe.set_ip_adapter_scale(adapter_scales)
+            ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
         p.task_args['ip_adapter_image'] = adapter_images
-        t1 = time.time()
-        ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
+        if len(adapter_masks) > 0:
+            p.cross_attention_kwargs = { 'ip_adapter_masks': adapter_masks }
         p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)
-        shared.log.info(f'IP adapter: {ip_str} image={adapter_images} time={t1-t0:.2f}')
+        t1 = time.time()
+        shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
         shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} names={adapter_names} {e}')
     return True

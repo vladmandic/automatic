@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import partial
 import re
 import sys
 import logging
@@ -37,13 +38,12 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 timer.startup.record("torch")
 
+import transformers # pylint: disable=W0611,C0411
+timer.startup.record("transformers")
+
 import onnxruntime
 onnxruntime.set_default_logger_severity(3)
 timer.startup.record("onnx")
-
-from modules.onnx_impl import initialize_olive # pylint: disable=ungrouped-imports
-initialize_olive()
-timer.startup.record("olive")
 
 from fastapi import FastAPI # pylint: disable=W0611,C0411
 import gradio # pylint: disable=W0611,C0411
@@ -54,6 +54,10 @@ import pydantic # pylint: disable=W0611,C0411
 timer.startup.record("pydantic")
 
 import diffusers # pylint: disable=W0611,C0411
+import diffusers.loaders.single_file # pylint: disable=W0611,C0411
+logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
+from tqdm.rich import tqdm
+diffusers.loaders.single_file.logging.tqdm = partial(tqdm, unit='C')
 timer.startup.record("diffusers")
 
 def get_packages():

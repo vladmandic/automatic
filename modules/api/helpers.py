@@ -36,8 +36,7 @@ def encode_pil_to_base64(image):
         shared.log.error('API cannot encode image: not a PIL image')
         return ''
     buffered = io.BytesIO()
-    image_format = Image.registered_extensions()[f'.{shared.opts.samples_format}']
-    image.save(buffered, format=image_format)
+    save_image(image, fn=buffered, ext=shared.opts.samples_format)
     b64 = base64.b64encode(buffered.getvalue())
     return b64
 
@@ -59,7 +58,7 @@ def save_image(image, fn, ext):
         image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, pnginfo=pnginfo_data)
     elif image_format == 'JPEG':
         if image.mode == 'RGBA':
-            shared.log.warning('Saving RGBA image as JPEG: Alpha channel will be lost')
+            shared.log.warning('Save: RGBA image as JPEG - removed alpha channel')
             image = image.convert("RGB")
         elif image.mode == 'I;16':
             image = image.point(lambda p: p * 0.0038910505836576).convert("L")

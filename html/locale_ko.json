@@ -155,7 +155,7 @@
   {"id":"","label":"Upscaler 2 visibility","localized":"","hint":"Strength of the secondary upscaler"},
   {"id":"","label":"GFPGAN visibility","localized":"","hint":"Strength of GFPGAN face restore network, 0=disabled"},
   {"id":"","label":"CodeFormer visibility","localized":"","hint":"Strength of CodeFormer face restore network, 0=disabled"},
-  {"id":"","label":"CodeFormer weight","localized":"","hint":"0=maximum strength, 1=minimium strength"}
+  {"id":"","label":"CodeFormer weight","localized":"","hint":"0=maximum strength, 1=minimum strength"}
 ],
 "settings menu": [
   {"id":"settings_submit","label":"Apply settings","localized":"설정 적용","hint":"현재 설정을 저장한다. (서버 재시작 권장)"},
@@ -224,7 +224,7 @@
   {"id":"","label":"Validate","localized":"검증","hint":""},
   {"id":"","label":"List model details","localized":"모델 목록 조회","hint":""},
   {"id":"","label":"Calculate hash for all models (may take a long time)","localized":"모든 모델에 대해 해시값 계산 (긴 시간이 걸릴 수 있음)","hint":""},
-  {"id":"","label":"seach models","localized":"모델 검색","hint":""},
+  {"id":"","label":"search models","localized":"모델 검색","hint":""},
   {"id":"","label":"select model","localized":"모델 선택","hint":""},
   {"id":"","label":"specify model variant","localized":"모델 종류(variant) 지정","hint":""},
   {"id":"","label":"specify model revision","localized":"모델 리비전 지정","hint":""},
@@ -312,7 +312,7 @@
   {"id":"","label":"once","localized":"","hint":""},
   {"id":"","label":"deterministic","localized":"","hint":""},
   {"id":"","label":"select embedding","localized":"임베딩 선택","hint":""},
-  {"id":"","label":"create emebedding","localized":"임베딩 생성","hint":""},
+  {"id":"","label":"create embedding","localized":"임베딩 생성","hint":""},
   {"id":"","label":"gradient clip value","localized":"","hint":""},
   {"id":"","label":"create interim hypernetworks","localized":"","hint":""},
   {"id":"","label":"Original model","localized":"원본 모델","hint":""}

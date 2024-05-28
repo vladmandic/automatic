@@ -2,6 +2,10 @@ let settingsInitialized = false;
 let opts_metadata = {};
 const opts_tabs = {};
 
+function getSettingsTabs() {
+  return gradioApp().querySelectorAll('#tab_settings .tabitem');
+}
+
 const monitoredOpts = [
   { sd_model_checkpoint: null },
   { sd_backend: () => gradioApp().getElementById('refresh_sd_model_checkpoint')?.click() },
@@ -34,7 +38,6 @@ async function updateOpts(json_string) {
   }
 
   opts = new_opts;
-
   Object.entries(opts_metadata).forEach(([opt, meta]) => {
     if (!opts_tabs[meta.tab_name]) opts_tabs[meta.tab_name] = {};
     if (!opts_tabs[meta.tab_name].unsaved_keys) opts_tabs[meta.tab_name].unsaved_keys = new Set();
@@ -48,7 +51,7 @@ function showAllSettings() {
   // Try to ensure that the show all settings tab is opened by clicking on its tab button
   const tab_dirty_indicator = gradioApp().getElementById('modification_indicator_show_all_pages');
   if (tab_dirty_indicator && tab_dirty_indicator.nextSibling) tab_dirty_indicator.nextSibling.click();
-  gradioApp().querySelectorAll('#settings > .tab-content > .tabitem').forEach((elem) => {
+  getSettingsTabs().forEach((elem) => {
     if (elem.id === 'settings_tab_licenses' || elem.id === 'settings_show_all_pages') return;
     elem.style.display = 'block';
   });
@@ -118,7 +121,7 @@ onAfterUiUpdate(async () => {
     setTimeout(() => {
       log('settingsSearch', e.target.value);
       showAllSettings();
-      gradioApp().querySelectorAll('#tab_settings .tabitem').forEach((section) => {
+      getSettingsTabs().forEach((section) => {
         section.querySelectorAll('.dirtyable').forEach((setting) => {
           const visible = setting.innerText.toLowerCase().includes(e.target.value.toLowerCase()) || setting.id.toLowerCase().includes(e.target.value.toLowerCase());
           if (!visible) setting.style.display = 'none';
@@ -195,6 +198,3 @@ async function initSettings() {
   });
   log('initSettings');
 }
-
-onUiLoaded(initSettings);
-onUiLoaded(initModels);

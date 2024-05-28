@@ -23,15 +23,11 @@ def setup_for_low_vram(sd_model, use_medvram):
         be in CPU
         """
         global module_in_gpu # pylint: disable=global-statement
-
         module = parents.get(module, module)
-
         if module_in_gpu == module:
             return
-
         if module_in_gpu is not None:
             module_in_gpu.to(cpu)
-
         module.to(devices.device)
         module_in_gpu = module
 

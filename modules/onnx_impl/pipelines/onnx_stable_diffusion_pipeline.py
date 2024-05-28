@@ -62,6 +62,9 @@ class OnnxStableDiffusionPipeline(diffusers.OnnxStableDiffusionPipeline, Callabl
         if generator is None:
             generator = torch.Generator("cpu")
 
+        # set timesteps
+        self.scheduler.set_timesteps(num_inference_steps)
+
         # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
         # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
         # corresponds to doing no classifier free guidance.
@@ -84,11 +87,8 @@ class OnnxStableDiffusionPipeline(diffusers.OnnxStableDiffusionPipeline, Callabl
             width,
             prompt_embeds.dtype,
             generator,
-            latents
+            latents,
         )
-
-        # set timesteps
-        self.scheduler.set_timesteps(num_inference_steps)
 
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.

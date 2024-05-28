@@ -9,7 +9,7 @@ class ModuleTypeIa3(network.ModuleType):
         return None
 
 
-class NetworkModuleIa3(network.NetworkModule):
+class NetworkModuleIa3(network.NetworkModule): # pylint: disable=abstract-method
     def __init__(self,  net: network.Network, weights: network.NetworkWeights):
         super().__init__(net, weights)
         self.w = weights.w["weight"]

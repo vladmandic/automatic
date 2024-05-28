@@ -1244,7 +1244,7 @@ class Script(scripts.Script):
         return [cosine_scale_1, cosine_scale_2, cosine_scale_3, sigma, view_batch_size, stride, multi_decoder]
 
     def run(self, p: processing.StableDiffusionProcessing, cosine_scale_1, cosine_scale_2, cosine_scale_3, sigma, view_batch_size, stride, multi_decoder): # pylint: disable=arguments-differ
-        c = shared.sd_model.__class__.__name__ if shared.sd_model is not None else ''
+        c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
         if c != 'StableDiffusionXLPipeline':
             shared.log.warning(f'DemoFusion: pipeline={c} required=StableDiffusionXLPipeline')
             return None

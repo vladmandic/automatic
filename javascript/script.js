@@ -1,20 +1,36 @@
 const log = (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
+  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
   console.log(ts, ...msg); // eslint-disable-line no-console
 };
 
 const debug = (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
+  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
   console.debug(ts, ...msg); // eslint-disable-line no-console
 };
+
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms)); // eslint-disable-line no-promise-executor-return
+}
 
 function gradioApp() {
   const elems = document.getElementsByTagName('gradio-app');
   const elem = elems.length === 0 ? document : elems[0];
   if (elem !== document) elem.getElementById = (id) => document.getElementById(id);
   return elem.shadowRoot ? elem.shadowRoot : elem;
+}
+
+function logFn(func) {
+  return async function () { // eslint-disable-line func-names
+    const t0 = performance.now();
+    const returnValue = func(...arguments);
+    const t1 = performance.now();
+    log(func.name, Math.round(t1 - t0) / 1000);
+    return returnValue;
+  };
 }
 
 function getUICurrentTab() {
@@ -30,6 +46,7 @@ const get_uiCurrentTab = getUICurrentTab;
 const uiAfterUpdateCallbacks = [];
 const uiUpdateCallbacks = [];
 const uiLoadedCallbacks = [];
+const uiReadyCallbacks = [];
 const uiTabChangeCallbacks = [];
 const optionsChangedCallbacks = [];
 let uiCurrentTab = null;
@@ -45,6 +62,10 @@ function onUiUpdate(callback) {
 
 function onUiLoaded(callback) {
   uiLoadedCallbacks.push(callback);
+}
+
+function onUiReady(callback) {
+  uiReadyCallbacks.push(callback);
 }
 
 function onUiTabChange(callback) {
@@ -72,15 +93,28 @@ function scheduleAfterUiUpdateCallbacks() {
 }
 
 let executedOnLoaded = false;
+const ignoreElements = ['logMonitorData', 'logWarnings', 'logErrors', 'tooltip-container', 'logger'];
+const ignoreClasses = ['wrap'];
 
-document.addEventListener('DOMContentLoaded', () => {
-  const mutationObserver = new MutationObserver((m) => {
-    if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) {
+let mutationTimer = null;
+let validMutations = [];
+async function mutationCallback(mutations) {
+  let newMutations = mutations;
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => m.target.nodeName !== 'LABEL');
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => ignoreElements.indexOf(m.target.id) === -1);
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => m.target.id !== 'logWarnings' && m.target.id !== 'logErrors');
+  if (newMutations.length > 0) newMutations = newMutations.filter((m) => !m.target.classList?.contains('wrap'));
+  if (newMutations.length > 0) validMutations = validMutations.concat(newMutations);
+  if (validMutations.length < 1) return;
+
+  if (mutationTimer) clearTimeout(mutationTimer);
+  mutationTimer = setTimeout(async () => {
+    if (!executedOnLoaded && gradioApp().getElementById('txt2img_prompt')) { // execute once
       executedOnLoaded = true;
       executeCallbacks(uiLoadedCallbacks);
     }
-    if (executedOnLoaded) {
-      executeCallbacks(uiUpdateCallbacks, m);
+    if (executedOnLoaded) { // execute on each mutation
+      executeCallbacks(uiUpdateCallbacks, mutations);
       scheduleAfterUiUpdateCallbacks();
     }
     const newTab = getUICurrentTab();
@@ -88,7 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
       uiCurrentTab = newTab;
       executeCallbacks(uiTabChangeCallbacks);
     }
-  });
+    validMutations = [];
+    mutationTimer = null;
+  }, 50);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const mutationObserver = new MutationObserver(mutationCallback);
   mutationObserver.observe(gradioApp(), { childList: true, subtree: true });
 });
 

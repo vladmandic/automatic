@@ -2,12 +2,15 @@ from typing import Optional, Union
 import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from torch.nn.modules.utils import _pair
 import accelerate.utils.modeling
 from modules import devices
 
 
 tensor_to_timer = 0
-orig_method = accelerate.utils.set_module_tensor_to_device
+orig_set_module = accelerate.utils.set_module_tensor_to_device
+orig_torch_conv = torch.nn.modules.conv.Conv2d._conv_forward # pylint: disable=protected-access
 
 
 def check_device_same(d1, d2):
@@ -57,10 +60,24 @@ def hijack_accelerate():
 
 
 def restore_accelerate():
-    accelerate.utils.set_module_tensor_to_device = orig_method
+    accelerate.utils.set_module_tensor_to_device = orig_set_module
 
 
 def hijack_hfhub():
     import contextlib
     import huggingface_hub.file_download
     huggingface_hub.file_download.FileLock = contextlib.nullcontext
+
+
+def torch_conv_forward(self, input, weight, bias): # pylint: disable=redefined-builtin
+    if self.padding_mode != 'zeros':
+        return F.conv2d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode), weight, bias, self.stride, _pair(0), self.dilation, self.groups) # pylint: disable=protected-access
+    if weight.dtype != bias.dtype:
+        bias.to(weight.dtype)
+    return F.conv2d(input, weight, bias, self.stride, self.padding, self.dilation, self.groups)
+
+def hijack_torch_conv():
+    torch.nn.modules.conv.Conv2d._conv_forward = torch_conv_forward # pylint: disable=protected-access
+
+def restore_torch_conv():
+    torch.nn.modules.conv.Conv2d._conv_forward = orig_torch_conv # pylint: disable=protected-access

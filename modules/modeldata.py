@@ -48,6 +48,11 @@ class ModelData:
 # provides shared.sd_model field as a property
 class Shared(sys.modules[__name__].__class__):
     @property
+    def sd_loaded(self):
+        import modules.sd_models # pylint: disable=W0621
+        return modules.sd_models.model_data.sd_model is not None
+
+    @property
     def sd_model(self):
         import modules.sd_models # pylint: disable=W0621
         if modules.sd_models.model_data.sd_model is None:

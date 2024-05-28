@@ -87,6 +87,7 @@ def refresh_vae_list():
     candidates = []
     for path in vae_paths:
         candidates += glob.iglob(path, recursive=True)
+    candidates = [os.path.abspath(path) for path in candidates]
     for filepath in candidates:
         name = get_filename(filepath)
         if name == 'VAE':

@@ -154,6 +154,11 @@ def create_ui(startup_timer = None):
         ui_models.create_ui()
         timer.startup.record("ui-models")
 
+    with gr.Blocks(analytics_enabled=False) as gallery_interface:
+        from modules import ui_gallery
+        ui_gallery.create_ui()
+        timer.startup.record("ui-gallery")
+
     def create_setting_component(key, is_quicksettings=False):
         def fun():
             return opts.data[key] if key in opts.data else opts.data_labels[key].default
@@ -172,6 +177,7 @@ def create_ui(startup_timer = None):
         else:
             raise ValueError(f'bad options item type: {t} for key {key}')
         elem_id = f"setting_{key}"
+        dirty_indicator = None
 
         if not is_quicksettings:
             dirtyable_setting = gr.Group(elem_classes="dirtyable", visible=args.get("visible", True))
@@ -199,7 +205,8 @@ def create_ui(startup_timer = None):
 
         if res is not None and not is_quicksettings:
             res.change(fn=None, inputs=res, _js=f'(val) => markIfModified("{key}", val)')
-            dirty_indicator.click(fn=lambda: getattr(opts, key), outputs=res, show_progress=False)
+            if dirty_indicator is not None:
+                dirty_indicator.click(fn=lambda: getattr(opts, key), outputs=res, show_progress=False)
             dirtyable_setting.__exit__()
 
         return res
@@ -271,8 +278,9 @@ def create_ui(startup_timer = None):
         with gr.Row(elem_id="system_row"):
             restart_submit = gr.Button(value="Restart server", variant='primary', elem_id="restart_submit")
             shutdown_submit = gr.Button(value="Shutdown server", variant='primary', elem_id="shutdown_submit")
-            unload_sd_model = gr.Button(value='Unload checkpoint', variant='primary', elem_id="sett_unload_sd_model")
-            reload_sd_model = gr.Button(value='Reload checkpoint', variant='primary', elem_id="sett_reload_sd_model")
+            unload_sd_model = gr.Button(value='Unload model', variant='primary', elem_id="sett_unload_sd_model")
+            reload_sd_model = gr.Button(value='Reload model', variant='primary', elem_id="sett_reload_sd_model")
+            enable_profiling = gr.Button(value='Start profiling', variant='primary', elem_id="enable_profiling")
 
         with gr.Tabs(elem_id="system") as system_tabs:
             global ui_system_tabs # pylint: disable=global-statement
@@ -356,10 +364,16 @@ def create_ui(startup_timer = None):
             modules.sd_models.unload_model_weights(op='refiner')
 
         def reload_sd_weights():
-            modules.sd_models.reload_model_weights()
+            modules.sd_models.reload_model_weights(force=True)
+
+        def switch_profiling():
+            shared.cmd_opts.profile = not shared.cmd_opts.profile
+            shared.log.warning(f'Profiling: {shared.cmd_opts.profile}')
+            return 'Stop profiling' if shared.cmd_opts.profile else 'Start profiling'
 
         unload_sd_model.click(fn=unload_sd_weights, inputs=[], outputs=[])
         reload_sd_model.click(fn=reload_sd_weights, inputs=[], outputs=[])
+        enable_profiling.click(fn=switch_profiling, inputs=[], outputs=[enable_profiling])
         request_notifications.click(fn=lambda: None, inputs=[], outputs=[], _js='function(){}')
         preview_theme.click(fn=None, _js='previewTheme', inputs=[], outputs=[])
 
@@ -370,6 +384,7 @@ def create_ui(startup_timer = None):
     interfaces += [(img2img_interface, "Image", "img2img")]
     interfaces += [(control_interface, "Control", "control")] if control_interface is not None else []
     interfaces += [(extras_interface, "Process", "process")]
+    interfaces += [(gallery_interface, "Gallery", "gallery")]
     interfaces += [(models_interface, "Models", "models")]
     interfaces += script_callbacks.ui_tabs_callback()
     interfaces += [(settings_interface, "System", "system")]

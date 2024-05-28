@@ -44,11 +44,13 @@ def infotext_to_html(text):
     res.pop('Negative prompt', None)
     params = [f'{k}: {v}' for k, v in res.items() if v is not None]
     params = '| '.join(params) if len(params) > 0 else ''
-    code = f'''
-        <p><b>Prompt:</b> {html.escape(prompt)}</p>
-        <p><b>Negative:</b> {html.escape(negative)}</p>
-        <p><b>Parameters:</b> {html.escape(params)}</p>
-        '''
+    code = ''
+    if len(prompt) > 0:
+        code += f'<p><b>Prompt:</b> {html.escape(prompt)}</p>'
+    if len(negative) > 0:
+        code += f'<p><b>Negative:</b> {html.escape(negative)}</p>'
+    if len(params) > 0:
+        code += f'<p><b>Parameters:</b> {html.escape(params)}</p>'
     return code
 
 
@@ -87,23 +89,33 @@ def save_files(js_data, files, html_info, index):
 
     class PObject: # pylint: disable=too-few-public-methods
         def __init__(self, d=None):
+            # 'Parser': 'Full parser', 'Model': 'lyriel_v16', 'Model hash': 'ec6f68ea63', 'Backend': 'Diffusers', 'App': 'SD.Next', 'Version': '69d7fef', 'Operations': 'txt2img', 'Sampler options': 'order 2/low order', 'Pipeline': 'StableDiffusionPipeline'
+            # <pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>
             if d is not None:
                 for k, v in d.items():
                     setattr(self, k, v)
-            self.prompt = getattr(self, 'prompt', None) or getattr(self, 'Prompt', None)
-            self.all_prompts = getattr(self, 'all_prompts', [self.prompt])
-            self.negative_prompt = getattr(self, 'negative_prompt', None)
-            self.all_negative_prompt = getattr(self, 'all_negative_prompts', [self.negative_prompt])
-            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None)
-            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
-            self.subseed = getattr(self, 'subseed', None)
-            self.all_subseeds = getattr(self, 'all_subseeds', [self.subseed])
-            self.width = getattr(self, 'width', None)
-            self.height = getattr(self, 'height', None)
+            self.prompt = getattr(self, 'prompt', None) or getattr(self, 'Prompt', None) or ''
+            self.negative_prompt = getattr(self, 'negative_prompt', None) or getattr(self, 'Negative_prompt', None) or ''
+            self.sampler = getattr(self, 'sampler', None) or getattr(self, 'Sampler', None) or ''
+            self.seed = getattr(self, 'seed', None) or getattr(self, 'Seed', None) or 0
+            self.steps = getattr(self, 'steps', None) or getattr(self, 'Steps', None) or 0
+            self.width = getattr(self, 'width', None) or getattr(self, 'Width', None) or getattr(self, 'Size-1', None) or 0
+            self.height = getattr(self, 'height', None) or getattr(self, 'Height', None) or getattr(self, 'Size-2', None) or 0
+            self.cfg_scale = getattr(self, 'cfg_scale', None) or getattr(self, 'CFG scale', None) or 0
+            self.clip_skip = getattr(self, 'clip_skip', None) or getattr(self, 'Clip skip', None) or 1
+            self.denoising_strength = getattr(self, 'denoising_strength', None) or getattr(self, 'Denoising', None) or 0
             self.index_of_first_image = getattr(self, 'index_of_first_image', 0)
+            self.subseed = getattr(self, 'subseed', None) or getattr(self, 'Subseed', None)
+            self.styles = getattr(self, 'styles', None) or getattr(self, 'Styles', None) or []
+            self.styles = [s.strip() for s in self.styles.split(',')] if isinstance(self.styles, str) else self.styles
+
+            self.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
             self.infotexts = getattr(self, 'infotexts', [html_info])
             self.infotext = self.infotexts[0] if len(self.infotexts) > 0 else html_info
-            self.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
+            self.all_negative_prompt = getattr(self, 'all_negative_prompts', [self.negative_prompt])
+            self.all_prompts = getattr(self, 'all_prompts', [self.prompt])
+            self.all_seeds = getattr(self, 'all_seeds', [self.seed])
+            self.all_subseeds = getattr(self, 'all_subseeds', [self.subseed])
     try:
         data = json.loads(js_data)
     except Exception:
@@ -145,13 +157,20 @@ def save_files(js_data, files, html_info, index):
                     filename_txt = f"{os.path.splitext(tgt_filename)[0]}.txt"
                     with open(filename_txt, "w", encoding="utf8") as file:
                         file.write(f"{info}\n")
-                    shared.log.debug(f'Saving: text="{filename_txt}"')
+                    shared.log.debug(f'Save: text="{filename_txt}"')
                 except Exception as e:
                     shared.log.warning(f'Image description save failed: {filename_txt} {e}')
             script_callbacks.image_save_btn_callback(tgt_filename)
         else:
             image = generation_parameters_copypaste.image_from_url_text(filedata)
             info = p.infotexts[i + 1] if len(p.infotexts) > len(p.all_seeds) else p.infotexts[i] # infotexts may be offset by 1 because the first image is the grid
+            if len(info) == 0:
+                info = None
+            if (js_data is None or len(js_data) == 0) and image is not None and image.info is not None:
+                info = image.info.pop('parameters', None) or image.info.pop('UserComment', None)
+                geninfo, _ = images.read_info_from_image(image)
+                items = generation_parameters_copypaste.parse_generation_parameters(geninfo)
+                p = PObject(items)
             fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:
                 continue
@@ -246,7 +265,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 if shared.backend == shared.Backend.ORIGINAL:
                     buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "extras"])
                 else:
-                    buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "control", "extras"])
+                    buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "control", "extras"])
 
             download_files = gr.File(None, file_count="multiple", interactive=False, show_label=False, visible=False, elem_id=f'download_files_{tabname}')
             with gr.Group():
@@ -257,15 +276,18 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 generation_info = gr.Textbox(visible=False, elem_id=f'generation_info_{tabname}')
                 generation_info_button = gr.Button(visible=False, elem_id=f"{tabname}_generation_info_button")
 
-                generation_info_button.click(fn=update_generation_info, _js="(x, y, z) => [x, y, selected_gallery_index()]", show_progress=False, # triggered on gallery change from js
+                generation_info_button.click(fn=update_generation_info, show_progress=False,
+                    _js="(x, y, z) => [x, y, selected_gallery_index()]", # triggered on gallery change from js
                     inputs=[generation_info, html_info, html_info],
                     outputs=[html_info, html_info_formatted],
                 )
-                save.click(fn=call_queue.wrap_gradio_call(save_files), _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]", show_progress=False,
+                save.click(fn=call_queue.wrap_gradio_call(save_files), show_progress=False,
+                    _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
                     inputs=[generation_info, result_gallery, html_info, html_info],
                     outputs=[download_files, html_log],
                 )
-                delete.click(fn=call_queue.wrap_gradio_call(delete_files), _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
+                delete.click(fn=call_queue.wrap_gradio_call(delete_files),show_progress=False,
+                    _js="(x, y, z, i) => [x, y, z, selected_gallery_index()]",
                     inputs=[generation_info, result_gallery, html_info, html_info],
                     outputs=[result_gallery, html_log],
                 )
@@ -278,9 +300,17 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 paste_field_names = scripts.scripts_control.paste_field_names
             else:
                 paste_field_names = []
+            debug(f'Paste field: tab={tabname} fields={paste_field_names}')
             for paste_tabname, paste_button in buttons.items():
-                debug(f'Create output panel: button={paste_button} tabname={paste_tabname}')
-                bindings = generation_parameters_copypaste.ParamBinding(paste_button=paste_button, tabname=paste_tabname, source_tabname=("txt2img" if tabname == "txt2img" else None), source_image_component=result_gallery, paste_field_names=paste_field_names)
+                debug(f'Create output panel: source={tabname} target={paste_tabname} button={paste_button}')
+                bindings = generation_parameters_copypaste.ParamBinding(
+                    paste_button=paste_button,
+                    tabname=paste_tabname,
+                    source_tabname=tabname,
+                    source_image_component=result_gallery,
+                    paste_field_names=paste_field_names,
+                    source_text_component=prompt or generation_info
+                )
                 generation_parameters_copypaste.register_paste_params_button(bindings)
             return result_gallery, generation_info, html_info, html_info_formatted, html_log
 
@@ -352,24 +382,23 @@ def update_token_counter(text, steps):
         shared.log.info('Tokenizer busy')
         return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
     from modules import extra_networks
-    try:
-        text, _ = extra_networks.parse_prompt(text)
-        _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
-        prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
-    except Exception:
-        prompt_schedules = [[[steps, text]]]
-    flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
-    prompts = [prompt_text for step, prompt_text in flat_prompts]
+    prompt, _ = extra_networks.parse_prompt(text)
     if shared.backend == shared.Backend.ORIGINAL:
         from modules import sd_hijack
+        try:
+            _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
+            prompt_schedules = prompt_parser.get_learned_conditioning_prompt_schedules(prompt_flat_list, steps)
+        except Exception:
+            prompt_schedules = [[[steps, text]]]
+        flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
+        prompts = [prompt_text for _step, prompt_text in flat_prompts]
         token_count, max_length = max([sd_hijack.model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
     elif shared.backend == shared.Backend.DIFFUSERS:
-        if shared.sd_model is not None and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
+        if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
             has_bos_token = shared.sd_model.tokenizer.bos_token_id is not None
             has_eos_token = shared.sd_model.tokenizer.eos_token_id is not None
-            ids = [shared.sd_model.tokenizer(prompt) for prompt in prompts]
-            if len(ids) > 0 and hasattr(ids[0], 'input_ids'):
-                ids = [x.input_ids for x in ids]
-            token_count = max([len(x) for x in ids]) - int(has_bos_token) - int(has_eos_token)
+            ids = shared.sd_model.tokenizer(prompt)
+            ids = getattr(ids, 'input_ids', [])
+            token_count = len(ids) - int(has_bos_token) - int(has_eos_token)
             max_length = shared.sd_model.tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
     return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"

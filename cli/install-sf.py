@@ -3,7 +3,7 @@ import os
 import re
 import sys
 
-torch_supported = ['211', '212','220','221']
+torch_supported = ['211', '212','220','221','222','230']
 cuda_supported = ['cu118', 'cu121']
 python_supported = ['39', '310', '311']
 repo_url = 'https://github.com/chengzeyi/stable-fast'
@@ -77,6 +77,8 @@ def install_stable_fast():
         url = f'{repo_url}/{path_url}/{file_url}'
 
     ok = install_pip(url)
+    if ok:
+        install_pip('triton')
     if ok:
         import sfast
         print(f'StableFast installed: {sfast.__version__}')

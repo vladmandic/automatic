@@ -1,3 +1,4 @@
+import json
 from PIL import Image
 import gradio as gr
 from modules import scripts, processing, shared, ipadapter
@@ -33,11 +34,14 @@ class Script(scripts.Script):
                 init_images.append(image)
             except Exception as e:
                 shared.log.warning(f'IP adapter failed to load image: {e}')
-        return init_images
+        return gr.update(value=init_images, visible=len(init_images) > 0)
 
     def display_units(self, num_units):
         num_units = num_units or 1
         return (num_units * [gr.update(visible=True)]) + ((MAX_ADAPTERS - num_units) * [gr.update(visible=False)])
+
+    def display_advanced(self, advanced):
+        return [gr.update(visible=advanced), gr.update(visible=advanced)]
 
     def ui(self, _is_img2img):
         with gr.Accordion('IP Adapters', open=False, elem_id='ipadapter'):
@@ -47,7 +51,9 @@ class Script(scripts.Script):
             starts = []
             ends = []
             files = []
-            galleries = []
+            masks = []
+            image_galleries = []
+            mask_galleries = []
             with gr.Row():
                 num_adapters = gr.Slider(label="Active IP adapters", minimum=1, maximum=MAX_ADAPTERS, step=1, value=1, scale=1)
             for i in range(MAX_ADAPTERS):
@@ -61,16 +67,27 @@ class Script(scripts.Script):
                     with gr.Row():
                         files.append(gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100))
                     with gr.Row():
-                        galleries.append(gr.Gallery(show_label=False, value=[]))
-                    files[i].change(fn=self.load_images, inputs=[files[i]], outputs=[galleries[i]])
+                        image_galleries.append(gr.Gallery(show_label=False, value=[], visible=False, container=False, rows=1))
+                    with gr.Row():
+                        masks.append(gr.File(label='Input masks', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100))
+                    with gr.Row():
+                        mask_galleries.append(gr.Gallery(show_label=False, value=[], visible=False))
+                    files[i].change(fn=self.load_images, inputs=[files[i]], outputs=[image_galleries[i]])
+                    masks[i].change(fn=self.load_images, inputs=[masks[i]], outputs=[mask_galleries[i]])
                 units.append(unit)
             num_adapters.change(fn=self.display_units, inputs=[num_adapters], outputs=units)
-        return [num_adapters] + adapters + scales + files + starts + ends
+            layers_active = gr.Checkbox(label='Layer options', default=False, interactive=True)
+            layers_label = gr.HTML('<a href="https://huggingface.co/docs/diffusers/main/en/using-diffusers/ip_adapter#style--layout-control" target="_blank">InstantStyle: advanced layer activation</a>', visible=False)
+            layers = gr.Text(label='Layer scales', placeholder='{\n"down": {"block_2": [0.0, 1.0]},\n"up": {"block_0": [0.0, 1.0, 0.0]}\n}', rows=1, type='text', interactive=True, lines=5, visible=False, show_label=False)
+            layers_active.change(fn=self.display_advanced, inputs=[layers_active], outputs=[layers_label, layers])
+        return [num_adapters] + adapters + scales + files + starts + ends + masks + [layers_active] + [layers]
 
     def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if shared.backend != shared.Backend.DIFFUSERS:
             return
-        args = list(args)
+        args = list(args) if args is not None else []
+        if len(args) == 0:
+            return
         units = args.pop(0)
         if getattr(p, 'ip_adapter_names', []) == []:
             p.ip_adapter_names = args[:MAX_ADAPTERS][:units]
@@ -82,4 +99,14 @@ class Script(scripts.Script):
             p.ip_adapter_starts = args[MAX_ADAPTERS*3:MAX_ADAPTERS*4][:units]
         if getattr(p, 'ip_adapter_ends', [1.0]) == [1.0]:
             p.ip_adapter_ends = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
+        if getattr(p, 'ip_adapter_masks', []) == []:
+            p.ip_adapter_masks = args[MAX_ADAPTERS*5:MAX_ADAPTERS*6][:units]
+            p.ip_adapter_masks = [x for x in p.ip_adapter_masks if x]
+        layers_active, layers = args[MAX_ADAPTERS*6:MAX_ADAPTERS*7]
+        if layers_active and len(layers) > 0:
+            try:
+                layers = json.loads(layers)
+                p.ip_adapter_layers = layers
+            except Exception as e:
+                shared.log.error(f'IP adapter: failed to parse layer scales: {e}')
         # ipadapter.apply(shared.sd_model, p, p.ip_adapter_names, p.ip_adapter_scales, p.ip_adapter_starts, p.ip_adapter_ends, p.ip_adapter_images) # called directly from processing.process_images_inner

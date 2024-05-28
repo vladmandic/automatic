@@ -12,15 +12,14 @@ from PIL import Image
 sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860")
 sd_username = os.environ.get('SDAPI_USR', None)
 sd_password = os.environ.get('SDAPI_PWD', None)
+options = {
+    "save_images": True,
+    "send_images": True,
+}
 
 logging.basicConfig(level = logging.INFO, format = '%(asctime)s %(levelname)s: %(message)s')
 log = logging.getLogger(__name__)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-options = {
-    "save_images": False,
-    "send_images": True,
-}
 
 
 def auth():

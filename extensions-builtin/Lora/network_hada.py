@@ -9,7 +9,7 @@ class ModuleTypeHada(network.ModuleType):
         return None
 
 
-class NetworkModuleHada(network.NetworkModule):
+class NetworkModuleHada(network.NetworkModule): # pylint: disable=abstract-method
     def __init__(self,  net: network.Network, weights: network.NetworkWeights):
         super().__init__(net, weights)
         if hasattr(self.sd_module, 'weight'):

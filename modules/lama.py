@@ -86,7 +86,7 @@ class SimpleLama:
         self.model.eval()
         self.model.to(self.device)
 
-    def __call__(self, image: Image.Image | np.ndarray, mask: Image.Image | np.ndarray):
+    def __call__(self, image: Image.Image, mask: Image.Image):
         if image is None:
             log.warning('LaMa: image is none')
             return None

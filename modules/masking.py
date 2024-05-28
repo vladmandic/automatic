@@ -351,6 +351,7 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
         mask = cv2.cvtColor(np.array(mask), cv2.COLOR_BGR2GRAY)
         mask = cv2.threshold(mask, 0, 255, cv2.THRESH_BINARY)[1]
         sigmaX, sigmaY = int((h0-h1)/3), int((w0-w1)/3)
+        sigmaX, sigmaY = max(1, sigmaX), max(1, sigmaY)
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=max(sigmaX, sigmaY) // 3) # increase overlap area
         mask = cv2.GaussianBlur(mask, (0, 0), sigmaX=sigmaX, sigmaY=sigmaY) # blur mask
@@ -365,6 +366,8 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
         # h, w = cropped.shape[:2]
         # noised[y1:y1 + h, x1:x1 + w] = cropped # overlay original over initialized
         # image = noised
+
+    # mask = Image.new('L', (w0, h0), 0)
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(image)
@@ -497,8 +500,7 @@ def run_mask_live(input_image: gr.Image):
             res = run_mask(input_image)
             busy = False
             return res
-    else:
-        return None
+    return None
 
 
 def create_segment_ui():
@@ -520,26 +522,26 @@ def create_segment_ui():
     with gr.Accordion(open=False, label="Mask", elem_id="control_mask", elem_classes=["small-accordion"]):
         controls.clear()
         with gr.Row():
-            controls.append(gr.Checkbox(label="Live update", value=True))
-            btn_mask = ui_components.ToolButton(value=ui_symbols.refresh, visible=True)
-            btn_lama = ui_components.ToolButton(value=ui_symbols.image, visible=True)
+            controls.append(gr.Checkbox(label="Live update", value=True, elem_id="control_mask_live_update"))
+            btn_mask = ui_components.ToolButton(value=ui_symbols.refresh, visible=True, elem_id="control_mask_refresh", )
+            btn_lama = ui_components.ToolButton(value=ui_symbols.image, visible=True, elem_id="control_mask_lama")
         with gr.Row():
-            controls.append(gr.Checkbox(label="Inpaint masked only", value=False))
-            controls.append(gr.Checkbox(label="Invert mask", value=False))
+            controls.append(gr.Checkbox(label="Inpaint masked only", value=False, elem_id="control_mask_only", ))
+            controls.append(gr.Checkbox(label="Invert mask", value=False, elem_id="control_mask_invert"))
         with gr.Row():
             controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Blur', value=0.01, elem_id="control_mask_blur"))
             controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Erode', value=0.01, elem_id="control_mask_erode"))
             controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Dilate', value=0.01, elem_id="control_mask_dilate"))
         with gr.Row():
-            controls.append(gr.Dropdown(label="Auto-mask", choices=['None', 'Threshold', 'Edge', 'Grayscale'], value='None'))
-            selected_model = gr.Dropdown(label="Auto-segment", choices=MODELS.keys(), value='None')
+            controls.append(gr.Dropdown(label="Auto-mask", choices=['None', 'Threshold', 'Edge', 'Grayscale'], value='None', elem_id="control_mask_auto"))
+            selected_model = gr.Dropdown(label="Auto-segment", choices=MODELS.keys(), value='None', elem_id="control_mask_segment")
         with gr.Row():
-            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Score', value=0.5, visible=False))
-            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='IOU', value=0.5, visible=False))
-            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='NMS', value=0.5, visible=False))
+            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Score', value=0.5, visible=False, elem_id="control_mask_score"))
+            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='IOU', value=0.5, visible=False, elem_id="control_mask_iou"))
+            controls.append(gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='NMS', value=0.5, visible=False, elem_id="control_mask_nms"))
         with gr.Row():
-            controls.append(gr.Dropdown(label="Preview", choices=['None', 'Masked', 'Binary', 'Grayscale', 'Color', 'Composite'], value='Composite'))
-            controls.append(gr.Dropdown(label="Colormap", choices=COLORMAP, value='pink'))
+            controls.append(gr.Dropdown(label="Preview", choices=['None', 'Masked', 'Binary', 'Grayscale', 'Color', 'Composite'], value='Composite', elem_id="control_mask_preview"))
+            controls.append(gr.Dropdown(label="Colormap", choices=COLORMAP, value='pink', elem_id="control_mask_colormap"))
 
         selected_model.change(fn=init_model, inputs=[selected_model], outputs=[selected_model])
         for control in controls:

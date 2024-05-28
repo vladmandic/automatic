@@ -2,19 +2,23 @@
 
 Main ToDo list can be found at [GitHub projects](https://github.com/users/vladmandic/projects)
 
-## Candidates for next release
+## Future Candidates
 
-- defork
-- stable diffusion 3.0
-- ipadapter masking: <https://github.com/huggingface/diffusers/pull/6847>
-- x-adapter: <https://github.com/showlab/X-Adapter>
+- stable diffusion 3.0: unreleased
+- boxdiff <https://github.com/huggingface/diffusers/pull/7947>
+- animatediff-sdxl <https://github.com/huggingface/diffusers/pull/6721>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
+- fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
+- profiling: <https://github.com/lllyasviel/stable-diffusion-webui-forge/discussions/716>
 - init latents: variations, img2img
 - diffusers public callbacks  
-- remove builtin: controlnet
-- remove builtin: image-browser
+- include reference styles
+- lora: sc lora, dora, etc
+- [SDXL Flash Mini](https://huggingface.co/sd-community/sdxl-flash-mini)  
+  SDXL type that weighs less, consumes less video memory, and the quality has not dropped much  
+  to use, simply select from *networks -> models -> reference -> SDXL Flash Mini*  
+  recommended parameters: steps: 6-9, cfg scale: 2.5-3.5, sampler: DPM++ SDE  
 
-## Control missing features
+### Missing
 
-- second pass: <https://github.com/vladmandic/automatic/issues/2783>  
-- control api  
+- control api scripts compatibility

@@ -24,7 +24,9 @@
   {"id":"","label":"🖌️","localized":"","hint":"LaMa remove selected object from image"},
   {"id":"","label":"🖼️","localized":"","hint":"Show preview"},
   {"id":"","label":"✎","localized":"","hint":"Interrogate image using BLIP model"},
-  {"id":"","label":"✐","localized":"","hint":"Interrogate image using DeepBooru model"}
+  {"id":"","label":"✐","localized":"","hint":"Interrogate image using DeepBooru model"},
+  {"id":"","label":"↶","localized":"","hint":"Apply selected style to prompt"},
+  {"id":"","label":"↷","localized":"","hint":"Save current prompt to style"} 
 ],
 "prompts": [
   {"id":"","label":"Prompt","localized":"","hint":"Describe image you want to generate"},
@@ -48,7 +50,7 @@
   {"id":"","label":"System","localized":"","hint":"System settings and information"},
   {"id":"","label":"System Info","localized":"","hint":"System information"},
   {"id":"","label":"Settings","localized":"","hint":"Application settings"},
-  {"id":"","label":"Script","localized":"","hint":"Addtional scripts to be used"},
+  {"id":"","label":"Script","localized":"","hint":"Additional scripts to be used"},
   {"id":"","label":"Extensions","localized":"","hint":"Application extensions"}
 ],
 "action panel": [
@@ -68,17 +70,17 @@
   {"id":"","label":"sidebar","localized":"","hint":"sidebar on the right side of the screen"},
   {"id":"","label":"Default multiplier for extra networks","localized":"","hint":"When adding extra network such as Lora to prompt, use this multiplier for it"},
   {"id":"","label":"Model","localized":"","hint":"Trained model checkpoints"},
-  {"id":"","label":"Style","localized":"","hint":"Additional styles to be applied on selected generation paramters"},
-  {"id":"","label":"Styles","localized":"","hint":"Additional styles to be applied on selected generation paramters"},
+  {"id":"","label":"Style","localized":"","hint":"Additional styles to be applied on selected generation parameters"},
+  {"id":"","label":"Styles","localized":"","hint":"Additional styles to be applied on selected generation parameters"},
   {"id":"","label":"Lora","localized":"","hint":"LoRA: Low-Rank Adaptation. Fine-tuned model that is applied on top of a loaded model"},
   {"id":"","label":"Embedding","localized":"","hint":"Textual inversion embedding is a trained embedded information about the subject"},
   {"id":"","label":"Hypernetwork","localized":"","hint":"Small trained neural network that modifies behavior of the loaded model"},
   {"id":"","label":"UI disable variable aspect ratio","localized":"","hint":"When disabled, all thumbnails appear as squared images"},
   {"id":"","label":"Build info on first access","localized":"","hint":"Prevents server from building EN page on server startup and instead build it when requested"},
   {"id":"","label":"Show built-in styles","localized":"","hint":"Show or hide build-it styles"},
-  {"id":"","label":"LoRA use alternative loading method","localized":"","hint":"Alternative method uses diffusers built-in LoRA capabilities instead of native SD.Next implementation (may reduce LoRA compatibiltiy)"},
+  {"id":"","label":"LoRA use alternative loading method","localized":"","hint":"Alternative method uses diffusers built-in LoRA capabilities instead of native SD.Next implementation (may reduce LoRA compatibility)"},
   {"id":"","label":"LoRA use merge when using alternative method","localized":"","hint":"When loading LoRAs, immediately merge weights with underlying model instead of applying them on-the-fly"},
-  {"id":"","label":"LoRA memory cache","localized":"","hint":"How many LoRAs to keep in network for future use before requireing reloading from storage"}
+  {"id":"","label":"LoRA memory cache","localized":"","hint":"How many LoRAs to keep in network for future use before requiring reloading from storage"}
 ],
 "gallery buttons": [
   {"id":"","label":"show","localized":"","hint":"Show image location"},
@@ -114,10 +116,11 @@
 ],
 "txt2img tab": [
   {"id":"","label":"Sampling method","localized":"","hint":"Which algorithm to use to produce the image"},
-  {"id":"","label":"Sampling steps","localized":"","hint":"How many times to improve the generated image iteratively; higher values take longer; very low values can produce bad results"},
+  {"id":"","label":"Steps","localized":"","hint":"How many times to improve the generated image iteratively; higher values take longer; very low values can produce bad results"},
   {"id":"","label":"Tiling","localized":"","hint":"Produce an image that can be tiled"},
   {"id":"","label":"full quality","localized":"","hint":"Use full quality VAE to decode latent samples"},
   {"id":"","label":"face restore","localized":"","hint":"Run processed image through additional face restoration model"},
+  {"id":"","label":"hidiffusion","localized":"","hint":"HiDiffusion allows creation of high-resolution images using your standard models without duplicates/distortions and improved performance"},
   {"id":"","label":"HDR Clamp","localized":"","hint":"Adjusts the level of nonsensical details by pruning values that deviate significantly from the distribution mean. It is particularly useful for enhancing generation at higher guidance scales, identifying outliers early in the process and applying mathematical adjustments based on the Range (Boundary) and Threshold settings. Think of it as setting the range within which you want your image values to be, and adjusting the threshold determines which values should be brought back into that range"},
   {"id":"","label":"HDR Maximize","localized":"","hint":"Calculates a 'normalization factor' by dividing the maximum tensor value by the specified range multiplied by 4. This factor is then used to shift the channels within the given boundary, ensuring maximum dynamic range for subsequent processing. The objective is to optimize dynamic range for external applications like Photoshop, particularly for adjusting levels, contrast, and brightness"},
   {"id":"","label":"Enable second pass","localized":"","hint":"Use a similar process as image to image to upscale and/or add detail to the final image. Optionally uses refiner model to enhance image details."},
@@ -130,7 +133,7 @@
   {"id":"","label":"Resize width to","localized":"","hint":"Resizes image to this width. If 0, width is inferred from either of two nearby sliders"},
   {"id":"","label":"Resize height to","localized":"","hint":"Resizes image to this height. If 0, height is inferred from either of two nearby sliders"},
   {"id":"","label":"Secondary sampler","localized":"","hint":"Use specific sampler as fallback sampler if primary is not supported for specific operation"},
-  {"id":"","label":"Refiner start","localized":"","hint":"Refiner pass will start when base model is this much complete (set to 0 or 1 to run after full base model run)"},
+  {"id":"","label":"Refiner start","localized":"","hint":"Refiner pass will start when base model is this much complete (set to larger than 0 and smaller than 1 to run after full base model run)"},
   {"id":"","label":"Refiner steps","localized":"","hint":"Number of steps to use for refiner pass"},
   {"id":"","label":"Secondary CFG Scale","localized":"","hint":"CFG scale used for refiner pass"},
   {"id":"","label":"Rescale guidance","localized":"","hint":"Rescale CFG generated noise to avoid overexposed images"},
@@ -141,6 +144,7 @@
   {"id":"","label":"Batch count","localized":"","hint":"How many batches of images to create (has no impact on generation performance or VRAM usage)"},
   {"id":"","label":"Batch size","localized":"","hint":"How many image to create in a single batch (increases generation performance at cost of higher VRAM usage)"},
   {"id":"","label":"cfg scale","localized":"","hint":"Classifier Free Guidance scale: how strongly the image should conform to prompt. Lower values produce more creative results, higher values make it follow the prompt more strictly; recommended values between 5-10"},
+  {"id":"","label":"Guidance End","localized":"","hint":"Ends the effect of CFG and PAG early: A value of 1 acts as normal, 0.5 stops guidance at 50% of steps"},
   {"id":"","label":"CLIP skip","localized":"","hint":"Clip skip is a feature that allows users to control the level of specificity of the prompt, the higher the CLIP skip value, the less deep the prompt will be interpreted. CLIP Skip 1 is typical while some anime models produce better results at  CLIP skip 2"},
   {"id":"","label":"Initial seed","localized":"","hint":"A value that determines the output of random number generator - if you create an image with same parameters and seed as another image, you'll get the same result"},
   {"id":"","label":"Variation","localized":"","hint":"Second seed to be mixed with primary seed"},
@@ -208,8 +212,8 @@
   {"id":"shutdown_submit","label":"Shutdown server","localized":"","hint":"Shutdown server"},
   {"id":"settings_preview_theme","label":"Preview theme","localized":"","hint":"Show theme preview"},
   {"id":"defaults_submit","label":"Restore defaults","localized":"","hint":"Restore default server settings"},
-  {"id":"sett_unload_sd_model","label":"Unload checkpoint","localized":"","hint":"Unload currently loaded model checkpoint"},
-  {"id":"sett_reload_sd_model","label":"Reload checkpoint","localized":"","hint":"Reload currently selected model checkpoint"}
+  {"id":"sett_unload_sd_model","label":"Unload model","localized":"","hint":"Unload currently loaded model"},
+  {"id":"sett_reload_sd_model","label":"Reload model","localized":"","hint":"Reload currently selected model"}
 ],
 "settings sections": [
   {"id":"","label":"Execution & Models","localized":"","hint":"Settings related to execution backend, models, and prompt attention"},
@@ -271,7 +275,7 @@
   {"id":"","label":"Live preview display period","localized":"","hint":"Request preview image every n steps, set to 0 to disable"},
   {"id":"","label":"Approximate","localized":"","hint":"Cheap neural network approximation. Very fast compared to VAE, but produces pictures with 4 times smaller horizontal/vertical resolution and lower quality"},
   {"id":"","label":"Simple","localized":"","hint":"Very cheap approximation. Very fast compared to VAE, but produces pictures with 8 times smaller horizontal/vertical resolution and extremely low quality"},
-  {"id":"","label":"Progress update period","localized":"","hint":"Update period for UI progress bar and preview checks, in miliseconds"},
+  {"id":"","label":"Progress update period","localized":"","hint":"Update period for UI progress bar and preview checks, in milliseconds"},
   {"id":"","label":"Euler a","localized":"","hint":"Euler Ancestral - very creative, each can get a completely different picture depending on step count, setting steps higher than 30-40 does not help"},
   {"id":"","label":"DPM adaptive","localized":"","hint":"Ignores step count - uses a number of steps determined by the CFG and resolution"},
   {"id":"","label":"DDIM","localized":"","hint":"Denoising Diffusion Implicit Models - best at inpainting"},
@@ -309,7 +313,8 @@
   {"id":"","label":"include watermark","localized":"","hint":"Add invisible watermark to image by altering some pixel values"},
   {"id":"","label":"watermark string","localized":"","hint":"Watermark string to add to image. Keep very short to avoid image corruption."},
   {"id":"","label":"show log view","localized":"","hint":"Show log view at the bottom of the main window"},
-  {"id":"","label":"Log view update period","localized":"","hint":"Log view update period, in miliseconds"}
+  {"id":"","label":"Log view update period","localized":"","hint":"Log view update period, in milliseconds"},
+  {"id":"","label":"PAG layer names","localized":"","hint":"Space separated list of layers<br>Available: d[0-5], m[0], u[0-8]<br>Default: m0"}
 ],
 "scripts": [
   {"id":"","label":"X values","localized":"","hint":"Separate values for X axis using commas"},

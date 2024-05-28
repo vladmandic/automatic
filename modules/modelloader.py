@@ -45,7 +45,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     block_size = 16384 # 16KB blocks
     written = 0
     img = None
-    shared.state.begin('civitai')
+    shared.state.begin('CivitAI')
     try:
         with open(preview_file, 'wb') as f:
             with p.Progress(p.TextColumn('[cyan]{task.description}'), p.DownloadColumn(), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TransferSpeedColumn(), console=shared.console) as progress:
@@ -107,7 +107,7 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
     total_size = int(r.headers.get('content-length', 0))
     res += f' size={round((starting_pos + total_size)/1024/1024, 2)}Mb'
     shared.log.info(res)
-    shared.state.begin('civitai')
+    shared.state.begin('CivitAI')
     block_size = 16384 # 16KB blocks
     written = starting_pos
     global download_pbar # pylint: disable=global-statement
@@ -162,7 +162,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         return None
     from diffusers import DiffusionPipeline
     import huggingface_hub as hf
-    shared.state.begin('huggingface')
+    shared.state.begin('HuggingFace')
     if download_config is None:
         download_config = {
             "force_download": False,
@@ -226,20 +226,18 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 
 def load_diffusers_models(clear=True):
-    excluded_models = [
-        'PhotoMaker', 'inswapper_128', 'IP-Adapter'
-    ]
+    # excluded_models = ['PhotoMaker', 'inswapper_128', 'IP-Adapter']
+    excluded_models = []
     t0 = time.time()
     place = shared.opts.diffusers_dir
     if place is None or len(place) == 0 or not os.path.isdir(place):
         place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
-    output = []
     try:
         for folder in os.listdir(place):
             try:
-                if any([x in folder for x in excluded_models]): # noqa:C419
+                if any([x in folder for x in excluded_models]): # noqa:C419 # pylint: disable=use-a-generator
                     continue
                 if "--" not in folder:
                     continue
@@ -253,20 +251,24 @@ def load_diffusers_models(clear=True):
                 if len(snapshots) == 0:
                     shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
                     continue
-                commit = os.path.join(folder, 'snapshots', snapshots[-1])
-                mtime = os.path.getmtime(commit)
-                info = os.path.join(commit, "model_info.json")
-                diffuser_repos.append({ 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': commit, 'mtime': mtime, 'model_info': info })
-                if os.path.exists(os.path.join(folder, 'hidden')):
-                    continue
-                output.append(name)
-            except Exception:
-                # shared.log.error(f"Error analyzing diffusers model: {folder} {e}")
-                pass
+                for snapshot in snapshots:
+                    commit = os.path.join(folder, 'snapshots', snapshot)
+                    mtime = os.path.getmtime(commit)
+                    info = os.path.join(commit, "model_info.json")
+                    index = os.path.join(commit, "model_index.json")
+                    if not os.path.exists(index):
+                        debug(f'Diffusers skip model no info: {name}')
+                        continue
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index }
+                    diffuser_repos.append(repo)
+                    if os.path.exists(os.path.join(folder, 'hidden')):
+                        continue
+            except Exception as e:
+                debug(f"Error analyzing diffusers model: {folder} {e}")
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(output)} time={time.time()-t0:.2f}')
-    return output
+    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
+    return diffuser_repos
 
 
 def find_diffuser(name: str):

@@ -252,7 +252,7 @@ class StableDiffusionModelHijack:
     def get_prompt_lengths(self, text):
         if self.clip is None:
             return 0, 0
-        _, token_count = self.clip.process_texts([text])
+        _chunks, token_count = self.clip.process_texts([text])
         return token_count, self.clip.get_target_prompt_token_count(token_count)
 
 

@@ -12,6 +12,7 @@ from modules import devices, paths
 
 
 taesd_models = { 'sd-decoder': None, 'sd-encoder': None, 'sdxl-decoder': None, 'sdxl-encoder': None }
+previous_warnings = False
 
 
 def conv(n_in, n_out, **kwargs):
@@ -142,12 +143,15 @@ def decode(latents):
 
 
 def encode(image):
+    global previous_warnings # pylint: disable=global-statement
     from modules import shared
     model_class = shared.sd_model_type
     if model_class == 'ldm':
         model_class = 'sd'
     if 'sd' not in model_class:
-        shared.log.warning(f'TAESD unsupported model type: {model_class}')
+        if not previous_warnings:
+            previous_warnings = True
+            shared.log.warning(f'TAESD unsupported model type: {model_class}')
         return Image.new('RGB', (8, 8), color = (0, 0, 0))
     vae = taesd_models[f'{model_class}-encoder']
     if vae is None:

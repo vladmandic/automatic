@@ -20,7 +20,7 @@ class StableDiffusionProcessing:
     """
     The first set of paramaters: sd_models -> do_not_reload_embeddings represent the minimum required to create a StableDiffusionProcessing
     """
-    def __init__(self, sd_model=None, outpath_samples=None, outpath_grids=None, prompt: str = "", styles: List[str] = None, seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1, seed_enable_extras: bool = True, sampler_name: str = None, hr_sampler_name: str = None, batch_size: int = 1, n_iter: int = 1, steps: int = 50, cfg_scale: float = 7.0, image_cfg_scale: float = None, clip_skip: int = 1, width: int = 512, height: int = 512, full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, do_not_save_samples: bool = False, do_not_save_grid: bool = False, extra_generation_params: Dict[Any, Any] = None, overlay_images: Any = None, negative_prompt: str = None, eta: float = None, do_not_reload_embeddings: bool = False, denoising_strength: float = 0, diffusers_guidance_rescale: float = 0.7, sag_scale: float = 0.0, cfg_end: float = 1, resize_mode: int = 0, resize_name: str = 'None', scale_by: float = 0, selected_scale_tab: int = 0, hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95, hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0, override_settings: Dict[str, Any] = None, override_settings_restore_afterwards: bool = True, sampler_index: int = None, script_args: list = None): # pylint: disable=unused-argument
+    def __init__(self, sd_model=None, outpath_samples=None, outpath_grids=None, prompt: str = "", styles: List[str] = None, seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1, seed_enable_extras: bool = True, sampler_name: str = None, hr_sampler_name: str = None, batch_size: int = 1, n_iter: int = 1, steps: int = 50, cfg_scale: float = 7.0, image_cfg_scale: float = None, clip_skip: int = 1, width: int = 512, height: int = 512, full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, hidiffusion: bool = False, do_not_save_samples: bool = False, do_not_save_grid: bool = False, extra_generation_params: Dict[Any, Any] = None, overlay_images: Any = None, negative_prompt: str = None, eta: float = None, do_not_reload_embeddings: bool = False, denoising_strength: float = 0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1, resize_mode: int = 0, resize_name: str = 'None', scale_by: float = 0, selected_scale_tab: int = 0, hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95, hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0, override_settings: Dict[str, Any] = None, override_settings_restore_afterwards: bool = True, sampler_index: int = None, script_args: list = None): # pylint: disable=unused-argument
         self.outpath_samples: str = outpath_samples
         self.outpath_grids: str = outpath_grids
         self.prompt: str = prompt
@@ -33,7 +33,7 @@ class StableDiffusionProcessing:
         self.seed_resize_from_h: int = seed_resize_from_h
         self.seed_resize_from_w: int = seed_resize_from_w
         self.sampler_name: str = sampler_name
-        self.hr_sampler_name: str = hr_sampler_name
+        self.hr_sampler_name: str = hr_sampler_name if hr_sampler_name != 'Same as primary' else sampler_name
         self.batch_size: int = batch_size
         self.n_iter: int = n_iter
         self.steps: int = steps
@@ -42,16 +42,15 @@ class StableDiffusionProcessing:
         self.scale_by: float = scale_by
         self.image_cfg_scale = image_cfg_scale
         self.diffusers_guidance_rescale = diffusers_guidance_rescale
-        self.sag_scale = sag_scale
+        self.pag_scale = pag_scale
+        self.pag_adaptive = pag_adaptive
         self.cfg_end = cfg_end
-        if devices.backend == "ipex" and width == 1024 and height == 1024 and not torch.xpu.has_fp64_dtype() and os.environ.get('DISABLE_IPEX_1024_WA', None) is None:
-            width = 1080
-            height = 1080
         self.width: int = width
         self.height: int = height
         self.full_quality: bool = full_quality
         self.restore_faces: bool = restore_faces
         self.tiling: bool = tiling
+        self.hidiffusion: bool = hidiffusion
         self.do_not_save_samples: bool = do_not_save_samples
         self.do_not_save_grid: bool = do_not_save_grid
         self.extra_generation_params: dict = extra_generation_params or {}
@@ -65,8 +64,6 @@ class StableDiffusionProcessing:
         self.override_settings_restore_afterwards = override_settings_restore_afterwards
         self.is_using_inpainting_conditioning = False # a111 compatibility
         self.disable_extra_networks = False
-        self.token_merging_ratio = 0
-        self.token_merging_ratio_hr = 0
         # self.scripts = scripts.ScriptRunner() # set via property
         # self.script_args = script_args or [] # set via property
         self.per_script_args = {}
@@ -145,7 +142,6 @@ class StableDiffusionProcessing:
         self.negative_embeds = []
         self.negative_pooleds = []
 
-
     @property
     def sd_model(self):
         return shared.sd_model
@@ -186,29 +182,12 @@ class StableDiffusionProcessing:
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
 
-    def get_token_merging_ratio(self, for_hr=False):
-        if for_hr:
-            return self.token_merging_ratio_hr or shared.opts.token_merging_ratio_hr or self.token_merging_ratio or shared.opts.token_merging_ratio
-        return self.token_merging_ratio or shared.opts.token_merging_ratio
-
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
     def __init__(self, enable_hr: bool = False, denoising_strength: float = 0.75, firstphase_width: int = 0, firstphase_height: int = 0, hr_scale: float = 2.0, hr_force: bool = False, hr_upscaler: str = None, hr_second_pass_steps: int = 0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0, refiner_prompt: str = '', refiner_negative: str = '', **kwargs):
 
         super().__init__(**kwargs)
-        if devices.backend == "ipex" and not torch.xpu.has_fp64_dtype() and os.environ.get('DISABLE_IPEX_1024_WA', None) is None:
-            width_curse = bool(hr_resize_x == 1024 and self.height * (hr_resize_x / self.width) == 1024)
-            height_curse = bool(hr_resize_y == 1024 and self.width * (hr_resize_y / self.height) == 1024)
-            if (width_curse != height_curse) or (height_curse and width_curse):
-                if width_curse:
-                    hr_resize_x = 1080
-                if height_curse:
-                    hr_resize_y = 1080
-            if self.width * hr_scale == 1024 and self.height * hr_scale == 1024:
-                hr_scale = 1080 / self.width
-            if firstphase_width * hr_scale == 1024 and firstphase_height * hr_scale == 1024:
-                hr_scale = 1080 / firstphase_width
         self.enable_hr = enable_hr
         self.denoising_strength = denoising_strength
         self.hr_scale = hr_scale
@@ -345,7 +324,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
         if self.image_mask is not None:
             self.ops.append('inpaint')
-        else:
+        elif hasattr(self, 'init_images') and self.init_images is not None:
             self.ops.append('img2img')
         crop_region = None
 
@@ -440,6 +419,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 batch_images = np.expand_dims(self.init_images[0], axis=0).repeat(self.batch_size, axis=0)
             elif len(self.init_images) <= self.batch_size:
                 batch_images = np.array(self.init_images)
+            else:
+                batch_images = np.array(self.init_images[:self.batch_size])
             image = torch.from_numpy(batch_images)
             image = 2. * image - 1.
             image = image.to(device=shared.device, dtype=devices.dtype_vae)
@@ -463,8 +444,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         from modules import processing_original
         return processing_original.sample_img2img(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts)
 
-    def get_token_merging_ratio(self, for_hr=False):
-        return self.token_merging_ratio or ("token_merging_ratio" in self.override_settings and shared.opts.token_merging_ratio) or shared.opts.token_merging_ratio_img2img or shared.opts.token_merging_ratio
 
 class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def __init__(self, **kwargs):

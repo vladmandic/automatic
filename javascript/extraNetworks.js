@@ -1,5 +1,5 @@
 const activePromptTextarea = {};
-let sortVal = 0;
+let sortVal = -1;
 
 // helpers
 
@@ -17,18 +17,22 @@ const requestGet = (url, data, handler) => {
 };
 
 const getENActiveTab = () => {
-  if (gradioApp().getElementById('tab_txt2img').style.display === 'block') return 'txt2img';
-  if (gradioApp().getElementById('tab_img2img').style.display === 'block') return 'img2img';
-  if (gradioApp().getElementById('tab_control').style.display === 'block') return 'control';
-  return '';
+  let tabName = '';
+  if (gradioApp().getElementById('tab_txt2img').style.display === 'block') tabName = 'txt2img';
+  else if (gradioApp().getElementById('tab_img2img').style.display === 'block') tabName = 'img2img';
+  else if (gradioApp().getElementById('tab_control').style.display === 'block') tabName = 'control';
+  // log('getENActiveTab', tabName);
+  return tabName;
 };
 
 const getENActivePage = () => {
   const tabname = getENActiveTab();
-  const page = gradioApp().querySelector(`#${tabname}_extra_networks > .tabs > .tab-nav > .selected`);
+  let page = gradioApp().querySelector(`#${tabname}_extra_networks > .tabs > .tab-nav > .selected`);
+  if (!page) page = gradioApp().querySelector(`#${tabname}_extra_tabs > .tab-nav > .selected`);
   const pageName = page ? page.innerText : '';
   const btnApply = gradioApp().getElementById(`${tabname}_extra_apply`);
   if (btnApply) btnApply.style.display = pageName === 'Style' ? 'inline-flex' : 'none';
+  // log('getENActivePage', pageName);
   return pageName;
 };
 
@@ -45,7 +49,7 @@ const setENState = (state) => {
 // methods
 
 function showCardDetails(event) {
-  console.log('showCardDetails', event);
+  // log('showCardDetails', event);
   const tabname = getENActiveTab();
   const btn = gradioApp().getElementById(`${tabname}_extra_details_btn`);
   btn.click();
@@ -54,6 +58,7 @@ function showCardDetails(event) {
 }
 
 function getCardDetails(...args) {
+  // log('getCardDetails', args);
   const el = event?.target?.parentElement?.parentElement;
   if (el?.classList?.contains('card')) setENState({ op: 'getCardDetails', item: el.dataset.name });
   else setENState({ op: 'getCardDetails', item: null });
@@ -108,7 +113,7 @@ function getCardsForActivePage() {
   if (!pagename) return [];
   const allCards = Array.from(gradioApp().querySelectorAll('.extra-network-cards > .card'));
   const cards = allCards.filter((el) => el.dataset.page.toLowerCase().includes(pagename.toLowerCase()));
-  log('getCardsForActivePage', pagename, cards.length);
+  // log('getCardsForActivePage', pagename, cards.length);
   return allCards;
 }
 
@@ -223,34 +228,36 @@ function tryToRemoveExtraNetworkFromPrompt(textarea, text) {
   return false;
 }
 
-function sortExtraNetworks() {
-  const sortDesc = ['Name [A-Z]', 'Name [Z-A]', 'Date [Newest]', 'Date [Oldest]', 'Size [Largest]', 'Size [Smallest]'];
+function sortExtraNetworks(fixed = 'no') {
+  const sortDesc = ['Default', 'Name [A-Z]', 'Name [Z-A]', 'Date [Newest]', 'Date [Oldest]', 'Size [Largest]', 'Size [Smallest]'];
   const pagename = getENActivePage();
   if (!pagename) return 'sort error: unknown page';
   const allPages = Array.from(gradioApp().querySelectorAll('.extra-network-cards'));
   const pages = allPages.filter((el) => el.id.toLowerCase().includes(pagename.toLowerCase()));
   let num = 0;
+  if (sortVal === -1) sortVal = sortDesc.indexOf(opts.extra_networks_sort);
+  if (fixed !== 'fixed') sortVal = (sortVal + 1) % sortDesc.length;
   for (const pg of pages) {
     const cards = Array.from(pg.querySelectorAll('.card') || []);
     num = cards.length;
     if (num === 0) return 'sort: no cards';
     cards.sort((a, b) => { // eslint-disable-line no-loop-func
       switch (sortVal) {
-        case 0: return a.dataset.name ? a.dataset.name.localeCompare(b.dataset.name) : 0;
-        case 1: return b.dataset.name ? b.dataset.name.localeCompare(a.dataset.name) : 0;
-        case 2: return a.dataset.mtime && !isNaN(a.dataset.mtime) ? parseFloat(b.dataset.mtime) - parseFloat(a.dataset.mtime) : 0;
-        case 3: return b.dataset.mtime && !isNaN(b.dataset.mtime) ? parseFloat(a.dataset.mtime) - parseFloat(b.dataset.mtime) : 0;
-        case 4: return a.dataset.size && !isNaN(a.dataset.size) ? parseFloat(b.dataset.size) - parseFloat(a.dataset.size) : 0;
-        case 5: return b.dataset.size && !isNaN(b.dataset.size) ? parseFloat(a.dataset.size) - parseFloat(b.dataset.size) : 0;
+        case 0: return 0;
+        case 1: return a.dataset.name ? a.dataset.name.localeCompare(b.dataset.name) : 0;
+        case 2: return b.dataset.name ? b.dataset.name.localeCompare(a.dataset.name) : 0;
+        case 3: return a.dataset.mtime && !isNaN(a.dataset.mtime) ? parseFloat(b.dataset.mtime) - parseFloat(a.dataset.mtime) : 0;
+        case 4: return b.dataset.mtime && !isNaN(b.dataset.mtime) ? parseFloat(a.dataset.mtime) - parseFloat(b.dataset.mtime) : 0;
+        case 5: return a.dataset.size && !isNaN(a.dataset.size) ? parseFloat(b.dataset.size) - parseFloat(a.dataset.size) : 0;
+        case 6: return b.dataset.size && !isNaN(b.dataset.size) ? parseFloat(a.dataset.size) - parseFloat(b.dataset.size) : 0;
       }
       return 0;
     });
     for (const card of cards) pg.appendChild(card);
   }
   const desc = sortDesc[sortVal];
-  sortVal = (sortVal + 1) % sortDesc.length;
-  log('sortExtraNetworks', pagename, num, desc);
-  return `sort page ${pagename} cards ${num} by ${desc}`;
+  log('sortExtraNetworks', { name: pagename, val: sortVal, order: desc, fixed: fixed === 'fixed', items: num });
+  return desc;
 }
 
 function refreshENInput(tabname) {
@@ -259,6 +266,7 @@ function refreshENInput(tabname) {
 }
 
 function cardClicked(textToAdd, allowNegativePrompt) {
+  // log('cardClicked', textToAdd, allowNegativePrompt);
   const tabname = getENActiveTab();
   const textarea = allowNegativePrompt ? activePromptTextarea[tabname] : gradioApp().querySelector(`#${tabname}_prompt > label > textarea`);
   if (textarea.value.indexOf(textToAdd) !== -1) textarea.value = textarea.value.replace(textToAdd, '');
@@ -267,15 +275,12 @@ function cardClicked(textToAdd, allowNegativePrompt) {
 }
 
 function extraNetworksSearchButton(event) {
+  // log('extraNetworksSearchButton', event);
   const tabname = getENActiveTab();
   const searchTextarea = gradioApp().querySelector(`#${tabname}_extra_search textarea`);
   const button = event.target;
-
-  if (button.classList.contains('search-all')) {
-    searchTextarea.value = '';
-  } else {
-    searchTextarea.value = `${button.textContent.trim()}/`;
-  }
+  if (button.classList.contains('search-all')) searchTextarea.value = '';
+  else searchTextarea.value = `${button.textContent.trim()}/`;
   updateInput(searchTextarea);
 }
 
@@ -289,10 +294,20 @@ function selectStyle(name) {
 
 function applyStyles(styles) {
   let newStyles = [];
-  if (styles) newStyles = Array.isArray(styles) ? styles : [styles];
+  if (styles) {
+    newStyles = Array.isArray(styles) ? styles : [styles];
+  } else {
+    const tabname = getENActiveTab();
+    styles = gradioApp().querySelectorAll(`#${tabname}_styles .token span`);
+    newStyles = Array.from(styles).map((el) => el.textContent).filter((el) => el.length > 0);
+  }
   const index = newStyles.indexOf(desiredStyle);
   if (index > -1) newStyles.splice(index, 1);
   else newStyles.push(desiredStyle);
+  gradioApp().querySelectorAll('.extra-network-cards .card').forEach((el) => {
+    if (newStyles.includes(el.getAttribute('data-name'))) el.style.boxShadow = '0 0 2px 4px var(--button-primary-border-color)';
+    else el.style.boxShadow = 'none';
+  });
   return newStyles.join('|');
 }
 
@@ -306,6 +321,11 @@ function quickSaveStyle() {
   const tabname = getENActiveTab();
   const btnSave = gradioApp().getElementById(`${tabname}_extra_quicksave`);
   if (btnSave) btnSave.click();
+  const btnRefresh = gradioApp().getElementById(`${tabname}_extra_refresh`);
+  if (btnRefresh) {
+    setTimeout(() => btnRefresh.click(), 100);
+    // setTimeout(() => sortExtraNetworks('fixed'), 500);
+  }
 }
 
 let enDirty = false;
@@ -321,7 +341,7 @@ function closeDetailsEN(...args) {
 }
 
 function refeshDetailsEN(args) {
-  log(`refeshDetailsEN: ${enDirty}`);
+  // log(`refeshDetailsEN: ${enDirty}`);
   const tabname = getENActiveTab();
   const btnRefresh = gradioApp().getElementById(`${tabname}_extra_refresh`);
   if (btnRefresh && enDirty) setTimeout(() => btnRefresh.click(), 100);
@@ -332,7 +352,7 @@ function refeshDetailsEN(args) {
 // refresh on en show
 function refreshENpage() {
   if (getCardsForActivePage().length === 0) {
-    log('refreshENpage');
+    // log('refreshENpage');
     const tabname = getENActiveTab();
     const btnRefresh = gradioApp().getElementById(`${tabname}_extra_refresh`);
     if (btnRefresh) btnRefresh.click();
@@ -367,6 +387,7 @@ function setupExtraNetworksForTab(tabname) {
   if (btnView) buttons.appendChild(btnView);
   if (btnClose) buttons.appendChild(btnClose);
   btnModel.onclick = () => btnModel.classList.toggle('toolbutton-selected');
+  // btnRefresh.onclick = () => setTimeout(() => sortExtraNetworks('fixed'), 500);
   tabs.appendChild(buttons);
 
   // details
@@ -425,6 +446,7 @@ function setupExtraNetworksForTab(tabname) {
     }
     if (entries[0].intersectionRatio > 0) {
       refreshENpage();
+      // sortExtraNetworks('fixed');
       if (window.opts.extra_networks_card_cover === 'cover') {
         en.style.transition = '';
         en.style.zIndex = 100;
@@ -458,7 +480,7 @@ function setupExtraNetworksForTab(tabname) {
       gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
     }
   });
-  intersectionObserver.observe(en); // monitor visibility of
+  intersectionObserver.observe(en); // monitor visibility
 }
 
 async function setupExtraNetworks() {
@@ -481,5 +503,3 @@ async function setupExtraNetworks() {
   registerPrompt('control', 'control_neg_prompt');
   log('initExtraNetworks');
 }
-
-onUiLoaded(setupExtraNetworks);

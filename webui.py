@@ -12,17 +12,18 @@ import modules.loader
 import torch # pylint: disable=wrong-import-order
 from modules import timer, errors, paths # pylint: disable=unused-import
 from installer import log, git_commit, custom_excepthook
-import ldm.modules.encoders.modules # pylint: disable=W0611,C0411,E0401
+import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
 from modules import shared, extensions, gr_tempdir, modelloader # pylint: disable=ungrouped-imports
 from modules import extra_networks, ui_extra_networks # pylint: disable=ungrouped-imports
 from modules.paths import create_paths
-from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=W0611,C0411,C0412
+from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=unused-import
 import modules.devices
 import modules.sd_samplers
 import modules.lowvram
 import modules.scripts
 import modules.sd_models
 import modules.sd_vae
+import modules.sd_unet
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -87,6 +88,9 @@ def initialize():
     modules.sd_vae.refresh_vae_list()
     timer.startup.record("vae")
 
+    modules.sd_unet.refresh_unet_list()
+    timer.startup.record("unet")
+
     extensions.list_extensions()
     timer.startup.record("extensions")
 
@@ -111,6 +115,7 @@ def initialize():
     timer.startup.record("upscalers")
 
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
+    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
     shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
     timer.startup.record("onchange")
 
@@ -154,7 +159,7 @@ def load_model():
     if not opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
         log.debug('Model auto load disabled')
     else:
-        shared.state.begin('load')
+        shared.state.begin('Load')
         thread_model = Thread(target=lambda: shared.sd_model)
         thread_model.start()
         thread_refiner = Thread(target=lambda: shared.sd_refiner)
@@ -263,7 +268,8 @@ def start_ui():
             max_threads=64,
             show_api=False,
             quiet=True,
-            favicon_path='html/logo.ico',
+            # favicon_path='html/logo.ico',
+            favicon_path='html/favicon.svg',
             allowed_paths=allowed_paths,
             app_kwargs=fastapi_args,
             _frontend=True and cmd_opts.share,

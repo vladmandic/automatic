@@ -39,8 +39,8 @@
   --button-primary-background-fill: var(--primary-600);
   --button-primary-background-fill-hover: var(--primary-800);
   --button-secondary-text-color: var(--neutral-100);
-  --button-secondary-background-fill: var(--neutral-600);
-  --button-secondary-background-fill-hover: var(--neutral-800);
+  --button-secondary-background-fill: var(--neutral-900);
+  --button-secondary-background-fill-hover: var(--neutral-600);
   --block-title-text-color: var(--neutral-300);
   --radius-xxs: 0;
   --radius-xs: 1;
@@ -53,17 +53,36 @@
   --line-sm: 1.2em;
   --line-md: 1.4em;
   --line-lg: 1.5em;
+  --range-shadow:
+     -20em 0 0 0 hsl(180, 54%,  2%), -19em 0 0 0 hsl(180, 54%,  5%), -18em 0 0 0 hsl(180, 54%,  0%), -17em 0 0 0 hsl(180, 54%, 11%),
+     -16em 0 0 0 hsl(180, 54%, 14%), -15em 0 0 0 hsl(180, 54%, 17%), -14em 0 0 0 hsl(180, 54%, 20%), -13em 0 0 0 hsl(180, 54%, 23%),
+     -12em 0 0 0 hsl(180, 54%, 26%), -11em 0 0 0 hsl(180, 54%, 29%), -10em 0 0 0 hsl(180, 54%, 32%),  -9em 0 0 0 hsl(180, 54%, 35%),
+      -8em 0 0 0 hsl(180, 54%, 38%),  -7em 0 0 0 hsl(180, 54%, 41%), -6em 0 0 0 hsl(180, 54%, 44%),  -5em 0 0 0 hsl(180, 54%, 47%),
+      -4em 0 0 0 hsl(180, 54%, 50%),  -3em 0 0 0 hsl(180, 54%, 53%), -2em 0 0 0 hsl(180, 54%, 56%),  -1em 0 0 0 hsl(180, 54%, 59%),
+      1em 0 0 0 var(--neutral-800),  2em 0 0 0 var(--neutral-800), 3em 0 0 0 var(--neutral-800),  4em 0 0 0 var(--neutral-800),
+      5em 0 0 0 var(--neutral-800),  6em 0 0 0 var(--neutral-800), 7em 0 0 0 var(--neutral-800),  8em 0 0 0 var(--neutral-800),
+      9em 0 0 0 var(--neutral-800), 10em 0 0 0 var(--neutral-800), 11em 0 0 0 var(--neutral-800), 12em 0 0 0 var(--neutral-800),
+     13em 0 0 0 var(--neutral-800), 14em 0 0 0 var(--neutral-800), 15em 0 0 0 var(--neutral-800), 16em 0 0 0 var(--neutral-800);
 }
 
 html { font-size: var(--font-size); font-family: var(--font); }
 body, button, input, select, textarea { font-family: var(--font); }
 button { max-width: 400px; white-space: nowrap; }
 img { background-color: var(--background-color); }
+
+/*
 input[type=range] { height: var(--line-xs) !important; appearance: none !important; margin-top: 0 !important; min-width: max(4em, 100%) !important; background-color: var(--background-color) !important; width: 100% !important; background: transparent !important; }
 input[type=range]::-webkit-slider-runnable-track { width: 100% !important; height: 6px !important; cursor: pointer !important; background: var(--input-background-fill) !important; border-radius: var(--radius-lg) !important; border: 0px solid var(--neutral-900) !important; }
 input[type=range]::-moz-range-track              { width: 100% !important; height: 6px !important; cursor: pointer !important; background: var(--input-background-fill) !important; border-radius: var(--radius-lg) !important; border: 0px solid var(--neutral-900) !important; }
 input[type=range]::-webkit-slider-thumb { border: 0px solid #000000 !important; height: var(--line-xs) !important; width: var(--line-md) !important; border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -4px !important; }
 input[type=range]::-moz-range-thumb     { border: 0px solid #000000 !important; height: var(--line-xs) !important; width: var(--line-md) !important; border-radius: var(--radius-lg) !important; background: var(--highlight-color) !important; cursor: pointer !important; appearance: none !important; margin-top: -4px !important; }
+*/
+input[type='range'] { display: block; margin: 0; padding: 0; height: 1em; background-color: transparent; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 0 transparent; -webkit-appearance: none; appearance: none; }
+input[type='range']::-webkit-slider-thumb { height: .9em; width: .9em; background-color: hsl(180, 54%, 61%); box-shadow: var(--range-shadow); border-radius: var(--radius-xs); }
+input[type='range']::-webkit-slider-runnable-track, input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; }
+input[type='range']::-moz-range-thumb { height: .9em; width: .9em; background-color: hsl(180, 54%, 61%); box-shadow: var(--range-shadow); }
+input[type='range']::-moz-range-track, input[type='range']::-webkit-slider-runnable-track { border: none; background: none; width: 100%; height: 100%; }
+
 :root { scrollbar-color: var(--highlight-color) #303030; }
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-track { background: #303030; }
@@ -87,6 +106,7 @@ fieldset .gr-block.gr-box, label.block span { padding: 0; margin-top: -4px; }
 .gr-input-label { color: lightyellow; border-width: 0; background: transparent; padding: 2px !important; }
 .gr-panel { background-color: var(--background-color); }
 .eta-bar { display: none !important }
+.gradio-slider { max-width: 200px; }
 .gradio-slider input[type="number"] { background: var(--neutral-950); margin-top: 2px; }
 svg.feather.feather-image, .feather .feather-image { display: none }
 .gap-2 { padding-top: 8px; }

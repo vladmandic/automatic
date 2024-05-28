@@ -44,6 +44,19 @@
     "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
     "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
   },
+  "SDXS DreamShaper 512": {
+    "path": "IDKiro/sdxs-512-dreamshaper",
+    "preview": "IDKiro--sdxs-512-dreamshaper.jpg",
+    "desc": "SDXS: Real-Time One-Step Latent Diffusion Models with Image Conditions",
+    "extras": "width: 512, height: 512, sampler: CMSI, steps: 1, cfg_scale: 0.0"
+  },
+  "SDXL Flash Mini": {
+    "path": "SDXL-Flash_Mini.safetensors@https://huggingface.co/sd-community/sdxl-flash-mini/resolve/main/SDXL-Flash_Mini.safetensors?download=true",
+    "preview": "SDXL-Flash_Mini.jpg",
+    "desc": "Introducing the new fast model SDXL Flash (Mini), we learned that all fast XL models work fast, but the quality decreases, and we also made a fast model, but it is not as fast as LCM, Turbo, Lightning and Hyper, but the quality is higher.",
+    "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0",
+    "experimental": true
+  },
 
   "RunwayML SD 1.5": {
     "original": true,
@@ -137,6 +150,12 @@
     "path": "PixArt-alpha/PixArt-XL-2-1024-MS",
     "desc": "PixArt-α is a Transformer-based T2I diffusion model whose image generation quality is competitive with state-of-the-art image generators (e.g., Imagen, SDXL, and even Midjourney), and the training speed markedly surpasses existing large-scale T2I models. Extensive experiments demonstrate that PIXART-α excels in image quality, artistry, and semantic control. It can directly generate 1024px images from text prompts within a single sampling process.",
     "preview": "PixArt-alpha--PixArt-XL-2-1024-MS.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+  },
+  "Pixart-Σ": {
+    "path": "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS",
+    "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
+    "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
 

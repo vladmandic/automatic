@@ -20,7 +20,7 @@ class ENVStore:
     def __getattr__(self, name: str):
         value = os.environ.get(f"SDNEXT_OLIVE_{name}", None)
         if value is None:
-            return
+            return value
         ty = self.__class__.__annotations__[name]
         deserialize = self.__DESERIALIZER[ty]
         return deserialize(value)
@@ -119,7 +119,7 @@ class RandomDataLoader:
 # -----------------------------------------------------------------------------
 
 
-def text_encoder_inputs(batchsize, torch_dtype):
+def text_encoder_inputs(batchsize, torch_dtype): # pylint: disable=unused-argument
     input_ids = torch.zeros((config.batch_size, 77), dtype=torch_dtype)
     return {
         "input_ids": input_ids,
@@ -132,11 +132,11 @@ def text_encoder_load(model_name):
     return model
 
 
-def text_encoder_conversion_inputs(model):
+def text_encoder_conversion_inputs(model): # pylint: disable=unused-argument
     return text_encoder_inputs(1, torch.int32)
 
 
-def text_encoder_data_loader(data_dir, batchsize, *_, **__):
+def text_encoder_data_loader(data_dir, batchsize, *_, **__): # pylint: disable=unused-argument
     return RandomDataLoader(text_encoder_inputs, config.batch_size, torch.int32)
 
 
@@ -145,7 +145,7 @@ def text_encoder_data_loader(data_dir, batchsize, *_, **__):
 # -----------------------------------------------------------------------------
 
 
-def text_encoder_2_inputs(batchsize, torch_dtype):
+def text_encoder_2_inputs(batchsize, torch_dtype): # pylint: disable=unused-argument
     return {
         "input_ids": torch.zeros((config.batch_size, 77), dtype=torch_dtype),
         "output_hidden_states": True,
@@ -157,11 +157,11 @@ def text_encoder_2_load(model_name):
     return model
 
 
-def text_encoder_2_conversion_inputs(model):
+def text_encoder_2_conversion_inputs(model): # pylint: disable=unused-argument
     return text_encoder_2_inputs(1, torch.int64)
 
 
-def text_encoder_2_data_loader(data_dir, batchsize, *_, **__):
+def text_encoder_2_data_loader(data_dir, batchsize, *_, **__): # pylint: disable=unused-argument
     return RandomDataLoader(text_encoder_2_inputs, config.batch_size, torch.int64)
 
 
@@ -170,7 +170,7 @@ def text_encoder_2_data_loader(data_dir, batchsize, *_, **__):
 # -----------------------------------------------------------------------------
 
 
-def unet_inputs(batchsize, torch_dtype, is_conversion_inputs=False):
+def unet_inputs(batchsize, torch_dtype, is_conversion_inputs=False): # pylint: disable=unused-argument
     if config.is_sdxl:
         inputs = {
             "sample": torch.rand((2 * config.batch_size, 4, config.height // 8, config.width // 8), dtype=torch_dtype),
@@ -220,11 +220,11 @@ def unet_load(model_name):
     return model
 
 
-def unet_conversion_inputs(model):
+def unet_conversion_inputs(model): # pylint: disable=unused-argument
     return tuple(unet_inputs(1, torch.float32, True).values())
 
 
-def unet_data_loader(data_dir, batchsize, *_, **__):
+def unet_data_loader(data_dir, batchsize, *_, **__): # pylint: disable=unused-argument
     return RandomDataLoader(unet_inputs, config.batch_size, torch.float16)
 
 
@@ -233,7 +233,7 @@ def unet_data_loader(data_dir, batchsize, *_, **__):
 # -----------------------------------------------------------------------------
 
 
-def vae_encoder_inputs(batchsize, torch_dtype):
+def vae_encoder_inputs(batchsize, torch_dtype): # pylint: disable=unused-argument
     return {
         "sample": torch.rand((config.batch_size, 3, config.height, config.width), dtype=torch_dtype),
         "return_dict": False,
@@ -257,11 +257,11 @@ def vae_encoder_load(model_name):
     return model
 
 
-def vae_encoder_conversion_inputs(model):
+def vae_encoder_conversion_inputs(model): # pylint: disable=unused-argument
     return tuple(vae_encoder_inputs(1, torch.float32).values())
 
 
-def vae_encoder_data_loader(data_dir, batchsize, *_, **__):
+def vae_encoder_data_loader(data_dir, batchsize, *_, **__): # pylint: disable=unused-argument
     return RandomDataLoader(vae_encoder_inputs, config.batch_size, torch.float16)
 
 
@@ -270,7 +270,7 @@ def vae_encoder_data_loader(data_dir, batchsize, *_, **__):
 # -----------------------------------------------------------------------------
 
 
-def vae_decoder_inputs(batchsize, torch_dtype):
+def vae_decoder_inputs(batchsize, torch_dtype): # pylint: disable=unused-argument
     return {
         "latent_sample": torch.rand((config.batch_size, 4, config.height // 8, config.width // 8), dtype=torch_dtype),
         "return_dict": False,
@@ -294,9 +294,9 @@ def vae_decoder_load(model_name):
     return model
 
 
-def vae_decoder_conversion_inputs(model):
+def vae_decoder_conversion_inputs(model): # pylint: disable=unused-argument
     return tuple(vae_decoder_inputs(1, torch.float32).values())
 
 
-def vae_decoder_data_loader(data_dir, batchsize, *_, **__):
+def vae_decoder_data_loader(data_dir, batchsize, *_, **__): # pylint: disable=unused-argument
     return RandomDataLoader(vae_decoder_inputs, config.batch_size, torch.float16)

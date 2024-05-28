@@ -33,7 +33,6 @@ then
     venv_dir="venv"
 fi
 
-
 # read any command line flags to the webui.sh script
 while getopts "f" flag > /dev/null 2>&1
 do
@@ -65,35 +64,45 @@ then
     exit 1
 fi
 
-echo "Create and activate python venv"
 if [[ ! -d "${venv_dir}" ]]
 then
+    echo "Create python venv"
     "${PYTHON}" -m venv "${venv_dir}"
     first_launch=1
 fi
 
 if [[ -f "${venv_dir}"/bin/activate ]]
 then
+    echo "Activate python venv"
     source "${venv_dir}"/bin/activate
 else
     echo "Error: Cannot activate python venv"
     exit 1
 fi
 
+# Add venv lib folder to PATH
+# IPEX needs this
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath "$venv_dir")/lib/
 fi
 
+# Add ROCm to PATH if it's not already
+if  [ ! -x "$(command -v rocminfo)" ] && [ -f '/opt/rocm/bin/rocminfo' ]
+then
+    export PATH=$PATH:/opt/rocm/bin
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
+fi
+
 if [[ ! -z "${ACCELERATE}" ]] && [ ${ACCELERATE}="True" ] && [ -x "$(command -v accelerate)" ]
 then
-    echo "Launching accelerate launch.py..."
+    echo "Launch: accelerate"
     exec accelerate launch --num_cpu_threads_per_process=6 launch.py "$@"
-elif [[ "$@" == *"--use-ipex"* ]] && [[ -z "${first_launch}" ]] && [ -x "$(command -v ipexrun)" ] && [[ -z "${DISABLE_IPEXRUN}" ]]
+elif [[ ! -z "${IPEXRUN}" ]] && [ ${IPEXRUN}="True" ] && [ -x "$(command -v ipexrun)" ]
 then
-    echo "Launching ipexrun launch.py..."
+    echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
 else
-    echo "Launching launch.py..."
+    echo "Launch"
     exec "${PYTHON}" launch.py "$@"
 fi

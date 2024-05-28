@@ -15,12 +15,22 @@
     "type": "git",
     "url": "git+https://github.com/vladmandic/automatic.git"
   },
+  "scripts": {
+    "start": "python launch.py --debug --experimental",
+    "ruff": "ruff check",
+    "eslint": "eslint javascript/ extensions-builtin/sdnext-modernui/javascript/",
+    "pylint": "pylint *.py modules/ extensions-builtin/",
+    "lint": "npm run eslint; npm run ruff; npm run pylint"
+  },
   "devDependencies": {
-    "esbuild": "^0.18.15",
-    "eslint": "^8.44.0",
-    "eslint-config-airbnb-base": "^15.0.0"
+    "esbuild": "^0.18.15"
   },
   "dependencies": {
-    "eslint-plugin-json": "^3.1.0"
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-css": "^0.9.2",
+    "eslint-plugin-html": "^8.1.1",
+    "eslint-plugin-json": "^3.1.0",
+    "eslint-plugin-markdown": "^4.0.1"
   }
 }

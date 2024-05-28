@@ -8,6 +8,7 @@ from modules import shared, devices, errors, images, scripts, memstats, lowvram,
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
+from modules import pag
 
 
 opt_C = 4
@@ -25,6 +26,7 @@ get_fixed_seed = processing_helpers.get_fixed_seed
 create_random_tensors = processing_helpers.create_random_tensors
 old_hires_fix_first_pass_dimensions = processing_helpers.old_hires_fix_first_pass_dimensions
 get_sampler_name = processing_helpers.get_sampler_name
+get_sampler_index = processing_helpers.get_sampler_index
 validate_sample = processing_helpers.validate_sample
 decode_first_stage = processing_helpers.decode_first_stage
 images_tensor_to_samples = processing_helpers.images_tensor_to_samples
@@ -74,8 +76,6 @@ class Processed:
         self.all_negative_prompts = all_negative_prompts or p.all_negative_prompts or [self.negative_prompt]
         self.all_seeds = all_seeds or p.all_seeds or [self.seed]
         self.all_subseeds = all_subseeds or p.all_subseeds or [self.subseed]
-        self.token_merging_ratio = p.token_merging_ratio
-        self.token_merging_ratio_hr = p.token_merging_ratio_hr
         self.infotexts = infotexts or [info]
 
     def js(self):
@@ -113,8 +113,6 @@ class Processed:
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
 
-    def get_token_merging_ratio(self, for_hr=False):
-        return self.token_merging_ratio_hr if for_hr else self.token_merging_ratio
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
@@ -160,8 +158,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
+        pag.apply(p)
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
 
         if p.width is not None:
@@ -193,8 +192,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 processed = process_images_inner(p)
 
     finally:
-        if not shared.opts.cuda_compile:
-            sd_models.apply_token_merging(p.sd_model, 0)
+        pag.unapply()
+        if shared.opts.cuda_compile_backend == 'none':
+            sd_models.remove_token_merging(p.sd_model)
 
         script_callbacks.after_process_callback(p)
 
@@ -213,22 +213,31 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 def process_init(p: StableDiffusionProcessing):
     seed = get_fixed_seed(p.seed)
     subseed = get_fixed_seed(p.subseed)
-    if type(p.prompt) == list:
-        p.all_prompts = [shared.prompt_styles.apply_styles_to_prompt(x, p.styles) for x in p.prompt]
-    else:
-        p.all_prompts = p.batch_size * p.n_iter * [shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)]
-    if type(p.negative_prompt) == list:
-        p.all_negative_prompts = [shared.prompt_styles.apply_negative_styles_to_prompt(x, p.styles) for x in p.negative_prompt]
-    else:
-        p.all_negative_prompts = p.batch_size * p.n_iter * [shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)]
-    if type(seed) == list:
-        p.all_seeds = seed
-    else:
-        p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
-    if type(subseed) == list:
-        p.all_subseeds = subseed
-    else:
-        p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
+    reset_prompts = False
+    if p.all_prompts is None:
+        p.all_prompts = p.prompt if isinstance(p.prompt, list) else p.batch_size * p.n_iter * [p.prompt]
+        reset_prompts = True
+    if p.all_negative_prompts is None:
+        p.all_negative_prompts = p.negative_prompt if isinstance(p.negative_prompt, list) else p.batch_size * p.n_iter * [p.negative_prompt]
+        reset_prompts = True
+    if p.all_seeds is None:
+        reset_prompts = True
+        if type(seed) == list:
+            p.all_seeds = seed
+        else:
+            if shared.opts.sequential_seed:
+                p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
+            else:
+                p.all_seeds = []
+                for i in range(len(p.all_prompts)):
+                    seed = get_fixed_seed(p.seed)
+                    p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
+        if type(subseed) == list:
+            p.all_subseeds = subseed
+        else:
+            p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
+    if reset_prompts:
+        p.all_prompts, p.all_negative_prompts = shared.prompt_styles.apply_styles_to_prompts(p.all_prompts, p.all_negative_prompts, p.styles, p.all_seeds)
 
 
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:
@@ -260,8 +269,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
         if not hasattr(p, 'skip_init'):
-            with devices.autocast():
-                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
@@ -288,8 +296,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 break
             p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
             if not p.disable_extra_networks:
-                with devices.autocast():
-                    extra_networks.activate(p, extra_network_data)
+                extra_networks.activate(p, extra_network_data)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
@@ -325,8 +332,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
 
             for i, x_sample in enumerate(x_samples_ddim):
-                if hasattr(p, 'recursion'):
-                    continue
                 debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
                 if type(x_sample) == Image.Image:
@@ -340,11 +345,13 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
                     p.ops.append('face')
                     x_sample = face_restoration.restore_faces(x_sample, p)
-                    image = Image.fromarray(x_sample)
+                    if x_sample is not None:
+                        image = Image.fromarray(x_sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
                     p.scripts.postprocess_image(p, pp)
-                    image = pp.image
+                    if pp.image is not None:
+                        image = pp.image
                 if p.color_corrections is not None and i < len(p.color_corrections):
                     if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
                         orig = p.color_corrections
@@ -361,7 +368,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 infotexts.append(text)
                 image.info["parameters"] = text
                 output_images.append(image)
-                if shared.opts.samples_save and not p.do_not_save_samples:
+                if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
@@ -369,7 +376,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image2 = Image.new('RGBa', image.size)
                     mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
                     image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
-                    image_mask_composite.save('/tmp/composite.png')
                     if shared.opts.save_mask:
                         images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:
@@ -402,6 +408,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=infotext(-1), p=p, grid=True, suffix="-grid") # main save grid
 
     if shared.backend == shared.Backend.DIFFUSERS:
+        from modules import ipadapter
         ipadapter.unapply(shared.sd_model)
 
     if not p.disable_extra_networks:
@@ -409,7 +416,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     if shared.opts.include_mask:
         if getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
-            output_images.append(p.image_mask)
+            if getattr(p, 'mask_for_facehires', None) is not None:
+                output_images.append(p.mask_for_facehires)
+            else:
+                output_images.append(p.image_mask)
 
     processed = Processed(
         p,

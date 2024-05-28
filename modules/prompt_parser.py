@@ -121,9 +121,15 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
         class AtStep(lark.Transformer):
             def scheduled(self, args):
                 before, after, _, when = args
-                yield before or () if step <= when else after
+                try:
+                    yield before or () if step <= when else after
+                except StopIteration:
+                    yield ''
             def alternate(self, args):
-                yield next(args[(step - 1)%len(args)]) # pylint: disable=stop-iteration-return
+                try:
+                    yield next(args[(step - 1) % len(args)]) # pylint: disable=stop-iteration-return
+                except StopIteration:
+                    yield ''
             def start(self, args):
                 def flatten(x):
                     if type(x) == str:
@@ -135,8 +141,7 @@ def get_learned_conditioning_prompt_schedules(prompts, steps):
             def plain(self, args):
                 yield args[0].value
             def __default__(self, data, children, meta):
-                for child in children:
-                    yield child
+                yield from children
         return AtStep().transform(tree)
 
     def get_schedule(prompt):
@@ -273,10 +278,10 @@ def parse_prompt_attention(text):
       (abc) - increases attention to abc by a multiplier of 1.1
       (abc:3.12) - increases attention to abc by a multiplier of 3.12
       [abc] - decreases attention to abc by a multiplier of 1.1
-      \( - literal character '('
-      \[ - literal character '['
-      \) - literal character ')'
-      \] - literal character ']'
+      ( - literal character '('
+      [ - literal character '['
+      ) - literal character ')'
+      ] - literal character ']'
       \\ - literal character '\'
       anything else - just text
     >>> parse_prompt_attention('normal text')
@@ -285,7 +290,7 @@ def parse_prompt_attention(text):
     [['an ', 1.0], ['important', 1.1], [' word', 1.0]]
     >>> parse_prompt_attention('(unbalanced')
     [['unbalanced', 1.1]]
-    >>> parse_prompt_attention('\(literal\]')
+    >>> parse_prompt_attention('(literal]')
     [['(literal]', 1.0]]
     >>> parse_prompt_attention('(unnecessary)(parens)')
     [['unnecessaryparens', 1.1]]
@@ -305,7 +310,7 @@ def parse_prompt_attention(text):
     square_brackets = []
     if opts.prompt_attention == 'Fixed attention':
         res = [[text, 1.0]]
-        debug(f'Prompt: parser={opts.prompt_attention} {res}')
+        debug(f'Prompt: parser="{opts.prompt_attention}" {res}')
         return res
     elif opts.prompt_attention == 'Compel parser':
         conjunction = Compel.parse_prompt_string(text)
@@ -314,7 +319,7 @@ def parse_prompt_attention(text):
         res = []
         for frag in conjunction.prompts[0].children:
             res.append([frag.text, frag.weight])
-        debug(f'Prompt: parser={opts.prompt_attention} {res}')
+        debug(f'Prompt: parser="{opts.prompt_attention}" {res}')
         return res
     elif opts.prompt_attention == 'A1111 parser':
         re_attention = re_attention_v1
@@ -377,7 +382,7 @@ def parse_prompt_attention(text):
             res.pop(i + 1)
         else:
             i += 1
-    debug(f'Prompt: parser={opts.prompt_attention} {res}')
+    debug(f'Prompt: parser="{opts.prompt_attention}" {res}')
     return res
 
 if __name__ == "__main__":

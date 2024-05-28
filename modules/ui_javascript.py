@@ -43,50 +43,59 @@ def html_body():
     return body
 
 
-def html_css(is_builtin: bool):
-    added = []
-
+def html_css(css: str):
     def stylesheet(fn):
-        added.append(fn)
         return f'<link rel="stylesheet" property="stylesheet" href="{webpath(fn)}">'
 
-    css = 'sdnext.css' if is_builtin else 'base.css'
-    head = stylesheet(os.path.join(script_path, 'javascript', css))
+    head = ''
+    if css is not None:
+        head += stylesheet(os.path.join(script_path, 'javascript', css))
     for cssfile in modules.scripts.list_files_with_name("style.css"):
         if not os.path.isfile(cssfile):
             continue
         head += stylesheet(cssfile)
 
-    theme_name = modules.shared.cmd_opts.theme or modules.shared.opts.gradio_theme or ''
-    if theme_name == 'default':
-        theme_name = 'black-teal'
-    if theme_name == 'modern' or theme_name == 'modern/default':
-        theme_name = 'modern/sdxl_alpha'
-    if theme_name.startswith('modern/'):
-        theme_name = theme_name[7:]
-        theme_folder = next((e.path for e in modules.extensions.extensions if e.name == 'sdnext-ui-ux'), None)
-        theme_file = os.path.join(theme_folder or '', 'themes', f'{theme_name}.css')
-        if os.path.exists(theme_file):
-            head += stylesheet(theme_file)
-    elif theme_name in theme.list_builtin_themes() and os.path.exists(os.path.join(script_path, "javascript", f"{theme_name}.css")):
-        head += stylesheet(os.path.join(script_path, "javascript", f"{theme_name}.css"))
-    if os.path.exists(os.path.join(data_path, "user.css")):
-        head += stylesheet(os.path.join(data_path, "user.css"))
-    added = [a.replace(script_path, '').replace('\\', '/') for a in added]
-    # log.debug(f'Adding CSS stylesheets: {added}')
+    usercss = os.path.join(data_path, "user.css") if os.path.exists(os.path.join(data_path, "user.css")) else None
+    if modules.shared.opts.theme_type == 'Standard':
+        themecss = os.path.join(script_path, "javascript", f"{modules.shared.opts.gradio_theme}.css")
+        if os.path.exists(themecss):
+            head += stylesheet(themecss)
+            modules.shared.log.debug(f'UI theme: css="{themecss}" base="{css}" user="{usercss}"')
+        else:
+            modules.shared.log.error(f'UI theme: css="{themecss}" not found')
+    elif modules.shared.opts.theme_type == 'Modern':
+        theme_folder = next((e.path for e in modules.extensions.extensions if e.name == 'sdnext-modernui'), None)
+        themecss = os.path.join(theme_folder or '', 'themes', f'{modules.shared.opts.gradio_theme}.css')
+        if os.path.exists(themecss):
+            head += stylesheet(themecss)
+            modules.shared.log.debug(f'UI theme: css="{themecss}" base="{css}" user="{usercss}"')
+        else:
+            modules.shared.log.error(f'UI theme: css="{themecss}" not found')
+    if usercss is not None:
+        head += stylesheet(usercss)
     return head
 
 
 def reload_javascript():
-    is_builtin = theme.reload_gradio_theme()
+    base_css = theme.reload_gradio_theme()
     head = html_head()
-    css = html_css(is_builtin)
+    css = html_css(base_css)
     body = html_body()
+    title = '<title>SD.Next</title>'
+    manifest = f'<link rel="manifest" href="{webpath(os.path.join(script_path, "html", "manifest.json"))}">'
 
     def template_response(*args, **kwargs):
         res = shared.GradioTemplateResponseOriginal(*args, **kwargs)
+        res.body = res.body.replace(b'<head>', f'<head>{title}'.encode("utf8"))
         res.body = res.body.replace(b'</head>', f'{head}</head>'.encode("utf8"))
+        res.body = res.body.replace(b'</head>', f'{manifest}</head>'.encode("utf8"))
         res.body = res.body.replace(b'</body>', f'{css}{body}</body>'.encode("utf8"))
+        lines = res.body.decode("utf8").split('\n')
+        for line in lines:
+            if 'meta name="twitter:' in line:
+                res.body = res.body.replace(line.encode("utf8"), b'')
+            # if 'iframeResizer.contentWindow.min.js' in line:
+            #    res.body = res.body.replace(line.encode("utf8"), b'<script src="/javascript/iframeResizer.js" async=""></script>')
         res.init_headers()
         return res
 

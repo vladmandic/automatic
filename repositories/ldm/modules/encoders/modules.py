@@ -1,13 +1,9 @@
 import torch
 import torch.nn as nn
-import kornia
 from torch.utils.checkpoint import checkpoint
-
-from transformers import T5Tokenizer, T5EncoderModel, CLIPTokenizer, CLIPTextModel
 
 import open_clip
 from ldm.util import default, count_params, autocast
-
 
 class AbstractEncoder(nn.Module):
     def __init__(self):
@@ -62,6 +58,7 @@ class FrozenT5Embedder(AbstractEncoder):
     def __init__(self, version="google/t5-v1_1-large", device="cuda", max_length=77,
                  freeze=True):  # others are google/t5-v1_1-xl and google/t5-v1_1-xxl
         super().__init__()
+        from transformers import T5Tokenizer, T5EncoderModel
         self.tokenizer = T5Tokenizer.from_pretrained(version)
         self.transformer = T5EncoderModel.from_pretrained(version)
         self.device = device
@@ -99,6 +96,7 @@ class FrozenCLIPEmbedder(AbstractEncoder):
     def __init__(self, version="openai/clip-vit-large-patch14", device="cuda", max_length=77,
                  freeze=True, layer="last", layer_idx=None):  # clip-vit-base-patch32
         super().__init__()
+        from transformers import CLIPTokenizer, CLIPTextModel
         assert layer in self.LAYERS
         self.tokenizer = CLIPTokenizer.from_pretrained(version)
         self.transformer = CLIPTextModel.from_pretrained(version)
@@ -155,6 +153,7 @@ class ClipImageEmbedder(nn.Module):
         self.ucg_rate = ucg_rate
 
     def preprocess(self, x):
+        import kornia
         # normalize to [0,1]
         x = kornia.geometry.resize(x, (224, 224),
                                    interpolation='bicubic', align_corners=True,
@@ -265,6 +264,7 @@ class FrozenOpenCLIPImageEmbedder(AbstractEncoder):
         self.ucg_rate = ucg_rate
 
     def preprocess(self, x):
+        import kornia
         # normalize to [0,1]
         x = kornia.geometry.resize(x, (224, 224),
                                    interpolation='bicubic', align_corners=True,

@@ -96,6 +96,8 @@ def add_paste_fields(tabname, init_img, fields, override_settings_component=None
         modules.ui.txt2img_paste_fields = fields
     elif tabname == 'img2img':
         modules.ui.img2img_paste_fields = fields
+    elif tabname == 'control':
+        modules.ui.control_paste_fields = fields
 
 
 def create_buttons(tabs_list):
@@ -157,13 +159,14 @@ def connect_paste_params_buttons():
             )
         if binding.source_text_component is not None and fields is not None:
             connect_paste(binding.paste_button, fields, binding.source_text_component, override_settings_component, binding.tabname)
-        if binding.source_tabname is not None and fields is not None:
+        if binding.source_tabname is not None and fields is not None and binding.source_tabname in paste_fields:
             paste_field_names = ['Prompt', 'Negative prompt', 'Steps', 'Face restoration'] + (["Seed"] if shared.opts.send_seed else []) + binding.paste_field_names
-            binding.paste_button.click(
-                fn=lambda *x: x,
-                inputs=[field for field, name in paste_fields[binding.source_tabname]["fields"] if name in paste_field_names],
-                outputs=[field for field, name in fields if name in paste_field_names],
-            )
+            if "fields" in paste_fields[binding.source_tabname] and paste_fields[binding.source_tabname]["fields"] is not None:
+                binding.paste_button.click(
+                    fn=lambda *x: x,
+                    inputs=[field for field, name in paste_fields[binding.source_tabname]["fields"] if name in paste_field_names],
+                    outputs=[field for field, name in fields if name in paste_field_names],
+                )
         binding.paste_button.click(
             fn=None,
             _js=f"switch_to_{binding.tabname}",
@@ -184,13 +187,17 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters(infotext):
+def parse_generation_parameters(infotext, no_prompt=False):
     if not isinstance(infotext, str):
         return {}
     debug(f'Parse infotext: {infotext}')
     re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
     re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
-    sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    basic_params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
+
+    infotext = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
+    infotext = infotext.replace(' Steps: ', ', Steps: ').replace('\nSteps: ', ', Steps: ') # fix cases where there is no delimiter between prompt and steps
+    sanitized = infotext
     sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
     sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
     sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
@@ -198,12 +205,29 @@ def parse_generation_parameters(infotext):
     params = dict(re_param.findall(sanitized))
     debug(f"Parse params: {params}")
     params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    first_param = next(iter(params)) if params else None
+    if len(list(params)) == 0:
+        first_param = None
+    else:
+        try:
+            first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
+        except Exception:
+            first_param, first_param_idx = next(iter(params)), 0
+        if first_param_idx > 0:
+            for _i in range(first_param_idx):
+                params.pop(next(iter(params)))
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
 
-    prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
-    negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
+    if negative_idx == -1: # prompt can be without negative prompt
+        prompt = infotext[:params_idx] if params_idx > 0 else infotext
+    else:
+        prompt = infotext[:negative_idx]
+    if prompt.startswith('Steps: '):
+        prompt = ''
+    if negative_idx >= 0:
+        negative = infotext[negative_idx:params_idx] if params_idx > 0 else infotext[negative_idx:]
+    else:
+        negative = ''
 
     for k, v in params.copy().items(): # avoid dict-has-changed
         if len(v) > 0 and v[0] == '"' and v[-1] == '"':
@@ -222,8 +246,9 @@ def parse_generation_parameters(infotext):
             params["Full quality"] = False
         else:
             params[k] = v
-    params["Prompt"] = prompt.replace('Prompt:', '').strip()
-    params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
+    if not no_prompt:
+        params["Prompt"] = prompt.replace('Prompt:', '').strip(' ,\n')
+        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip(' ,\n')
     debug(f"Parse: {params}")
     return params
 
@@ -266,10 +291,8 @@ infotext_to_setting_name_mapping = [
     ('UniPC variant', 'uni_pc_variant'),
     # Token Merging
     ('Mask weight', 'inpainting_mask_weight'),
-    ('Token merging ratio', 'token_merging_ratio'),
-    ('ToMe', 'token_merging_ratio'),
-    ('ToMe hires', 'token_merging_ratio_hr'),
-    ('ToMe img2img', 'token_merging_ratio_img2img'),
+    ('ToMe', 'tome_ratio'),
+    ('ToDo', 'todo_ratio'),
 ]
 
 
@@ -300,7 +323,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                 prompt = ''
         else:
             shared.log.debug(f'Paste prompt: type="current" prompt="{prompt}"')
-        params = parse_generation_parameters(prompt)
+        params = parse_generation_parameters(prompt, no_prompt=False)
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []
         applied = {}
@@ -310,7 +333,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
             else:
                 v = params.get(key, None)
             if v is None:
-                res.append(gr.update())
+                res.append(gr.update()) # triggers update for each gradio component even if there are no updates
             elif isinstance(v, type_of_gr_update):
                 res.append(v)
                 applied[key] = v
@@ -330,6 +353,10 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
 
     if override_settings_component is not None:
         def paste_settings(params):
+            params.pop('Prompt', None)
+            params.pop('Negative prompt', None)
+            if not params:
+                gr.Dropdown.update(value=[], choices=[], visible=False)
             vals = {}
             for param_name, setting_name in infotext_to_setting_name_mapping:
                 v = params.get(param_name, None)
@@ -346,8 +373,10 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                     continue
                 vals[param_name] = v
             vals_pairs = [f"{k}: {v}" for k, v in vals.items()]
-            shared.log.debug(f'Settings overrides: {vals_pairs}')
+            if len(vals_pairs) > 0:
+                shared.log.debug(f'Settings overrides: {vals_pairs}')
             return gr.Dropdown.update(value=vals_pairs, choices=vals_pairs, visible=len(vals_pairs) > 0)
+
         local_paste_fields = local_paste_fields + [(override_settings_component, paste_settings)]
 
     button.click(

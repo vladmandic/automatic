@@ -18,6 +18,7 @@ def patch(key, obj, field, replacement, add_if_not_exists:bool = False):
     patch_key = (obj, field)
     if patch_key in originals[key]:
         log.error(f"Patch already applied: field={field}")
+        return getattr(obj, field, None) # avoid patching again
     if not hasattr(obj, field) and not add_if_not_exists:
         log.error(f"Patch no attribute: type={type(obj)} name='{type.__name__}' fiel'{field}'")
         return None
@@ -40,7 +41,7 @@ def undo(key, obj, field):
     patch_key = (obj, field)
     if patch_key not in originals[key]:
         log.error(f"Patch no patch to undo: field={field}")
-        return
+        return None
     original_func = originals[key].pop(patch_key)
     if original_func is None:
         delattr(obj, field)

@@ -943,10 +943,7 @@ class StableDiffusionXLDiffImg2ImgPipeline(DiffusionPipeline, FromSingleFileMixi
             and denoising_value_valid(denoising_start)
             and denoising_start >= denoising_end
         ):
-            raise ValueError(
-                f"`denoising_start`: {denoising_start} cannot be larger than or equal to `denoising_end`: "
-                + f" {denoising_end} when using type float."
-            )
+            raise ValueError(f"`denoising_start`: {denoising_start} cannot be larger than or equal to `denoising_end`: {denoising_end} when using type float.")
         elif denoising_end is not None and denoising_value_valid(denoising_end):
             discrete_timestep_cutoff = int(
                 round(
@@ -1077,7 +1074,7 @@ class StableDiffusionDiffImg2ImgPipeline(DiffusionPipeline):
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
-        requires_safety_checker: bool = True,
+        requires_safety_checker: bool = False,
     ):
         super().__init__()
 
@@ -1970,6 +1967,9 @@ class Script(scripts.Script):
             p.task_args['map'] = image_map
             if shared.sd_model_type == 'sdxl':
                 p.task_args['original_image'] = image_init
+            if p.batch_size > 1:
+                shared.log.warning(f'Differential-diffusion: batch-size={p.batch_size} parallel processing not supported')
+                p.batch_size = 1
             shared.log.debug(f'Differential-diffusion: pipeline={pipe.__class__.__name__} strength={strength} model={model} auto={image is None}')
             shared.sd_model = pipe
             sd_models.move_model(pipe.vae, devices.device, force=True)
@@ -1981,6 +1981,7 @@ class Script(scripts.Script):
         # run pipeline
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
         if shared.opts.include_mask:
+            p.image_mask = image_mask
             if image_mask is not None and isinstance(image_mask, Image.Image):
                 processed.images.append(image_mask)
 

@@ -64,7 +64,7 @@ class APIProcess():
         for k, v in req.params.items():
             if k not in processors.config[processor.processor_id]['params']:
                 return JSONResponse(status_code=400, content={"error": f"Processor invalid parameter: id={req.model} {k}={v}"})
-        shared.state.begin('api-preprocess', api=True)
+        shared.state.begin('API-PRE', api=True)
         processed = processor(image, local_config=req.params)
         image = encode_pil_to_base64(processed)
         shared.state.end(api=False)
@@ -90,7 +90,7 @@ class APIProcess():
                 return JSONResponse(status_code=400, content={"error": f"Mask invalid parameter: {k}={v}"})
             else:
                 setattr(masking.opts, k, v)
-        shared.state.begin('api-mask', api=True)
+        shared.state.begin('API-MASK', api=True)
         with self.queue_lock:
             processed = masking.run_mask(input_image=image, input_mask=mask, return_type=req.type)
         shared.state.end(api=False)

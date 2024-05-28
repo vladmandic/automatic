@@ -140,7 +140,7 @@ class EmbeddingDatabase:
     def get_expected_shape(self):
         if shared.backend == shared.Backend.DIFFUSERS:
             return 0
-        if shared.sd_model is None:
+        if shared.sd_loaded:
             shared.log.error('Model not loaded')
             return 0
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
@@ -151,7 +151,7 @@ class EmbeddingDatabase:
         embeddings_to_load = []
         loaded_embeddings = {}
         skipped_embeddings = []
-        if shared.sd_model is None:
+        if not shared.sd_loaded:
             return 0
         tokenizer   = getattr(shared.sd_model, 'tokenizer',   None)
         tokenizer_2 = getattr(shared.sd_model, 'tokenizer_2', None)
@@ -165,11 +165,11 @@ class EmbeddingDatabase:
             return 0
         filenames = list(filename)
         exts = [".SAFETENSORS", '.BIN', '.PT', '.PNG', '.WEBP', '.JXL', '.AVIF']
-        for filename in filenames:
+        for _filename in filenames:
             # debug(f'Embedding check: {filename}')
-            fullname = filename
-            filename = os.path.basename(fullname)
-            fn, ext = os.path.splitext(filename)
+            fullname = _filename
+            _filename = os.path.basename(fullname)
+            fn, ext = os.path.splitext(_filename)
             name = os.path.basename(fn)
             embedding = Embedding(vec=None, name=name, filename=fullname)
             tokenizer_vocab = tokenizer.get_vocab()
@@ -199,6 +199,8 @@ class EmbeddingDatabase:
                             embeddings_dict[k] = f.get_tensor(k)
                 else:  # fallback for sd1.5 pt embeddings
                     embeddings_dict["clip_l"] = self.load_from_file(embedding.filename, embedding.filename)
+                if 'emb_params' in embeddings_dict and 'clip_l' not in embeddings_dict:
+                    embeddings_dict["clip_l"] = embeddings_dict["emb_params"]
                 if 'clip_l' not in embeddings_dict:
                     raise ValueError('Invalid Embedding, dict missing required key `clip_l`')
                 if 'clip_g' not in embeddings_dict and model_type == "SDXL" and shared.opts.diffusers_convert_embed:
@@ -281,7 +283,7 @@ class EmbeddingDatabase:
         elif ext in ['.SAFETENSORS']:
             data = safetensors.torch.load_file(path, device="cpu")
         else:
-            return
+            return None
 
         # textual inversion embeddings
         if 'string_to_param' in data:
@@ -336,7 +338,7 @@ class EmbeddingDatabase:
                     continue
 
     def load_textual_inversion_embeddings(self, force_reload=False):
-        if shared.sd_model is None:
+        if not shared.sd_loaded:
             return
         t0 = time.time()
         if not force_reload:

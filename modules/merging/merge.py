@@ -189,7 +189,6 @@ def simple_merge(
     threads: int = 4,
 ) -> Dict:
     futures = []
-    # with tqdm(thetas["model_a"].keys(), desc="Merge") as progress:
     import rich.progress as p
     with p.Progress(p.TextColumn('[cyan]{task.description}'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TextColumn('[cyan]keys={task.fields[keys]}'), console=console) as progress:
         task = progress.add_task(description="Merging", total=len(thetas["model_a"].keys()), keys=len(thetas["model_a"].keys()))

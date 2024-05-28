@@ -13,6 +13,7 @@ import network_lokr
 import network_full
 import network_norm
 import network_glora
+import network_overrides
 import lora_convert
 import torch
 import diffusers.models.lora
@@ -188,18 +189,15 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
         net = None
         if network_on_disk is not None:
+            shorthash = getattr(network_on_disk, 'shorthash', '').lower()
             if debug:
-                shared.log.debug(f'LoRA load start: name="{name}" file="{network_on_disk.filename}"')
+                shared.log.debug(f'LoRA load: name="{name}" file="{network_on_disk.filename}" hash="{shorthash}"')
             try:
                 if recompile_model:
                     shared.compiled_model_state.lora_model.append(f"{name}:{te_multipliers[i] if te_multipliers else 1.0}")
-                shorthash = getattr(network_on_disk, 'shorthash', '').lower()
-                if shared.backend == shared.Backend.DIFFUSERS and (shared.opts.lora_force_diffusers # OpenVINO only works with Diffusers LoRa loading.
-                        or shorthash == 'aaebf6360f7d' # sd15-lcm
-                        or shorthash == '3d18b05e4f56' # sdxl-lcm
-                        or shorthash == 'b71dcb732467' # sdxl-tcd
-                        or shorthash == '813ea5fb1c67' # sdxl-turbo
-                    ):
+                if shared.backend == shared.Backend.DIFFUSERS and shared.opts.lora_force_diffusers: # OpenVINO only works with Diffusers LoRa loading
+                    net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
+                elif shared.backend == shared.Backend.DIFFUSERS and network_overrides.check_override(shorthash):
                     net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
                 else:
                     net = load_network(name, network_on_disk)

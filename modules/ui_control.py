@@ -9,7 +9,7 @@ from modules.control.units import xs # vislearn ControlNet-XS
 from modules.control.units import lite # vislearn ControlNet-XS
 from modules.control.units import t2iadapter # TencentARC T2I-Adapter
 from modules.control.units import reference # reference pipeline
-from modules import errors, shared, progress, sd_samplers, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images # pylint: disable=ungrouped-imports
+from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images # pylint: disable=ungrouped-imports
 from modules import ui_control_helpers as helpers
 
 
@@ -46,7 +46,7 @@ def generate_click(job_id: str, active_tab: str, *args):
         time.sleep(0.01)
     from modules.control.run import control_run
     debug(f'Control: tab="{active_tab}" job={job_id} args={args}')
-    shared.state.begin('control')
+    shared.state.begin('Generate')
     progress.add_task_to_queue(job_id)
     with call_queue.queue_lock:
         yield [None, None, None, None, 'Control: starting']
@@ -59,7 +59,7 @@ def generate_click(job_id: str, active_tab: str, *args):
         except Exception as e:
             shared.log.error(f"Control exception: {e}")
             errors.display(e, 'Control')
-            return None, None, None, None, f'Control: Exception: {e}'
+            yield [None, None, None, None, f'Control: Exception: {e}']
         progress.finish_task(job_id)
     shared.state.end()
 
@@ -84,49 +84,51 @@ def create_ui(_blocks: gr.Blocks=None):
 
             with gr.Row(elem_id='control_settings'):
 
+                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('control')
+
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
                     with gr.Row():
                         show_preview = gr.Checkbox(label="Show preview", value=True, elem_id="control_show_preview")
                     with gr.Row():
                         input_type = gr.Radio(label="Input type", choices=['Control only', 'Init image same as control', 'Separate init image'], value='Control only', type='index', elem_id='control_input_type')
                     with gr.Row():
-                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.50, elem_id="control_denoising_strength")
+                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.50, elem_id="control_input_denoising_strength")
 
                 with gr.Accordion(open=False, label="Size", elem_id="control_size", elem_classes=["small-accordion"]):
                     with gr.Tabs():
                         with gr.Tab('Before'):
-                            resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control', [], accordion=False, latent=True)
+                            resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control_before', [], accordion=False, latent=True)
                         with gr.Tab('After'):
-                            resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control', [], accordion=False, latent=False)
+                            resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control_after', [], accordion=False, latent=False)
                         with gr.Tab('Mask'):
-                            resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control', [], accordion=False, latent=False)
+                            resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False)
 
                 with gr.Accordion(open=False, label="Sampler", elem_id="control_sampler", elem_classes=["small-accordion"]):
-                    sd_samplers.set_samplers()
-                    steps, sampler_index = ui_sections.create_sampler_and_steps_selection(sd_samplers.samplers, "control")
+                    steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "control")
+                    ui_sections.create_sampler_options('control')
 
-                batch_count, batch_size = ui_sections.create_batch_inputs('control')
+                batch_count, batch_size = ui_sections.create_batch_inputs('control', accordion=True)
 
                 seed, _reuse_seed, subseed, _reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('control', reuse_visible=False)
 
                 mask_controls = masking.create_segment_ui()
 
-                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling= ui_sections.create_advanced_inputs('control')
-                hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('control')
+                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
+                hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('control')
 
                 with gr.Accordion(open=False, label="Video", elem_id="control_video", elem_classes=["small-accordion"]):
                     with gr.Row():
                         video_skip_frames = gr.Slider(minimum=0, maximum=100, step=1, label='Skip input frames', value=0, elem_id="control_video_skip_frames")
                     with gr.Row():
-                        video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-                        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False)
+                        video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None', elem_id="control_video_type")
+                        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False, elem_id="control_video_duration")
                     with gr.Row():
-                        video_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-                        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-                        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+                        video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id="control_video_loop")
+                        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False, elem_id="control_video_pad")
+                        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id="control_video_interpolate")
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
-                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
@@ -177,7 +179,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 with gr.Column(scale=9, elem_id='control-preview-column', visible=True) as column_preview:
                     gr.HTML('<span id="control-preview-button">Preview</p>')
                     with gr.Tabs(elem_classes=['control-tabs'], elem_id='control-tab-preview'):
-                        with gr.Tab('Preview', id='preview-image') as tab_image:
+                        with gr.Tab('Preview', id='preview-image') as _tab_preview:
                             preview_process = gr.Image(label="Preview", show_label=False, type="pil", source="upload", interactive=False, height=gr_height, visible=True, elem_id='control_preview', elem_classes=['control-image'])
 
             with gr.Accordion('Control elements', open=False, elem_id="control_elements"):
@@ -460,7 +462,6 @@ def create_ui(_blocks: gr.Blocks=None):
                 input_script_args = scripts.scripts_current.setup_ui(parent='control', accordion=True)
 
             # handlers
-
             for btn in input_buttons:
                 btn.click(fn=helpers.copy_input, inputs=[input_mode, btn, input_image, input_resize, input_inpaint], outputs=[input_image, input_resize, input_inpaint], _js='controlInputMode')
                 btn.click(fn=helpers.transfer_input, inputs=[btn], outputs=[input_image, input_resize, input_inpaint] + input_buttons)
@@ -473,7 +474,7 @@ def create_ui(_blocks: gr.Blocks=None):
             btn_interrogate_booru.click(fn=helpers.interrogate_booru, inputs=[], outputs=[prompt])
 
             select_fields = [input_mode, input_image, init_image, input_type, input_resize, input_inpaint, input_video, input_batch, input_folder]
-            select_output = [output_tabs, result_txt]
+            select_output = [output_tabs, preview_process, result_txt]
             select_dict = dict(
                 fn=helpers.select_input,
                 _js="controlInputMode",
@@ -499,7 +500,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 prompt, negative, styles,
                 steps, sampler_index,
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling,
+                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, restore_faces, tiling, hidiffusion,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
                 resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
@@ -532,7 +533,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (negative, "Negative prompt"),
                 # input
                 (denoising_strength, "Denoising strength"),
-                # resize # TODO resize params
+                # resize
                 (width_before, "Size-1"),
                 (height_before, "Size-2"),
                 (resize_mode_before, "Resize mode"),
@@ -545,6 +546,8 @@ def create_ui(_blocks: gr.Blocks=None):
                 (batch_size, "Batch-2"),
                 # seed
                 (seed, "Seed"),
+                (subseed, "Variation seed"),
+                (subseed_strength, "Variation strength"),
                 # mask
                 (mask_controls[1], "Mask only"),
                 (mask_controls[2], "Mask invert"),
@@ -560,7 +563,25 @@ def create_ui(_blocks: gr.Blocks=None):
                 (full_quality, "Full quality"),
                 (restore_faces, "Face restoration"),
                 (tiling, "Tiling"),
-                # second pass # TODO second pass params
+                (hidiffusion, "HiDiffusion"),
+                # second pass
+                (enable_hr, "Second pass"),
+                (hr_sampler_index, "Hires sampler"),
+                (denoising_strength, "Denoising strength"),
+                (hr_upscaler, "Hires upscaler"),
+                (hr_force, "Hires force"),
+                (hr_second_pass_steps, "Hires steps"),
+                (hr_scale, "Hires upscale"),
+                (hr_resize_x, "Hires resize-1"),
+                (hr_resize_y, "Hires resize-2"),
+                # refiner
+                (refiner_start, "Refiner start"),
+                (refiner_steps, "Refiner steps"),
+                (refiner_prompt, "Prompt2"),
+                (refiner_negative, "Negative2"),
+                # pag
+                (pag_scale, "PAG scale"),
+                (pag_adaptive, "PAG adaptive"),
                 # hidden
                 (seed_resize_from_w, "Seed resize from-1"),
                 (seed_resize_from_h, "Seed resize from-2"),
@@ -570,7 +591,6 @@ def create_ui(_blocks: gr.Blocks=None):
             bindings = generation_parameters_copypaste.ParamBinding(paste_button=btn_paste, tabname="control", source_text_component=prompt, source_image_component=output_gallery)
             generation_parameters_copypaste.register_paste_params_button(bindings)
             masking.bind_controls([input_image, input_inpaint, input_resize], preview_process, output_image)
-
 
             if os.environ.get('SD_CONTROL_DEBUG', None) is not None: # debug only
                 from modules.control.test import test_processors, test_controlnets, test_adapters, test_xs, test_lite
@@ -588,4 +608,5 @@ def create_ui(_blocks: gr.Blocks=None):
                     run_test_adapters_btn.click(fn=test_adapters, inputs=[prompt, negative, input_image], outputs=[preview_process, output_image, output_video, output_gallery])
                     run_test_lite_btn.click(fn=test_lite, inputs=[prompt, negative, input_image], outputs=[preview_process, output_image, output_video, output_gallery])
 
+    ui_extra_networks.setup_ui(extra_networks_ui, output_gallery)
     return [(control_ui, 'Control', 'control')]

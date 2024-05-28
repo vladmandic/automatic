@@ -5,7 +5,7 @@ from fastapi import FastAPI, APIRouter, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from modules import errors, shared, postprocessing
-from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control
+from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery
 
 
 errors.install()
@@ -78,10 +78,14 @@ class Api:
         # functional api
         self.add_api_route("/sdapi/v1/png-info", endpoints.post_pnginfo, methods=["POST"], response_model=models.ResImageInfo)
         self.add_api_route("/sdapi/v1/interrogate", endpoints.post_interrogate, methods=["POST"])
+        self.add_api_route("/sdapi/v1/vqa", endpoints.post_vqa, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-checkpoints", endpoints.post_refresh_checkpoints, methods=["POST"])
         self.add_api_route("/sdapi/v1/unload-checkpoint", endpoints.post_unload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", endpoints.post_reload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-vae", endpoints.post_refresh_vae, methods=["POST"])
+
+        # gallery api
+        gallery.register_api(app)
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if (shared.cmd_opts.auth or shared.cmd_opts.auth_file) and shared.cmd_opts.api_only:
@@ -100,34 +104,6 @@ class Api:
         user = self.app.tokens.get(token) if hasattr(self.app, 'tokens') else None
         shared.log.info(f'Browser session: user={user} client={req.client.host} agent={agent}')
         return {}
-
-    def prepare_img_gen_request(self, request):
-        if hasattr(request, "face") and request.face and not request.script_name and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
-            request.script_name = "face"
-            request.script_args = [
-                request.face.mode,
-                request.face.source_images,
-                request.face.ip_model,
-                request.face.ip_override_sampler,
-                request.face.ip_cache_model,
-                request.face.ip_strength,
-                request.face.ip_structure,
-                request.face.id_strength,
-                request.face.id_conditioning,
-                request.face.id_cache,
-                request.face.pm_trigger,
-                request.face.pm_strength,
-                request.face.pm_start,
-                request.face.fs_cache
-            ]
-            del request.face
-
-        if hasattr(request, "ip_adapter") and request.ip_adapter and request.script_name != "IP Adapter" and (not request.alwayson_scripts or "IP Adapter" not in request.alwayson_scripts.keys()):
-            request.alwayson_scripts = {} if request.alwayson_scripts is None else request.alwayson_scripts
-            request.alwayson_scripts["IP Adapter"] = {
-                "args": [request.ip_adapter.adapter, request.ip_adapter.scale, request.ip_adapter.image]
-            }
-            del request.ip_adapter
 
     def set_upscalers(self, req: dict):
         reqDict = vars(req)

@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict, List, Type, Callable
 from pydantic import BaseModel, Field, create_model # pylint: disable=no-name-in-module
 from inflection import underscore
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
@@ -35,6 +35,7 @@ class PydanticModelGenerator:
         model_name: str = None,
         class_instance = None,
         additional_fields = None,
+        exclude_fields: List = [],
     ):
         def field_type_generator(_k, v):
             field_type = v.annotation
@@ -68,6 +69,8 @@ class PydanticModelGenerator:
                 field_type=fld["type"],
                 field_value=fld["default"],
                 field_exclude=fld["exclude"] if "exclude" in fld else False))
+        for fld in exclude_fields:
+            self._model_def = [x for x in self._model_def if x.field != fld]
 
     def generate_model(self):
         model_fields = { d.field: (d.field_type, Field(default=d.field_value, alias=d.field_alias, exclude=d.field_exclude)) for d in self._model_def }
@@ -146,9 +149,12 @@ class ItemEmbedding(BaseModel):
     vectors: int = Field(title="Vectors", description="The number of vectors in the embedding")
 
 class ItemIPAdapter(BaseModel):
-    adapter: str = Field(title="Adapter", default="Base", description="Adapter to use")
-    image: str = Field(title="Image", default="", description="Adapter image, must be a base64 string containing the image's data.")
-    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="Scale of the adapter image, must be between 0 and 1.")
+    adapter: str = Field(title="Adapter", default="Base", description="")
+    images: List[str] = Field(title="Image", default=[], description="")
+    masks: Optional[List[str]] = Field(title="Mask", default=[], description="")
+    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="")
+    start: float = Field(title="Start", default=0.0, gt=0, le=1, description="")
+    end: float = Field(title="End", default=1.0, gt=0, le=1, description="")
 
 class ItemFace(BaseModel):
     mode: str = Field(title="Mode", default="FaceID", description="The mode to use (available values: FaceID, FaceSwap, PhotoMaker, InstantID).")
@@ -201,7 +207,7 @@ ReqTxt2Img = PydanticModelGenerator(
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "ip_adapter", "type": Optional[ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[ItemFace], "default": None, "exclude": True},
     ]
 ).generate_model()
@@ -226,7 +232,7 @@ ReqImg2Img = PydanticModelGenerator(
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
-        {"key": "ip_adapter", "type": Optional[ItemIPAdapter], "default": None, "exclude": True},
+        {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face_id", "type": Optional[ItemFace], "default": None, "exclude": True},
     ]
 ).generate_model()
@@ -305,6 +311,14 @@ class ResInterrogate(BaseModel):
     trending: Optional[str] = Field(default=None, title="Medium", description="Image trending.")
     flavor: Optional[str] = Field(default=None, title="Medium", description="Image flavor.")
 
+class ReqVQA(BaseModel):
+    image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
+    model: str = Field(default="Moondream 2", title="Model", description="The interrogate model used.")
+    question: str = Field(default="describe the image", title="Question", description="Question to ask the model.")
+
+class ResVQA(BaseModel):
+    answer: Optional[str] = Field(default=None, title="Answer", description="The generated answer for the image.")
+
 class ResTrain(BaseModel):
     info: str = Field(title="Train info", description="Response string from train embedding or hypernetwork task.")
 
@@ -366,3 +380,54 @@ class ResNVML(BaseModel): # definition of http response
 # compatibility items
 StableDiffusionTxt2ImgProcessingAPI = ResTxt2Img
 StableDiffusionImg2ImgProcessingAPI = ResImg2Img
+
+# helper function
+
+def create_model_from_signature(func: Callable, model_name: str, base_model: Type[BaseModel] = BaseModel, additional_fields: List = [], exclude_fields: List[str] = []):
+    from PIL import Image
+
+    class Config:
+        extra = 'allow'
+
+    args, _, varkw, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(func)
+    config = Config if varkw else None # Allow extra params if there is a **kwargs parameter in the function signature
+    defaults = defaults or []
+    args = args or []
+    for arg in exclude_fields:
+        if arg in args:
+            args.remove(arg)
+    non_default_args = len(args) - len(defaults)
+    defaults = (...,) * non_default_args + defaults
+    keyword_only_params = {param: kwonlydefaults.get(param, Any) for param in kwonlyargs}
+    for k, v in annotations.items():
+        if v == List[Image.Image]:
+            annotations[k] = List[str]
+        elif v == Image.Image:
+            annotations[k] = str
+        elif str(v) == 'typing.List[modules.control.unit.Unit]':
+            annotations[k] = List[str]
+    model_fields = {param: (annotations.get(param, Any), default) for param, default in zip(args, defaults)}
+
+    for fld in additional_fields:
+        model_def = ModelDef(
+            field=underscore(fld["key"]),
+            field_alias=fld["key"],
+            field_type=fld["type"],
+            field_value=fld["default"],
+            field_exclude=fld["exclude"] if "exclude" in fld else False)
+        model_fields[model_def.field] = (model_def.field_type, Field(default=model_def.field_value, alias=model_def.field_alias, exclude=model_def.field_exclude))
+
+    for fld in exclude_fields:
+        if fld in model_fields:
+            del model_fields[fld]
+
+    model = create_model(
+        model_name,
+        **model_fields,
+        **keyword_only_params,
+        __base__=base_model,
+        __config__=config,
+    )
+    model.__config__.allow_population_by_field_name = True
+    model.__config__.allow_mutation = True
+    return model

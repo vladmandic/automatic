@@ -60,9 +60,7 @@ def factorization(dimension: int, factor:int=-1) -> tuple[int, int]:
         new_n = dimension // new_m
         if new_m + new_n > length or new_m>factor:
             break
-        else:
-            m, n = new_m, new_n
+        m, n = new_m, new_n
     if m > n:
         n, m = m, n
     return m, n
-

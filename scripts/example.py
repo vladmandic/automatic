@@ -88,7 +88,7 @@ class Script(scripts.Script):
     # Run pipeline
     def run(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         # prepare pipeline
-        c = shared.sd_model.__class__.__name__ if shared.sd_model is not None else ''
+        c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
         if c != pipeline_base:
             shared.log.warning(f'{title}: pipeline={c} required={pipeline_base}')
             return None

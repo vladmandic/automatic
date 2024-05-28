@@ -95,7 +95,7 @@ class Upscaler:
 
     def upscale(self, img: Image, scale, selected_model: str = None):
         orig_state = copy.deepcopy(shared.state)
-        shared.state.begin('upscale')
+        shared.state.begin('Upscale')
         self.scale = scale
         dest_w = int(img.width * scale)
         dest_h = int(img.height * scale)

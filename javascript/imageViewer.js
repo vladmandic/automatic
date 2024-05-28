@@ -54,22 +54,41 @@ function modalKeyHandler(event) {
   event.stopPropagation();
 }
 
+async function getExif(el) {
+  let exif = '';
+  try {
+    exif = await window.exifr.parse(el, { userComment: true });
+  } catch (e) {
+    log('getExif', el, e);
+    return exif;
+  }
+  // let html = `<b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>`;
+  let html = '';
+  let params;
+  if (exif.paramters) {
+    params = exif.paramters;
+  } else if (exif.userComment) {
+    params = Array.from(exif.userComment)
+      .map((c) => String.fromCharCode(c))
+      .filter((c) => c !== '\x00')
+      .join('')
+      .replace('UNICODE', '');
+  } else {
+    params = '';
+  }
+  if (params.length > 0) html += `<b>Prompt</b> ${params || ''}<br>`;
+  html = html.replace('Negative prompt:', '<br><b>Negative</b>');
+  html = html.replace('Steps:', '<br><b>Params</b> Steps:');
+  html = html.replaceAll('\n', '<br>');
+  html = html.replaceAll('<br><br>', '<br>');
+  return html;
+}
+window.getExif = getExif;
+
 async function displayExif(el) {
   const modalExif = gradioApp().getElementById('modalExif');
-  modalExif.innerHTML = '';
-  const exif = await window.exifr.parse(el);
-  if (!exif) return;
-  // log('exif', exif);
-  try {
-    let html = `
-      <b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>
-      <b>Prompt</b> ${exif.parameters || ''}<br>
-      `;
-    html = html.replace('\n', '<br>');
-    html = html.replace('Negative prompt:', '<br><b>Negative</b>');
-    html = html.replace('Steps:', '<br><b>Params</b> Steps:');
-    modalExif.innerHTML = html;
-  } catch (e) { }
+  const html = await getExif(el);
+  modalExif.innerHTML = html;
 }
 
 function showModal(event) {
@@ -80,7 +99,7 @@ function showModal(event) {
   modalImage.onload = () => {
     previewInstance.moveTo(0, 0);
     modalPreviewZone.focus();
-    displayExif(modalImage);
+    if (opts.viewer_show_metadata) displayExif(modalImage);
   };
   modalImage.src = source.src;
   if (modalImage.style.display === 'none') lb.style.setProperty('background-image', `url(${source.src})`);
@@ -140,8 +159,6 @@ function modalResetInstance(event) {
   previewInstance = panzoom(modalImage, { zoomSpeed: 0.05, minZoom: 0.1, maxZoom: 5.0, filterKey: (/* e, dx, dy, dz */) => true });
 }
 
-let imageViewerInitialized = false;
-
 function galleryClickEventHandler(event) {
   if (event.button !== 0) return;
   if (event.target.nodeName === 'IMG' && !event.target.parentNode.classList.contains('thumbnail-item')) {
@@ -152,21 +169,17 @@ function galleryClickEventHandler(event) {
   }
 }
 
-async function initImageViewer() {
+async function bindImageViewer() {
   // Each tab has its own gradio-gallery
   const galleryPreviews = gradioApp().querySelectorAll('.gradio-gallery > div.preview');
-  if (galleryPreviews.length > 0) {
-    for (const galleryPreview of galleryPreviews) {
-      const fullImgPreview = galleryPreview.querySelectorAll('img');
-      if (fullImgPreview.length > 0) {
-        galleryPreview.addEventListener('click', galleryClickEventHandler, true);
-        fullImgPreview.forEach(setupImageForLightbox);
-      }
-    }
+  for (const galleryPreview of galleryPreviews) {
+    if (!galleryPreview.hasAttribute('data-listener')) galleryPreview.addEventListener('click', galleryClickEventHandler, true);
+    galleryPreview.setAttribute('data-listener', true);
+    galleryPreview.querySelectorAll('img').forEach(setupImageForLightbox);
   }
-  if (imageViewerInitialized) return;
-  imageViewerInitialized = true;
+}
 
+async function initImageViewer() {
   // main elements
   const modal = document.createElement('div');
   modal.id = 'lightboxModal';
@@ -225,7 +238,7 @@ async function initImageViewer() {
   // exif
   const modalExif = document.createElement('div');
   modalExif.id = 'modalExif';
-  modalExif.style = 'position: absolute; bottom: 0px; width: 98%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small;';
+  modalExif.style = 'position: absolute; bottom: 0px; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em; z-index: 1';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });
@@ -268,4 +281,4 @@ async function initImageViewer() {
   log('initImageViewer');
 }
 
-onAfterUiUpdate(initImageViewer);
+onAfterUiUpdate(bindImageViewer);

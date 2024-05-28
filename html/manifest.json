@@ -1,0 +1,8 @@
+{
+  "name": "SD.Next",
+  "short_name": "SD.Next",
+  "icons": [{ "src": "favicon.png", "sizes": "256x256", "type": "image/png", "purpose": "any maskable" }],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone"
+}

@@ -10,7 +10,7 @@ function uiOpenSubmenus() {
   return states;
 }
 
-function getUIDefaults() {
+async function getUIDefaults() {
   const btn = gradioApp().getElementById('ui_defaults_view');
   if (!btn) return;
   const intersectionObserver = new IntersectionObserver((entries) => {
@@ -19,5 +19,3 @@ function getUIDefaults() {
   });
   intersectionObserver.observe(btn); // monitor visibility of tab
 }
-
-onUiLoaded(getUIDefaults);

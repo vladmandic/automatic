@@ -39,6 +39,7 @@ body:
     attributes:
       value: |
         Please follow these guidelines when creating an issue:  
+        - If issue is related to ModernUI, create issue at [ModernUI issues](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)
         - If possible update to latest version before reporting the issue as older versions cannot be properly supported  
           And search existing **issues** and **discussions** before creating a new one  
         - If issue cannot be clearly seen in the provided log, run SD.Next with debug logging enabled by adding `--debug` to your command line parameters
@@ -67,8 +68,8 @@ body:
       label: Backend
       description: What is the backend you're using?
       options:
-        - Original
         - Diffusers
+        - Original
       default: 0
     validations:
       required: true
@@ -92,9 +93,8 @@ body:
         - SD 1.5
         - SD 2.1
         - SD-XL
-        - LCM
         - PixArt
-        - SSD
+        - Stable Cascade
         - Kandinsky
         - Other
       default: 0

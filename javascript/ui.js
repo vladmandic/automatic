@@ -7,6 +7,7 @@ let img2img_textarea;
 const wait_time = 800;
 const token_timeouts = {};
 let uiLoaded = false;
+let promptsInitialized = false;
 window.args_to_array = Array.from; // Compatibility with e.g. extensions that may expect this to be around
 
 function rememberGallerySelection(name) {
@@ -32,7 +33,8 @@ function clip_gallery_urls(gallery) {
 }
 
 function all_gallery_buttons() {
-  const allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
+  let allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
+  if (allGalleryButtons.length === 0) allGalleryButtons = gradioApp().querySelectorAll('.gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
   const visibleGalleryButtons = [];
   allGalleryButtons.forEach((elem) => {
     if (elem.parentElement.offsetParent) visibleGalleryButtons.push(elem);
@@ -41,7 +43,8 @@ function all_gallery_buttons() {
 }
 
 function selected_gallery_button() {
-  const allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
+  let allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
+  if (allCurrentButtons.length === 0) allCurrentButtons = gradioApp().querySelectorAll('.gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small.selected');
   let visibleCurrentButton = null;
   allCurrentButtons.forEach((elem) => {
     if (elem.parentElement.offsetParent) visibleCurrentButton = elem;
@@ -326,8 +329,6 @@ function sortUIElements() {
 }
 
 onAfterUiUpdate(async () => {
-  let promptsInitialized = false;
-
   async function registerTextarea(id, id_counter, id_button) {
     const prompt = gradioApp().getElementById(id);
     if (!prompt) return;
@@ -338,17 +339,18 @@ onAfterUiUpdate(async () => {
     prompt.parentElement.style.position = 'relative';
     promptTokenCountUpdateFuncs[id] = () => { update_token_counter(id_button); };
     localTextarea.addEventListener('input', promptTokenCountUpdateFuncs[id]);
-    if (!promptsInitialized) log('initPrompts');
-    promptsInitialized = true;
   }
 
   // sortUIElements();
+  if (promptsInitialized) return;
+  log('initPrompts');
   registerTextarea('txt2img_prompt', 'txt2img_token_counter', 'txt2img_token_button');
   registerTextarea('txt2img_neg_prompt', 'txt2img_negative_token_counter', 'txt2img_negative_token_button');
   registerTextarea('img2img_prompt', 'img2img_token_counter', 'img2img_token_button');
   registerTextarea('img2img_neg_prompt', 'img2img_negative_token_counter', 'img2img_negative_token_button');
   registerTextarea('control_prompt', 'control_token_counter', 'control_token_button');
   registerTextarea('control_neg_prompt', 'control_negative_token_counter', 'control_negative_token_button');
+  promptsInitialized = true;
 });
 
 function update_txt2img_tokens(...args) {
@@ -437,7 +439,8 @@ function currentImageResolutioncontrol(_a, _b, scaleBy) {
 }
 
 function updateImg2imgResizeToTextAfterChangingImage() {
-  setTimeout(() => gradioApp().getElementById('img2img_update_resize_to').click(), 500);
+  const el = gradioApp().getElementById('img2img_update_resize_to');
+  if (el) setTimeout(() => gradioApp().getElementById('img2img_update_resize_to').click(), 500);
   return [];
 }
 
@@ -491,11 +494,9 @@ async function browseFolder() {
 
 async function reconnectUI() {
   const gallery = gradioApp().getElementById('txt2img_gallery');
-  if (!gallery) return;
   const task_id = localStorage.getItem('task');
   const api_logo = Array.from(gradioApp().querySelectorAll('img')).filter((el) => el?.src?.endsWith('api-logo.svg'));
   if (api_logo.length > 0) api_logo[0].remove();
-  clearInterval(start_check); // eslint-disable-line no-use-before-define
   if (task_id) {
     debug('task check:', task_id);
     requestProgress(task_id, null, gallery, null, null, true);
@@ -523,5 +524,3 @@ async function reconnectUI() {
   sd_model_observer.observe(sd_model, { attributes: true, childList: true, subtree: true });
   log('reconnectUI');
 }
-
-const start_check = setInterval(reconnectUI, 100);

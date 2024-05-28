@@ -60,7 +60,6 @@ def load_model():
         "torch_dtype": torch.float16,
         "safety_checker": None,
         "requires_safety_checker": False,
-        "load_safety_checker": False,
         "load_connected_pipeline": True,
         "use_safetensors": True,
     }

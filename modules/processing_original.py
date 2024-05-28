@@ -97,7 +97,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
                 p.extra_generation_params, p.restore_faces = bak_extra_generation_params, bak_restore_faces
                 images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], shared.opts.samples_format, info=info, suffix="-before-hires")
         if latent_scale_mode is None or p.hr_force: # non-latent upscaling
-            shared.state.job = 'upscale'
+            shared.state.job = 'Upscale'
             if decoded_samples is None:
                 decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
                 decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
@@ -126,7 +126,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
             if p.hr_sampler_name == "PLMS":
                 p.hr_sampler_name = 'UniPC'
         if p.hr_force or latent_scale_mode is not None:
-            shared.state.job = 'hires'
+            shared.state.job = 'HiRes'
             if p.denoising_strength > 0:
                 p.ops.append('hires')
                 devices.torch_gc() # GC now before running the next img2img to prevent running out of memory
@@ -135,10 +135,10 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
                     p.sampler.initialize(p)
                 samples = samples[:, :, p.truncate_y//2:samples.shape[2]-(p.truncate_y+1)//2, p.truncate_x//2:samples.shape[3]-(p.truncate_x+1)//2]
                 noise = create_random_tensors(samples.shape[1:], seeds=seeds, subseeds=subseeds, subseed_strength=subseed_strength, p=p)
-                sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio(for_hr=True))
+                sd_models.apply_token_merging(p.sd_model)
                 hypertile_set(p, hr=True)
                 samples = p.sampler.sample_img2img(p, samples, noise, conditioning, unconditional_conditioning, steps=p.hr_second_pass_steps or p.steps, image_conditioning=image_conditioning)
-                sd_models.apply_token_merging(p.sd_model, p.get_token_merging_ratio())
+                sd_models.apply_token_merging(p.sd_model)
             else:
                 p.ops.append('upscale')
         x = None
@@ -149,7 +149,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
     return samples
 
 
-def sample_img2img(p, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
+def sample_img2img(p, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # pylint: disable=unused-argument
     hypertile_set(p)
     x = create_random_tensors([4, p.height // 8, p.width // 8], seeds=seeds, subseeds=subseeds, subseed_strength=p.subseed_strength, seed_resize_from_h=p.seed_resize_from_h, seed_resize_from_w=p.seed_resize_from_w, p=p)
     x *= p.initial_noise_multiplier

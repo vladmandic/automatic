@@ -22,6 +22,12 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
                 url = v.get('alt', None) or v['path']
             else:
                 url = v['path']
+            experimental = v.get('experimental', False)
+            if experimental:
+                if shared.cmd_opts.experimental:
+                    shared.log.debug(f'Extra networks experimental: model="{k}"')
+                else:
+                    continue
             name = os.path.join(reference_dir, k)
             preview = v.get('preview', v['path'])
             yield {

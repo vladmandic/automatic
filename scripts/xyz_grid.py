@@ -21,6 +21,12 @@ def apply_field(field):
     return fun
 
 
+def apply_task_args(field):
+    def fun(p, x, xs):
+        p.task_args[field] = x
+    return fun
+
+
 def apply_setting(field):
     def fun(p, x, xs):
         shared.opts.data[field] = x
@@ -225,12 +231,10 @@ axis_options = [
     AxisOption("Model", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
     AxisOption("Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
-    AxisOptionTxt2Img("Sampler", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
-    AxisOptionImg2Img("Sampler", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers_for_img2img]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
     AxisOption("CFG Scale", float, apply_field("cfg_scale")),
-    AxisOption("CFG End", float, apply_field("cfg_end")),
+    AxisOption("Guidance End", float, apply_field("cfg_end")),
     AxisOption("Variation seed", int, apply_field("subseed")),
     AxisOption("Variation strength", float, apply_field("subseed_strength")),
     AxisOption("Clip skip", float, apply_clip_skip),
@@ -238,8 +242,9 @@ axis_options = [
     AxisOption("Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
     AxisOption("Model dictionary", str, apply_dict, fmt=format_value, cost=1.0, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
     AxisOptionImg2Img("Image mask weight", float, apply_field("inpainting_mask_weight")),
-    AxisOption("[Postprocess] Upscaler", str, apply_upscaler, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
-    AxisOption("[Postprocess] Face restore", str, apply_face_restore, fmt=format_value),
+    AxisOptionTxt2Img("[Sampler] Name", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
+    AxisOptionImg2Img("[Sampler] Name", str, apply_sampler, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers_for_img2img]),
+    AxisOption("[Sampler] Timestep spacing", str, apply_setting("schedulers_timestep_spacing"), choices=lambda: ['default', 'linspace', 'leading', 'trailing']),
     AxisOption("[Sampler] Sigma min", float, apply_field("s_min")),
     AxisOption("[Sampler] Sigma max", float, apply_field("s_max")),
     AxisOption("[Sampler] Sigma tmin", float, apply_field("s_tmin")),
@@ -257,6 +262,8 @@ axis_options = [
     AxisOption("[Refiner] Model", str, apply_refiner, fmt=format_value, cost=1.0, choices=lambda: ['None'] + sorted(sd_models.checkpoints_list)),
     AxisOption("[Refiner] Refiner start", float, apply_field("refiner_start")),
     AxisOption("[Refiner] Refiner steps", float, apply_field("refiner_steps")),
+    AxisOption("[Postprocess] Upscaler", str, apply_upscaler, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
+    AxisOption("[Postprocess] Face restore", str, apply_face_restore, fmt=format_value),
     AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
     AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),
     AxisOption("[HDR] Color", float, apply_field("hdr_color")),
@@ -267,8 +274,8 @@ axis_options = [
     AxisOption("[HDR] Maximize boundary", float, apply_field("hdr_max_boundry")),
     AxisOption("[HDR] Tint Color Hex", str, apply_field("hdr_color_picker")),
     AxisOption("[HDR] Tint Ratio", float, apply_field("hdr_tint_ratio")),
-    AxisOption("[ToMe] Token merging ratio (txt2img)", float, apply_override('token_merging_ratio')),
-    AxisOption("[ToMe] Token merging ratio (hires)", float, apply_override('token_merging_ratio_hr')),
+    AxisOption("[Token Merging] ToMe ratio", float, apply_setting('tome_ratio')),
+    AxisOption("[Token Merging] ToDo ratio", float, apply_setting('todo_ratio')),
     AxisOption("[FreeU] 1st stage backbone factor", float, apply_setting('freeu_b1')),
     AxisOption("[FreeU] 2nd stage backbone factor", float, apply_setting('freeu_b2')),
     AxisOption("[FreeU] 1st stage skip factor", float, apply_setting('freeu_s1')),
@@ -277,6 +284,12 @@ axis_options = [
     AxisOption("[IP adapter] Scale", float, apply_field('ip_adapter_scales')),
     AxisOption("[IP adapter] Starts", float, apply_field('ip_adapter_starts')),
     AxisOption("[IP adapter] Ends", float, apply_field('ip_adapter_ends')),
+    AxisOption("[HiDiffusion] T1", float, apply_override('hidiffusion_t1')),
+    AxisOption("[HiDiffusion] T2", float, apply_override('hidiffusion_t2')),
+    AxisOption("[HiDiffusion] Agression step", float, apply_field('hidiffusion_steps')),
+    AxisOption("[PAG] Attention scale", float, apply_field('pag_scale')),
+    AxisOption("[PAG] Adaptive scaling", float, apply_field('pag_adaptive')),
+    AxisOption("[PAG] Applied layers", str, apply_setting('pag_apply_layers')),
 ]
 
 
@@ -385,8 +398,8 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
 class SharedSettingsStackHelper(object):
     vae = None
     schedulers_solver_order = None
-    token_merging_ratio_hr = None
-    token_merging_ratio = None
+    tome_ratio = None
+    todo_ratio = None
     sd_model_checkpoint = None
     sd_model_dict = None
     sd_vae_checkpoint = None
@@ -395,8 +408,8 @@ class SharedSettingsStackHelper(object):
         #Save overridden settings so they can be restored later.
         self.vae = shared.opts.sd_vae
         self.schedulers_solver_order = shared.opts.schedulers_solver_order
-        self.token_merging_ratio_hr = shared.opts.token_merging_ratio_hr
-        self.token_merging_ratio = shared.opts.token_merging_ratio
+        self.tome_ratio = shared.opts.tome_ratio
+        self.todo_ratio = shared.opts.todo_ratio
         self.sd_model_checkpoint = shared.opts.sd_model_checkpoint
         self.sd_model_dict = shared.opts.sd_model_dict
         self.sd_vae_checkpoint = shared.opts.sd_vae
@@ -405,8 +418,8 @@ class SharedSettingsStackHelper(object):
         #Restore overriden settings after plot generation.
         shared.opts.data["sd_vae"] = self.vae
         shared.opts.data["schedulers_solver_order"] = self.schedulers_solver_order
-        shared.opts.data["token_merging_ratio_hr"] = self.token_merging_ratio_hr
-        shared.opts.data["token_merging_ratio"] = self.token_merging_ratio
+        shared.opts.data["tome_ratio"] = self.tome_ratio
+        shared.opts.data["todo_ratio"] = self.todo_ratio
         if self.sd_model_dict != shared.opts.sd_model_dict:
             shared.opts.data["sd_model_dict"] = self.sd_model_dict
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:

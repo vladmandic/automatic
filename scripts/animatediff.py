@@ -25,9 +25,9 @@ ADAPTERS = {
     'Motion 1.4': 'guoyww/animatediff-motion-adapter-v1-4',
     'TemporalDiff': 'vladmandic/temporaldiff',
     'AnimateFace': 'vladmandic/animateface',
+    'SDXL Beta': 'guoyww/animatediff-motion-adapter-sdxl-beta',
     # 'LongAnimateDiff 32': 'vladmandic/longanimatediff-32',
     # 'LongAnimateDiff 64': 'vladmandic/longanimatediff-64',
-    # 'Motion SD-XL Beta v1' :'vladmandic/animatediff-sdxl',
 }
 LORAS = {
     'None': None,
@@ -48,14 +48,14 @@ orig_pipe = None # original sd_model pipeline
 
 
 def set_adapter(adapter_name: str = 'None'):
-    if shared.sd_model is None:
+    if not shared.sd_loaded:
         return
     if shared.backend != shared.Backend.DIFFUSERS:
         shared.log.warning('AnimateDiff: not in diffusers mode')
         return
     global motion_adapter, loaded_adapter, orig_pipe # pylint: disable=global-statement
     # adapter_name = name if name is not None and isinstance(name, str) else loaded_adapter
-    if adapter_name is None or adapter_name == 'None' or shared.sd_model is None:
+    if adapter_name is None or adapter_name == 'None' or not shared.sd_loaded:
         motion_adapter = None
         loaded_adapter = None
         if orig_pipe is not None:
@@ -63,10 +63,10 @@ def set_adapter(adapter_name: str = 'None'):
             shared.sd_model = orig_pipe
             orig_pipe = None
         return
-    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
+    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl' and not (shared.sd_model.__class__.__name__ == 'AnimateDiffPipeline' or shared.sd_model.__class__.__name__ == 'AnimateDiffSDXLPipeline'):
         shared.log.warning(f'AnimateDiff: unsupported model type: {shared.sd_model.__class__.__name__}')
         return
-    if motion_adapter is not None and loaded_adapter == adapter_name and shared.sd_model.__class__.__name__ == 'AnimateDiffPipeline':
+    if motion_adapter is not None and loaded_adapter == adapter_name and (shared.sd_model.__class__.__name__ == 'AnimateDiffPipeline' or shared.sd_model.__class__.__name__ == 'AnimateDiffSDXLPipeline'):
         shared.log.debug(f'AnimateDiff cache: adapter="{adapter_name}"')
         return
     if getattr(shared.sd_model, 'image_encoder', None) is not None:
@@ -81,26 +81,49 @@ def set_adapter(adapter_name: str = 'None'):
     try:
         shared.log.info(f'AnimateDiff load: adapter="{adapter_name}"')
         motion_adapter = None
-        motion_adapter = diffusers.MotionAdapter.from_pretrained(adapter_name, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype, low_cpu_mem_usage=False, device_map=None)
+        if shared.sd_model_type == 'sd':
+            motion_adapter = diffusers.MotionAdapter.from_pretrained(adapter_name, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype, low_cpu_mem_usage=False, device_map=None)
+        elif shared.sd_model_type == 'sdxl':
+            motion_adapter = diffusers.MotionAdapter.from_pretrained(adapter_name, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype, low_cpu_mem_usage=False, device_map=None, variant='fp16')
         motion_adapter.to(shared.device)
         sd_models.set_diffuser_options(motion_adapter, vae=None, op='adapter')
         loaded_adapter = adapter_name
-        new_pipe = diffusers.AnimateDiffPipeline(
-            vae=shared.sd_model.vae,
-            text_encoder=shared.sd_model.text_encoder,
-            tokenizer=shared.sd_model.tokenizer,
-            unet=shared.sd_model.unet,
-            scheduler=shared.sd_model.scheduler,
-            feature_extractor=getattr(shared.sd_model, 'feature_extractor', None),
-            image_encoder=getattr(shared.sd_model, 'image_encoder', None),
-            motion_adapter=motion_adapter,
-        )
+        new_pipe = None
+        if shared.sd_model_type == 'sd':
+            new_pipe = diffusers.AnimateDiffPipeline(
+                vae=shared.sd_model.vae,
+                text_encoder=shared.sd_model.text_encoder,
+                tokenizer=shared.sd_model.tokenizer,
+                unet=shared.sd_model.unet,
+                scheduler=shared.sd_model.scheduler,
+                feature_extractor=getattr(shared.sd_model, 'feature_extractor', None),
+                image_encoder=getattr(shared.sd_model, 'image_encoder', None),
+                motion_adapter=motion_adapter,
+            )
+        elif shared.sd_model_type == 'sdxl':
+            new_pipe = diffusers.AnimateDiffSDXLPipeline(
+                vae=shared.sd_model.vae,
+                text_encoder=shared.sd_model.text_encoder,
+                text_encoder_2=shared.sd_model.text_encoder_2,
+                tokenizer=shared.sd_model.tokenizer,
+                tokenizer_2=shared.sd_model.tokenizer_2,
+                unet=shared.sd_model.unet,
+                scheduler=shared.sd_model.scheduler,
+                feature_extractor=getattr(shared.sd_model, 'feature_extractor', None),
+                image_encoder=getattr(shared.sd_model, 'image_encoder', None),
+                motion_adapter=motion_adapter,
+            )
+        if new_pipe is None:
+            motion_adapter = None
+            loaded_adapter = None
+            shared.log.error(f'AnimateDiff load error: adapter="{adapter_name}"')
+            return
         orig_pipe = shared.sd_model
         shared.sd_model = new_pipe
         sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
         sd_models.copy_diffuser_options(new_pipe, orig_pipe)
         sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
-        shared.log.debug(f'AnimateDiff create pipeline: adapter="{loaded_adapter}"')
+        shared.log.debug(f'AnimateDiff create: pipeline="{shared.sd_model.__class__}" adapter="{loaded_adapter}"')
     except Exception as e:
         motion_adapter = None
         loaded_adapter = None

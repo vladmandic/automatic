@@ -89,17 +89,50 @@ def get_sampler_name(sampler_index: int, img: bool = False) -> str:
     return sampler_name
 
 
-def slerp(val, low, high): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
-    low_norm = low/torch.norm(low, dim=1, keepdim=True)
-    high_norm = high/torch.norm(high, dim=1, keepdim=True)
-    dot = (low_norm*high_norm).sum(1)
+def get_sampler_index(sampler_name: str) -> int:
+    sampler_index = 0
+    for i, sampler in enumerate(sd_samplers.samplers):
+        if sampler.name == sampler_name:
+            sampler_index = i
+            break
+    return sampler_index
 
-    if dot.mean() > 0.9995:
-        return low * val + high * (1 - val)
 
+def slerp(val, lo, hi): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
+    lo_norm = lo / torch.norm(lo, dim=1, keepdim=True)
+    hi_norm = hi / torch.norm(hi, dim=1, keepdim=True)
+    dot = (lo_norm * hi_norm).sum(1)
+    dot_mean = dot.mean()
+    if dot_mean > 0.9999: # simplifies slerp to lerp if vectors are nearly parallel
+        return lo * val + hi * (1 - val)
+    if dot_mean < 0.0001: # also simplifies slerp to lerp to avoid division-by-zero later on
+        return lo * (1.0 - val) + hi * val
     omega = torch.acos(dot)
     so = torch.sin(omega)
-    res = (torch.sin((1.0-val)*omega)/so).unsqueeze(1)*low + (torch.sin(val*omega)/so).unsqueeze(1) * high
+    lo_res = (torch.sin((1.0 - val) * omega) / so).unsqueeze(1)
+    hi_res = (torch.sin(val * omega) / so).unsqueeze(1)
+    # lo_res[lo_res != lo_res] = 0 # replace nans with zeros, but should not happen with dot_mean filtering
+    # hi_res[hi_res != hi_res] = 0
+    res = lo * lo_res + hi * hi_res
+    return res
+
+
+def slerp_alt(val, lo, hi): # from https://discuss.pytorch.org/t/help-regarding-slerp-function-for-generative-model-sampling/32475/3
+    lo_norm = lo / torch.linalg.norm(lo, dim=1, keepdim=True)
+    hi_norm = hi / torch.linalg.norm(hi, dim=1, keepdim=True)
+    dot = (lo_norm * hi_norm).sum(1)
+    dot_mean = dot.mean().abs()
+    if dot_mean > 0.9999: # simplifies slerp to lerp if vectors are nearly parallel
+        lerp_val = lo * val + hi * (1 - val)
+        return lerp_val / torch.linalg.norm(lerp_val) * torch.sqrt(torch.linalg.norm(hi_norm) * torch.linalg.norm(lo_norm))
+    if dot_mean < 0.0001: # also simplifies slerp to lerp to avoid division-by-zero later on
+        lerp_val = lo * (1.0 - val) + hi * val
+        return lerp_val / torch.linalg.norm(lerp_val) * torch.sqrt(torch.linalg.norm(hi_norm) * torch.linalg.norm(lo_norm))
+    omega = torch.acos(dot)
+    so = torch.sin(omega)
+    lo_res = (torch.sin((1.0 - val) * omega) / so).unsqueeze(1)
+    hi_res = (torch.sin(val * omega) / so).unsqueeze(1)
+    res = lo * lo_res + hi * hi_res
     return res
 
 
@@ -158,7 +191,7 @@ def decode_first_stage(model, x, full_quality=True):
         x_sample = torch.zeros((len(x), 3, x.shape[2] * 8, x.shape[3] * 8), dtype=devices.dtype_vae, device=devices.device)
         return x_sample
     prev_job = shared.state.job
-    shared.state.job = 'vae'
+    shared.state.job = 'VAE'
     with devices.autocast(disable = x.dtype==devices.dtype_vae):
         try:
             if full_quality:
@@ -346,7 +379,7 @@ def resize_init_images(p):
     return p.width, p.height
 
 
-def resize_hires(p, latents): # input=latents output=pil
+def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler else latent
     if not torch.is_tensor(latents):
         shared.log.warning('Hires: input is not tensor')
         first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
@@ -354,7 +387,7 @@ def resize_hires(p, latents): # input=latents output=pil
     latent_upscaler = shared.latent_upscale_modes.get(p.hr_upscaler, None)
     # shared.log.info(f'Hires: upscaler={p.hr_upscaler} width={p.hr_upscale_to_x} height={p.hr_upscale_to_y} images={latents.shape[0]}')
     if latent_upscaler is not None:
-        latents = torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
+        return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
     first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
     resized_images = []
     for img in first_pass_images:
@@ -364,6 +397,7 @@ def resize_hires(p, latents): # input=latents output=pil
             resized_image = img
         resized_images.append(resized_image)
     return resized_images
+
 
 def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
     if type(prompts) is str:
@@ -386,7 +420,10 @@ def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
             negative_prompts_2.append(negative_prompts_2[-1])
     return prompts, negative_prompts, prompts_2, negative_prompts_2
 
+
 def calculate_base_steps(p, use_denoise_start, use_refiner_start):
+    if len(getattr(p, 'timesteps', [])) > 0:
+        return None
     is_txt2img = sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
     if not is_txt2img:
         if use_denoise_start and shared.sd_model_type == 'sdxl':
@@ -402,7 +439,10 @@ def calculate_base_steps(p, use_denoise_start, use_refiner_start):
     debug_steps(f'Steps: type=base input={p.steps} output={steps} task={sd_models.get_diffusers_task(shared.sd_model)} refiner={use_refiner_start} denoise={p.denoising_strength} model={shared.sd_model_type}')
     return max(1, int(steps))
 
+
 def calculate_hires_steps(p):
+    # if len(getattr(p, 'timesteps', [])) > 0:
+    #    return None
     if p.hr_second_pass_steps > 0:
         steps = (p.hr_second_pass_steps // p.denoising_strength) + 1
     elif p.denoising_strength > 0:
@@ -412,7 +452,10 @@ def calculate_hires_steps(p):
     debug_steps(f'Steps: type=hires input={p.hr_second_pass_steps} output={steps} denoise={p.denoising_strength} model={shared.sd_model_type}')
     return max(1, int(steps))
 
+
 def calculate_refiner_steps(p):
+    # if len(getattr(p, 'timesteps', [])) > 0:
+    #    return None
     if "StableDiffusionXL" in shared.sd_refiner.__class__.__name__:
         if p.refiner_start > 0 and p.refiner_start < 1:
             #steps = p.refiner_steps // (1 - p.refiner_start) # SDXL with denoise strenght
@@ -426,3 +469,89 @@ def calculate_refiner_steps(p):
         steps = (p.refiner_steps * 1.25) + 1
     debug_steps(f'Steps: type=refiner input={p.refiner_steps} output={steps} start={p.refiner_start} denoise={p.denoising_strength}')
     return max(1, int(steps))
+
+
+def get_generator(p):
+    if shared.opts.diffusers_generator_device == "Unset":
+        generator_device = None
+        generator = None
+    elif getattr(p, "generator", None) is not None:
+        generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
+        generator = p.generator
+    else:
+        generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
+        try:
+            generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
+        except Exception as e:
+            shared.log.error(f'Torch generator: seeds={p.seeds} device={generator_device} {e}')
+            generator = None
+    return generator
+
+
+def set_latents(p):
+    def dummy_prepare_latents(*args, **_kwargs):
+        return args[0] # just return image to skip re-processing it
+
+    from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import retrieve_timesteps
+    image = shared.sd_model.image_processor.preprocess(p.init_images) # resize to mod8, normalize, transpose, to tensor
+    timesteps, steps = retrieve_timesteps(shared.sd_model.scheduler, p.steps, devices.device)
+    timesteps, steps = shared.sd_model.get_timesteps(steps, p.denoising_strength, devices.device)
+    timestep = timesteps[:1].repeat(p.batch_size) # need to determine level of added noise
+    latents = shared.sd_model.prepare_latents(image, timestep, batch_size=p.batch_size, num_images_per_prompt=1, dtype=devices.dtype, device=devices.device, generator=get_generator(p))
+    shared.sd_model.prepare_latents = dummy_prepare_latents # stop diffusers processing latents again
+    return latents
+
+
+def apply_circular(enable, model):
+    try:
+        for layer in [layer for layer in model.unet.modules() if type(layer) is torch.nn.Conv2d]:
+            layer.padding_mode = 'circular' if enable else 'zeros'
+        for layer in [layer for layer in model.vae.modules() if type(layer) is torch.nn.Conv2d]:
+            layer.padding_mode = 'circular' if enable else 'zeros'
+    except Exception as e:
+        debug(f"Diffusers tiling failed: {e}")
+
+
+def save_intermediate(p, latents, suffix):
+    for i in range(len(latents)):
+        from modules.processing import create_infotext
+        info=create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, [], iteration=p.iteration, position_in_batch=i)
+        decoded = processing_vae.vae_decode(latents=latents, model=shared.sd_model, output_type='pil', full_quality=p.full_quality)
+        for j in range(len(decoded)):
+            images.save_image(decoded[j], path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix=suffix)
+
+
+def update_sampler(p, sd_model, second_pass=False):
+    sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
+    if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
+        sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
+        if sampler is None:
+            sampler = sd_samplers.all_samplers_map.get("UniPC")
+        if len(getattr(p, 'timesteps', [])) > 0:
+            if 'schedulers_use_karras' in shared.opts.data:
+                shared.opts.data['schedulers_use_karras'] = False
+            else:
+                shared.opts.schedulers_use_karras = False
+        sampler = sd_samplers.create_sampler(sampler.name, sd_model)
+        if sampler is None:
+            return
+        sampler_options = []
+        if sampler.config.get('use_karras_sigmas', False):
+            sampler_options.append('karras')
+        if sampler.config.get('rescale_betas_zero_snr', False):
+            sampler_options.append('rescale beta')
+        if sampler.config.get('thresholding', False):
+            sampler_options.append('dynamic thresholding')
+        if 'algorithm_type' in sampler.config:
+            sampler_options.append(sampler.config['algorithm_type'])
+        if shared.opts.schedulers_prediction_type != 'default':
+            sampler_options.append(shared.opts.schedulers_prediction_type)
+        if shared.opts.schedulers_beta_schedule != 'default':
+            sampler_options.append(shared.opts.schedulers_beta_schedule)
+        if 'beta_start' in sampler.config and (shared.opts.schedulers_beta_start > 0 or shared.opts.schedulers_beta_end > 0):
+            sampler_options.append(f'beta {shared.opts.schedulers_beta_start}-{shared.opts.schedulers_beta_end}')
+        if 'solver_order' in sampler.config:
+            sampler_options.append(f'order {shared.opts.schedulers_solver_order}')
+        if 'lower_order_final' in sampler.config:
+            sampler_options.append('low order')
+        p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)

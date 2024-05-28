@@ -1,76 +1,73 @@
 [MAIN]
 analyse-fallback-blocks=no
 clear-cache-post-run=no
-#enable-all-extensions=
-#errors-only=
-#exit-zero=
 extension-pkg-allow-list=
 extension-pkg-whitelist=
 fail-on=
 fail-under=10
 ignore=CVS
 ignore-paths=/usr/lib/.*$,
-             ^repositories/.*$,
-             ^extensions/.*$,
-             ^extensions-builtin/.*$,
-             ^modules/dml/.*$,
-             ^modules/tcd/.*$,
-             ^modules/xadapters/.*$,
-ignore-patterns=
+             modules/control/proc,
+             modules/control/units,
+             modules/dml,
+             modules/hidiffusion,
+             modules/hijack,
+             modules/intel/ipex,
+             modules/intel/openvino,
+             modules/k-diffusion,
+             modules/ldsr,
+             modules/onnx_impl,
+             modules/pag,
+             modules/rife,
+             modules/taesd,
+             modules/todo,
+             modules/unipc,
+             modules/xadapter,
+             repositories,
+             extensions-builtin/sd-webui-agent-scheduler,
+             extensions-builtin/sd-extension-chainner/nodes,
+             extensions-builtin/sdnext-modernui/node_modules,
+ignore-patterns=.*test*.py$,
+                .*_model.py$,
+                .*_arch.py$,
+                .*_model_arch.py*,
+                .*_model_arch_v2.py$, 
 ignored-modules=
 jobs=0
 limit-inference-results=100
 load-plugins=
 persistent=yes
-py-version=3.10
+py-version=3.9
 recursive=no
 source-roots=
 suggestion-mode=yes
 unsafe-load-any-extension=no
-#verbose=
 
 [BASIC]
 argument-naming-style=snake_case
-#argument-rgx=
 attr-naming-style=snake_case
-#attr-rgx=
 bad-names=foo, bar, baz, toto, tutu, tata
 bad-names-rgxs=
 class-attribute-naming-style=any
 class-const-naming-style=UPPER_CASE
-#class-const-rgx=
 class-naming-style=PascalCase
-#class-rgx=
 const-naming-style=snake_case
-#const-rgx=
 docstring-min-length=-1
 function-naming-style=snake_case
-#function-rgx=
-# Good variable names which should always be accepted, separated by a comma.
-good-names=i,j,k,e,ex,ok,p
+good-names=i,j,k,e,ex,ok,p,x,y,id
 good-names-rgxs=
 include-naming-hint=no
 inlinevar-naming-style=any
-#inlinevar-rgx=
 method-naming-style=snake_case
-#method-rgx=
 module-naming-style=snake_case
-#module-rgx=
 name-group=
 no-docstring-rgx=^_
 property-classes=abc.abstractproperty
-#typealias-rgx=
-#typevar-rgx=
 variable-naming-style=snake_case
-#variable-rgx=
 
 [CLASSES]
 check-protected-access-in-special-methods=no
-defining-attr-methods=__init__,
-                      __new__,
-                      setUp,
-                      asyncSetUp,
-                      __post_init__
+defining-attr-methods=__init__, __new__,
 exclude-protected=_asdict,_fields,_replace,_source,_make,os._exit
 valid-classmethod-first-arg=cls
 valid-metaclass-classmethod-first-arg=mcs
@@ -81,7 +78,7 @@ ignored-parents=
 max-args=99
 max-attributes=99
 max-bool-expr=99
-max-branches=99
+max-branches=199
 max-locals=99
 max-parents=99
 max-public-methods=99
@@ -130,14 +127,15 @@ disable=bad-inline-option,
         broad-exception-caught,
         chained-comparison,
         consider-iterating-dictionary,
+        consider-merging-isinstance,
         consider-using-dict-items,
-        consider-using-generator,
         consider-using-enumerate,
-        consider-using-sys-exit,
         consider-using-from-import,
+        consider-using-generator,
         consider-using-get,
         consider-using-in,
         consider-using-min-builtin,
+        consider-using-sys-exit,
         dangerous-default-value,
         deprecated-pragma,
         duplicate-code,
@@ -157,18 +155,19 @@ disable=bad-inline-option,
         raw-checker-failed,
         simplifiable-if-expression,
         suppressed-message,
-        too-many-nested-blocks,
         too-few-public-methods,
-        too-many-statements,
-        too-many-locals,
         too-many-instance-attributes,
+        too-many-locals,
+        too-many-nested-blocks,
+        too-many-statements,
+        unidiomatic-typecheck,
+        unnecessary-dict-index-lookup,
         unnecessary-dunder-call,
         unnecessary-lambda,
         use-dict-literal,
         use-symbolic-message-instead,
         useless-suppression,
-        unidiomatic-typecheck,
-        wrong-import-position
+        wrong-import-position,
 enable=c-extension-no-member
 
 [METHOD_ARGS]
@@ -187,7 +186,6 @@ never-returning-functions=sys.exit,argparse.parse_error
 [REPORTS]
 evaluation=max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10))
 msg-template=
-#output-format=
 reports=no
 score=no
 

@@ -165,6 +165,9 @@ class Processor():
             if self.processor_id != processor_id:
                 self.reset()
                 self.config(processor_id)
+            if processor_id not in config:
+                log.error(f'Control Processor unknown: id="{processor_id}" available={list(config)}')
+                return f'Processor failed to load: {processor_id}'
             cls = config[processor_id]['class']
             log.debug(f'Control Processor loading: id="{processor_id}" class={cls.__name__}')
             debug(f'Control Processor config={self.load_config}')
@@ -220,6 +223,8 @@ class Processor():
         image_process = image_input
         if image_input is None:
             # log.error('Control Processor: no input')
+            return image_process
+        if self.processor_id not in config:
             return image_process
         if config[self.processor_id].get('dirty', False):
             processor_id = self.processor_id

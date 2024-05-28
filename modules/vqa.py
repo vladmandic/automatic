@@ -124,13 +124,18 @@ def moondream(question: str, image: Image.Image, repo: str = None):
     return response
 
 
-def interrogate(vqa_question, vqa_image, vqa_model):
-    vqa_model = MODELS.get(vqa_model, None)
+def interrogate(vqa_question, vqa_image, vqa_model_req):
+    vqa_model = MODELS.get(vqa_model_req, None)
     shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
     if vqa_image is None:
         answer = 'no image provided'
-    if vqa_model is None:
+        return answer
+    if vqa_model_req is None:
         answer = 'no model selected'
+        return answer
+    if vqa_model is None:
+        answer = f'unknown: model={vqa_model_req} available={MODELS.keys()}'
+        return answer
     if 'git' in vqa_model.lower():
         answer = git(vqa_question, vqa_image, vqa_model)
     if 'vilt' in vqa_model.lower():

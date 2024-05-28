@@ -83,7 +83,7 @@ class InterrogateModels:
         from repositories.blip.models import blip
         import modules.modelloader as modelloader
         model_path = os.path.join(paths.models_path, "BLIP")
-        download_name='model_base_caption_capfilt_large.pth',
+        download_name='model_base_caption_capfilt_large.pth'
         shared.log.debug(f'Model interrogate load: type=BLiP model={download_name} path={model_path}')
         files = modelloader.load_models(
             model_path=model_path,
@@ -163,16 +163,18 @@ class InterrogateModels:
 
     def interrogate(self, pil_image):
         res = ""
-        shared.state.begin('interrogate')
+        shared.state.begin('Interrogate')
         try:
             if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
                 devices.torch_gc()
             self.load()
             if isinstance(pil_image, list):
-                pil_image = pil_image[0]
+                pil_image = pil_image[0] if len(pil_image) > 0 else None
             if isinstance(pil_image, dict) and 'name' in pil_image:
                 pil_image = Image.open(pil_image['name'])
+            if pil_image is None:
+                return ''
             pil_image = pil_image.convert("RGB")
             caption = self.generate_caption(pil_image)
             self.send_blip_to_ram()
@@ -265,8 +267,7 @@ def interrogate(image, mode, caption=None):
 
 
 def interrogate_image(image, model, mode):
-    shared.state.begin()
-    shared.state.job = 'interrogate'
+    shared.state.begin('Interrogate')
     try:
         if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
             lowvram.send_everything_to_cpu()
@@ -293,8 +294,7 @@ def interrogate_batch(batch_files, batch_folder, batch_str, model, mode, write):
     if len(files) == 0:
         shared.log.error('Interrogate batch no images')
         return ''
-    shared.state.begin()
-    shared.state.job = 'batch interrogate'
+    shared.state.begin('Batch interrogate')
     prompts = []
     try:
         if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):

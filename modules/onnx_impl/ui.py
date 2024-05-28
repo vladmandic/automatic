@@ -17,7 +17,6 @@ def create_ui():
     from modules.shared import log, opts, cmd_opts, refresh_checkpoints
     from modules.sd_models import checkpoint_tiles, get_closet_checkpoint_match
     from modules.paths import sd_configs_path
-    from . import run_olive_workflow
     from .execution_providers import ExecutionProvider, install_execution_provider
     from .utils import check_diffusers_cache
 
@@ -39,7 +38,7 @@ def create_ui():
                 ep_log = gr.HTML("")
                 ep_install.click(fn=install_execution_provider, inputs=[ep_checkbox], outputs=[ep_log])
 
-            if run_olive_workflow is not None:
+            if opts.cuda_compile_backend == "olive-ai":
                 import olive.passes as olive_passes
                 from olive.hardware.accelerator import AcceleratorSpec, Device
                 accelerator = AcceleratorSpec(accelerator_type=Device.GPU, execution_provider=opts.onnx_execution_provider)
@@ -147,7 +146,9 @@ def create_ui():
                                                             sd_configs[submodel]["passes"][pass_name]["config"][config_key] = value
                                                         return listener
 
-                                                    for config_key, v in getattr(olive_passes, config_dict["type"], olive_passes.Pass)._default_config(accelerator).items(): # pylint: disable=protected-access
+                                                    pass_cls = getattr(olive_passes, config_dict["type"], None)
+                                                    default_config = {} if pass_cls is None else pass_cls._default_config(accelerator) # pylint: disable=protected-access
+                                                    for config_key, v in default_config.items():
                                                         component = None
                                                         if v.type_ == bool:
                                                             component = gr.Checkbox
@@ -160,7 +161,7 @@ def create_ui():
                                                             sd_pass_config_components[submodel][pass_name][config_key] = component
                                                             component.change(fn=create_pass_config_change_listener(submodel, pass_name, config_key), inputs=component)
 
-                                                    pass_type.change(fn=sd_create_change_listener(submodel, "passes", config_key, "type"), inputs=pass_type) # pylint: disable=undefined-loop-variable
+                                                    pass_type.change(fn=sd_create_change_listener(submodel, "passes", pass_name, "type"), inputs=pass_type)
 
                             def sd_save():
                                 for k, v in sd_configs.items():
@@ -208,7 +209,9 @@ def create_ui():
                                                             sdxl_configs[submodel]["passes"][pass_name]["config"][config_key] = value
                                                         return listener
 
-                                                    for config_key, v in getattr(olive_passes, config_dict["type"], olive_passes.Pass)._default_config(accelerator).items(): # pylint: disable=protected-access
+                                                    pass_cls = getattr(olive_passes, config_dict["type"], None)
+                                                    default_config = {} if pass_cls is None else pass_cls._default_config(accelerator) # pylint: disable=protected-access
+                                                    for config_key, v in default_config.items():
                                                         component = None
                                                         if v.type_ == bool:
                                                             component = gr.Checkbox

@@ -81,7 +81,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
             possible_tags = info.get('tags', []) # tags from info json
             if not isinstance(possible_tags, list):
-                possible_tags = [v for v in possible_tags.values()]
+                possible_tags = list(possible_tags.values())
             for tag in possible_tags:
                 tag = tag.strip().lower()
                 if tag not in tags:
@@ -90,7 +90,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
             bad_chars = [';', ':', '<', ">", "*", '?', '\'', '\"', '(', ')', '[', ']', '{', '}', '\\', '/']
             clean_tags = {}
             for k, v in tags.items():
-                tag = ''.join(i for i in k if not i in bad_chars).strip()
+                tag = ''.join(i for i in k if i not in bad_chars).strip()
                 clean_tags[tag] = v
 
             clean_tags.pop('img', None)

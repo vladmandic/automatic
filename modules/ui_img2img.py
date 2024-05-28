@@ -100,11 +100,7 @@ def create_ui():
 
                     with gr.TabItem('Batch', id='batch', elem_id="img2img_batch_tab") as tab_batch:
                         hidden = '<br>Disabled when launched with --hide-ui-dir-config.' if shared.cmd_opts.hide_ui_dir_config else ''
-                        gr.HTML(
-                            "<p style='padding-bottom: 1em;' class=\"text-gray-500\">Upload images or process images in a directory" +
-                            "<br>Add inpaint batch mask directory to enable inpaint batch processing"
-                            f"{hidden}</p>"
-                        )
+                        gr.HTML(f"<p style='padding-bottom: 1em;' class=\"text-gray-500\">Upload images or process images in a directory <br>Add inpaint batch mask directory to enable inpaint batch processing {hidden}</p>")
                         img2img_batch_files = gr.Files(label="Batch Process", interactive=True, elem_id="img2img_image_batch")
                         img2img_batch_input_dir = gr.Textbox(label="Inpaint batch input directory", **shared.hide_dirs, elem_id="img2img_batch_input_dir")
                         img2img_batch_output_dir = gr.Textbox(label="Inpaint batch output directory", **shared.hide_dirs, elem_id="img2img_batch_output_dir")
@@ -120,9 +116,11 @@ def create_ui():
 
                 with gr.Group(elem_classes="settings-accordion"):
 
-                    steps, sampler_index = ui_sections.create_sampler_inputs('img2img')
+                    with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
+                        steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
+                        ui_sections.create_sampler_options('img2img')
                     resize_mode, resize_name, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
-                    batch_count, batch_size = ui_sections.create_batch_inputs('img2img')
+                    batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 
                     with gr.Accordion(open=False, label="Denoise", elem_classes=["small-accordion"], elem_id="img2img_denoise_group"):
@@ -130,8 +128,9 @@ def create_ui():
                             denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.50, elem_id="img2img_denoising_strength")
                             refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Denoise start', value=0.0, elem_id="img2img_refiner_start")
 
-                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, sag_scale, cfg_end, full_quality, restore_faces, tiling = ui_sections.create_advanced_inputs('img2img')
-                    hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio, = ui_sections.create_correction_inputs('img2img')
+                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
+                    full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('img2img')
+                    hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
                     with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
@@ -150,12 +149,12 @@ def create_ui():
                         for i, elem in enumerate(img2img_tabs):
                             elem.select(fn=lambda tab=i: select_img2img_tab(tab), inputs=[], outputs=[inpaint_controls, mask_alpha]) # pylint: disable=cell-var-from-loop
 
-                override_settings = ui_common.create_override_inputs('img2img')
+                    override_settings = ui_common.create_override_inputs('img2img')
 
                 with gr.Group(elem_id="img2img_script_container"):
                     img2img_script_inputs = modules.scripts.scripts_img2img.setup_ui(parent='img2img', accordion=True)
 
-            img2img_gallery, img2img_generation_info, img2img_html_info, _img2img_html_info_formatted, img2img_html_log = ui_common.create_output_panel("img2img", prompt=None)
+            img2img_gallery, img2img_generation_info, img2img_html_info, _img2img_html_info_formatted, img2img_html_log = ui_common.create_output_panel("img2img", prompt=img2img_prompt)
 
             ui_common.connect_reuse_seed(seed, reuse_seed, img2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, img2img_generation_info, is_subseed=True)
@@ -177,10 +176,10 @@ def create_ui():
                 sampler_index,
                 mask_blur, mask_alpha,
                 inpainting_fill,
-                full_quality, restore_faces, tiling,
+                full_quality, restore_faces, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale,
-                diffusers_guidance_rescale, sag_scale, cfg_end,
+                diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
                 refiner_start,
                 clip_skip,
                 denoising_strength,
@@ -263,6 +262,7 @@ def create_ui():
                 (full_quality, "Full quality"),
                 (restore_faces, "Face restoration"),
                 (tiling, "Tiling"),
+                (hidiffusion, "HiDiffusion"),
                 # inpaint
                 (mask_blur, "Mask blur"),
                 (mask_alpha, "Mask alpha"),

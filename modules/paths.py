@@ -100,6 +100,7 @@ def create_paths(opts):
     create_path(fix_path('ckpt_dir'))
     create_path(fix_path('diffusers_dir'))
     create_path(fix_path('vae_dir'))
+    create_path(fix_path('unet_dir'))
     create_path(fix_path('lora_dir'))
     create_path(fix_path('embeddings_dir'))
     create_path(fix_path('hypernetwork_dir'))
@@ -116,6 +117,7 @@ def create_paths(opts):
     create_path(fix_path('outdir_save'))
     create_path(fix_path('outdir_video'))
     create_path(fix_path('styles_dir'))
+    create_path(fix_path('wildcards_dir'))
 
 
 class Prioritize:

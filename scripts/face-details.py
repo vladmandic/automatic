@@ -3,14 +3,18 @@ import numpy as np
 from PIL import Image, ImageDraw
 from modules import shared, processing
 from modules.face_restoration import FaceRestoration
+from modules import devices, processing_class
 
 
 class YoLoResult:
-    def __init__(self, score: float, box: list[int], mask: Image.Image = None, size: float = 0):
+    def __init__(self, score: float, box: list[int], mask: Image.Image = None, size: float = 0, width = 0, height = 0, args = {}):
         self.score = score
         self.box = box
         self.mask = mask
         self.size = size
+        self.width = width
+        self.height = height
+        self.args = args
 
 
 class FaceRestorerYolo(FaceRestoration):
@@ -33,33 +37,33 @@ class FaceRestorerYolo(FaceRestoration):
     def predict(
             self,
             image: Image.Image,
-            offload: bool = False,
-            conf: float = 0.5,
-            iou: float = 0.5,
             imgsz: int = 640,
             half: bool = True,
-            device = 'cuda',
-            n: int = 5,
+            device = devices.device,
             augment: bool = True,
             agnostic: bool = False,
             retina: bool = False,
             mask: bool = True,
+            offload: bool = shared.opts.face_restoration_unload,
         ) -> list[YoLoResult]:
 
+        args = {
+            'conf': shared.opts.facehires_conf,
+            'iou': shared.opts.facehires_iou,
+            'max_det': shared.opts.facehires_max,
+        }
         self.model.to(device)
         predictions = self.model.predict(
             source=[image],
             stream=False,
             verbose=False,
-            conf=conf,
-            iou=iou,
             imgsz=imgsz,
             half=half,
             device=device,
-            max_det=n,
             augment=augment,
             agnostic_nms=agnostic,
             retina_masks=retina,
+            **args
         )
         if offload:
             self.model.to('cpu')
@@ -70,13 +74,15 @@ class FaceRestorerYolo(FaceRestoration):
             for score, box in zip(scores, boxes):
                 box = box.tolist()
                 mask_image = None
-                size = (box[2] - box[0]) * (box[3] - box[1]) / (image.width * image.height)
-                if mask:
-                    mask_image = image.copy()
-                    mask_image = Image.new('L', image.size, 0)
-                    draw = ImageDraw.Draw(mask_image)
-                    draw.rectangle(box, fill="white", outline=None, width=0)
-                result.append(YoLoResult(score=score, box=box, mask=mask_image, size=size))
+                w, h = box[2] - box[0], box[3] - box[1]
+                size = w * h / (image.width * image.height)
+                if (min(w, h) > shared.opts.facehires_min_size if shared.opts.facehires_min_size > 0 else True) and (max(w, h) < shared.opts.facehires_max_size if shared.opts.facehires_max_size > 0 else True):
+                    if mask:
+                        mask_image = image.copy()
+                        mask_image = Image.new('L', image.size, 0)
+                        draw = ImageDraw.Draw(mask_image)
+                        draw.rectangle(box, fill="white", outline=None, width=0)
+                    result.append(YoLoResult(score=round(score, 2), box=box, mask=mask_image, size=size, width=w, height=h, args=args))
         return result
 
     def load(self):
@@ -90,7 +96,8 @@ class FaceRestorerYolo(FaceRestoration):
                 self.model = YOLO(model_file)
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
-        from modules import devices, processing_class
+        if hasattr(p, 'recursion'):
+            return
         if not hasattr(p, 'facehires'):
             p.facehires = 0
         if np_image is None or p.facehires >= p.batch_size * p.n_iter:
@@ -100,7 +107,7 @@ class FaceRestorerYolo(FaceRestoration):
             shared.log.error(f"Model load: type=FaceHires model='{self.model_name}' dir={self.model_dir} url={self.model_url}")
             return np_image
         image = Image.fromarray(np_image)
-        faces = self.predict(image, mask=True, device=devices.device, offload=shared.opts.face_restoration_unload)
+        faces = self.predict(image)
         if len(faces) == 0:
             return np_image
 
@@ -111,6 +118,7 @@ class FaceRestorerYolo(FaceRestoration):
 
         pp = None
         shared.opts.data['mask_apply_overlay'] = True
+        resolution = 512 if shared.sd_model_type in ['none', 'sd', 'lcm', 'unknown'] else 1024
         args = {
             'batch_size': 1,
             'n_iter': 1,
@@ -123,11 +131,16 @@ class FaceRestorerYolo(FaceRestoration):
             'denoising_strength': shared.opts.facehires_strength if shared.opts.facehires_strength > 0 else orig_p.get('denoising_strength', 0.3),
             'styles': [],
             'prompt': orig_p.get('refiner_prompt', ''),
-            # TODO facehires expose as tunable
             'mask_blur': 10,
-            'inpaint_full_res_padding': 15,
+            'inpaint_full_res_padding': shared.opts.facehires_padding,
             'restore_faces': True,
+            'width': resolution,
+            'height': resolution,
         }
+        if getattr(p, 'is_control', False):
+            from modules.control import run
+            run.restore_pipeline()
+
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
         p.facehires += 1 # set flag to avoid recursion
 
@@ -138,12 +151,12 @@ class FaceRestorerYolo(FaceRestoration):
         if len(p.negative_prompt) == 0:
             p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
 
-        shared.log.debug(f'Face HiRes: faces={[f.__dict__ for f in faces]} strength={p.denoising_strength} blur={p.mask_blur} padding={p.inpaint_full_res_padding} steps={p.steps}')
+        report = [{'score': f.score, 'size': f'{f.width}x{f.height}' } for f in faces]
+        shared.log.debug(f'Face HiRes: faces={report} args={faces[0].args} denoise={p.denoising_strength} blur={p.mask_blur} resolution={p.width}x{p.height} padding={p.inpaint_full_res_padding}')
+
+        mask_all = []
         for face in faces:
             if face.mask is None:
-                continue
-            if face.size < 0.0002 or face.size > 0.8:
-                shared.log.debug(f'Face HiRes skip: {face.__dict__}')
                 continue
             p.init_images = [image]
             p.image_mask = [face.mask]
@@ -153,6 +166,8 @@ class FaceRestorerYolo(FaceRestoration):
             p.overlay_images = None # skip applying overlay twice
             if pp is not None and pp.images is not None and len(pp.images) > 0:
                 image = pp.images[0] # update image to be reused for next face
+                if len(pp.images) > 1:
+                    mask_all.append(pp.images[1])
 
         # restore pipeline
         p = processing_class.switch_class(p, orig_cls, orig_p)
@@ -160,7 +175,13 @@ class FaceRestorerYolo(FaceRestoration):
         p.image_mask = getattr(orig_p, 'image_mask', None)
         shared.opts.data['mask_apply_overlay'] = orig_apply_overlay
         np_image = np.array(image)
-        # shared.log.debug(f'Face HiRes complete: faces={len(faces)} time={t1-t0:.3f}')
+
+        """
+        if len(mask_all) > 0 and shared.opts.include_mask:
+            from modules.control.util import blend
+            mask_all = blend([np.array(m) for m in mask_all])
+            mask_pil = Image.fromarray(mask_all)
+        """
         return np_image
 
 
