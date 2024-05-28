@@ -37,7 +37,7 @@ pi-heif
 diffusers==0.28.0
 safetensors==0.4.3
 tensordict==0.1.2
-peft==0.10.0
+peft==0.11.1
 httpx==0.24.1
 compel==2.0.2
 torchsde==0.2.6
