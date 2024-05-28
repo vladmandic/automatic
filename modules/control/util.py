@@ -31,6 +31,7 @@ def HWC3(x):
         y = color * alpha + 255.0 * (1.0 - alpha)
         y = y.clip(0, 255).astype(np.uint8)
         return y
+    return x # should not happen
 
 
 def make_noise_disk(H, W, C, F):

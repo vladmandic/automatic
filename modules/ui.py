@@ -177,6 +177,7 @@ def create_ui(startup_timer = None):
         else:
             raise ValueError(f'bad options item type: {t} for key {key}')
         elem_id = f"setting_{key}"
+        dirty_indicator = None
 
         if not is_quicksettings:
             dirtyable_setting = gr.Group(elem_classes="dirtyable", visible=args.get("visible", True))
@@ -204,7 +205,8 @@ def create_ui(startup_timer = None):
 
         if res is not None and not is_quicksettings:
             res.change(fn=None, inputs=res, _js=f'(val) => markIfModified("{key}", val)')
-            dirty_indicator.click(fn=lambda: getattr(opts, key), outputs=res, show_progress=False)
+            if dirty_indicator is not None:
+                dirty_indicator.click(fn=lambda: getattr(opts, key), outputs=res, show_progress=False)
             dirtyable_setting.__exit__()
 
         return res

@@ -2,7 +2,7 @@ import io
 import os
 import time
 import base64
-from typing import List
+from typing import List, Union
 from urllib.parse import quote, unquote
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -51,7 +51,7 @@ class ConnectionManager:
         debug(f'Browser WS disconnect: client={ws.client.host}')
         self.active.remove(ws)
 
-    async def send(self, ws: WebSocket, data: str|dict|bytes):
+    async def send(self, ws: WebSocket, data: Union[str, dict, bytes]):
         # debug(f'Browser WS send: client={ws.client.host} data={type(data)}')
         if ws.client_state != WebSocketState.CONNECTED:
             return
@@ -64,7 +64,7 @@ class ConnectionManager:
         else:
             debug(f'Browser WS send: client={ws.client.host} data={type(data)} unknown')
 
-    async def broadcast(self, data: str|dict|bytes):
+    async def broadcast(self, data: Union[str, dict, bytes]):
         for ws in self.active:
             await self.send(ws, data)
 

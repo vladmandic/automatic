@@ -4,6 +4,7 @@ import torch
 from modules.sd_hijack_utils import CondFunc
 
 
+cumsum_needs_int_fix = False
 # has_mps is only available in nightly pytorch (for now) and macOS 12.3+.
 # check `getattr` and try it for compatibility
 def check_for_mps() -> bool:

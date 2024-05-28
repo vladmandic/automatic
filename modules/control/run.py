@@ -330,7 +330,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     video = cv2.VideoCapture(inputs)
                     if not video.isOpened():
                         yield terminate(f'Control: video open failed: path={inputs}')
-                        return
+                        return [], '', '', 'Error: video open failed'
                     frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
                     fps = int(video.get(cv2.CAP_PROP_FPS))
                     w, h = int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -341,7 +341,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     shared.log.debug(f'Control: input video: path={inputs} frames={frames} fps={fps} size={w}x{h} codec={codec}')
                 except Exception as e:
                     yield terminate(f'Control: video open failed: path={inputs} {e}')
-                    return
+                    return [], '', '', 'Error: video open failed'
 
             while status:
                 processed_image = None
@@ -355,7 +355,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     if shared.state.interrupted:
                         shared.state.interrupted = False
                         yield terminate('Control interrupted')
-                        return
+                        return [], '', '', 'Interrupted'
                     # get input
                     if isinstance(input_image, str):
                         try:
@@ -443,7 +443,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             pass
                         if any(img is None for img in processed_images):
                             yield terminate('Control: attempting process but output is none')
-                            return
+                            return [], '', '', 'Error: output is none'
                         if len(processed_images) > 1 and len(active_process) != len(active_model):
                             processed_image = [np.array(i) for i in processed_images]
                             processed_image = util.blend(processed_image) # blend all processed images into one
@@ -461,7 +461,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             p.init_images = processed_images
                         elif isinstance(selected_models, list) and len(processed_images) != len(selected_models):
                             yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
-                            return
+                            return [], '', '', 'Error: number of inputs does not match'
                         elif selected_models is not None:
                             p.init_images = processed_image
                     else:
@@ -475,7 +475,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         debug(f'Control: process=None image={p.ref_image}')
                         if p.ref_image is None:
                             yield terminate('Control: attempting reference mode but image is none')
-                            return
+                            return [], '', '', 'Reference mode without image'
                     elif unit_type == 'controlnet' and input_type == 1: # Init image same as control
                         p.task_args['control_image'] = p.init_images # switch image and control_image
                         p.task_args['strength'] = p.denoising_strength
@@ -535,7 +535,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     if has_models:
                         if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None and getattr(p, 'init_images', None) is None:
                             yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
-                            return
+                            return [], '', '', 'Error: Input image is none'
 
                     # resize mask
                     if mask is not None and resize_mode_mask != 0 and resize_name_mask != 'None':

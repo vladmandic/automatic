@@ -419,6 +419,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 batch_images = np.expand_dims(self.init_images[0], axis=0).repeat(self.batch_size, axis=0)
             elif len(self.init_images) <= self.batch_size:
                 batch_images = np.array(self.init_images)
+            else:
+                batch_images = np.array(self.init_images[:self.batch_size])
             image = torch.from_numpy(batch_images)
             image = 2. * image - 1.
             image = image.to(device=shared.device, dtype=devices.dtype_vae)

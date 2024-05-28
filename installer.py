@@ -402,9 +402,7 @@ def check_python():
 
 # check diffusers version
 def check_diffusers():
-    if args.experimental or args.skip_git:
-        return
-    # noop for now, can be used to force specific version based on conditions
+    pass # noop for now, can be used to force specific version based on conditions
 
 
 # check onnx version
