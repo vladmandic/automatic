@@ -212,8 +212,8 @@
   {"id":"shutdown_submit","label":"Shutdown server","localized":"","hint":"Shutdown server"},
   {"id":"settings_preview_theme","label":"Preview theme","localized":"","hint":"Show theme preview"},
   {"id":"defaults_submit","label":"Restore defaults","localized":"","hint":"Restore default server settings"},
-  {"id":"sett_unload_sd_model","label":"Unload checkpoint","localized":"","hint":"Unload currently loaded model checkpoint"},
-  {"id":"sett_reload_sd_model","label":"Reload checkpoint","localized":"","hint":"Reload currently selected model checkpoint"}
+  {"id":"sett_unload_sd_model","label":"Unload model","localized":"","hint":"Unload currently loaded model"},
+  {"id":"sett_reload_sd_model","label":"Reload model","localized":"","hint":"Reload currently selected model"}
 ],
 "settings sections": [
   {"id":"","label":"Execution & Models","localized":"","hint":"Settings related to execution backend, models, and prompt attention"},

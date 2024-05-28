@@ -1486,7 +1486,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     shared.log.info(f'Model load finished: {memory_stats()} cached={len(checkpoints_loaded.keys())}')
 
 
-def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model'):
+def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary
@@ -1508,7 +1508,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model')
         current_checkpoint_info = None
     else:
         current_checkpoint_info = getattr(sd_model, 'sd_checkpoint_info', None)
-        if current_checkpoint_info is not None and checkpoint_info is not None and current_checkpoint_info.filename == checkpoint_info.filename:
+        if current_checkpoint_info is not None and checkpoint_info is not None and current_checkpoint_info.filename == checkpoint_info.filename and not force:
             return None
         if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
             lowvram.send_everything_to_cpu()

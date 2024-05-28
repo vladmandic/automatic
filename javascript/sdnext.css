@@ -5,7 +5,7 @@
   --color-debug: #7F7F7F;
   --color-info: #D4D4D4;
   --color-warning: #FF9900;
-  --color-error: #BE0000
+  --color-error: #BE0000;
 }
 a { font-weight: bold; cursor: pointer; }
 h2 { margin-top: 1em !important; font-size: var(--text-xxl) !important; }
