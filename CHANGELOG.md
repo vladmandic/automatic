@@ -22,6 +22,10 @@
     Simply set *advanced -> attention guidance* and *advanced -> adaptive scaling*  
     Additional options are available in *settings -> inference settings -> pag*  
     *Note*: PAG has replaced SAG as attention guidance method in SD.Next  
+  - [LayerDiffuse](https://github.com/rootonchair/diffuser_layerdiffuse)
+    Create transparent images with foreground-only being generated  
+    Simply select from scripts -> apply to current model  
+    All necessary files will be auto-downloaded on first use  
   - **IP Adapter Masking**:  
     Powerful method of using masking with ip-adapters  
     When combined with multiple ip-adapters, it allows for different inputs guidance for each segment of the input image  
@@ -139,7 +143,7 @@
   - Add option *timesteps* to manually set timesteps instead of relying on steps+spacing  
     Additionally, presets from nVidias align-you-steps reasearch are provided  
     Result is that perfectly aligned steps can drastically reduce number of steps needed!  
-    For example, AIY preset alows DPM++2M to run in ~10 steps with quality equallying ~30 steps!  
+    For example, **AYS** preset alows DPM++2M to run in ~10 steps with quality equallying ~30 steps!  
 - **IPEX**, thanks @Disty0
   - Update to *IPEX 2.1.20* on Linux  
     requires removing the venv folder to update properly  
