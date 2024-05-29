@@ -253,7 +253,7 @@ def install(package, friendly: str = None, ignore: bool = False):
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-    if args.reinstall or not installed(package, friendly):
+    if args.reinstall or not installed(package, friendly, quiet=True):
         res = pip(f"install --upgrade {package}", ignore=ignore)
         try:
             import imp # pylint: disable=deprecated-module
@@ -440,7 +440,7 @@ def check_torch():
     def is_rocm_available():
         if not allow_rocm:
             return False
-        if installed('torch-directml'):
+        if installed('torch-directml', quiet=True):
             log.debug('DirectML installation is detected. Skipping HIP SDK check.')
             return False
         if platform.system() == 'Windows':
