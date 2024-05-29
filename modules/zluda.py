@@ -3,6 +3,7 @@ import sys
 from typing import Union
 import torch
 from torch._prims_common import DeviceLikeType
+import onnxruntime as ort
 from modules import shared, devices
 
 
@@ -57,8 +58,14 @@ def initialize_zluda():
         if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
             torch.backends.cuda.enable_cudnn_sdp(False)
             torch.backends.cuda.enable_cudnn_sdp = do_nothing
-
         shared.opts.sdp_options = ['Math attention']
+
+        # ONNX Runtime is not supported
+        ort.capi._pybind_state.get_available_providers = lambda: [v for v in ort.get_available_providers() if v != 'CUDAExecutionProvider'] # pylint: disable=protected-access
+        ort.get_available_providers = ort.capi._pybind_state.get_available_providers # pylint: disable=protected-access
+        if shared.opts.onnx_execution_provider == 'CUDAExecutionProvider':
+            shared.opts.onnx_execution_provider = 'CPUExecutionProvider'
+
         devices.device_codeformer = devices.cpu
 
         result = test(device)
