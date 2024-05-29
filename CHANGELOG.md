@@ -1,5 +1,12 @@
 # Change Log for SD.Next
 
+## Update for 2024-05-29
+
+- fix textual inversion loading
+- fix gallery mtime display
+- fix extra network scrollable area
+- lock torch-directml version
+
 ## Update for 2024-05-28
 
 ### Highlights for 2024-05-28
@@ -10,10 +17,6 @@ Starting with the new UI - yup, this version ships with a *preview* of the new [
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
 **ModernUI** is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
 Thanks to @BinaryQuantumSoul for his hard work on this project!  
-
-![Screenshot-ModernUI](html/screenshot-modernui.jpg)
-![Screenshot-ModernUI-Img](html/screenshot-modernui-img2img.jpg)
-![Screenshot-ModernUI-Control](html/screenshot-modernui-control.jpg)
 
 *What else?*
 
