@@ -128,7 +128,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_control_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
-    processing.process_init(p)
+    # processing.process_init(p)
     resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
 
     # TODO monkey-patch for modernui missing tabs.select event

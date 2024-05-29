@@ -20,6 +20,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - diffusers public callbacks  
 - include reference styles
 - lora: sc lora, dora, etc
+- controlnet: additional models
 
 ## Experimental
 

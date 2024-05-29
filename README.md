@@ -142,6 +142,7 @@ Also supported are modifiers such as:
 
 - [Step-by-step install guide](https://github.com/vladmandic/automatic/wiki/Installation)
 - [Advanced install notes](https://github.com/vladmandic/automatic/wiki/Advanced-Install)
+- [Video: install and use](https://www.youtube.com/watch?v=nWTnTyFTuAs)
 - [Common installation errors](https://github.com/vladmandic/automatic/discussions/1627)  
 - [FAQ](https://github.com/vladmandic/automatic/discussions/1011)
 

@@ -5,10 +5,12 @@
 - fix textual inversion loading
 - fix gallery mtime display
 - fix extra network scrollable area when using modernui
+- fix control prompts list handling
 - workaround for scale-by when using modernui
 - lock torch-directml version
 - improve xformers installer
 - improve ultralytics installer
+- improve triton installer
 
 ## Update for 2024-05-28
 

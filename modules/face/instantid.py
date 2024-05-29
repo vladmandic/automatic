@@ -43,8 +43,6 @@ def instant_id(p: processing.StableDiffusionProcessing, app, source_images, stre
         controlnet_model = ControlNetModel.from_pretrained(REPO_ID, subfolder="ControlNetModel", torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
         sd_models.move_model(controlnet_model, devices.device)
 
-    processing.process_init(p)
-
     # create new pipeline
     orig_pipeline = shared.sd_model # backup current pipeline definition
     shared.sd_model = StableDiffusionXLInstantIDPipeline(
