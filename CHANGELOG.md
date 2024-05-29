@@ -6,6 +6,7 @@
 - fix gallery mtime display
 - fix extra network scrollable area when using modernui
 - fix control prompts list handling
+- fix variation seed with hires pass
 - workaround for scale-by when using modernui
 - lock torch-directml version
 - improve xformers installer
