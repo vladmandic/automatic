@@ -68,7 +68,7 @@ def p_sample_ddim(self, x, c, t, index, repeat_noise=False, use_original_steps=F
         pred_x0, _, *_ = self.model.first_stage_model.quantize(pred_x0)
 
     if dynamic_threshold is not None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     # direction pointing to x_t
     dir_xt = (1. - a_prev - sigma_t**2).sqrt() * e_t

@@ -15,7 +15,6 @@ exclude = [
     "modules/xadapter",
     "modules/intel/openvino",
     "modules/intel/ipex",
-    "modules/dml",
     "modules/segmoe",
     "modules/control/proc",
     "modules/control/units",
