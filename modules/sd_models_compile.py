@@ -27,7 +27,7 @@ class CompiledModelState:
 deepcache_worker = None
 
 
-def apply_compile_to_model(sd_model, function, options):
+def apply_compile_to_model(sd_model, function, options, op=None):
     if "Model" in options:
         if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
             sd_model.unet = function(sd_model.unet)
@@ -38,7 +38,11 @@ def apply_compile_to_model(sd_model, function, options):
             sd_model.decoder = sd_model.decoder_pipe.decoder = function(sd_model.decoder_pipe.decoder)
         if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
             sd_model.prior_prior = None
+            if op == "nncf" and "StableCascade" in sd_model.__class__.__name__: # fixes dtype errors
+                backup_clip_txt_pooled_mapper = copy.deepcopy(sd_model.prior_pipe.prior.clip_txt_pooled_mapper)
             sd_model.prior_prior = sd_model.prior_pipe.prior = function(sd_model.prior_pipe.prior)
+            if op == "nncf" and "StableCascade" in sd_model.__class__.__name__:
+                sd_model.prior_prior.clip_txt_pooled_mapper = sd_model.prior_pipe.prior.clip_txt_pooled_mapper = backup_clip_txt_pooled_mapper
     if "VAE" in options:
         if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
             sd_model.vae = function(sd_model.vae)
@@ -88,7 +92,7 @@ def ipex_optimize(sd_model):
             devices.torch_gc()
             return model
 
-        sd_model = apply_compile_to_model(sd_model, ipex_optimize_model, shared.opts.ipex_optimize)
+        sd_model = apply_compile_to_model(sd_model, ipex_optimize_model, shared.opts.ipex_optimize, op="ipex")
 
         t1 = time.time()
         shared.log.info(f"IPEX Optimize: time={t1-t0:.2f}")
@@ -120,7 +124,7 @@ def nncf_compress_weights(sd_model):
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
 
-        sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights)
+        sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
 
         t1 = time.time()
         shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
@@ -267,7 +271,7 @@ def compile_torch(sd_model):
         except Exception as e:
             shared.log.error(f"Torch inductor config error: {e}")
 
-        sd_model = apply_compile_to_model(sd_model, torch_compile_model, shared.opts.cuda_compile)
+        sd_model = apply_compile_to_model(sd_model, torch_compile_model, shared.opts.cuda_compile, op="compile")
 
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
