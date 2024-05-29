@@ -4,9 +4,10 @@ import gradio as gr
 from PIL import Image
 from modules import shared, ui_symbols, ui_common, images, ui_control_helpers
 from modules.ui_components import ToolButton
-
+from urllib.parse import unquote
 
 def read_media(fn):
+    fn = unquote(fn).replace('%3A', ':')
     if not os.path.isfile(fn):
         shared.log.error(f'Gallery not found: file="{fn}"')
         return [[], None, '', '', f'Media not found: {fn}']
