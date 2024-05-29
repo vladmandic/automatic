@@ -434,7 +434,8 @@ def check_torch():
     log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino}')
     log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
-    xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
+    xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers') if opts.get('cross_attention_optimization', '') == 'xFormers' or args.use_xformers else 'none'
+    triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
 
     def is_rocm_available():
         if not allow_rocm:
@@ -452,14 +453,7 @@ def check_torch():
         pass
     elif allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe'))):
         log.info('nVidia CUDA toolkit detected: nvidia-smi present')
-        if not args.use_xformers:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
-            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu121')
-        else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu118')
-            xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre triton xformers --index-url https://download.pytorch.org/whl/cu118')
-        if opts.get('cross_attention_optimization', '') != 'xFormers':
-            xformers_package = 'none'
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True)
     elif is_rocm_available():
         is_windows = platform.system() == 'Windows'
@@ -555,7 +549,6 @@ def check_torch():
                 ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
                 ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
                 install(ort_package, 'onnxruntime-training')
-        xformers_package = os.environ.get('XFORMERS_PACKAGE', 'none')
     elif allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI")):
         args.use_ipex = True # pylint: disable=attribute-defined-outside-init
         log.info('Intel OneAPI Toolkit detected')
@@ -623,6 +616,8 @@ def check_torch():
         if not installed('torch', quiet=True):
             log.debug(f'Installing torch: {torch_command}')
         install(torch_command, 'torch torchvision')
+    if triton_command is not None:
+        install(triton_command, 'triton')
     else:
         try:
             import torch
@@ -666,7 +661,7 @@ def check_torch():
                 install(f'--no-deps {xformers_package}', ignore=True)
                 import torch
                 import xformers # pylint: disable=unused-import
-            elif not args.experimental and not args.use_xformers:
+            elif not args.experimental and not args.use_xformers and opts.get('cross_attention_optimization', '') != 'xFormers':
                 uninstall('xformers')
         except Exception as e:
             log.debug(f'Cannot install xformers package: {e}')
