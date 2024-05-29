@@ -50,8 +50,8 @@ predefined_sdxl = {
     'Depth Zoe XL': 'diffusers/controlnet-zoe-depth-sdxl-1.0',
     'Depth Mid XL': 'diffusers/controlnet-depth-sdxl-1.0-mid',
     'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0',
-    'xinsir-controlnet-openpose-sdxl': 'xinsir/controlnet-openpose-sdxl-1.0',
-    'xinsir-controlnet-canny': 'xinsir/controlnet-canny-sdxl-1.0'
+    'Xinsir OpenPose XL': 'xinsir/controlnet-openpose-sdxl-1.0',
+    'Xinsir Canny': 'xinsir/controlnet-canny-sdxl-1.0'
     # 'StabilityAI Canny R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-canny-rank128.safetensors',
     # 'StabilityAI Depth R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
     # 'StabilityAI Recolor R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors',
