@@ -140,7 +140,7 @@ class EmbeddingDatabase:
     def get_expected_shape(self):
         if shared.backend == shared.Backend.DIFFUSERS:
             return 0
-        if shared.sd_loaded:
+        if not shared.sd_loaded:
             shared.log.error('Model not loaded')
             return 0
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
