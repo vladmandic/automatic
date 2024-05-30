@@ -1,3 +1,4 @@
+from functools import lru_cache
 import os
 import sys
 import json
@@ -171,6 +172,7 @@ def print_profile(profiler: cProfile.Profile, msg: str):
 
 
 # check if package is installed
+@lru_cache()
 def installed(package, friendly: str = None, reload = False, quiet = False):
     ok = True
     try:
@@ -201,12 +203,12 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                 # log.debug(f"Package version found: {p[0]} {package_version}")
                 if len(p) > 1:
                     exact = package_version == p[1]
-                    ok = ok and (exact or args.experimental)
                     if not exact and not quiet:
                         if args.experimental:
                             log.warning(f"Package allowing experimental: {p[0]} {package_version} required {p[1]}")
                         else:
                             log.warning(f"Package version mismatch: {p[0]} {package_version} required {p[1]}")
+                    ok = ok and (exact or args.experimental)
             else:
                 if not quiet:
                     log.debug(f"Package not found: {p[0]}")
@@ -227,6 +229,7 @@ def uninstall(package, quiet = False):
     return res
 
 
+@lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False):
     arg = arg.replace('>=', '==')
     if not quiet:
@@ -248,12 +251,13 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False):
 
 
 # install package using pip if not already installed
-def install(package, friendly: str = None, ignore: bool = False):
+@lru_cache()
+def install(package, friendly: str = None, ignore: bool = False, reinstall: bool = False):
     res = ''
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-    if args.reinstall or not installed(package, friendly, quiet=True):
+    if args.reinstall or reinstall or not installed(package, friendly, quiet=False):
         res = pip(f"install --upgrade {package}", ignore=ignore)
         try:
             import imp # pylint: disable=deprecated-module
@@ -264,6 +268,7 @@ def install(package, friendly: str = None, ignore: bool = False):
 
 
 # execute git command
+@lru_cache()
 def git(arg: str, folder: str = None, ignore: bool = False):
     if args.skip_git:
         return ''
@@ -858,7 +863,7 @@ def install_requirements():
     with open('requirements.txt', 'r', encoding='utf8') as f:
         lines = [line.strip() for line in f.readlines() if line.strip() != '' and not line.startswith('#') and line is not None]
         for line in lines:
-            install(line)
+            _res = install(line)
     if args.profile:
         print_profile(pr, 'Requirements')
 

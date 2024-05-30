@@ -9,14 +9,15 @@ instightface_mp = None
 
 def get_app(mp_name):
     global insightface_app, instightface_mp # pylint: disable=global-statement
-    from installer import installed, install
-    packages = [
-        ('insightface', 'insightface'),
-        ('git+https://github.com/tencent-ailab/IP-Adapter.git', 'ip_adapter'),
-    ]
-    for pkg in packages:
-        if not installed(pkg[1], reload=False, quiet=True):
-            install(pkg[0], pkg[1], ignore=False)
+
+    from installer import install, installed
+    if not installed('insightface', reload=False, quiet=True):
+        install('insightface', 'insightface', ignore=False)
+        install('albumentations==1.4.3', 'albumentations', ignore=False, reinstall=True)
+        install('pydantic==1.10.15', 'pydantic', ignore=False, reinstall=True)
+    if not installed('ip_adapter', reload=False, quiet=True):
+        install('git+https://github.com/tencent-ailab/IP-Adapter.git', 'ip_adapter', ignore=False)
+
     if insightface_app is None or mp_name != instightface_mp:
         from insightface.app import FaceAnalysis
         import huggingface_hub as hf

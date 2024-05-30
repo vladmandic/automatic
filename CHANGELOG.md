@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-29
+## Update for 2024-05-30
 
 - fix textual inversion loading
 - fix gallery mtime display
@@ -12,6 +12,7 @@
 - improve xformers installer
 - improve ultralytics installer
 - improve triton installer
+- improve insightface installer
 
 ## Update for 2024-05-28
 

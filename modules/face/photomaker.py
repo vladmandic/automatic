@@ -49,7 +49,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, input_images, trigger, 
     shared.opts.data['prompt_attention'] = 'Fixed attention' # otherwise need to deal with class_tokens_mask
     p.task_args['input_id_images'] = input_images
     p.task_args['start_merge_step'] = int(start * p.steps)
-    p.task_args['prompt'] = p.all_prompts[0] # override all logic
+    p.task_args['prompt'] = p.all_prompts[0] if p.all_prompts is not None else p.prompt
 
     photomaker_path = hf.hf_hub_download(repo_id="TencentARC/PhotoMaker", filename="photomaker-v1.bin", repo_type="model", cache_dir=shared.opts.diffusers_dir)
     shared.log.debug(f'PhotoMaker: model={photomaker_path} images={len(input_images)} trigger={trigger} args={p.task_args}')
