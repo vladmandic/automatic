@@ -205,8 +205,9 @@ def face_id(
             faceid_model.set_scale(scale)
             extra_network_data = None
 
-            processing.process_init(p)
-            p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
+            if p.all_prompts is None or len(p.all_prompts) == 0:
+                processing.process_init(p)
+                p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
             for n in range(p.n_iter):
                 p.iteration = n
                 p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]

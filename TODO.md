@@ -21,6 +21,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - include reference styles
 - lora: sc lora, dora, etc
 - controlnet: additional models
+- resadapter: <https://github.com/bytedance/res-adapter>
 
 ## Experimental
 
