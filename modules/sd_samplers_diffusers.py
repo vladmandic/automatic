@@ -111,7 +111,6 @@ class DiffusionSampler:
             return
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
-        print('HERE1', name, self.config.get('solver_order', None))
         if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.scheduler.scheduler_config
         else:
@@ -119,14 +118,11 @@ class DiffusionSampler:
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
-        print('HERE2', name, self.config.get('solver_order', None))
         for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
             self.config[key] = value
-        print('HERE3', name, self.config.get('solver_order', None))
         for key, value in kwargs.items(): # apply user args, if any
             if key in self.config:
                 self.config[key] = value
-        print('HERE4', name, self.config.get('solver_order', None))
         # finally apply user preferences
         if shared.opts.schedulers_prediction_type != 'default':
             self.config['prediction_type'] = shared.opts.schedulers_prediction_type
@@ -169,7 +165,6 @@ class DiffusionSampler:
             del self.config['prediction_type']
         if 'SGM' in name:
             self.config['timestep_spacing'] = 'trailing'
-        print('HERE5', name, self.config.get('solver_order', None))
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
