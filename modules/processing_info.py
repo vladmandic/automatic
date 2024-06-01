@@ -64,8 +64,6 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }
     if 'txt2img' in p.ops:
-        pass
-    if shared.backend == shared.Backend.ORIGINAL:
         args["Variation seed"] = all_subseeds[index] if p.subseed_strength > 0 else None
         args["Variation strength"] = p.subseed_strength if p.subseed_strength > 0 else None
     if 'hires' in p.ops or 'upscale' in p.ops:

@@ -6,9 +6,11 @@
 - fix gallery mtime display
 - fix extra network scrollable area when using modernui
 - fix control prompts list handling
-- fix variation seed with hires pass
 - fix restore variation seed and strength
 - fix negative prompt parsing from metadata
+- fix stable cascade progress monitoring
+- fix variation seed with hires pass
+- add variation seed info to metadata
 - workaround for scale-by when using modernui
 - lock torch-directml version
 - improve xformers installer
