@@ -136,7 +136,7 @@ def create_seed_inputs(tab, reuse_visible=True):
         with gr.Row(visible=False):
             seed_resize_from_w = gr.Slider(minimum=0, maximum=4096, step=8, label="Resize seed from width", value=0, elem_id=f"{tab}_seed_resize_from_w")
             seed_resize_from_h = gr.Slider(minimum=0, maximum=4096, step=8, label="Resize seed from height", value=0, elem_id=f"{tab}_seed_resize_from_h")
-        random_seed.click(fn=lambda: [-1, -1], show_progress=False, inputs=[], outputs=[seed, subseed])
+        random_seed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[seed])
         random_subseed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[subseed])
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
 

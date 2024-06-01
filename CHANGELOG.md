@@ -1,12 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-05-30
+## Update for 2024-06-01
 
 - fix textual inversion loading
 - fix gallery mtime display
 - fix extra network scrollable area when using modernui
 - fix control prompts list handling
 - fix variation seed with hires pass
+- fix restore variation seed and strength
 - workaround for scale-by when using modernui
 - lock torch-directml version
 - improve xformers installer

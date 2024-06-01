@@ -56,7 +56,7 @@ def create_ui():
 
             txt2img_gallery, txt2img_generation_info, txt2img_html_info, _txt2img_html_info_formatted, txt2img_html_log = ui_common.create_output_panel("txt2img", preview=True, prompt=txt2img_prompt)
             ui_common.connect_reuse_seed(seed, reuse_seed, txt2img_generation_info, is_subseed=False)
-            ui_common.connect_reuse_seed(subseed, reuse_subseed, txt2img_generation_info, is_subseed=True)
+            ui_common.connect_reuse_seed(subseed, reuse_subseed, txt2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
 
             dummy_component = gr.Textbox(visible=False, value='dummy')
             txt2img_args = [

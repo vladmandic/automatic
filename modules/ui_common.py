@@ -348,31 +348,37 @@ def create_override_inputs(tab): # pylint: disable=unused-argument
     return override_settings
 
 
-def connect_reuse_seed(seed: gr.Number, reuse_seed: gr.Button, generation_info: gr.Textbox, is_subseed):
+def connect_reuse_seed(seed: gr.Number, reuse_seed: gr.Button, generation_info: gr.Textbox, is_subseed, subseed_strength=None):
     """ Connects a 'reuse (sub)seed' button's click event so that it copies last used
         (sub)seed value from generation info the to the seed field. If copying subseed and subseed strength
         was 0, i.e. no variation seed was used, it copies the normal seed value instead."""
     def copy_seed(gen_info_string: str, index: int):
-        res = -1
+        restore_seed = -1
+        restore_strength = -1
         try:
             gen_info = json.loads(gen_info_string)
             shared.log.debug(f'Reuse: info={gen_info}')
             index -= gen_info.get('index_of_first_image', 0)
             index = int(index)
-
-            if is_subseed and gen_info.get('subseed_strength', 0) > 0:
+            if is_subseed:
                 all_subseeds = gen_info.get('all_subseeds', [-1])
-                res = all_subseeds[index if 0 <= index < len(all_subseeds) else 0]
+                restore_seed = all_subseeds[index if 0 <= index < len(all_subseeds) else 0]
+                restore_strength = gen_info.get('subseed_strength', 0)
             else:
                 all_seeds = gen_info.get('all_seeds', [-1])
-                res = all_seeds[index if 0 <= index < len(all_seeds) else 0]
+                restore_seed = all_seeds[index if 0 <= index < len(all_seeds) else 0]
         except json.decoder.JSONDecodeError:
             if gen_info_string != '':
                 shared.log.error(f"Error parsing JSON generation info: {gen_info_string}")
-        return [res, gr_show(False)]
-
+        if is_subseed is not None:
+            return [restore_seed, gr_show(False), restore_strength]
+        else:
+            return [restore_seed, gr_show(False)]
     dummy_component = gr.Number(visible=False, value=0)
-    reuse_seed.click(fn=copy_seed, _js="(x, y) => [x, selected_gallery_index()]", show_progress=False, inputs=[generation_info, dummy_component], outputs=[seed, dummy_component])
+    if subseed_strength is None:
+        reuse_seed.click(fn=copy_seed, _js="(x, y) => [x, selected_gallery_index()]", show_progress=False, inputs=[generation_info, dummy_component], outputs=[seed, dummy_component])
+    else:
+        reuse_seed.click(fn=copy_seed, _js="(x, y) => [x, selected_gallery_index()]", show_progress=False, inputs=[generation_info, dummy_component], outputs=[seed, dummy_component, subseed_strength])
 
 
 def update_token_counter(text, steps):
