@@ -103,7 +103,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
-    shared.state.sampling_steps = base_args.get('num_inference_steps', None) or p.steps
+    shared.state.sampling_steps = base_args.get('prior_num_inference_steps', None) or base_args.get('num_inference_steps', None) or p.steps
     p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
@@ -211,7 +211,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 desc='Hires',
             )
             shared.state.job = 'HiRes'
-            shared.state.sampling_steps = hires_args.get('num_inference_steps', None) or p.steps
+            shared.state.sampling_steps = hires_args.get('prior_num_inference_steps', None) or hires_args.get('num_inference_steps', None) or p.steps
             try:
                 sd_models_compile.check_deepcache(enable=True)
                 output = shared.sd_model(**hires_args) # pylint: disable=not-callable
@@ -276,7 +276,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 clip_skip=p.clip_skip,
                 desc='Refiner',
             )
-            shared.state.sampling_steps = refiner_args.get('num_inference_steps', None) or p.steps
+            shared.state.sampling_steps = refiner_args.get('prior_num_inference_steps', None) or refiner_args.get('num_inference_steps', None) or p.steps
             try:
                 if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true
                     shared.sd_refiner.register_to_config(requires_aesthetics_score = getattr(shared.sd_refiner, 'tokenizer', None) is None)
