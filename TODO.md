@@ -22,6 +22,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - lora: sc lora, dora, etc
 - controlnet: additional models
 - resadapter: <https://github.com/bytedance/res-adapter>
+- t-gate: <https://huggingface.co/docs/diffusers/main/en/optimization/tgate>
 
 ## Experimental
 
