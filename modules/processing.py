@@ -232,8 +232,9 @@ def process_init(p: StableDiffusionProcessing):
                 for i in range(len(p.all_prompts)):
                     seed = get_fixed_seed(p.seed)
                     p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
+    if p.all_subseeds is None:
         if type(subseed) == list:
-            p.all_subseeds = subseed
+            p.all_subseeds = [int(s) for s in subseed]
         else:
             p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
     if reset_prompts:
