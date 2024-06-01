@@ -32,8 +32,10 @@ def txt2img(id_task,
 
     override_settings = create_override_settings_dict(override_settings_texts)
     if sampler_index is None:
+        shared.log.warning('Sampler: invalid')
         sampler_index = 0
     if hr_sampler_index is None:
+        shared.log.warning('Sampler: invalid')
         hr_sampler_index = 0
 
     p = processing.StableDiffusionProcessingTxt2Img(

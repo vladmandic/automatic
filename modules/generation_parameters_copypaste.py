@@ -217,6 +217,8 @@ def parse_generation_parameters(infotext, no_prompt=False):
                 params.pop(next(iter(params)))
     params_idx = sanitized.find(f'{first_param}:') if first_param else -1
     negative_idx = infotext.find("Negative prompt:")
+    if 'Steps:' in sanitized:
+        params_idx = max(params_idx, sanitized.find('Steps:'))
 
     if negative_idx == -1: # prompt can be without negative prompt
         prompt = infotext[:params_idx] if params_idx > 0 else infotext

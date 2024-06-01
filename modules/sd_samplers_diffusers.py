@@ -46,7 +46,9 @@ config = {
     'UniPC': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'predict_x0': 'bh2', 'lower_order_final': True, 'timestep_spacing': 'linspace' },
     'DEIS': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "deis", 'solver_type': "logrho", 'lower_order_final': True, 'timestep_spacing': 'linspace' },
     'DPM++': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'sigma_min' },
-    'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace' },
+    'DPM++ 1S': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 1 },
+    'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
+    'DPM++ 3M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 3 },
     'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
     'Euler a': { 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
     'Euler': { 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
@@ -77,7 +79,9 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('Euler', lambda model: DiffusionSampler('Euler', EulerDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler a', lambda model: DiffusionSampler('Euler a', EulerAncestralDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++', lambda model: DiffusionSampler('DPM++', DPMSolverSinglestepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ 1S', lambda model: DiffusionSampler('DPM++ 1S', DPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ 2M', lambda model: DiffusionSampler('DPM++ 2M', DPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ 3M', lambda model: DiffusionSampler('DPM++ 3M', DPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM SDE', lambda model: DiffusionSampler('DPM SDE', DPMSolverSDEScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('PNDM', lambda model: DiffusionSampler('PNDM', PNDMScheduler, model), [], {}),
@@ -107,10 +111,7 @@ class DiffusionSampler:
             return
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
-        # shared.log.debug(f'Sampler: name={name} type=all config={self.config}')
-        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
-            self.config[key] = value
-        # shared.log.debug(f'Sampler: name={name} type=scheduler config={self.config}')
+        print('HERE1', name, self.config.get('solver_order', None))
         if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.scheduler.scheduler_config
         else:
@@ -118,11 +119,14 @@ class DiffusionSampler:
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
-        # shared.log.debug(f'Sampler: name={name} type=model config={self.config}')
+        print('HERE2', name, self.config.get('solver_order', None))
+        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
+            self.config[key] = value
+        print('HERE3', name, self.config.get('solver_order', None))
         for key, value in kwargs.items(): # apply user args, if any
             if key in self.config:
                 self.config[key] = value
-        # shared.log.debug(f'Sampler: name={name} type=user config={self.config}')
+        print('HERE4', name, self.config.get('solver_order', None))
         # finally apply user preferences
         if shared.opts.schedulers_prediction_type != 'default':
             self.config['prediction_type'] = shared.opts.schedulers_prediction_type
@@ -136,7 +140,7 @@ class DiffusionSampler:
             self.config['thresholding'] = shared.opts.schedulers_use_thresholding
         if 'lower_order_final' in self.config:
             self.config['lower_order_final'] = shared.opts.schedulers_use_loworder
-        if 'solver_order' in self.config:
+        if 'solver_order' in self.config and 'DPM' not in name:
             self.config['solver_order'] = shared.opts.schedulers_solver_order
         if 'predict_x0' in self.config:
             self.config['predict_x0'] = shared.opts.uni_pc_variant
@@ -165,6 +169,7 @@ class DiffusionSampler:
             del self.config['prediction_type']
         if 'SGM' in name:
             self.config['timestep_spacing'] = 'trailing'
+        print('HERE5', name, self.config.get('solver_order', None))
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()

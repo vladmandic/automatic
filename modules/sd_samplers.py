@@ -55,6 +55,7 @@ def create_sampler(name, model):
         return model.scheduler
     config = find_sampler_config(name)
     if config is None or config.constructor is None:
+        shared.log.warning(f'Sampler: sampler="{name}" not found')
         return None
     if shared.backend == shared.Backend.ORIGINAL:
         sampler = config.constructor(model)

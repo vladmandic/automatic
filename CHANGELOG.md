@@ -8,12 +8,14 @@
 - fix control prompts list handling
 - fix variation seed with hires pass
 - fix restore variation seed and strength
+- fix negative prompt parsing from metadata
 - workaround for scale-by when using modernui
 - lock torch-directml version
 - improve xformers installer
 - improve ultralytics installer
 - improve triton installer
 - improve insightface installer
+- add dpm++ 1s and dpm++ 3m aliases for dpm++ 2m scheduler with different orders
 
 ## Update for 2024-05-28
 

@@ -86,6 +86,13 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     if mask is not None and input_type == 0:
         input_type = 1 # inpaint always requires control_image
 
+    if sampler_index is None:
+        shared.log.warning('Sampler: invalid')
+        sampler_index = 0
+    if hr_sampler_index is None:
+        shared.log.warning('Sampler: invalid')
+        hr_sampler_index = 0
+
     p = StableDiffusionProcessingControl(
         prompt = prompt,
         negative_prompt = negative,
