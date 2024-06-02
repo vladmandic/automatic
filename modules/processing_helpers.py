@@ -216,7 +216,8 @@ def decode_first_stage(model, x, full_quality=True):
 
 def get_fixed_seed(seed):
     if seed is None or seed == '' or seed == -1:
-        return int(random.randrange(4294967294))
+        random.seed()
+        seed = int(random.randrange(4294967294))
     return seed
 
 

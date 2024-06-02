@@ -12,10 +12,11 @@ import os.path
 from os import mkdir
 from urllib import request
 from enum import Enum
+import diffusers
+import diffusers.loaders.single_file_utils
 from rich import progress # pylint: disable=redefined-builtin
 import torch
 import safetensors.torch
-import diffusers
 from omegaconf import OmegaConf
 from transformers import logging as transformers_logging
 from ldm.util import instantiate_from_config
@@ -1056,6 +1057,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     else:
                         diffusers_load_config['config'] = get_load_config(checkpoint_info.path, model_type, config_type='json')
                 if hasattr(pipeline, 'from_single_file'):
+                    diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # TODO patch for diffusers==0.28.0
                     diffusers_load_config['use_safetensors'] = True
                     diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
                     if shared.opts.disable_accelerate:

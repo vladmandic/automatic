@@ -10,6 +10,7 @@
 - fix negative prompt parsing from metadata
 - fix stable cascade progress monitoring
 - fix variation seed with hires pass
+- fix loading models trained with onetrainer
 - add variation seed info to metadata
 - workaround for scale-by when using modernui
 - lock torch-directml version
