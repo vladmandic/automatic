@@ -252,13 +252,14 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False):
 
 # install package using pip if not already installed
 @lru_cache()
-def install(package, friendly: str = None, ignore: bool = False, reinstall: bool = False):
+def install(package, friendly: str = None, ignore: bool = False, reinstall: bool = False, no_deps: bool = False):
     res = ''
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=False):
-        res = pip(f"install --upgrade {package}", ignore=ignore)
+        deps = '' if not no_deps else '--no-deps'
+        res = pip(f"install --upgrade {deps} {package}", ignore=ignore)
         try:
             import imp # pylint: disable=deprecated-module
             imp.reload(pkg_resources)
