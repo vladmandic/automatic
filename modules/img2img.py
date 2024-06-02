@@ -152,6 +152,7 @@ def img2img(id_task: str, mode: int,
             shared.log.debug('Init image not set')
 
     if sampler_index is None:
+        shared.log.warning('Sampler: invalid')
         sampler_index = 0
 
     override_settings = create_override_settings_dict(override_settings_texts)

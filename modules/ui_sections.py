@@ -136,7 +136,7 @@ def create_seed_inputs(tab, reuse_visible=True):
         with gr.Row(visible=False):
             seed_resize_from_w = gr.Slider(minimum=0, maximum=4096, step=8, label="Resize seed from width", value=0, elem_id=f"{tab}_seed_resize_from_w")
             seed_resize_from_h = gr.Slider(minimum=0, maximum=4096, step=8, label="Resize seed from height", value=0, elem_id=f"{tab}_seed_resize_from_h")
-        random_seed.click(fn=lambda: [-1, -1], show_progress=False, inputs=[], outputs=[seed, subseed])
+        random_seed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[seed])
         random_subseed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[subseed])
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
 
@@ -316,10 +316,10 @@ def create_resize_inputs(tab, images, accordion=True, latent=False):
         with gr.Row(visible=True) as _resize_group:
             with gr.Column(elem_id=f"{tab}_column_size"):
                 selected_scale_tab = gr.State(value=0) # pylint: disable=abstract-class-instantiated
-                with gr.Tabs():
-                    with gr.Tab(label="Fixed") as tab_scale_to:
+                with gr.Tabs(elem_id=f"{tab}_scale_tabs"):
+                    with gr.Tab(label="Fixed", elem_id=f"{tab}_scale_tab_fixed") as tab_scale_to:
                         with gr.Row():
-                            with gr.Column(elem_id=f"{tab}_column_size"):
+                            with gr.Column(elem_id=f"{tab}_column_size_fixed"):
                                 with gr.Row():
                                     width = gr.Slider(minimum=64, maximum=8192, step=8, label="Width", value=512, elem_id=f"{tab}_width")
                                     height = gr.Slider(minimum=64, maximum=8192, step=8, label="Height", value=512, elem_id=f"{tab}_height")
@@ -332,7 +332,7 @@ def create_resize_inputs(tab, images, accordion=True, latent=False):
                                     detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_detect_image_size_btn")
                                     el = tab.split('_')[0]
                                     detect_image_size_btn.click(fn=lambda w, h, _: (w or gr.update(), h or gr.update()), _js=f'currentImageResolution{el}', inputs=[dummy_component, dummy_component, dummy_component], outputs=[width, height], show_progress=False)
-                    with gr.Tab(label="Scale") as tab_scale_by:
+                    with gr.Tab(label="Scale", elem_id=f"{tab}_scale_tab_scale") as tab_scale_by:
                         scale_by = gr.Slider(minimum=0.05, maximum=8.0, step=0.05, label="Scale", value=1.0, elem_id=f"{tab}_scale")
                     for component in images:
                         component.change(fn=lambda: None, _js="updateImg2imgResizeToTextAfterChangingImage", inputs=[], outputs=[], show_progress=False)

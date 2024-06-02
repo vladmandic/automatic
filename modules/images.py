@@ -231,7 +231,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
             return im.resize((w, h), resample=Image.Resampling.LANCZOS) # force for mask
         scale = max(w / im.width, h / im.height)
         if scale > 1.0:
-            upscalers = [x for x in shared.sd_upscalers if x.name == upscaler_name]
+            upscalers = [x for x in shared.sd_upscalers if x.name.lower().replace('-', ' ') == upscaler_name.lower().replace('-', ' ')]
             if len(upscalers) > 0:
                 upscaler = upscalers[0]
                 im = upscaler.scaler.upscale(im, scale, upscaler.data_path)
@@ -240,8 +240,9 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
                 if upscaler is not None:
                     im = latent(im, w, h, upscaler)
                 else:
-                    upscaler = upscalers[0]
+                    upscaler = shared.sd_upscalers[0]
                     shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={upscaler.name}")
+                    shared.log.debug(f"Resize upscaler: available={[u.name for u in shared.sd_upscalers]}")
         if im.width != w or im.height != h: # probably downsample after upscaler created larger image
             im = im.resize((w, h), resample=Image.Resampling.LANCZOS)
         return im

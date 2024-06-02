@@ -554,6 +554,7 @@ class Script(scripts.Script):
             processing.fix_seed(p)
         if not shared.opts.return_grid:
             p.batch_size = 1
+
         def process_axis(opt, vals, vals_dropdown):
             if opt.label == 'Nothing':
                 return [0]

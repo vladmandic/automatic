@@ -150,7 +150,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'generator' in possible:
         args['generator'] = get_generator(p)
     if 'latents' in possible and getattr(p, "init_latent", None) is not None:
-        args['latents'] = p.init_latent
+        if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
+            args['latents'] = p.init_latent
     if 'output_type' in possible:
         if not hasattr(model, 'vae'):
             args['output_type'] = 'np' # only set latent if model has vae

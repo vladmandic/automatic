@@ -223,7 +223,7 @@ def process_init(p: StableDiffusionProcessing):
     if p.all_seeds is None:
         reset_prompts = True
         if type(seed) == list:
-            p.all_seeds = seed
+            p.all_seeds = [int(s) for s in seed]
         else:
             if shared.opts.sequential_seed:
                 p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
@@ -232,13 +232,13 @@ def process_init(p: StableDiffusionProcessing):
                 for i in range(len(p.all_prompts)):
                     seed = get_fixed_seed(p.seed)
                     p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
+    if p.all_subseeds is None:
         if type(subseed) == list:
-            p.all_subseeds = subseed
+            p.all_subseeds = [int(s) for s in subseed]
         else:
             p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
     if reset_prompts:
         p.all_prompts, p.all_negative_prompts = shared.prompt_styles.apply_styles_to_prompts(p.all_prompts, p.all_negative_prompts, p.styles, p.all_seeds)
-
 
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     """this is the main loop that both txt2img and img2img use; it calls func_init once inside all the scopes and func_sample once per batch"""

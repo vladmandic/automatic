@@ -81,8 +81,10 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, see
 def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
     if len(prompt) == 0:
         return prompt
-    if seed > 0:
+    old_state = None
+    if seed > 0 and len(all_wildcards) > 0:
         random.seed(seed)
+        old_state = random.getstate()
     replaced = {}
     t0 = time.time()
     for style_wildcards in all_wildcards:
@@ -104,6 +106,8 @@ def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
         shared.log.debug(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
     if (len(replaced_file) > 0 or len(not_found) > 0) and not silent:
         shared.log.debug(f'Wildcards applied: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
+    if old_state is not None:
+        random.setstate(old_state)
     return prompt
 
 

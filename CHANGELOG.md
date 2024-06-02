@@ -1,5 +1,26 @@
 # Change Log for SD.Next
 
+## Update for 2024-06-02
+
+- fix textual inversion loading
+- fix gallery mtime display
+- fix extra network scrollable area when using modernui
+- fix control prompts list handling
+- fix restore variation seed and strength
+- fix negative prompt parsing from metadata
+- fix stable cascade progress monitoring
+- fix variation seed with hires pass
+- fix loading models trained with onetrainer
+- add variation seed info to metadata
+- workaround for scale-by when using modernui
+- lock torch-directml version
+- improve xformers installer
+- improve ultralytics installer (face-hires)
+- improve triton installer (compile)
+- improve insightface installer (faceip)
+- improve mim installer (dwpose)
+- add dpm++ 1s and dpm++ 3m aliases for dpm++ 2m scheduler with different orders
+
 ## Update for 2024-05-28
 
 ### Highlights for 2024-05-28
@@ -10,10 +31,6 @@ Starting with the new UI - yup, this version ships with a *preview* of the new [
 For details on how to enable and use it, see [Home](https://github.com/BinaryQuantumSoul/sdnext-modernui) and [WiKi](https://github.com/vladmandic/automatic/wiki/Themes)  
 **ModernUI** is still in early development and not all features are available yet, please report [issues and feedback](https://github.com/BinaryQuantumSoul/sdnext-modernui/issues)  
 Thanks to @BinaryQuantumSoul for his hard work on this project!  
-
-![Screenshot-ModernUI](html/screenshot-modernui.jpg)
-![Screenshot-ModernUI-Img](html/screenshot-modernui-img2img.jpg)
-![Screenshot-ModernUI-Control](html/screenshot-modernui-control.jpg)
 
 *What else?*
 

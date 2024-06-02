@@ -216,7 +216,8 @@ def decode_first_stage(model, x, full_quality=True):
 
 def get_fixed_seed(seed):
     if seed is None or seed == '' or seed == -1:
-        return int(random.randrange(4294967294))
+        random.seed()
+        seed = int(random.randrange(4294967294))
     return seed
 
 
@@ -526,6 +527,7 @@ def update_sampler(p, sd_model, second_pass=False):
     if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
         sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
         if sampler is None:
+            shared.log.warning(f'Sampler: sampler="{sampler_selection}" not found')
             sampler = sd_samplers.all_samplers_map.get("UniPC")
         if len(getattr(p, 'timesteps', [])) > 0:
             if 'schedulers_use_karras' in shared.opts.data:

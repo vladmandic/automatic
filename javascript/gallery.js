@@ -163,7 +163,7 @@ class GalleryFile extends HTMLElement {
       this.width = cache.width;
       this.height = cache.height;
       this.size = cache.size;
-      this.mtime = new Date(1000 * cache.mtime);
+      this.mtime = new Date(cache.mtime);
     } else {
       try {
         const json = await delayFetchThumb(this.src);
@@ -175,7 +175,7 @@ class GalleryFile extends HTMLElement {
           this.width = json.width;
           this.height = json.height;
           this.size = json.size;
-          this.mtime = new Date(1000 * json.mtime);
+          this.mtime = new Date(json.mtime);
           await idbAdd({
             hash: this.hash,
             folder: this.folder,

@@ -230,6 +230,7 @@ def pad_to_same_length(pipe, embeds):
     try:
         if getattr(pipe, "prior_pipe", None) and getattr(pipe.prior_pipe, "text_encoder", None) is not None: # Cascade
             empty_embed = pipe.prior_pipe.encode_prompt(device, 1, 1, False, "")
+            empty_embed = [torch.zeros(empty_embed[0].shape, device=empty_embed[0].device, dtype=empty_embed[0].dtype)]
         else: # SDXL
             empty_embed = pipe.encode_prompt("")
     except TypeError:  # SD1.5

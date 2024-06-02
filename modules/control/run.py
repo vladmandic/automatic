@@ -86,6 +86,13 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     if mask is not None and input_type == 0:
         input_type = 1 # inpaint always requires control_image
 
+    if sampler_index is None:
+        shared.log.warning('Sampler: invalid')
+        sampler_index = 0
+    if hr_sampler_index is None:
+        shared.log.warning('Sampler: invalid')
+        hr_sampler_index = 0
+
     p = StableDiffusionProcessingControl(
         prompt = prompt,
         negative_prompt = negative,
@@ -128,7 +135,20 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_control_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
-    processing.process_init(p)
+    # processing.process_init(p)
+    resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
+
+    # TODO monkey-patch for modernui missing tabs.select event
+    if selected_scale_tab_before == 0 and resize_name_before != 'None' and scale_by_before != 1 and inputs is not None and len(inputs) > 0:
+        shared.log.debug('Control: override resize mode=before')
+        selected_scale_tab_before = 1
+    if selected_scale_tab_after == 0 and resize_name_after != 'None' and scale_by_after != 1:
+        shared.log.debug('Control: override resize mode=after')
+        selected_scale_tab_after = 1
+    if selected_scale_tab_mask == 0 and resize_name_mask != 'None' and scale_by_mask != 1:
+        shared.log.debug('Control: override resize mode=mask')
+        selected_scale_tab_mask = 1
+
     # set initial resolution
     if resize_mode_before != 0 or inputs is None or inputs == [None]:
         p.width, p.height = width_before, height_before # pylint: disable=attribute-defined-outside-init
