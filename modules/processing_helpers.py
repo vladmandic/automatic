@@ -503,12 +503,19 @@ def set_latents(p):
     return latents
 
 
+last_circular = False
 def apply_circular(enable, model):
+    global last_circular # pylint: disable=global-statement
+    if not hasattr(model, 'unet') or not hasattr(model, 'vae'):
+        return
+    if last_circular == enable:
+        return
     try:
         for layer in [layer for layer in model.unet.modules() if type(layer) is torch.nn.Conv2d]:
             layer.padding_mode = 'circular' if enable else 'zeros'
         for layer in [layer for layer in model.vae.modules() if type(layer) is torch.nn.Conv2d]:
             layer.padding_mode = 'circular' if enable else 'zeros'
+        last_circular = enable
     except Exception as e:
         debug(f"Diffusers tiling failed: {e}")
 

@@ -604,6 +604,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as SegMoE model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'SegMoE'
+            if 'hunyuandit' in f.lower():
+                if shared.backend == shared.Backend.ORIGINAL:
+                    warn(f'Model detected as Tenecent HunyuanDiT model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                guess = 'HunyuanDiT'
             if 'pixart-xl' in f.lower():
                 if shared.backend == shared.Backend.ORIGINAL:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
@@ -1197,7 +1201,7 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
         new_pipe = None
         signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
         possible = signature.parameters.keys()
-        if isinstance(pipeline, cls):
+        if isinstance(pipeline, cls) and args == {}:
             return pipeline
         pipe_dict = {}
         components_used = []
