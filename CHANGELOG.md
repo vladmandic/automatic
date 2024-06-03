@@ -9,7 +9,7 @@
 
 *Note*: New features require `diffusers==0.29.0.dev`
 
-- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model
+- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model  
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 - [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
