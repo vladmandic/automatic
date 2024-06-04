@@ -2,7 +2,7 @@
 
 ## TODO
 
-- add controlnets
+- StableDiffusion 3
 
 ## Update for 2024-06-03
 
@@ -36,7 +36,7 @@
 - **Kohya HiRes Fix** allows for higher resolution generation using standard *SD15* models  
   enable via scripts -> kohya-hires-fix  
   *note*: alternative to regular hidiffusion method, but with different approach to scaling  
-- additional built-in 4 great **ControlNet** SDXL models from Xinsir: OpenPose, Canny, Scribble, AnimePainter  
+- additional built-in 4 great custom trained **ControlNet SDXL** models from Xinsir: OpenPose, Canny, Scribble, AnimePainter  
   thanks @lbeltrame
 - lower overhead on generate calls
 - cumulative fixes since the last release
