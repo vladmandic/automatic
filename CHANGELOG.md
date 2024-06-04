@@ -2,7 +2,6 @@
 
 ## TODO
 
-- update checkpoint: `Tencent-Hunyuan/HunyuanDiT-Diffusers`
 - add controlnets
 
 ## Update for 2024-06-03
@@ -14,7 +13,7 @@
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 - [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
   write your prompts forin ~110 auto-detected languages!  
-  compatible with SD15 and SDXL  
+  compatible with *SD15* and *SDXL*  
   enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder  
   *note*: right now this is more of a proof-of-concept before smaller and/or quantized models are released  
   model will be auto-downloaded on first use: note its huge size of 27GB  
@@ -30,13 +29,15 @@
   - Chinese: 一个美丽的女人在海滩上穿着白色比基尼的照片, 背景是城市天际线
   - Korean: 도시의 스카이라인을 배경으로 해변에서 흰색 비키니를 입은 아름 다운 여성의 사진
 - [T-Gate](https://github.com/HaozheLiu-ST/T-GATE) Speed up generations by gating at which step cross-attention is no longer needed  
-  enable via scripts -> t-gate
-- **PCM LoRAs** allow for fast denoising using less steps with standard sd15 and sdxl models  
+  enable via scripts -> t-gate  
+  compatible with *SD15*  
+- **PCM LoRAs** allow for fast denoising using less steps with standard *SD15* and *SDXL* models  
   download from <https://huggingface.co/Kijai/converted_pcm_loras_fp16/tree/main>
-- **Kohya HiRes Fix** allows for higher resolution generation using standard sd15 models  
+- **Kohya HiRes Fix** allows for higher resolution generation using standard *SD15* models  
   enable via scripts -> kohya-hires-fix  
   *note*: alternative to regular hidiffusion method, but with different approach to scaling  
-- additional built-in **ControlNet** models: TODO
+- additional built-in 4 great **ControlNet** SDXL models from Xinsir: OpenPose, Canny, Scribble, AnimePainter  
+  thanks @lbeltrame
 - lower overhead on generate calls
 - cumulative fixes since the last release
 

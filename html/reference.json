@@ -159,7 +159,7 @@
   },
   
   "Tencent HunyuanDiT": {
-    "path": "XCLiu/HunyuanDiT-0523",
+    "path": "Tencent-Hunyuan/HunyuanDiT-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
     "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
