@@ -3,7 +3,7 @@ import json
 import time
 from contextlib import nullcontext
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
@@ -415,7 +415,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         extra_networks.deactivate(p, extra_network_data)
 
     if shared.opts.include_mask:
-        if getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
+        if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images):
+            p.image_mask = create_binary_mask(p.overlay_images[0])
+            p.image_mask = ImageOps.invert(p.image_mask)
+            output_images.append(p.image_mask)
+        elif getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
             if getattr(p, 'mask_for_facehires', None) is not None:
                 output_images.append(p.mask_for_facehires)
             else:

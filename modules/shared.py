@@ -752,10 +752,10 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "facehires_iou": OptionInfo(0.5, "Max face overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05}),
     "facehires_min_size": OptionInfo(0, "Min face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
     "facehires_max_size": OptionInfo(0, "Max face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
-    "facehires_padding": OptionInfo(10, "Face padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
-    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
+    "facehires_padding": OptionInfo(20, "Face padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "facehires_strength": OptionInfo(0.0, "Face restore strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),

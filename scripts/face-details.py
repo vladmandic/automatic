@@ -160,6 +160,7 @@ class FaceRestorerYolo(FaceRestoration):
                 continue
             p.init_images = [image]
             p.image_mask = [face.mask]
+            # mask_all.append(face.mask)
             p.recursion = True
             pp = processing.process_images_inner(p)
             del p.recursion
@@ -176,12 +177,13 @@ class FaceRestorerYolo(FaceRestoration):
         shared.opts.data['mask_apply_overlay'] = orig_apply_overlay
         np_image = np.array(image)
 
-        """
         if len(mask_all) > 0 and shared.opts.include_mask:
             from modules.control.util import blend
-            mask_all = blend([np.array(m) for m in mask_all])
-            mask_pil = Image.fromarray(mask_all)
-        """
+            p.image_mask = blend([np.array(m) for m in mask_all])
+            # combined = blend([np_image, p.image_mask])
+            # combined = Image.fromarray(combined)
+            # combined.save('/tmp/face.png')
+            p.image_mask = Image.fromarray(p.image_mask)
         return np_image
 
 
