@@ -116,7 +116,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         hidiffusion.apply_hidiffusion(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
-        if hasattr(shared.sd_model, 'tgate'):
+        if hasattr(shared.sd_model, 'tgate') and getattr(p, 'gate_step', -1) > 0:
+            base_args['gate_step'] = p.gate_step
             output = shared.sd_model.tgate(**base_args) # pylint: disable=not-callable
         else:
             output = shared.sd_model(**base_args)

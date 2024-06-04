@@ -16,9 +16,9 @@
   write your prompts forin ~110 auto-detected languages!  
   compatible with SD15 and SDXL  
   enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder  
-  *Note*: right now this is more of a proof-of-concept before smaller and/or quantized models are released  
+  *note*: right now this is more of a proof-of-concept before smaller and/or quantized models are released  
   model will be auto-downloaded on first use: note its huge size of 27GB  
-  even executing it in FP16 context will require ~16GB of VRAM for text encoder alone  
+  even executing it in FP16 will require ~16GB of VRAM for text encoder alone  
   examples:  
   - English: photo of a beautiful woman wearing a white bikini on a beach with a city skyline in the background
   - Croatian: fotografija lijepe žene u bijelom bikiniju na plaži s gradskim obzorom u pozadini
@@ -35,8 +35,8 @@
   download from <https://huggingface.co/Kijai/converted_pcm_loras_fp16/tree/main>
 - **Kohya HiRes Fix** allows for higher resolution generation using standard sd15 models  
   enable via scripts -> kohya-hires-fix  
-  *note*: this alternative to regular hidiffusion method, but with different approach to scaling  
-- additional built-in controlnet models: TODO
+  *note*: alternative to regular hidiffusion method, but with different approach to scaling  
+- additional built-in **ControlNet** models: TODO
 - lower overhead on generate calls
 - cumulative fixes since the last release
 
