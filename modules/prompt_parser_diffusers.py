@@ -130,6 +130,8 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
+    if getattr(p, 'hidiffusion', False) is True:
+        cache.clear()
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return

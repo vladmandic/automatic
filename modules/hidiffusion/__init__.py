@@ -10,7 +10,7 @@ def apply_hidiffusion(p, model_type):
         shared.log.warning(f'HiDiffusion: class={shared.sd_model.__class__.__name__} not supported')
         return
     remove_hidiffusion(p)
-    if p.hidiffusion:
+    if getattr(p, 'hidiffusion', False) is True:
         t0 = time.time()
         hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_steps > 0
         hidiffusion.aggressive_step = shared.opts.hidiffusion_steps
