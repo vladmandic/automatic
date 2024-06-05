@@ -40,6 +40,7 @@
   thanks @lbeltrame
 - lower overhead on generate calls
 - cumulative fixes since the last release
+- add python version check for torch-directml
 
 ## Update for 2024-06-02
 

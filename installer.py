@@ -386,13 +386,14 @@ def get_platform():
 
 
 # check python version
-def check_python():
-    supported_minors = [9, 10, 11]
+def check_python(supported_minors=[9, 10, 11], reason=None):
     if args.quick:
         return
     log.info(f'Python {platform.python_version()} on {platform.system()}')
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
         log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
+        if reason is not None:
+            log.error(reason)
         if not args.ignore:
             sys.exit(1)
     if not args.skip_git:
@@ -619,6 +620,7 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
             log.info('Using DirectML Backend')
+            check_python(supported_minors=[10], reason='DirectML backend requires Python 3.10')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0 torchvision torch-directml')
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
