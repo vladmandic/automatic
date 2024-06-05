@@ -540,6 +540,16 @@ def check_torch():
             log.info("For ZLUDA support specify '--use-zluda'")
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+
+            # conceal ROCm installed
+            os.environ.pop("ROCM_HOME", None)
+            os.environ.pop("ROCM_PATH", None)
+            paths = os.environ["PATH"].split(";")
+            paths_no_rocm = []
+            for path in paths:
+                if "ROCm" not in path:
+                    paths_no_rocm.append(path)
+            os.environ["PATH"] = ";".join(paths_no_rocm)
         else:
             if rocm_ver is None: # assume the latest if version check fails
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
