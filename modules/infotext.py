@@ -27,9 +27,9 @@ def parse(infotext):
     if not isinstance(infotext, str):
         return {}
     debug(f'Raw: {infotext}')
-    if 'negative prompt:' not in infotext:
+    if 'negative prompt:' not in infotext.lower():
         infotext = 'negative prompt: ' + infotext
-    if 'Prompt:' not in infotext:
+    if 'prompt:' not in infotext.lower():
         infotext = 'prompt: ' + infotext
 
     remaining = infotext
