@@ -23,6 +23,7 @@ class Dot(dict): # dot notation access to dictionary attributes
 
 
 version = None
+current_branch = None
 log = logging.getLogger("sd")
 debug = log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
@@ -294,6 +295,7 @@ def git(arg: str, folder: str = None, ignore: bool = False):
 
 # reattach as needed as head can get detached
 def branch(folder=None):
+    global current_branch # pylint: disable=global-statement
     # if args.experimental:
     #    return None
     if not os.path.exists(os.path.join(folder or os.curdir, '.git')):
@@ -318,17 +320,19 @@ def branch(folder=None):
         b = b.split('\n')[0].replace('*', '').strip()
     log.debug(f'Submodule: {folder} / {b}')
     git(f'checkout {b}', folder, ignore=True)
+    if folder is None:
+        current_branch = b
     return b
 
 
 # update git repository
-def update(folder, current_branch = False, rebase = True):
+def update(folder, keep_branch = False, rebase = True):
     try:
         git('config rebase.Autostash true')
     except Exception:
         pass
     arg = '--rebase --force' if rebase else ''
-    if current_branch:
+    if keep_branch:
         res = git(f'pull {arg}', folder)
         debug(f'Install update: folder={folder} args={arg} {res}')
         return res
@@ -1003,7 +1007,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
                 try:
                     git('add .')
                     git('stash')
-                    update('.', current_branch=True)
+                    update('.', keep_branch=True)
                     # git('git stash pop')
                     ver = git('log -1 --pretty=format:"%h %ad"')
                     log.info(f'Upgraded to version: {ver}')

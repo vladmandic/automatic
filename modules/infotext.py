@@ -32,7 +32,7 @@ def parse(infotext):
     if 'prompt:' not in infotext.lower():
         infotext = 'prompt: ' + infotext
 
-    remaining = infotext
+    remaining = infotext.replace('\nSteps:', ' Steps:')
     prompt = remaining[:infotext.lower().find('negative prompt:')]
     remaining = remaining.replace(prompt, '')
     if prompt.lower().startswith('prompt: '):
@@ -40,7 +40,7 @@ def parse(infotext):
     # debug(f'Prompt: {prompt}')
 
     params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
-    param_idx = [remaining.lower().find(p) for p in params if p in remaining]
+    param_idx = [remaining.lower().find(p) for p in params if p in remaining.lower()]
     param_idx = min(param_idx) if len(param_idx) > 0 else 0
     negative = remaining[:param_idx] if param_idx > 0 else remaining
     remaining = remaining.replace(negative, '')
