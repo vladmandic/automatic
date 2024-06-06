@@ -6,7 +6,7 @@ import csv
 import json
 import time
 import random
-from modules import files_cache, shared
+from modules import files_cache, shared, infotext
 
 
 class Style():
@@ -132,12 +132,11 @@ def apply_styles_to_extra(p, style: Style):
     name_exclude = [
         'size',
     ]
-    from modules.generation_parameters_copypaste import parse_generation_parameters
     reference_style = get_reference_style()
-    extra = parse_generation_parameters(reference_style) if shared.opts.extra_network_reference else {}
+    extra = infotext.parse(reference_style) if shared.opts.extra_network_reference else {}
 
     style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards], silent=True)
-    extra.update(parse_generation_parameters(style_extra))
+    extra.update(infotext.parse(style_extra))
     extra.pop('Prompt', None)
     extra.pop('Negative prompt', None)
     fields = []

@@ -16,7 +16,7 @@ from collections import OrderedDict
 import gradio as gr
 from PIL import Image
 from starlette.responses import FileResponse, JSONResponse
-from modules import paths, shared, scripts, files_cache, errors
+from modules import paths, shared, scripts, files_cache, errors, infotext
 from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 
@@ -877,28 +877,26 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return ui_refresh_click(title)
 
     def ui_save_click():
-        from modules import generation_parameters_copypaste
         filename = os.path.join(paths.data_path, "params.txt")
         if os.path.exists(filename):
             with open(filename, "r", encoding="utf8") as file:
                 prompt = file.read()
         else:
             prompt = ''
-        params = generation_parameters_copypaste.parse_generation_parameters(prompt)
+        params = infotext.parse(prompt)
         res = show_details(text=None, img=None, desc=None, info=None, meta=None, parameters=None, description=None, prompt=None, negative=None, wildcards=None, params=params)
         return res
 
     def ui_quicksave_click(name):
         if name is None:
             return
-        from modules import generation_parameters_copypaste
         fn = os.path.join(paths.data_path, "params.txt")
         if os.path.exists(fn):
             with open(fn, "r", encoding="utf8") as file:
                 prompt = file.read()
         else:
             prompt = ''
-        params = generation_parameters_copypaste.parse_generation_parameters(prompt)
+        params = infotext.parse(prompt)
         fn = os.path.join(shared.opts.styles_dir, os.path.splitext(name)[0] + '.json')
         prompt = params.get('Prompt', '')
         item = {

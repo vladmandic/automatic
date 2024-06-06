@@ -6,7 +6,7 @@ import platform
 import subprocess
 from functools import reduce
 import gradio as gr
-from modules import call_queue, shared, prompt_parser, ui_sections, ui_symbols, ui_components, generation_parameters_copypaste, images, scripts, script_callbacks
+from modules import call_queue, shared, prompt_parser, ui_sections, ui_symbols, ui_components, generation_parameters_copypaste, images, scripts, script_callbacks, infotext
 
 
 folder_symbol = ui_symbols.folder
@@ -23,8 +23,8 @@ def update_generation_info(generation_info, html_info, img_index):
         generation_info = json.loads(generation_info)
         if img_index < 0 or img_index >= len(generation_info["infotexts"]):
             return html_info, generation_info
-        infotext = generation_info["infotexts"][img_index]
-        html_info_formatted = infotext_to_html(infotext)
+        info = generation_info["infotexts"][img_index]
+        html_info_formatted = infotext_to_html(info)
         return html_info, html_info_formatted
     except Exception:
         pass
@@ -37,7 +37,7 @@ def plaintext_to_html(text):
 
 
 def infotext_to_html(text):
-    res = generation_parameters_copypaste.parse_generation_parameters(text)
+    res = infotext.parse(text)
     prompt = res.get('Prompt', '')
     negative = res.get('Negative prompt', '')
     res.pop('Prompt', None)
@@ -169,7 +169,7 @@ def save_files(js_data, files, html_info, index):
             if (js_data is None or len(js_data) == 0) and image is not None and image.info is not None:
                 info = image.info.pop('parameters', None) or image.info.pop('UserComment', None)
                 geninfo, _ = images.read_info_from_image(image)
-                items = generation_parameters_copypaste.parse_generation_parameters(geninfo)
+                items = infotext.parse(geninfo)
                 p = PObject(items)
             fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:

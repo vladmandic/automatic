@@ -4,7 +4,7 @@
 
 - StableDiffusion 3
 
-## Update for 2024-06-03
+## Update for 2024-06-04
 
 *Note*: New features require `diffusers==0.29.0.dev`
 
@@ -41,6 +41,7 @@
 - lower overhead on generate calls
 - cumulative fixes since the last release
 - add python version check for torch-directml
+- improve metadata/infotext parser
 
 ## Update for 2024-06-02
 
