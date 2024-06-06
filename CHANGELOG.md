@@ -41,7 +41,8 @@
 - lower overhead on generate calls
 - cumulative fixes since the last release
 - add python version check for torch-directml
-- improve metadata/infotext parser
+- improve metadata/infotext parser  
+  add `cli/image-exif.py` that can be used to view/extract metadata from images  
 
 ## Update for 2024-06-02
 
