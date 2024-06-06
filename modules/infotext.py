@@ -52,7 +52,7 @@ def parse(infotext):
     params['Prompt'] = prompt
     params['Negative prompt'] = negative
     for key, val in params.copy().items():
-        val = unquote(val).strip(" ,\n\\n")
+        val = unquote(val).strip(" ,\n").replace('\\\n', '')
         size = re_size.match(val)
         if val.replace('.', '', 1).isdigit():
             params[key] = float(val) if '.' in val else int(val)
