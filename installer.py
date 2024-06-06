@@ -293,9 +293,9 @@ def git(arg: str, folder: str = None, ignore: bool = False):
         log.debug(f'Git output: {txt}')
     return txt
 
+
 # reattach as needed as head can get detached
 def branch(folder=None):
-    global current_branch # pylint: disable=global-statement
     # if args.experimental:
     #    return None
     if not os.path.exists(os.path.join(folder or os.curdir, '.git')):
@@ -320,8 +320,6 @@ def branch(folder=None):
         b = b.split('\n')[0].replace('*', '').strip()
     log.debug(f'Submodule: {folder} / {b}')
     git(f'checkout {b}', folder, ignore=True)
-    if folder is None:
-        current_branch = b
     return b
 
 
@@ -950,9 +948,9 @@ def check_extensions():
     return round(newest_all)
 
 
-def get_version():
+def get_version(force=False):
     global version # pylint: disable=global-statement
-    if version is None:
+    if version is None or force:
         try:
             subprocess.run('git config log.showsignature false', stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True, check=True)
         except Exception:
@@ -974,7 +972,39 @@ def get_version():
             }
         except Exception:
             version = { 'app': 'sd.next', 'version': 'unknown' }
+        try:
+            cwd = os.getcwd()
+            os.chdir('extensions-builtin/sdnext-modernui')
+            res = subprocess.run('git rev-parse --abbrev-ref HEAD', stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True, check=True)
+            os.chdir(cwd)
+            branch_ui = res.stdout.decode(encoding = 'utf8', errors='ignore') if len(res.stdout) > 0 else ''
+            branch_ui = 'dev' if 'dev' in branch_ui else 'main'
+            version['ui'] = branch_ui
+        except Exception:
+            os.chdir(cwd)
+            version['ui'] = 'unknown'
     return version
+
+
+def check_ui(ver):
+    if ver is None:
+        return
+    if ver['branch'] == ver['ui']:
+        return
+    log.warning(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
+    cwd = os.getcwd()
+    try:
+        os.chdir('extensions-builtin/sdnext-modernui')
+        git('checkout ' + ver['branch'])
+        os.chdir(cwd)
+        ver = get_version(force=True)
+        if ver['branch'] == ver['ui']:
+            log.info(f'Branch synchronized: {ver["branch"]}')
+        else:
+            log.error(f'Branch synchronize: sdnext={ver["branch"]} ui={ver["ui"]}')
+    except Exception as e:
+        log.error(f'Branch switch: {e}')
+    os.chdir(cwd)
 
 
 # check version of the main repo and optionally upgrade it
@@ -984,9 +1014,11 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
     if not os.path.exists('.git'):
         log.warning('Not a git repository, all git operations are disabled')
         args.skip_git = True # pylint: disable=attribute-defined-outside-init
-    log.info(f'Version: {print_dict(get_version())}')
+    ver = get_version()
+    log.info(f'Version: {print_dict(ver)}')
     if args.version or args.skip_git:
         return
+    check_ui(ver)
     commit = git('rev-parse HEAD')
     global git_commit # pylint: disable=global-statement
     git_commit = commit[:7]
