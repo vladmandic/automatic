@@ -224,7 +224,7 @@ class ExtraNetworksPage:
                 tgt = tgt.path
                 if os.path.join(paths.models_path, 'Reference') in tgt:
                     subdirs['Reference'] = 1
-                if shared.backend == shared.Backend.DIFFUSERS and shared.opts.diffusers_dir in tgt:
+                if shared.native and shared.opts.diffusers_dir in tgt:
                     subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
                 if 'models--' in tgt:
                     continue

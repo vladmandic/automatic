@@ -262,7 +262,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                     clip_files.click(fn=None, _js='clip_gallery_urls', inputs=[result_gallery], outputs=[])
                 save = gr.Button('Save', elem_id=f'save_{tabname}')
                 delete = gr.Button('Delete', elem_id=f'delete_{tabname}')
-                if shared.backend == shared.Backend.ORIGINAL:
+                if not shared.native:
                     buttons = generation_parameters_copypaste.create_buttons(["img2img", "inpaint", "extras"])
                 else:
                     buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "control", "extras"])
@@ -389,7 +389,7 @@ def update_token_counter(text, steps):
         return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
     from modules import extra_networks
     prompt, _ = extra_networks.parse_prompt(text)
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         from modules import sd_hijack
         try:
             _, prompt_flat_list, _ = prompt_parser.get_multicond_prompt_list([text])
@@ -399,7 +399,7 @@ def update_token_counter(text, steps):
         flat_prompts = reduce(lambda list1, list2: list1+list2, prompt_schedules)
         prompts = [prompt_text for _step, prompt_text in flat_prompts]
         token_count, max_length = max([sd_hijack.model_hijack.get_prompt_lengths(prompt) for prompt in prompts], key=lambda args: args[0])
-    elif shared.backend == shared.Backend.DIFFUSERS:
+    elif shared.native:
         if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
             has_bos_token = shared.sd_model.tokenizer.bos_token_id is not None
             has_eos_token = shared.sd_model.tokenizer.eos_token_id is not None

@@ -54,7 +54,7 @@ def refresh_vae_list():
     vae_path = shared.opts.vae_dir
     vae_dict.clear()
     vae_paths = []
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         if sd_models.model_path is not None and os.path.isdir(sd_models.model_path):
             vae_paths += [
                 os.path.join(sd_models.model_path, 'VAE', '**/*.vae.ckpt'),
@@ -73,7 +73,7 @@ def refresh_vae_list():
                 os.path.join(shared.opts.vae_dir, '**/*.pt'),
                 os.path.join(shared.opts.vae_dir, '**/*.safetensors'),
             ]
-    elif shared.backend == shared.Backend.DIFFUSERS:
+    elif shared.native:
         if sd_models.model_path is not None and os.path.isdir(sd_models.model_path):
             vae_paths += [os.path.join(sd_models.model_path, 'VAE', '**/*.vae.safetensors')]
         if shared.opts.ckpt_dir is not None and os.path.isdir(shared.opts.ckpt_dir):
@@ -92,7 +92,7 @@ def refresh_vae_list():
         name = get_filename(filepath)
         if name == 'VAE':
             continue
-        if shared.backend == shared.Backend.ORIGINAL:
+        if not shared.native:
             vae_dict[name] = filepath
         else:
             if filepath.endswith(".json"):
@@ -243,12 +243,12 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         vae_source = "function-argument"
     if loaded_vae_file == vae_file:
         return None
-    if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
+    if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
         lowvram.send_everything_to_cpu()
     # else:
     #    sd_models.move_model(sd_model, devices.cpu)
 
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         sd_hijack.model_hijack.undo_hijack(sd_model)
         if shared.cmd_opts.rollback_vae and devices.dtype_vae == torch.bfloat16:
             devices.dtype_vae = torch.float16

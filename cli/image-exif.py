@@ -9,7 +9,9 @@ from PIL import Image, ExifTags, TiffImagePlugin, PngImagePlugin
 from rich import print # pylint: disable=redefined-builtin
 
 
-module_spec = importlib.util.spec_from_file_location('infotext', os.path.join('modules', 'infotext.py'))
+module_file = os.path.abspath(__file__)
+module_dir = os.path.dirname(module_file)
+module_spec = importlib.util.spec_from_file_location('infotext', os.path.join(module_dir, '..', 'modules', 'infotext.py'))
 infotext = importlib.util.module_from_spec(module_spec)
 module_spec.loader.exec_module(infotext)
 

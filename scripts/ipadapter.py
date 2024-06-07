@@ -14,7 +14,7 @@ class Script(scripts.Script):
         return 'IP Adapters'
 
     def show(self, is_img2img):
-        return scripts.AlwaysVisible if shared.backend == shared.Backend.DIFFUSERS else False
+        return scripts.AlwaysVisible if shared.native else False
 
     def load_images(self, files):
         init_images = []
@@ -83,7 +83,7 @@ class Script(scripts.Script):
         return [num_adapters] + adapters + scales + files + starts + ends + masks + [layers_active] + [layers]
 
     def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
-        if shared.backend != shared.Backend.DIFFUSERS:
+        if not shared.native:
             return
         args = list(args) if args is not None else []
         if len(args) == 0:

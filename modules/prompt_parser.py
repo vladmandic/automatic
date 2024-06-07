@@ -14,7 +14,7 @@ from typing import List
 import lark
 import torch
 from compel import Compel
-from modules.shared import opts, log, backend, Backend
+from modules.shared import opts, log, native
 
 # a prompt like this: "fantasy landscape with a [mountain:lake:0.25] and [an oak:a christmas tree:0.75][ in foreground::0.6][ in background:0.25] [shoddy:masterful:0.5]"
 # will be represented with prompt_schedule like this (assuming steps=100):
@@ -326,7 +326,7 @@ def parse_prompt_attention(text):
         whitespace = ''
     else:
         re_attention = re_attention_v1
-        if backend == Backend.DIFFUSERS:
+        if native:
             text = text.replace('\n', ' BREAK ')
         else:
             text = text.replace('\n', ' ')

@@ -67,7 +67,7 @@ def generate_click(job_id: str, active_tab: str, *args):
 def create_ui(_blocks: gr.Blocks=None):
     helpers.initialize()
 
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         with gr.Blocks(analytics_enabled = False) as control_ui:
             pass
         return [(control_ui, 'Control', 'control')]

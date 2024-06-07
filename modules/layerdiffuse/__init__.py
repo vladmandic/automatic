@@ -41,6 +41,8 @@ def apply_layerdiffuse_sdxl_conv(pipeline):
 
 
 def apply_layerdiffuse():
+    if not shared.native:
+        return
     try:
         if shared.sd_model_type == 'sd':
             shared.log.info(f'LayerDiffuse: class={shared.sd_model.__class__.__name__}')

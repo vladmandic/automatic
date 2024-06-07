@@ -47,7 +47,7 @@ convert_diffusers_name_to_compvis = lora_convert.convert_diffusers_name_to_compv
 
 def assign_network_names_to_compvis_modules(sd_model):
     network_layer_mapping = {}
-    if shared.backend == shared.Backend.DIFFUSERS:
+    if shared.native:
         if not hasattr(shared.sd_model, 'text_encoder') or not hasattr(shared.sd_model, 'unet'):
             return
         for name, module in shared.sd_model.text_encoder.named_modules():
@@ -85,7 +85,7 @@ def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
     shared.log.debug(f'LoRA load: name="{name}" file="{network_on_disk.filename}" type=diffusers {"cached" if cached else ""} fuse={shared.opts.lora_fuse_diffusers}')
     if cached is not None:
         return cached
-    if shared.backend != shared.Backend.DIFFUSERS:
+    if shared.native:
         return None
     shared.sd_model.load_lora_weights(network_on_disk.filename)
     if shared.opts.lora_fuse_diffusers:
@@ -195,9 +195,9 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             try:
                 if recompile_model:
                     shared.compiled_model_state.lora_model.append(f"{name}:{te_multipliers[i] if te_multipliers else 1.0}")
-                if shared.backend == shared.Backend.DIFFUSERS and shared.opts.lora_force_diffusers: # OpenVINO only works with Diffusers LoRa loading
+                if shared.native and shared.opts.lora_force_diffusers: # OpenVINO only works with Diffusers LoRa loading
                     net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
-                elif shared.backend == shared.Backend.DIFFUSERS and network_overrides.check_override(shorthash):
+                elif shared.native and network_overrides.check_override(shorthash):
                     net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
                 else:
                     net = load_network(name, network_on_disk)

@@ -4,7 +4,7 @@ from modules import shared, sd_samplers_common, sd_vae, generation_parameters_co
 from modules.processing_class import StableDiffusionProcessing
 
 
-if shared.backend == shared.Backend.ORIGINAL:
+if not shared.native:
     from modules import sd_hijack
 else:
     sd_hijack = None
@@ -57,7 +57,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Styles": "; ".join(p.styles) if p.styles is not None and len(p.styles) > 0 else None,
         "Tiling": p.tiling if p.tiling else None,
         # sdnext
-        "Backend": 'Diffusers' if shared.backend == shared.Backend.DIFFUSERS else 'Original',
+        "Backend": 'Diffusers' if shared.native else 'Original',
         "App": 'SD.Next',
         "Version": git_commit,
         "Comment": comment,
@@ -109,12 +109,12 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
     args["Sampler ENSD"] = shared.opts.eta_noise_seed_delta if shared.opts.eta_noise_seed_delta != 0 and sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p) else None
     args["Sampler ENSM"] = p.initial_noise_multiplier if getattr(p, 'initial_noise_multiplier', 1.0) != 1.0 else None
     args['Sampler order'] = shared.opts.schedulers_solver_order if shared.opts.schedulers_solver_order != shared.opts.data_labels.get('schedulers_solver_order').default else None
-    if shared.backend == shared.Backend.DIFFUSERS:
+    if shared.native:
         args['Sampler beta schedule'] = shared.opts.schedulers_beta_schedule if shared.opts.schedulers_beta_schedule != shared.opts.data_labels.get('schedulers_beta_schedule').default else None
         args['Sampler beta start'] = shared.opts.schedulers_beta_start if shared.opts.schedulers_beta_start != shared.opts.data_labels.get('schedulers_beta_start').default else None
         args['Sampler beta end'] = shared.opts.schedulers_beta_end if shared.opts.schedulers_beta_end != shared.opts.data_labels.get('schedulers_beta_end').default else None
         args['Sampler DPM solver'] = shared.opts.schedulers_dpm_solver if shared.opts.schedulers_dpm_solver != shared.opts.data_labels.get('schedulers_dpm_solver').default else None
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         args['Sampler brownian'] = shared.opts.schedulers_brownian_noise if shared.opts.schedulers_brownian_noise != shared.opts.data_labels.get('schedulers_brownian_noise').default else None
         args['Sampler discard'] = shared.opts.schedulers_discard_penultimate if shared.opts.schedulers_discard_penultimate != shared.opts.data_labels.get('schedulers_discard_penultimate').default else None
         args['Sampler dyn threshold'] = shared.opts.schedulers_use_thresholding if shared.opts.schedulers_use_thresholding != shared.opts.data_labels.get('schedulers_use_thresholding').default else None

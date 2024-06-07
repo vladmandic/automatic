@@ -20,7 +20,7 @@ def list_samplers(backend_name = shared.backend):
     global samplers # pylint: disable=global-statement
     global samplers_for_img2img # pylint: disable=global-statement
     global samplers_map # pylint: disable=global-statement
-    if backend_name == shared.Backend.ORIGINAL:
+    if not shared.native:
         from modules import sd_samplers_compvis, sd_samplers_kdiffusion
         all_samplers = [*sd_samplers_compvis.samplers_data_compvis, *sd_samplers_kdiffusion.samplers_data_k_diffusion]
     else:
@@ -57,14 +57,14 @@ def create_sampler(name, model):
     if config is None or config.constructor is None:
         # shared.log.warning(f'Sampler: sampler="{name}" not found')
         return None
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         sampler = config.constructor(model)
         sampler.config = config
         sampler.name = name
         sampler.initialize(p=None)
         shared.log.debug(f'Sampler: sampler="{name}" config={config.options}')
         return sampler
-    elif shared.backend == shared.Backend.DIFFUSERS:
+    elif shared.native:
         sampler = config.constructor(model)
         if not hasattr(model, 'scheduler_config'):
             model.scheduler_config = sampler.sampler.config.copy()

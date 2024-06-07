@@ -81,7 +81,7 @@ class Shared(sys.modules[__name__].__class__):
             if modules.sd_models.model_data.sd_model is None:
                 model_type = 'none'
                 return model_type
-            if shared.backend == shared.Backend.ORIGINAL:
+            if not shared.native:
                 model_type = 'ldm'
             elif "StableDiffusionXL" in self.sd_model.__class__.__name__:
                 model_type = 'sdxl'
@@ -110,7 +110,7 @@ class Shared(sys.modules[__name__].__class__):
             if modules.sd_models.model_data.sd_refiner is None:
                 model_type = 'none'
                 return model_type
-            if shared.backend == shared.Backend.ORIGINAL:
+            if not shared.native:
                 model_type = 'ldm'
             elif "StableDiffusionXL" in self.sd_refiner.__class__.__name__:
                 model_type = 'sdxl'

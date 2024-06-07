@@ -8,7 +8,7 @@ class UpscalerSD(Upscaler):
     def __init__(self, dirname): # pylint: disable=super-init-not-called
         self.name = "SDUpscale"
         self.user_path = dirname
-        if shared.backend != shared.Backend.DIFFUSERS:
+        if not shared.native:
             super().__init__()
             return
         self.scalers = [

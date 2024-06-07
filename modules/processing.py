@@ -161,7 +161,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         pag.apply(p)
         if shared.opts.cuda_compile_backend == 'none':
             sd_models.apply_token_merging(p.sd_model)
-            sd_hijack_freeu.apply_freeu(p, shared.backend == shared.Backend.ORIGINAL)
+            sd_hijack_freeu.apply_freeu(p, not shared.native)
 
         if p.width is not None:
             p.width = 8 * int(p.width / 8)
@@ -247,7 +247,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     else:
         assert p.prompt is not None
 
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         import modules.sd_hijack # pylint: disable=redefined-outer-name
         modules.sd_hijack.model_hijack.apply_circular(p.tiling)
         modules.sd_hijack.model_hijack.clear_comments()
@@ -256,7 +256,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     output_images = []
 
     process_init(p)
-    if os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings and shared.backend == shared.Backend.ORIGINAL:
+    if os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings and not shared.native:
         modules.sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=False)
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
@@ -264,7 +264,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     def infotext(_inxex=0): # dummy function overriden if there are iterations
         return ''
 
-    ema_scope_context = p.sd_model.ema_scope if shared.backend == shared.Backend.ORIGINAL else nullcontext
+    ema_scope_context = p.sd_model.ema_scope if not shared.native else nullcontext
     shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
@@ -283,7 +283,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 shared.log.debug(f'Process interrupted: {n+1}/{p.n_iter}')
                 break
 
-            if shared.backend == shared.Backend.DIFFUSERS:
+            if shared.native:
                 from modules import ipadapter
                 ipadapter.apply(shared.sd_model, p)
             p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
@@ -304,10 +304,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 x_samples_ddim = p.scripts.process_images(p)
             if x_samples_ddim is None:
-                if shared.backend == shared.Backend.ORIGINAL:
+                if not shared.native:
                     from modules.processing_original import process_original
                     x_samples_ddim = process_original(p)
-                elif shared.backend == shared.Backend.DIFFUSERS:
+                elif shared.native:
                     from modules.processing_diffusers import process_diffusers
                     x_samples_ddim = process_diffusers(p)
                 else:
@@ -316,7 +316,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if not shared.opts.keep_incomplete and shared.state.interrupted:
                 x_samples_ddim = []
 
-            if shared.backend == shared.Backend.ORIGINAL and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
+            if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
                 devices.torch_gc()
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
@@ -407,7 +407,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 if shared.opts.grid_save:
                     images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=infotext(-1), p=p, grid=True, suffix="-grid") # main save grid
 
-    if shared.backend == shared.Backend.DIFFUSERS:
+    if shared.native:
         from modules import ipadapter
         ipadapter.unapply(shared.sd_model)
 

@@ -35,9 +35,9 @@ def apply_color_correction(correction, original_image):
 
 
 def apply_overlay(image: Image, paste_loc, index, overlays):
-    debug(f'Apply overlay: image={image} loc={paste_loc} index={index} overlays={overlays}')
     if overlays is None or index >= len(overlays):
         return image
+    debug(f'Apply overlay: image={image} loc={paste_loc} index={index} overlays={overlays}')
     overlay = overlays[index]
     if paste_loc is not None:
         x, y, w, h = paste_loc
@@ -321,7 +321,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 
     # HACK: Using introspection as the Depth2Image model doesn't appear to uniquely
     # identify itself with a field common to all models. The conditioning_key is also hybrid.
-    if shared.backend == shared.Backend.DIFFUSERS:
+    if shared.native:
         return diffusers_image_conditioning(source_image, latent_image, image_mask)
     if isinstance(p.sd_model, LatentDepth2ImageDiffusion):
         return depth2img_image_conditioning(source_image)
@@ -346,7 +346,7 @@ def validate_sample(tensor):
         sample = tensor
     else:
         shared.log.warning(f'Unknown sample type: {type(tensor)}')
-    sample = 255.0 * np.moveaxis(sample, 0, 2) if shared.backend == shared.Backend.ORIGINAL else 255.0 * sample
+    sample = 255.0 * np.moveaxis(sample, 0, 2) if not shared.native else 255.0 * sample
     with warnings.catch_warnings(record=True) as w:
         cast = sample.astype(np.uint8)
     if len(w) > 0:

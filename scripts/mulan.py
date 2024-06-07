@@ -50,7 +50,7 @@ class Script(scripts.Script):
 
     def show(self, is_img2img):
         if shared.cmd_opts.experimental:
-            return True if shared.backend == shared.Backend.DIFFUSERS else False
+            return True if shared.native else False
         else:
             return False
 

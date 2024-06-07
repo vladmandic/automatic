@@ -104,7 +104,7 @@ def get_prompt_schedule(prompt, steps):
 
 def get_tokens(msg, prompt):
     global token_dict, token_type # pylint: disable=global-statement
-    if shared.backend != shared.Backend.DIFFUSERS:
+    if not shared.native:
         return
     if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
         if token_dict is None or token_type != shared.sd_model_type:
@@ -133,7 +133,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
-    elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type:
+    elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
         p.prompt_embeds = cache.get('prompt_embeds', None)
         p.positive_pooleds = cache.get('positive_pooleds', None)
         p.negative_embeds = cache.get('negative_embeds', None)
@@ -154,36 +154,28 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         for i in range(max(len(positive_schedule), len(negative_schedule))):
             positive_prompt = positive_schedule[i % len(positive_schedule)]
             negative_prompt = negative_schedule[i % len(negative_schedule)]
-            if cache.get('model_type', None) != shared.sd_model_type:
-                cache[positive_prompt + negative_prompt] = None
-                results = None
-            elif clip_skip == cache.get('clip_skip', None):
-                results = cache.get(positive_prompt + negative_prompt, None)
-            else:
-                results = None
-
-            if results is None:
-                results = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
-                cache[positive_prompt + negative_prompt] = results
-
-            prompt_embed, positive_pooled, negative_embed, negative_pooled = results
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
             if prompt_embed is not None:
                 p.prompt_embeds.append(torch.cat([prompt_embed] * len(prompts), dim=0))
-                cache['prompt_embeds'] = p.prompt_embeds
             if negative_embed is not None:
                 p.negative_embeds.append(torch.cat([negative_embed] * len(negative_prompts), dim=0))
-                cache['negative_embeds'] = p.negative_embeds
             if positive_pooled is not None:
                 p.positive_pooleds.append(torch.cat([positive_pooled] * len(prompts), dim=0))
-                cache['positive_pooleds'] = p.positive_pooleds
             if negative_pooled is not None:
                 p.negative_pooleds.append(torch.cat([negative_pooled] * len(negative_prompts), dim=0))
-                cache['negative_pooleds'] = p.negative_pooleds
 
-        cache['prompts'] = prompts
-        cache['negative_prompts'] = negative_prompts
-        cache['clip_skip'] = clip_skip
-        cache['model_type'] = shared.sd_model_type
+        cache.update({
+            'prompt_embeds': p.prompt_embeds,
+            'negative_embeds': p.negative_embeds,
+            'positive_pooleds': p.positive_pooleds,
+            'negative_pooleds': p.negative_pooleds,
+            'scheduled_prompt': p.scheduled_prompt,
+            'prompts': prompts,
+            'negative_prompts': negative_prompts,
+            'clip_skip': clip_skip,
+            'steps': steps,
+            'model_type': shared.sd_model_type
+        })
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])
