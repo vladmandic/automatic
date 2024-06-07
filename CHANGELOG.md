@@ -47,6 +47,7 @@
 - improve metadata/infotext parser  
   add `cli/image-exif.py` that can be used to view/extract metadata from images  
 - auto-synchronize modernui and core branches  
+- fix apply/unapply hidiffusion for sd15  
 
 ## Update for 2024-06-02
 
