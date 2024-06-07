@@ -406,6 +406,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
     "cuda_dtype": OptionInfo("FP32" if sys.platform == "darwin" or cmd_opts.use_openvino else "BF16" if devices.backend == "ipex" else "FP16", "Device precision type", gr.Radio, {"choices": ["FP32", "FP16", "BF16"]}),
+    "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
+
+    "model_sep": OptionInfo("<h2>Model options</h2>", "", gr.HTML),
     "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for model (--no-half)", None, None, None),
     "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for VAE (--no-half-vae)"),
     "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling"),
@@ -415,7 +418,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox, {"visible": True}),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
 
-    "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
+    "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
     "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
@@ -425,10 +428,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": not native}),
 
-    "other_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
+    "other_sep": OptionInfo("<h2>Execution options</h2>", "", gr.HTML),
     "opt_channelslast": OptionInfo(False, "Use channels last "),
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
-    "cudnn_deterministic": OptionInfo(False, "Use deterministic options for cuDNN"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),

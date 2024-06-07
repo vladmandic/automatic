@@ -232,9 +232,13 @@ def set_cuda_params():
         if torch.backends.cudnn.is_available():
             try:
                 torch.backends.cudnn.deterministic = shared.opts.cudnn_deterministic
+                torch.use_deterministic_algorithms(shared.opts.cudnn_deterministic)
+                log.debug(f'Torch mode: deterministic={shared.opts.cudnn_deterministic}')
+                if shared.opts.cudnn_deterministic:
+                    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
                 torch.backends.cudnn.benchmark = True
                 if shared.opts.cudnn_benchmark:
-                    log.debug('Torch enable cuDNN benchmark')
+                    log.debug('Torch cuDNN: enable benchmark')
                     torch.backends.cudnn.benchmark_limit = 0
                 torch.backends.cudnn.allow_tf32 = True
             except Exception:
@@ -363,10 +367,12 @@ def cond_cast_float(tensor):
     return tensor.float() if unet_needs_upcast else tensor
 
 
-def randn(seed, shape):
+def randn(seed, shape=None):
     torch.manual_seed(seed)
     if backend == 'ipex':
         torch.xpu.manual_seed_all(seed)
+    if shape is None:
+        return None
     if device.type == 'mps':
         return torch.randn(shape, device=cpu).to(device)
     elif shared.opts.diffusers_generator_device == "CPU":

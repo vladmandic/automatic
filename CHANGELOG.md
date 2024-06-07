@@ -38,6 +38,9 @@
   *note*: alternative to regular hidiffusion method, but with different approach to scaling  
 - additional built-in 4 great custom trained **ControlNet SDXL** models from Xinsir: OpenPose, Canny, Scribble, AnimePainter  
   thanks @lbeltrame
+- add torch **full deterministic mode**
+  enable in settings -> compute -> use deterministic mode  
+  typical differences are not large and its disabled by default as it does have some performance impact  
 - lower overhead on generate calls
 - cumulative fixes since the last release
 - add python version check for torch-directml

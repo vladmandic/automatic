@@ -3,7 +3,6 @@ import torch
 import torch.nn.functional as F
 from diffusers.utils.torch_utils import is_torch_version
 from diffusers.pipelines import auto_pipeline
-from modules.shared import log
 
 
 def sd15_hidiffusion_key():
@@ -229,7 +228,7 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
                 norm_hidden_states = self.norm2(hidden_states)
                 norm_hidden_states = norm_hidden_states * (1 + scale_mlp) + shift_mlp
             if self._chunk_size is not None:
-                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size)
+                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size) # TODO hidiffusion undefined
             else:
                 ff_output = self.ff(norm_hidden_states)
             if self.use_ada_layer_norm_zero:
@@ -268,7 +267,7 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
             additional_residuals: Optional[torch.FloatTensor] = None,
         ) -> Tuple[torch.FloatTensor, Tuple[torch.FloatTensor, ...]]:
-            self.max_timestep = self.info['pipeline']._num_timesteps
+            self.max_timestep = self.info['pipeline']._num_timesteps # pylint: disable=protected-access
             # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
             if self.model == 'sd15':
@@ -303,7 +302,7 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
                 self.T1 = int(self.max_timestep * self.T1_ratio)
 
             output_states = ()
-            cross_attention_kwargs.get("scale", 1.0) if cross_attention_kwargs is not None else 1.0
+            _scale = cross_attention_kwargs.get("scale", 1.0) if cross_attention_kwargs is not None else 1.0 # TODO hidiffusion unused
 
             blocks = list(zip(self.resnets, self.attentions))
 
@@ -407,7 +406,7 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                     return F.interpolate(first, scale_factor=rescale, mode='bicubic')
                 return first
 
-            self.max_timestep = self.info['pipeline']._num_timesteps
+            self.max_timestep = self.info['pipeline']._num_timesteps # pylint: disable=protected-access
             ori_H, ori_W = self.info['size']
             if self.model == 'sd15':
                 if ori_H < 256 or ori_W < 256:
@@ -489,8 +488,8 @@ def make_diffusers_downsampler_block(block_class: Type[torch.nn.Module]) -> Type
         aggressive_raunet = False
         max_timestep = 50
 
-        def forward(self, hidden_states: torch.Tensor, scale = 1.0) -> torch.Tensor:
-            self.max_timestep = self.info['pipeline']._num_timesteps
+        def forward(self, hidden_states: torch.Tensor, scale = 1.0) -> torch.Tensor: # pylint: disable=unused-argument
+            self.max_timestep = self.info['pipeline']._num_timesteps # pylint: disable=protected-access
             # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
             if self.model == 'sd15':
@@ -522,20 +521,20 @@ def make_diffusers_downsampler_block(block_class: Type[torch.nn.Module]) -> Type
             else:
                 self.T1 = int(self.max_timestep * self.T1_ratio)
             if self.timestep < self.T1:
-                self.ori_stride = self.stride
-                self.ori_padding = self.padding
-                self.ori_dilation = self.dilation
-                self.stride = (4,4)
-                self.padding = (2,2)
-                self.dilation = (2,2)
+                self.ori_stride = self.stride # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.ori_padding = self.padding # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.ori_dilation = self.dilation # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.stride = (4,4) # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.padding = (2,2) # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.dilation = (2,2) # pylint: disable=access-member-before-definition, attribute-defined-outside-init
 
             hidden_states = F.conv2d(
                 hidden_states, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups
             )
             if self.timestep < self.T1:
-                self.stride = self.ori_stride
-                self.padding = self.ori_padding
-                self.dilation = self.ori_dilation
+                self.stride = self.ori_stride # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.padding = self.ori_padding # pylint: disable=access-member-before-definition, attribute-defined-outside-init
+                self.dilation = self.ori_dilation # pylint: disable=access-member-before-definition, attribute-defined-outside-init
             self.timestep += 1
             if self.timestep == self.max_timestep:
                 self.timestep = 0
@@ -557,8 +556,8 @@ def make_diffusers_upsampler_block(block_class: Type[torch.nn.Module]) -> Type[t
         aggressive_raunet = False
         max_timestep = 50
 
-        def forward(self, hidden_states: torch.Tensor, scale = 1.0) -> torch.Tensor:
-            self.max_timestep = self.info['pipeline']._num_timesteps
+        def forward(self, hidden_states: torch.Tensor, scale = 1.0) -> torch.Tensor: # pylint: disable=unused-argument
+            self.max_timestep = self.info['pipeline']._num_timesteps # pylint: disable=protected-access
             # self.max_timestep = len(self.info['scheduler'].timesteps)
             ori_H, ori_W = self.info['size']
             if self.model == 'sd15':
@@ -645,24 +644,21 @@ def apply_hidiffusion(
         modified_key = sd15_hidiffusion_key()
         for key, module in diffusion_model.named_modules():
             if apply_raunet and key in modified_key['down_module_key']:
-                make_block_fn = make_diffusers_downsampler_block
-                module.__class__ = make_block_fn(module.__class__)
+                module.__class__ = make_diffusers_downsampler_block(module.__class__)
                 module.switching_threshold_ratio = 'T1_ratio'
             if apply_raunet and key in modified_key['down_module_key_extra']:
-                make_block_fn = make_diffusers_cross_attn_down_block
-                module.__class__ = make_block_fn(module.__class__)
+                module.__class__ = make_diffusers_cross_attn_down_block(module.__class__)
                 module.switching_threshold_ratio = 'T2_ratio'
             if apply_raunet and key in modified_key['up_module_key']:
-                make_block_fn = make_diffusers_upsampler_block
-                module.__class__ = make_block_fn(module.__class__)
+                module.__class__ = make_diffusers_upsampler_block(module.__class__)
                 module.switching_threshold_ratio = 'T1_ratio'
             if apply_raunet and key in modified_key['up_module_key_extra']:
-                make_block_fn = make_diffusers_cross_attn_up_block
-                module.__class__ = make_block_fn(module.__class__)
+                module.__class__ = make_diffusers_cross_attn_up_block(module.__class__)
                 module.switching_threshold_ratio = 'T2_ratio'
             if apply_window_attn and key in modified_key['windown_attn_module_key']:
-                make_block_fn = make_diffusers_transformer_block
-                module.__class__ = make_block_fn(module.__class__)
+                module.__class__ = make_diffusers_transformer_block(module.__class__)
+            if hasattr(module, "_patched_forward"):
+                module.forward = module._patched_forward # pylint: disable=protected-access
             module.model = 'sd15'
             module.info = diffusion_model.info
 
@@ -685,7 +681,7 @@ def apply_hidiffusion(
             if apply_window_attn and key in modified_key['windown_attn_module_key']:
                 module.__class__ = make_diffusers_transformer_block(module.__class__)
             if hasattr(module, "_patched_forward"):
-                module.forward = module._patched_forward
+                module.forward = module._patched_forward # pylint: disable=protected-access
             module.model = 'sdxl'
             module.info = diffusion_model.info
     else:
@@ -702,7 +698,7 @@ def remove_hidiffusion(model: torch.nn.Module):
             module.info["hooks"].clear()
             del module.info
         if hasattr(module, "_forward"):
-            module.forward = module._forward
+            module.forward = module._forward # pylint: disable=protected-access
         if hasattr(module, "_parent"):
-            module.__class__ = module._parent
+            module.__class__ = module._parent # pylint: disable=protected-access
     return model

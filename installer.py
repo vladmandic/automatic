@@ -991,19 +991,19 @@ def check_ui(ver):
         return
     if ver['branch'] == ver['ui']:
         return
-    log.warning(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
+    log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
     cwd = os.getcwd()
     try:
         os.chdir('extensions-builtin/sdnext-modernui')
-        git('checkout ' + ver['branch'])
+        git('checkout ' + ver['branch'], ignore=True)
         os.chdir(cwd)
         ver = get_version(force=True)
         if ver['branch'] == ver['ui']:
-            log.info(f'Branch synchronized: {ver["branch"]}')
+            log.debug(f'Branch synchronized: {ver["branch"]}')
         else:
-            log.error(f'Branch synchronize: sdnext={ver["branch"]} ui={ver["ui"]}')
+            log.debug(f'Branch synch failed: sdnext={ver["branch"]} ui={ver["ui"]}')
     except Exception as e:
-        log.error(f'Branch switch: {e}')
+        log.debug(f'Branch switch: {e}')
     os.chdir(cwd)
 
 
