@@ -33,6 +33,9 @@
   compatible with *SD15*  
 - **PCM LoRAs** allow for fast denoising using less steps with standard *SD15* and *SDXL* models  
   download from <https://huggingface.co/Kijai/converted_pcm_loras_fp16/tree/main>
+- [ByteDance ResAdapter](https://github.com/bytedance/res-adapter) resolution-free model adapter  
+  allows to use resolutions from 0.5 to 2.0 of original model resolution, compatible with *SD15* and *SDXL*
+  enable via scripts -> resadapter and select desired model
 - **Kohya HiRes Fix** allows for higher resolution generation using standard *SD15* models  
   enable via scripts -> kohya-hires-fix  
   *note*: alternative to regular hidiffusion method, but with different approach to scaling  

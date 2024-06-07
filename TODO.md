@@ -5,7 +5,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ## Future Candidates
 
 - stable diffusion 3.0: unreleased
-- boxdiff <https://github.com/huggingface/diffusers/pull/7947>
 - animatediff-sdxl <https://github.com/huggingface/diffusers/pull/6721>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
@@ -14,7 +13,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - diffusers public callbacks  
 - include reference styles
 - lora: sc lora, dora, etc
-- resadapter: <https://github.com/bytedance/res-adapter>
 
 ## Experimental
 
