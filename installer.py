@@ -402,6 +402,8 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
             log.error(reason)
         if not args.ignore:
             sys.exit(1)
+    if int(sys.version_info.minor) == 12:
+        os.environ.setdefault('SETUPTOOLS_USE_DISTUTILS', 'local') # hack for python 3.11 setuptools
     if not args.skip_git:
         git_cmd = os.environ.get('GIT', "git")
         if shutil.which(git_cmd) is None:
@@ -432,6 +434,7 @@ def check_onnx():
 
 
 def install_rocm_zluda(torch_command):
+    check_python(supported_minors=[10,11], reason='RocM or Zluda backends require Python 3.10 or 3.11')
     is_windows = platform.system() == 'Windows'
     log.info('AMD ROCm toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
@@ -539,6 +542,7 @@ def install_rocm_zluda(torch_command):
 
 
 def install_ipex(torch_command):
+    check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('Intel OneAPI Toolkit detected')
     if os.environ.get("NEOReadDebugKeys", None) is None:
@@ -579,6 +583,7 @@ def install_ipex(torch_command):
 
 
 def install_openvino(torch_command):
+    check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
     log.info('Using OpenVINO')
     torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')

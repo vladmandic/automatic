@@ -235,7 +235,7 @@ def set_cuda_params():
                 torch.use_deterministic_algorithms(shared.opts.cudnn_deterministic)
                 log.debug(f'Torch mode: deterministic={shared.opts.cudnn_deterministic}')
                 if shared.opts.cudnn_deterministic:
-                    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+                    os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
                 torch.backends.cudnn.benchmark = True
                 if shared.opts.cudnn_benchmark:
                     log.debug('Torch cuDNN: enable benchmark')

@@ -890,7 +890,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         timer = Timer()
     logging.getLogger("diffusers").setLevel(logging.ERROR)
     timer.record("diffusers")
-    devices.set_cuda_params()
     diffusers_load_config = {
         "low_cpu_mem_usage": True,
         "torch_dtype": devices.dtype,
@@ -1420,7 +1419,6 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
         from modules import sd_hijack_inpainting
         sd_hijack_inpainting.do_inpainting_hijack()
 
-    devices.set_cuda_params()
     if already_loaded_state_dict is not None:
         state_dict = already_loaded_state_dict
     else:

@@ -32,7 +32,7 @@ class FaceRestorerYolo(FaceRestoration):
 
     def dependencies(self):
         import installer
-        installer.install('ultralytics', ignore=True)
+        installer.install('ultralytics', ignore=True, quiet=True)
 
     def predict(
             self,

@@ -78,7 +78,7 @@ def run_postprocessing(extras_mode, image, image_folder: List[tempfile.NamedTemp
             pp.image.info[k] = v
         if 'parameters' in items:
             info = items['parameters'] + ', '
-        info = info + ", ".join([k if k == v else f'{k}: {info.quote(v)}' for k, v in pp.info.items() if v is not None])
+        info = info + ", ".join([k if k == v else f'{k}: {infotext.quote(v)}' for k, v in pp.info.items() if v is not None])
         pp.image.info["postprocessing"] = info
         processed_images.append(pp.image)
         if save_output:

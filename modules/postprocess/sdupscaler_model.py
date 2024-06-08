@@ -28,7 +28,6 @@ class UpscalerSD(Upscaler):
             shared.log.debug(f"Upscaler cached: type={scaler.name} model={path}")
             return self.models[path]
         else:
-            devices.set_cuda_params()
             model = diffusers.DiffusionPipeline.from_pretrained(path, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype)
             if hasattr(model, "set_progress_bar_config"):
                 model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + 'Upscale', ncols=80, colour='#327fba')
