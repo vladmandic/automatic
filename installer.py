@@ -438,8 +438,8 @@ def install_rocm_zluda(torch_command):
     is_windows = platform.system() == 'Windows'
     log.info('AMD ROCm toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
-    if not is_windows:
-        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
+    # if not is_windows:
+    #    os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
     try:
         if is_windows:
             command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -468,8 +468,8 @@ def install_rocm_zluda(torch_command):
         os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
         if arch == 'navi3x':
             os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '11.0.0')
-            if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
-                os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
+            # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
+            #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
         elif arch == 'navi2x':
             os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
         else:
@@ -551,7 +551,7 @@ def install_ipex(torch_command):
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if "linux" in sys.platform:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post0 torchvision==0.16.0.post0 intel-extension-for-pytorch==2.1.20+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-        os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')
+        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')
         if os.environ.get('DISABLE_VENV_LIBS', None) is None:
             install(os.environ.get('MKL_PACKAGE', 'mkl==2024.1.0'), 'mkl')
             install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.1.0'), 'mkl-dpcpp')
@@ -760,14 +760,15 @@ def install_packages():
     log.info('Verifying packages')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip', quiet=True)
-    tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0')
-    if tensorflow_package != '':
-        install(tensorflow_package, 'tensorflow-rocm' if 'rocm' in tensorflow_package else 'tensorflow', ignore=True, quiet=True)
-    bitsandbytes_package = os.environ.get('BITSANDBYTES_PACKAGE', None)
-    if bitsandbytes_package is not None:
-        install(bitsandbytes_package, 'bitsandbytes', ignore=True, quiet=True)
-    elif not args.experimental:
-        uninstall('bitsandbytes')
+    # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0')
+    # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', None)
+    # if tensorflow_package is not None:
+    #    install(tensorflow_package, 'tensorflow-rocm' if 'rocm' in tensorflow_package else 'tensorflow', ignore=True, quiet=True)
+    # bitsandbytes_package = os.environ.get('BITSANDBYTES_PACKAGE', None)
+    # if bitsandbytes_package is not None:
+    #    install(bitsandbytes_package, 'bitsandbytes', ignore=True, quiet=True)
+    # elif not args.experimental:
+    #    uninstall('bitsandbytes')
     if args.profile:
         print_profile(pr, 'Packages')
 

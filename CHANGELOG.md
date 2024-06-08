@@ -60,6 +60,7 @@
 - add env variable `SD_PIP_DEBUG` to write `pip.log` for all pip operations  
   also improved installer logging  
 - add python version check for `torch-directml`
+- do not install `tensorflow` by default  
 - improve metadata/infotext parser  
   add `cli/image-exif.py` that can be used to view/extract metadata from images  
 - lower overhead on generate calls
