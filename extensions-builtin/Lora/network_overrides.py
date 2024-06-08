@@ -1,7 +1,7 @@
 from modules import shared
 
 
-force_diffusers = [
+maybe_diffusers = [
     'aaebf6360f7d', # sd15-lcm
     '3d18b05e4f56', # sdxl-lcm
     'b71dcb732467', # sdxl-tcd
@@ -19,12 +19,16 @@ force_diffusers = [
     '8cca3706050b', # hyper-sdxl-1step
 ]
 
+force_diffusers = [
+    '816d0eed49fd', # flash-sdxl
+    'c2ec22757b46', # flash-sd15
+]
+
 def check_override(shorthash):
-    if not shared.opts.lora_maybe_diffusers:
-        return False
     if len(shorthash) < 4:
         return False
-    force = any(x.startswith(shorthash) for x in force_diffusers)
-    if force:
+    force = any(x.startswith(shorthash) for x in maybe_diffusers) if shared.opts.lora_maybe_diffusers else False
+    force = force or any(x.startswith(shorthash) for x in force_diffusers)
+    if force and shared.opts.lora_maybe_diffusers:
         shared.log.debug('LoRA override: force diffusers')
     return force

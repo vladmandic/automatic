@@ -52,6 +52,8 @@
 
 ### Improvements
 
+- further work on improving python 3.12 functionality and remove experimental flag  
+  note: recommended version remains python 3.11 for all users except if you're using directml and then its python 3.10  
 - improved **installer** for initial installs  
   initial install will do single-pass install of all required packages with correct versions  
   subsequent runs will check package versions as necessary  

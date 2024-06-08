@@ -85,7 +85,7 @@ def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
     shared.log.debug(f'LoRA load: name="{name}" file="{network_on_disk.filename}" type=diffusers {"cached" if cached else ""} fuse={shared.opts.lora_fuse_diffusers}')
     if cached is not None:
         return cached
-    if shared.native:
+    if not shared.native:
         return None
     shared.sd_model.load_lora_weights(network_on_disk.filename)
     if shared.opts.lora_fuse_diffusers:
