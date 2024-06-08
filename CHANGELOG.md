@@ -4,13 +4,18 @@
 
 - StableDiffusion 3
 
-## Update for 2024-06-04
+## Update for 2024-06-08
 
 *Note*: New features require `diffusers==0.29.0.dev`
+
+### New Models
 
 - [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model  
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
+
+### New Functionality
+
 - [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
   write your prompts forin ~110 auto-detected languages!  
   compatible with *SD15* and *SDXL*  
@@ -44,13 +49,21 @@
 - add torch **full deterministic mode**
   enable in settings -> compute -> use deterministic mode  
   typical differences are not large and its disabled by default as it does have some performance impact  
-- lower overhead on generate calls
-- cumulative fixes since the last release
-- add python version check for torch-directml
+
+### Improvements
+
+- improved **installer** for initial installs  
+  initial install will do single-pass install of all required packages with correct versions  
+  subsequent runs will check package versions as necessary  
+- add env variable `SD_PIP_DEBUG` to write `pip.log` for all pip operations  
+  also improved installer logging  
+- add python version check for `torch-directml`
 - improve metadata/infotext parser  
   add `cli/image-exif.py` that can be used to view/extract metadata from images  
+- lower overhead on generate calls
 - auto-synchronize modernui and core branches  
 - fix apply/unapply hidiffusion for sd15  
+- cumulative fixes since the last release
 
 ## Update for 2024-06-02
 
