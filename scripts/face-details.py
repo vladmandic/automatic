@@ -137,8 +137,10 @@ class FaceRestorerYolo(FaceRestoration):
             'width': resolution,
             'height': resolution,
         }
+        control_pipeline = None
         if getattr(p, 'is_control', False):
             from modules.control import run
+            control_pipeline = shared.sd_model
             run.restore_pipeline()
 
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
@@ -171,6 +173,8 @@ class FaceRestorerYolo(FaceRestoration):
                     mask_all.append(pp.images[1])
 
         # restore pipeline
+        if control_pipeline is not None:
+            shared.sd_model = control_pipeline
         p = processing_class.switch_class(p, orig_cls, orig_p)
         p.init_images = getattr(orig_p, 'init_images', None)
         p.image_mask = getattr(orig_p, 'image_mask', None)
