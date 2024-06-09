@@ -60,22 +60,22 @@ fastapi_args = {
 }
 
 import modules.sd_hijack
+from packaging.version import Version
 timer.startup.record("ldm")
-
 modules.loader.initialized = True
-
 
 def check_rollback_vae():
     if shared.cmd_opts.rollback_vae:
         if not torch.cuda.is_available():
             log.error("Rollback VAE functionality requires compatible GPU")
             shared.cmd_opts.rollback_vae = False
-        elif not torch.__version__.startswith('2.1'):
+        elif not Version(torch.__version__) >= Version("2.1"):
             log.error("Rollback VAE functionality requires Torch 2.1 or higher")
             shared.cmd_opts.rollback_vae = False
         elif 0 < torch.cuda.get_device_capability()[0] < 8:
             log.error('Rollback VAE functionality device capabilities not met')
             shared.cmd_opts.rollback_vae = False
+
 
 
 def initialize():
