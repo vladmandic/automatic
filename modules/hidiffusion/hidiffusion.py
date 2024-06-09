@@ -228,7 +228,7 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
                 norm_hidden_states = self.norm2(hidden_states)
                 norm_hidden_states = norm_hidden_states * (1 + scale_mlp) + shift_mlp
             if self._chunk_size is not None:
-                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size) # TODO hidiffusion undefined
+                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size) # pylint: disable=undefined-variable # TODO hidiffusion undefined
             else:
                 ff_output = self.ff(norm_hidden_states)
             if self.use_ada_layer_norm_zero:
