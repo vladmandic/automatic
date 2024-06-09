@@ -22,6 +22,12 @@ predefined_sd15 = {
     'Canny v2': 'TencentARC/t2iadapter_canny_sd15v2',
     'Sketch v1': 'TencentARC/t2iadapter_sketch_sd14v1',
     'Sketch v2': 'TencentARC/t2iadapter_sketch_sd15v2',
+    # 'Coadapter Canny': 'TencentARC/T2I-Adapter/models/coadapter-canny-sd15v1.pth',
+    # 'Coadapter Color': 'TencentARC/T2I-Adapter/models/coadapter-color-sd15v1.pth',
+    # 'Coadapter Depth': 'TencentARC/T2I-Adapter/models/coadapter-depth-sd15v1.pth',
+    # 'Coadapter Fuser': 'TencentARC/T2I-Adapter/models/coadapter-fuser-sd15v1.pth',
+    # 'Coadapter Sketch': 'TencentARC/T2I-Adapter/models/coadapter-sketch-sd15v1.pth',
+    # 'Coadapter Style': 'TencentARC/T2I-Adapter/models/coadapter-style-sd15v1.pth',
 }
 predefined_sdxl = {
     'Canny XL': 'TencentARC/t2i-adapter-canny-sdxl-1.0',
@@ -31,6 +37,7 @@ predefined_sdxl = {
     'OpenPose XL': 'TencentARC/t2i-adapter-openpose-sdxl-1.0',
     'Midas Depth XL': 'TencentARC/t2i-adapter-depth-midas-sdxl-1.0',
 }
+
 models = {}
 all_models = {}
 all_models.update(predefined_sd15)
@@ -94,7 +101,15 @@ class Adapter():
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
                 return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
-            self.model = T2IAdapter.from_pretrained(model_path, **self.load_config)
+            if model_path.endswith('.pth') or model_path.endswith('.pt') or model_path.endswith('.safetensors'):
+                from huggingface_hub import hf_hub_download
+                parts = model_path.split('/')
+                repo_id = f'{parts[0]}/{parts[1]}'
+                filename = '/'.join(parts[2:])
+                model = hf_hub_download(repo_id, filename, **self.load_config)
+                self.model = T2IAdapter.from_pretrained(model, **self.load_config)
+            else:
+                self.model = T2IAdapter.from_pretrained(model_path, **self.load_config)
             if self.device is not None:
                 self.model.to(self.device)
             if self.dtype is not None:
