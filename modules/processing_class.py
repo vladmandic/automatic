@@ -469,6 +469,24 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.fidelity = 0.5
         self.mask_image = None
         self.override = None
+        self.resize_mode_before = None
+        self.resize_name_before = None
+        self.width_before = None
+        self.height_before = None
+        self.scale_by_before = None
+        self.selected_scale_tab_before = None
+        self.resize_mode_after = None
+        self.resize_name_after = None
+        self.width_after = None
+        self.height_after = None
+        self.scale_by_after = None
+        self.selected_scale_tab_after = None
+        self.resize_mode_mask = None
+        self.resize_name_mask = None
+        self.width_mask = None
+        self.height_mask = None
+        self.scale_by_mask = None
+        self.selected_scale_tab_mask = None
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass

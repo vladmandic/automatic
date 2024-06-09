@@ -149,12 +149,34 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         shared.log.debug('Control: override resize mode=mask')
         selected_scale_tab_mask = 1
 
-    # set initial resolution
+    # set control sizing
     if resize_mode_before != 0 or inputs is None or inputs == [None]:
         p.width, p.height = width_before, height_before # pylint: disable=attribute-defined-outside-init
+        p.width_before = width_before
+        p.height_before = height_before
+        if resize_name_before != 'None':
+            p.resize_mode_before = resize_mode_before
+            p.resize_name_before = resize_name_before
+        p.scale_by_before = scale_by_before
+        p.selected_scale_tab_before = selected_scale_tab_before
     else:
         del p.width
         del p.height
+    if resize_name_after != 'None':
+        p.resize_mode_after = resize_mode_after
+        p.resize_name_after = resize_name_after
+        p.width_after = width_after
+        p.height_after = height_after
+        p.scale_by_after = scale_by_after
+        p.selected_scale_tab_after = selected_scale_tab_after
+    if resize_name_mask != 'None':
+        p.resize_mode_mask = resize_mode_mask
+        p.resize_name_mask = resize_name_mask
+        p.width_mask = width_mask
+        p.height_mask = height_mask
+        p.scale_by_mask = scale_by_mask
+        p.selected_scale_tab_mask = selected_scale_tab_mask
+
     # hires/refine defined outside of main init
     p.enable_hr = enable_hr
     p.hr_sampler_name = processing.get_sampler_name(hr_sampler_index)

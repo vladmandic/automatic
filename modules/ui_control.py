@@ -533,11 +533,27 @@ def create_ui(_blocks: gr.Blocks=None):
                 (negative, "Negative prompt"),
                 # input
                 (denoising_strength, "Denoising strength"),
-                # resize
+                # size basic
                 (width_before, "Size-1"),
                 (height_before, "Size-2"),
                 (resize_mode_before, "Resize mode"),
                 (scale_by_before, "Resize scale"),
+                # size control
+                (width_before, "Size before-1"),
+                (height_before, "Size before-2"),
+                (resize_mode_before, "Size mode before"),
+                (scale_by_before, "Size scale before"),
+                (resize_name_before, "Size name before"),
+                (width_after, "Size after-1"),
+                (height_after, "Size after-2"),
+                (resize_mode_after, "Size mode after"),
+                (scale_by_after, "Size scale after"),
+                (resize_name_after, "Size name after"),
+                (width_mask, "Size mask-1"),
+                (height_mask, "Size mask-2"),
+                (resize_mode_mask, "Size mode mask"),
+                (scale_by_mask, "Size scale mask"),
+                (resize_name_mask, "Size name mask"),
                 # sampler
                 (sampler_index, "Sampler"),
                 (steps, "Steps"),

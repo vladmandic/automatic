@@ -4,7 +4,7 @@ import os
 import io
 import re
 import sys
-import importlib
+import importlib.util
 from PIL import Image, ExifTags, TiffImagePlugin, PngImagePlugin
 from rich import print # pylint: disable=redefined-builtin
 
