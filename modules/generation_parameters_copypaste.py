@@ -1,12 +1,11 @@
 import base64
 import io
 import os
-import re
-import json
 from PIL import Image
 import gradio as gr
 from modules.paths import data_path
 from modules import shared, gr_tempdir, script_callbacks, images
+from modules.infotext import parse, mapping, quote, unquote # pylint: disable=unused-import
 
 
 type_of_gr_update = type(gr.update())
@@ -14,7 +13,8 @@ paste_fields = {}
 registered_param_bindings = []
 debug = shared.log.trace if os.environ.get('SD_PASTE_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PASTE')
-
+parse_generation_parameters = parse # compatibility
+infotext_to_setting_name_mapping = mapping # compatibility
 
 class ParamBinding:
     def __init__(self, paste_button, tabname, source_text_component=None, source_image_component=None, source_tabname=None, override_settings_component=None, paste_field_names=None):
@@ -30,21 +30,6 @@ class ParamBinding:
 
 def reset():
     paste_fields.clear()
-
-
-def quote(text):
-    if ',' not in str(text) and '\n' not in str(text) and ':' not in str(text):
-        return text
-    return json.dumps(text, ensure_ascii=False)
-
-
-def unquote(text):
-    if len(text) == 0 or text[0] != '"' or text[-1] != '"':
-        return text
-    try:
-        return json.loads(text)
-    except Exception:
-        return text
 
 
 def image_from_url_text(filedata):
@@ -187,124 +172,13 @@ def send_image_and_dimensions(x):
     return img, w, h
 
 
-def parse_generation_parameters(infotext, no_prompt=False):
-    if not isinstance(infotext, str):
-        return {}
-    debug(f'Parse infotext: {infotext}')
-    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
-    re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
-    basic_params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
-
-    infotext = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
-    infotext = infotext.replace(' Steps: ', ', Steps: ').replace('\nSteps: ', ', Steps: ') # fix cases where there is no delimiter between prompt and steps
-    sanitized = infotext
-    sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
-    sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
-    sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
-
-    params = dict(re_param.findall(sanitized))
-    debug(f"Parse params: {params}")
-    params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    if len(list(params)) == 0:
-        first_param = None
-    else:
-        try:
-            first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-        except Exception:
-            first_param, first_param_idx = next(iter(params)), 0
-        if first_param_idx > 0:
-            for _i in range(first_param_idx):
-                params.pop(next(iter(params)))
-    params_idx = sanitized.find(f'{first_param}:') if first_param else -1
-    negative_idx = infotext.find("Negative prompt:")
-    if 'Steps:' in sanitized:
-        params_idx = max(params_idx, sanitized.find('Steps:'))
-
-    if negative_idx == -1: # prompt can be without negative prompt
-        prompt = infotext[:params_idx] if params_idx > 0 else infotext
-    else:
-        prompt = infotext[:negative_idx]
-    if prompt.startswith('Steps: '):
-        prompt = ''
-    if negative_idx >= 0:
-        negative = infotext[negative_idx:params_idx] if params_idx > 0 else infotext[negative_idx:]
-    else:
-        negative = ''
-
-    for k, v in params.copy().items(): # avoid dict-has-changed
-        if len(v) > 0 and v[0] == '"' and v[-1] == '"':
-            v = unquote(v)
-        m = re_size.match(v)
-        if v.replace('.', '', 1).isdigit():
-            params[k] = float(v) if '.' in v else int(v)
-        elif v == "True":
-            params[k] = True
-        elif v == "False":
-            params[k] = False
-        elif m is not None:
-            params[f"{k}-1"] = int(m.group(1))
-            params[f"{k}-2"] = int(m.group(2))
-        elif k == 'VAE' and v == 'TAESD':
-            params["Full quality"] = False
-        else:
-            params[k] = v
-    if not no_prompt:
-        params["Prompt"] = prompt.replace('Prompt:', '').strip(' ,\n')
-        params["Negative prompt"] = negative.replace('Negative prompt:', '').strip(' ,\n')
-    debug(f"Parse: {params}")
-    return params
-
-
-settings_map = {}
-
-
-infotext_to_setting_name_mapping = [
-    ('Backend', 'sd_backend'),
-    ('Model hash', 'sd_model_checkpoint'),
-    ('Refiner', 'sd_model_refiner'),
-    ('VAE', 'sd_vae'),
-    ('Parser', 'prompt_attention'),
-    ('Color correction', 'img2img_color_correction'),
-    # Samplers
-    ('Sampler Eta', 'scheduler_eta'),
-    ('Sampler ENSD', 'eta_noise_seed_delta'),
-    ('Sampler order', 'schedulers_solver_order'),
-    # Samplers diffusers
-    ('Sampler beta schedule', 'schedulers_beta_schedule'),
-    ('Sampler beta start', 'schedulers_beta_start'),
-    ('Sampler beta end', 'schedulers_beta_end'),
-    ('Sampler DPM solver', 'schedulers_dpm_solver'),
-    # Samplers original
-    ('Sampler brownian', 'schedulers_brownian_noise'),
-    ('Sampler discard', 'schedulers_discard_penultimate'),
-    ('Sampler dyn threshold', 'schedulers_use_thresholding'),
-    ('Sampler karras', 'schedulers_use_karras'),
-    ('Sampler low order', 'schedulers_use_loworder'),
-    ('Sampler quantization', 'enable_quantization'),
-    ('Sampler sigma', 'schedulers_sigma'),
-    ('Sampler sigma min', 's_min'),
-    ('Sampler sigma max', 's_max'),
-    ('Sampler sigma churn', 's_churn'),
-    ('Sampler sigma uncond', 's_min_uncond'),
-    ('Sampler sigma noise', 's_noise'),
-    ('Sampler sigma tmin', 's_tmin'),
-    ('Sampler ENSM', 'initial_noise_multiplier'), # img2img only
-    ('UniPC skip type', 'uni_pc_skip_type'),
-    ('UniPC variant', 'uni_pc_variant'),
-    # Token Merging
-    ('Mask weight', 'inpainting_mask_weight'),
-    ('ToMe', 'tome_ratio'),
-    ('ToDo', 'todo_ratio'),
-]
-
-
 def create_override_settings_dict(text_pairs):
     res = {}
     params = {}
     for pair in text_pairs:
         k, v = pair.split(":", maxsplit=1)
         params[k] = v.strip()
-    for param_name, setting_name in infotext_to_setting_name_mapping:
+    for param_name, setting_name in mapping:
         value = params.get(param_name, None)
         if value is None:
             continue
@@ -325,7 +199,7 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                 prompt = ''
         else:
             shared.log.debug(f'Paste prompt: type="current" prompt="{prompt}"')
-        params = parse_generation_parameters(prompt, no_prompt=False)
+        params = parse(prompt)
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []
         applied = {}

@@ -90,6 +90,8 @@ def get_pipelines():
         pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
     if hasattr(diffusers, 'PixArtSigmaPipeline'):
         pipelines['PixArt-Sigma'] = getattr(diffusers, 'PixArtSigmaPipeline', None)
+    if hasattr(diffusers, 'HunyuanDiTPipeline'):
+        pipelines['HunyuanDiT'] = getattr(diffusers, 'HunyuanDiTPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

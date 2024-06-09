@@ -13,7 +13,7 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         if sd_models.model_data.sd_model is None:
             return
-        if shared.backend == shared.Backend.ORIGINAL:
+        if not shared.native:
             sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=True)
         elif hasattr(sd_models.model_data.sd_model, 'embedding_db'):
             sd_models.model_data.sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
@@ -48,7 +48,7 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
                 for embedding_path
                 in candidates
             ]
-        elif shared.backend == shared.Backend.ORIGINAL:
+        elif not shared.native:
             self.embeddings = list(sd_hijack.model_hijack.embedding_db.word_embeddings.values())
         elif hasattr(sd_models.model_data.sd_model, 'embedding_db'):
             self.embeddings = list(sd_models.model_data.sd_model.embedding_db.word_embeddings.values())

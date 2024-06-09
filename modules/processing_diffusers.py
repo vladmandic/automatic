@@ -100,6 +100,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         denoising_start=0 if use_refiner_start else p.refiner_start if use_denoise_start else None,
         denoising_end=p.refiner_start if use_refiner_start else 1 if use_denoise_start else None,
         output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
+        # output_type='pil',
         clip_skip=p.clip_skip,
         desc='Base',
     )
@@ -112,13 +113,17 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
         sd_models.move_model(shared.sd_model, devices.device)
-        hidiffusion.apply_hidiffusion(p, shared.sd_model_type)
+        hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
-        output = shared.sd_model(**base_args) # pylint: disable=not-callable
+        if hasattr(shared.sd_model, 'tgate') and getattr(p, 'gate_step', -1) > 0:
+            base_args['gate_step'] = p.gate_step
+            output = shared.sd_model.tgate(**base_args) # pylint: disable=not-callable
+        else:
+            output = shared.sd_model(**base_args)
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
-        hidiffusion.remove_hidiffusion(p)
+        hidiffusion.unapply()
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
         sd_models_compile.check_deepcache(enable=False)
         if shared.cmd_opts.profile:
@@ -305,7 +310,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
-            if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
+            if torch.is_tensor(output.images) and len(output.images) > 0 and any(s >= 512 for s in output.images.shape):
+                results = output.images.cpu().numpy()
+            elif hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                 results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality)
             elif hasattr(output, 'images'):
                 results = output.images

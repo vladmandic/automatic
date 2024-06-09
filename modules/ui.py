@@ -139,7 +139,7 @@ def create_ui(startup_timer = None):
     modules.scripts.scripts_current = None
 
     with gr.Blocks(analytics_enabled=False) as control_interface:
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             from modules import ui_control
             ui_control.create_ui()
             timer.startup.record("ui-control")

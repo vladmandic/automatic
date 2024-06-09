@@ -32,7 +32,7 @@ class FaceRestorerYolo(FaceRestoration):
 
     def dependencies(self):
         import installer
-        installer.install('ultralytics', ignore=True)
+        installer.install('ultralytics', ignore=True, quiet=True)
 
     def predict(
             self,
@@ -137,8 +137,10 @@ class FaceRestorerYolo(FaceRestoration):
             'width': resolution,
             'height': resolution,
         }
+        control_pipeline = None
         if getattr(p, 'is_control', False):
             from modules.control import run
+            control_pipeline = shared.sd_model
             run.restore_pipeline()
 
         p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
@@ -160,6 +162,7 @@ class FaceRestorerYolo(FaceRestoration):
                 continue
             p.init_images = [image]
             p.image_mask = [face.mask]
+            # mask_all.append(face.mask)
             p.recursion = True
             pp = processing.process_images_inner(p)
             del p.recursion
@@ -170,18 +173,21 @@ class FaceRestorerYolo(FaceRestoration):
                     mask_all.append(pp.images[1])
 
         # restore pipeline
+        if control_pipeline is not None:
+            shared.sd_model = control_pipeline
         p = processing_class.switch_class(p, orig_cls, orig_p)
         p.init_images = getattr(orig_p, 'init_images', None)
         p.image_mask = getattr(orig_p, 'image_mask', None)
         shared.opts.data['mask_apply_overlay'] = orig_apply_overlay
         np_image = np.array(image)
 
-        """
         if len(mask_all) > 0 and shared.opts.include_mask:
             from modules.control.util import blend
-            mask_all = blend([np.array(m) for m in mask_all])
-            mask_pil = Image.fromarray(mask_all)
-        """
+            p.image_mask = blend([np.array(m) for m in mask_all])
+            # combined = blend([np_image, p.image_mask])
+            # combined = Image.fromarray(combined)
+            # combined.save('/tmp/face.png')
+            p.image_mask = Image.fromarray(p.image_mask)
         return np_image
 
 

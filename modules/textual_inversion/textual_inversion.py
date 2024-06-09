@@ -27,7 +27,7 @@ def list_textual_inversion_templates():
 
 
 def list_embeddings(*dirs):
-    is_ext = extension_filter(['.SAFETENSORS', '.PT' ] + ( ['.PNG', '.WEBP', '.JXL', '.AVIF', '.BIN' ] if shared.backend != shared.Backend.DIFFUSERS else [] ))
+    is_ext = extension_filter(['.SAFETENSORS', '.PT' ] + ( ['.PNG', '.WEBP', '.JXL', '.AVIF', '.BIN' ] if not shared.native else [] ))
     is_not_preview = lambda fp: not next(iter(os.path.splitext(fp))).upper().endswith('.PREVIEW') # pylint: disable=unnecessary-lambda-assignment
     return list(filter(lambda fp: is_ext(fp) and is_not_preview(fp) and os.stat(fp).st_size > 0, directory_files(*dirs)))
 
@@ -138,7 +138,7 @@ class EmbeddingDatabase:
         return embedding
 
     def get_expected_shape(self):
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return 0
         if not shared.sd_loaded:
             shared.log.error('Model not loaded')
@@ -302,7 +302,7 @@ class EmbeddingDatabase:
         else:
             raise RuntimeError(f"Couldn't identify {filename} as textual inversion embedding")
 
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return emb
 
         vec = emb.detach().to(devices.device, dtype=torch.float32)
@@ -326,7 +326,7 @@ class EmbeddingDatabase:
         if not os.path.isdir(embdir.path):
             return
         file_paths = list_embeddings(embdir.path)
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             self.load_diffusers_embedding(file_paths)
         else:
             for file_path in file_paths:

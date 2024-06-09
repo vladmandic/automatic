@@ -215,7 +215,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         self.width = self.width or 512
         self.height = self.height or 512
@@ -252,7 +252,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                     self.hr_upscale_to_y = self.hr_resize_y
                 self.truncate_x = (self.hr_upscale_to_x - target_w) // 8
                 self.truncate_y = (self.hr_upscale_to_y - target_h) // 8
-        if shared.backend == shared.Backend.ORIGINAL: # diffusers are handled in processing_diffusers
+        if not shared.native: # diffusers are handled in processing_diffusers
             if (self.hr_upscale_to_x == self.width and self.hr_upscale_to_y == self.height) or upscaler is None or upscaler == 'None': # special case: the user has chosen to do nothing
                 self.is_hr_pass = False
                 return
@@ -303,9 +303,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
-        if shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'image_mask', None) is not None:
+        if shared.native and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
-        elif shared.backend == shared.Backend.DIFFUSERS and getattr(self, 'init_images', None) is not None:
+        elif shared.native and getattr(self, 'init_images', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
 
         if all_prompts is not None:
@@ -317,7 +317,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
         if self.sampler_name == "PLMS":
             self.sampler_name = 'UniPC'
-        if shared.backend == shared.Backend.ORIGINAL:
+        if not shared.native:
             self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
             if hasattr(self.sampler, "initialize"):
                 self.sampler.initialize(self)
@@ -331,7 +331,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         if self.image_mask is not None:
             if type(self.image_mask) == list:
                 self.image_mask = self.image_mask[0]
-            if shared.backend == shared.Backend.ORIGINAL: # original way of processing mask
+            if not shared.native: # original way of processing mask
                 self.image_mask = processing_helpers.create_binary_mask(self.image_mask)
                 if self.inpainting_mask_invert:
                     self.image_mask = ImageOps.invert(self.image_mask)
@@ -341,7 +341,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                     np_mask = cv2.GaussianBlur(np_mask, (kernel_size, 1), self.mask_blur)
                     np_mask = cv2.GaussianBlur(np_mask, (1, kernel_size), self.mask_blur)
                     self.image_mask = Image.fromarray(np_mask)
-            elif shared.backend == shared.Backend.DIFFUSERS:
+            elif shared.native:
                 if 'control' in self.ops:
                     self.image_mask = masking.run_mask(input_image=self.init_images, input_mask=self.image_mask, return_type='Grayscale', invert=self.inpainting_mask_invert==1) # blur/padding are handled in masking module
                 else:
@@ -411,9 +411,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             self.overlay_images = self.overlay_images * self.batch_size
         if self.color_corrections is not None and len(self.color_corrections) == 1:
             self.color_corrections = self.color_corrections * self.batch_size
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return # we've already set self.init_images and self.mask and we dont need any more processing
-        elif shared.backend == shared.Backend.ORIGINAL:
+        elif not shared.native:
             self.init_images = [np.moveaxis((np.array(image).astype(np.float32) / 255.0), 2, 0) for image in self.init_images]
             if len(self.init_images) == 1:
                 batch_images = np.expand_dims(self.init_images[0], axis=0).repeat(self.batch_size, axis=0)
@@ -469,6 +469,24 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.fidelity = 0.5
         self.mask_image = None
         self.override = None
+        self.resize_mode_before = None
+        self.resize_name_before = None
+        self.width_before = None
+        self.height_before = None
+        self.scale_by_before = None
+        self.selected_scale_tab_before = None
+        self.resize_mode_after = None
+        self.resize_name_after = None
+        self.width_after = None
+        self.height_after = None
+        self.scale_by_after = None
+        self.selected_scale_tab_after = None
+        self.resize_mode_mask = None
+        self.resize_name_mask = None
+        self.width_mask = None
+        self.height_mask = None
+        self.scale_by_mask = None
+        self.selected_scale_tab_mask = None
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass

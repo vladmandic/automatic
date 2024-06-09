@@ -186,7 +186,7 @@ def context_hypertile_vae(p):
     error_reported = False
     height, width = p.height, p.width
     max_h, max_w = 0, 0
-    vae = getattr(p.sd_model, "vae", None) if shared.backend == shared.Backend.DIFFUSERS else getattr(p.sd_model, "first_stage_model", None)
+    vae = getattr(p.sd_model, "vae", None) if shared.native else getattr(p.sd_model, "first_stage_model", None)
     if height % 8 != 0 or width % 8 != 0:
         log.warning(f'Hypertile VAE disabled: width={width} height={height} are not divisible by 8')
         return nullcontext()
@@ -211,7 +211,7 @@ def context_hypertile_unet(p):
     error_reported = False
     height, width = p.height, p.width
     max_h, max_w = 0, 0
-    unet = getattr(p.sd_model, "unet", None) if shared.backend == shared.Backend.DIFFUSERS else getattr(p.sd_model.model, "diffusion_model", None)
+    unet = getattr(p.sd_model, "unet", None) if shared.native else getattr(p.sd_model.model, "diffusion_model", None)
     if height % 8 != 0 or width % 8 != 0:
         log.warning(f'Hypertile UNet disabled: width={width} height={height} are not divisible by 8')
         return nullcontext()

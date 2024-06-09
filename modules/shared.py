@@ -206,7 +206,7 @@ if cmd_opts.backend is not None: # override with args
 if cmd_opts.use_openvino: # override for openvino
     backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
-
+native = backend == Backend.DIFFUSERS
 
 class OptionInfo:
     def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, folder=None, submit=None, comment_before='', comment_after=''):
@@ -340,11 +340,11 @@ def temp_disable_extensions():
         for ext in disable_safe:
             if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
-    if backend == Backend.DIFFUSERS:
+    if native:
         for ext in disable_diffusers:
             if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
-    if backend == Backend.ORIGINAL:
+    if not native:
         for ext in disable_original:
             if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
@@ -366,13 +366,13 @@ if not (cmd_opts.lowvram or cmd_opts.medvram):
 
 
 if devices.backend == "directml": # Force BMM for DirectML instead of SDP
-    cross_attention_optimization_default = "Dynamic Attention BMM" if backend == Backend.DIFFUSERS else "Sub-quadratic"
-elif backend == Backend.DIFFUSERS and (cmd_opts.lowvram or cmd_opts.medvram):
+    cross_attention_optimization_default = "Dynamic Attention BMM" if native else "Sub-quadratic"
+elif native and (cmd_opts.lowvram or cmd_opts.medvram):
     cross_attention_optimization_default = "Dynamic Attention SDP"
 elif devices.backend == "cpu":
-    cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
+    cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
 elif devices.backend == "mps":
-    cross_attention_optimization_default = "Scaled-Dot-Product" if backend == Backend.DIFFUSERS else "Doggettx's"
+    cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
 else: # cuda, rocm, ipex
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
@@ -392,12 +392,12 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
     "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
-    "stream_load": OptionInfo(False, "Load models using stream loading method", gr.Checkbox, {"visible": backend == Backend.ORIGINAL }),
+    "stream_load": OptionInfo(False, "Load models using stream loading method", gr.Checkbox, {"visible": not native }),
     "model_reuse_dict": OptionInfo(False, "Reuse loaded model dictionary", gr.Checkbox, {"visible": False}),
     "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "A1111 parser", "Fixed attention"] }),
-    "prompt_mean_norm": OptionInfo(True, "Prompt attention normalization", gr.Checkbox, {"visible": backend == Backend.ORIGINAL }),
-    "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": backend == Backend.ORIGINAL }),
-    "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": backend == Backend.ORIGINAL }),
+    "prompt_mean_norm": OptionInfo(True, "Prompt attention normalization", gr.Checkbox, {"visible": not native }),
+    "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
+    "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
     "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
 }))
@@ -406,6 +406,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
     "cuda_dtype": OptionInfo("FP32" if sys.platform == "darwin" or cmd_opts.use_openvino else "BF16" if devices.backend == "ipex" else "FP16", "Device precision type", gr.Radio, {"choices": ["FP32", "FP16", "BF16"]}),
+    "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
+
+    "model_sep": OptionInfo("<h2>Model options</h2>", "", gr.HTML),
     "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for model (--no-half)", None, None, None),
     "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for VAE (--no-half-vae)"),
     "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling"),
@@ -415,20 +418,19 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox, {"visible": True}),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
 
-    "cross_attention_sep": OptionInfo("<h2>Attention</h2>", "", gr.HTML),
-    "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(diffusers=backend == Backend.DIFFUSERS) }),
+    "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
+    "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
     "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": backend == Backend.DIFFUSERS}),
-    "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": backend == Backend.ORIGINAL}),
-    "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
-    "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": backend == Backend.ORIGINAL}),
-    "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": backend == Backend.ORIGINAL}),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": native}),
+    "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
+    "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
+    "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
+    "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": not native}),
 
-    "other_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
+    "other_sep": OptionInfo("<h2>Execution options</h2>", "", gr.HTML),
     "opt_channelslast": OptionInfo(False, "Use channels last "),
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
-    "cudnn_deterministic": OptionInfo(False, "Use deterministic options for cuDNN"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
@@ -445,7 +447,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
     "nncf_sep": OptionInfo("<h2>Model Compress</h2>", "", gr.HTML),
-    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": backend == Backend.DIFFUSERS}),
+    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
@@ -668,7 +670,7 @@ options_templates.update(options_section(('ui', "User Interface Options"), {
     "keyedit_precision_attention": OptionInfo(0.1, "Ctrl+up/down precision when editing (attention:1.1)", gr.Slider, {"minimum": 0.01, "maximum": 0.2, "step": 0.001, "visible": False}),
     "keyedit_precision_extra": OptionInfo(0.05, "Ctrl+up/down precision when editing <extra networks:0.9>", gr.Slider, {"minimum": 0.01, "maximum": 0.2, "step": 0.001, "visible": False}),
     "keyedit_delimiters": OptionInfo(r".,\/!?%^*;:{}=`~()", "Ctrl+up/down word delimiters", gr.Textbox, { "visible": False }),
-    "quicksettings_list": OptionInfo(["sd_model_checkpoint"] if backend == Backend.ORIGINAL else ["sd_model_checkpoint", "sd_model_refiner"], "Quicksettings list", gr.Dropdown, lambda: {"multiselect":True, "choices": list(opts.data_labels.keys())}),
+    "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", gr.Dropdown, lambda: {"multiselect":True, "choices": list(opts.data_labels.keys())}),
     "ui_scripts_reorder": OptionInfo("", "UI scripts order", gr.Textbox, { "visible": False }),
 }))
 
@@ -752,10 +754,10 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "facehires_iou": OptionInfo(0.5, "Max face overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05}),
     "facehires_min_size": OptionInfo(0, "Min face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
     "facehires_max_size": OptionInfo(0, "Max face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
-    "facehires_padding": OptionInfo(10, "Face padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
-    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
+    "facehires_padding": OptionInfo(20, "Face padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "facehires_strength": OptionInfo(0.0, "Face restore strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),
@@ -815,7 +817,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
     "extra_networks_default_multiplier": OptionInfo(1.0, "Default multiplier for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
-    "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": backend==Backend.DIFFUSERS}),
+    "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": native}),
     "extra_networks_sep3": OptionInfo("<h2>Extra networks settings</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),

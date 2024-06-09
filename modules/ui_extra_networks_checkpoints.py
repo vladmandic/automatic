@@ -16,7 +16,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
 
     def list_reference(self): # pylint: disable=inconsistent-return-statements
         for k, v in shared.reference_models.items():
-            if shared.backend != shared.Backend.DIFFUSERS:
+            if not shared.native:
                 if not v.get('original', False):
                     continue
                 url = v.get('alt', None) or v['path']
@@ -82,7 +82,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
         return items
 
     def allowed_directories_for_previews(self):
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return [v for v in [shared.opts.ckpt_dir, shared.opts.diffusers_dir, reference_dir] if v is not None]
         else:
             return [v for v in [shared.opts.ckpt_dir, reference_dir, sd_models.model_path] if v is not None]

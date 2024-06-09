@@ -31,7 +31,8 @@ class NetworkOnDisk:
             self.metadata = m
         self.alias = self.metadata.get('ss_output_name', self.name)
         # self.set_hash(self.metadata.get('sshs_model_hash') or hashes.sha256_from_cache(self.filename, "lora/" + self.name, use_addnet_hash=self.is_safetensors) or '')
-        self.set_hash(hashes.sha256_from_cache(self.filename, "lora/" + self.name) or self.metadata.get('sshs_model_hash'))
+        sha256 = hashes.sha256_from_cache(self.filename, "lora/" + self.name) or hashes.sha256_from_cache(self.filename, "lora/" + self.name, use_addnet_hash=True) or self.metadata.get('sshs_model_hash')
+        self.set_hash(sha256)
         self.sd_version = self.detect_version()
 
     def detect_version(self):

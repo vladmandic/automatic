@@ -1,5 +1,78 @@
 # Change Log for SD.Next
 
+## TODO
+
+- StableDiffusion 3
+
+## Update for 2024-06-08
+
+*Note*: New features require `diffusers==0.29.0.dev`
+
+### New Models
+
+- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model  
+  note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
+  simply select from networks -> models -> reference, model will be auto-downloaded on first use  
+
+### New Functionality
+
+- [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
+  write your prompts forin ~110 auto-detected languages!  
+  compatible with *SD15* and *SDXL*  
+  enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder  
+  *note*: right now this is more of a proof-of-concept before smaller and/or quantized models are released  
+  model will be auto-downloaded on first use: note its huge size of 27GB  
+  even executing it in FP16 will require ~16GB of VRAM for text encoder alone  
+  examples:  
+  - English: photo of a beautiful woman wearing a white bikini on a beach with a city skyline in the background
+  - Croatian: fotografija lijepe žene u bijelom bikiniju na plaži s gradskim obzorom u pozadini
+  - Italian: Foto di una bella donna che indossa un bikini bianco su una spiaggia con lo skyline di una città sullo sfondo
+  - Spanish: Foto de una hermosa mujer con un bikini blanco en una playa con un horizonte de la ciudad en el fondo
+  - German: Foto einer schönen Frau in einem weißen Bikini an einem Strand mit einer Skyline der Stadt im Hintergrund
+  - Arabic: صورة لامرأة جميلة ترتدي بيكيني أبيض على شاطئ مع أفق المدينة في الخلفية
+  - Japanese: 街のスカイラインを背景にビーチで白いビキニを着た美しい女性の写真
+  - Chinese: 一个美丽的女人在海滩上穿着白色比基尼的照片, 背景是城市天际线
+  - Korean: 도시의 스카이라인을 배경으로 해변에서 흰색 비키니를 입은 아름 다운 여성의 사진
+- [T-Gate](https://github.com/HaozheLiu-ST/T-GATE) Speed up generations by gating at which step cross-attention is no longer needed  
+  enable via scripts -> t-gate  
+  compatible with *SD15*  
+- **PCM LoRAs** allow for fast denoising using less steps with standard *SD15* and *SDXL* models  
+  download from <https://huggingface.co/Kijai/converted_pcm_loras_fp16/tree/main>
+- [ByteDance ResAdapter](https://github.com/bytedance/res-adapter) resolution-free model adapter  
+  allows to use resolutions from 0.5 to 2.0 of original model resolution, compatible with *SD15* and *SDXL*
+  enable via scripts -> resadapter and select desired model
+- **Kohya HiRes Fix** allows for higher resolution generation using standard *SD15* models  
+  enable via scripts -> kohya-hires-fix  
+  *note*: alternative to regular hidiffusion method, but with different approach to scaling  
+- additional built-in 4 great custom trained **ControlNet SDXL** models from Xinsir: OpenPose, Canny, Scribble, AnimePainter  
+  thanks @lbeltrame
+- add torch **full deterministic mode**
+  enable in settings -> compute -> use deterministic mode  
+  typical differences are not large and its disabled by default as it does have some performance impact  
+
+### Improvements
+
+- further work on improving python 3.12 functionality and remove experimental flag  
+  note: recommended version remains python 3.11 for all users except if you're using directml and then its python 3.10  
+- improved **installer** for initial installs  
+  initial install will do single-pass install of all required packages with correct versions  
+  subsequent runs will check package versions as necessary  
+- add env variable `SD_PIP_DEBUG` to write `pip.log` for all pip operations  
+  also improved installer logging  
+- add python version check for `torch-directml`  
+- do not install `tensorflow` by default  
+- improve metadata/infotext parser  
+  add `cli/image-exif.py` that can be used to view/extract metadata from images  
+- lower overhead on generate calls  
+- auto-synchronize modernui and core branches  
+
+## Fixes
+
+- cumulative fixes since the last release
+- fix apply/unapply hidiffusion for sd15  
+- fix controlnet reference enabled check  
+- fix face-hires with control batch count  
+
 ## Update for 2024-06-02
 
 - fix textual inversion loading

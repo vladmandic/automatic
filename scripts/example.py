@@ -67,7 +67,7 @@ class Script(scripts.Script):
         return title
 
     def show(self, is_img2img):
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return img2img if is_img2img else txt2img
         return False
 

@@ -73,8 +73,8 @@ fi
 
 if [[ -f "${venv_dir}"/bin/activate ]]
 then
-    echo "Activate python venv"
     source "${venv_dir}"/bin/activate
+    echo "Activate python venv: $VIRTUAL_ENV"
 else
     echo "Error: Cannot activate python venv"
     exit 1
@@ -103,6 +103,7 @@ then
     echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
 else
-    echo "Launch"
+    PYTHON=`which python`
+    echo "Launch: ${PYTHON}"
     exec "${PYTHON}" launch.py "$@"
 fi

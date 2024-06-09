@@ -16,7 +16,7 @@ class Script(scripts.Script):
 
     def show(self, is_img2img):
         return False
-        # return True if shared.backend == shared.Backend.DIFFUSERS else False
+        # return True if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():

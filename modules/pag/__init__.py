@@ -10,13 +10,15 @@ orig_pipeline = None
 
 def apply(p: processing.StableDiffusionProcessing): # pylint: disable=arguments-differ
     global orig_pipeline # pylint: disable=global-statement
+    if not shared.native:
+        return None
     c = shared.sd_model.__class__ if shared.sd_loaded else None
-    if p.pag_scale == 0:
+    if c == StableDiffusionPAGPipeline or c == StableDiffusionXLPAGPipeline:
         unapply()
         return None
-    if c == StableDiffusionPAGPipeline or c == StableDiffusionXLPAGPipeline:
-        pass
-    elif detect.is_sd15(c):
+    if p.pag_scale == 0:
+        return
+    if detect.is_sd15(c):
         orig_pipeline = shared.sd_model
         shared.sd_model = sd_models.switch_pipe(StableDiffusionPAGPipeline, shared.sd_model)
     elif detect.is_sdxl(c):

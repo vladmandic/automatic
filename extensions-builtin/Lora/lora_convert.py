@@ -106,7 +106,7 @@ def make_unet_conversion_map() -> Dict[str, str]:
 
 class KeyConvert:
     def __init__(self):
-        if shared.backend == shared.Backend.ORIGINAL:
+        if not shared.native:
             self.converter = self.original
             self.is_sd2 = 'model_transformer_resblocks' in shared.sd_model.network_layer_mapping
         else:

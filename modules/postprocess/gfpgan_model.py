@@ -72,8 +72,8 @@ def setup_model(dirname):
     except Exception:
         pass
     try:
-        install('basicsr')
-        install('gfpgan')
+        install('basicsr', quiet=True)
+        install('gfpgan', quiet=True)
         import gfpgan
         import facexlib
         import modules.face_restoration

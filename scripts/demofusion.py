@@ -1225,7 +1225,7 @@ class Script(scripts.Script):
         return 'DemoFusion'
 
     def show(self, is_img2img):
-        return not is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        return not is_img2img if shared.native else False
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):

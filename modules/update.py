@@ -56,7 +56,7 @@ def apply_update(update_rebase, update_submodules, update_extensions):
         if update_rebase:
             i.git('add .')
             i.git('stash')
-        res = i.update('.', current_branch=True, rebase=update_rebase)
+        res = i.update('.', keep_branch=True, rebase=update_rebase)
         html.append(res.replace('\n', '<br>'))
     except Exception as e:
         html.append(f'Error during repository upgrade: {e}')

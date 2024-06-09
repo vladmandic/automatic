@@ -16,7 +16,7 @@ class Script(scripts.Script):
         return 'Image-to-Video'
 
     def show(self, is_img2img):
-        return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        return is_img2img if shared.native else False
         # return False
 
     # return signature is array of gradio components
