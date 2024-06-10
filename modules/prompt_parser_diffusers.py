@@ -183,12 +183,30 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         return
 
 
+def normalize_prompt(pairs: list):
+    num_words = 0
+    total_weight = 0
+    for section in pairs:
+        words = len(section[0].split())
+        if section[1] == -1: # control tokens
+            continue
+        num_words += words
+        total_weight += section[1] * words
+    avg_weight = round(100 * total_weight / num_words) / 100 if num_words > 0 else 1
+    debug(f'Prompt stats: words={num_words} weight={avg_weight}')
+    for section in pairs:
+        section[1] = section[1] / avg_weight if section[1] != -1 else -1 # skip control tokens
+    debug(f'Prompt normalized: {pairs}')
+    return pairs
+
+
 def get_prompts_with_weights(prompt: str):
     t0 = time.time()
-    manager = DiffusersTextualInversionManager(shared.sd_model,
-                                               shared.sd_model.tokenizer or shared.sd_model.tokenizer_2)
+    manager = DiffusersTextualInversionManager(shared.sd_model, shared.sd_model.tokenizer or shared.sd_model.tokenizer_2)
     prompt = manager.maybe_convert_prompt(prompt, shared.sd_model.tokenizer or shared.sd_model.tokenizer_2)
     texts_and_weights = prompt_parser.parse_prompt_attention(prompt)
+    if shared.opts.prompt_mean_norm:
+        texts_and_weights = normalize_prompt(texts_and_weights)
     texts, text_weights = zip(*texts_and_weights)
     debug(f'Prompt: weights={texts_and_weights} time={(time.time() - t0):.3f}')
     return texts, text_weights

@@ -52,6 +52,9 @@
 
 ### Improvements
 
+- additional modernui themes
+- reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
+  this can drastically help with unbalanced prompts  
 - further work on improving python 3.12 functionality and remove experimental flag  
   note: recommended version remains python 3.11 for all users except if you're using directml and then its python 3.10  
 - improved **installer** for initial installs  
@@ -65,6 +68,7 @@
   add `cli/image-exif.py` that can be used to view/extract metadata from images  
 - lower overhead on generate calls  
 - auto-synchronize modernui and core branches  
+- add option to pad prompt with empty embeds, thanks @Disty
 
 ## Fixes
 
@@ -72,6 +76,7 @@
 - fix apply/unapply hidiffusion for sd15  
 - fix controlnet reference enabled check  
 - fix face-hires with control batch count  
+- apply rollback-vae option to latest torch versions, thanks @Iaotle
 
 ## Update for 2024-06-02
 
