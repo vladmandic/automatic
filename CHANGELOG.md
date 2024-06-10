@@ -76,6 +76,7 @@
 - fix apply/unapply hidiffusion for sd15  
 - fix controlnet reference enabled check  
 - fix face-hires with control batch count  
+- install pynvml on-demand
 - apply rollback-vae option to latest torch versions, thanks @Iaotle
 
 ## Update for 2024-06-02
