@@ -27,22 +27,24 @@ def parse(infotext):
     if not isinstance(infotext, str):
         return {}
     debug(f'Raw: {infotext}')
-    if 'negative prompt:' not in infotext.lower():
-        infotext = 'negative prompt: ' + infotext
-    if 'prompt:' not in infotext.lower():
-        infotext = 'prompt: ' + infotext
 
     remaining = infotext.replace('\nSteps:', ' Steps:')
-    prompt = remaining[:infotext.lower().find('negative prompt:')]
+    params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
+
+    prompt_end = [remaining.lower().find(p) for p in params if p in remaining.lower()]
+    prompt_end += [remaining.lower().find('negative prompt:')]
+    prompt_end = [p for p in prompt_end if p > -1]
+    prompt_end = min(prompt_end) if len(prompt_end) > 0 else 0
+    prompt = remaining[:prompt_end]
     remaining = remaining.replace(prompt, '')
     if prompt.lower().startswith('prompt: '):
         prompt = prompt[8:]
     # debug(f'Prompt: {prompt}')
 
-    params = ['steps:', 'seed:', 'width:', 'height:', 'sampler:', 'size:', 'cfg scale:'] # first param is one of those
     param_idx = [remaining.lower().find(p) for p in params if p in remaining.lower()]
+    param_idx = [p for p in param_idx if p > -1]
     param_idx = min(param_idx) if len(param_idx) > 0 else 0
-    negative = remaining[:param_idx] if param_idx > 0 else remaining
+    negative = remaining[:param_idx] if param_idx > 0 else ''
     remaining = remaining.replace(negative, '')
     if negative.lower().startswith('negative prompt: '):
         negative = negative[16:]
