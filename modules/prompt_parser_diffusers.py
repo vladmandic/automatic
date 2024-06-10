@@ -219,11 +219,14 @@ def pad_to_same_length(pipe, embeds):
     if not hasattr(pipe, 'encode_prompt') and 'StableCascade' not in pipe.__class__.__name__:
         return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    if shared.opts.diffusers_empty_prompt_pad or 'StableCascade' in pipe.__class__.__name__:
+    if shared.opts.diffusers_empty_prompt_pad:
         empty_embed = [torch.empty((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
     else:
         try:
-            empty_embed = pipe.encode_prompt("")
+            if 'StableCascade' in pipe.__class__.__name__:
+                empty_embed = [torch.zeros((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
+            else:
+                empty_embed = pipe.encode_prompt("")
         except TypeError:  # SD1.5
             empty_embed = pipe.encode_prompt("", device, 1, False)
     max_token_count = max([embed.shape[1] for embed in embeds])
