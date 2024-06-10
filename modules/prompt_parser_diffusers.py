@@ -216,17 +216,16 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
 
 
 def pad_to_same_length(pipe, embeds):
-    if not hasattr(pipe, 'encode_prompt') and not (hasattr(pipe, "prior_pipe") and hasattr(pipe.prior_pipe, "encode_prompt")):
+    if not hasattr(pipe, 'encode_prompt') and 'StableCascade' not in pipe.__class__.__name__:
         return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    try:
-        if getattr(pipe, "prior_pipe", None) and getattr(pipe.prior_pipe, "text_encoder", None) is not None: # Cascade
-            empty_embed = pipe.prior_pipe.encode_prompt(device, 1, 1, False, "")
-            empty_embed = [torch.zeros(empty_embed[0].shape, device=empty_embed[0].device, dtype=empty_embed[0].dtype)]
-        else: # SDXL
+    if shared.opts.diffusers_empty_prompt_pad or 'StableCascade' in pipe.__class__.__name__:
+        empty_embed = [torch.empty((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
+    else:
+        try:
             empty_embed = pipe.encode_prompt("")
-    except TypeError:  # SD1.5
-        empty_embed = pipe.encode_prompt("", device, 1, False)
+        except TypeError:  # SD1.5
+            empty_embed = pipe.encode_prompt("", device, 1, False)
     max_token_count = max([embed.shape[1] for embed in embeds])
     repeats = max_token_count - min([embed.shape[1] for embed in embeds])
     empty_batched = empty_embed[0].to(embeds[0].device).repeat(embeds[0].shape[0], repeats // empty_embed[0].shape[1], 1)

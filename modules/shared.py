@@ -534,6 +534,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "disable_accelerate": OptionInfo(False, "Disable accelerate"),
     "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty", gr.Checkbox, {"visible": False}),
     "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
+    "diffusers_empty_prompt_pad": OptionInfo(False, "Use empty values for prompt padding", gr.Checkbox),
     "huggingface_token": OptionInfo('', 'HuggingFace token'),
 
     "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
