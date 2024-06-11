@@ -17,6 +17,7 @@ then
 fi
 
 # python3 executable
+PYTHON_ENV="${PYTHON}"
 if [[ -z "${PYTHON}" ]]
 then
     PYTHON="python3"
@@ -81,7 +82,6 @@ else
 fi
 
 # Add venv lib folder to PATH
-# IPEX needs this
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath "$venv_dir")/lib/
@@ -103,7 +103,11 @@ then
     echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
 else
-    PYTHON=`which python`
+  # use python from env variable if set otherwise look it up now so it gets venv python
+  if [[ -z "${PYTHON_ENV}" ]]
+  then
+    PYTHON=`which python3`
+  fi
     echo "Launch: ${PYTHON}"
     exec "${PYTHON}" launch.py "$@"
 fi
