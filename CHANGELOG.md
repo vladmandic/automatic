@@ -4,7 +4,7 @@
 
 - StableDiffusion 3
 
-## Update for 2024-06-08
+## Update for 2024-06-11
 
 *Note*: New features require `diffusers==0.29.0.dev`
 
@@ -72,12 +72,14 @@
 
 ## Fixes
 
-- cumulative fixes since the last release
+- cumulative fixes since the last release  
 - fix apply/unapply hidiffusion for sd15  
 - fix controlnet reference enabled check  
 - fix face-hires with control batch count  
-- install pynvml on-demand
-- apply rollback-vae option to latest torch versions, thanks @Iaotle
+- install pynvml on-demand  
+- apply rollback-vae option to latest torch versions, thanks @Iaotle  
+- face hires skip if strength is 0  
+- restore all sampler configuration on sampler change  
 
 ## Update for 2024-06-02
 

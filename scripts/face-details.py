@@ -137,6 +137,8 @@ class FaceRestorerYolo(FaceRestoration):
             'width': resolution,
             'height': resolution,
         }
+        if args['denoising_strength'] == 0:
+            shared.log.debug('Face HiRes skip: strength=0')
         control_pipeline = None
         if getattr(p, 'is_control', False):
             from modules.control import run

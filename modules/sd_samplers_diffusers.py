@@ -111,13 +111,22 @@ class DiffusionSampler:
             return
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
+        debug(f'Sampler: all="{self.config}"')
         if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.scheduler.scheduler_config
         else:
             orig_config = model.scheduler.config
+        if not hasattr(model, 'orig_scheduler'): # store settings from initial scheduler
+            model.orig_scheduler = orig_config.copy()
+        else:
+            for key, value in model.orig_scheduler.items(): # apply scheduler defaults
+                if key in self.config:
+                    self.config[key] = value
+            debug(f'Sampler: original="{model.orig_scheduler}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
+        debug(f'Sampler: default="{self.config}"')
         for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
             self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
@@ -168,11 +177,13 @@ class DiffusionSampler:
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
-        debug(f'Sampler: sampler="{name}" config={self.config} signature={possible}')
         for key in self.config.copy().keys():
             if key not in possible:
                 shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
+        debug(f'Sampler: name="{name}"')
+        debug(f'Sampler: config={self.config}')
+        debug(f'Sampler: signature={possible}')
         # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
         self.sampler = constructor(**self.config)
         # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
