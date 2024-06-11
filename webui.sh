@@ -102,12 +102,12 @@ elif [[ ! -z "${IPEXRUN}" ]] && [ ${IPEXRUN}="True" ] && [ -x "$(command -v ipex
 then
     echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
+elif [[ -f "${venv_dir}/bin/python3" ]]
+then
+    PYTHON="${venv_dir}/bin/python3"
+    echo "Launch: ${PYTHON}"
+    exec "${PYTHON}" launch.py "$@"
 else
-  # use python from env variable if set otherwise look it up now so it gets venv python
-  if [[ -z "${PYTHON_ENV}" ]]
-  then
-    PYTHON=`which python3`
-  fi
     echo "Launch: ${PYTHON}"
     exec "${PYTHON}" launch.py "$@"
 fi
