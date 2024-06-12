@@ -34,7 +34,7 @@ pymatting
 orjson
 invisible-watermark
 pi-heif
-diffusers==0.28.0
+diffusers==0.27.2
 safetensors==0.4.3
 tensordict==0.1.2
 peft==0.11.1
