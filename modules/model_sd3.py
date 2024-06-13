@@ -1,4 +1,6 @@
+import io
 import os
+import contextlib
 import warnings
 import torch
 import diffusers
@@ -16,8 +18,12 @@ def hf_login():
     import huggingface_hub as hf
     from modules import shared
     if shared.opts.huggingface_token is not None and len(shared.opts.huggingface_token) > 2 and not loggedin:
-        shared.log.debug(f'HF login token found: {"x" * len(shared.opts.huggingface_token)}')
-        hf.login(shared.opts.huggingface_token)
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            hf.login(shared.opts.huggingface_token)
+        text = stdout.getvalue() or ''
+        line = [l for l in text.split('\n') if 'Token' in l]
+        shared.log.debug(f'HF login: {line[0] if len(line) > 0 else text}')
         loggedin = True
 
 
