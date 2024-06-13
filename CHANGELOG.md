@@ -68,7 +68,7 @@
   add `cli/image-exif.py` that can be used to view/extract metadata from images  
 - lower overhead on generate calls  
 - auto-synchronize modernui and core branches  
-- add option to pad prompt with empty embeds, thanks @Disty
+- add option to pad prompt with zeros, thanks @Disty
 
 ## Fixes
 
