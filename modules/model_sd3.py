@@ -23,11 +23,12 @@ def hf_login():
             hf.login(shared.opts.huggingface_token)
         text = stdout.getvalue() or ''
         line = [l for l in text.split('\n') if 'Token' in l]
-        shared.log.debug(f'HF login: {line[0] if len(line) > 0 else text}')
+        shared.log.info(f'HF login: {line[0] if len(line) > 0 else text}')
         loggedin = True
 
 
 def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
+    from modules import devices
     hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
@@ -107,10 +108,12 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
         )
     diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Pipeline
     diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Img2ImgPipeline
+    devices.torch_gc(force=True)
     return pipe
 
 
 def load_te3(pipe, te3=None, cache_dir=None):
+    from modules import devices
     hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     if pipe is None or not hasattr(pipe, 'text_encoder_3'):
@@ -142,24 +145,7 @@ def load_te3(pipe, te3=None, cache_dir=None):
             subfolder='tokenizer_3',
             cache_dir=cache_dir,
         )
-
-
-def stats():
-    s = torch.cuda.mem_get_info()
-    system = { 'free': s[0], 'used': s[1] - s[0], 'total': s[1] }
-    s = dict(torch.cuda.memory_stats('cuda'))
-    allocated = { 'current': s['allocated_bytes.all.current'], 'peak': s['allocated_bytes.all.peak'] }
-    reserved = { 'current': s['reserved_bytes.all.current'], 'peak': s['reserved_bytes.all.peak'] }
-    active = { 'current': s['active_bytes.all.current'], 'peak': s['active_bytes.all.peak'] }
-    inactive = { 'current': s['inactive_split_bytes.all.current'], 'peak': s['inactive_split_bytes.all.peak'] }
-    cuda = {
-        'system': system,
-        'active': active,
-        'allocated': allocated,
-        'reserved': reserved,
-        'inactive': inactive,
-    }
-    return cuda
+    devices.torch_gc(force=True)
 
 
 if __name__ == '__main__':
@@ -174,7 +160,6 @@ if __name__ == '__main__':
     # pipeline.to('cuda')
     t1 = time.time()
     log.info(f'Loaded: time={t1-t0:.3f}')
-    log.info(f'Stats: {stats()}')
 
     # pipeline.scheduler = diffusers.schedulers.EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
     log.info(f'Scheduler, {pipeline.scheduler}')
@@ -188,5 +173,4 @@ if __name__ == '__main__':
     ).images[0]
     t2 = time.time()
     log.info(f'Generated: time={t2-t1:.3f}')
-    log.info(f'Stats: {stats()}')
     image.save("/tmp/sd3.png")
