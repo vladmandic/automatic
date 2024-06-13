@@ -54,6 +54,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 
 *Main interface using **ModernUI***:  
 ![Screenshot-Dark](html/screenshot-modernui.jpg)
+![Screenshot-Dark](html/screenshot-modernui-sd3.jpg)
 
 For screenshots and informations on other available themes, see [Themes Wiki](https://github.com/vladmandic/automatic/wiki/Themes)
 

@@ -1,8 +1,20 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-12
+## Update for 2024-06-13
 
-### New Models
+### Highlights for 2024-06-13
+
+First, yes, it's here and supported: [**StabilityAI Stable Diffusion 3 Medium**](https://stability.ai/news/stable-diffusion-3-medium)  
+for details on how to download and use, see [Wiki](https://github.com/vladmandic/automatic/wiki/SD3)
+
+#### What else?
+
+A lot of work on state-of-the-art multi-lingual models with both [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) and [MuLan](https://github.com/mulanai/MuLan)  
+Plus tons of minor features such as optimized initial install experience, **T-Gate** and **ResAdapter**, additional ModernUI themes (both light and dark) and fixes since the last release which was only 2 weeks ago!
+
+### Full Changelog for 2024-06-13
+
+#### New Models
 
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
   yup, supported!  
@@ -13,7 +25,7 @@
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 
-### New Functionality
+#### New Functionality
 
 - [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
   write your prompts forin ~110 auto-detected languages!  
@@ -50,7 +62,7 @@
   typical differences are not large and its disabled by default as it does have some performance impact  
 - new sampler: **Euler FlowMatch**  
 
-### Improvements
+#### Improvements
 
 - additional modernui themes
 - reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
@@ -70,7 +82,7 @@
 - auto-synchronize modernui and core branches  
 - add option to pad prompt with zeros, thanks @Disty
 
-## Fixes
+#### Fixes
 
 - cumulative fixes since the last release  
 - fix apply/unapply hidiffusion for sd15  
