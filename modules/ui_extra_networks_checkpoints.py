@@ -16,7 +16,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
 
     def list_reference(self): # pylint: disable=inconsistent-return-statements
         for k, v in shared.reference_models.items():
-            if shared.backend != shared.Backend.DIFFUSERS:
+            if not shared.native:
                 if not v.get('original', False):
                     continue
                 url = v.get('alt', None) or v['path']
@@ -28,12 +28,11 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
                     shared.log.debug(f'Extra networks experimental: model="{k}"')
                 else:
                     continue
-            name = os.path.join(reference_dir, k)
             preview = v.get('preview', v['path'])
             yield {
                 "type": 'Model',
-                "name": name,
-                "title": name,
+                "name": os.path.join(reference_dir, k),
+                "title": os.path.join(reference_dir, k),
                 "filename": url,
                 "preview": self.find_preview(os.path.join(reference_dir, preview)),
                 "local_preview": self.find_preview_file(os.path.join(reference_dir, preview)),
@@ -82,7 +81,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
         return items
 
     def allowed_directories_for_previews(self):
-        if shared.backend == shared.Backend.DIFFUSERS:
+        if shared.native:
             return [v for v in [shared.opts.ckpt_dir, shared.opts.diffusers_dir, reference_dir] if v is not None]
         else:
             return [v for v in [shared.opts.ckpt_dir, reference_dir, sd_models.model_path] if v is not None]

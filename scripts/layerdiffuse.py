@@ -8,7 +8,7 @@ class Script(scripts.Script):
         return 'LayerDiffuse'
 
     def show(self, is_img2img):
-        return True if shared.backend == shared.Backend.DIFFUSERS else False
+        return True if shared.native else False
 
     def apply(self):
         from modules import layerdiffuse

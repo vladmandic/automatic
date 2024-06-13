@@ -215,26 +215,25 @@ def main():
         installer.log.info('Startup: skip all')
         installer.quick_allowed = True
         init_paths()
-    elif installer.check_timestamp():
-        installer.log.info('Startup: quick launch')
-        installer.install_requirements()
-        installer.install_packages()
-        init_paths()
-        installer.check_extensions()
     else:
-        installer.log.info('Startup: standard')
         installer.install_requirements()
         installer.install_packages()
-        installer.install_submodules()
-        init_paths()
-        installer.install_extensions()
-        installer.install_requirements() # redo requirements since extensions may change them
-        installer.update_wiki()
-        if installer.errors == 0:
-            installer.log.debug(f'Setup complete without errors: {round(time.time())}')
+        if installer.check_timestamp():
+            installer.log.info('Startup: quick launch')
+            init_paths()
+            installer.check_extensions()
         else:
-            installer.log.warning(f'Setup complete with errors: {installer.errors}')
-            installer.log.warning(f'See log file for more details: {installer.log_file}')
+            installer.log.info('Startup: standard')
+            installer.install_submodules()
+            init_paths()
+            installer.install_extensions()
+            installer.install_requirements() # redo requirements since extensions may change them
+            installer.update_wiki()
+            if installer.errors == 0:
+                installer.log.debug(f'Setup complete without errors: {round(time.time())}')
+            else:
+                installer.log.warning(f'Setup complete with errors: {installer.errors}')
+                installer.log.warning(f'See log file for more details: {installer.log_file}')
     installer.extensions_preload(parser) # adds additional args from extensions
     args = installer.parse_args(parser)
 

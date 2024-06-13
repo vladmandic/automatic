@@ -146,7 +146,7 @@ def get_extensions_list():
     return ext_list
 
 def post_pnginfo(req: models.ReqImageInfo):
-    from modules import images, script_callbacks, generation_parameters_copypaste
+    from modules import images, script_callbacks, infotext
     if not req.image.strip():
         return models.ResImageInfo(info="")
     image = helpers.decode_base64_to_image(req.image.strip())
@@ -155,6 +155,6 @@ def post_pnginfo(req: models.ReqImageInfo):
     geninfo, items = images.read_info_from_image(image)
     if geninfo is None:
         geninfo = ""
-    params = generation_parameters_copypaste.parse_generation_parameters(geninfo)
+    params = infotext.parse(geninfo)
     script_callbacks.infotext_pasted_callback(geninfo, params)
     return models.ResImageInfo(info=geninfo, items=items, parameters=params)

@@ -49,7 +49,7 @@ def single_sample_to_image(sample, approximation=None):
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
 
-        if shared.backend == shared.Backend.DIFFUSERS: # [-x,x] to [-5,5]
+        if shared.native: # [-x,x] to [-5,5]
             sample_max = torch.max(sample)
             if sample_max > 5:
                 sample = sample * (5 / sample_max)

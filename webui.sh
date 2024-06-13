@@ -17,6 +17,7 @@ then
 fi
 
 # python3 executable
+PYTHON_ENV="${PYTHON}"
 if [[ -z "${PYTHON}" ]]
 then
     PYTHON="python3"
@@ -73,15 +74,14 @@ fi
 
 if [[ -f "${venv_dir}"/bin/activate ]]
 then
-    echo "Activate python venv"
     source "${venv_dir}"/bin/activate
+    echo "Activate python venv: $VIRTUAL_ENV"
 else
     echo "Error: Cannot activate python venv"
     exit 1
 fi
 
 # Add venv lib folder to PATH
-# IPEX needs this
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath "$venv_dir")/lib/
@@ -102,7 +102,12 @@ elif [[ ! -z "${IPEXRUN}" ]] && [ ${IPEXRUN}="True" ] && [ -x "$(command -v ipex
 then
     echo "Launch: ipexrun"
     exec ipexrun --multi-task-manager 'taskset' --memory-allocator 'jemalloc' launch.py "$@"
+elif [[ -f "${venv_dir}/bin/python3" ]]
+then
+    PYTHON="${venv_dir}/bin/python3"
+    echo "Launch: ${PYTHON}"
+    exec "${PYTHON}" launch.py "$@"
 else
-    echo "Launch"
+    echo "Launch: ${PYTHON}"
     exec "${PYTHON}" launch.py "$@"
 fi

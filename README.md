@@ -16,9 +16,9 @@
 ## Table of contents
 
 - [SD.Next Features](#sdnext-features)
-- [Backend support](#backend-support)
 - [Model support](#model-support)
 - [Platform support](#platform-support)
+- [Backend support](#backend-support)
 - [Examples](#examples)
 - [Install](#install)
 - [Notes](#notes)
@@ -31,7 +31,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple diffusion models!  
-  ▹ **Stable Diffusion 1.5/2.1 | SD-XL | LCM | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | etc.**
+  ▹ **Stable Diffusion 1.5/2.1/XL/3.0 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
@@ -54,10 +54,62 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 
 *Main interface using **ModernUI***:  
 ![Screenshot-Dark](html/screenshot-modernui.jpg)
+![Screenshot-Dark](html/screenshot-modernui-sd3.jpg)
 
 For screenshots and informations on other available themes, see [Themes Wiki](https://github.com/vladmandic/automatic/wiki/Themes)
 
 <br>
+
+## Model support
+
+Additional models will be added as they become available and there is public interest in them
+
+- [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*  
+- [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)  
+- [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
+- [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
+- [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)  
+- [Playground](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*  
+- [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
+- [aMUSEd 256](https://huggingface.co/amused/amused-256) 256 and 512
+- [Segmind Vega](https://huggingface.co/segmind/Segmind-Vega)  
+- [Segmind SSD-1B](https://huggingface.co/segmind/SSD-1B)  
+- [Segmind SegMoE](https://github.com/segmind/segmoe) *SD and SD-XL*  
+- [Kandinsky](https://github.com/ai-forever/Kandinsky-2) *2.1 and 2.2 and latest 3.0*  
+- [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*  
+- [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)  
+- [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)  
+- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
+- [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
+- [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
+- [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
+- [Segmind SD Distilled](https://huggingface.co/blog/sd_distillation) *(all variants)*
+- [BLIP-Diffusion](https://dxli94.github.io/BLIP-Diffusion-website/)  
+- [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
+- [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
+- [SDXS](https://github.com/IDKiro/sdxs)
+- [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD) 
+
+
+Also supported are modifiers such as:
+- **LCM**, **Turbo** and **Lightning** (*adversarial diffusion distillation*) networks
+- All **LoRA** types such as LoCon, LyCORIS, HADA, IA3, Lokr, OFT
+- **IP-Adapters** for SD 1.5 and SD-XL
+- **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
+- **AnimateDiff** for SD 1.5
+- **MuLAN** multi-language support  
+
+## Platform support
+
+- *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*  
+- *AMD* GPUs using **ROCm** libraries on *Linux*  
+  Support will be extended to *Windows* once AMD releases ROCm for Windows  
+- *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*  
+- Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries  
+  This includes support for AMD GPUs that are not supported by native ROCm libraries  
+- Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
+- *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
+- *ONNX/Olive*  
 
 ## Backend support
 
@@ -71,54 +123,6 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
   This backend and is fully compatible with most existing functionality and extensions written for *A1111 SDWebUI*  
   Supports **SD 1.x** and **SD 2.x** models  
   All other model types such as *SD-XL, LCM, Stable Cascade, PixArt, Playground, Segmind, Kandinsky, etc.* require backend **Diffusers**  
-
-## Model support
-
-Additional models will be added as they become available and there is public interest in them
-
-- [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*  
-- [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)  
-- [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
-- [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)  
-- [Playground](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*  
-- [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
-- [aMUSEd 256](https://huggingface.co/amused/amused-256) 256 and 512
-- [Segmind Vega](https://huggingface.co/segmind/Segmind-Vega)  
-- [Segmind SSD-1B](https://huggingface.co/segmind/SSD-1B)  
-- [Segmind SegMoE](https://github.com/segmind/segmoe) *SD and SD-XL*  
-- [Kandinsky](https://github.com/ai-forever/Kandinsky-2) *2.1 and 2.2 and latest 3.0*  
-- [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*  
-- [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)  
-- [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)  
-- [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
-- [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
-- [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
-- [Segmind SD Distilled](https://huggingface.co/blog/sd_distillation) *(all variants)*
-- [BLIP-Diffusion](https://dxli94.github.io/BLIP-Diffusion-website/)  
-- [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
-- [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)  
-- [SDXS](https://github.com/IDKiro/sdxs)
-- [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD) 
-
-
-Also supported are modifiers such as:
-- **LCM** and **Turbo** (*adversarial diffusion distillation*) networks
-- All **LoRA** types such as LoCon, LyCORIS, HADA, IA3, Lokr, OFT
-- **IP-Adapters** for SD 1.5 and SD-XL
-- **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
-- **AnimateDiff** for SD 1.5
-
-## Platform support
-
-- *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*  
-- *AMD* GPUs using **ROCm** libraries on *Linux*  
-  Support will be extended to *Windows* once AMD releases ROCm for Windows  
-- *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*  
-- Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries  
-  This includes support for AMD GPUs that are not supported by native ROCm libraries  
-- Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
-- *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
-- *ONNX/Olive*  
 
 ## Examples
 

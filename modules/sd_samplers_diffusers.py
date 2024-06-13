@@ -32,6 +32,7 @@ try:
         LMSDiscreteScheduler,
         PNDMScheduler,
         SASolverScheduler,
+        FlowMatchEulerDiscreteScheduler,
     )
 except Exception as e:
     import diffusers
@@ -65,6 +66,7 @@ config = {
     'Euler EDM': { },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
+    'Euler FlowMatch': { },
     'IPNDM': { },
 }
 
@@ -96,6 +98,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Same as primary', None, [], {}),
 ]
@@ -111,13 +114,22 @@ class DiffusionSampler:
             return
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
+        debug(f'Sampler: all="{self.config}"')
         if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.scheduler.scheduler_config
         else:
             orig_config = model.scheduler.config
+        if not hasattr(model, 'orig_scheduler'): # store settings from initial scheduler
+            model.orig_scheduler = orig_config.copy()
+        else:
+            for key, value in model.orig_scheduler.items(): # apply scheduler defaults
+                if key in self.config:
+                    self.config[key] = value
+            debug(f'Sampler: original="{model.orig_scheduler}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
+        debug(f'Sampler: default="{self.config}"')
         for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
             self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
@@ -168,11 +180,13 @@ class DiffusionSampler:
         # validate all config params
         signature = inspect.signature(constructor, follow_wrapped=True)
         possible = signature.parameters.keys()
-        debug(f'Sampler: sampler="{name}" config={self.config} signature={possible}')
         for key in self.config.copy().keys():
             if key not in possible:
-                shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
+                # shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
+        debug(f'Sampler: name="{name}"')
+        debug(f'Sampler: config={self.config}')
+        debug(f'Sampler: signature={possible}')
         # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
         self.sampler = constructor(**self.config)
         # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')

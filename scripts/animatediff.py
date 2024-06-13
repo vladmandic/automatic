@@ -50,7 +50,7 @@ orig_pipe = None # original sd_model pipeline
 def set_adapter(adapter_name: str = 'None'):
     if not shared.sd_loaded:
         return
-    if shared.backend != shared.Backend.DIFFUSERS:
+    if not shared.native:
         shared.log.warning('AnimateDiff: not in diffusers mode')
         return
     global motion_adapter, loaded_adapter, orig_pipe # pylint: disable=global-statement
@@ -135,7 +135,7 @@ class Script(scripts.Script):
         return 'AnimateDiff'
 
     def show(self, _is_img2img):
-        return scripts.AlwaysVisible if shared.backend == shared.Backend.DIFFUSERS else False
+        return scripts.AlwaysVisible if shared.native else False
 
 
     def ui(self, _is_img2img):

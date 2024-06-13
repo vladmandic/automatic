@@ -289,8 +289,9 @@ def find_diffuser(name: str):
     return None
 
 
-def get_reference_opts(name: str):
+def get_reference_opts(name: str, quiet=False):
     model_opts = {}
+    name = name.replace('Diffusers/', 'huggingface/')
     for k, v in shared.reference_models.items():
         model_name = os.path.splitext(v.get('path', '').split('@')[0])[0]
         if k == name or model_name == name:
@@ -299,7 +300,8 @@ def get_reference_opts(name: str):
     if not model_opts:
         # shared.log.error(f'Reference: model="{name}" not found')
         return {}
-    shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
+    if not quiet:
+        shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
     return model_opts
 
 

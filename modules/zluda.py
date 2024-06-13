@@ -18,8 +18,11 @@ def _join_rocm_home(*paths) -> str:
 
 
 def is_zluda(device: DeviceLikeType):
-    device = torch.device(device)
-    return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+    try:
+        device = torch.device(device)
+        return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+    except Exception:
+        return False
 
 
 def test(device: DeviceLikeType) -> Union[Exception, None]:

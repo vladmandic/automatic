@@ -58,14 +58,14 @@
     "experimental": true
   },
 
-  "RunwayML SD 1.5": {
+  "RunwayML StableDiffusion 1.5": {
     "original": true,
     "path": "v1-5-pruned-fp16-emaonly.safetensors@https://huggingface.co/Aptronym/SDNext/resolve/main/Reference/v1-5-pruned-fp16-emaonly.safetensors?download=true",
     "preview": "v1-5-pruned-fp16-emaonly.jpg",
     "desc": "Stable Diffusion 1.5 is the base model all other 1.5 checkpoint were trained from. It's a latent text-to-image diffusion model capable of generating photo-realistic images given any text input. The Stable-Diffusion-v1-5 checkpoint was initialized with the weights of the Stable-Diffusion-v1-2 checkpoint and subsequently fine-tuned on 595k steps at resolution 512x512.",
     "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
-  "StabilityAI SD 2.1": {
+  "StabilityAI StableDiffusion 2.1": {
     "path": "huggingface/stabilityai/stable-diffusion-2-1-base",
     "preview": "stabilityai--stable-diffusion-2-1-base.jpg",
     "skip": true,
@@ -73,7 +73,7 @@
     "desc": "This stable-diffusion-2-1-base model fine-tunes stable-diffusion-2-base (512-base-ema.ckpt) with 220k extra steps taken",
     "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
-  "StabilityAI SD 2.1 V": {
+  "StabilityAI StableDiffusion 2.1 V": {
     "path": "huggingface/stabilityai/stable-diffusion-2-1",
     "preview": "stabilityai--stable-diffusion-2-1.jpg",
     "skip": true,
@@ -81,13 +81,12 @@
     "desc": "This stable-diffusion-2 model is resumed from stable-diffusion-2-base (512-base-ema.ckpt) and trained for 150k steps using a v-objective on the same dataset. Resumed for another 140k steps on 768x768 images",
     "extras": "width: 768, height: 768, sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
-  "StabilityAI SD-XL 1.0 Base": {
+  "StabilityAI StableDiffusion XL 1.0 Base": {
     "path": "sd_xl_base_1.0.safetensors@https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors?download=true",
     "preview": "sd_xl_base_1.0.jpg",
     "desc": "Stable Diffusion XL (SDXL) is the latest AI image generation model that is tailored towards more photorealistic outputs with more detailed imagery and composition compared to previous SD models, including SD 2.1. It can make realistic faces, legible text within the images, and better image composition, all while using shorter and simpler prompts at a greatly increased base resolution of 1024x1024. Just like its predecessors, SDXL has the ability to generate image variations using image-to-image prompting, inpainting (reimagining of the selected parts of an image), and outpainting (creating new parts that lie outside the image borders).",
     "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
-
   "StabilityAI Stable Cascade": {
     "path": "huggingface/stabilityai/stable-cascade",
     "skip": true,
@@ -103,6 +102,15 @@
     "desc": "Stable Cascade is a diffusion model built upon the Würstchen architecture and its main difference to other models like Stable Diffusion is that it is working at a much smaller latent space. Why is this important? The smaller the latent space, the faster you can run inference and the cheaper the training becomes. How small is the latent space? Stable Diffusion uses a compression factor of 8, resulting in a 1024x1024 image being encoded to 128x128. Stable Cascade achieves a compression factor of 42, meaning that it is possible to encode a 1024x1024 image to 24x24, while maintaining crisp reconstructions. The text-conditional model is then trained in the highly compressed latent space. Previous versions of this architecture, achieved a 16x cost reduction over Stable Diffusion 1.5",
     "preview": "stabilityai--stable-cascade.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
+  },
+  "StabilityAI Stable Diffusion 3 Medium": {
+    "path": "huggingface/stabilityai/stable-diffusion-3-medium-diffusers",
+    "skip": true,
+    "variant": "fp16",
+    "te3": null,
+    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "preview": "stabilityai--stable-diffusion-3.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 7.0"
   },
 
   "Segmind Vega": {
@@ -158,7 +166,14 @@
     "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
-
+  
+  "Tencent HunyuanDiT": {
+    "path": "Tencent-Hunyuan/HunyuanDiT-Diffusers",
+    "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
+    "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+  },
+  
   "Kandinsky 2.1": {
     "path": "kandinsky-community/kandinsky-2-1",
     "desc": "Kandinsky 2.1 is a text-conditional diffusion model based on unCLIP and latent diffusion, composed of a transformer-based image prior model, a unet diffusion model, and a decoder. Kandinsky 2.1 inherits best practices from Dall-E 2 and Latent diffusion while introducing some new ideas. It uses the CLIP model as a text and image encoder, and diffusion image prior (mapping) between latent spaces of CLIP modalities. This approach increases the visual performance of the model and unveils new horizons in blending images and text-guided image manipulation.",

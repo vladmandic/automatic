@@ -4,70 +4,17 @@ import os
 import io
 import re
 import sys
-import json
+import importlib.util
 from PIL import Image, ExifTags, TiffImagePlugin, PngImagePlugin
 from rich import print # pylint: disable=redefined-builtin
 
 
-def unquote(text):
-    if len(text) == 0 or text[0] != '"' or text[-1] != '"':
-        return text
-    try:
-        return json.loads(text)
-    except Exception:
-        return text
+module_file = os.path.abspath(__file__)
+module_dir = os.path.dirname(module_file)
+module_spec = importlib.util.spec_from_file_location('infotext', os.path.join(module_dir, '..', 'modules', 'infotext.py'))
+infotext = importlib.util.module_from_spec(module_spec)
+module_spec.loader.exec_module(infotext)
 
-
-def parse_generation_parameters(infotext):
-    if not isinstance(infotext, str):
-        return {}
-    re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
-    re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
-    basic_params = ['steps', 'seed', 'width', 'height', 'sampler', 'size', 'cfg scale', 'hires'] # first param is one of those
-
-    sanitized = infotext.replace('prompt:', 'Prompt:').replace('negative prompt:', 'Negative prompt:').replace('Negative Prompt', 'Negative prompt') # cleanup everything in brackets so re_params can work
-    sanitized = re.sub(r'<[^>]*>', lambda match: ' ' * len(match.group()), sanitized)
-    sanitized = re.sub(r'\([^)]*\)', lambda match: ' ' * len(match.group()), sanitized)
-    sanitized = re.sub(r'\{[^}]*\}', lambda match: ' ' * len(match.group()), sanitized)
-
-    params = dict(re_param.findall(sanitized))
-    params = { k.strip():params[k].strip() for k in params if k.lower() not in ['hashes', 'lora', 'embeddings', 'prompt', 'negative prompt']} # remove some keys
-    if len(list(params)) == 0:
-        first_param = None
-    else:
-        try:
-            first_param, first_param_idx = next((s, i) for i, s in enumerate(params) if any(x in s.lower() for x in basic_params))
-        except Exception:
-            first_param, first_param_idx = next(iter(params)), 0
-        if first_param_idx > 0:
-            for _i in range(first_param_idx):
-                params.pop(next(iter(params)))
-    params_idx = sanitized.find(f'{first_param}:') if first_param else -1
-    negative_idx = infotext.find("Negative prompt:")
-
-    prompt = infotext[:params_idx] if negative_idx == -1 else infotext[:negative_idx] # prompt can be with or without negative prompt
-    negative = infotext[negative_idx:params_idx] if negative_idx >= 0 else ''
-
-    for k, v in params.copy().items(): # avoid dict-has-changed
-        if len(v) > 0 and v[0] == '"' and v[-1] == '"':
-            v = unquote(v)
-        m = re_size.match(v)
-        if v.replace('.', '', 1).isdigit():
-            params[k] = float(v) if '.' in v else int(v)
-        elif v == "True":
-            params[k] = True
-        elif v == "False":
-            params[k] = False
-        elif m is not None:
-            params[f"{k}-1"] = int(m.group(1))
-            params[f"{k}-2"] = int(m.group(2))
-        elif k == 'VAE' and v == 'TAESD':
-            params["Full quality"] = False
-        else:
-            params[k] = v
-    params["Prompt"] = prompt.replace('Prompt:', '').strip()
-    params["Negative prompt"] = negative.replace('Negative prompt:', '').strip()
-    return params
 
 
 class Exif: # pylint: disable=single-string-used-for-slots
@@ -132,7 +79,7 @@ class Exif: # pylint: disable=single-string-used-for-slots
 
     def parse(self):
         x = self.exif.pop('parameters', None) or self.exif.pop('UserComment', None)
-        res = parse_generation_parameters(x)
+        res = infotext.parse(x)
         return res
 
     def get_bytes(self):

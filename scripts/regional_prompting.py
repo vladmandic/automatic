@@ -24,7 +24,7 @@ class Script(scripts.Script):
         return 'Regional prompting'
 
     def show(self, is_img2img):
-        return not is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        return not is_img2img if shared.native else False
 
     def change(self, mode):
         return [gr.update(visible='Col' in mode or 'Row' in mode), gr.update(visible='Prompt' in mode)]

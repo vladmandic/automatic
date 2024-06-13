@@ -76,7 +76,7 @@ def unapply(pipe): # pylint: disable=arguments-differ
     try:
         if hasattr(pipe, 'set_ip_adapter_scale'):
             pipe.set_ip_adapter_scale(0)
-        if hasattr(pipe, 'unet') and hasattr(pipe.unet, 'config')and pipe.unet.config.encoder_hid_dim_type == 'ip_image_proj':
+        if hasattr(pipe, 'unet') and hasattr(pipe.unet, 'config') and pipe.unet.config.encoder_hid_dim_type == 'ip_image_proj':
             pipe.unet.encoder_hid_proj = None
             pipe.config.encoder_hid_dim_type = None
             pipe.unet.set_default_attn_processor()
@@ -138,7 +138,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     # init code
     if pipe is None:
         return False
-    if shared.backend != shared.Backend.DIFFUSERS:
+    if not shared.native:
         shared.log.warning('IP adapter: not in diffusers mode')
         return False
     if len(adapter_images) == 0:

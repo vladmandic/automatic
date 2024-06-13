@@ -49,10 +49,7 @@ class Script(scripts.Script):
         return 'MuLan'
 
     def show(self, is_img2img):
-        if shared.cmd_opts.experimental:
-            return True if shared.backend == shared.Backend.DIFFUSERS else False
-        else:
-            return False
+        return True if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():

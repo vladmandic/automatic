@@ -166,18 +166,18 @@ def create_advanced_inputs(tab, base=True):
                 cfg_scale, cfg_end = None, None
             with gr.Row():
                 image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Secondary guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
-                diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.backend == shared.Backend.DIFFUSERS)
+                diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.native)
             with gr.Row():
-                diffusers_pag_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_pag_scale", visible=shared.backend == shared.Backend.DIFFUSERS)
-                diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_pag_adaptive", visible=shared.backend == shared.Backend.DIFFUSERS)
+                diffusers_pag_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_pag_scale", visible=shared.native)
+                diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_pag_adaptive", visible=shared.native)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
     return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
 
 
 def create_correction_inputs(tab):
-    with gr.Accordion(open=False, label="Corrections", elem_id=f"{tab}_corrections", elem_classes=["small-accordion"], visible=shared.backend == shared.Backend.DIFFUSERS):
-        with gr.Group(visible=shared.backend == shared.Backend.DIFFUSERS):
+    with gr.Accordion(open=False, label="Corrections", elem_id=f"{tab}_corrections", elem_classes=["small-accordion"], visible=shared.native):
+        with gr.Group(visible=shared.native):
             with gr.Row(elem_id=f"{tab}_hdr_mode_row"):
                 hdr_mode = gr.Dropdown(label="Mode", choices=["Relative values", "Absolute values"], type="index", value="Relative values", elem_id=f"{tab}_hdr_mode", show_label=False)
                 gr.HTML('<br>')
@@ -243,7 +243,7 @@ def create_sampler_options(tabname):
             return '999,845,730,587,443,310,193,116,53,13'
         return ''
 
-    if shared.backend == shared.Backend.ORIGINAL:
+    if not shared.native:
         with gr.Row(elem_classes=['flex-break']):
             options = ['brownian noise', 'discard penultimate sigma']
             values = []
@@ -292,7 +292,7 @@ def create_hires_inputs(tab):
             with gr.Row(elem_id=f"{tab}_hires_row2"):
                 hr_second_pass_steps = gr.Slider(minimum=0, maximum=99, step=1, label='HiRes steps', elem_id=f"{tab}_steps_alt", value=20)
                 denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.3, elem_id=f"{tab}_denoising_strength")
-        with gr.Group(visible=shared.backend == shared.Backend.DIFFUSERS):
+        with gr.Group(visible=shared.native):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
                 refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.0, elem_id=f"{tab}_refiner_start")
                 refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=10)

@@ -175,7 +175,7 @@ class StableDiffusionModelHijack:
         if m.cond_stage_key == "edit":
             sd_hijack_unet.hijack_ddpm_edit()
 
-        if "Model" in shared.opts.ipex_optimize and shared.backend == shared.Backend.ORIGINAL:
+        if "Model" in shared.opts.ipex_optimize and not shared.native:
             try:
                 import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
                 m.model.eval()
@@ -185,7 +185,7 @@ class StableDiffusionModelHijack:
             except Exception as err:
                 shared.log.warning(f"IPEX Optimize not supported: {err}")
 
-        if "Model" in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none' and shared.backend == shared.Backend.ORIGINAL:
+        if "Model" in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none' and not shared.native:
             try:
                 import logging
                 shared.log.info(f"Compiling pipeline={m.model.__class__.__name__} mode={shared.opts.cuda_compile_backend}")

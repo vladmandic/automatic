@@ -8,6 +8,8 @@ unet_dict = {}
 def load_unet(model):
     if shared.opts.sd_unet == 'None':
         return
+    if "StableCascade" in model.__class__.__name__:
+        return
     if shared.opts.sd_unet not in list(unet_dict):
         shared.log.error(f'UNet model not found: {shared.opts.sd_unet}')
         return
@@ -22,7 +24,7 @@ def load_unet(model):
         config_file = 'default'
     try:
         if "StableCascade" in model.__class__.__name__:
-            from modules.sd_cascade import load_prior
+            from modules.model_stablecascade import load_prior
             prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet], config_file=config_file)
             model.prior_pipe.prior = model.prior_prior = None # Prevent OOM
             model.prior_pipe.prior = model.prior_prior = prior_unet.to(devices.device, dtype=devices.dtype_unet)

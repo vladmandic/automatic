@@ -5,12 +5,14 @@ from modules import shared
 from modules.hidiffusion import hidiffusion
 
 
-def apply_hidiffusion(p, model_type):
+def apply(p, model_type):
+    if not shared.native:
+        return
     if model_type not in ['sd', 'sdxl'] and p.hidiffusion:
         shared.log.warning(f'HiDiffusion: class={shared.sd_model.__class__.__name__} not supported')
         return
-    remove_hidiffusion(p)
-    if p.hidiffusion:
+    unapply()
+    if getattr(p, 'hidiffusion', False) is True:
         t0 = time.time()
         hidiffusion.is_aggressive_raunet = shared.opts.hidiffusion_steps > 0
         hidiffusion.aggressive_step = shared.opts.hidiffusion_steps
@@ -36,6 +38,6 @@ def apply_hidiffusion(p, model_type):
         shared.log.debug(f'HiDiffusion apply: raunet={shared.opts.hidiffusion_raunet} attn={shared.opts.hidiffusion_attn} aggressive={shared.opts.hidiffusion_steps > 0}:{shared.opts.hidiffusion_steps} t1={shared.opts.hidiffusion_t1} t2={shared.opts.hidiffusion_t2} time={t1-t0:.2f} type={shared.sd_model_type} width={p.width} height={p.height}')
 
 
-def remove_hidiffusion(p):
+def unapply():
     if hasattr(shared.sd_model, "unet"):
         hidiffusion.remove_hidiffusion(shared.sd_model)

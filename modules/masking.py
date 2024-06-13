@@ -442,7 +442,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
 
     return_type = return_type or opts.preview_type
 
-    shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur} erode={opts.mask_erode} dilate={opts.mask_dilate} type={return_type} time={t1-t0:.2f}')
+    shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur:.3f} erode={opts.mask_erode:.3f} dilate={opts.mask_dilate:.3f} type={return_type} time={t1-t0:.2f}')
     if return_type == 'None':
         return input_mask
     elif return_type == 'Opaque':

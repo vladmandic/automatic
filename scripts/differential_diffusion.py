@@ -1875,7 +1875,7 @@ class Script(scripts.Script):
         return 'Differential diffusion'
 
     def show(self, is_img2img):
-        return is_img2img if shared.backend == shared.Backend.DIFFUSERS else False
+        return is_img2img if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():

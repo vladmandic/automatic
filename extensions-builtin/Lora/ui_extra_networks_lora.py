@@ -19,10 +19,10 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         try:
             # path, _ext = os.path.splitext(l.filename)
             name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
-            if shared.backend == shared.Backend.ORIGINAL:
+            if not shared.native:
                 if l.sd_version == network.SdVersion.SDXL:
                     return None
-            elif shared.backend == shared.Backend.DIFFUSERS:
+            elif shared.native:
                 if shared.sd_model_type == 'none': # return all when model is not loaded
                     pass
                 elif shared.sd_model_type == 'sdxl':

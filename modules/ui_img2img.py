@@ -141,7 +141,7 @@ def create_ui():
                         with gr.Row():
                             inpainting_mask_invert = gr.Radio(label='Mode', choices=['masked', 'invert'], value='masked', type="index", elem_id="img2img_mask_mode")
                             inpaint_full_res = gr.Radio(label="Inpaint area", choices=["full", "masked"], type="index", value="full", elem_id="img2img_inpaint_full_res")
-                            inpainting_fill = gr.Radio(label='Masked content', choices=['fill', 'original', 'noise', 'nothing'], value='original', type="index", elem_id="img2img_inpainting_fill", visible=shared.backend == shared.Backend.ORIGINAL)
+                            inpainting_fill = gr.Radio(label='Masked content', choices=['fill', 'original', 'noise', 'nothing'], value='original', type="index", elem_id="img2img_inpainting_fill", visible=not shared.native)
 
                         def select_img2img_tab(tab):
                             return gr.update(visible=tab in [2, 3, 4]), gr.update(visible=tab == 3)

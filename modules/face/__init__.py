@@ -12,7 +12,7 @@ class Script(scripts.Script):
         return 'Face'
 
     def show(self, is_img2img):
-        return True if shared.backend == shared.Backend.DIFFUSERS else False
+        return True if shared.native else False
 
     def load_images(self, files):
         init_images = []
@@ -90,7 +90,7 @@ class Script(scripts.Script):
         return [mode, gallery, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache]
 
     def run(self, p: processing.StableDiffusionProcessing, mode, input_images, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
-        if shared.backend != shared.Backend.DIFFUSERS:
+        if not shared.native:
             return None
         if mode == 'None':
             return None
