@@ -16,9 +16,9 @@
 ## Table of contents
 
 - [SD.Next Features](#sdnext-features)
-- [Backend support](#backend-support)
 - [Model support](#model-support)
 - [Platform support](#platform-support)
+- [Backend support](#backend-support)
 - [Examples](#examples)
 - [Install](#install)
 - [Notes](#notes)
@@ -31,7 +31,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple diffusion models!  
-  ▹ **Stable Diffusion 1.5/2.1 | SD-XL | LCM | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | etc.**
+  ▹ **Stable Diffusion 1.5/2.1/XL/3.0 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | Würstchen | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
@@ -59,25 +59,13 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
 
 <br>
 
-## Backend support
-
-**SD.Next** supports two main backends: *Diffusers* and *Original*:
-
-- **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
-  Supports *all* models listed below  
-  This backend is set as default for new installations  
-  See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information  
-- **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
-  This backend and is fully compatible with most existing functionality and extensions written for *A1111 SDWebUI*  
-  Supports **SD 1.x** and **SD 2.x** models  
-  All other model types such as *SD-XL, LCM, Stable Cascade, PixArt, Playground, Segmind, Kandinsky, etc.* require backend **Diffusers**  
-
 ## Model support
 
 Additional models will be added as they become available and there is public interest in them
 
 - [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*  
 - [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)  
+- [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
 - [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
 - [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)  
 - [Playground](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*  
@@ -90,6 +78,7 @@ Additional models will be added as they become available and there is public int
 - [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*  
 - [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)  
 - [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)  
+- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
 - [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
 - [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
 - [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
@@ -102,11 +91,12 @@ Additional models will be added as they become available and there is public int
 
 
 Also supported are modifiers such as:
-- **LCM** and **Turbo** (*adversarial diffusion distillation*) networks
+- **LCM**, **Turbo** and **Lightning** (*adversarial diffusion distillation*) networks
 - All **LoRA** types such as LoCon, LyCORIS, HADA, IA3, Lokr, OFT
 - **IP-Adapters** for SD 1.5 and SD-XL
 - **InstantID**, **FaceSwap**, **FaceID**, **PhotoMerge**  
 - **AnimateDiff** for SD 1.5
+- **MuLAN** multi-language support  
 
 ## Platform support
 
@@ -119,6 +109,19 @@ Also supported are modifiers such as:
 - Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
 - *ONNX/Olive*  
+
+## Backend support
+
+**SD.Next** supports two main backends: *Diffusers* and *Original*:
+
+- **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
+  Supports *all* models listed below  
+  This backend is set as default for new installations  
+  See [wiki article](https://github.com/vladmandic/automatic/wiki/Diffusers) for more information  
+- **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
+  This backend and is fully compatible with most existing functionality and extensions written for *A1111 SDWebUI*  
+  Supports **SD 1.x** and **SD 2.x** models  
+  All other model types such as *SD-XL, LCM, Stable Cascade, PixArt, Playground, Segmind, Kandinsky, etc.* require backend **Diffusers**  
 
 ## Examples
 
