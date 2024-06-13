@@ -26,14 +26,37 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     dtype = torch.float16
+    kwargs = {}
     if fn is not None and fn.endswith('.safetensors') and os.path.exists(fn):
         model_id = fn
         loader = diffusers.StableDiffusion3Pipeline.from_single_file
-        reload_te = True
+        kwargs = {
+            'text_encoder': transformers.CLIPTextModelWithProjection.from_pretrained(
+                repo_id,
+                subfolder='text_encoder',
+                cache_dir=cache_dir,
+                torch_dtype=dtype,
+            ),
+            'text_encoder_2': transformers.CLIPTextModelWithProjection.from_pretrained(
+                repo_id,
+                subfolder='text_encoder_2',
+                cache_dir=cache_dir,
+                torch_dtype=dtype,
+            ),
+            'tokenizer': transformers.CLIPTokenizer.from_pretrained(
+                repo_id,
+                subfolder='tokenizer',
+                cache_dir=cache_dir,
+            ),
+            'tokenizer_2': transformers.CLIPTokenizer.from_pretrained(
+                repo_id,
+                subfolder='tokenizer_2',
+                cache_dir=cache_dir,
+            ),
+        }
     else:
         model_id = repo_id
         loader = diffusers.StableDiffusion3Pipeline.from_pretrained
-        reload_te = False
     if te3 == 'fp16':
         text_encoder_3 = transformers.T5EncoderModel.from_pretrained(
             repo_id,
@@ -47,6 +70,7 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
             text_encoder_3=text_encoder_3,
             cache_dir=cache_dir,
             config=config,
+            **kwargs,
         )
     elif te3 == 'fp8':
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
@@ -64,6 +88,7 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
             torch_dtype=dtype,
             cache_dir=cache_dir,
             config=config,
+            **kwargs,
         )
     else:
         pipe = loader(
@@ -72,20 +97,9 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
             text_encoder_3=None,
             cache_dir=cache_dir,
             config=config,
+            **kwargs,
         )
-    if reload_te:
-        pipe.text_encoder = transformers.CLIPTextModelWithProjection.from_pretrained(
-            repo_id,
-            subfolder='text_encoder',
-            cache_dir=cache_dir,
-            torch_dtype=pipe.vae.dtype,
-        )
-        pipe.text_encoder_2 = transformers.CLIPTextModelWithProjection.from_pretrained(
-            repo_id,
-            subfolder='text_encoder_2',
-            cache_dir=cache_dir,
-            torch_dtype=pipe.vae.dtype,
-        )
+    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["StableDiffusion3Img2ImgPipeline"] = diffusers.StableDiffusion3Img2ImgPipeline
     return pipe
 
 

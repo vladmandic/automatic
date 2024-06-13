@@ -590,7 +590,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                     if not shared.native:
                         warn(f'Model detected as Segmind Vega model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL'
-                elif size > 5692 and size < 5698:
+                elif size > 5692 and size < 5698 or size > 4134 and size < 4138:
                     if not shared.native:
                         warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion 3'
