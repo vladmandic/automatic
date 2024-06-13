@@ -4,10 +4,9 @@
 
 ### New Models
 
-
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
   yup, supported!  
-  quote: "Stable Diffusion 3 Medium is a multimodal diffusion transformer (MMDiT) model that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency"  
+  quote: *"Stable Diffusion 3 Medium is a multimodal diffusion transformer (MMDiT) model that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency"*  
   sdnext also supports switching optional T5 text encoder on-the-fly as well as loading model from either diffusers repo or safetensors single-file  
   for details, see [Wiki](https://github.com/vladmandic/automatic/wiki/SD3)
 - [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model  
