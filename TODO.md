@@ -4,7 +4,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Future Candidates
 
-- stable diffusion 3.0: unreleased
 - animatediff-sdxl <https://github.com/huggingface/diffusers/pull/6721>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
