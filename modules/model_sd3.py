@@ -8,11 +8,9 @@ import rich.traceback
 
 rich.traceback.install()
 warnings.filterwarnings(action="ignore", category=FutureWarning)
-cache_dir = '/mnt/models/Diffusers'
-model_fn = '/mnt/models/stable-diffusion/sd3/sd3_medium_incl_clips.safetensors'
 
 
-def load_sd3(te3=None, fn=None):
+def load_sd3(te3=None, fn=None, cache_dir=None):
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     dtype = torch.float16
@@ -76,7 +74,7 @@ def load_sd3(te3=None, fn=None):
     return pipe
 
 
-def load_te3(pipe, te3=None):
+def load_te3(pipe, te3=None, cache_dir=None):
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     if pipe is None or not hasattr(pipe, 'text_encoder_3'):
         return pipe
@@ -128,6 +126,7 @@ def stats():
 
 
 if __name__ == '__main__':
+    model_fn = '/mnt/models/stable-diffusion/sd3/sd3_medium_incl_clips.safetensors'
     import time
     import logging
     logging.basicConfig(level=logging.INFO)
