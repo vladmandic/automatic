@@ -99,7 +99,8 @@ def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
             config=config,
             **kwargs,
         )
-    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["StableDiffusion3Img2ImgPipeline"] = diffusers.StableDiffusion3Img2ImgPipeline
+    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Pipeline
+    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Img2ImgPipeline
     return pipe
 
 
