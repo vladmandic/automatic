@@ -8,9 +8,21 @@ import rich.traceback
 
 rich.traceback.install()
 warnings.filterwarnings(action="ignore", category=FutureWarning)
+loggedin = False
 
 
-def load_sd3(te3=None, fn=None, cache_dir=None):
+def hf_login():
+    global loggedin # pylint: disable=global-statement
+    import huggingface_hub as hf
+    from modules import shared
+    if shared.opts.huggingface_token is not None and len(shared.opts.huggingface_token) > 2 and not loggedin:
+        shared.log.debug(f'HF login token found: {"x" * len(shared.opts.huggingface_token)}')
+        hf.login(shared.opts.huggingface_token)
+        loggedin = True
+
+
+def load_sd3(te3=None, fn=None, cache_dir=None, config=None):
+    hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     dtype = torch.float16
@@ -34,6 +46,7 @@ def load_sd3(te3=None, fn=None, cache_dir=None):
             torch_dtype=dtype,
             text_encoder_3=text_encoder_3,
             cache_dir=cache_dir,
+            config=config,
         )
     elif te3 == 'fp8':
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
@@ -42,6 +55,7 @@ def load_sd3(te3=None, fn=None, cache_dir=None):
             subfolder='text_encoder_3',
             quantization_config=quantization_config,
             cache_dir=cache_dir,
+            config=config,
         )
         pipe = loader(
             model_id,
@@ -49,14 +63,15 @@ def load_sd3(te3=None, fn=None, cache_dir=None):
             device_map='balanced',
             torch_dtype=dtype,
             cache_dir=cache_dir,
+            config=config,
         )
     else:
         pipe = loader(
             model_id,
             torch_dtype=dtype,
             text_encoder_3=None,
-            # tokenizer_3=None,
             cache_dir=cache_dir,
+            config=config,
         )
     if reload_te:
         pipe.text_encoder = transformers.CLIPTextModelWithProjection.from_pretrained(
@@ -75,6 +90,7 @@ def load_sd3(te3=None, fn=None, cache_dir=None):
 
 
 def load_te3(pipe, te3=None, cache_dir=None):
+    hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     if pipe is None or not hasattr(pipe, 'text_encoder_3'):
         return pipe

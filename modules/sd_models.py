@@ -1012,7 +1012,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     from modules.model_sd3 import load_sd3
                     shared.log.debug('Loading: model="Stable Diffusion 3" variant=medium type=diffusers')
                     shared.opts.scheduler = 'Default'
-                    sd_model = load_sd3(cache_dir=shared.opts.diffusers_dir)
+                    sd_model = load_sd3(cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
@@ -1085,7 +1085,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         diffusers_load_config['config'] = get_load_config(checkpoint_info.path, model_type, config_type='json')
                 if model_type.startswith('Stable Diffusion 3'):
                     from modules.model_sd3 import load_sd3
-                    sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir)
+                    sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
                 elif hasattr(pipeline, 'from_single_file'):
                     diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
                     diffusers_load_config['use_safetensors'] = True
