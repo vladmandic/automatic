@@ -4,7 +4,7 @@
 
 ### Highlights for 2024-06-13
 
-First, yes, it's here and supported: [**StabilityAI Stable Diffusion 3 Medium**](https://stability.ai/news/stable-diffusion-3-medium)  
+First, yes, it is here and supported: [**StabilityAI Stable Diffusion 3 Medium**](https://stability.ai/news/stable-diffusion-3-medium)  
 for details on how to download and use, see [Wiki](https://github.com/vladmandic/automatic/wiki/SD3)
 
 #### What else?
@@ -27,8 +27,8 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 
 #### New Functionality
 
-- [MuLan](https://github.com/mulanai/MuLan) Multi-langunage prompts
-  write your prompts forin ~110 auto-detected languages!  
+- [MuLan](https://github.com/mulanai/MuLan) Multi-language prompts
+  write your prompts in ~110 auto-detected languages!  
   compatible with *SD15* and *SDXL*  
   enable in scripts -> MuLan and set encoder to `InternVL-14B-224px` encoder  
   *note*: right now this is more of a proof-of-concept before smaller and/or quantized models are released  
@@ -68,7 +68,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 - reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
   this can drastically help with unbalanced prompts  
 - further work on improving python 3.12 functionality and remove experimental flag  
-  note: recommended version remains python 3.11 for all users except if you're using directml and then its python 3.10  
+  note: recommended version remains python 3.11 for all users, except if you are using directml in which case its python 3.10  
 - improved **installer** for initial installs  
   initial install will do single-pass install of all required packages with correct versions  
   subsequent runs will check package versions as necessary  

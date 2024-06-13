@@ -1367,6 +1367,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
 
 
 def set_diffusers_attention(pipe):
+    import diffusers.models.attention_processor as p
+
     def set_attn(pipe, attention):
         if attention is None:
             return
@@ -1377,21 +1379,20 @@ def set_diffusers_attention(pipe):
         modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
         for module in modules:
             if 'SD3Transformer2DModel' in module.__class__.__name__: # TODO SD3
-                continue
-            module.set_attn_processor(attention)
+                module.set_attn_processor(p.JointAttnProcessor2_0())
+            else:
+                module.set_attn_processor(attention)
 
     if shared.opts.cross_attention_optimization == "Disabled":
         pass # do nothing
     elif shared.opts.cross_attention_optimization == "Scaled-Dot-Product": # The default set by Diffusers
-        from diffusers.models.attention_processor import AttnProcessor2_0
-        set_attn(pipe, AttnProcessor2_0())
+        set_attn(pipe, p.AttnProcessor2_0())
     elif shared.opts.cross_attention_optimization == "xFormers" and hasattr(pipe, 'enable_xformers_memory_efficient_attention'):
         pipe.enable_xformers_memory_efficient_attention()
     elif shared.opts.cross_attention_optimization == "Split attention" and hasattr(pipe, "enable_attention_slicing"):
         pipe.enable_attention_slicing()
     elif shared.opts.cross_attention_optimization == "Batch matrix-matrix":
-        from diffusers.models.attention_processor import AttnProcessor
-        set_attn(pipe, AttnProcessor())
+        set_attn(pipe, p.AttnProcessor())
     elif shared.opts.cross_attention_optimization == "Dynamic Attention BMM":
         from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorBMM
         set_attn(pipe, DynamicAttnProcessorBMM())
