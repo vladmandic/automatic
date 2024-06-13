@@ -27,7 +27,7 @@ fasteners
 orjson
 invisible-watermark
 pi-heif
-diffusers==0.28.1
+diffusers==0.29.0
 safetensors==0.4.3
 tensordict==0.1.2
 peft==0.11.1
@@ -53,7 +53,7 @@ pandas
 protobuf==4.25.3
 pytorch_lightning==1.9.4
 tokenizers==0.19.1
-transformers==4.41.1
+transformers==4.41.2
 urllib3==1.26.18
 Pillow==10.3.0
 timm==0.9.16

@@ -92,6 +92,9 @@ def get_pipelines():
         pipelines['PixArt-Sigma'] = getattr(diffusers, 'PixArtSigmaPipeline', None)
     if hasattr(diffusers, 'HunyuanDiTPipeline'):
         pipelines['HunyuanDiT'] = getattr(diffusers, 'HunyuanDiTPipeline', None)
+    if hasattr(diffusers, 'StableDiffusion3Pipeline'):
+        pipelines['Stable Diffusion 3'] = getattr(diffusers, 'StableDiffusion3Pipeline', None)
+        pipelines['Stable Diffusion 3 Img2Img'] = getattr(diffusers, 'StableDiffusion3Img2ImgPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

@@ -85,7 +85,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
     shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
-    update_sampler(p, shared.sd_model)
+    update_sampler(p, shared.sd_model) # TODO SD3
     base_args = set_pipeline_args(
         p=p,
         model=shared.sd_model,

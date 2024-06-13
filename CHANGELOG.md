@@ -1,15 +1,15 @@
 # Change Log for SD.Next
 
-## TODO
-
-- StableDiffusion 3
-
-## Update for 2024-06-11
-
-*Note*: New features require `diffusers==0.29.0.dev`
+## Update for 2024-06-12
 
 ### New Models
 
+
+- [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
+  yup, supported!  
+  quote: "Stable Diffusion 3 Medium is a multimodal diffusion transformer (MMDiT) model that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency"  
+  sdnext also supports switching optional T5 text encoder on-the-fly as well as loading model from either diffusers repo or safetensors single-file  
+  for details, see [Wiki](https://github.com/vladmandic/automatic/wiki/SD3)
 - [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) bilingual english/chinese diffusion transformer model  
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
@@ -49,6 +49,7 @@
 - add torch **full deterministic mode**
   enable in settings -> compute -> use deterministic mode  
   typical differences are not large and its disabled by default as it does have some performance impact  
+- new sampler: **Euler FlowMatch**  
 
 ### Improvements
 

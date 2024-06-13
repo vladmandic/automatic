@@ -32,6 +32,7 @@ try:
         LMSDiscreteScheduler,
         PNDMScheduler,
         SASolverScheduler,
+        FlowMatchEulerDiscreteScheduler,
     )
 except Exception as e:
     import diffusers
@@ -65,6 +66,7 @@ config = {
     'Euler EDM': { },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
+    'Euler FlowMatch': { },
     'IPNDM': { },
 }
 
@@ -96,6 +98,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Same as primary', None, [], {}),
 ]
@@ -179,7 +182,7 @@ class DiffusionSampler:
         possible = signature.parameters.keys()
         for key in self.config.copy().keys():
             if key not in possible:
-                shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
+                # shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
         debug(f'Sampler: name="{name}"')
         debug(f'Sampler: config={self.config}')

@@ -28,12 +28,11 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
                     shared.log.debug(f'Extra networks experimental: model="{k}"')
                 else:
                     continue
-            name = os.path.join(reference_dir, k)
             preview = v.get('preview', v['path'])
             yield {
                 "type": 'Model',
-                "name": name,
-                "title": name,
+                "name": os.path.join(reference_dir, k),
+                "title": os.path.join(reference_dir, k),
                 "filename": url,
                 "preview": self.find_preview(os.path.join(reference_dir, preview)),
                 "local_preview": self.find_preview_file(os.path.join(reference_dir, preview)),

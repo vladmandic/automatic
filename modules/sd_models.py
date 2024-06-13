@@ -590,6 +590,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                     if not shared.native:
                         warn(f'Model detected as Segmind Vega model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL'
+                elif size > 5692 and size < 5698:
+                    if not shared.native:
+                        warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                    guess = 'Stable Diffusion 3'
             # guess by name
             """
             if 'LCM_' in f.upper() or 'LCM-' in f.upper() or '_LCM' in f.upper() or '-LCM' in f.upper():
@@ -613,13 +617,17 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 if not shared.native:
                     warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Alpha'
+            if 'stable-diffusion-3' in f.lower():
+                if not shared.native:
+                    warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                guess = 'Stable Diffusion 3'
             if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
                 if not shared.native:
                     warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 if devices.dtype == torch.float16:
                     warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
-            if 'pixart_sigma' in f.lower():
+            if 'pixart-sigma' in f.lower():
                 if not shared.native:
                     warn(f'Model detected as PixArt-Sigma model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Sigma'
@@ -803,6 +811,8 @@ def move_model(model, device=None, force=False):
                                         if os.environ.get('SD_MOVE_DEBUG', None):
                                             shared.log.warning(f'Model move meta: module={module.__class__}')
                                         module.to_empty(device=device)
+            elif 'enable_sequential_cpu_offload' in str(e0):
+                pass # ignore model move if sequential offload is enabled
             else:
                 raise e0
         if hasattr(model, "prior_pipe"):
@@ -834,6 +844,8 @@ def get_load_config(model_file, model_type, config_type='yaml'):
             return 'configs/sd15'
         if model_type == 'Stable Diffusion XL':
             return 'configs/sdxl'
+        if model_type == 'Stable Diffusion 3':
+            return 'configs/sd3'
     return None
 
 
@@ -954,7 +966,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 diffusers_load_config['variant'] = 'fp16'
             if model_type in ['Stable Cascade']: # forced pipeline
                 try:
-                    from modules.sd_cascade import load_cascade_combined
+                    from modules.model_stablecascade import load_cascade_combined
                     sd_model = load_cascade_combined(checkpoint_info, diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
@@ -990,6 +1002,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         use_safetensors=True,
                         cache_dir=shared.opts.diffusers_dir,
                         **diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
+            elif model_type in ['Stable Diffusion 3']:
+                try:
+                    from modules.model_sd3 import load_sd3
+                    shared.log.debug('Loading: model="Stable Diffusion 3" variant=medium type=diffusers')
+                    shared.opts.scheduler = 'Default'
+                    sd_model = load_sd3()
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
@@ -1060,8 +1083,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type, config_type='yaml')
                     else:
                         diffusers_load_config['config'] = get_load_config(checkpoint_info.path, model_type, config_type='json')
-                if hasattr(pipeline, 'from_single_file'):
-                    diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # TODO patch for diffusers==0.28.0
+                if model_type.startswith('Stable Diffusion 3'):
+                    from modules.model_sd3 import load_sd3
+                    sd_model = load_sd3(fn=checkpoint_info.path)
+                elif hasattr(pipeline, 'from_single_file'):
+                    diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
                     diffusers_load_config['use_safetensors'] = True
                     diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
                     if shared.opts.disable_accelerate:
@@ -1072,7 +1098,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     else:
                         sd_hijack_accelerate.restore_accelerate()
                     sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
-                    sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
+                    # sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
                 elif hasattr(pipeline, 'from_ckpt'):
                     diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
                     sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
@@ -1116,8 +1142,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
-        if "StableCascade" not in sd_model.__class__.__name__:
-            sd_unet.load_unet(sd_model)
+        sd_unet.load_unet(sd_model)
         timer.record("load")
 
         if op == 'refiner':
@@ -1140,6 +1165,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             move_model(sd_model, devices.device)
         timer.record("move")
 
+        reload_text_encoder()
+
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
 
@@ -1153,8 +1180,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     except Exception as e:
         shared.log.error("Failed to load diffusers model")
         errors.display(e, "loading Diffusers model")
-
-
 
     devices.torch_gc(force=True)
     if shared.cmd_opts.profile:
@@ -1351,6 +1376,8 @@ def set_diffusers_attention(pipe):
         modules = [getattr(pipe, n, None) for n in module_names]
         modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
         for module in modules:
+            if 'SD3Transformer2DModel' in module.__class__.__name__: # TODO SD3
+                continue
             module.set_attn_processor(attention)
 
     if shared.opts.cross_attention_optimization == "Disabled":
@@ -1492,6 +1519,13 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     current_checkpoint_info = None
     devices.torch_gc(force=True)
     shared.log.info(f'Model load finished: {memory_stats()} cached={len(checkpoints_loaded.keys())}')
+
+
+def reload_text_encoder():
+    if hasattr(shared.sd_model, 'text_encoder_3'):
+        from modules.model_sd3 import load_te3
+        shared.log.debug(f'Load: TE3={shared.opts.sd_te3}')
+        load_te3(shared.sd_model, shared.opts.sd_te3)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
