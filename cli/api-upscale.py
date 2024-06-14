@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import io
 import os
+import io
 import time
 import base64
 import logging
@@ -9,11 +9,9 @@ import requests
 import urllib3
 from PIL import Image
 
-
 sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860")
 sd_username = os.environ.get('SDAPI_USR', None)
 sd_password = os.environ.get('SDAPI_PWD', None)
-
 
 logging.basicConfig(level = logging.INFO, format = '%(asctime)s %(levelname)s: %(message)s')
 log = logging.getLogger(__name__)
@@ -42,35 +40,51 @@ def post(endpoint: str, dct: dict = None):
         return req.json()
 
 
-def info(args): # pylint: disable=redefined-outer-name
+def encode(f):
+    image = Image.open(f)
+    if image.mode == 'RGBA':
+        image = image.convert('RGB')
+    log.info(f'encoding image: {image}')
+    with io.BytesIO() as stream:
+        image.save(stream, 'JPEG')
+        image.close()
+        values = stream.getvalue()
+        encoded = base64.b64encode(values).decode()
+        return encoded
+
+
+def upscale(args): # pylint: disable=redefined-outer-name
     t0 = time.time()
-    with open(args.input, 'rb') as f:
-        content = f.read()
-    models = get('/sdapi/v1/preprocessors')
-    log.info(f'models: {models}')
-    req = {
-        'model': args.model or 'Canny',
-        'image': base64.b64encode(content).decode(),
-        'config': { 'low_threshold': 50 },
+    # options['mask'] = encode(args.mask)
+    upscalers = get('/sdapi/v1/upscalers')
+    upscalers = [u['name'] for u in upscalers]
+    log.info(f'upscalers: {upscalers}')
+    options = {
+        "save_images": False,
+        "send_images": True,
+        'image': encode(args.input),
+        'upscaler_1': args.upscaler,
+        'resize_mode': 0, # rescale_by
+        'upscaling_resize': args.scale,
+
     }
-    data = post('/sdapi/v1/preprocess', req)
+    data = post('/sdapi/v1/extra-single-image', options)
     t1 = time.time()
     if 'image' in data:
         b64 = data['image'].split(',',1)[0]
         image = Image.open(io.BytesIO(base64.b64decode(b64)))
-        log.info(f'received image: size={image.size} time={t1-t0:.2f}')
-        if args.output:
-            image.save(args.output)
-            log.info(f'saved image: fn={args.output}')
+        image.save(args.output)
+        log.info(f'received: image={image} file={args.output} time={t1-t0:.2f}')
     else:
-        log.info(f'received: {data} time={t1-t0:.2f}')
+        log.warning(f'no images received: {data}')
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-info')
+    parser = argparse.ArgumentParser(description = 'api-upscale')
     parser.add_argument('--input', required=True, help='input image')
-    parser.add_argument('--model', required=True, help='preprocessing model')
-    parser.add_argument('--output', required=False, help='output image')
+    parser.add_argument('--output', required=True, help='output image')
+    parser.add_argument('--upscaler', required=False, default='Nearest', help='upscaler name')
+    parser.add_argument('--scale', required=False, default=2, help='upscaler scale')
     args = parser.parse_args()
-    log.info(f'info: {args}')
-    info(args)
+    log.info(f'upscale: {args}')
+    upscale(args)

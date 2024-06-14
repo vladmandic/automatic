@@ -390,6 +390,9 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
     if latent_upscaler is not None:
         return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
     first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+    if p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr'):
+        shared.log.error('Hires: missing upscaling dimensions')
+        return first_pass_images
     resized_images = []
     for img in first_pass_images:
         if latent_upscaler is None:

@@ -48,7 +48,10 @@ def generate(args): # pylint: disable=redefined-outer-name
     options['sampler_name'] = args.sampler
     options['width'] = int(args.width)
     options['height'] = int(args.height)
-    options['restore_faces'] = args.faces
+    if args.faces:
+        options['restore_faces'] = args.faces
+        options['denoising_strength'] = 0.5
+        options['hr_sampler_name'] = args.sampler
     data = post('/sdapi/v1/txt2img', options)
     t1 = time.time()
     if 'images' in data:
@@ -65,7 +68,7 @@ def generate(args): # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-txt2img')
+    parser = argparse.ArgumentParser(description = 'api-txt2img')
     parser.add_argument('--prompt', required=False, default='', help='prompt text')
     parser.add_argument('--negative', required=False, default='', help='negative prompt text')
     parser.add_argument('--width', required=False, default=512, help='image width')

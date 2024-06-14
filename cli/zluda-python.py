@@ -13,7 +13,7 @@ class Interpreter:
 
     def execute(self, s: str):
         try:
-            exec(s, self.env_globals, self.env_locals)
+            exec(s, self.env_globals, self.env_locals) # pylint: disable=exec-used
         except Exception as e:
             print(f'{e.__class__.__name__}: {e}')
 

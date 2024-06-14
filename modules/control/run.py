@@ -193,6 +193,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     p.refiner_negative = refiner_negative
     if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
         p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
+    elif p.enable_hr and (p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0):
+        p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.hr_resize_x / 8), 8 * int(hr_resize_y / 8)
 
     global p_extra_args # pylint: disable=global-statement
     for k, v in p_extra_args.items():

@@ -44,14 +44,21 @@ def info(args): # pylint: disable=redefined-outer-name
     t0 = time.time()
     with open(args.input, 'rb') as f:
         content = f.read()
-    data = post('/sdapi/v1/png-info', { 'image': base64.b64encode(content).decode() })
+    dct = { 'image': base64.b64encode(content).decode() }
+    if args.model is not None:
+        dct['model'] = args.model
+    if args.question is not None:
+        dct['question'] = args.question
+    data = post('/sdapi/v1/vqa', dct)
     t1 = time.time()
-    log.info(f'received: {data} time={t1-t0:.2f}')
+    log.info(f'answer: {data} time={t1-t0:.2f}')
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-info')
+    parser = argparse.ArgumentParser(description = 'api-vqa')
     parser.add_argument('--input', required=True, help='input image')
+    parser.add_argument('--model', required=False, help='vqa model')
+    parser.add_argument('--question', required=False, help='question')
     args = parser.parse_args()
     log.info(f'info: {args}')
     info(args)
