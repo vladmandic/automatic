@@ -16,7 +16,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     if id_part is None:
         id_part = "img2img" if is_img2img else "txt2img"
     with gr.Row(elem_id=f"{id_part}_toprow", variant="compact"):
-        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=6):
+        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=5):
             with gr.Row():
                 with gr.Column(scale=80):
                     with gr.Row():

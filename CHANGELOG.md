@@ -2,6 +2,7 @@
 
 ## Update for 2024-06-14
 
+- css tweaks for standardui
 - force apply vae config on model load
 - restructure api examples: `cli/api-*`
 - fix control second pass resize
