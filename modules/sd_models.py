@@ -545,7 +545,7 @@ def change_backend():
     refresh_vae_list()
 
 
-def detect_pipeline(f: str, op: str = 'model', warning=True):
+def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
     guess = shared.opts.diffusers_pipeline
     warn = shared.log.warning if warning else lambda *args, **kwargs: None
     size = 0
@@ -642,7 +642,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 guess = 'Stable Diffusion XL Instruct'
             # get actual pipeline
             pipeline = shared_items.get_pipelines().get(guess, None)
-            shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+            if not quiet:
+                shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
         except Exception as e:
             shared.log.error(f'Error detecting diffusers pipeline: model={f} {e}')
             return None, None
@@ -650,7 +651,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
         try:
             size = round(os.path.getsize(f) / 1024 / 1024)
             pipeline = shared_items.get_pipelines().get(guess, None)
-            shared.log.info(f'Diffusers: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+            if not quiet:
+                shared.log.info(f'Diffusers: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
         except Exception as e:
             shared.log.error(f'Error loading diffusers pipeline: model={f} {e}')
 
@@ -1157,7 +1159,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         timer.record("embeddings")
 
         set_diffuser_options(sd_model, vae, op)
-
+        if op == 'model':
+            sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
             move_model(sd_model, devices.cpu)

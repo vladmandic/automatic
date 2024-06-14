@@ -155,14 +155,32 @@ def load_vae(model, vae_file=None, vae_source="unknown-source"):
         except Exception as e:
             shared.log.error(f"Loading VAE failed: model={vae_file} source={vae_source} {e}")
             restore_base_vae(model)
-        # If vae used is not in dict, update it
-        # It will be removed on refresh though
         vae_opt = get_filename(vae_file)
         if vae_opt not in vae_dict:
             vae_dict[vae_opt] = vae_file
     elif loaded_vae_file:
         restore_base_vae(model)
     loaded_vae_file = vae_file
+
+
+def apply_vae_config(model_file, vae_file, sd_model):
+    def get_vae_config():
+        config_file = os.path.join(paths.sd_configs_path, os.path.splitext(os.path.basename(model_file))[0] + '_vae.json')
+        if config_file is not None and os.path.exists(config_file):
+            return shared.readfile(config_file)
+        config_file = os.path.join(paths.sd_configs_path, os.path.splitext(os.path.basename(vae_file))[0] + '.json') if vae_file else None
+        if config_file is not None and os.path.exists(config_file):
+            return shared.readfile(config_file)
+        config_file = os.path.join(paths.sd_configs_path, shared.sd_model_type, 'vae', 'config.json')
+        if config_file is not None and os.path.exists(config_file):
+            return shared.readfile(config_file)
+        return {}
+
+    if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'config'):
+        config = get_vae_config()
+        for k, v in config.items():
+            if k in sd_model.vae.config and not k.startswith('_'):
+                sd_model.vae.config[k] = v
 
 
 def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
@@ -262,6 +280,7 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
             vae = load_vae_diffusers(shared.sd_model.sd_checkpoint_info.filename, vae_file, vae_source)
             if vae is not None:
                 sd_models.set_diffuser_options(sd_model, vae=vae, op='vae')
+                apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
 
     if not shared.cmd_opts.lowvram and not shared.cmd_opts.medvram:
         sd_models.move_model(sd_model, devices.device)
