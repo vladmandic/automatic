@@ -434,7 +434,7 @@ def check_onnx():
 
 
 def install_rocm_zluda(torch_command):
-    check_python(supported_minors=[10,11], reason='RocM or Zluda backends require Python 3.10 or 3.11')
+    check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
     is_windows = platform.system() == 'Windows'
     log.info('AMD ROCm toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
