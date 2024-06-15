@@ -5,10 +5,13 @@
 - sd3 enable taesd preview and non-full quality mode
 - sd3 simplified loading of model in single-file safetensors format
 - css tweaks for standardui
-- force apply vae config on model load, fix unsaturated outputs  
+- force apply vae config on model load  
+  fix unsaturated outputs  
 - restructure api examples: `cli/api-*`
 - fix control second pass resize
 - fix api face-hires
+- fix hunyuandit set attention processor
+- fix civitai download without name
 
 ## Update for 2024-06-13
 

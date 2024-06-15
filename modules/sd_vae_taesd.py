@@ -57,7 +57,7 @@ def Decoder(latent_channels=4):
     )
 
 
-class TAESD2(nn.Module):
+class TAESD2(nn.Module): # pylint: disable=abstract-method
     latent_magnitude = 3
     latent_shift = 0.5
 
@@ -142,13 +142,16 @@ def model(model_class = 'sd', model_type = 'decoder'):
 
 
 def decode(latents):
+    global previous_warnings # pylint: disable=global-statement
     from modules import shared
     model_class = shared.sd_model_type
     if model_class == 'ldm':
         model_class = 'sd'
     dtype = devices.dtype_vae if devices.dtype_vae != torch.bfloat16 else torch.float16 # taesd does not support bf16
     if 'sd' not in model_class:
-        shared.log.warning(f'TAESD unsupported model type: {model_class}')
+        if not previous_warnings:
+            previous_warnings = True
+            shared.log.warning(f'TAESD unsupported model type: {model_class}')
         return Image.new('RGB', (8, 8), color = (0, 0, 0))
     vae = taesd_models[f'{model_class}-decoder']
     if vae is None:
