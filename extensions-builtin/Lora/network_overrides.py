@@ -24,10 +24,12 @@ force_diffusers = [
     'c2ec22757b46', # flash-sd15
 ]
 
-def check_override(shorthash):
+def check_override(shorthash=''):
+    force = False
+    force = force or (shared.sd_model_type == 'sd3') # TODO sd3 forced diffusers for lora load
     if len(shorthash) < 4:
-        return False
-    force = any(x.startswith(shorthash) for x in maybe_diffusers) if shared.opts.lora_maybe_diffusers else False
+        return force
+    force = force or (any(x.startswith(shorthash) for x in maybe_diffusers) if shared.opts.lora_maybe_diffusers else False)
     force = force or any(x.startswith(shorthash) for x in force_diffusers)
     if force and shared.opts.lora_maybe_diffusers:
         shared.log.debug('LoRA override: force diffusers')

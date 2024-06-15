@@ -152,6 +152,10 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
 
 def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, token: str = None):
     import threading
+    if model_name is None or len(model_name) == 0:
+        err = 'Model download: no target model name provided'
+        shared.log.error(err)
+        return err
     thread = threading.Thread(target=download_civit_model_thread, args=(model_name, model_url, model_path, model_type, token))
     thread.start()
     return f'Model download: name={model_name} url={model_url} path={model_path}'
