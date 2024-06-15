@@ -515,14 +515,7 @@ def install_rocm_zluda(torch_command):
         torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
         # conceal ROCm installed
-        os.environ.pop("ROCM_HOME", None)
-        os.environ.pop("ROCM_PATH", None)
-        paths = os.environ["PATH"].split(";")
-        paths_no_rocm = []
-        for path in paths:
-            if "ROCm" not in path:
-                paths_no_rocm.append(path)
-        os.environ["PATH"] = ";".join(paths_no_rocm)
+        conceal_rocm()
     else:
         if rocm_ver is None: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
@@ -539,6 +532,17 @@ def install_rocm_zluda(torch_command):
             ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
     return torch_command
+
+
+def conceal_rocm():
+    os.environ.pop("ROCM_HOME", None)
+    os.environ.pop("ROCM_PATH", None)
+    paths = os.environ["PATH"].split(";")
+    paths_no_rocm = []
+    for path in paths:
+        if "ROCm" not in path:
+            paths_no_rocm.append(path)
+    os.environ["PATH"] = ";".join(paths_no_rocm)
 
 
 def install_ipex(torch_command):
@@ -677,11 +681,11 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
             log.info('Using DirectML Backend')
-            check_python(supported_minors=[10], reason='DirectML backend requires Python 3.10')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0 torchvision torch-directml')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
+            conceal_rocm()
         else:
             if args.use_zluda:
                 log.warning("ZLUDA failed to initialize: no HIP SDK found")
