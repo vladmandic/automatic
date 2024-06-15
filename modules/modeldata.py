@@ -83,7 +83,7 @@ class Shared(sys.modules[__name__].__class__):
                 return model_type
             if not shared.native:
                 model_type = 'ldm'
-            elif "StableDiffusion3" in self.sd_refiner.__class__.__name__:
+            elif "StableDiffusion3" in self.sd_model.__class__.__name__:
                 model_type = 'sd3'
             elif "StableDiffusionXL" in self.sd_model.__class__.__name__:
                 model_type = 'sdxl'

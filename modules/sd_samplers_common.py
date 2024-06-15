@@ -56,7 +56,10 @@ def single_sample_to_image(sample, approximation=None):
             sample_min = torch.min(sample)
             if sample_min < -5:
                 sample = sample * (5 / abs(sample_min))
-        if sd_cascade:
+        if approximation == 2: # TAESD
+            x_sample = sd_vae_taesd.decode(sample)
+            x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
+        elif sd_cascade:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
@@ -64,9 +67,6 @@ def single_sample_to_image(sample, approximation=None):
             x_sample = sd_vae_approx.nn_approximation(sample) * 0.5 + 0.5
             if shared.sd_model_type == "sdxl":
                 x_sample = x_sample[[2,1,0], :, :] # BGR to RGB
-        elif approximation == 2: # TAESD
-            x_sample = sd_vae_taesd.decode(sample)
-            x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
         elif approximation == 3: # Full VAE
             x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0] * 0.5 + 0.5
         else:
