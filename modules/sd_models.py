@@ -1381,7 +1381,8 @@ def set_diffusers_attention(pipe):
         modules = [getattr(pipe, n, None) for n in module_names]
         modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
         for module in modules:
-            if 'SD3Transformer2DModel' in module.__class__.__name__: # TODO SD3
+            print('HERE', module.__class__.__name__)
+            if module.__class__.__name__ in ['SD3Transformer2DModel']:
                 module.set_attn_processor(p.JointAttnProcessor2_0())
             else:
                 module.set_attn_processor(attention)

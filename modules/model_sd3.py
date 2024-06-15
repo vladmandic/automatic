@@ -1,6 +1,4 @@
-import io
 import os
-import contextlib
 import warnings
 import torch
 import diffusers
@@ -13,23 +11,9 @@ warnings.filterwarnings(action="ignore", category=FutureWarning)
 loggedin = False
 
 
-def hf_login():
-    global loggedin # pylint: disable=global-statement
-    import huggingface_hub as hf
-    from modules import shared
-    if shared.opts.huggingface_token is not None and len(shared.opts.huggingface_token) > 2 and not loggedin:
-        stdout = io.StringIO()
-        with contextlib.redirect_stdout(stdout):
-            hf.login(shared.opts.huggingface_token)
-        text = stdout.getvalue() or ''
-        line = [l for l in text.split('\n') if 'Token' in l]
-        shared.log.info(f'HF login: {line[0] if len(line) > 0 else text}')
-        loggedin = True
-
-
 def load_sd3(fn=None, cache_dir=None, config=None):
-    from modules import devices
-    hf_login()
+    from modules import devices, modelloader
+    modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     dtype = torch.float16
@@ -88,8 +72,8 @@ def load_sd3(fn=None, cache_dir=None, config=None):
 
 
 def load_te3(pipe, te3=None, cache_dir=None):
-    from modules import devices
-    hf_login()
+    from modules import devices, modelloader
+    modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     if pipe is None or not hasattr(pipe, 'text_encoder_3'):
         return pipe

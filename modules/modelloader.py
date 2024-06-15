@@ -1,8 +1,10 @@
+import io
 import os
 import time
 import json
 import shutil
 import importlib
+import contextlib
 from typing import Dict
 from urllib.parse import urlparse
 from PIL import Image
@@ -12,8 +14,23 @@ from modules.upscaler import Upscaler, UpscalerLanczos, UpscalerNearest, Upscale
 from modules.paths import script_path, models_path
 
 
+loggedin = False
 diffuser_repos = []
 debug = shared.log.trace if os.environ.get('SD_DOWNLOAD_DEBUG', None) is not None else lambda *args, **kwargs: None
+
+
+def hf_login(token=None):
+    global loggedin # pylint: disable=global-statement
+    import huggingface_hub as hf
+    token = token or shared.opts.huggingface_token
+    if token is not None and len(token) > 2 and not loggedin:
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            hf.login(shared.opts.huggingface_token)
+        text = stdout.getvalue() or ''
+        line = [l for l in text.split('\n') if 'Token' in l]
+        shared.log.info(f'HF login: {line[0] if len(line) > 0 else text}')
+        loggedin = True
 
 
 def download_civit_meta(model_path: str, model_id):
@@ -188,7 +205,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     token = token or shared.opts.huggingface_token
     if token is not None and len(token) > 2:
         shared.log.debug(f"Diffusers authentication: {token}")
-        hf.login(token)
+        hf_login(token)
     pipeline_dir = None
 
     ok = False
