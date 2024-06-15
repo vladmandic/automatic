@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-14
+## Update for 2024-06-15
 
 - sd3 enable taesd preview and non-full quality mode
 - sd3 simplified loading of model in single-file safetensors format
