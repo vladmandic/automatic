@@ -19,6 +19,7 @@
 - fix api face-hires
 - fix **hunyuandit** set attention processor
 - fix civitai download without name
+- fix compatibility with latest adetailer
 - css tweaks for standardui
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
