@@ -1047,7 +1047,7 @@ def check_ui(ver):
         if ver['branch'] == ver['ui']:
             log.debug(f'Branch synchronized: {ver["branch"]}')
         else:
-            log.debug(f'Branch synch failed: sdnext={ver["branch"]} ui={ver["ui"]}')
+            log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
     except Exception as e:
         log.debug(f'Branch switch: {e}')
     os.chdir(cwd)
