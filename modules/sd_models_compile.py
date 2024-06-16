@@ -67,7 +67,7 @@ def apply_compile_to_model(sd_model, function, options, op=None):
                 sd_model.text_encoder = function(sd_model.text_encoder)
         if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
             sd_model.text_encoder_2 = function(sd_model.text_encoder_2)
-        if hasattr(sd_model, 'text_encoder_3') and hasattr(sd_model.text_encoder_2, 'config'):
+        if hasattr(sd_model, 'text_encoder_3') and hasattr(sd_model.text_encoder_3, 'config'):
             if op == "nncf" and sd_model.text_encoder_3.__class__.__name__ == "T5EncoderModel":
                 from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
                 for i in range(len(sd_model.text_encoder_3.encoder.block)):
