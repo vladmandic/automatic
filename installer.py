@@ -1019,7 +1019,7 @@ def get_version(force=False):
                 'url': origin.replace('\n', '') + '/tree/' + branch_name.replace('\n', '')
             }
         except Exception:
-            version = { 'app': 'sd.next', 'version': 'unknown' }
+            version = { 'app': 'sd.next', 'version': 'unknown', 'branch': 'unknown' }
         try:
             cwd = os.getcwd()
             os.chdir('extensions-builtin/sdnext-modernui')
@@ -1035,9 +1035,7 @@ def get_version(force=False):
 
 
 def check_ui(ver):
-    if ver is None:
-        return
-    if ver['branch'] == ver['ui']:
+    if ver is None or 'branch' not in ver or 'ui' not in ver or ver['branch'] == ver['ui']:
         return
     log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
     cwd = os.getcwd()

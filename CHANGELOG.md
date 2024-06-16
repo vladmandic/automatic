@@ -32,6 +32,7 @@
 - fix civitai download without name
 - fix compatibility with latest adetailer
 - fix invalid sampler warning
+- fix starting from non git repo
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 
