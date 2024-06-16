@@ -9,17 +9,23 @@
 
 ## Update for 2024-06-16
 
-### Improvements
+### Improvements: SD3
+
+- enable taesd preview and non-full quality mode  
+- enable base LoRA support  
+- simplified loading of model in single-file safetensors format  
+  loading sd3 can now be performed fully offline  
+- add support for nncf compressed weights, thanks @Disty0!
+- add support for sampler shift for Euler FlowMatch  
+  see *settings -> samplers*, also available as param in xyz grid  
+  higher shift means model will spend more time on structure and less on details  
+
+### Improvements: General
 
 - support for T5 text-encoder loader in **all** models that use T5  
   *example*: load FP8 quantized T5 text-encoder into PixArt Sigma  
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
-- **sd3** enable taesd preview and non-full quality mode  
-- **sd3** enable base LoRA support  
-- **sd3** simplified loading of model in single-file safetensors format  
-  loading sd3 can now be performed fully offline  
-- **sd3** add support for nncf compressed weights, thanks @Disty0!
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
 - css tweaks for standardui
@@ -37,6 +43,7 @@
 - fix starting from non git repo
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
+- remove obsolete training code leftovers
 
 ## Update for 2024-06-13
 

@@ -54,6 +54,9 @@ def image_grid(imgs, batch_size=1, rows=None):
     cols = math.ceil(len(imgs) / rows)
     params = script_callbacks.ImageGridLoopParams(imgs, cols, rows)
     script_callbacks.image_grid_callback(params)
+    imgs = [i for i in imgs if i is not None] if imgs is not None else []
+    if len(imgs) == 0:
+        return None
     w, h = imgs[0].size
     grid = Image.new('RGB', size=(params.cols * w, params.rows * h), color=shared.opts.grid_background)
     for i, img in enumerate(params.imgs):

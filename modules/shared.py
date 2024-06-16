@@ -41,7 +41,7 @@ hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
 locking_available = True
 clip_model = None
-interrogator = modules.interrogate.InterrogateModels("interrogate")
+interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 face_restorers = []
 tab_names = []
@@ -716,6 +716,7 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     'schedulers_timesteps_range': OptionInfo(1000, "Timesteps range", gr.Slider, {"minimum": 250, "maximum": 4000, "step": 1}),
     'schedulers_timesteps': OptionInfo('', "Timesteps"),
     "schedulers_rescale_betas": OptionInfo(False, "Rescale betas with zero terminal SNR", gr.Checkbox),
+    'schedulers_shift': OptionInfo(1, "Sampler shift", gr.Slider, {"minimum": 0.1, "maximum": 10, "step": 0.1}),
 
     # managed from ui.py for backend original k-diffusion
     "schedulers_sep_kdiffusers": OptionInfo("<h2>K-Diffusion specific config</h2>", "", gr.HTML),
@@ -775,19 +776,19 @@ options_templates.update(options_section(('control', "Control Options"), {
     "control_unload_processor": OptionInfo(False, "Processor unload after use"),
 }))
 
-options_templates.update(options_section(('training', "Training"), {
-    "unload_models_when_training": OptionInfo(False, "Move VAE and CLIP to RAM when training"),
-    "pin_memory": OptionInfo(True, "Pin training dataset to memory"),
-    "save_optimizer_state": OptionInfo(False, "Save resumable optimizer state when training"),
-    "save_training_settings_to_txt": OptionInfo(True, "Save training settings to a text file"),
-    "dataset_filename_word_regex": OptionInfo("", "Filename word regex"),
-    "dataset_filename_join_string": OptionInfo(" ", "Filename join string"),
-    "embeddings_templates_dir": OptionInfo(os.path.join(paths.script_path, 'train', 'templates'), "Embeddings train templates directory", folder=True),
-    "training_image_repeats_per_epoch": OptionInfo(1, "Image repeats per epoch", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
-    "training_write_csv_every": OptionInfo(0, "Save loss CSV file every n steps"),
-    "training_enable_tensorboard": OptionInfo(False, "Enable tensorboard logging"),
-    "training_tensorboard_save_images": OptionInfo(False, "Save generated images within tensorboard"),
-    "training_tensorboard_flush_every": OptionInfo(120, "Tensorboard flush period"),
+options_templates.update(options_section(('interrogate', "Interrogate"), { # "Training" section disabled so just a placeholder
+    "unload_models_when_training": OptionInfo(False, "Move VAE and CLIP to RAM when training", gr.Checkbox, { "visible": False }),
+    "pin_memory": OptionInfo(True, "Pin training dataset to memory", gr.Checkbox, { "visible": False }),
+    "save_optimizer_state": OptionInfo(False, "Save resumable optimizer state when training", gr.Checkbox, { "visible": False }),
+    "save_training_settings_to_txt": OptionInfo(True, "Save training settings to a text file", gr.Checkbox, { "visible": False }),
+    "dataset_filename_word_regex": OptionInfo("", "Filename word regex", gr.Textbox, { "visible": False }),
+    "dataset_filename_join_string": OptionInfo(" ", "Filename join string", gr.Textbox, { "visible": False }),
+    "embeddings_templates_dir": OptionInfo("", "Embeddings train templates directory", gr.Textbox, { "visible": False }),
+    "training_image_repeats_per_epoch": OptionInfo(1, "Image repeats per epoch", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1, "visible": False }),
+    "training_write_csv_every": OptionInfo(0, "Save loss CSV file every n steps", gr.Number, { "visible": False }),
+    "training_enable_tensorboard": OptionInfo(False, "Enable tensorboard logging", gr.Checkbox, { "visible": False }),
+    "training_tensorboard_save_images": OptionInfo(False, "Save generated images within tensorboard", gr.Checkbox, { "visible": False }),
+    "training_tensorboard_flush_every": OptionInfo(120, "Tensorboard flush period", gr.Number, { "visible": False }),
 }))
 
 options_templates.update(options_section(('interrogate', "Interrogate"), {

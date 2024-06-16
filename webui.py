@@ -118,7 +118,6 @@ def initialize():
     shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
     timer.startup.record("onchange")
 
-    modules.textual_inversion.textual_inversion.list_textual_inversion_templates()
     shared.reload_hypernetworks()
     shared.prompt_styles.reload()
 
