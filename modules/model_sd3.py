@@ -13,7 +13,6 @@ loggedin = False
 
 def load_sd3(fn=None, cache_dir=None, config=None):
     from modules import devices, modelloader
-    modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     dtype = torch.float16
@@ -56,6 +55,7 @@ def load_sd3(fn=None, cache_dir=None, config=None):
         else:
             kwargs = {}
     else:
+        modelloader.hf_login()
         model_id = repo_id
         loader = diffusers.StableDiffusion3Pipeline.from_pretrained
     pipe = loader(
@@ -71,34 +71,45 @@ def load_sd3(fn=None, cache_dir=None, config=None):
     return pipe
 
 
-def load_te3(pipe, te3=None, cache_dir=None):
+def load_t5(pipe, module, te3=None, cache_dir=None):
     from modules import devices, modelloader
-    modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    if pipe is None or not hasattr(pipe, 'text_encoder_3'):
+    if pipe is None or not hasattr(pipe, module):
         return pipe
     if 'fp16' in te3.lower():
-        pipe.text_encoder_3 = transformers.T5EncoderModel.from_pretrained(
+        modelloader.hf_login()
+        t5 = transformers.T5EncoderModel.from_pretrained(
             repo_id,
             subfolder='text_encoder_3',
             # torch_dtype=dtype,
             cache_dir=cache_dir,
             torch_dtype=pipe.text_encoder.dtype,
         )
+        setattr(pipe, module, t5)
     elif 'fp8' in te3.lower():
+        modelloader.hf_login()
         from installer import install
         install('bitsandbytes', quiet=True)
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
-        pipe.text_encoder_3 = transformers.T5EncoderModel.from_pretrained(
+        t5 = transformers.T5EncoderModel.from_pretrained(
             repo_id,
             subfolder='text_encoder_3',
             quantization_config=quantization_config,
             cache_dir=cache_dir,
             torch_dtype=pipe.text_encoder.dtype,
         )
+        setattr(pipe, module, t5)
+        """
+        if hasattr(pipe, 'remove_all_hooks'):
+            pipe.remove_all_hooks()
+            nn = getattr(pipe, module)
+            import accelerate
+            accelerate.hooks.remove_hook_from_module(nn, recurse=True)
+            nn.to(device=devices.device)
+        """
     else:
-        pipe.text_encoder_3 = None
-    if getattr(pipe, 'text_encoder_3', None) is not None and getattr(pipe, 'tokenizer_3', None) is None:
+        setattr(pipe, module, None)
+    if getattr(pipe, 'text_encoder_3', None) is not None and getattr(pipe, 'tokenizer_3', None) is None: # not needed anymore
         pipe.tokenizer_3 = transformers.T5TokenizerFast.from_pretrained(
             repo_id,
             subfolder='tokenizer_3',

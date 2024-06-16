@@ -997,7 +997,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
                     # shared.opts.data['cuda_dtype'] = 'FP32' # override
-                    shared.opts.data['diffusers_model_cpu_offload'] = True # override
+                    # shared.opts.data['diffusers_model_cpu_offload'] = True # override
                     devices.set_cuda_params()
                     sd_model = diffusers.PixArtSigmaPipeline.from_pretrained(
                         checkpoint_info.path,
@@ -1168,7 +1168,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             move_model(sd_model, devices.device)
         timer.record("move")
 
-        reload_text_encoder()
+        reload_text_encoder(initial=True)
 
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
@@ -1527,11 +1527,19 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     shared.log.info(f'Model load finished: {memory_stats()} cached={len(checkpoints_loaded.keys())}')
 
 
-def reload_text_encoder():
-    if hasattr(shared.sd_model, 'text_encoder_3'):
-        from modules.model_sd3 import load_te3
-        shared.log.debug(f'Load: TE3={shared.opts.sd_te3}')
-        load_te3(shared.sd_model, shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
+def reload_text_encoder(initial=False):
+    if initial and (shared.opts.sd_te3 is None or shared.opts.sd_te3 == 'None'):
+        return # dont unload
+    signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
+    t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
+    if len(t5) > 0:
+        from modules.model_sd3 import load_t5
+        shared.log.debug(f'Load: t5={shared.opts.sd_te3} module="{t5[0]}"')
+        load_t5(pipe=shared.sd_model, module=t5[0], te3=shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
+    elif hasattr(shared.sd_model, 'text_encoder_3'):
+        from modules.model_sd3 import load_t5
+        shared.log.debug(f'Load: t5={shared.opts.sd_te3} module="text_encoder_3"')
+        load_t5(pipe=shared.sd_model, module='text_encoder_3', te3=shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):

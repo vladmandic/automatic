@@ -3,19 +3,27 @@
 ## Pending
 
 - Diffusers==0.30.0
-- https://github.com/huggingface/diffusers/issues/8579
 - https://github.com/huggingface/diffusers/issues/8546
 - https://github.com/huggingface/diffusers/pull/8566
-- https://github.com/huggingface/diffusers/pull/8506
+- https://github.com/huggingface/diffusers/pull/8584
 
-## Update for 2024-06-15
+## Update for 2024-06-16
 
-- support for `torch-directml` **0.2.2**, thanks @lshqqytiger!
-- **sd3** enable taesd preview and non-full quality mode
-- **sd3** enable base LoRA support
-- **sd3** simplified loading of model in single-file safetensors format
+### Improvements
+
+- support for T5 text-encoder loader in **all** models that use T5  
+  *example*: load FP8 quantized T5 text-encoder into PixArt Sigma  
+- support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
+  new directml is finally based on modern `torch` 2.3.1!  
+- **sd3** enable taesd preview and non-full quality mode  
+- **sd3** enable base LoRA support  
+- **sd3** simplified loading of model in single-file safetensors format  
+  loading sd3 can now be performed fully offline  
+
+### Fixes
+
 - fix unsaturated outputs, force apply vae config on model load  
-- fix control second pass resize
+- fix control second pass resize  
 - fix api face-hires
 - fix **hunyuandit** set attention processor
 - fix civitai download without name
