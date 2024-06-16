@@ -812,15 +812,22 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                     <tr><td>Preview Embedded</td><td>{item.preview.startswith('data:')}</td></tr>
                 '''
                 # desc = f'Name: {os.path.basename(item.name)}\nDescription: {item.description}\nPrompt: {item.prompt}\nNegative: {item.negative}\nExtra: {item.extra}\n'
+            if item.name.startswith('Diffusers'):
+                url = item.name.replace('Diffusers/', '')
+                url = f'<a href="https://huggingface.co/{url}" target="_blank">https://huggingface.co/models/{url}</a>' if url is not None else 'N/A'
+            else:
+                url = info.get('id', None) if info is not None else None
+                url = f'<a href="https://civitai.com/models/{url}" target="_blank">civitai.com/models/{url}</a>' if url is not None else 'N/A'
             text = f'''
                 <h2 style="border-bottom: 1px solid var(--button-primary-border-color); margin: 0em 0px 1em 0 !important">{item.name}</h2>
-                <table style="width: 100%; line-height: 1.3em;"><tbody>
+                <table style="width: 100%; line-height: 1.5em;"><tbody>
                     <tr><td>Type</td><td>{page.title}</td></tr>
                     <tr><td>Alias</td><td>{getattr(item, 'alias', 'N/A')}</td></tr>
                     <tr><td>Filename</td><td>{item.filename}</td></tr>
                     <tr><td>Hash</td><td>{getattr(item, 'hash', 'N/A')}</td></tr>
                     <tr><td>Size</td><td>{round(stat.st_size/1024/1024, 2) if stat is not None else 'N/A'} MB</td></tr>
                     <tr><td>Last modified</td><td>{datetime.fromtimestamp(stat.st_mtime) if stat is not None else 'N/A'}</td></tr>
+                    <tr><td>Source URL</td><td>{url}</td></tr>
                     <tr><td style="border-top: 1px solid var(--button-primary-border-color);"></td><td></td></tr>
                     {lora}
                     {model}

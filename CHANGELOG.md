@@ -19,6 +19,8 @@
 - **sd3** enable base LoRA support  
 - **sd3** simplified loading of model in single-file safetensors format  
   loading sd3 can now be performed fully offline  
+- extra networks: info display now contains link to source url if model if its known  
+  works for civitai and huggingface models  
 
 ### Fixes
 
