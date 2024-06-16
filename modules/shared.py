@@ -330,8 +330,9 @@ def temp_disable_extensions():
         modules.shared.opts.data['theme_type'] = 'None'
         modules.shared.opts.data['gradio_theme'] = theme_name
     else:
-        modules.shared.opts.data['theme_type'] = 'None'
-        modules.shared.opts.data['gradio_theme'] = theme_name
+        modules.shared.log.error(f'UI theme invalid: theme="{theme_name}" available={["standard/*", "modern/*", "none/*"]} fallback="standard/black-teal"')
+        modules.shared.opts.data['theme_type'] = 'Standard'
+        modules.shared.opts.data['gradio_theme'] = 'black-teal'
 
     for ext in disable_themes:
         if ext.lower() not in opts.disabled_extensions:

@@ -1,17 +1,26 @@
 # Change Log for SD.Next
 
+## Pending
+
+- Diffusers==0.30.0
+- https://github.com/huggingface/diffusers/issues/8579
+- https://github.com/huggingface/diffusers/issues/8546
+- https://github.com/huggingface/diffusers/pull/8566
+- https://github.com/huggingface/diffusers/pull/8506
+
 ## Update for 2024-06-15
 
-- sd3 enable taesd preview and non-full quality mode
-- sd3 simplified loading of model in single-file safetensors format
-- css tweaks for standardui
-- force apply vae config on model load  
-  fix unsaturated outputs  
-- restructure api examples: `cli/api-*`
+- support for `torch-directml` **0.2.2**, thanks @lshqqytiger!
+- **sd3** enable taesd preview and non-full quality mode
+- **sd3** simplified loading of model in single-file safetensors format
+- fix unsaturated outputs, force apply vae config on model load  
 - fix control second pass resize
 - fix api face-hires
-- fix hunyuandit set attention processor
+- fix **hunyuandit** set attention processor
 - fix civitai download without name
+- css tweaks for standardui
+- restructure api examples: `cli/api-*`
+- handle theme fallback when invalid theme is specified
 
 ## Update for 2024-06-13
 
