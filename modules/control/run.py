@@ -90,8 +90,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         shared.log.warning('Sampler: invalid')
         sampler_index = 0
     if hr_sampler_index is None:
-        shared.log.warning('Sampler: invalid')
-        hr_sampler_index = 0
+        hr_sampler_index = sampler_index
 
     p = StableDiffusionProcessingControl(
         prompt = prompt,

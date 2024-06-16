@@ -35,8 +35,7 @@ def txt2img(id_task,
         shared.log.warning('Sampler: invalid')
         sampler_index = 0
     if hr_sampler_index is None:
-        shared.log.warning('Sampler: invalid')
-        hr_sampler_index = 0
+        hr_sampler_index = sampler_index
 
     p = processing.StableDiffusionProcessingTxt2Img(
         sd_model=shared.sd_model,

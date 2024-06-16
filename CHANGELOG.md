@@ -21,6 +21,7 @@
   loading sd3 can now be performed fully offline  
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
+- css tweaks for standardui
 
 ### Fixes
 
@@ -30,7 +31,7 @@
 - fix **hunyuandit** set attention processor
 - fix civitai download without name
 - fix compatibility with latest adetailer
-- css tweaks for standardui
+- fix invalid sampler warning
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 
