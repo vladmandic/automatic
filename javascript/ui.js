@@ -471,19 +471,23 @@ function toggleCompact(val, old) {
 
 function previewTheme() {
   let name = gradioApp().getElementById('setting_gradio_theme').querySelectorAll('input')?.[0].value || '';
-  fetch('/file=html/themes.json').then((res) => {
-    res.json().then((themes) => {
-      const theme = themes.find((t) => t.id === name);
-      if (theme) {
-        window.open(theme.subdomain, '_blank');
-      } else {
-        const el = document.getElementById('theme-preview') || createThemeElement();
-        el.style.display = el.style.display === 'block' ? 'none' : 'block';
-        name = name.replace('/', '-');
-        el.src = `/file=html/${name}.jpg`;
-      }
-    });
-  });
+  fetch('/file=html/themes.json')
+    .then((res) => {
+      res.json()
+        .then((themes) => {
+          const theme = Array.isArray(themes) ? themes.find((t) => t.id === name) : null;
+          if (theme) {
+            window.open(theme.subdomain, '_blank');
+          } else {
+            const el = document.getElementById('theme-preview') || createThemeElement();
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+            name = name.replace('/', '-');
+            el.src = `/file=html/${name}.jpg`;
+          }
+        })
+        .catch((e) => console.error('previewTheme:', e));
+    })
+    .catch((e) => console.error('previewTheme:', e));
 }
 
 async function browseFolder() {
