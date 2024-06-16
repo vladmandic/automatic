@@ -12,6 +12,7 @@
 
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!
 - **sd3** enable taesd preview and non-full quality mode
+- **sd3** enable base LoRA support
 - **sd3** simplified loading of model in single-file safetensors format
 - fix unsaturated outputs, force apply vae config on model load  
 - fix control second pass resize
