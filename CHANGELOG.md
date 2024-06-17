@@ -37,6 +37,7 @@ Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
 - css tweaks for standardui
+- css tweaks for modernui
 
 ### Fixes
 
