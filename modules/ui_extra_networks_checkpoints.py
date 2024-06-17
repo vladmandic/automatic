@@ -64,7 +64,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
             record["info"] = self.find_info(checkpoint.filename)
             record["description"] = self.find_description(checkpoint.filename, record["info"])
         except Exception as e:
-            shared.log.debug(f"Extra networks error: type=model file={name} {e}")
+            shared.log.debug(f"Networks error: type=model file={name} {e}")
         return record
 
     def list_items(self):

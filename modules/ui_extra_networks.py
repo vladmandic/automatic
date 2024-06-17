@@ -71,7 +71,7 @@ def init_api(app):
         metadata = page.metadata.get(item, 'none')
         if metadata is None:
             metadata = ''
-        # shared.log.debug(f"Extra networks metadata: page='{page}' item={item} len={len(metadata)}")
+        # shared.log.debug(f"Networks metadata: page='{page}' item={item} len={len(metadata)}")
         return JSONResponse({"metadata": metadata})
 
     def get_info(page: str = "", item: str = ""):
@@ -84,7 +84,7 @@ def init_api(app):
         info = page.find_info(item['filename'])
         if info is None:
             info = {}
-        # shared.log.debug(f"Extra networks info: page='{page.name}' item={item['name']} len={len(info)}")
+        # shared.log.debug(f"Networks info: page='{page.name}' item={item['name']} len={len(info)}")
         return JSONResponse({"info": info})
 
     def get_desc(page: str = "", item: str = ""):
@@ -97,7 +97,7 @@ def init_api(app):
         desc = page.find_description(item['filename'])
         if desc is None:
             desc = ''
-        # shared.log.debug(f"Extra networks desc: page='{page.name}' item={item['name']} len={len(desc)}")
+        # shared.log.debug(f"Networks desc: page='{page.name}' item={item['name']} len={len(desc)}")
         return JSONResponse({"description": desc})
 
     app.add_api_route("/sd_extra_networks/thumb", fetch_file, methods=["GET"])
@@ -186,7 +186,7 @@ class ExtraNetworksPage:
             except Exception as e:
                 shared.log.warning(f'Extra network error creating thumbnail: {f} {e}')
         if created > 0:
-            shared.log.info(f"Extra network thumbnails: {self.name} created={created}")
+            shared.log.info(f"Network thumbnails: {self.name} created={created}")
             self.missing_thumbs.clear()
 
     def create_items(self, tabname):
@@ -235,7 +235,7 @@ class ExtraNetworksPage:
                     continue
                 # if not self.is_empty(tgt):
                 subdirs[subdir] = 1
-        debug(f"Extra networks: page='{self.name}' subfolders={list(subdirs)}")
+        debug(f"Networks: page='{self.name}' subfolders={list(subdirs)}")
         subdirs = OrderedDict(sorted(subdirs.items()))
         if self.name == 'model':
             subdirs['Reference'] = 1
@@ -272,7 +272,7 @@ class ExtraNetworksPage:
         self.html += ''.join(htmls)
         self.page_time = time.time()
         self.html = f"<div id='~tabname_{self_name_id}_subdirs' class='extra-network-subdirs'>{subdirs_html}</div><div id='~tabname_{self_name_id}_cards' class='extra-network-cards'>{self.html}</div>"
-        shared.log.debug(f"Extra networks: page='{self.name}' items={len(self.items)} subfolders={len(subdirs)} tab={tabname} folders={self.allowed_directories_for_previews()} list={self.list_time:.2f} thumb={self.preview_time:.2f} desc={self.desc_time:.2f} info={self.info_time:.2f} workers={shared.max_workers} sort={shared.opts.extra_networks_sort}")
+        shared.log.debug(f"Networks: page='{self.name}' items={len(self.items)} subfolders={len(subdirs)} tab={tabname} folders={self.allowed_directories_for_previews()} list={self.list_time:.2f} thumb={self.preview_time:.2f} desc={self.desc_time:.2f} info={self.info_time:.2f} workers={shared.max_workers} sort={shared.opts.extra_networks_sort}")
         if len(self.missing_thumbs) > 0:
             threading.Thread(target=self.create_thumb).start()
         return self.patch(self.html, tabname)
@@ -570,7 +570,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         with gr.Group(elem_id=f"{tabname}_extra_details_tabs", visible=False) as ui.details_tabs:
             with gr.Tabs():
                 with gr.Tab('Description', elem_classes=['extra-details-tabs']):
-                    desc = gr.Textbox('', show_label=False, lines=8, placeholder="Extra network description...")
+                    desc = gr.Textbox('', show_label=False, lines=8, placeholder="Network description...")
                     ui.details_components.append(desc)
                     with gr.Row():
                         btn_save_desc = gr.Button('Save', elem_classes=['small-button'], elem_id=f'{tabname}_extra_details_save_desc')
@@ -895,7 +895,8 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return res
 
     def ui_quicksave_click(name):
-        if name is None:
+        if name is None or len(name) < 1:
+            shared.log.warning("Network quick save style: no name provided")
             return
         fn = os.path.join(paths.data_path, "params.txt")
         if os.path.exists(fn):
@@ -915,9 +916,9 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         }
         shared.writefile(item, fn, silent=True)
         if len(prompt) > 0:
-            shared.log.debug(f"Extra network quick save style: item={name} filename='{fn}'")
+            shared.log.debug(f"Network quick save style: item={name} filename='{fn}'")
         else:
-            shared.log.warning(f"Extra network quick save model: item={name} filename='{fn}' prompt is empty")
+            shared.log.warning(f"Network quick save model: item={name} filename='{fn}' prompt is empty")
 
     def ui_sort_cards(sort_order):
         if shared.opts.extra_networks_sort != sort_order:

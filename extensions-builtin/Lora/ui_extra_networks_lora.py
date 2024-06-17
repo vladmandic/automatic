@@ -102,7 +102,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
             return item
         except Exception as e:
-            shared.log.debug(f"Extra networks error: type=lora file={name} {e}")
+            shared.log.debug(f"Networks error: type=lora file={name} {e}")
             from modules import errors
             errors.display('e', 'Lora')
             return None

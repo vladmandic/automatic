@@ -27,7 +27,7 @@ class ExtraNetworksPageHypernetworks(ui_extra_networks.ExtraNetworksPage):
                     "size": os.path.getsize(path),
                 }
             except Exception as e:
-                shared.log.debug(f"Extra networks error: type=hypernetwork file={path} {e}")
+                shared.log.debug(f"Networks error: type=hypernetwork file={path} {e}")
 
     def allowed_directories_for_previews(self):
         return [shared.opts.hypernetwork_dir]
