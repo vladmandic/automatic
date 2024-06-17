@@ -46,6 +46,7 @@
 - fix starting from non git repo
 - fix control api negative prompt handling
 - fix saving style without name provided
+- fix t2i-color adapter
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 - remove obsolete training code leftovers
