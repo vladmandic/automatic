@@ -1528,18 +1528,18 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
 
 
 def reload_text_encoder(initial=False):
-    if initial and (shared.opts.sd_te3 is None or shared.opts.sd_te3 == 'None'):
+    if initial and (shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None'):
         return # dont unload
     signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
     if len(t5) > 0:
         from modules.model_sd3 import load_t5
-        shared.log.debug(f'Load: t5={shared.opts.sd_te3} module="{t5[0]}"')
-        load_t5(pipe=shared.sd_model, module=t5[0], te3=shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
+        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
+        load_t5(pipe=shared.sd_model, module=t5[0], te3=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     elif hasattr(shared.sd_model, 'text_encoder_3'):
         from modules.model_sd3 import load_t5
-        shared.log.debug(f'Load: t5={shared.opts.sd_te3} module="text_encoder_3"')
-        load_t5(pipe=shared.sd_model, module='text_encoder_3', te3=shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
+        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
+        load_t5(pipe=shared.sd_model, module='text_encoder_3', te3=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):

@@ -13,12 +13,15 @@
 
 - enable taesd preview and non-full quality mode  
 - enable base LoRA support  
+- add support for 4bit quantized t5 text encoder  
+  simply select in *settings -> model -> text encoder*
 - simplified loading of model in single-file safetensors format  
   loading sd3 can now be performed fully offline  
 - add support for nncf compressed weights, thanks @Disty0!
 - add support for sampler shift for Euler FlowMatch  
   see *settings -> samplers*, also available as param in xyz grid  
   higher shift means model will spend more time on structure and less on details  
+- add support for selecting text encoder in xyz grid
 
 ### Improvements: General
 

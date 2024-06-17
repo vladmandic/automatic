@@ -86,6 +86,19 @@ def load_t5(pipe, module, te3=None, cache_dir=None):
             torch_dtype=pipe.text_encoder.dtype,
         )
         setattr(pipe, module, t5)
+    elif 'fp4' in te3.lower():
+        modelloader.hf_login()
+        from installer import install
+        install('bitsandbytes', quiet=True)
+        quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
+        t5 = transformers.T5EncoderModel.from_pretrained(
+            repo_id,
+            subfolder='text_encoder_3',
+            quantization_config=quantization_config,
+            cache_dir=cache_dir,
+            torch_dtype=pipe.text_encoder.dtype,
+        )
+        setattr(pipe, module, t5)
     elif 'fp8' in te3.lower():
         modelloader.hf_login()
         from installer import install
