@@ -102,8 +102,7 @@ Also supported are modifiers such as:
 ## Platform support
 
 - *nVidia* GPUs using **CUDA** libraries on both *Windows and Linux*  
-- *AMD* GPUs using **ROCm** libraries on *Linux*  
-  Support will be extended to *Windows* once AMD releases ROCm for Windows  
+- *AMD* GPUs using **ROCm** libraries on *Linux*  or *Windows*
 - *Intel Arc* GPUs using **OneAPI** with *IPEX XPU* libraries on both *Windows and Linux*  
 - Any GPU compatible with *DirectX* on *Windows* using **DirectML** libraries  
   This includes support for AMD GPUs that are not supported by native ROCm libraries  
