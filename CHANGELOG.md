@@ -7,7 +7,12 @@
 - https://github.com/huggingface/diffusers/pull/8566
 - https://github.com/huggingface/diffusers/pull/8584
 
-## Update for 2024-06-16
+## Update for 2024-06-17
+
+### Highlights for 2024-06-17
+
+Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
+Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well as ability to use explicit **T5** text-encoder in many supported models!  
 
 ### Improvements: SD3
 
@@ -47,6 +52,7 @@
 - fix control api negative prompt handling
 - fix saving style without name provided
 - fix t2i-color adapter
+- fix sdxl "has been incorrectly initialized"
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 - remove obsolete training code leftovers
