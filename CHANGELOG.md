@@ -44,6 +44,7 @@
 - fix compatibility with latest adetailer
 - fix invalid sampler warning
 - fix starting from non git repo
+- fix control api negative prompt handling
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 - remove obsolete training code leftovers
