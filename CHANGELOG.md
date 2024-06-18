@@ -2,6 +2,8 @@
 
 ## Pending
 
+- SC Lora
+- HunyuanDiT 1.1
 - Diffusers==0.30.0
 - https://github.com/huggingface/diffusers/issues/8546
 - https://github.com/huggingface/diffusers/pull/8566
@@ -12,9 +14,13 @@
 ### Highlights for 2024-06-17
 
 Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
-Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well as ability to use explicit **T5** text-encoder in many supported models!  
+But there's more than SD3:
+- support for **PixArt-Sigma** in small/medium/large variants AND using 4/8/16bit quantized T5 text-encoder!  
+- (finally) new release of **Torch-DirectML**  
 
-### Improvements: SD3
+### Models
+
+#### Stable Diffusion 3
 
 - enable taesd preview and non-full quality mode  
 - enable base LoRA support  
@@ -28,10 +34,18 @@ Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well
   higher shift means model will spend more time on structure and less on details  
 - add support for selecting text encoder in xyz grid
 
+#### Pixart-Σ
+
+- Add *small* (512px) and *large* (2k) variations, in addition to existing *medium* (1k)  
+- Add support for 4/8bit quantized t5 text encoder  
+  *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
+  simply select in *settings -> model -> text encoder* before or after model load  
+
 ### Improvements: General
 
+- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
-  *example*: load FP8 quantized T5 text-encoder into PixArt Sigma  
+  *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma or Stable Cascade!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
 - extra networks: info display now contains link to source url if model if its known  

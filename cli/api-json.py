@@ -45,10 +45,7 @@ if __name__ == "__main__":
     log.info(f'api-json: {args}')
     if os.path.isfile(args.json[0]):
         with open(args.json[0], 'r', encoding='ascii') as f:
-            txt = f.read()
-            txt = txt.encode('ascii')
-            print('HERE', txt)
-            dct = json.loads(txt)
+            dct = json.load(f) # TODO fails with b64 encoded images inside json due to string encoding
     else:
         dct = json.loads(args.json[0])
     res = post(endpoint=args.endpoint[0], payload=dct)

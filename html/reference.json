@@ -160,15 +160,30 @@
     "preview": "PixArt-alpha--PixArt-XL-2-1024-MS.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
-  "Pixart-Σ": {
-    "path": "PixArt-alpha/PixArt-Sigma-XL-2-1024-MS",
+  "Pixart-Σ Small": {
+    "path": "huggingface/PixArt-alpha/PixArt-Sigma-XL-2-512-MS",
     "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
     "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
+    "skip": true,
+    "extras": "width: 512, height: 512, sampler: Default, cfg_scale: 2.0"
+  },
+  "Pixart-Σ Medium": {
+    "path": "huggingface/PixArt-alpha/PixArt-Sigma-XL-2-1024-MS",
+    "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
+    "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+  },
+  "Pixart-Σ Large": {
+    "path": "huggingface/PixArt-alpha/PixArt-Sigma-XL-2-2K-MS",
+    "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
+    "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
+    "skip": true,
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
   
-  "Tencent HunyuanDiT": {
-    "path": "Tencent-Hunyuan/HunyuanDiT-Diffusers",
+  "Tencent HunyuanDiT 1.1": {
+    "path": "Tencent-Hunyuan/HunyuanDiT-v1.1-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
     "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"

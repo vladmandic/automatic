@@ -1,14 +1,7 @@
 import os
-import warnings
 import torch
 import diffusers
 import transformers
-import rich.traceback
-
-
-rich.traceback.install()
-warnings.filterwarnings(action="ignore", category=FutureWarning)
-loggedin = False
 
 
 def load_sd3(fn=None, cache_dir=None, config=None):
@@ -48,7 +41,7 @@ def load_sd3(fn=None, cache_dir=None, config=None):
                 ),
                 'text_encoder_3': None,
             }
-        elif fn_size < 1e10: # if model is below 10gb it does not have te4
+        elif fn_size < 1e10: # if model is below 10gb it does not have te3
             kwargs = {
                 'text_encoder_3': None,
             }
@@ -69,63 +62,3 @@ def load_sd3(fn=None, cache_dir=None, config=None):
     diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Img2ImgPipeline
     devices.torch_gc()
     return pipe
-
-
-def load_t5(pipe, module, te3=None, cache_dir=None):
-    from modules import devices, modelloader
-    repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    if pipe is None or not hasattr(pipe, module):
-        return pipe
-    if 'fp16' in te3.lower():
-        modelloader.hf_login()
-        t5 = transformers.T5EncoderModel.from_pretrained(
-            repo_id,
-            subfolder='text_encoder_3',
-            # torch_dtype=dtype,
-            cache_dir=cache_dir,
-            torch_dtype=pipe.text_encoder.dtype,
-        )
-        setattr(pipe, module, t5)
-    elif 'fp4' in te3.lower():
-        modelloader.hf_login()
-        from installer import install
-        install('bitsandbytes', quiet=True)
-        quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
-        t5 = transformers.T5EncoderModel.from_pretrained(
-            repo_id,
-            subfolder='text_encoder_3',
-            quantization_config=quantization_config,
-            cache_dir=cache_dir,
-            torch_dtype=pipe.text_encoder.dtype,
-        )
-        setattr(pipe, module, t5)
-    elif 'fp8' in te3.lower():
-        modelloader.hf_login()
-        from installer import install
-        install('bitsandbytes', quiet=True)
-        quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
-        t5 = transformers.T5EncoderModel.from_pretrained(
-            repo_id,
-            subfolder='text_encoder_3',
-            quantization_config=quantization_config,
-            cache_dir=cache_dir,
-            torch_dtype=pipe.text_encoder.dtype,
-        )
-        setattr(pipe, module, t5)
-        """
-        if hasattr(pipe, 'remove_all_hooks'):
-            pipe.remove_all_hooks()
-            nn = getattr(pipe, module)
-            import accelerate
-            accelerate.hooks.remove_hook_from_module(nn, recurse=True)
-            nn.to(device=devices.device)
-        """
-    else:
-        setattr(pipe, module, None)
-    if getattr(pipe, 'text_encoder_3', None) is not None and getattr(pipe, 'tokenizer_3', None) is None: # not needed anymore
-        pipe.tokenizer_3 = transformers.T5TokenizerFast.from_pretrained(
-            repo_id,
-            subfolder='tokenizer_3',
-            cache_dir=cache_dir,
-        )
-    devices.torch_gc()

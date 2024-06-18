@@ -202,11 +202,17 @@ def get_closet_checkpoint_match(search_string):
     if checkpoint_info is not None:
         return checkpoint_info
     found = sorted([info for info in checkpoints_list.values() if search_string in info.title], key=lambda x: len(x.title))
-    if found:
+    if found and len(found) > 0:
         return found[0]
     found = sorted([info for info in checkpoints_list.values() if search_string.split(' ')[0] in info.title], key=lambda x: len(x.title))
-    if found:
+    if found and len(found) > 0:
         return found[0]
+    for v in shared.reference_models.values():
+        if search_string in v['path'] or os.path.basename(search_string) in v['path']:
+            model_name = search_string.replace('huggingface/', '')
+            checkpoint_info = CheckpointInfo(v['path']) # create a virutal model info
+            checkpoint_info.type = 'huggingface'
+            return checkpoint_info
     return None
 
 
@@ -565,34 +571,20 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 # elif size < 0: # unknown
                 #    guess = 'Stable Diffusion 2B'
                 elif size >= 5791 and size <= 5799: # 5795
-                    if not shared.native:
-                        warn(f'Model detected as SD-XL refiner model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     if op == 'model':
                         warn(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL Refiner'
                 elif (size >= 6611 and size <= 7220): # 6617, HassakuXL is 6776, monkrenRealisticINT_v10 is 7217
-                    if not shared.native:
-                        warn(f'Model detected as SD-XL base model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL'
                 elif size >= 3361 and size <= 3369: # 3368
-                    if not shared.native:
-                        warn(f'Model detected as SD upscale model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion Upscale'
                 elif size >= 4891 and size <= 4899: # 4897
-                    if not shared.native:
-                        warn(f'Model detected as SD XL inpaint model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL Inpaint'
                 elif size >= 9791 and size <= 9799: # 9794
-                    if not shared.native:
-                        warn(f'Model detected as SD XL instruct pix2pix model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL Instruct'
                 elif size > 3138 and size < 3142: #3140
-                    if not shared.native:
-                        warn(f'Model detected as Segmind Vega model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL'
                 elif size > 5692 and size < 5698 or size > 4134 and size < 4138:
-                    if not shared.native:
-                        warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
@@ -602,34 +594,20 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Latent Consistency Model'
             """
             if 'instaflow' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as InstaFlow model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'InstaFlow'
             if 'segmoe' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as SegMoE model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'SegMoE'
             if 'hunyuandit' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Tenecent HunyuanDiT model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'HunyuanDiT'
             if 'pixart-xl' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Alpha'
             if 'stable-diffusion-3' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion 3'
             if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 if devices.dtype == torch.float16:
                     warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
             if 'pixart-sigma' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as PixArt-Sigma model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Sigma'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
@@ -996,14 +974,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
-                    # shared.opts.data['cuda_dtype'] = 'FP32' # override
-                    # shared.opts.data['diffusers_model_cpu_offload'] = True # override
-                    devices.set_cuda_params()
-                    sd_model = diffusers.PixArtSigmaPipeline.from_pretrained(
-                        checkpoint_info.path,
-                        use_safetensors=True,
-                        cache_dir=shared.opts.diffusers_dir,
-                        **diffusers_load_config)
+                    from modules.model_pixart import load_pixart
+                    sd_model = load_pixart(checkpoint_info, diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
@@ -1533,13 +1505,13 @@ def reload_text_encoder(initial=False):
     signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
     if len(t5) > 0:
-        from modules.model_sd3 import load_t5
+        from modules.model_t5 import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
-        load_t5(pipe=shared.sd_model, module=t5[0], te3=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+        set_t5(pipe=shared.sd_model, module=t5[0], t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     elif hasattr(shared.sd_model, 'text_encoder_3'):
-        from modules.model_sd3 import load_t5
+        from modules.model_t5 import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
-        load_t5(pipe=shared.sd_model, module='text_encoder_3', te3=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+        set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
