@@ -44,7 +44,6 @@ Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
 - fix control second pass resize  
-- fix api face-hires
 - fix **hunyuandit** set attention processor
 - fix civitai download without name
 - fix compatibility with latest adetailer
@@ -54,6 +53,8 @@ Other than SD3, highlight is (finally) new release of **Torch-DirectML** as well
 - fix saving style without name provided
 - fix t2i-color adapter
 - fix sdxl "has been incorrectly initialized"
+- fix api face-hires
+- fix api ip-adapter
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 - remove obsolete training code leftovers

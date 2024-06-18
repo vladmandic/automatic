@@ -152,8 +152,8 @@ class ItemIPAdapter(BaseModel):
     adapter: str = Field(title="Adapter", default="Base", description="")
     images: List[str] = Field(title="Image", default=[], description="")
     masks: Optional[List[str]] = Field(title="Mask", default=[], description="")
-    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="")
-    start: float = Field(title="Start", default=0.0, gt=0, le=1, description="")
+    scale: float = Field(title="Scale", default=0.5, ge=0, le=1, description="")
+    start: float = Field(title="Start", default=0.0, ge=0, le=1, description="")
     end: float = Field(title="End", default=1.0, gt=0, le=1, description="")
 
 class ItemFace(BaseModel):
