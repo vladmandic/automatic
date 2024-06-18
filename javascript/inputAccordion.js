@@ -10,13 +10,10 @@ function setupAccordion(accordion) {
   const extra = gradioApp().querySelector(`#${accordion.id}-extra`);
   const span = labelWrap.querySelector('span');
   let linked = true;
-
   const isOpen = () => labelWrap.classList.contains('open');
-
   const observerAccordionOpen = new MutationObserver((mutations) => {
     mutations.forEach((mutationRecord) => {
       accordion.classList.toggle('input-accordion-open', isOpen());
-
       if (linked) {
         accordion.visibleCheckbox.checked = isOpen();
         accordion.onVisibleCheckboxChange();
@@ -24,15 +21,9 @@ function setupAccordion(accordion) {
     });
   });
   observerAccordionOpen.observe(labelWrap, { attributes: true, attributeFilter: ['class'] });
-
-  if (extra) {
-    labelWrap.insertBefore(extra, labelWrap.lastElementChild);
-  }
-
+  if (extra) labelWrap.insertBefore(extra, labelWrap.lastElementChild);
   accordion.onChecked = (checked) => {
-    if (isOpen() !== checked) {
-      labelWrap.click();
-    }
+    if (isOpen() !== checked) labelWrap.click();
   };
 
   const visibleCheckbox = document.createElement('INPUT');
@@ -41,13 +32,9 @@ function setupAccordion(accordion) {
   visibleCheckbox.id = `${accordion.id}-visible-checkbox`;
   visibleCheckbox.className = `${gradioCheckbox.className} input-accordion-checkbox`;
   span.insertBefore(visibleCheckbox, span.firstChild);
-
   accordion.visibleCheckbox = visibleCheckbox;
   accordion.onVisibleCheckboxChange = () => {
-    if (linked && isOpen() !== visibleCheckbox.checked) {
-      labelWrap.click();
-    }
-
+    if (linked && isOpen() !== visibleCheckbox.checked) labelWrap.click();
     gradioCheckbox.checked = visibleCheckbox.checked;
     updateInput(gradioCheckbox);
   };
@@ -59,8 +46,10 @@ function setupAccordion(accordion) {
   visibleCheckbox.addEventListener('input', accordion.onVisibleCheckboxChange);
 }
 
-onUiLoaded(() => {
-  for (const accordion of gradioApp().querySelectorAll('.input-accordion')) {
-    setupAccordion(accordion);
-  }
-});
+// onUiLoaded(() => {
+//  for (const accordion of gradioApp().querySelectorAll('.input-accordion')) setupAccordion(accordion);
+// });
+
+function initAccordions() {
+  for (const accordion of gradioApp().querySelectorAll('.input-accordion')) setupAccordion(accordion);
+}

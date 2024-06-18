@@ -240,7 +240,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-details > div { overflow-y: auto; min-height: 40vh; max-height: 80vh; align-self: flex-start; }
 .extra-details td:first-child { font-weight: bold; vertical-align: top; }
 .extra-details .gradio-image { max-height: 50vh; }
-
+.input-accordion-checkbox { display: none !important; }
 
 /* specific elements */
 #modelmerger_interp_description { margin-top: 1em; margin-bottom: 1em; }
