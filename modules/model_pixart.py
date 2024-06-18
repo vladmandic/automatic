@@ -19,6 +19,7 @@ def load_pixart(checkpoint_info, diffusers_load_config={}):
     kwargs = { 'transformer': transformer }
     if t5 is not None:
         kwargs['text_encoder'] = t5
+    diffusers_load_config.pop('variant', None)
     pipe = diffusers.PixArtSigmaPipeline.from_pretrained(
         'PixArt-alpha/PixArt-Sigma-XL-2-1024-MS',
         cache_dir = shared.opts.diffusers_dir,
