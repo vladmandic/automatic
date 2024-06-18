@@ -2,44 +2,40 @@
 
 ## Pending
 
-- SC Lora
-- HunyuanDiT 1.1
 - Diffusers==0.30.0
 - https://github.com/huggingface/diffusers/issues/8546
 - https://github.com/huggingface/diffusers/pull/8566
 - https://github.com/huggingface/diffusers/pull/8584
 
-## Update for 2024-06-17
+## Update for 2024-06-18
 
-### Highlights for 2024-06-17
+### Highlights for 2024-06-18
 
 Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
 But there's more than SD3:
 - support for **PixArt-Sigma** in small/medium/large variants AND using 4/8/16bit quantized T5 text-encoder!  
+- support for **HunyuanDiT 1.1**  
 - (finally) new release of **Torch-DirectML**  
 
-### Models
+### Model Improvements
 
-#### Stable Diffusion 3
-
-- enable taesd preview and non-full quality mode  
-- enable base LoRA support  
-- add support for 4bit quantized t5 text encoder  
+- **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
+- SD3: enable base LoRA support  
+- SD3: add support for 4bit quantized T5 text encoder  
   simply select in *settings -> model -> text encoder*
-- simplified loading of model in single-file safetensors format  
+- SD3: simplified loading of model in single-file safetensors format  
   loading sd3 can now be performed fully offline  
-- add support for nncf compressed weights, thanks @Disty0!
-- add support for sampler shift for Euler FlowMatch  
+- SD3: add support for nncf compressed weights, thanks @Disty0!
+- SD3: add support for sampler shift for Euler FlowMatch  
   see *settings -> samplers*, also available as param in xyz grid  
   higher shift means model will spend more time on structure and less on details  
-- add support for selecting text encoder in xyz grid
-
-#### Pixart-Σ
-
-- Add *small* (512px) and *large* (2k) variations, in addition to existing *medium* (1k)  
-- Add support for 4/8bit quantized t5 text encoder  
+- SD3: add support for selecting text encoder in xyz grid
+- **Pixart-Σ**: Add *small* (512px) and *large* (2k) variations, in addition to existing *medium* (1k)  
+- Pixart-Σ: Add support for 4/8bit quantized t5 text encoder  
   *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
   simply select in *settings -> model -> text encoder* before or after model load  
+- **HunyuanDiT**: support for model version 1.1  
+
 
 ### Improvements: General
 
@@ -58,7 +54,7 @@ But there's more than SD3:
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
 - fix control second pass resize  
-- fix **hunyuandit** set attention processor
+- fix hunyuandit set attention processor
 - fix civitai download without name
 - fix compatibility with latest adetailer
 - fix invalid sampler warning

@@ -26,9 +26,6 @@ force_diffusers = [ # forced always
 
 force_models = [ # forced always
     'sd3',
-    'sc',
-    'hunyuandit',
-    'kandinsky',
 ]
 
 force_classes = [ # forced always
@@ -37,7 +34,7 @@ force_classes = [ # forced always
 
 def check_override(shorthash=''):
     force = False
-    force = force or (shared.sd_model_type in force_classes)
+    force = force or (shared.sd_model_type in force_models)
     force = force or (shared.sd_model.__class__.__name__ in force_classes)
     if len(shorthash) < 4:
         return force
