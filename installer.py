@@ -275,9 +275,12 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
 
 # execute git command
 @lru_cache()
-def git(arg: str, folder: str = None, ignore: bool = False):
+def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = False):
     if args.skip_git:
         return ''
+    if optional:
+        if 'google.colab' in sys.modules:
+            return ''
     git_cmd = os.environ.get('GIT', "git")
     if git_cmd != "git":
         git_cmd = os.path.abspath(git_cmd)
@@ -306,7 +309,7 @@ def branch(folder=None):
         return None
     branches = []
     try:
-        b = git('branch --show-current', folder)
+        b = git('branch --show-current', folder, optional=True)
         if b == '':
             branches = git('branch', folder).split('\n')
         if len(branches) > 0:
@@ -315,7 +318,7 @@ def branch(folder=None):
                 b = branches[1].strip()
                 log.debug(f'Git detached head detected: folder="{folder}" reattach={b}')
     except Exception:
-        b = git('git rev-parse --abbrev-ref HEAD', folder)
+        b = git('git rev-parse --abbrev-ref HEAD', folder, optional=True)
     if 'main' in b:
         b = 'main'
     elif 'master' in b:
@@ -323,7 +326,7 @@ def branch(folder=None):
     else:
         b = b.split('\n')[0].replace('*', '').strip()
     log.debug(f'Submodule: {folder} / {b}')
-    git(f'checkout {b}', folder, ignore=True)
+    git(f'checkout {b}', folder, ignore=True, optional=True)
     return b
 
 
@@ -396,6 +399,12 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
     if args.quick:
         return
     log.info(f'Python version={platform.python_version()} platform={platform.system()} bin="{sys.executable}" venv="{sys.prefix}"')
+    if int(sys.version_info.major) == 3 and int(sys.version_info.minor) == 12 and int(sys.version_info.minor) > 3: # TODO python 3.12.4 or higher cause a mess with pydantic
+        log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.12.3 or lower")
+        if reason is not None:
+            log.error(reason)
+        if not args.ignore:
+            sys.exit(1)
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
         log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
         if reason is not None:
@@ -1035,16 +1044,21 @@ def get_version(force=False):
 
 
 def check_ui(ver):
-    if ver is None or 'branch' not in ver or 'ui' not in ver or ver['branch'] == ver['ui']:
-        return
-    log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
+    def same(ver):
+        core = ver['branch'] if ver is not None and 'branch' in ver else 'unknown'
+        ui = ver['ui'] if ver is not None and 'ui' in ver else 'unknown'
+        return core == ui or (core == 'master' and ui == 'main')
+
+    if not same(ver):
+        log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
     cwd = os.getcwd()
     try:
         os.chdir('extensions-builtin/sdnext-modernui')
-        git('checkout ' + ver['branch'], ignore=True)
+        target = 'dev' if 'dev' in ver['branch'] else 'main'
+        git('checkout ' + target, ignore=True, optional=True)
         os.chdir(cwd)
         ver = get_version(force=True)
-        if ver['branch'] == ver['ui']:
+        if not same(ver):
             log.debug(f'Branch synchronized: {ver["branch"]}')
         else:
             log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
