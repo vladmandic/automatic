@@ -63,6 +63,10 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Comment": comment,
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }
+    # native
+    if shared.native:
+        args['Pipeline'] = shared.sd_model.__class__.__name__
+        args['T5'] = None if (not shared.opts.add_model_name_to_info or shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None') else shared.opts.sd_text_encoder
     if 'txt2img' in p.ops:
         args["Variation seed"] = all_subseeds[index] if p.subseed_strength > 0 else None
         args["Variation strength"] = p.subseed_strength if p.subseed_strength > 0 else None
@@ -143,12 +147,20 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args['Sampler sigma uncond'] = shared.opts.s_churn if shared.opts.s_churn != shared.opts.data_labels.get('s_churn').default else None
         args['Sampler sigma noise'] = shared.opts.s_noise if shared.opts.s_noise != shared.opts.data_labels.get('s_noise').default else None
         args['Sampler sigma tmin'] = shared.opts.s_tmin if shared.opts.s_tmin != shared.opts.data_labels.get('s_tmin').default else None
-    # tome
-    args['ToMe'] = shared.opts.tome_ratio if shared.opts.tome_ratio != 0 else None
-    args['ToDo'] = shared.opts.todo_ratio if shared.opts.todo_ratio != 0 else None
+    # tome/todo
+    if shared.opts.token_merging_method == 'ToMe':
+        args['ToMe'] = shared.opts.tome_ratio if shared.opts.tome_ratio != 0 else None
+    else:
+        args['ToDo'] = shared.opts.todo_ratio if shared.opts.todo_ratio != 0 else None
 
     args.update(p.extra_generation_params)
-    params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in args.items() if v is not None])
+    for k, v in args.copy().items():
+        if v is None:
+            del args[k]
+        if isinstance(v, str):
+            if len(v) == 0 or v == '0x0':
+                del args[k]
+    params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in args.items()])
     negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index]}" if all_negative_prompts[index] else ""
     infotext = f"{all_prompts[index]}{negative_prompt_text}\n{params_text}".strip()
     return infotext
