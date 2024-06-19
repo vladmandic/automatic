@@ -37,15 +37,41 @@ def load_t5(t5=None, cache_dir=None):
             cache_dir=cache_dir,
             torch_dtype=devices.dtype,
         )
+    elif 'int8' in t5.lower():
+        modelloader.hf_login()
+        from installer import install
+        install('nncf==2.7.0', quiet=True)
+        from modules.sd_models_compile import nncf_compress_model
+        from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
+        t5 = transformers.T5EncoderModel.from_pretrained(
+            repo_id,
+            subfolder='text_encoder_3',
+            cache_dir=cache_dir,
+            torch_dtype=devices.dtype,
+        )
+        for i in range(len(t5.encoder.block)):
+            t5.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
+                t5.encoder.block[i].layer[1].DenseReluDense
+            )
+        t5 = nncf_compress_model(t5)
     else:
         t5 = None
     return t5
 
 
 def set_t5(pipe, module, t5=None, cache_dir=None):
-    from modules import devices
+    from modules import devices, shared
     if pipe is None or not hasattr(pipe, module):
         return pipe
     t5 = load_t5(t5=t5, cache_dir=cache_dir)
     setattr(pipe, module, t5)
+    if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
+        from accelerate import cpu_offload
+        getattr(pipe, module).to("cpu")
+        cpu_offload(getattr(pipe, module), devices.device, offload_buffers=len(getattr(pipe, module)._parameters) > 0) # pylint: disable=protected-access
+    elif shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
+        if not hasattr(pipe, "_all_hooks") or len(pipe._all_hooks) == 0: # pylint: disable=protected-access
+            pipe.enable_model_cpu_offload(device=devices.device)
+        else:
+            pipe.maybe_free_model_hooks()
     devices.torch_gc()

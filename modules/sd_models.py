@@ -653,15 +653,10 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
 
 
-def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
+def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
-    if (shared.opts.diffusers_model_cpu_offload or shared.cmd_opts.medvram) and (shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram):
-        shared.log.warning(f'Setting {op}: Model CPU offload and Sequential CPU offload are not compatible')
-        shared.log.debug(f'Setting {op}: disabling model CPU offload')
-        shared.opts.diffusers_model_cpu_offload=False
-        shared.cmd_opts.medvram=False
 
     if hasattr(sd_model, "watermark"):
         sd_model.watermark = NoWatermark()
@@ -717,6 +712,20 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
         shared.log.debug(f'Setting {op}: enable channels last')
         sd_model.unet.to(memory_format=torch.channels_last)
 
+    if offload:
+        set_diffuser_offload(sd_model, op)
+
+def set_diffuser_offload(sd_model, op: str = 'model'):
+    if sd_model is None:
+        shared.log.warning(f'{op} is not loaded')
+        return
+    if (shared.opts.diffusers_model_cpu_offload or shared.cmd_opts.medvram) and (shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram):
+        shared.log.warning(f'Setting {op}: Model CPU offload and Sequential CPU offload are not compatible')
+        shared.log.debug(f'Setting {op}: disabling model CPU offload')
+        shared.opts.diffusers_model_cpu_offload=False
+        shared.cmd_opts.medvram=False
+    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
+        sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
         if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
             shared.log.debug(f'Setting {op}: enable model CPU offload')
@@ -1130,7 +1139,12 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
         timer.record("embeddings")
 
-        set_diffuser_options(sd_model, vae, op)
+        set_diffuser_options(sd_model, vae, op, offload=False)
+        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
+        timer.record("options")
+
+        set_diffuser_offload(sd_model, op)
         if op == 'model':
             sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
@@ -1144,9 +1158,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
-
-        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-            sd_model = sd_models_compile.nncf_compress_weights(sd_model)
 
         if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none'):
             sd_model = sd_models_compile.compile_diffusers(sd_model)
