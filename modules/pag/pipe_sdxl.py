@@ -461,10 +461,10 @@ class StableDiffusionXLPAGPipeline(
             image_encoder=image_encoder,
             feature_extractor=feature_extractor,
         )
-        if 'force_zeros_for_empty_prompt' in self.config:
-            self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
-        if 'requires_aesthetics_score' in self.config:
-            self.register_to_config(requires_aesthetics_score=requires_aesthetics_score)
+        # if 'force_zeros_for_empty_prompt' in self.config:
+        #     self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
+        # if 'requires_aesthetics_score' in self.config:
+        #     self.register_to_config(requires_aesthetics_score=requires_aesthetics_score)
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
         self.default_sample_size = self.unet.config.sample_size
