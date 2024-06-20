@@ -461,8 +461,10 @@ class StableDiffusionXLPAGPipeline(
             image_encoder=image_encoder,
             feature_extractor=feature_extractor,
         )
-        self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
-        self.register_to_config(requires_aesthetics_score=requires_aesthetics_score)
+        if 'force_zeros_for_empty_prompt' in self.config:
+            self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
+        if 'requires_aesthetics_score' in self.config:
+            self.register_to_config(requires_aesthetics_score=requires_aesthetics_score)
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
         self.default_sample_size = self.unet.config.sample_size
@@ -1500,7 +1502,7 @@ class StableDiffusionXLPAGPipeline(
                     else:
                         replace_processor = PAGIdentitySelfAttnProcessor()
 
-                    if(self.pag_applied_layers_index):
+                    if self.pag_applied_layers_index:
                         drop_layers = self.pag_applied_layers_index
                         for drop_layer in drop_layers:
                             layer_number = int(drop_layer[1:])
@@ -1517,7 +1519,7 @@ class StableDiffusionXLPAGPipeline(
                                 raise ValueError(
                                     f"Invalid layer index: {drop_layer}. Available layers: {len(down_layers)} down layers, {len(mid_layers)} mid layers, {len(up_layers)} up layers."
                                 )
-                    elif(self.pag_applied_layers):
+                    elif self.pag_applied_layers:
                         drop_full_layers = self.pag_applied_layers
                         for drop_full_layer in drop_full_layers:
                             try:
@@ -1621,7 +1623,7 @@ class StableDiffusionXLPAGPipeline(
                 if XLA_AVAILABLE:
                     xm.mark_step()
 
-        if not output_type == "latent":
+        if output_type != "latent":
             # make sure the VAE is in float32 mode, as it overflows in float16
             needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
 
@@ -1656,7 +1658,7 @@ class StableDiffusionXLPAGPipeline(
         else:
             image = latents
 
-        if not output_type == "latent":
+        if output_type != "latent":
             # apply watermark if available
             if self.watermark is not None:
                 image = self.watermark.apply_watermark(image)
@@ -1671,7 +1673,7 @@ class StableDiffusionXLPAGPipeline(
 
         #Change the attention layers back to original ones after PAG was applied
         if self.do_adversarial_guidance:
-            if(self.pag_applied_layers_index):
+            if self.pag_applied_layers_index:
                 drop_layers = self.pag_applied_layers_index
                 for drop_layer in drop_layers:
                     layer_number = int(drop_layer[1:])
@@ -1685,26 +1687,22 @@ class StableDiffusionXLPAGPipeline(
                         else:
                             raise ValueError(f"Invalid layer type: {drop_layer[0]}")
                     except IndexError:
-                        raise ValueError(
-                            f"Invalid layer index: {drop_layer}. Available layers: {len(down_layers)} down layers, {len(mid_layers)} mid layers, {len(up_layers)} up layers."
-                        )
-            elif(self.pag_applied_layers):
-                            drop_full_layers = self.pag_applied_layers
-                            for drop_full_layer in drop_full_layers:
-                                try:
-                                    if drop_full_layer == "down":
-                                        for down_layer in down_layers:
-                                            down_layer.processor = AttnProcessor2_0()
-                                    elif drop_full_layer == "mid":
-                                        for mid_layer in mid_layers:
-                                            mid_layer.processor = AttnProcessor2_0()
-                                    elif drop_full_layer == "up":
-                                        for up_layer in up_layers:
-                                            up_layer.processor = AttnProcessor2_0()
-                                    else:
-                                        raise ValueError(f"Invalid layer type: {drop_full_layer}")
-                                except IndexError:
-                                    raise ValueError(
-                                        f"Invalid layer index: {drop_full_layer}. Available layers are: down, mid and up. If you need to specify each layer index, you can use `pag_applied_layers_index`"
-                                    )
+                        raise ValueError(f"Invalid layer index: {drop_layer}. Available layers: {len(down_layers)} down layers, {len(mid_layers)} mid layers, {len(up_layers)} up layers.")
+            elif self.pag_applied_layers:
+                drop_full_layers = self.pag_applied_layers
+                for drop_full_layer in drop_full_layers:
+                    try:
+                        if drop_full_layer == "down":
+                            for down_layer in down_layers:
+                                down_layer.processor = AttnProcessor2_0()
+                        elif drop_full_layer == "mid":
+                            for mid_layer in mid_layers:
+                                mid_layer.processor = AttnProcessor2_0()
+                        elif drop_full_layer == "up":
+                            for up_layer in up_layers:
+                                up_layer.processor = AttnProcessor2_0()
+                        else:
+                            raise ValueError(f"Invalid layer type: {drop_full_layer}")
+                    except IndexError:
+                        raise ValueError(f"Invalid layer index: {drop_full_layer}. Available layers are: down, mid and up. If you need to specify each layer index, you can use `pag_applied_layers_index`")
         return StableDiffusionXLPipelineOutput(images=image)

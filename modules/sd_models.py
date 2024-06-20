@@ -1113,6 +1113,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if sd_model is None:
             shared.log.error('Diffuser model not loaded')
             return
+        if 'requires_aesthetics_score' in sd_model.config:
+            sd_model.register_to_config(requires_aesthetics_score=False)
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
         sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
         sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
