@@ -12,6 +12,7 @@ async function initStartup() {
   initLogMonitor();
   initContextMenu();
   initDragDrop();
+  initAccordions();
   initSettings();
   initImageViewer();
   initGallery();

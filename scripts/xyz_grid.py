@@ -138,6 +138,11 @@ def apply_vae(p, x, xs):
     sd_vae.reload_vae_weights(shared.sd_model, vae_file=find_vae(x))
 
 
+def apply_te(p, x, xs):
+    shared.opts.data["sd_text_encoder"] = x
+    sd_models.reload_text_encoder()
+
+
 def apply_styles(p: processing.StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
 
@@ -230,6 +235,7 @@ axis_options = [
     AxisOption("Prompt S/R", str, apply_prompt, fmt=format_value),
     AxisOption("Model", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
+    AxisOption("Text encoder", str, apply_te, cost=0.7, choices=lambda: ['None', 'T5 FP4', 'T5 FP8', 'T5 FP16']),
     AxisOption("Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),

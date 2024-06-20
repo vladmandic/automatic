@@ -49,6 +49,7 @@ def assign_network_names_to_compvis_modules(sd_model):
     network_layer_mapping = {}
     if shared.native:
         if not hasattr(shared.sd_model, 'text_encoder') or not hasattr(shared.sd_model, 'unet'):
+            sd_model.network_layer_mapping = {}
             return
         for name, module in shared.sd_model.text_encoder.named_modules():
             prefix = "lora_te1_" if shared.sd_model_type == "sdxl" else "lora_te_"
@@ -66,6 +67,7 @@ def assign_network_names_to_compvis_modules(sd_model):
             module.network_layer_name = network_name
     else:
         if not hasattr(shared.sd_model, 'cond_stage_model'):
+            sd_model.network_layer_mapping = {}
             return
         for name, module in shared.sd_model.cond_stage_model.wrapped.named_modules():
             network_name = name.replace(".", "_")
@@ -87,10 +89,14 @@ def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
         return cached
     if not shared.native:
         return None
+    if not hasattr(shared.sd_model, 'load_lora_weights'):
+        shared.log.error(f"LoRA load failed: class={shared.sd_model.__class__} does not implement load lora")
+        return None
     try:
         shared.sd_model.load_lora_weights(network_on_disk.filename)
     except Exception as e:
         errors.display(e, "LoRA")
+        return None
     if shared.opts.lora_fuse_diffusers:
         shared.sd_model.fuse_lora(lora_scale=lora_scale)
     net = network.Network(name, network_on_disk)

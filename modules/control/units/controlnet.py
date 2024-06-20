@@ -172,10 +172,19 @@ class ControlNet():
                 self.load_safetensors(model_path)
             else:
                 self.model = ControlNetModel.from_pretrained(model_path, **self.load_config)
-            if self.device is not None:
-                self.model.to(self.device)
             if self.dtype is not None:
                 self.model.to(self.dtype)
+            if "ControlNet" in opts.nncf_compress_weights:
+                try:
+                    log.debug(f'Control {what} model NNCF Compress: id="{model_id}"')
+                    from installer import install
+                    install('nncf==2.7.0', quiet=True)
+                    from modules.sd_models_compile import nncf_compress_model
+                    self.model = nncf_compress_model(self.model)
+                except Exception as e:
+                    log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" error={e}')
+            if self.device is not None:
+                self.model.to(self.device)
             t1 = time.time()
             self.model_id = model_id
             log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')

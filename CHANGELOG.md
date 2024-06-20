@@ -3,44 +3,72 @@
 ## Pending
 
 - Diffusers==0.30.0
-- https://github.com/huggingface/diffusers/issues/8546
 - https://github.com/huggingface/diffusers/pull/8566
 - https://github.com/huggingface/diffusers/pull/8584
 
-## Update for 2024-06-16
+## Update for 2024-06-19
 
-### Improvements: SD3
+### Highlights for 2024-06-19
 
-- enable taesd preview and non-full quality mode  
-- enable base LoRA support  
-- simplified loading of model in single-file safetensors format  
-  loading sd3 can now be performed fully offline  
-- add support for nncf compressed weights, thanks @Disty0!
-- add support for sampler shift for Euler FlowMatch  
+Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
+But there's more than SD3:
+- support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)
+- support for **PixArt-Sigma** in small/medium/large variants
+- support for **HunyuanDiT 1.1**  
+- (finally) new release of **Torch-DirectML**  
+
+### Model Improvements
+
+- **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
+- SD3: enable base LoRA support  
+- SD3: add support for FP4 quantized T5 text encoder  
+  simply select in *settings -> model -> text encoder*
+- SD3: add support for INT8 quantized T5 text encoder, thanks @Disty0!  
+- SD3: enable cpu-offloading for T5 text encoder, thanks @Disty0!  
+- SD3: simplified loading of model in single-file safetensors format  
+  model load can now be performed fully offline  
+- SD3: add support for NNCF compressed weights, thanks @Disty0!
+- SD3: add support for sampler shift for Euler FlowMatch  
   see *settings -> samplers*, also available as param in xyz grid  
   higher shift means model will spend more time on structure and less on details  
+- SD3: add support for selecting T5 text encoder variant in XYZ grid
+- **Pixart-Σ**: Add *small* (512px) and *large* (2k) variations, in addition to existing *medium* (1k)  
+- Pixart-Σ: Add support for 4/8bit quantized t5 text encoder  
+  *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
+  simply select in *settings -> model -> text encoder* before or after model load  
+- **HunyuanDiT**: support for model version 1.1  
+
 
 ### Improvements: General
 
+- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
-  *example*: load FP8 quantized T5 text-encoder into PixArt Sigma  
+  *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma or Stable Cascade!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
+- improved google.colab support
 - css tweaks for standardui
+- css tweaks for modernui
 
 ### Fixes
 
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
 - fix control second pass resize  
-- fix api face-hires
-- fix **hunyuandit** set attention processor
+- fix hunyuandit set attention processor
 - fix civitai download without name
 - fix compatibility with latest adetailer
 - fix invalid sampler warning
 - fix starting from non git repo
+- fix control api negative prompt handling
+- fix saving style without name provided
+- fix t2i-color adapter
+- fix sdxl "has been incorrectly initialized"
+- fix api face-hires
+- fix api ip-adapter
+- cleanup image metadata
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
 - remove obsolete training code leftovers

@@ -105,7 +105,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         desc='Base',
     )
     shared.state.sampling_steps = base_args.get('prior_num_inference_steps', None) or base_args.get('num_inference_steps', None) or p.steps
-    p.extra_generation_params['Pipeline'] = shared.sd_model.__class__.__name__
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
     output = None

@@ -144,7 +144,7 @@ def get_tokens(msg, prompt):
             except Exception:
                 tokens.append(f'UNK_{i}')
         token_count = len(ids) - int(has_bos_token) - int(has_eos_token)
-        shared.log.trace(f'Prompt tokenizer: type={msg} tokens={token_count} {tokens}')
+        debug(f'Prompt tokenizer: type={msg} tokens={token_count} {tokens}')
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):

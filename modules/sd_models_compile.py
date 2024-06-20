@@ -114,27 +114,32 @@ def ipex_optimize(sd_model):
         shared.log.warning(f"IPEX Optimize: error: {e}")
     return sd_model
 
+def nncf_send_to_device(model):
+    for child in model.children():
+        if child.__class__.__name__ == "WeightsDecompressor":
+            child.scale = child.scale.to(devices.device)
+            child.zero_point = child.zero_point.to(devices.device)
+        nncf_send_to_device(child)
+
+def nncf_compress_model(model):
+    import nncf
+    model.eval()
+    backup_embeddings = None
+    if hasattr(model, "get_input_embeddings"):
+        backup_embeddings = copy.deepcopy(model.get_input_embeddings())
+    model = nncf.compress_weights(model)
+    nncf_send_to_device(model)
+    if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
+        model.set_input_embeddings(backup_embeddings)
+    devices.torch_gc(force=True)
+    return model
 
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
-        if sd_model.device.type == "meta":
-            shared.log.warning("Compress Weights is not compatible with Sequential CPU offload")
-            return sd_model
+        from installer import install
+        install('nncf==2.7.0', quiet=True)
 
-        def nncf_compress_model(model):
-            return_device = model.device
-            model.eval()
-            backup_embeddings = None
-            if hasattr(model, "get_input_embeddings"):
-                backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-            model = nncf.compress_weights(model.to(devices.device)).to(return_device)
-            if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
-                model.set_input_embeddings(backup_embeddings)
-            devices.torch_gc(force=True)
-            return model
-
-        import nncf
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
 

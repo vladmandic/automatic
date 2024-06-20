@@ -446,6 +446,7 @@ class StableDiffusionXLPAGPipeline(
         feature_extractor: CLIPImageProcessor = None,
         force_zeros_for_empty_prompt: bool = True,
         add_watermarker: Optional[bool] = None,
+        requires_aesthetics_score: Optional[bool] = None, # todo: patch SDXLPAG pipeline
     ):
         super().__init__()
 
@@ -461,12 +462,11 @@ class StableDiffusionXLPAGPipeline(
             feature_extractor=feature_extractor,
         )
         self.register_to_config(force_zeros_for_empty_prompt=force_zeros_for_empty_prompt)
+        self.register_to_config(requires_aesthetics_score=requires_aesthetics_score)
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
-
         self.default_sample_size = self.unet.config.sample_size
-
-        add_watermarker = add_watermarker if add_watermarker is not None else is_invisible_watermark_available()
+        add_watermarker = False
 
         if add_watermarker:
             self.watermark = StableDiffusionXLWatermarker()

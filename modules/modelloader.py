@@ -204,7 +204,6 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     shared.log.debug(f'Diffusers downloading: id="{hub_id}" args={download_config}')
     token = token or shared.opts.huggingface_token
     if token is not None and len(token) > 2:
-        shared.log.debug(f"Diffusers authentication: {token}")
         hf_login(token)
     pipeline_dir = None
 
@@ -315,6 +314,10 @@ def get_reference_opts(name: str, quiet=False):
     name = name.replace('Diffusers/', 'huggingface/')
     for k, v in shared.reference_models.items():
         model_name = os.path.splitext(v.get('path', '').split('@')[0])[0]
+        if k == name or model_name == name:
+            model_opts = v
+            break
+        model_name = model_name.replace('huggingface/', '')
         if k == name or model_name == name:
             model_opts = v
             break

@@ -55,7 +55,7 @@ def control_set(kwargs):
 
 def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
                 input_type: int = 0,
-                prompt: str = '', negative: str = '', styles: List[str] = [],
+                prompt: str = '', negative_prompt: str = '', styles: List[str] = [],
                 steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1.0,
@@ -94,7 +94,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
 
     p = StableDiffusionProcessingControl(
         prompt = prompt,
-        negative_prompt = negative,
+        negative_prompt = negative_prompt,
         styles = styles,
         steps = steps,
         n_iter = batch_count,

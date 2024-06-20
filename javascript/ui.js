@@ -424,6 +424,7 @@ function selectVAE(name) {
 }
 
 function selectReference(name) {
+  log(`Select reference: ${name}`);
   desiredCheckpointName = name;
   gradioApp().getElementById('change_reference').click();
 }

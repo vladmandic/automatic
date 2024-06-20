@@ -175,7 +175,7 @@ def set_cuda_sync_mode(mode):
         return
     try:
         import ctypes
-        log.info(f'Set cuda synch: mode={mode}')
+        log.info(f'Set cuda sync: mode={mode}')
         torch.cuda.set_device(torch.device(get_optimal_device_name()))
         ctypes.CDLL('libcudart.so').cudaSetDeviceFlags({'auto': 0, 'spin': 1, 'yield': 2, 'block': 4}[mode])
     except Exception:
