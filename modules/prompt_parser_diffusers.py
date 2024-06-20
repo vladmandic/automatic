@@ -41,8 +41,26 @@ def compel_hijack(self, token_ids: torch.Tensor,
     return hidden_state
 
 
-EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
+def sd3_compel_hijack(self, token_ids: torch.Tensor,
+                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+    needs_hidden_states = True
+    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
+    clip_skip = int(self.returned_embeddings_type)
+    hidden_state = text_encoder_output.hidden_states[-(clip_skip+1)]
 
+    return hidden_state
+
+def insert_parser_highjack(pipename):
+    if "StableDiffusion3" in pipename:
+        EmbeddingsProvider._encode_token_ids_to_embeddings = sd3_compel_hijack # pylint: disable=protected-access
+        debug("Loading SD3 Parser hijack")
+    else:
+        EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
+        debug("Loading Standard Parser hijack")
+
+
+
+insert_parser_highjack("Initialize")
 
 # from https://github.com/damian0815/compel/blob/main/src/compel/diffusers_textual_inversion_manager.py
 class DiffusersTextualInversionManager(BaseTextualInversionManager):
@@ -217,7 +235,7 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
     embeddings_providers = []
     if 'StableCascade' in pipe.__class__.__name__:
         embedding_type = -(clip_skip)
-    elif 'XL' in pipe.__class__.__name__ or 'SD3' in pipe.__class__.__name__:
+    elif 'XL' in pipe.__class__.__name__:
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
@@ -237,7 +255,7 @@ def pad_to_same_length(pipe, embeds):
     if not hasattr(pipe, 'encode_prompt') and 'StableCascade' not in pipe.__class__.__name__:
         return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    if shared.opts.diffusers_zeros_prompt_pad:
+    if shared.opts.diffusers_zeros_prompt_pad or 'StableDiffusion3' in pipe.__class__.__name__:
         empty_embed = [torch.zeros((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
     else:
         try:
@@ -276,14 +294,15 @@ def split_prompts(prompt, SD3 = False):
 
     if SD3 and prompt3 != " ":
         ps, ws = get_prompts_with_weights(prompt3)
-        prompt3 = ", ".join(ps)
+        prompt3 = " ".join(ps)
     return prompt, prompt2, prompt3
+
 
 def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
     SD3 = hasattr(pipe, 'text_encoder_3')
     prompt, prompt_2, prompt_3 = split_prompts(prompt, SD3)
-    neg_prompt, neg_prompt_2, neg_prompt_3 = split_prompts(prompt, SD3)
+    neg_prompt, neg_prompt_2, neg_prompt_3 = split_prompts(neg_prompt, SD3)
 
     if prompt != prompt_2:
         ps = [get_prompts_with_weights(p) for p in [prompt, prompt_2]]
@@ -330,37 +349,28 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         debug(f'Prompt: unpadded shape={prompt_embeds[0].shape} TE{i+1} ptokens={torch.count_nonzero(ptokens)} ntokens={torch.count_nonzero(ntokens)} time={(time.time() - t0):.3f}')
     if SD3:
         t0 = time.time()
-        for i in range(len(prompt_embeds)):
-            pooled_prompt_embeds.append(prompt_embeds[i][
-                torch.arange(prompt_embeds[i].shape[0], device=device),
-                (ptokens.to(dtype=torch.int, device=device) == 49407)
-                .int()
-                .argmax(dim=-1),
-            ])
-            negative_pooled_prompt_embeds.append(negative_prompt_embeds[i][
-                torch.arange(negative_prompt_embeds[i].shape[0], device=device),
-                (ntokens.to(dtype=torch.int, device=device) == 49407)
-                .int()
-                .argmax(dim=-1),
-            ])
+        pooled_prompt_embeds.append(embedding_providers[0].get_pooled_embeddings(texts=positives[0] if len(positives[0]) == 1 else [" ".join(positives[0])], device=device))
+        pooled_prompt_embeds.append(embedding_providers[1].get_pooled_embeddings(texts=positives[-1] if len(positives[-1]) == 1 else [" ".join(positives[-1])], device=device))
+        negative_pooled_prompt_embeds.append(embedding_providers[0].get_pooled_embeddings(texts=negatives[0] if len(negatives[0]) == 1 else [" ".join(negatives[0])], device=device))
+        negative_pooled_prompt_embeds.append(embedding_providers[1].get_pooled_embeddings(texts=negatives[-1] if len(negatives[-1]) == 1 else [" ".join(negatives[-1])], device=device))
         pooled_prompt_embeds = torch.cat(pooled_prompt_embeds, dim=-1)
         negative_pooled_prompt_embeds = torch.cat(negative_pooled_prompt_embeds, dim=-1)
         debug(f'Prompt: pooled shape={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
     elif prompt_embeds[-1].shape[-1] > 768:
         t0 = time.time()
         if shared.opts.diffusers_pooled == "weighted":
-            pooled_prompt_embeds = prompt_embeds[-1][
+            pooled_prompt_embeds = embedding_providers[-1].text_encoder.text_projection(prompt_embeds[-1][
                 torch.arange(prompt_embeds[-1].shape[0], device=device),
                 (ptokens.to(dtype=torch.int, device=device) == 49407)
                 .int()
                 .argmax(dim=-1),
-            ]
-            negative_pooled_prompt_embeds = negative_prompt_embeds[-1][
+            ])
+            negative_pooled_prompt_embeds = embedding_providers[-1].text_encoder.text_projection(negative_prompt_embeds[-1][
                 torch.arange(negative_prompt_embeds[-1].shape[0], device=device),
                 (ntokens.to(dtype=torch.int, device=device) == 49407)
                 .int()
                 .argmax(dim=-1),
-            ]
+            ])
         else:
             try:
                 pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[prompt_2], device=device) if prompt_embeds[-1].shape[-1] > 768 else None

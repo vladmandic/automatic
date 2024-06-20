@@ -1158,6 +1158,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
         timer.record("embeddings")
 
+        from modules.prompt_parser_diffusers import insert_parser_highjack
+        insert_parser_highjack(sd_model.__class__.__name__)
+
         set_diffuser_options(sd_model, vae, op)
         if op == 'model':
             sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
