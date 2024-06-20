@@ -255,15 +255,16 @@ def select_checkpoint(op='model'):
         shared.log.info("  or use --ckpt-dir <path-to-folder> to specify folder with sd models")
         shared.log.info("  or use --ckpt <path-to-checkpoint> to force using specific model")
         return None
-    checkpoint_info = next(iter(checkpoints_list.values()))
+    # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
         if model_checkpoint != 'model.ckpt' and model_checkpoint != 'runwayml/stable-diffusion-v1-5':
-            shared.log.warning(f"Selected checkpoint not found: {model_checkpoint}")
+            shared.log.warning(f'Selected: {op}="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
         # shared.log.warning(f"Loading fallback checkpoint: {checkpoint_info.title}")
-        shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
-    shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
+        # shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
+    else:
+        shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
     return checkpoint_info
 
 
@@ -936,6 +937,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         checkpoint_info = checkpoint_info or select_checkpoint(op=op)
         if checkpoint_info is None:
+            print('HERE1')
             unload_model_weights(op=op)
             return
 
@@ -1574,6 +1576,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
         else:
             load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
         if load_dict and next_checkpoint_info is not None:
+            print('HERE2')
             model_data.sd_dict = shared.opts.sd_model_dict
             shared.opts.data["sd_model_checkpoint"] = next_checkpoint_info.title
             reload_model_weights(reuse_dict=True) # ok we loaded dict now lets redo and load model on top of it
@@ -1587,6 +1590,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             shared.opts.data["sd_model_refiner"] = checkpoint_info.title
             return model_data.sd_refiner
 
+    print('HERE3')
     # fallback
     shared.log.info(f"Loading using fallback: {op} model={checkpoint_info.title}")
     try:
