@@ -140,6 +140,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True):
     if shared.cmd_opts.profile:
         t1 = time.time()
         shared.log.debug(f'Profile: VAE decode: {t1-t0:.2f}')
+    devices.torch_gc()
     return imgs
 
 
@@ -155,4 +156,5 @@ def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variab
         latents = full_vae_encode(image=tensor, model=shared.sd_model)
     else:
         latents = taesd_vae_encode(image=tensor)
+    devices.torch_gc()
     return latents
