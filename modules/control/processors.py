@@ -139,7 +139,7 @@ class Processor():
         self.model = None
         self.processor_id = processor_id
         # self.override = None
-        devices.torch_gc()
+        # devices.torch_gc()
         self.load_config = { 'cache_dir': cache_dir }
 
     def config(self, processor_id = None):

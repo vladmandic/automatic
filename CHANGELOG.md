@@ -12,6 +12,7 @@ But there's more than SD3:
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
 - (finally) new release of **Torch-DirectML**  
+- additional efficiencies for users with low vram gpus  
 - over 20 overall fixes  
 
 ### Model Improvements
@@ -47,6 +48,7 @@ But there's more than SD3:
   *note*: new directml is finally based on modern `torch` 2.3.1!  
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
+- force gc for lowvram users and improve gc logging
 - improved google.colab support
 - css tweaks for standardui
 - css tweaks for modernui

@@ -140,11 +140,8 @@ def torch_gc(force=False):
         used_gpu = round(100 * gpu.get('used', 0) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
     used_ram = round(100 * ram.get('used', 0) / ram.get('total', 1)) if ram.get('total', 1) > 1 else 0
     global previous_oom # pylint: disable=global-statement
-    if force or shared.opts.torch_gc_threshold == 0:
-        log.debug(f'Forced Torch GC: GPU={used_gpu}% RAM={used_ram}% {mem}')
-        force = True
-    elif used_gpu >= shared.opts.torch_gc_threshold or used_ram >= shared.opts.torch_gc_threshold:
-        log.info(f'High memory utilization: GPU={used_gpu}% RAM={used_ram}% {mem}')
+    threshold = 0 if (shared.cmd_opts.lowvram and not shared.cmd_opts.use_zluda) else shared.opts.torch_gc_threshold
+    if force or threshold == 0 or used_gpu >= threshold or used_ram >= threshold:
         force = True
     if oom > previous_oom:
         previous_oom = oom
@@ -163,7 +160,13 @@ def torch_gc(force=False):
         except Exception:
             pass
     t1 = time.time()
-    log.debug(f'GC: collected={collected} device={torch.device(get_optimal_device_name())} {memstats.memory_stats()} time={round(t1 - t0, 2)}')
+    mem = memstats.memory_stats()
+    saved = round(gpu.get('used', 0) - mem.get('gpu', {}).get('used', 0), 2)
+    before = { 'gpu': gpu.get('used', 0), 'ram': ram.get('used', 0) }
+    after = { 'gpu': mem.get('gpu', {}).get('used', 0), 'ram': mem.get('ram', {}).get('used', 0), 'retries': mem.get('retries', 0), 'oom': mem.get('oom', 0) }
+    utilization = { 'gpu': used_gpu, 'ram': used_ram, 'threshold': threshold }
+    results = { 'collected': collected, 'saved': saved }
+    log.debug(f'GC: utilization={utilization} gc={results} beofre={before} after={after} device={torch.device(get_optimal_device_name())} fn={sys._getframe(1).f_code.co_name} time={round(t1 - t0, 2)}') # pylint: disable=protected-access
 
 
 def set_cuda_sync_mode(mode):
