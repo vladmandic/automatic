@@ -52,7 +52,7 @@ But there's more than SD3:
 - css tweaks for modernui
 - additional torch gc checks, thanks @Disty0!
 
-**NNCF**, thanks @Disty0!  
+**Improvements: NNCF**, thanks @Disty0!  
  - SD3 and PixArt support  
  - moved the first compression step to CPU  
  - sequential cpu offload (lowvram) support  
