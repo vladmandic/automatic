@@ -1,13 +1,8 @@
 # Change Log for SD.Next
 
-## Pending
+## Update for 2024-06-21
 
-- Diffusers==0.30.0
-- https://github.com/huggingface/diffusers/pull/8584
-
-## Update for 2024-06-20
-
-### Highlights for 2024-06-20
+### Highlights for 2024-06-21
 
 Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
 But there's more than SD3:
