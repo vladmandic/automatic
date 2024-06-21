@@ -764,7 +764,7 @@ def move_model(model, device=None, force=False):
     if model is None or device is None:
         return
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
-        if device == devices.device: # force vae back to gpu if not in txt2img mode
+        if device == devices.device and not model.vae.device.type == "meta": # force vae back to gpu if not in txt2img mode
             model.vae.to(device)
             if hasattr(model.vae, '_hf_hook'):
                 debug_move(f'Model move: to={device} class={model.vae.__class__} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access

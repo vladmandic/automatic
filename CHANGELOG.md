@@ -76,6 +76,7 @@ But there's more than SD3:
 - fix api face-hires
 - fix api ip-adapter
 - fix memory exceptions with ROCm, thanks @Disty0!
+- fix face-hires with lowvram, thanks @Disty0!
 - cleanup image metadata
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
