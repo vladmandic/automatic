@@ -40,8 +40,26 @@ def compel_hijack(self, token_ids: torch.Tensor,
     return hidden_state
 
 
-EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
+def sd3_compel_hijack(self, token_ids: torch.Tensor,
+                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+    needs_hidden_states = True
+    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
+    clip_skip = int(self.returned_embeddings_type)
+    hidden_state = text_encoder_output.hidden_states[-(clip_skip+1)]
 
+    return hidden_state
+
+def insert_parser_highjack(pipename):
+    if "StableDiffusion3" in pipename:
+        EmbeddingsProvider._encode_token_ids_to_embeddings = sd3_compel_hijack # pylint: disable=protected-access
+        debug("Loading SD3 Parser hijack")
+    else:
+        EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
+        debug("Loading Standard Parser hijack")
+
+
+
+insert_parser_highjack("Initialize")
 
 # from https://github.com/damian0815/compel/blob/main/src/compel/diffusers_textual_inversion_manager.py
 class DiffusersTextualInversionManager(BaseTextualInversionManager):
@@ -239,7 +257,7 @@ def pad_to_same_length(pipe, embeds):
     if not hasattr(pipe, 'encode_prompt') and 'StableCascade' not in pipe.__class__.__name__:
         return embeds
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    if shared.opts.diffusers_zeros_prompt_pad:
+    if shared.opts.diffusers_zeros_prompt_pad or 'StableDiffusion3' in pipe.__class__.__name__:
         empty_embed = [torch.zeros((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
     else:
         try:
@@ -259,15 +277,34 @@ def pad_to_same_length(pipe, embeds):
             embeds[i] = embed
     return embeds
 
+def split_prompts(prompt, SD3 = False):
+    if prompt.find("TE2:") != -1:
+        prompt, prompt2 = prompt.split("TE2:")
+    else:
+        prompt2 = prompt
+
+    if prompt.find("TE3:") != -1:
+        prompt, prompt3 = prompt.split("TE3:")
+    elif prompt2.find("TE3:") != -1:
+        prompt2, prompt3 = prompt2.split("TE3:")
+    else:
+        prompt3 = prompt
+
+    prompt = prompt.strip()
+    prompt2 = " " if prompt2.strip() == "" else prompt2.strip()
+    prompt3 = " " if prompt3.strip() == "" else prompt3.strip()
+
+    if SD3 and prompt3 != " ":
+        ps, ws = get_prompts_with_weights(prompt3)
+        prompt3 = " ".join(ps)
+    return prompt, prompt2, prompt3
+
 
 def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
     device = pipe.device if str(pipe.device) != 'meta' else devices.device
-    prompt_split = prompt.split("TE2:")
-    prompt = prompt_split[0]
-    prompt_2 = prompt_split[-1]
-    neg_prompt_split = neg_prompt.split("TE2:")
-    neg_prompt_2 = neg_prompt_split[-1]
-    neg_prompt = neg_prompt_split[0]
+    SD3 = hasattr(pipe, 'text_encoder_3')
+    prompt, prompt_2, prompt_3 = split_prompts(prompt, SD3)
+    neg_prompt, neg_prompt_2, neg_prompt_3 = split_prompts(neg_prompt, SD3)
 
     if prompt != prompt_2:
         ps = [get_prompts_with_weights(p) for p in [prompt, prompt_2]]
@@ -287,8 +324,8 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     embedding_providers = prepare_embedding_providers(pipe, clip_skip)
     prompt_embeds = []
     negative_prompt_embeds = []
-    pooled_prompt_embeds = None
-    negative_pooled_prompt_embeds = None
+    pooled_prompt_embeds = []
+    negative_pooled_prompt_embeds = []
     for i in range(len(embedding_providers)):
         t0 = time.time()
         text = list(positives[i])
@@ -312,22 +349,30 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         embed, ntokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[negatives[i]], fragment_weights_batch=[negative_weights[i]], device=device, should_return_tokens=True)
         negative_prompt_embeds.append(embed)
         debug(f'Prompt: unpadded shape={prompt_embeds[0].shape} TE{i+1} ptokens={torch.count_nonzero(ptokens)} ntokens={torch.count_nonzero(ntokens)} time={(time.time() - t0):.3f}')
-
-    if prompt_embeds[-1].shape[-1] > 768:
+    if SD3:
+        t0 = time.time()
+        pooled_prompt_embeds.append(embedding_providers[0].get_pooled_embeddings(texts=positives[0] if len(positives[0]) == 1 else [" ".join(positives[0])], device=device))
+        pooled_prompt_embeds.append(embedding_providers[1].get_pooled_embeddings(texts=positives[-1] if len(positives[-1]) == 1 else [" ".join(positives[-1])], device=device))
+        negative_pooled_prompt_embeds.append(embedding_providers[0].get_pooled_embeddings(texts=negatives[0] if len(negatives[0]) == 1 else [" ".join(negatives[0])], device=device))
+        negative_pooled_prompt_embeds.append(embedding_providers[1].get_pooled_embeddings(texts=negatives[-1] if len(negatives[-1]) == 1 else [" ".join(negatives[-1])], device=device))
+        pooled_prompt_embeds = torch.cat(pooled_prompt_embeds, dim=-1)
+        negative_pooled_prompt_embeds = torch.cat(negative_pooled_prompt_embeds, dim=-1)
+        debug(f'Prompt: pooled shape={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
+    elif prompt_embeds[-1].shape[-1] > 768:
         t0 = time.time()
         if shared.opts.diffusers_pooled == "weighted":
-            pooled_prompt_embeds = prompt_embeds[-1][
+            pooled_prompt_embeds = embedding_providers[-1].text_encoder.text_projection(prompt_embeds[-1][
                 torch.arange(prompt_embeds[-1].shape[0], device=device),
                 (ptokens.to(dtype=torch.int, device=device) == 49407)
                 .int()
                 .argmax(dim=-1),
-            ]
-            negative_pooled_prompt_embeds = negative_prompt_embeds[-1][
+            ])
+            negative_pooled_prompt_embeds = embedding_providers[-1].text_encoder.text_projection(negative_prompt_embeds[-1][
                 torch.arange(negative_prompt_embeds[-1].shape[0], device=device),
                 (ntokens.to(dtype=torch.int, device=device) == 49407)
                 .int()
                 .argmax(dim=-1),
-            ]
+            ])
         else:
             try:
                 pooled_prompt_embeds = embedding_providers[-1].get_pooled_embeddings(texts=[prompt_2], device=device) if prompt_embeds[-1].shape[-1] > 768 else None
@@ -343,4 +388,21 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     debug(f'Prompt: positive={prompt_embeds.shape if prompt_embeds is not None else None} pooled={pooled_prompt_embeds.shape if pooled_prompt_embeds is not None else None} negative={negative_prompt_embeds.shape if negative_prompt_embeds is not None else None} pooled={negative_pooled_prompt_embeds.shape if negative_pooled_prompt_embeds is not None else None}')
     if prompt_embeds.shape[1] != negative_prompt_embeds.shape[1]:
         [prompt_embeds, negative_prompt_embeds] = pad_to_same_length(pipe, [prompt_embeds, negative_prompt_embeds])
+    if SD3:
+        t5_prompt_embed = pipe._get_t5_prompt_embeds(
+                prompt=prompt_3,
+                num_images_per_prompt=prompt_embeds.shape[0],
+                device=pipe.device,
+            )
+        prompt_embeds = torch.nn.functional.pad(
+            prompt_embeds, (0, t5_prompt_embed.shape[-1] - prompt_embeds.shape[-1]))
+        prompt_embeds = torch.cat([prompt_embeds, t5_prompt_embed], dim=-2)
+        t5_negative_prompt_embed = pipe._get_t5_prompt_embeds(
+            prompt=neg_prompt_3,
+            num_images_per_prompt=prompt_embeds.shape[0],
+            device=pipe.device,
+        )
+        negative_prompt_embeds = torch.nn.functional.pad(
+            negative_prompt_embeds, (0, t5_negative_prompt_embed.shape[-1] - negative_prompt_embeds.shape[-1]))
+        negative_prompt_embeds = torch.cat([negative_prompt_embeds, t5_negative_prompt_embed], dim=-2)
     return prompt_embeds, pooled_prompt_embeds, negative_prompt_embeds, negative_pooled_prompt_embeds
