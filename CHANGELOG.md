@@ -4,24 +4,31 @@
 
 ### Highlights for 2024-06-21
 
-Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
-But there's more than SD3:
-- support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)
-- support for **PixArt-Sigma** in small/medium/large variants
+Following zero-day **SD3** release, a week later here's a refresh with 10+ improvements  
+including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
+
+But there's more than SD3:  
+- support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)  
+- support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
 - (finally) new release of **Torch-DirectML**  
+- over 20 overall fixes  
 
 ### Model Improvements
 
 - **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
 - SD3: enable base LoRA support  
 - SD3: add support for FP4 quantized T5 text encoder  
-  simply select in *settings -> model -> text encoder*
+  simply select in *settings -> model -> text encoder*  
+  *note* for SD3 with T5, set SD.Next to use FP16 precision, not BF16 precision  
 - SD3: add support for INT8 quantized T5 text encoder, thanks @Disty0!  
 - SD3: enable cpu-offloading for T5 text encoder, thanks @Disty0!  
 - SD3: simplified loading of model in single-file safetensors format  
   model load can now be performed fully offline  
 - SD3: add support for NNCF compressed weights, thanks @Disty0!
+- SD3: full support for prompt parsing and attention, thanks @AI-Casanova!
+- SD3: ability to target different prompts to each of text-encoders, thanks @AI-Casanova!  
+  example: `dog TE2: cat TE3: bird`
 - SD3: add support for sampler shift for Euler FlowMatch  
   see *settings -> samplers*, also available as param in xyz grid  
   higher shift means model will spend more time on structure and less on details  
@@ -31,7 +38,6 @@ But there's more than SD3:
   *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
   simply select in *settings -> model -> text encoder* before or after model load  
 - **HunyuanDiT**: support for model version 1.1  
-
 
 ### Improvements: General
 

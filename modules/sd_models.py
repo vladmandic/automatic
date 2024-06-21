@@ -562,30 +562,30 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             # guess by size
             if os.path.isfile(f) and f.endswith('.safetensors'):
                 size = round(os.path.getsize(f) / 1024 / 1024)
-                if size < 128:
+                if (size < 128):
                     warn(f'Model size smaller than expected: {f} size={size} MB')
                 elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
                     warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
                     guess = 'VAE'
-                elif size >= 4970 and size <= 4976: # 4973
+                elif (size >= 4970 and size <= 4976): # 4973
                     guess = 'Stable Diffusion 2' # SD v2 but could be eps or v-prediction
                 # elif size < 0: # unknown
                 #    guess = 'Stable Diffusion 2B'
-                elif size >= 5791 and size <= 5799: # 5795
+                elif (size >= 5791 and size <= 5799): # 5795
                     if op == 'model':
                         warn(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL Refiner'
                 elif (size >= 6611 and size <= 7220): # 6617, HassakuXL is 6776, monkrenRealisticINT_v10 is 7217
                     guess = 'Stable Diffusion XL'
-                elif size >= 3361 and size <= 3369: # 3368
+                elif (size >= 3361 and size <= 3369): # 3368
                     guess = 'Stable Diffusion Upscale'
-                elif size >= 4891 and size <= 4899: # 4897
+                elif (size >= 4891 and size <= 4899): # 4897
                     guess = 'Stable Diffusion XL Inpaint'
-                elif size >= 9791 and size <= 9799: # 9794
+                elif (size >= 9791 and size <= 9799): # 9794
                     guess = 'Stable Diffusion XL Instruct'
-                elif size > 3138 and size < 3142: #3140
+                elif (size > 3138 and size < 3142): #3140
                     guess = 'Stable Diffusion XL'
-                elif size > 5692 and size < 5698 or size > 4134 and size < 4138:
+                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366):
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
