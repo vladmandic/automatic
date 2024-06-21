@@ -140,9 +140,6 @@ def nncf_compress_weights(sd_model):
         from installer import install
         install('nncf==2.7.0', quiet=True)
 
-        shared.compiled_model_state = CompiledModelState()
-        shared.compiled_model_state.is_compiled = True
-
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
 
         t1 = time.time()
