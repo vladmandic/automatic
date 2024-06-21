@@ -400,6 +400,7 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
         else:
             resized_image = img
         resized_images.append(resized_image)
+    devices.torch_gc()
     return resized_images
 
 

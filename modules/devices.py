@@ -140,12 +140,15 @@ def torch_gc(force=False):
         used_gpu = round(100 * gpu.get('used', 0) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
     used_ram = round(100 * ram.get('used', 0) / ram.get('total', 1)) if ram.get('total', 1) > 1 else 0
     global previous_oom # pylint: disable=global-statement
+    if force or shared.opts.torch_gc_threshold == 0:
+        log.debug(f'Forced Torch GC: GPU={used_gpu}% RAM={used_ram}% {mem}')
+        force = True
+    elif used_gpu >= shared.opts.torch_gc_threshold or used_ram >= shared.opts.torch_gc_threshold:
+        log.info(f'High memory utilization: GPU={used_gpu}% RAM={used_ram}% {mem}')
+        force = True
     if oom > previous_oom:
         previous_oom = oom
         log.warning(f'GPU out-of-memory error: {mem}')
-        force = True
-    if used_gpu >= shared.opts.torch_gc_threshold or used_ram >= shared.opts.torch_gc_threshold:
-        log.info(f'High memory utilization: GPU={used_gpu}% RAM={used_ram}% {mem}')
         force = True
     if not force:
         return

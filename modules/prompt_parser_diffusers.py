@@ -12,10 +12,9 @@ debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PROMPT')
 orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_embeddings # pylint: disable=protected-access
-token_dict = None
-token_type = None
+token_dict = None # used by helper get_tokens
+token_type = None # used by helper get_tokens
 cache = {}
-cache_type = None
 
 
 def compel_hijack(self, token_ids: torch.Tensor,
@@ -151,7 +150,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
     if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
-    elif prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
+    elif shared.opts.sd_textencoder_cache and prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
         p.prompt_embeds = cache.get('prompt_embeds', None)
         p.positive_pooleds = cache.get('positive_pooleds', None)
         p.negative_embeds = cache.get('negative_embeds', None)
@@ -182,18 +181,21 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
             if negative_pooled is not None:
                 p.negative_pooleds.append(torch.cat([negative_pooled] * len(negative_prompts), dim=0))
 
-        cache.update({
-            'prompt_embeds': p.prompt_embeds,
-            'negative_embeds': p.negative_embeds,
-            'positive_pooleds': p.positive_pooleds,
-            'negative_pooleds': p.negative_pooleds,
-            'scheduled_prompt': p.scheduled_prompt,
-            'prompts': prompts,
-            'negative_prompts': negative_prompts,
-            'clip_skip': clip_skip,
-            'steps': steps,
-            'model_type': shared.sd_model_type
-        })
+        if shared.opts.sd_textencoder_cache:
+            cache.update({
+                'prompt_embeds': p.prompt_embeds,
+                'negative_embeds': p.negative_embeds,
+                'positive_pooleds': p.positive_pooleds,
+                'negative_pooleds': p.negative_pooleds,
+                'scheduled_prompt': p.scheduled_prompt,
+                'prompts': prompts,
+                'negative_prompts': negative_prompts,
+                'clip_skip': clip_skip,
+                'steps': steps,
+                'model_type': shared.sd_model_type
+            })
+        else:
+            cache.clear()
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])

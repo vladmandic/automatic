@@ -11,6 +11,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - diffusers public callbacks  
 - include reference styles
 - lora: sc lora, dora, etc
+- sd3 controlnet: <https://github.com/huggingface/diffusers/pull/8566>
 
 ## Experimental
 

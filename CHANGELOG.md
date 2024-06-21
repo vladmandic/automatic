@@ -3,12 +3,11 @@
 ## Pending
 
 - Diffusers==0.30.0
-- https://github.com/huggingface/diffusers/pull/8566
 - https://github.com/huggingface/diffusers/pull/8584
 
-## Update for 2024-06-19
+## Update for 2024-06-20
 
-### Highlights for 2024-06-19
+### Highlights for 2024-06-20
 
 Following zero-day **SD3** release, a week later here's a refresh with more than a few improvements.  
 But there's more than SD3:
@@ -51,6 +50,7 @@ But there's more than SD3:
 - improved google.colab support
 - css tweaks for standardui
 - css tweaks for modernui
+- additional torch gc checks, thanks @Disty0!
 
 ### Fixes
 
@@ -68,6 +68,7 @@ But there's more than SD3:
 - fix sdxl "has been incorrectly initialized"
 - fix api face-hires
 - fix api ip-adapter
+- fix memory exceptions with ROCm, thanks @Disty0!
 - cleanup image metadata
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified

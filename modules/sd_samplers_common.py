@@ -40,15 +40,17 @@ def single_sample_to_image(sample, approximation=None):
                 warn_once('Unknown decode type')
                 approximation = 0
         # normal sample is [4,64,64]
-        if sample.dtype == torch.bfloat16:
-            sample = sample.to(torch.float16)
+        try:
+            if sample.dtype == torch.bfloat16:
+                sample = sample.to(torch.float16)
+        except Exception as e:
+            warn_once(f'live preview: {e}')
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
         if len(sample) == 16: # sd_cascade
             sd_cascade = True
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
-
         if shared.native: # [-x,x] to [-5,5]
             sample_max = torch.max(sample)
             if sample_max > 5:

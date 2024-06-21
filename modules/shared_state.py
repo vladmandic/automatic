@@ -41,10 +41,12 @@ class State:
         log.debug(f'Requested {"pause" if self.paused else "continue"}')
 
     def nextjob(self):
+        import modules.devices
         self.do_set_current_image()
         self.job_no += 1
         self.sampling_step = 0
         self.current_image_sampling_step = 0
+        modules.devices.torch_gc()
 
     def dict(self):
         obj = {
