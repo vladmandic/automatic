@@ -295,7 +295,7 @@ def split_prompts(prompt, SD3 = False):
     prompt3 = " " if prompt3.strip() == "" else prompt3.strip()
 
     if SD3 and prompt3 != " ":
-        ps, ws = get_prompts_with_weights(prompt3)
+        ps, _ws = get_prompts_with_weights(prompt3)
         prompt3 = " ".join(ps)
     return prompt, prompt2, prompt3
 
@@ -385,11 +385,15 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     prompt_embeds = torch.cat(prompt_embeds, dim=-1) if len(prompt_embeds) > 1 else prompt_embeds[0]
     negative_prompt_embeds = torch.cat(negative_prompt_embeds, dim=-1) if len(negative_prompt_embeds) > 1 else \
         negative_prompt_embeds[0]
+    if pooled_prompt_embeds == []:
+        pooled_prompt_embeds = None
+    if negative_pooled_prompt_embeds == []:
+        negative_pooled_prompt_embeds = None
     debug(f'Prompt: positive={prompt_embeds.shape if prompt_embeds is not None else None} pooled={pooled_prompt_embeds.shape if pooled_prompt_embeds is not None else None} negative={negative_prompt_embeds.shape if negative_prompt_embeds is not None else None} pooled={negative_pooled_prompt_embeds.shape if negative_pooled_prompt_embeds is not None else None}')
     if prompt_embeds.shape[1] != negative_prompt_embeds.shape[1]:
         [prompt_embeds, negative_prompt_embeds] = pad_to_same_length(pipe, [prompt_embeds, negative_prompt_embeds])
     if SD3:
-        t5_prompt_embed = pipe._get_t5_prompt_embeds(
+        t5_prompt_embed = pipe._get_t5_prompt_embeds( # pylint: disable=protected-access
                 prompt=prompt_3,
                 num_images_per_prompt=prompt_embeds.shape[0],
                 device=pipe.device,
@@ -397,7 +401,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         prompt_embeds = torch.nn.functional.pad(
             prompt_embeds, (0, t5_prompt_embed.shape[-1] - prompt_embeds.shape[-1]))
         prompt_embeds = torch.cat([prompt_embeds, t5_prompt_embed], dim=-2)
-        t5_negative_prompt_embed = pipe._get_t5_prompt_embeds(
+        t5_negative_prompt_embed = pipe._get_t5_prompt_embeds( # pylint: disable=protected-access
             prompt=neg_prompt_3,
             num_images_per_prompt=prompt_embeds.shape[0],
             device=pipe.device,
