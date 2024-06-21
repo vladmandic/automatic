@@ -25,7 +25,6 @@ But there's more than SD3:
 - SD3: enable cpu-offloading for T5 text encoder, thanks @Disty0!  
 - SD3: simplified loading of model in single-file safetensors format  
   model load can now be performed fully offline  
-- SD3: add support for NNCF compressed weights, thanks @Disty0!
 - SD3: full support for prompt parsing and attention, thanks @AI-Casanova!
 - SD3: ability to target different prompts to each of text-encoders, thanks @AI-Casanova!  
   example: `dog TE2: cat TE3: bird`
@@ -43,7 +42,7 @@ But there's more than SD3:
 
 - support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
-  *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma or Stable Cascade!
+  *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
 - extra networks: info display now contains link to source url if model if its known  
@@ -52,6 +51,13 @@ But there's more than SD3:
 - css tweaks for standardui
 - css tweaks for modernui
 - additional torch gc checks, thanks @Disty0!
+
+**NNCF**, thanks @Disty0!  
+ - SD3 and PixArt support  
+ - moved the first compression step to CPU  
+ - sequential cpu offload (lowvram) support  
+ - Lora support without reloading the model  
+ - ControlNet compression support  
 
 ### Fixes
 
