@@ -393,20 +393,23 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     if prompt_embeds.shape[1] != negative_prompt_embeds.shape[1]:
         [prompt_embeds, negative_prompt_embeds] = pad_to_same_length(pipe, [prompt_embeds, negative_prompt_embeds])
     if SD3:
+        device = pipe.device if str(pipe.device) != 'meta' else devices.device
         t5_prompt_embed = pipe._get_t5_prompt_embeds( # pylint: disable=protected-access
-                prompt=prompt_3,
-                num_images_per_prompt=prompt_embeds.shape[0],
-                device=pipe.device,
-            )
+            prompt=prompt_3,
+            num_images_per_prompt=prompt_embeds.shape[0],
+            device=device,
+        )
         prompt_embeds = torch.nn.functional.pad(
-            prompt_embeds, (0, t5_prompt_embed.shape[-1] - prompt_embeds.shape[-1]))
+            prompt_embeds, (0, t5_prompt_embed.shape[-1] - prompt_embeds.shape[-1])
+        ).to(device)
         prompt_embeds = torch.cat([prompt_embeds, t5_prompt_embed], dim=-2)
         t5_negative_prompt_embed = pipe._get_t5_prompt_embeds( # pylint: disable=protected-access
             prompt=neg_prompt_3,
             num_images_per_prompt=prompt_embeds.shape[0],
-            device=pipe.device,
+            device=device,
         )
         negative_prompt_embeds = torch.nn.functional.pad(
-            negative_prompt_embeds, (0, t5_negative_prompt_embed.shape[-1] - negative_prompt_embeds.shape[-1]))
+            negative_prompt_embeds, (0, t5_negative_prompt_embed.shape[-1] - negative_prompt_embeds.shape[-1])
+        ).to(device)
         negative_prompt_embeds = torch.cat([negative_prompt_embeds, t5_negative_prompt_embed], dim=-2)
     return prompt_embeds, pooled_prompt_embeds, negative_prompt_embeds, negative_pooled_prompt_embeds
