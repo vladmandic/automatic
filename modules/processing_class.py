@@ -516,6 +516,8 @@ def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None
         for k, v in dct.items():
             if k in possible:
                 kwargs[k] = v
+    if new_class == StableDiffusionProcessingTxt2Img:
+        sd_models.clean_diffuser_pipe(shared.sd_model)
     debug(f"Switching class: {p.__class__.__name__} -> {new_class.__name__} fn={sys._getframe(1).f_code.co_name}") # pylint: disable=protected-access
     p.__class__ = new_class
     p.__init__(**kwargs)

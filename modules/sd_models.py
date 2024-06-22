@@ -562,7 +562,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             # guess by size
             if os.path.isfile(f) and f.endswith('.safetensors'):
                 size = round(os.path.getsize(f) / 1024 / 1024)
-                if (size < 128):
+                if size < 128:
                     warn(f'Model size smaller than expected: {f} size={size} MB')
                 elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
                     warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
@@ -937,7 +937,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         checkpoint_info = checkpoint_info or select_checkpoint(op=op)
         if checkpoint_info is None:
-            print('HERE1')
             unload_model_weights(op=op)
             return
 
@@ -1115,8 +1114,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if sd_model is None:
             shared.log.error('Diffuser model not loaded')
             return
-        if 'requires_aesthetics_score' in sd_model.config:
-            sd_model.register_to_config(requires_aesthetics_score=False)
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
         sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
         sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
@@ -1298,14 +1295,20 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
     return pipeline
 
 
-def set_diffuser_pipe(pipe, new_pipe_type):
+def clean_diffuser_pipe(pipe):
     n = getattr(pipe.__class__, '__name__', '')
-    if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE and 'StableDiffusionXL' in n and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
+    if 'StableDiffusionXL' in n and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
         # diffusers adds requires_aesthetics_score with img2img and complains if requires_aesthetics_score exist in txt2img
         internal_dict = dict(pipe._internal_dict) # pylint: disable=protected-access
         internal_dict.pop('requires_aesthetics_score', None)
         del pipe._internal_dict
         pipe.register_to_config(**internal_dict)
+
+
+def set_diffuser_pipe(pipe, new_pipe_type):
+    n = getattr(pipe.__class__, '__name__', '')
+    if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
+        clean_diffuser_pipe(pipe)
 
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
@@ -1587,7 +1590,6 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
         else:
             load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
         if load_dict and next_checkpoint_info is not None:
-            print('HERE2')
             model_data.sd_dict = shared.opts.sd_model_dict
             shared.opts.data["sd_model_checkpoint"] = next_checkpoint_info.title
             reload_model_weights(reuse_dict=True) # ok we loaded dict now lets redo and load model on top of it
@@ -1601,7 +1603,6 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             shared.opts.data["sd_model_refiner"] = checkpoint_info.title
             return model_data.sd_refiner
 
-    print('HERE3')
     # fallback
     shared.log.info(f"Loading using fallback: {op} model={checkpoint_info.title}")
     try:
