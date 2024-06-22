@@ -351,11 +351,10 @@ def validate_sample(tensor):
         cast = sample.astype(np.uint8)
     if len(w) > 0:
         nans = np.isnan(sample).sum()
-        shared.log.error(f'Failed to validate samples: sample={sample.shape} invalid={nans}')
         cast = np.nan_to_num(sample)
         minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
         cast = cast.astype(np.uint8)
-        shared.log.warning(f'Attempted to correct samples: min={minimum:.2f} max={maximum:.2f} mean={mean:.2f}')
+        shared.log.error(f'Failed to validate samples: sample={sample.shape} min={minimum:.2f} max={maximum:.2f} mean={mean:.2f} invalid={nans}')
     return cast
 
 

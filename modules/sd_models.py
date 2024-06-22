@@ -1296,8 +1296,7 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
 
 
 def clean_diffuser_pipe(pipe):
-    n = getattr(pipe.__class__, '__name__', '')
-    if 'StableDiffusionXL' in n and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
+    if pipe is not None and shared.sd_model_type == 'sdxl' and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
         # diffusers adds requires_aesthetics_score with img2img and complains if requires_aesthetics_score exist in txt2img
         internal_dict = dict(pipe._internal_dict) # pylint: disable=protected-access
         internal_dict.pop('requires_aesthetics_score', None)
