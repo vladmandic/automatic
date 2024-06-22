@@ -259,6 +259,11 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         vae_file, vae_source = resolve_vae(checkpoint_file)
     else:
         vae_source = "function-argument"
+    if vae_file is None or vae_file == 'None':
+        if hasattr(sd_model, 'original_vae'):
+            sd_models.set_diffuser_options(sd_model, vae=sd_model.original_vae, op='vae')
+            shared.log.info("VAE restored")
+            return None
     if loaded_vae_file == vae_file:
         return None
     if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
@@ -276,11 +281,14 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         if vae_file is not None:
             shared.log.info(f"VAE weights loaded: {vae_file}")
     else:
-        if hasattr(shared.sd_model, "vae") and hasattr(shared.sd_model, "sd_checkpoint_info"):
-            vae = load_vae_diffusers(shared.sd_model.sd_checkpoint_info.filename, vae_file, vae_source)
+        if hasattr(sd_model, "vae") and hasattr(sd_model, "sd_checkpoint_info"):
+            vae = load_vae_diffusers(sd_model.sd_checkpoint_info.filename, vae_file, vae_source)
             if vae is not None:
+                if not hasattr(sd_model, 'original_vae'):
+                    sd_model.original_vae = sd_model.vae
+                    sd_models.move_model(sd_model.original_vae, devices.cpu)
                 sd_models.set_diffuser_options(sd_model, vae=vae, op='vae')
-                apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
+                apply_vae_config(sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
 
     if not shared.cmd_opts.lowvram and not shared.cmd_opts.medvram:
         sd_models.move_model(sd_model, devices.device)

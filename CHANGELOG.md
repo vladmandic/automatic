@@ -11,6 +11,7 @@ But there's more than SD3:
 - support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
+- additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora
 - (finally) new release of **Torch-DirectML**  
 - additional efficiencies for users with low vram gpus  
 - over 20 overall fixes  
@@ -47,6 +48,7 @@ But there's more than SD3:
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
 - xyz grid: add support for LoRA selector
+- vae load: store original vae so it can be restored when set to none
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
 - force gc for lowvram users and improve gc logging
@@ -56,11 +58,11 @@ But there's more than SD3:
 - additional torch gc checks, thanks @Disty0!
 
 **Improvements: NNCF**, thanks @Disty0!  
- - SD3 and PixArt support  
- - moved the first compression step to CPU  
- - sequential cpu offload (lowvram) support  
- - Lora support without reloading the model  
- - ControlNet compression support  
+- SD3 and PixArt support  
+- moved the first compression step to CPU  
+- sequential cpu offload (lowvram) support  
+- Lora support without reloading the model  
+- ControlNet compression support  
 
 ### Fixes
 
