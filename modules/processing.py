@@ -158,7 +158,6 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
-        pag.apply(p)
         if shared.opts.cuda_compile_backend == 'none':
             sd_models.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, not shared.native)
@@ -273,6 +272,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
+            pag.apply(p)
             debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
             p.iteration = n
             if shared.state.skipped:
