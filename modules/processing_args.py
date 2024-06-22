@@ -27,7 +27,8 @@ def task_specific_kwargs(p, model):
                 'height': 8 * math.ceil(p.height / 8),
             }
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
-        model.register_to_config(requires_aesthetics_score = False)
+        if shared.sd_model_type == 'sdxl':
+            model.register_to_config(requires_aesthetics_score = False)
         p.ops.append('img2img')
         task_args = {
             'image': p.init_images,
@@ -42,7 +43,8 @@ def task_specific_kwargs(p, model):
             'strength': p.denoising_strength,
         }
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
-        model.register_to_config(requires_aesthetics_score = False)
+        if shared.sd_model_type == 'sdxl':
+            model.register_to_config(requires_aesthetics_score = False)
         p.ops.append('inpaint')
         width, height = processing_helpers.resize_init_images(p)
         task_args = {
