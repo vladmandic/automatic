@@ -46,6 +46,7 @@ But there's more than SD3:
   *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
+- xyz grid: add support for LoRA selector
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
 - force gc for lowvram users and improve gc logging
