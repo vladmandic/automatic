@@ -1,4 +1,5 @@
 from typing import Type, Dict, Any, Tuple, Optional
+import math
 import torch
 import torch.nn.functional as F
 from diffusers.utils.torch_utils import is_torch_version
@@ -100,15 +101,18 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
             # reference: https://github.com/microsoft/Swin-Transformer
             def window_partition(x, window_size, shift_size, H, W):
                 B, _N, C = x.shape
-                # H, W = int(N**0.5), int(N**0.5)
                 x = x.view(B,H,W,C)
+                if H % 2 != 0 or W % 2 != 0:
+                    from modules.errors import log
+                    log.warning('HiDiffusion: The feature size is not divisible by 2')
+                    x = F.interpolate(x.permute(0,3,1,2).contiguous(), size=(window_size[0]*2, window_size[1]*2), mode='bicubic').permute(0,2,3,1).contiguous()
                 if type(shift_size) == list or type(shift_size) == tuple:
                     if shift_size[0] > 0:
                         x = torch.roll(x, shifts=(-shift_size[0], -shift_size[1]), dims=(1, 2))
                 else:
                     if shift_size > 0:
                         x = torch.roll(x, shifts=(-shift_size, -shift_size), dims=(1, 2))
-                x = x.view(B, H // window_size[0], window_size[0], W // window_size[1], window_size[1], C)
+                x = x.view(B, 2, window_size[0], 2, window_size[1], C)
                 windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size[0], window_size[1], C)
                 windows = windows.view(-1, window_size[0] * window_size[1], C)
                 return windows
@@ -116,15 +120,17 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
             def window_reverse(windows, window_size, H, W, shift_size):
                 B, _N, C = windows.shape
                 windows = windows.view(-1, window_size[0], window_size[1], C)
-                B = int(windows.shape[0] / (H * W / window_size[0] / window_size[1]))
-                x = windows.view(B, H // window_size[0], W // window_size[1], window_size[0], window_size[1], -1)
-                x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+                B = int(windows.shape[0] / 4) # 2x2
+                x = windows.view(B, 2, 2, window_size[0], window_size[1], -1)
+                x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, window_size[0]*2, window_size[1]*2, -1)
                 if type(shift_size) == list or type(shift_size) == tuple:
                     if shift_size[0] > 0:
                         x = torch.roll(x, shifts=(shift_size[0], shift_size[1]), dims=(1, 2))
                 else:
                     if shift_size > 0:
                         x = torch.roll(x, shifts=(shift_size, shift_size), dims=(1, 2))
+                if H % 2 != 0 or W % 2 != 0:
+                    x = F.interpolate(x.permute(0,3,1,2).contiguous(), size=(H, W), mode='bicubic').permute(0,2,3,1).contiguous()
                 x = x.view(B, H*W, C)
                 return x
 
@@ -152,9 +158,9 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
             rand_num = torch.rand(1)
             _B, N, _C = hidden_states.shape
             ori_H, ori_W = self.info['size']
-            downsample_ratio = int(((ori_H*ori_W) // N)**0.5)
-            H, W = (ori_H//downsample_ratio, ori_W//downsample_ratio)
-            widow_size = (H//2, W//2)
+            downsample_ratio = round(((ori_H*ori_W) / N)**0.5)
+            H, W = (math.ceil(ori_H/downsample_ratio), math.ceil(ori_W/downsample_ratio))
+            widow_size = (math.ceil(H/2), math.ceil(W/2))
             if rand_num <= 0.25:
                 shift_size = (0,0)
             if rand_num > 0.25 and rand_num <= 0.5:
@@ -351,9 +357,11 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
 
                 if i == 0:
                     if self.aggressive_raunet and self.timestep >= self.T1_start and self.timestep < self.T1_end:
-                        hidden_states = F.avg_pool2d(hidden_states, kernel_size=(2,2))
+                        self.info["upsample_size"] = (hidden_states.shape[2], hidden_states.shape[3])
+                        hidden_states = F.avg_pool2d(hidden_states, kernel_size=(2,2),ceil_mode=True)
                     elif self.timestep < self.T1:
-                        hidden_states = F.avg_pool2d(hidden_states, kernel_size=(2,2))
+                        self.info["upsample_size"] = (hidden_states.shape[2], hidden_states.shape[3])
+                        hidden_states = F.avg_pool2d(hidden_states, kernel_size=(2,2),ceil_mode=True)
                 output_states = output_states + (hidden_states,)
 
             if self.downsamplers is not None:
@@ -458,11 +466,9 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
                 )[0]
                 if i == 1:
                     if self.aggressive_raunet and self.timestep >= self.T1_start and self.timestep < self.T1_end:
-                        re_size = (int(hidden_states.shape[-2] * 2), int(hidden_states.shape[-1] * 2))
-                        hidden_states = F.interpolate(hidden_states, size=re_size, mode='bicubic')
+                        hidden_states = F.interpolate(hidden_states, size=self.info["upsample_size"], mode='bicubic')
                     elif self.timestep < self.T1:
-                        re_size = (int(hidden_states.shape[-2] * 2), int(hidden_states.shape[-1] * 2))
-                        hidden_states = F.interpolate(hidden_states, size=re_size, mode='bicubic')
+                        hidden_states = F.interpolate(hidden_states, size=self.info["upsample_size"], mode='bicubic')
 
             if self.upsamplers is not None:
                 for upsampler in self.upsamplers:
@@ -589,9 +595,6 @@ def make_diffusers_upsampler_block(block_class: Type[torch.nn.Module]) -> Type[t
                 self.T1 = int(aggressive_step/50 * self.max_timestep)
             else:
                 self.T1 = int(self.max_timestep * self.T1_ratio)
-            if self.timestep < self.T1:
-                if ori_H != hidden_states.shape[2] and ori_W != hidden_states.shape[3]:
-                    hidden_states = F.interpolate(hidden_states, scale_factor=2.0, mode='bicubic')
             self.timestep += 1
             if self.timestep == self.max_timestep:
                 self.timestep = 0
@@ -629,9 +632,10 @@ def apply_hidiffusion(
         make_block_fn = make_diffusers_unet_2d_condition
         model.unet.__class__ = make_block_fn(model.unet.__class__)
     diffusion_model = model.unet if hasattr(model, "unet") else model
-    diffusion_model.num_upsamplers += 2
+    diffusion_model.num_upsamplers += 12
     diffusion_model.info = {
         'size': None,
+        'upsample_size': None,
         'hooks': [],
         'text_to_img_controlnet': hasattr(model, 'controlnet'),
         'is_inpainting_task': model.__class__ in auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING.values(),

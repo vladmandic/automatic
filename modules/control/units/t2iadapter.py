@@ -74,7 +74,7 @@ class Adapter():
         self.model_id: str = model_id
         self.device = device
         self.dtype = dtype
-        self.load_config = { 'cache_dir': cache_dir }
+        self.load_config = { 'cache_dir': cache_dir, 'use_safetensors': False }
         if load_config is not None:
             self.load_config.update(load_config)
         if model_id is not None:
@@ -101,7 +101,7 @@ class Adapter():
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
                 return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
-            if model_path.endswith('.pth') or model_path.endswith('.pt') or model_path.endswith('.safetensors'):
+            if model_path.endswith('.pth') or model_path.endswith('.pt') or model_path.endswith('.safetensors') or model_path.endswith('.bin'):
                 from huggingface_hub import hf_hub_download
                 parts = model_path.split('/')
                 repo_id = f'{parts[0]}/{parts[1]}'

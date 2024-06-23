@@ -37,7 +37,7 @@ class ExtraNetworksPageTextualInversion(ui_extra_networks.ExtraNetworksPage):
             record["info"] = self.find_info(embedding.filename)
             record["description"] = self.find_description(embedding.filename, record["info"])
         except Exception as e:
-            shared.log.debug(f"Extra networks error: type=embedding file={embedding.filename} {e}")
+            shared.log.debug(f"Networks error: type=embedding file={embedding.filename} {e}")
         return record
 
     def list_items(self):

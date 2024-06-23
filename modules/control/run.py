@@ -55,7 +55,7 @@ def control_set(kwargs):
 
 def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
                 input_type: int = 0,
-                prompt: str = '', negative: str = '', styles: List[str] = [],
+                prompt: str = '', negative_prompt: str = '', styles: List[str] = [],
                 steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1.0,
@@ -90,12 +90,11 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         shared.log.warning('Sampler: invalid')
         sampler_index = 0
     if hr_sampler_index is None:
-        shared.log.warning('Sampler: invalid')
-        hr_sampler_index = 0
+        hr_sampler_index = sampler_index
 
     p = StableDiffusionProcessingControl(
         prompt = prompt,
-        negative_prompt = negative,
+        negative_prompt = negative_prompt,
         styles = styles,
         steps = steps,
         n_iter = batch_count,
@@ -192,7 +191,9 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     p.refiner_prompt = refiner_prompt
     p.refiner_negative = refiner_negative
     if p.enable_hr and (p.hr_resize_x == 0 or p.hr_resize_y == 0):
-        p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.width * p.hr_scale / 8), 8 * int(p.height * p.hr_scale / 8)
+        p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(width_before * p.hr_scale / 8), 8 * int(height_before * p.hr_scale / 8)
+    elif p.enable_hr and (p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0):
+        p.hr_upscale_to_x, p.hr_upscale_to_y = 8 * int(p.hr_resize_x / 8), 8 * int(hr_resize_y / 8)
 
     global p_extra_args # pylint: disable=global-statement
     for k, v in p_extra_args.items():

@@ -41,7 +41,7 @@ hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
 locking_available = True
 clip_model = None
-interrogator = modules.interrogate.InterrogateModels("interrogate")
+interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 face_restorers = []
 tab_names = []
@@ -330,8 +330,9 @@ def temp_disable_extensions():
         modules.shared.opts.data['theme_type'] = 'None'
         modules.shared.opts.data['gradio_theme'] = theme_name
     else:
-        modules.shared.opts.data['theme_type'] = 'None'
-        modules.shared.opts.data['gradio_theme'] = theme_name
+        modules.shared.log.error(f'UI theme invalid: theme="{theme_name}" available={["standard/*", "modern/*", "none/*"]} fallback="standard/black-teal"')
+        modules.shared.opts.data['theme_type'] = 'Standard'
+        modules.shared.opts.data['gradio_theme'] = 'black-teal'
 
     for ext in disable_themes:
         if ext.lower() not in opts.disabled_extensions:
@@ -385,19 +386,20 @@ else:
     sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
-    "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["original", "diffusers"] }),
+    "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
-    "sd_te3": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": ['None', 'T5 FP8', 'T5 FP16']}),
-    "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
+    "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": ['None', 'T5 FP4', 'T5 FP8', 'T5 INT8', 'T5 FP16']}),
     "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
+    "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results"),
     "stream_load": OptionInfo(False, "Load models using stream loading method", gr.Checkbox, {"visible": not native }),
     "model_reuse_dict": OptionInfo(False, "Reuse loaded model dictionary", gr.Checkbox, {"visible": False}),
-    "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "A1111 parser", "Fixed attention"] }),
     "prompt_mean_norm": OptionInfo(False, "Prompt attention normalization", gr.Checkbox),
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
+    "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "A1111 parser", "Fixed attention"] }),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
     "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
@@ -448,7 +450,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
     "nncf_sep": OptionInfo("<h2>Model Compress</h2>", "", gr.HTML),
-    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
+    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
@@ -715,6 +717,7 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     'schedulers_timesteps_range': OptionInfo(1000, "Timesteps range", gr.Slider, {"minimum": 250, "maximum": 4000, "step": 1}),
     'schedulers_timesteps': OptionInfo('', "Timesteps"),
     "schedulers_rescale_betas": OptionInfo(False, "Rescale betas with zero terminal SNR", gr.Checkbox),
+    'schedulers_shift': OptionInfo(1, "Sampler shift", gr.Slider, {"minimum": 0.1, "maximum": 10, "step": 0.1}),
 
     # managed from ui.py for backend original k-diffusion
     "schedulers_sep_kdiffusers": OptionInfo("<h2>K-Diffusion specific config</h2>", "", gr.HTML),
@@ -774,19 +777,19 @@ options_templates.update(options_section(('control', "Control Options"), {
     "control_unload_processor": OptionInfo(False, "Processor unload after use"),
 }))
 
-options_templates.update(options_section(('training', "Training"), {
-    "unload_models_when_training": OptionInfo(False, "Move VAE and CLIP to RAM when training"),
-    "pin_memory": OptionInfo(True, "Pin training dataset to memory"),
-    "save_optimizer_state": OptionInfo(False, "Save resumable optimizer state when training"),
-    "save_training_settings_to_txt": OptionInfo(True, "Save training settings to a text file"),
-    "dataset_filename_word_regex": OptionInfo("", "Filename word regex"),
-    "dataset_filename_join_string": OptionInfo(" ", "Filename join string"),
-    "embeddings_templates_dir": OptionInfo(os.path.join(paths.script_path, 'train', 'templates'), "Embeddings train templates directory", folder=True),
-    "training_image_repeats_per_epoch": OptionInfo(1, "Image repeats per epoch", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
-    "training_write_csv_every": OptionInfo(0, "Save loss CSV file every n steps"),
-    "training_enable_tensorboard": OptionInfo(False, "Enable tensorboard logging"),
-    "training_tensorboard_save_images": OptionInfo(False, "Save generated images within tensorboard"),
-    "training_tensorboard_flush_every": OptionInfo(120, "Tensorboard flush period"),
+options_templates.update(options_section(('interrogate', "Interrogate"), { # "Training" section disabled so just a placeholder
+    "unload_models_when_training": OptionInfo(False, "Move VAE and CLIP to RAM when training", gr.Checkbox, { "visible": False }),
+    "pin_memory": OptionInfo(True, "Pin training dataset to memory", gr.Checkbox, { "visible": False }),
+    "save_optimizer_state": OptionInfo(False, "Save resumable optimizer state when training", gr.Checkbox, { "visible": False }),
+    "save_training_settings_to_txt": OptionInfo(True, "Save training settings to a text file", gr.Checkbox, { "visible": False }),
+    "dataset_filename_word_regex": OptionInfo("", "Filename word regex", gr.Textbox, { "visible": False }),
+    "dataset_filename_join_string": OptionInfo(" ", "Filename join string", gr.Textbox, { "visible": False }),
+    "embeddings_templates_dir": OptionInfo("", "Embeddings train templates directory", gr.Textbox, { "visible": False }),
+    "training_image_repeats_per_epoch": OptionInfo(1, "Image repeats per epoch", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1, "visible": False }),
+    "training_write_csv_every": OptionInfo(0, "Save loss CSV file every n steps", gr.Number, { "visible": False }),
+    "training_enable_tensorboard": OptionInfo(False, "Enable tensorboard logging", gr.Checkbox, { "visible": False }),
+    "training_tensorboard_save_images": OptionInfo(False, "Save generated images within tensorboard", gr.Checkbox, { "visible": False }),
+    "training_tensorboard_flush_every": OptionInfo(120, "Tensorboard flush period", gr.Number, { "visible": False }),
 }))
 
 options_templates.update(options_section(('interrogate', "Interrogate"), {
@@ -804,13 +807,13 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
     "deepbooru_filter_tags": OptionInfo("", "Filter out tags from deepbooru output"),
 }))
 
-options_templates.update(options_section(('extra_networks', "Extra Networks"), {
+options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_sep1": OptionInfo("<h2>Extra networks UI</h2>", "", gr.HTML),
-    "extra_networks": OptionInfo(["All"], "Extra networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
+    "extra_networks": OptionInfo(["All"], "Networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
     "extra_networks_sort": OptionInfo("Default", "Sort order", gr.Dropdown, {"choices": ['Default', 'Name [A-Z]', 'Name [Z-A]', 'Date [Newest]', 'Date [Oldest]', 'Size [Largest]', 'Size [Smallest]']}),
     "extra_networks_view": OptionInfo("gallery", "UI view", gr.Radio, {"choices": ["gallery", "list"]}),
     "extra_networks_card_cover": OptionInfo("sidebar", "UI position", gr.Radio, {"choices": ["cover", "inline", "sidebar"]}),
-    "extra_networks_height": OptionInfo(53, "UI height (%)", gr.Slider, {"minimum": 10, "maximum": 100, "step": 1}),
+    "extra_networks_height": OptionInfo(55, "UI height (%)", gr.Slider, {"minimum": 10, "maximum": 100, "step": 1}),
     "extra_networks_sidebar_width": OptionInfo(35, "UI sidebar width (%)", gr.Slider, {"minimum": 10, "maximum": 80, "step": 1}),
     "extra_networks_card_size": OptionInfo(160, "UI card size (px)", gr.Slider, {"minimum": 20, "maximum": 2000, "step": 1}),
     "extra_networks_card_square": OptionInfo(True, "UI disable variable aspect ratio"),
@@ -818,7 +821,7 @@ options_templates.update(options_section(('extra_networks', "Extra Networks"), {
     "extra_networks_sep2": OptionInfo("<h2>Extra networks general</h2>", "", gr.HTML),
     "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
-    "extra_networks_default_multiplier": OptionInfo(1.0, "Default multiplier for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
+    "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength for extra networks", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": native}),
     "extra_networks_sep3": OptionInfo("<h2>Extra networks settings</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),

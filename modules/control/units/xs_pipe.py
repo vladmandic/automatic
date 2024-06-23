@@ -1048,7 +1048,7 @@ class StableDiffusionXLControlNetXSPipeline(
             self.upcast_vae()
             latents = latents.to(next(iter(self.vae.post_quant_conv.parameters())).dtype)
 
-        if not output_type == "latent":
+        if output_type != "latent":
             # make sure the VAE is in float32 mode, as it overflows in float16
             needs_upcasting = self.vae.dtype == torch.float16 and self.vae.config.force_upcast
 
@@ -1064,7 +1064,7 @@ class StableDiffusionXLControlNetXSPipeline(
         else:
             image = latents
 
-        if not output_type == "latent":
+        if output_type != "latent":
             # apply watermark if available
             if self.watermark is not None:
                 image = self.watermark.apply_watermark(image)
@@ -1907,7 +1907,7 @@ class StableDiffusionControlNetXSPipeline(
             self.controlnet.to("cpu")
             torch.cuda.empty_cache()
 
-        if not output_type == "latent":
+        if output_type != "latent":
             image = self.vae.decode(latents / self.vae.config.scaling_factor, return_dict=False, generator=generator)[
                 0
             ]

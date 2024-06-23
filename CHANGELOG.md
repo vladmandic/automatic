@@ -1,5 +1,96 @@
 # Change Log for SD.Next
 
+## Update for 2024-06-23
+
+### Highlights for 2024-06-23
+
+Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
+including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
+
+But there's more than SD3:  
+- support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
+- support for **PixArt-Sigma** in small/medium/large variants  
+- support for **HunyuanDiT 1.1**  
+- additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora  
+- integration of **MS Florence** VLM/VQA *Base* and *Large* models  
+- (finally) new release of **Torch-DirectML**  
+- additional efficiencies for users with low VRAM GPUs  
+- over 20 overall fixes  
+
+### Model Improvements
+
+- **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
+- SD3: enable base LoRA support  
+- SD3: add support for FP4 quantized T5 text encoder  
+  simply select in *settings -> model -> text encoder*  
+  *note* for SD3 with T5, set SD.Next to use FP16 precision, not BF16 precision  
+- SD3: add support for INT8 quantized T5 text encoder, thanks @Disty0!  
+- SD3: enable cpu-offloading for T5 text encoder, thanks @Disty0!  
+- SD3: simplified loading of model in single-file safetensors format  
+  model load can now be performed fully offline  
+- SD3: full support for prompt parsing and attention, thanks @AI-Casanova!
+- SD3: ability to target different prompts to each of text-encoders, thanks @AI-Casanova!  
+  example: `dog TE2: cat TE3: bird`
+- SD3: add support for sampler shift for Euler FlowMatch  
+  see *settings -> samplers*, also available as param in xyz grid  
+  higher shift means model will spend more time on structure and less on details  
+- SD3: add support for selecting T5 text encoder variant in XYZ grid
+- **Pixart-Σ**: Add *small* (512px) and *large* (2k) variations, in addition to existing *medium* (1k)  
+- Pixart-Σ: Add support for 4/8bit quantized t5 text encoder  
+  *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
+  simply select in *settings -> model -> text encoder* before or after model load  
+- **HunyuanDiT**: support for model version 1.1  
+- **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
+  simply select in *process -> visual query*!
+
+### General Improvements
+
+- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
+- support for T5 text-encoder loader in **all** models that use T5  
+  *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
+- support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
+  *note*: new directml is finally based on modern `torch` 2.3.1!  
+- xyz grid: add support for LoRA selector
+- vae load: store original vae so it can be restored when set to none
+- extra networks: info display now contains link to source url if model if its known  
+  works for civitai and huggingface models  
+- force gc for lowvram users and improve gc logging
+- improved google.colab support
+- css tweaks for standardui
+- css tweaks for modernui
+- additional torch gc checks, thanks @Disty0!
+
+**Improvements: NNCF**, thanks @Disty0!  
+- SD3 and PixArt support  
+- moved the first compression step to CPU  
+- sequential cpu offload (lowvram) support  
+- Lora support without reloading the model  
+- ControlNet compression support  
+
+### Fixes
+
+- fix unsaturated outputs, force apply vae config on model load  
+- fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
+- fix control second pass resize  
+- fix hunyuandit set attention processor
+- fix civitai download without name
+- fix compatibility with latest adetailer
+- fix invalid sampler warning
+- fix starting from non git repo
+- fix control api negative prompt handling
+- fix saving style without name provided
+- fix t2i-color adapter
+- fix sdxl "has been incorrectly initialized"
+- fix api face-hires
+- fix api ip-adapter
+- fix memory exceptions with ROCm, thanks @Disty0!
+- fix face-hires with lowvram, thanks @Disty0!
+- fix pag incorrectly resetting pipeline
+- cleanup image metadata
+- restructure api examples: `cli/api-*`
+- handle theme fallback when invalid theme is specified
+- remove obsolete training code leftovers
+
 ## Update for 2024-06-13
 
 ### Highlights for 2024-06-13

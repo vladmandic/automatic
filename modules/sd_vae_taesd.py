@@ -11,7 +11,14 @@ import torch.nn as nn
 from modules import devices, paths
 
 
-taesd_models = { 'sd-decoder': None, 'sd-encoder': None, 'sdxl-decoder': None, 'sdxl-encoder': None }
+taesd_models = {
+    'sd-decoder': None,
+    'sd-encoder': None,
+    'sdxl-decoder': None,
+    'sdxl-encoder': None,
+    'sd3-decoder': None,
+    'sd3-encoder': None,
+}
 previous_warnings = False
 
 
@@ -31,33 +38,63 @@ class Block(nn.Module):
     def forward(self, x):
         return self.fuse(self.conv(x) + self.skip(x))
 
-def Encoder():
+def Encoder(latent_channels=4):
     return nn.Sequential(
         conv(3, 64), Block(64, 64),
         conv(64, 64, stride=2, bias=False), Block(64, 64), Block(64, 64), Block(64, 64),
         conv(64, 64, stride=2, bias=False), Block(64, 64), Block(64, 64), Block(64, 64),
         conv(64, 64, stride=2, bias=False), Block(64, 64), Block(64, 64), Block(64, 64),
-        conv(64, 4),
+        conv(64, latent_channels),
     )
 
-def Decoder():
+def Decoder(latent_channels=4):
     return nn.Sequential(
-        Clamp(), conv(4, 64), nn.ReLU(),
+        Clamp(), conv(latent_channels, 64), nn.ReLU(),
         Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
         Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
         Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
         Block(64, 64), conv(64, 3),
     )
 
+
+class TAESD2(nn.Module): # pylint: disable=abstract-method
+    latent_magnitude = 3
+    latent_shift = 0.5
+
+    def __init__(self, encoder_path="taesd_encoder.pth", decoder_path="taesd_decoder.pth", latent_channels=None):
+        """Initialize pretrained TAESD on the given device from the given checkpoints."""
+        super().__init__()
+        if latent_channels is None:
+            latent_channels = 16 if "taesd3" in str(encoder_path) else 4
+        self.encoder = Encoder(latent_channels)
+        self.decoder = Decoder(latent_channels)
+        if encoder_path is not None:
+            self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
+        if decoder_path is not None:
+            self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"))
+
+    @staticmethod
+    def scale_latents(x):
+        """raw latents -> [0, 1]"""
+        return x.div(2 * TAESD.latent_magnitude).add(TAESD.latent_shift).clamp(0, 1)
+
+    @staticmethod
+    def unscale_latents(x):
+        """[0, 1] -> raw latents"""
+        return x.sub(TAESD.latent_shift).mul(2 * TAESD.latent_magnitude)
+
+
 class TAESD(nn.Module): # pylint: disable=abstract-method
     latent_magnitude = 3
     latent_shift = 0.5
 
-    def __init__(self, encoder_path="taesd_encoder.pth", decoder_path="taesd_decoder.pth"):
+    def __init__(self, encoder_path="taesd_encoder.pth", decoder_path="taesd_decoder.pth", latent_channels=None):
         """Initialize pretrained TAESD on the given device from the given checkpoints."""
         super().__init__()
-        self.encoder = Encoder()
-        self.decoder = Decoder()
+        if latent_channels is None:
+            latent_channels = 16 if "taesd3" in str(encoder_path) or "taesd3" in str(decoder_path) else 4
+        self.encoder = Encoder(latent_channels)
+        self.decoder = Decoder(latent_channels)
         if encoder_path is not None:
             self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
         if decoder_path is not None:
@@ -105,13 +142,16 @@ def model(model_class = 'sd', model_type = 'decoder'):
 
 
 def decode(latents):
+    global previous_warnings # pylint: disable=global-statement
     from modules import shared
     model_class = shared.sd_model_type
     if model_class == 'ldm':
         model_class = 'sd'
     dtype = devices.dtype_vae if devices.dtype_vae != torch.bfloat16 else torch.float16 # taesd does not support bf16
     if 'sd' not in model_class:
-        shared.log.warning(f'TAESD unsupported model type: {model_class}')
+        if not previous_warnings:
+            previous_warnings = True
+            shared.log.warning(f'TAESD unsupported model type: {model_class}')
         return Image.new('RGB', (8, 8), color = (0, 0, 0))
     vae = taesd_models[f'{model_class}-decoder']
     if vae is None:

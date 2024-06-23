@@ -220,7 +220,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-network-cards .card .preview { box-shadow: var(--button-shadow); min-height: 30px; }
 .extra-network-cards .card:hover .overlay { background: rgba(0, 0, 0, 0.70); }
 .extra-network-cards .card:hover .preview { box-shadow: none; filter: grayscale(100%); }
-.extra-network-cards .card .overlay .tags { display: none; overflow-wrap: anywhere; position: absolute; top: 100%; z-index: 20; background: var(--body-background-fill); }
+.extra-network-cards .card .overlay .tags { display: none; overflow-wrap: anywhere; position: absolute; top: 100%; z-index: 20; background: var(--body-background-fill); overflow-x: hidden; overflow-y: auto; max-height: 333px; }
 .extra-network-cards .card .overlay .tag { padding: 2px; margin: 2px; background: rgba(70, 70, 70, 0.60); font-size: var(--text-md); cursor: pointer; display: inline-block; }
 .extra-network-cards .card .actions>span { padding: 4px; font-size: 34px !important; }
 .extra-network-cards .card .actions>span:hover { color: var(--highlight-color); }
@@ -240,7 +240,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-details > div { overflow-y: auto; min-height: 40vh; max-height: 80vh; align-self: flex-start; }
 .extra-details td:first-child { font-weight: bold; vertical-align: top; }
 .extra-details .gradio-image { max-height: 50vh; }
-
+.input-accordion-checkbox { display: none !important; }
 
 /* specific elements */
 #modelmerger_interp_description { margin-top: 1em; margin-bottom: 1em; }

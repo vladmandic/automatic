@@ -40,15 +40,17 @@ def single_sample_to_image(sample, approximation=None):
                 warn_once('Unknown decode type')
                 approximation = 0
         # normal sample is [4,64,64]
-        if sample.dtype == torch.bfloat16:
-            sample = sample.to(torch.float16)
+        try:
+            if sample.dtype == torch.bfloat16:
+                sample = sample.to(torch.float16)
+        except Exception as e:
+            warn_once(f'live preview: {e}')
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
         if len(sample) == 16: # sd_cascade
             sd_cascade = True
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
-
         if shared.native: # [-x,x] to [-5,5]
             sample_max = torch.max(sample)
             if sample_max > 5:
@@ -56,7 +58,10 @@ def single_sample_to_image(sample, approximation=None):
             sample_min = torch.min(sample)
             if sample_min < -5:
                 sample = sample * (5 / abs(sample_min))
-        if sd_cascade:
+        if approximation == 2: # TAESD
+            x_sample = sd_vae_taesd.decode(sample)
+            x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
+        elif sd_cascade:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
@@ -64,9 +69,6 @@ def single_sample_to_image(sample, approximation=None):
             x_sample = sd_vae_approx.nn_approximation(sample) * 0.5 + 0.5
             if shared.sd_model_type == "sdxl":
                 x_sample = x_sample[[2,1,0], :, :] # BGR to RGB
-        elif approximation == 2: # TAESD
-            x_sample = sd_vae_taesd.decode(sample)
-            x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
         elif approximation == 3: # Full VAE
             x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0] * 0.5 + 0.5
         else:

@@ -91,7 +91,6 @@ def reload_gradio_theme():
         'font_mono':['IBM Plex Mono', 'ui-monospace', 'Consolas', 'monospace']
     }
     gradio_theme = gr.themes.Base(**default_font_params)
-
     available_themes = list_themes()
     if theme_name not in available_themes:
         modules.shared.log.error(f'UI theme invalid: type={modules.shared.opts.theme_type} theme="{theme_name}" available={available_themes}')
@@ -99,6 +98,9 @@ def reload_gradio_theme():
             theme_name = 'black-teal'
         elif modules.shared.opts.theme_type == 'Modern':
             theme_name = 'Default'
+        else:
+            modules.shared.opts.theme_type = 'Standard'
+            theme_name = 'black-teal'
 
     modules.shared.opts.data['gradio_theme'] = theme_name
 

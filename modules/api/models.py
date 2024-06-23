@@ -152,8 +152,8 @@ class ItemIPAdapter(BaseModel):
     adapter: str = Field(title="Adapter", default="Base", description="")
     images: List[str] = Field(title="Image", default=[], description="")
     masks: Optional[List[str]] = Field(title="Mask", default=[], description="")
-    scale: float = Field(title="Scale", default=0.5, gt=0, le=1, description="")
-    start: float = Field(title="Start", default=0.0, gt=0, le=1, description="")
+    scale: float = Field(title="Scale", default=0.5, ge=0, le=1, description="")
+    start: float = Field(title="Start", default=0.0, ge=0, le=1, description="")
     end: float = Field(title="End", default=1.0, gt=0, le=1, description="")
 
 class ItemFace(BaseModel):
@@ -313,7 +313,7 @@ class ResInterrogate(BaseModel):
 
 class ReqVQA(BaseModel):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
-    model: str = Field(default="Moondream 2", title="Model", description="The interrogate model used.")
+    model: str = Field(default="MS Florence 2 Base", title="Model", description="The interrogate model used.")
     question: str = Field(default="describe the image", title="Question", description="Question to ask the model.")
 
 class ResVQA(BaseModel):

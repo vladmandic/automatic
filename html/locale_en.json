@@ -230,7 +230,7 @@
   {"id":"","label":"Control Options","localized":"","hint":"Settings related the Control tab"},
   {"id":"","label":"Training","localized":"","hint":"Settings related to model training configuration and directories"},
   {"id":"","label":"Interrogate","localized":"","hint":"Settings related to interrogation configuration"},
-  {"id":"","label":"Extra Networks","localized":"","hint":"Settings related to extra networks user interface, extra networks multiplier defaults, and configuration"},
+  {"id":"","label":"Networks","localized":"","hint":"Settings related to networks user interface, networks multiplier defaults, and configuration"},
   {"id":"","label":"Licenses","localized":"","hint":"View licenses of all additional included libraries"},
   {"id":"","label":"Show all pages","localized":"","hint":"Show all settings pages"}
 ],

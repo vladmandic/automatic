@@ -66,7 +66,7 @@ config = {
     'Euler EDM': { },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
-    'Euler FlowMatch': { },
+    'Euler FlowMatch': { 'shift': 1, },
     'IPNDM': { },
 }
 
@@ -156,6 +156,8 @@ class DiffusionSampler:
             self.config['beta_start'] = shared.opts.schedulers_beta_start
         if 'beta_end' in self.config and shared.opts.schedulers_beta_end > 0:
             self.config['beta_end'] = shared.opts.schedulers_beta_end
+        if 'shift' in self.config and shared.opts.schedulers_shift != 1:
+            self.config['shift'] = shared.opts.schedulers_shift
         if 'rescale_betas_zero_snr' in self.config:
             self.config['rescale_betas_zero_snr'] = shared.opts.schedulers_rescale_betas
         if 'timestep_spacing' in self.config and shared.opts.schedulers_timestep_spacing != 'default' and shared.opts.schedulers_timestep_spacing is not None:

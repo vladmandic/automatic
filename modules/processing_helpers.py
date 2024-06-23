@@ -351,11 +351,10 @@ def validate_sample(tensor):
         cast = sample.astype(np.uint8)
     if len(w) > 0:
         nans = np.isnan(sample).sum()
-        shared.log.error(f'Failed to validate samples: sample={sample.shape} invalid={nans}')
         cast = np.nan_to_num(sample)
         minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
         cast = cast.astype(np.uint8)
-        shared.log.warning(f'Attempted to correct samples: min={minimum:.2f} max={maximum:.2f} mean={mean:.2f}')
+        shared.log.error(f'Failed to validate samples: sample={sample.shape} min={minimum:.2f} max={maximum:.2f} mean={mean:.2f} invalid={nans}')
     return cast
 
 
@@ -390,6 +389,9 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
     if latent_upscaler is not None:
         return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
     first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+    if p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr'):
+        shared.log.error('Hires: missing upscaling dimensions')
+        return first_pass_images
     resized_images = []
     for img in first_pass_images:
         if latent_upscaler is None:
@@ -397,6 +399,7 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
         else:
             resized_image = img
         resized_images.append(resized_image)
+    devices.torch_gc()
     return resized_images
 
 

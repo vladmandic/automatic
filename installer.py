@@ -275,9 +275,12 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
 
 # execute git command
 @lru_cache()
-def git(arg: str, folder: str = None, ignore: bool = False):
+def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = False):
     if args.skip_git:
         return ''
+    if optional:
+        if 'google.colab' in sys.modules:
+            return ''
     git_cmd = os.environ.get('GIT', "git")
     if git_cmd != "git":
         git_cmd = os.path.abspath(git_cmd)
@@ -306,7 +309,7 @@ def branch(folder=None):
         return None
     branches = []
     try:
-        b = git('branch --show-current', folder)
+        b = git('branch --show-current', folder, optional=True)
         if b == '':
             branches = git('branch', folder).split('\n')
         if len(branches) > 0:
@@ -315,7 +318,7 @@ def branch(folder=None):
                 b = branches[1].strip()
                 log.debug(f'Git detached head detected: folder="{folder}" reattach={b}')
     except Exception:
-        b = git('git rev-parse --abbrev-ref HEAD', folder)
+        b = git('git rev-parse --abbrev-ref HEAD', folder, optional=True)
     if 'main' in b:
         b = 'main'
     elif 'master' in b:
@@ -323,7 +326,7 @@ def branch(folder=None):
     else:
         b = b.split('\n')[0].replace('*', '').strip()
     log.debug(f'Submodule: {folder} / {b}')
-    git(f'checkout {b}', folder, ignore=True)
+    git(f'checkout {b}', folder, ignore=True, optional=True)
     return b
 
 
@@ -396,6 +399,12 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
     if args.quick:
         return
     log.info(f'Python version={platform.python_version()} platform={platform.system()} bin="{sys.executable}" venv="{sys.prefix}"')
+    if int(sys.version_info.major) == 3 and int(sys.version_info.minor) == 12 and int(sys.version_info.micro) > 3: # TODO python 3.12.4 or higher cause a mess with pydantic
+        log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.12.3 or lower")
+        if reason is not None:
+            log.error(reason)
+        if not args.ignore:
+            sys.exit(1)
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
         log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
         if reason is not None:
@@ -434,7 +443,7 @@ def check_onnx():
 
 
 def install_rocm_zluda(torch_command):
-    check_python(supported_minors=[10,11], reason='RocM or Zluda backends require Python 3.10 or 3.11')
+    check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
     is_windows = platform.system() == 'Windows'
     log.info('AMD ROCm toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
@@ -515,14 +524,7 @@ def install_rocm_zluda(torch_command):
         torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
         # conceal ROCm installed
-        os.environ.pop("ROCM_HOME", None)
-        os.environ.pop("ROCM_PATH", None)
-        paths = os.environ["PATH"].split(";")
-        paths_no_rocm = []
-        for path in paths:
-            if "ROCm" not in path:
-                paths_no_rocm.append(path)
-        os.environ["PATH"] = ";".join(paths_no_rocm)
+        conceal_rocm()
     else:
         if rocm_ver is None: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
@@ -539,6 +541,17 @@ def install_rocm_zluda(torch_command):
             ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
     return torch_command
+
+
+def conceal_rocm():
+    os.environ.pop("ROCM_HOME", None)
+    os.environ.pop("ROCM_PATH", None)
+    paths = os.environ["PATH"].split(";")
+    paths_no_rocm = []
+    for path in paths:
+        if "ROCm" not in path:
+            paths_no_rocm.append(path)
+    os.environ["PATH"] = ";".join(paths_no_rocm)
 
 
 def install_ipex(torch_command):
@@ -677,11 +690,11 @@ def check_torch():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
             log.info('Using DirectML Backend')
-            check_python(supported_minors=[10], reason='DirectML backend requires Python 3.10')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.0.0 torchvision torch-directml')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
+            conceal_rocm()
         else:
             if args.use_zluda:
                 log.warning("ZLUDA failed to initialize: no HIP SDK found")
@@ -881,6 +894,7 @@ def install_submodules(force=True):
                 branch(name)
         except Exception:
             log.error(f'Error updating submodule: {submodule}')
+    setup_logging()
     if args.profile:
         print_profile(pr, 'Submodule')
     return '\n'.join(res)
@@ -1015,7 +1029,7 @@ def get_version(force=False):
                 'url': origin.replace('\n', '') + '/tree/' + branch_name.replace('\n', '')
             }
         except Exception:
-            version = { 'app': 'sd.next', 'version': 'unknown' }
+            version = { 'app': 'sd.next', 'version': 'unknown', 'branch': 'unknown' }
         try:
             cwd = os.getcwd()
             os.chdir('extensions-builtin/sdnext-modernui')
@@ -1031,21 +1045,24 @@ def get_version(force=False):
 
 
 def check_ui(ver):
-    if ver is None:
-        return
-    if ver['branch'] == ver['ui']:
-        return
-    log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
+    def same(ver):
+        core = ver['branch'] if ver is not None and 'branch' in ver else 'unknown'
+        ui = ver['ui'] if ver is not None and 'ui' in ver else 'unknown'
+        return core == ui or (core == 'master' and ui == 'main')
+
+    if not same(ver):
+        log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
     cwd = os.getcwd()
     try:
         os.chdir('extensions-builtin/sdnext-modernui')
-        git('checkout ' + ver['branch'], ignore=True)
+        target = 'dev' if 'dev' in ver['branch'] else 'main'
+        git('checkout ' + target, ignore=True, optional=True)
         os.chdir(cwd)
         ver = get_version(force=True)
-        if ver['branch'] == ver['ui']:
+        if not same(ver):
             log.debug(f'Branch synchronized: {ver["branch"]}')
         else:
-            log.debug(f'Branch synch failed: sdnext={ver["branch"]} ui={ver["ui"]}')
+            log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
     except Exception as e:
         log.debug(f'Branch switch: {e}')
     os.chdir(cwd)

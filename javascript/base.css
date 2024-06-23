@@ -17,6 +17,7 @@
 .tooltip-show { opacity: 0.9; }
 .tooltip-left { right: unset; left: 1em; }
 .toolbutton-selected { background: var(--background-fill-primary) !important; }
+.input-accordion-checkbox { display: none; }
 
 /* live preview */
 .progressDiv { position: relative; height: 20px; background: #b4c0cc; margin-bottom: -3px; }

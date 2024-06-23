@@ -80,7 +80,7 @@ def create_ui():
                     with gr.Row():
                         vqa_answer = gr.Textbox(label="Answer", lines=3)
                     with gr.Row(elem_id='interrogate_buttons_query'):
-                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='Moondream 2', label='VQA Model')
+                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='MS Florence 2 Base', label='VQA Model')
                         vqa_submit = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                     vqa_submit.click(vqa.interrogate, inputs=[vqa_question, vqa_image, vqa_model], outputs=[vqa_answer])
 

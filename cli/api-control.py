@@ -132,7 +132,7 @@ def generate(args): # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-img2img')
+    parser = argparse.ArgumentParser(description = 'api-img2img')
     parser.add_argument('--init', required=False, default=None, help='init image')
     parser.add_argument('--input', required=False, default=None, help='input image')
     parser.add_argument('--mask', required=False, help='mask image')

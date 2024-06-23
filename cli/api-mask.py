@@ -73,7 +73,7 @@ def info(args): # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-info')
+    parser = argparse.ArgumentParser(description = 'api-mask')
     parser.add_argument('--input', required=True, help='input image')
     parser.add_argument('--mask', required=False, help='input mask')
     parser.add_argument('--type', required=False, help='output mask type')

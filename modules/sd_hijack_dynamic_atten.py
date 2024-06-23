@@ -110,8 +110,8 @@ class DynamicAttnProcessorSDP:
         if not hasattr(F, "scaled_dot_product_attention"):
             raise ImportError("AttnProcessor2_0 requires PyTorch 2.0, to use it, please upgrade PyTorch to 2.0.")
 
-    def __call__(
-        self, attn, hidden_states: torch.FloatTensor, encoder_hidden_states=None, attention_mask=None, temb=None, scale: float = 1.0) -> torch.FloatTensor:
+    def __call__(self, attn, hidden_states: torch.Tensor, encoder_hidden_states=None, attention_mask=None, temb=None, *args, **kwargs) -> torch.Tensor:
+
         residual = hidden_states
         if attn.spatial_norm is not None:
             hidden_states = attn.spatial_norm(hidden_states, temb)
@@ -135,16 +135,15 @@ class DynamicAttnProcessorSDP:
         if attn.group_norm is not None:
             hidden_states = attn.group_norm(hidden_states.transpose(1, 2)).transpose(1, 2)
 
-        args = () if USE_PEFT_BACKEND else (scale,)
-        query = attn.to_q(hidden_states, *args)
+        query = attn.to_q(hidden_states)
 
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
         elif attn.norm_cross:
             encoder_hidden_states = attn.norm_encoder_hidden_states(encoder_hidden_states)
 
-        key = attn.to_k(encoder_hidden_states, *args)
-        value = attn.to_v(encoder_hidden_states, *args)
+        key = attn.to_k(encoder_hidden_states)
+        value = attn.to_v(encoder_hidden_states)
 
         inner_dim = key.shape[-1]
         head_dim = inner_dim // attn.heads
@@ -167,7 +166,7 @@ class DynamicAttnProcessorSDP:
         hidden_states = hidden_states.to(query.dtype)
 
         # linear proj
-        hidden_states = attn.to_out[0](hidden_states, *args)
+        hidden_states = attn.to_out[0](hidden_states)
         # dropout
         hidden_states = attn.to_out[1](hidden_states)
 
@@ -190,12 +189,10 @@ class DynamicAttnProcessorBMM:
     based on AttnProcessor V1
     """
 
-    def __call__(self, attn, hidden_states: torch.FloatTensor, encoder_hidden_states=None, attention_mask=None,
-    temb=None, scale: float = 1.0) -> torch.Tensor: # pylint: disable=too-many-statements, too-many-locals, too-many-branches
+    def __call__(self, attn, hidden_states: torch.Tensor, encoder_hidden_states=None, attention_mask=None,
+    temb=None, *args, **kwargs) -> torch.Tensor: # pylint: disable=too-many-statements, too-many-locals, too-many-branches
 
         residual = hidden_states
-
-        args = () if USE_PEFT_BACKEND else (scale,)
 
         if attn.spatial_norm is not None:
             hidden_states = attn.spatial_norm(hidden_states, temb)
@@ -214,15 +211,15 @@ class DynamicAttnProcessorBMM:
         if attn.group_norm is not None:
             hidden_states = attn.group_norm(hidden_states.transpose(1, 2)).transpose(1, 2)
 
-        query = attn.to_q(hidden_states, *args)
+        query = attn.to_q(hidden_states)
 
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
         elif attn.norm_cross:
             encoder_hidden_states = attn.norm_encoder_hidden_states(encoder_hidden_states)
 
-        key = attn.to_k(encoder_hidden_states, *args)
-        value = attn.to_v(encoder_hidden_states, *args)
+        key = attn.to_k(encoder_hidden_states)
+        value = attn.to_v(encoder_hidden_states)
 
         query = attn.head_to_batch_dim(query)
         key = attn.head_to_batch_dim(key)
@@ -294,7 +291,7 @@ class DynamicAttnProcessorBMM:
         hidden_states = attn.batch_to_head_dim(hidden_states)
 
         # linear proj
-        hidden_states = attn.to_out[0](hidden_states, *args)
+        hidden_states = attn.to_out[0](hidden_states)
         # dropout
         hidden_states = attn.to_out[1](hidden_states)
 

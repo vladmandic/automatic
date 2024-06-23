@@ -38,6 +38,7 @@ sd_metadata_pending = 0
 sd_metadata_timer = 0
 debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug_load = os.environ.get('SD_LOAD_DEBUG', None)
+debug_process = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 diffusers_version = int(diffusers.__version__.split('.')[1])
 
 
@@ -202,11 +203,17 @@ def get_closet_checkpoint_match(search_string):
     if checkpoint_info is not None:
         return checkpoint_info
     found = sorted([info for info in checkpoints_list.values() if search_string in info.title], key=lambda x: len(x.title))
-    if found:
+    if found and len(found) > 0:
         return found[0]
     found = sorted([info for info in checkpoints_list.values() if search_string.split(' ')[0] in info.title], key=lambda x: len(x.title))
-    if found:
+    if found and len(found) > 0:
         return found[0]
+    for v in shared.reference_models.values():
+        if search_string in v['path'] or os.path.basename(search_string) in v['path']:
+            model_name = search_string.replace('huggingface/', '')
+            checkpoint_info = CheckpointInfo(v['path']) # create a virutal model info
+            checkpoint_info.type = 'huggingface'
+            return checkpoint_info
     return None
 
 
@@ -249,15 +256,16 @@ def select_checkpoint(op='model'):
         shared.log.info("  or use --ckpt-dir <path-to-folder> to specify folder with sd models")
         shared.log.info("  or use --ckpt <path-to-checkpoint> to force using specific model")
         return None
-    checkpoint_info = next(iter(checkpoints_list.values()))
+    # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
         if model_checkpoint != 'model.ckpt' and model_checkpoint != 'runwayml/stable-diffusion-v1-5':
-            shared.log.warning(f"Selected checkpoint not found: {model_checkpoint}")
+            shared.log.warning(f'Selected: {op}="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
         # shared.log.warning(f"Loading fallback checkpoint: {checkpoint_info.title}")
-        shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
-    shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
+        # shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
+    else:
+        shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
     return checkpoint_info
 
 
@@ -545,7 +553,7 @@ def change_backend():
     refresh_vae_list()
 
 
-def detect_pipeline(f: str, op: str = 'model', warning=True):
+def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
     guess = shared.opts.diffusers_pipeline
     warn = shared.log.warning if warning else lambda *args, **kwargs: None
     size = 0
@@ -560,39 +568,25 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
                     warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
                     guess = 'VAE'
-                elif size >= 4970 and size <= 4976: # 4973
+                elif (size >= 4970 and size <= 4976): # 4973
                     guess = 'Stable Diffusion 2' # SD v2 but could be eps or v-prediction
                 # elif size < 0: # unknown
                 #    guess = 'Stable Diffusion 2B'
-                elif size >= 5791 and size <= 5799: # 5795
-                    if not shared.native:
-                        warn(f'Model detected as SD-XL refiner model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size >= 5791 and size <= 5799): # 5795
                     if op == 'model':
                         warn(f'Model detected as SD-XL refiner model, but attempting to load a base model: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL Refiner'
                 elif (size >= 6611 and size <= 7220): # 6617, HassakuXL is 6776, monkrenRealisticINT_v10 is 7217
-                    if not shared.native:
-                        warn(f'Model detected as SD-XL base model, but attempting to load using backend=original: {op}={f} size={size} MB')
                     guess = 'Stable Diffusion XL'
-                elif size >= 3361 and size <= 3369: # 3368
-                    if not shared.native:
-                        warn(f'Model detected as SD upscale model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size >= 3361 and size <= 3369): # 3368
                     guess = 'Stable Diffusion Upscale'
-                elif size >= 4891 and size <= 4899: # 4897
-                    if not shared.native:
-                        warn(f'Model detected as SD XL inpaint model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size >= 4891 and size <= 4899): # 4897
                     guess = 'Stable Diffusion XL Inpaint'
-                elif size >= 9791 and size <= 9799: # 9794
-                    if not shared.native:
-                        warn(f'Model detected as SD XL instruct pix2pix model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size >= 9791 and size <= 9799): # 9794
                     guess = 'Stable Diffusion XL Instruct'
-                elif size > 3138 and size < 3142: #3140
-                    if not shared.native:
-                        warn(f'Model detected as Segmind Vega model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size > 3138 and size < 3142): #3140
                     guess = 'Stable Diffusion XL'
-                elif size > 5692 and size < 5698 or size > 4134 and size < 4138:
-                    if not shared.native:
-                        warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
+                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366):
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
@@ -602,34 +596,20 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 guess = 'Latent Consistency Model'
             """
             if 'instaflow' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as InstaFlow model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'InstaFlow'
             if 'segmoe' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as SegMoE model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'SegMoE'
             if 'hunyuandit' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Tenecent HunyuanDiT model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'HunyuanDiT'
             if 'pixart-xl' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as PixArt Alpha model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Alpha'
             if 'stable-diffusion-3' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Stable Diffusion 3 model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'Stable Diffusion 3'
             if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as Stable Cascade model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 if devices.dtype == torch.float16:
                     warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
             if 'pixart-sigma' in f.lower():
-                if not shared.native:
-                    warn(f'Model detected as PixArt-Sigma model, but attempting to load using backend=original: {op}={f} size={size} MB')
                 guess = 'PixArt-Sigma'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
@@ -642,7 +622,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
                 guess = 'Stable Diffusion XL Instruct'
             # get actual pipeline
             pipeline = shared_items.get_pipelines().get(guess, None)
-            shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+            if not quiet:
+                shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
         except Exception as e:
             shared.log.error(f'Error detecting diffusers pipeline: model={f} {e}')
             return None, None
@@ -650,7 +631,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True):
         try:
             size = round(os.path.getsize(f) / 1024 / 1024)
             pipeline = shared_items.get_pipelines().get(guess, None)
-            shared.log.info(f'Diffusers: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+            if not quiet:
+                shared.log.info(f'Diffusers: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
         except Exception as e:
             shared.log.error(f'Error loading diffusers pipeline: model={f} {e}')
 
@@ -673,15 +655,10 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
 
 
-def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
+def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
-    if (shared.opts.diffusers_model_cpu_offload or shared.cmd_opts.medvram) and (shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram):
-        shared.log.warning(f'Setting {op}: Model CPU offload and Sequential CPU offload are not compatible')
-        shared.log.debug(f'Setting {op}: disabling model CPU offload')
-        shared.opts.diffusers_model_cpu_offload=False
-        shared.cmd_opts.medvram=False
 
     if hasattr(sd_model, "watermark"):
         sd_model.watermark = NoWatermark()
@@ -737,6 +714,20 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model'):
         shared.log.debug(f'Setting {op}: enable channels last')
         sd_model.unet.to(memory_format=torch.channels_last)
 
+    if offload:
+        set_diffuser_offload(sd_model, op)
+
+def set_diffuser_offload(sd_model, op: str = 'model'):
+    if sd_model is None:
+        shared.log.warning(f'{op} is not loaded')
+        return
+    if (shared.opts.diffusers_model_cpu_offload or shared.cmd_opts.medvram) and (shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram):
+        shared.log.warning(f'Setting {op}: Model CPU offload and Sequential CPU offload are not compatible')
+        shared.log.debug(f'Setting {op}: disabling model CPU offload')
+        shared.opts.diffusers_model_cpu_offload=False
+        shared.cmd_opts.medvram=False
+    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
+        sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
         if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
             shared.log.debug(f'Setting {op}: enable model CPU offload')
@@ -774,7 +765,7 @@ def move_model(model, device=None, force=False):
     if model is None or device is None:
         return
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
-        if device == devices.device: # force vae back to gpu if not in txt2img mode
+        if device == devices.device and model.vae.device.type != "meta": # force vae back to gpu if not in txt2img mode
             model.vae.to(device)
             if hasattr(model.vae, '_hf_hook'):
                 debug_move(f'Model move: to={device} class={model.vae.__class__} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
@@ -994,14 +985,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
             elif model_type in ['PixArt-Sigma']: # forced pipeline
                 try:
-                    # shared.opts.data['cuda_dtype'] = 'FP32' # override
-                    shared.opts.data['diffusers_model_cpu_offload'] = True # override
-                    devices.set_cuda_params()
-                    sd_model = diffusers.PixArtSigmaPipeline.from_pretrained(
-                        checkpoint_info.path,
-                        use_safetensors=True,
-                        cache_dir=shared.opts.diffusers_dir,
-                        **diffusers_load_config)
+                    from modules.model_pixart import load_pixart
+                    sd_model = load_pixart(checkpoint_info, diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
@@ -1156,8 +1141,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
         timer.record("embeddings")
 
-        set_diffuser_options(sd_model, vae, op)
+        from modules.prompt_parser_diffusers import insert_parser_highjack
+        insert_parser_highjack(sd_model.__class__.__name__)
 
+        set_diffuser_options(sd_model, vae, op, offload=False)
+        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
+        timer.record("options")
+
+        set_diffuser_offload(sd_model, op)
+        if op == 'model':
+            sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
             move_model(sd_model, devices.cpu)
@@ -1165,13 +1159,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             move_model(sd_model, devices.device)
         timer.record("move")
 
-        reload_text_encoder()
+        reload_text_encoder(initial=True)
 
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
-
-        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-            sd_model = sd_models_compile.nncf_compress_weights(sd_model)
 
         if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none'):
             sd_model = sd_models_compile.compile_diffusers(sd_model)
@@ -1305,11 +1296,25 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
     return pipeline
 
 
+def clean_diffuser_pipe(pipe):
+    if pipe is not None and shared.sd_model_type == 'sdxl' and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
+        debug_process(f'Pipeline clean: {pipe.__class__.__name__}')
+        # diffusers adds requires_aesthetics_score with img2img and complains if requires_aesthetics_score exist in txt2img
+        internal_dict = dict(pipe._internal_dict) # pylint: disable=protected-access
+        internal_dict.pop('requires_aesthetics_score', None)
+        del pipe._internal_dict
+        pipe.register_to_config(**internal_dict)
+
+
 def set_diffuser_pipe(pipe, new_pipe_type):
+    n = getattr(pipe.__class__, '__name__', '')
+    if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
+        clean_diffuser_pipe(pipe)
+
     if get_diffusers_task(pipe) == new_pipe_type:
         return pipe
+
     # skip specific pipelines
-    n = getattr(pipe.__class__, '__name__', '')
     if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline']:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
@@ -1378,8 +1383,10 @@ def set_diffusers_attention(pipe):
         modules = [getattr(pipe, n, None) for n in module_names]
         modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
         for module in modules:
-            if 'SD3Transformer2DModel' in module.__class__.__name__: # TODO SD3
+            if module.__class__.__name__ in ['SD3Transformer2DModel']:
                 module.set_attn_processor(p.JointAttnProcessor2_0())
+            elif module.__class__.__name__ in ['HunyuanDiT2DModel']:
+                pass
             else:
                 module.set_attn_processor(attention)
 
@@ -1522,11 +1529,19 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     shared.log.info(f'Model load finished: {memory_stats()} cached={len(checkpoints_loaded.keys())}')
 
 
-def reload_text_encoder():
-    if hasattr(shared.sd_model, 'text_encoder_3'):
-        from modules.model_sd3 import load_te3
-        shared.log.debug(f'Load: TE3={shared.opts.sd_te3}')
-        load_te3(shared.sd_model, shared.opts.sd_te3, cache_dir=shared.opts.diffusers_dir)
+def reload_text_encoder(initial=False):
+    if initial and (shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None'):
+        return # dont unload
+    signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
+    t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
+    if len(t5) > 0:
+        from modules.model_t5 import set_t5
+        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
+        set_t5(pipe=shared.sd_model, module=t5[0], t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+    elif hasattr(shared.sd_model, 'text_encoder_3'):
+        from modules.model_t5 import set_t5
+        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
+        set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):

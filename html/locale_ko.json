@@ -48,7 +48,7 @@
   {"id":"","label":"Interrogate\nDeepBooru","localized":"DeepBooru 모델 사용","hint":"DeepBooru 모델을 사용해 이미지에서 설명을 추출한다."}
 ],
 "extra networks": [
-  {"id":"","label":"Extra networks tab order","localized":"엑스트라 네트워크 탭 순서","hint":"Comma-separated list of tab names; tabs listed here will appear in the extra networks UI first and in order lsited"},
+  {"id":"","label":"Networks tab order","localized":"엑스트라 네트워크 탭 순서","hint":"Comma-separated list of tab names; tabs listed here will appear in the extra networks UI first and in order lsited"},
   {"id":"","label":"UI position","localized":"UI 위치","hint":""},
   {"id":"","label":"UI height (%)","localized":"UI 높이 (%)","hint":""},
   {"id":"","label":"UI sidebar width (%)","localized":"UI 사이드바 너비 (%)","hint":""},

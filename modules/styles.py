@@ -328,7 +328,7 @@ class StyleDatabase:
                 "preview": "",
             }
             keepcharacters = (' ','.','_')
-            fn = "".join(c for c in name if c.isalnum() or c in keepcharacters).rstrip()
+            fn = "".join(c for c in name if c.isalnum() or c in keepcharacters).strip()
             fn = os.path.join(path, fn + ".json")
             try:
                 with open(fn, 'w', encoding='utf-8') as f:

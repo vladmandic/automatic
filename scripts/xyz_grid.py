@@ -65,12 +65,14 @@ def apply_sampler(p, x, xs):
     else:
         p.sampler_name = sampler_name
 
+
 def apply_hr_sampler_name(p, x, xs):
     hr_sampler_name = sd_samplers.samplers_map.get(x.lower(), None)
     if hr_sampler_name is None:
         shared.log.warning(f"XYZ grid: unknown sampler: {x}")
     else:
         p.hr_sampler_name = hr_sampler_name
+
 
 def confirm_samplers(p, xs):
     for x in xs:
@@ -136,6 +138,24 @@ def find_vae(name: str):
 
 def apply_vae(p, x, xs):
     sd_vae.reload_vae_weights(shared.sd_model, vae_file=find_vae(x))
+
+
+def list_lora():
+    import sys
+    lora = [v for k, v in sys.modules.items() if k == 'networks'][0]
+    loras = [v.name for v in lora.available_networks.values()]
+    return ['None'] + loras
+
+
+def apply_lora(p, x, xs):
+    if x == 'None':
+        return
+    p.prompt = p.prompt + f" <lora:{x}:{shared.opts.extra_networks_default_multiplier}>"
+
+
+def apply_te(p, x, xs):
+    shared.opts.data["sd_text_encoder"] = x
+    sd_models.reload_text_encoder()
 
 
 def apply_styles(p: processing.StableDiffusionProcessingTxt2Img, x: str, _):
@@ -230,6 +250,8 @@ axis_options = [
     AxisOption("Prompt S/R", str, apply_prompt, fmt=format_value),
     AxisOption("Model", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
+    AxisOption("LoRA", str, apply_lora, cost=0.5, choices=list_lora),
+    AxisOption("Text encoder", str, apply_te, cost=0.7, choices=lambda: ['None', 'T5 FP4', 'T5 FP8', 'T5 FP16']),
     AxisOption("Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
@@ -251,6 +273,7 @@ axis_options = [
     AxisOption("[Sampler] Sigma tmax", float, apply_field("s_tmax")),
     AxisOption("[Sampler] Sigma Churn", float, apply_field("s_churn")),
     AxisOption("[Sampler] Sigma noise", float, apply_field("s_noise")),
+    AxisOption("[Sampler] Shift", float, apply_setting("schedulers_shift")),
     AxisOption("[Sampler] ETA", float, apply_setting("scheduler_eta")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
     AxisOption("[Second pass] Upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),

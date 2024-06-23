@@ -104,11 +104,12 @@ class FaceRestorerYolo(FaceRestoration):
             return np_image
         self.load()
         if self.model is None:
-            shared.log.error(f"Model load: type=FaceHires model='{self.model_name}' dir={self.model_dir} url={self.model_url}")
+            shared.log.debug('Face HiRes: model not loaded')
             return np_image
         image = Image.fromarray(np_image)
         faces = self.predict(image)
         if len(faces) == 0:
+            shared.log.debug('Face HiRes: no faces detected')
             return np_image
 
         # create backups
@@ -140,6 +141,7 @@ class FaceRestorerYolo(FaceRestoration):
         if args['denoising_strength'] == 0:
             shared.log.debug('Face HiRes skip: strength=0')
         control_pipeline = None
+        orig_class = shared.sd_model.__class__
         if getattr(p, 'is_control', False):
             from modules.control import run
             control_pipeline = shared.sd_model
@@ -177,6 +179,8 @@ class FaceRestorerYolo(FaceRestoration):
         # restore pipeline
         if control_pipeline is not None:
             shared.sd_model = control_pipeline
+        else:
+            shared.sd_model.__class__ = orig_class
         p = processing_class.switch_class(p, orig_cls, orig_p)
         p.init_images = getattr(orig_p, 'init_images', None)
         p.image_mask = getattr(orig_p, 'image_mask', None)

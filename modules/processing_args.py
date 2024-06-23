@@ -27,6 +27,8 @@ def task_specific_kwargs(p, model):
                 'height': 8 * math.ceil(p.height / 8),
             }
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
+        if shared.sd_model_type == 'sdxl':
+            model.register_to_config(requires_aesthetics_score = False)
         p.ops.append('img2img')
         task_args = {
             'image': p.init_images,
@@ -41,6 +43,8 @@ def task_specific_kwargs(p, model):
             'strength': p.denoising_strength,
         }
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
+        if shared.sd_model_type == 'sdxl':
+            model.register_to_config(requires_aesthetics_score = False)
         p.ops.append('inpaint')
         width, height = processing_helpers.resize_init_images(p)
         task_args = {
@@ -106,7 +110,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                     shared.log.error(f'Sampler timesteps: {e}')
             else:
                 shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
-    if shared.opts.prompt_attention != 'Fixed attention' and ('StableDiffusion' in model.__class__.__name__ or 'StableCascade' in model.__class__.__name__) and 'Onnx' not in model.__class__.__name__ and 'StableDiffusion3' not in model.__class__.__name__:
+    if shared.opts.prompt_attention != 'Fixed attention' and ('StableDiffusion' in model.__class__.__name__ or 'StableCascade' in model.__class__.__name__) and 'Onnx' not in model.__class__.__name__:
         try:
             prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
             parser = shared.opts.prompt_attention
@@ -126,6 +130,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['prompt_embeds_pooled'] = p.positive_pooleds[0].unsqueeze(0)
             elif 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
+            elif 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
+                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
@@ -134,6 +140,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['negative_prompt_embeds_pooled'] = p.negative_pooleds[0].unsqueeze(0)
             if 'XL' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
+                args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
+            if 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
         else:
             if 'PixArtSigmaPipeline' in model.__class__.__name__: # pixart-sigma pipeline throws list-of-list for negative prompt

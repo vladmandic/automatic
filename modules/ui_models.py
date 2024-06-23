@@ -431,7 +431,7 @@ def create_ui():
                     r = req(url)
                     log.debug(f'CivitAI search: name="{name}" tag={tag or "none"} url="{url}" status={r.status_code}')
                     if r.status_code != 200:
-                        return [], [], []
+                        return [], gr.update(visible=False, value=[]), gr.update(visible=False, value=None), gr.update(visible=False, value=None)
                     body = r.json()
                     nonlocal data
                     data = body.get('items', [])

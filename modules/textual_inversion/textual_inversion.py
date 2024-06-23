@@ -13,17 +13,6 @@ from modules.files_cache import directory_files, directory_mtime, extension_filt
 debug = shared.log.trace if os.environ.get('SD_TI_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: TEXTUAL INVERSION')
 TokenToAdd = namedtuple("TokenToAdd", ["clip_l", "clip_g"])
-TextualInversionTemplate = namedtuple("TextualInversionTemplate", ["name", "path"])
-textual_inversion_templates = {}
-
-
-def list_textual_inversion_templates():
-    textual_inversion_templates.clear()
-    for root, _dirs, fns in os.walk(shared.opts.embeddings_templates_dir):
-        for fn in fns:
-            path = os.path.join(root, fn)
-            textual_inversion_templates[fn] = TextualInversionTemplate(fn, path)
-    return textual_inversion_templates
 
 
 def list_embeddings(*dirs):

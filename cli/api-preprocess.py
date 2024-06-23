@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import io
 import os
 import time
 import base64
@@ -6,6 +7,7 @@ import logging
 import argparse
 import requests
 import urllib3
+from PIL import Image
 
 
 sd_url = os.environ.get('SDAPI_URL', "http://127.0.0.1:7860")
@@ -44,21 +46,31 @@ def info(args): # pylint: disable=redefined-outer-name
     t0 = time.time()
     with open(args.input, 'rb') as f:
         content = f.read()
-    dct = { 'image': base64.b64encode(content).decode() }
-    if args.model is not None:
-        dct['model'] = args.model
-    if args.question is not None:
-        dct['question'] = args.question
-    data = post('/sdapi/v1/vqa', dct)
+    models = get('/sdapi/v1/preprocessors')
+    log.info(f'models: {models}')
+    req = {
+        'model': args.model or 'Canny',
+        'image': base64.b64encode(content).decode(),
+        'config': { 'low_threshold': 50 },
+    }
+    data = post('/sdapi/v1/preprocess', req)
     t1 = time.time()
-    log.info(f'answer: {data} time={t1-t0:.2f}')
+    if 'image' in data:
+        b64 = data['image'].split(',',1)[0]
+        image = Image.open(io.BytesIO(base64.b64decode(b64)))
+        log.info(f'received image: size={image.size} time={t1-t0:.2f}')
+        if args.output:
+            image.save(args.output)
+            log.info(f'saved image: fn={args.output}')
+    else:
+        log.info(f'received: {data} time={t1-t0:.2f}')
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'simple-info')
+    parser = argparse.ArgumentParser(description = 'api-preprocess')
     parser.add_argument('--input', required=True, help='input image')
-    parser.add_argument('--model', required=False, help='vqa model')
-    parser.add_argument('--question', required=False, help='question')
+    parser.add_argument('--model', required=True, help='preprocessing model')
+    parser.add_argument('--output', required=False, help='output image')
     args = parser.parse_args()
     log.info(f'info: {args}')
     info(args)

@@ -489,8 +489,10 @@ class ScriptRunner:
         s = ScriptSummary('before-process')
         for script in self.alwayson_scripts:
             try:
-                script_args = p.script_args[script.args_from:script.args_to]
-                script.before_process(p, *script_args, **kwargs)
+                args = p.script_args[script.args_from:script.args_to]
+                if len(args) == 0:
+                    continue
+                script.before_process(p, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f"Error running before process: {script.filename}")
             s.record(script.title())
@@ -501,6 +503,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.process(p, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script process: {script.filename}')
@@ -513,6 +517,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 processed = script.process_images(p, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script process images: {script.filename}')
@@ -525,6 +531,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.before_process_batch(p, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script before process batch: {script.filename}')
@@ -536,6 +544,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.process_batch(p, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script process batch: {script.filename}')
@@ -547,6 +557,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.postprocess(p, processed, *args)
             except Exception as e:
                 errors.display(e, f'Running script postprocess: {script.filename}')
@@ -558,6 +570,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.postprocess_batch(p, *args, images=images, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script before postprocess batch: {script.filename}')
@@ -569,6 +583,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.postprocess_batch_list(p, pp, *args, **kwargs)
             except Exception as e:
                 errors.display(e, f'Running script before postprocess batch list: {script.filename}')
@@ -580,6 +596,8 @@ class ScriptRunner:
         for script in self.alwayson_scripts:
             try:
                 args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
+                if len(args) == 0:
+                    continue
                 script.postprocess_image(p, pp, *args)
             except Exception as e:
                 errors.display(e, f'Running script postprocess image: {script.filename}')

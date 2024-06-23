@@ -58,9 +58,23 @@ def apply_compile_to_model(sd_model, function, options, op=None):
                 sd_model.text_encoder = None
                 sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = function(sd_model.decoder_pipe.text_encoder)
             else:
+                if op == "nncf" and sd_model.text_encoder.__class__.__name__ == "T5EncoderModel":
+                    from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
+                    for i in range(len(sd_model.text_encoder.encoder.block)):
+                        sd_model.text_encoder.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
+                            sd_model.text_encoder.encoder.block[i].layer[1].DenseReluDense
+                        )
                 sd_model.text_encoder = function(sd_model.text_encoder)
         if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
             sd_model.text_encoder_2 = function(sd_model.text_encoder_2)
+        if hasattr(sd_model, 'text_encoder_3') and hasattr(sd_model.text_encoder_3, 'config'):
+            if op == "nncf" and sd_model.text_encoder_3.__class__.__name__ == "T5EncoderModel":
+                from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
+                for i in range(len(sd_model.text_encoder_3.encoder.block)):
+                    sd_model.text_encoder_3.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
+                        sd_model.text_encoder_3.encoder.block[i].layer[1].DenseReluDense
+                    )
+            sd_model.text_encoder_3 = function(sd_model.text_encoder_3)
         if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
             sd_model.prior_text_encoder = None
             sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder)
@@ -100,29 +114,31 @@ def ipex_optimize(sd_model):
         shared.log.warning(f"IPEX Optimize: error: {e}")
     return sd_model
 
+def nncf_send_to_device(model):
+    for child in model.children():
+        if child.__class__.__name__ == "WeightsDecompressor":
+            child.scale = child.scale.to(devices.device)
+            child.zero_point = child.zero_point.to(devices.device)
+        nncf_send_to_device(child)
+
+def nncf_compress_model(model):
+    import nncf
+    model.eval()
+    backup_embeddings = None
+    if hasattr(model, "get_input_embeddings"):
+        backup_embeddings = copy.deepcopy(model.get_input_embeddings())
+    model = nncf.compress_weights(model)
+    nncf_send_to_device(model)
+    if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
+        model.set_input_embeddings(backup_embeddings)
+    devices.torch_gc(force=True)
+    return model
 
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
-        if sd_model.device.type == "meta":
-            shared.log.warning("Compress Weights is not compatible with Sequential CPU offload")
-            return sd_model
-
-        def nncf_compress_model(model):
-            return_device = model.device
-            model.eval()
-            backup_embeddings = None
-            if hasattr(model, "get_input_embeddings"):
-                backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-            model = nncf.compress_weights(model.to(devices.device)).to(return_device)
-            if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
-                model.set_input_embeddings(backup_embeddings)
-            devices.torch_gc(force=True)
-            return model
-
-        import nncf
-        shared.compiled_model_state = CompiledModelState()
-        shared.compiled_model_state.is_compiled = True
+        from installer import install
+        install('nncf==2.7.0', quiet=True)
 
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
 
