@@ -461,7 +461,7 @@ function setupExtraNetworksForTab(tabname) {
         en.style.position = 'absolute';
         en.style.right = '0';
         en.style.top = '13em';
-        en.style.height = '-webkit-fill-available';
+        en.style.height = 'auto';
         en.style.transition = 'width 0.3s ease';
         en.style.width = `${window.opts.extra_networks_sidebar_width}vw`;
         gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
