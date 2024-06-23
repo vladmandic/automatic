@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-21
+## Update for 2024-06-23
 
-### Highlights for 2024-06-21
+### Highlights for 2024-06-23
 
 Following zero-day **SD3** release, a week later here's a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
@@ -12,6 +12,7 @@ But there's more than SD3:
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
 - additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora
+- integration of **MS Florence** VLM/VQA *Base* and *Large* models  
 - (finally) new release of **Torch-DirectML**  
 - additional efficiencies for users with low vram gpus  
 - over 20 overall fixes  
@@ -39,6 +40,8 @@ But there's more than SD3:
   *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
   simply select in *settings -> model -> text encoder* before or after model load  
 - **HunyuanDiT**: support for model version 1.1  
+- **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
+  simply select in *process -> visual query*!
 
 ### Improvements: General
 

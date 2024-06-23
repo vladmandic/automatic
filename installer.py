@@ -894,6 +894,7 @@ def install_submodules(force=True):
                 branch(name)
         except Exception:
             log.error(f'Error updating submodule: {submodule}')
+    setup_logging()
     if args.profile:
         print_profile(pr, 'Submodule')
     return '\n'.join(res)

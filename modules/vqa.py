@@ -8,6 +8,8 @@ processor = None
 model = None
 loaded: str = None
 MODELS = {
+    "MS Florence 2 Base": "microsoft/Florence-2-base", # 0.5GB
+    "MS Florence 2 Large": "microsoft/Florence-2-large", # 1.5GB
     "Moondream 2": "vikhyatk/moondream2", # 3.7GB
     "GIT TextCaps Base": "microsoft/git-base-textcaps", # 0.7GB
     "GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB
@@ -124,7 +126,44 @@ def moondream(question: str, image: Image.Image, repo: str = None):
     return response
 
 
+def florence(question: str, image: Image.Image, repo: str = None):
+    global processor, model, loaded # pylint: disable=global-statement
+    if model is None or loaded != repo:
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True)
+        processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True)
+        loaded = repo
+        model.eval()
+    model.to(devices.device, devices.dtype)
+    shared.log.debug(f'VQA: class={model.__class__.__name__} processor={processor.__class__} model={repo}')
+
+    if question.startswith('<'):
+        task = question.split('>', 1)[0] + '>'
+    else:
+        task = '<MORE_DETAILED_CAPTION>'
+        question = task + question
+    inputs = processor(text=question, images=image, return_tensors="pt")
+    input_ids = inputs['input_ids'].to(devices.device)
+    pixel_values = inputs['pixel_values'].to(devices.device, devices.dtype)
+    with devices.inference_context():
+        generated_ids = model.generate(
+            input_ids=input_ids,
+            pixel_values=pixel_values,
+            max_new_tokens=1024,
+            num_beams=3,
+            do_sample=False
+        )
+        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+        response = processor.post_process_generation(generated_text, task="task", image_size=(image.width, image.height))
+
+    if 'task' in response:
+        response = response['task']
+    shared.log.debug(f'VQA: task={task} response="{response}"')
+    return response
+
+
 def interrogate(vqa_question, vqa_image, vqa_model_req):
+    from installer import install
+    install('flash_attn', quiet=True)
     vqa_model = MODELS.get(vqa_model_req, None)
     shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
     if vqa_image is None:
@@ -146,6 +185,8 @@ def interrogate(vqa_question, vqa_image, vqa_model_req):
         answer = pix(vqa_question, vqa_image, vqa_model)
     if 'moondream2' in vqa_model.lower():
         answer = moondream(vqa_question, vqa_image, vqa_model)
+    if 'florence' in vqa_model.lower():
+        answer = florence(vqa_question, vqa_image, vqa_model)
     else:
         answer = 'unknown model'
     if model is not None:
