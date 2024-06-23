@@ -128,6 +128,9 @@ def moondream(question: str, image: Image.Image, repo: str = None):
 
 def florence(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
+    from installer import install, installed
+    if not installed('flash_attn', quiet=True):
+        install('flash_attn')
     if model is None or loaded != repo:
         model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True)
         processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True)
@@ -162,8 +165,6 @@ def florence(question: str, image: Image.Image, repo: str = None):
 
 
 def interrogate(vqa_question, vqa_image, vqa_model_req):
-    from installer import install
-    install('flash_attn', quiet=True)
     vqa_model = MODELS.get(vqa_model_req, None)
     shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
     if vqa_image is None:
