@@ -4,17 +4,17 @@
 
 ### Highlights for 2024-06-23
 
-Following zero-day **SD3** release, a week later here's a refresh with 10+ improvements  
+Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
 
 But there's more than SD3:  
-- support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)  
+- support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
-- additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora
+- additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora  
 - integration of **MS Florence** VLM/VQA *Base* and *Large* models  
 - (finally) new release of **Torch-DirectML**  
-- additional efficiencies for users with low vram gpus  
+- additional efficiencies for users with low VRAM GPUs  
 - over 20 overall fixes  
 
 ### Model Improvements
@@ -43,7 +43,7 @@ But there's more than SD3:
 - **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
   simply select in *process -> visual query*!
 
-### Improvements: General
+### General Improvements
 
 - support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
@@ -85,6 +85,7 @@ But there's more than SD3:
 - fix api ip-adapter
 - fix memory exceptions with ROCm, thanks @Disty0!
 - fix face-hires with lowvram, thanks @Disty0!
+- fix pag incorrectly resetting pipeline
 - cleanup image metadata
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
