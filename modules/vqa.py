@@ -178,15 +178,15 @@ def interrogate(vqa_question, vqa_image, vqa_model_req):
         return answer
     if 'git' in vqa_model.lower():
         answer = git(vqa_question, vqa_image, vqa_model)
-    if 'vilt' in vqa_model.lower():
+    elif 'vilt' in vqa_model.lower():
         answer = vilt(vqa_question, vqa_image, vqa_model)
-    if 'blip' in vqa_model.lower():
+    elif 'blip' in vqa_model.lower():
         answer = blip(vqa_question, vqa_image, vqa_model)
-    if 'pix' in vqa_model.lower():
+    elif 'pix' in vqa_model.lower():
         answer = pix(vqa_question, vqa_image, vqa_model)
-    if 'moondream2' in vqa_model.lower():
+    elif 'moondream2' in vqa_model.lower():
         answer = moondream(vqa_question, vqa_image, vqa_model)
-    if 'florence' in vqa_model.lower():
+    elif 'florence' in vqa_model.lower():
         answer = florence(vqa_question, vqa_image, vqa_model)
     else:
         answer = 'unknown model'
