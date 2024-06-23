@@ -199,6 +199,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])
+        devices.torch_gc()
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
         return
 
