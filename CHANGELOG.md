@@ -1,5 +1,9 @@
 # Change Log for SD.Next
 
+## Update for 2024-06-24
+
+- enable `florence` VLM for all platforms, thanks @lshqqytiger!
+
 ## Update for 2024-06-23
 
 ### Highlights for 2024-06-23
@@ -17,7 +21,7 @@ But there's more than SD3:
 - additional efficiencies for users with low VRAM GPUs  
 - over 20 overall fixes  
 
-### Model Improvements
+### Model Improvements for 2024-06-23
 
 - **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
 - SD3: enable base LoRA support  
@@ -43,7 +47,7 @@ But there's more than SD3:
 - **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
   simply select in *process -> visual query*!
 
-### General Improvements
+### General Improvements for 2024-06-23
 
 - support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
@@ -67,7 +71,7 @@ But there's more than SD3:
 - Lora support without reloading the model  
 - ControlNet compression support  
 
-### Fixes
+### Fixes for 2024-06-23
 
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
@@ -105,7 +109,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 
 ### Full Changelog for 2024-06-13
 
-#### New Models
+#### New Models for 2024-06-23
 
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
   yup, supported!  
@@ -116,7 +120,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 
-#### New Functionality
+#### New Functionality for 2024-06-23
 
 - [MuLan](https://github.com/mulanai/MuLan) Multi-language prompts
   write your prompts in ~110 auto-detected languages!  
@@ -153,7 +157,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   typical differences are not large and its disabled by default as it does have some performance impact  
 - new sampler: **Euler FlowMatch**  
 
-#### Improvements
+#### Improvements Fixes 2024-06-13
 
 - additional modernui themes
 - reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
@@ -173,7 +177,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 - auto-synchronize modernui and core branches  
 - add option to pad prompt with zeros, thanks @Disty
 
-#### Fixes
+#### Fixes 2024-06-13
 
 - cumulative fixes since the last release  
 - fix apply/unapply hidiffusion for sd15  
