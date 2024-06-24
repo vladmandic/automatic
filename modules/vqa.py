@@ -1,7 +1,7 @@
 import torch
 import transformers
-from PIL import Image
 import transformers.dynamic_module_utils
+from PIL import Image
 from modules import shared, devices
 
 
