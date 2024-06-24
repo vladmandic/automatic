@@ -1,5 +1,6 @@
 import torch
 import transformers
+import transformers.dynamic_module_utils
 from PIL import Image
 from modules import shared, devices
 
@@ -128,12 +129,17 @@ def moondream(question: str, image: Image.Image, repo: str = None):
 
 def florence(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
-    from installer import install, installed
-    if not installed('flash_attn', quiet=True):
-        install('flash_attn')
+    _get_imports = transformers.dynamic_module_utils.get_imports
+    def get_imports(f):
+        R = _get_imports(f)
+        if "flash_attn" in R:
+            R.remove("flash_attn") # flash_attn is optional
+        return R
     if model is None or loaded != repo:
+        transformers.dynamic_module_utils.get_imports = get_imports
         model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True)
         processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True)
+        transformers.dynamic_module_utils.get_imports = _get_imports
         loaded = repo
         model.eval()
     model.to(devices.device, devices.dtype)
