@@ -2,6 +2,7 @@ import torch
 import transformers
 from PIL import Image
 from modules import shared, devices
+from modules.zluda import is_zluda
 
 
 processor = None
@@ -129,7 +130,7 @@ def moondream(question: str, image: Image.Image, repo: str = None):
 def florence(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     from installer import install, installed
-    if not installed('flash_attn', quiet=True):
+    if not installed('flash_attn', quiet=True) and not is_zluda(devices.device):
         install('flash_attn')
     if model is None or loaded != repo:
         model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True)
