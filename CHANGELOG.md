@@ -1,8 +1,10 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-24
+## Update for 2024-06-25
 
-- enable `florence` VLM for all platforms, thanks @lshqqytiger!
+- enable `florence` VLM for all platforms, thanks @lshqqytiger!  
+- fix executing extensions with zero params  
+- fix nncf for lora, thanks @Disty0!
 
 ## Update for 2024-06-23
 
