@@ -351,6 +351,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     output_filename = None
     index = 0
     frames = 0
+    blended_image = None
 
     # set pipeline
     if pipe.__class__.__name__ != shared.sd_model.__class__.__name__:
@@ -477,7 +478,6 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             process.model = None
 
                     debug(f'Control processed: {len(processed_images)}')
-                    blended_image = None
                     if len(processed_images) > 0:
                         try:
                             if len(p.extra_generation_params["Control process"]) == 0:
