@@ -46,7 +46,7 @@ def get_gpu_info():
         try:
             if shared.cmd_opts.use_openvino:
                 return {
-                    'device': get_openvino_device(),
+                    'device': get_openvino_device(), # pylint: disable=used-before-assignment
                     'openvino': get_package_version("openvino"),
                 }
             elif shared.cmd_opts.use_directml:
@@ -311,7 +311,7 @@ def set_cuda_params():
         inference_context = contextlib.nullcontext
     else:
         inference_context = torch.no_grad
-    log_device_name = get_raw_openvino_device() if shared.cmd_opts.use_openvino else torch.device(get_optimal_device_name())
+    log_device_name = get_raw_openvino_device() if shared.cmd_opts.use_openvino else torch.device(get_optimal_device_name()) # pylint: disable=used-before-assignment
     log.debug(f'Desired Torch parameters: dtype={shared.opts.cuda_dtype} no-half={shared.opts.no_half} no-half-vae={shared.opts.no_half_vae} upscast={shared.opts.upcast_sampling}')
     log.info(f'Setting Torch parameters: device={log_device_name} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} fp16={fp16_ok} bf16={bf16_ok} optimization={shared.opts.cross_attention_optimization}')
 

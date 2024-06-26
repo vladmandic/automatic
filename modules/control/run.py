@@ -692,5 +692,4 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     if is_generator:
         yield (output_images, blended_image, html_txt, output_filename)
     else:
-        yield (output_images, blended_image, html_txt, output_filename)
-        return
+        return (output_images, blended_image, html_txt, output_filename)

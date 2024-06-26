@@ -547,7 +547,7 @@ def change_backend():
     shared.native = shared.backend == shared.Backend.DIFFUSERS
     checkpoints_loaded.clear()
     from modules.sd_samplers import list_samplers
-    list_samplers(shared.backend)
+    list_samplers()
     list_models()
     from modules.sd_vae import refresh_vae_list
     refresh_vae_list()

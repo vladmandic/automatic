@@ -259,14 +259,14 @@ class EmbeddingDatabase:
 
         if ext in ['.PNG', '.WEBP', '.JXL', '.AVIF']:
             if '.preview' in filename.lower():
-                return
+                return None
             embed_image = Image.open(path)
             if hasattr(embed_image, 'text') and 'sd-ti-embedding' in embed_image.text:
                 data = embedding_from_b64(embed_image.text['sd-ti-embedding'])
             else:
                 data = extract_image_data_embed(embed_image)
                 if not data: # if data is None, means this is not an embeding, just a preview image
-                    return
+                    return None
         elif ext in ['.BIN', '.PT']:
             data = torch.load(path, map_location="cpu")
         elif ext in ['.SAFETENSORS']:
@@ -284,7 +284,7 @@ class EmbeddingDatabase:
         elif type(data) == dict and type(next(iter(data.values()))) == torch.Tensor:
             if len(data.keys()) != 1:
                 self.skipped_embeddings[name] = Embedding(None, name=name, filename=path)
-                return
+                return None
             emb = next(iter(data.values()))
             if len(emb.shape) == 1:
                 emb = emb.unsqueeze(0)

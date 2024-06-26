@@ -35,7 +35,7 @@ timer.startup.record("torch")
 import transformers # pylint: disable=W0611,C0411
 timer.startup.record("transformers")
 
-import onnxruntime
+import onnxruntime # pylint: disable=W0611,C0411
 onnxruntime.set_default_logger_severity(3)
 timer.startup.record("onnx")
 
@@ -50,7 +50,7 @@ timer.startup.record("pydantic")
 import diffusers # pylint: disable=W0611,C0411
 import diffusers.loaders.single_file # pylint: disable=W0611,C0411
 logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
-from tqdm.rich import tqdm
+from tqdm.rich import tqdm # pylint: disable=W0611,C0411
 diffusers.loaders.single_file.logging.tqdm = partial(tqdm, unit='C')
 timer.startup.record("diffusers")
 
