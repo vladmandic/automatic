@@ -540,6 +540,27 @@ def install_rocm_zluda(torch_command):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
+
+        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
+            supported_archs = []
+            hipblaslt_available = True
+            libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
+            for file in os.listdir(libpath):
+                if not file.startswith('extop_'):
+                    continue
+                supported_archs.append(file[6:-3])
+            for gpu in amd_gpus:
+                if gpu not in supported_archs:
+                    hipblaslt_available = False
+                    break
+            log.info(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
+            if hipblaslt_available:
+                import ctypes
+                # Preload hipBLASLt.
+                ctypes.CDLL("/opt/rocm/lib/libhipblaslt.so", mode=ctypes.RTLD_GLOBAL)
+                os.environ["HIPBLASLT_TENSILE_LIBPATH"] = libpath
+            else:
+                os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
     return torch_command
 
 
