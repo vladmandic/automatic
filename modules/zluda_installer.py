@@ -3,7 +3,7 @@ import ctypes
 import shutil
 import zipfile
 import platform
-import urllib.request
+import requests
 from typing import Union
 
 
@@ -36,7 +36,10 @@ def install(zluda_path: os.PathLike) -> None:
     if platform.system() != 'Windows': # TODO
         return
 
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/{RELEASE}/ZLUDA-windows-amd64.zip', '_zluda')
+    with open('_zluda', 'wb') as file:
+        res = requests.get(f'https://github.com/lshqqytiger/ZLUDA/releases/download/{RELEASE}/ZLUDA-windows-amd64.zip', timeout=30)
+        file.write(res.content)
+
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:
