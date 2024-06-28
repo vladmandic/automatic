@@ -680,6 +680,20 @@ def check_torch():
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     elif is_rocm_available(allow_rocm):
         torch_command = install_rocm_zluda(torch_command)
+
+        # WSL ROCm
+        if os.environ.get('WSL_DISTRO_NAME', None) is not None:
+            import ctypes
+            try:
+                # Preload stdc++ library. This will ignore Anaconda stdc++ library.
+                ctypes.CDLL("/lib/x86_64-linux-gnu/libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                pass
+            try:
+                # Preload HSA Runtime library.
+                ctypes.CDLL("/opt/rocm/lib/libhsa-runtime64.so", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
         torch_command = install_ipex(torch_command)
     elif allow_openvino and args.use_openvino:
