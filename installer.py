@@ -1087,20 +1087,20 @@ def check_ui(ver):
 
     if not same(ver):
         log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
-    cwd = os.getcwd()
-    try:
-        os.chdir('extensions-builtin/sdnext-modernui')
-        target = 'dev' if 'dev' in ver['branch'] else 'main'
-        git('checkout ' + target, ignore=True, optional=True)
+        cwd = os.getcwd()
+        try:
+            os.chdir('extensions-builtin/sdnext-modernui')
+            target = 'dev' if 'dev' in ver['branch'] else 'main'
+            git('checkout ' + target, ignore=True, optional=True)
+            os.chdir(cwd)
+            ver = get_version(force=True)
+            if not same(ver):
+                log.debug(f'Branch synchronized: {ver["branch"]}')
+            else:
+                log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
+        except Exception as e:
+            log.debug(f'Branch switch: {e}')
         os.chdir(cwd)
-        ver = get_version(force=True)
-        if not same(ver):
-            log.debug(f'Branch synchronized: {ver["branch"]}')
-        else:
-            log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
-    except Exception as e:
-        log.debug(f'Branch switch: {e}')
-    os.chdir(cwd)
 
 
 # check version of the main repo and optionally upgrade it

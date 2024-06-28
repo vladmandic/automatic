@@ -6,6 +6,7 @@
 - fix executing extensions with zero params  
 - fix nncf for lora, thanks @Disty0!
 - fix diffusers version detection for SD3
+- fix current step for higher order samplers
 - add SD3 with FP16 T5 to list of detected models
 - multiple ModernUI fixes
 
