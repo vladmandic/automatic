@@ -586,7 +586,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     guess = 'Stable Diffusion XL Instruct'
                 elif (size > 3138 and size < 3142): #3140
                     guess = 'Stable Diffusion XL'
-                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366):
+                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366) or (size > 15028 and size < 15228):
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
