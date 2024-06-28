@@ -65,6 +65,7 @@ class Network:  # LoraModule
         self.unet_multiplier = [1.0] * 3
         self.dyn_dim = None
         self.modules = {}
+        self.bundle_embeddings = {}
         self.mtime = None
         self.mentioned_name = None
         """the text that was used to add the network to prompt - can be either name or an alias"""

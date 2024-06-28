@@ -1,7 +1,6 @@
 from typing import List, Union
 import os
 import time
-from collections import namedtuple
 import torch
 import safetensors.torch
 from PIL import Image
@@ -12,13 +11,143 @@ from modules.files_cache import directory_files, directory_mtime, extension_filt
 
 debug = shared.log.trace if os.environ.get('SD_TI_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: TEXTUAL INVERSION')
-TokenToAdd = namedtuple("TokenToAdd", ["clip_l", "clip_g"])
-
 
 def list_embeddings(*dirs):
     is_ext = extension_filter(['.SAFETENSORS', '.PT' ] + ( ['.PNG', '.WEBP', '.JXL', '.AVIF', '.BIN' ] if not shared.native else [] ))
     is_not_preview = lambda fp: not next(iter(os.path.splitext(fp))).upper().endswith('.PREVIEW') # pylint: disable=unnecessary-lambda-assignment
     return list(filter(lambda fp: is_ext(fp) and is_not_preview(fp) and os.stat(fp).st_size > 0, directory_files(*dirs)))
+
+
+def open_embeddings(filename):
+    """
+    Load Embedding files from drive. Image embeddings not currently supported.
+    """
+    if filename is None:
+        return
+    filenames = list(filename)
+    exts = [".SAFETENSORS", '.BIN', '.PT']
+    embeddings = []
+    skipped = []
+    for _filename in filenames:
+        # debug(f'Embedding check: {filename}')
+        fullname = _filename
+        _filename = os.path.basename(fullname)
+        fn, ext = os.path.splitext(_filename)
+        name = os.path.basename(fn)
+        embedding = Embedding(vec=[], name=name, filename=fullname)
+        try:
+            if ext.upper() not in exts:
+                debug(f'extension `{ext}` is invalid, expected one of: {exts}')
+                skipped.append(name)
+                continue
+            if ext.upper() in ['.SAFETENSORS']:
+                with safetensors.torch.safe_open(embedding.filename, framework="pt") as f:  # type: ignore
+                    for k in f.keys():
+                        embedding.vec.append(f.get_tensor(k))
+            else:  # fallback for sd1.5 pt embeddings
+                vectors = torch.load(fullname, map_location=devices.device)["string_to_param"]["*"]
+                embedding.vec.append(vectors)
+            embedding.tokens = [embedding.name if i == 0 else f"{embedding.name}_{i}" for i in range(len(embedding.vec[0]))]
+        except:
+            debug(f"Could not load embedding file {fullname}")
+        if embedding.vec:
+            embeddings.append(embedding)
+        else:
+            skipped.append(name)
+    return embeddings, skipped
+
+
+def convert_bundled(data):
+    """
+    Bundled embeddings are passed as a dict from lora loading, convert to Embedding objects and pass back as list.
+    """
+    embeddings = []
+    for key in data.keys():
+        embedding = Embedding(vec=[], name=key, filename=None)
+        for vector in data[key].values():
+            embedding.vec.append(vector)
+        embedding.tokens = [embedding.name if i == 0 else f"{embedding.name}_{i}" for i in range(len(embedding.vec[0]))]
+        embeddings.append(embedding)
+    return embeddings, []
+
+
+def get_text_encoders():
+    """
+    Select all text encoder and tokenizer pairs from known pipelines, and index them based on the dimensionality of
+    their embedding layers.
+    """
+    pipe = shared.sd_model
+    te_names = ["text_encoder", "text_encoder_2", "text_encoder_3"]
+    tokenizers_names = ["tokenizer", "tokenizer_2", "tokenizer_3"]
+    text_encoders = []
+    tokenizers = []
+    hidden_sizes = []
+    for te, tok in zip(te_names, tokenizers_names):
+        text_encoder = getattr(pipe, te, None)
+        if text_encoder is None:
+            continue
+        tokenizer = getattr(pipe, tok, None)
+        hidden_size = text_encoder.get_input_embeddings().weight.data.shape[-1] or None
+        if all([text_encoder, tokenizer, hidden_size]):
+            text_encoders.append(text_encoder)
+            tokenizers.append(tokenizer)
+            hidden_sizes.append(hidden_size)
+    return text_encoders, tokenizers, hidden_sizes
+
+
+def deref_tokenizers(tokens, tokenizers):
+    """
+    Bundled embeddings may have the same name as a seperately loaded embedding, or there may be multiple LoRA with
+    differing numbers of vectors. By editing the AddedToken objects, and deleting the dict keys pointing to them,
+    we can ensure that a smaller embedding will not get tokenized as itself, plus the remaining vectors of the previous.
+    """
+    for tokenizer in tokenizers:
+        # if tokens[0] in tokenizer.get_vocab():
+        #     idx = tokenizer.convert_tokens_to_ids(tokens[0])
+        #     debug(f"deref idx: {idx}")
+        #     tokenizer._added_tokens_decoder[idx].content = str(time.time())
+        #     del tokenizer._added_tokens_encoder[tokens[0]]
+
+        if len(tokens) > 1:
+            last_token = tokens[-1]
+            suffix = int(last_token.split("_")[-1])
+            newsuffix = suffix + 1
+            while last_token.replace(str(suffix), str(newsuffix)) in tokenizer.get_vocab():
+                idx = tokenizer.convert_tokens_to_ids(last_token.replace(str(suffix), str(newsuffix)))
+                debug(f"Textual inversion: deref idx={idx}")
+                del tokenizer._added_tokens_encoder[last_token.replace(str(suffix), str(newsuffix))]
+                tokenizer._added_tokens_decoder[idx].content = str(time.time())
+                newsuffix += 1
+
+
+def insert_tokens(embeddings: list, tokenizers: list):
+    """
+    Add all tokens to each tokenizer in the list, with one call to each.
+    """
+    tokens = []
+    for embedding in embeddings:
+        tokens += embedding.tokens
+    for tokenizer in tokenizers:
+        tokenizer.add_tokens(tokens)
+
+
+def insert_vectors(embedding, tokenizers, text_encoders, hiddensizes):
+    """
+    Insert embeddings into the input embedding layer of a list of text encoders, matched based on embedding size,
+    not by name.
+    Future warning, if another text encoder becomes available with embedding dimensions in [768,1280,4096]
+    this may cause collisions.
+    """
+    for vector, size in zip(embedding.vec, embedding.vector_sizes):
+        idx = hiddensizes.index(size)
+        unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
+        if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
+            text_encoders[idx].resize_token_embeddings(len(tokenizers[idx]))
+        for token, v in zip(embedding.tokens, vector.unbind()):
+            token_id = tokenizers[idx].convert_tokens_to_ids(token)
+            if token_id > unk_token_id:
+                text_encoders[idx].get_input_embeddings().weight.data[token_id] = v
+
 
 
 class Embedding:
@@ -35,6 +164,7 @@ class Embedding:
         self.sd_checkpoint = None
         self.sd_checkpoint_name = None
         self.optimizer_state_dict = None
+        self.tokens = None
 
     def save(self, filename):
         embedding_data = {
@@ -82,6 +212,10 @@ class DirWithTextualInversionEmbeddings:
 
 
 def convert_embedding(tensor, text_encoder, text_encoder_2):
+    """
+    Given a tensor of shape (b, embed_dim) and two text encoders whose tokenizers match, return a tensor with
+    approximately mathcing meaning, or padding if the input tensor is dissimilar to any frozen text embed
+    """
     with torch.no_grad():
         vectors = []
         clip_l_embeds = text_encoder.get_input_embeddings().weight.data.clone().to(device=devices.device)
@@ -91,7 +225,7 @@ def convert_embedding(tensor, text_encoder, text_encoder_2):
             if values < 0.707:  # Arbitrary similarity to cutoff, here 45 degrees
                 indices *= 0  # Use SDXL padding vector 0
             vectors.append(indices)
-        vectors = torch.stack(vectors)
+        vectors = torch.stack(vectors).to(text_encoder_2.device)
         output = text_encoder_2.get_input_embeddings().weight.data[vectors]
     return output
 
@@ -135,123 +269,41 @@ class EmbeddingDatabase:
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
         return vec.shape[1]
 
-    def load_diffusers_embedding(self, filename: Union[str, List[str]]):
-        _loaded_pre = len(self.word_embeddings)
-        embeddings_to_load = []
-        loaded_embeddings = {}
-        skipped_embeddings = []
+    def load_diffusers_embedding(self, filename: Union[str, List[str]] = None, data: dict = None):
+        """
+        File names take precidence over bundled embeddings passed as a dict.
+        Bundled embeddings are automatically set to overwrite previous embeddings.
+        """
+        overwrite = bool(data)
         if not shared.sd_loaded:
             return 0
-        tokenizer   = getattr(shared.sd_model, 'tokenizer',   None)
-        tokenizer_2 = getattr(shared.sd_model, 'tokenizer_2', None)
-        clip_l = getattr(shared.sd_model, 'text_encoder',   None)
-        clip_g = getattr(shared.sd_model, 'text_encoder_2', None)
-        if clip_g and tokenizer_2:
-            model_type = 'SDXL'
-        elif clip_l and tokenizer:
-            model_type = 'SD'
-        else:
+        embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
+        if not embeddings:
             return 0
-        filenames = list(filename)
-        exts = [".SAFETENSORS", '.BIN', '.PT', '.PNG', '.WEBP', '.JXL', '.AVIF']
-        for _filename in filenames:
-            # debug(f'Embedding check: {filename}')
-            fullname = _filename
-            _filename = os.path.basename(fullname)
-            fn, ext = os.path.splitext(_filename)
-            name = os.path.basename(fn)
-            embedding = Embedding(vec=None, name=name, filename=fullname)
-            tokenizer_vocab = tokenizer.get_vocab()
-            try:
-                if ext.upper() not in exts:
-                    raise ValueError(f'extension `{ext}` is invalid, expected one of: {exts}')
-                if name in tokenizer.get_vocab() or f"{name}_1" in tokenizer.get_vocab():
-                    loaded_embeddings[name] = embedding
-                    debug(f'Embedding already loaded: {name}')
-                embeddings_to_load.append(embedding)
-            except Exception as e:
-                skipped_embeddings.append(embedding)
-                debug(f'Embedding skipped: "{name}" {e}')
-                continue
-            embeddings_to_load = sorted(embeddings_to_load, key=lambda e: exts.index(os.path.splitext(e.filename)[1].upper()))
-
-        tokens_to_add = {}
-        for embedding in embeddings_to_load:
-            try:
-                if embedding.name in tokens_to_add or embedding.name in loaded_embeddings:
-                    raise ValueError('duplicate token')
-                embeddings_dict = {}
-                _, ext = os.path.splitext(embedding.filename)
-                if ext.upper() in ['.SAFETENSORS']:
-                    with safetensors.torch.safe_open(embedding.filename, framework="pt") as f: # type: ignore
-                        for k in f.keys():
-                            embeddings_dict[k] = f.get_tensor(k)
-                else:  # fallback for sd1.5 pt embeddings
-                    embeddings_dict["clip_l"] = self.load_from_file(embedding.filename, embedding.filename)
-                if 'emb_params' in embeddings_dict and 'clip_l' not in embeddings_dict:
-                    embeddings_dict["clip_l"] = embeddings_dict["emb_params"]
-                if 'clip_l' not in embeddings_dict:
-                    raise ValueError('Invalid Embedding, dict missing required key `clip_l`')
-                if 'clip_g' not in embeddings_dict and model_type == "SDXL" and shared.opts.diffusers_convert_embed:
-                    embeddings_dict["clip_g"] = convert_embedding(embeddings_dict["clip_l"], clip_l, clip_g)
-                if 'clip_g' in embeddings_dict:
-                    embedding_type = 'SDXL'
-                else:
-                    embedding_type = 'SD'
-                if embedding_type != model_type:
-                    raise ValueError(f'Unable to load {embedding_type} Embedding "{embedding.name}" into {model_type} Model')
-                _tokens_to_add = {}
-                for i in range(len(embeddings_dict["clip_l"])):
-                    if len(clip_l.get_input_embeddings().weight.data[0]) == len(embeddings_dict["clip_l"][i]):
-                        token = embedding.name if i == 0 else f"{embedding.name}_{i}"
-                        if token in tokenizer_vocab:
-                            raise RuntimeError(f'Multi-Vector Embedding would add pre-existing Token in Vocabulary: {token}')
-                        if token in tokens_to_add:
-                            raise RuntimeError(f'Multi-Vector Embedding would add duplicate Token to Add: {token}')
-                        _tokens_to_add[token] = TokenToAdd(
-                            embeddings_dict["clip_l"][i],
-                            embeddings_dict["clip_g"][i] if 'clip_g' in embeddings_dict else None
-                        )
-                if not _tokens_to_add:
-                    raise ValueError('no valid tokens to add')
-                tokens_to_add.update(_tokens_to_add)
-                loaded_embeddings[embedding.name] = embedding
-            except Exception as e:
-                debug(f"Embedding loading: {embedding.filename} {e}")
-                continue
-        if len(tokens_to_add) > 0:
-            tokenizer.add_tokens(list(tokens_to_add.keys()))
-            clip_l.resize_token_embeddings(len(tokenizer))
-            if model_type == 'SDXL':
-                tokenizer_2.add_tokens(list(tokens_to_add.keys())) # type: ignore
-                clip_g.resize_token_embeddings(len(tokenizer_2)) # type: ignore
-            unk_token_id = tokenizer.convert_tokens_to_ids(tokenizer.unk_token)
-            for token, data in tokens_to_add.items():
-                token_id = tokenizer.convert_tokens_to_ids(token)
-                if token_id > unk_token_id:
-                    clip_l.get_input_embeddings().weight.data[token_id] = data.clip_l
-                    if model_type == 'SDXL':
-                        clip_g.get_input_embeddings().weight.data[token_id] = data.clip_g # type: ignore
-
-        for embedding in loaded_embeddings.values():
-            if not embedding:
-                continue
-            self.register_embedding(embedding, shared.sd_model)
-            if embedding in embeddings_to_load:
-                embeddings_to_load.remove(embedding)
-        skipped_embeddings.extend(embeddings_to_load)
-        for embedding in skipped_embeddings:
-            if loaded_embeddings.get(embedding.name, None) == embedding:
-                continue
-            self.skipped_embeddings[embedding.name] = embedding
-        try:
-            if model_type == 'SD':
-                debug(f"Embeddings loaded: text-encoder={shared.sd_model.text_encoder.get_input_embeddings().weight.data.shape[0]}")
-            if model_type == 'SDXL':
-                debug(f"Embeddings loaded: text-encoder-1={shared.sd_model.text_encoder.get_input_embeddings().weight.data.shape[0]} text-encoder-2={shared.sd_model.text_encoder_2.get_input_embeddings().weight.data.shape[0]}")
-        except Exception:
-            pass
-        return len(self.word_embeddings) - _loaded_pre
+        text_encoders, tokenizers, hiddensizes = get_text_encoders()
+        if not all([text_encoders, tokenizers, hiddensizes]):
+            return 0
+        for embedding in embeddings:
+            embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
+            if shared.opts.diffusers_convert_embed and 768 in hiddensizes and 1280 in hiddensizes and 1280 not in embedding.vector_sizes and 768 in embedding.vector_sizes:
+                embedding.vec.append(
+                    convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
+                                      text_encoders[hiddensizes.index(1280)]))
+                embedding.vector_sizes.append(1280)
+            if len(embedding.vector_sizes) > len(hiddensizes):
+                embedding.tokens = []
+                self.skipped_embeddings[embedding.name] = embedding
+        if overwrite:
+            shared.log.info(f"Loading Bundled embeddings: {list(data.keys())}")
+            for embedding in embeddings:
+                if embedding.name not in self.skipped_embeddings:
+                    deref_tokenizers(embedding.tokens, tokenizers)
+        insert_tokens(embeddings, tokenizers)
+        for embedding in embeddings:
+            if embedding.name not in self.skipped_embeddings:
+                insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
+                self.register_embedding(embedding, shared.sd_model)
+        return
 
     def load_from_file(self, path, filename):
         name, ext = os.path.splitext(filename)
