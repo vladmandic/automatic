@@ -235,13 +235,14 @@ def uninstall(package, quiet = False):
 
 
 @lru_cache()
-def pip(arg: str, ignore: bool = False, quiet: bool = False):
+def pip(arg: str, ignore: bool = False, quiet: bool = False, uv=True):
     arg = arg.replace('>=', '==')
     if not quiet and '-r ' not in arg:
         log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace("  ", " ").strip()}"')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     log.debug(f'Running: pip="{pip_log}{arg} {env_args}"')
-    result = subprocess.run(f'"{sys.executable}" -m pip {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pipCmd = "uv pip" if uv else "pip"
+    result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
@@ -264,7 +265,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install --upgrade {deps}{package}", ignore=ignore)
+        res = pip(f"install {deps}{package}", ignore=ignore)
         try:
             import imp # pylint: disable=deprecated-module
             imp.reload(pkg_resources)
