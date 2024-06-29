@@ -182,8 +182,8 @@ def start_server(immediate=True, server=None):
 
 def main():
     global args # pylint: disable=global-statement
-    installer.ensure_base_requirements()
     installer.pip("install uv", uv=False)
+    installer.ensure_base_requirements()
     init_args() # setup argparser and default folders
     installer.args = args
     installer.setup_logging()
