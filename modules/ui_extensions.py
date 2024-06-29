@@ -206,7 +206,7 @@ def uninstall_extension(extension_path, search_text, sort_column):
     if len(found) > 0 and os.path.isdir(extension_path):
         found = found[0]
         try:
-            shutil.rmtree(found.path, ignore_errors=False, onerror=errorRemoveReadonly)
+            shutil.rmtree(found.path, ignore_errors=False, onerror=errorRemoveReadonly) # pylint: disable=deprecated-argument
             # extensions.extensions = [extension for extension in extensions.extensions if os.path.abspath(found.path) != os.path.abspath(extension_path)]
         except Exception as e:
             shared.log.warning(f'Extension uninstall failed: {found.path} {e}')

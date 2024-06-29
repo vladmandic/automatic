@@ -313,7 +313,7 @@ class ResInterrogate(BaseModel):
 
 class ReqVQA(BaseModel):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
-    model: str = Field(default="Moondream 2", title="Model", description="The interrogate model used.")
+    model: str = Field(default="MS Florence 2 Base", title="Model", description="The interrogate model used.")
     question: str = Field(default="describe the image", title="Question", description="Question to ask the model.")
 
 class ResVQA(BaseModel):

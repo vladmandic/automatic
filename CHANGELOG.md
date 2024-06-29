@@ -1,21 +1,33 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-21
+## Update for 2024-06-28
 
-### Highlights for 2024-06-21
+- enable `florence` VLM for all platforms, thanks @lshqqytiger!  
+- fix executing extensions with zero params  
+- fix nncf for lora, thanks @Disty0!
+- fix diffusers version detection for SD3
+- fix current step for higher order samplers
+- add SD3 with FP16 T5 to list of detected models
+- multiple ModernUI fixes
 
-Following zero-day **SD3** release, a week later here's a refresh with 10+ improvements  
+## Update for 2024-06-23
+
+### Highlights for 2024-06-23
+
+Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
 
 But there's more than SD3:  
-- support for quantized **T5** text encoder in all models that use T5: FP4/FP8/FP16/INT8 (SD3, PixArt-Σ, etc)  
+- support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
+- additional **NNCF weights compression** support: SD3, PixArt, ControlNet, Lora  
+- integration of **MS Florence** VLM/VQA *Base* and *Large* models  
 - (finally) new release of **Torch-DirectML**  
-- additional efficiencies for users with low vram gpus  
+- additional efficiencies for users with low VRAM GPUs  
 - over 20 overall fixes  
 
-### Model Improvements
+### Model Improvements for 2024-06-23
 
 - **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
 - SD3: enable base LoRA support  
@@ -38,14 +50,18 @@ But there's more than SD3:
   *note* by default pixart-Σ uses full fp16 t5 encoder with large memory footprint  
   simply select in *settings -> model -> text encoder* before or after model load  
 - **HunyuanDiT**: support for model version 1.1  
+- **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
+  simply select in *process -> visual query*!
 
-### Improvements: General
+### General Improvements for 2024-06-23
 
 - support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
   *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
   *note*: new directml is finally based on modern `torch` 2.3.1!  
+- xyz grid: add support for LoRA selector
+- vae load: store original vae so it can be restored when set to none
 - extra networks: info display now contains link to source url if model if its known  
   works for civitai and huggingface models  
 - force gc for lowvram users and improve gc logging
@@ -55,13 +71,13 @@ But there's more than SD3:
 - additional torch gc checks, thanks @Disty0!
 
 **Improvements: NNCF**, thanks @Disty0!  
- - SD3 and PixArt support  
- - moved the first compression step to CPU  
- - sequential cpu offload (lowvram) support  
- - Lora support without reloading the model  
- - ControlNet compression support  
+- SD3 and PixArt support  
+- moved the first compression step to CPU  
+- sequential cpu offload (lowvram) support  
+- Lora support without reloading the model  
+- ControlNet compression support  
 
-### Fixes
+### Fixes for 2024-06-23
 
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
@@ -79,6 +95,7 @@ But there's more than SD3:
 - fix api ip-adapter
 - fix memory exceptions with ROCm, thanks @Disty0!
 - fix face-hires with lowvram, thanks @Disty0!
+- fix pag incorrectly resetting pipeline
 - cleanup image metadata
 - restructure api examples: `cli/api-*`
 - handle theme fallback when invalid theme is specified
@@ -98,7 +115,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 
 ### Full Changelog for 2024-06-13
 
-#### New Models
+#### New Models for 2024-06-23
 
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
   yup, supported!  
@@ -109,7 +126,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 
-#### New Functionality
+#### New Functionality for 2024-06-23
 
 - [MuLan](https://github.com/mulanai/MuLan) Multi-language prompts
   write your prompts in ~110 auto-detected languages!  
@@ -146,7 +163,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   typical differences are not large and its disabled by default as it does have some performance impact  
 - new sampler: **Euler FlowMatch**  
 
-#### Improvements
+#### Improvements Fixes 2024-06-13
 
 - additional modernui themes
 - reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
@@ -166,7 +183,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 - auto-synchronize modernui and core branches  
 - add option to pad prompt with zeros, thanks @Disty
 
-#### Fixes
+#### Fixes 2024-06-13
 
 - cumulative fixes since the last release  
 - fix apply/unapply hidiffusion for sd15  

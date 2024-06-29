@@ -39,10 +39,10 @@ def get_script(script_name, script_runner):
     return script_runner.scripts[script_idx]
 
 def init_default_script_args(script_runner):
-    #find max idx from the scripts in runner and generate a none array to init script_args
+    # find max idx from the scripts in runner and generate a none array to init script_args
     last_arg_index = 1
     for script in script_runner.scripts:
-        if last_arg_index < script.args_to:
+        if last_arg_index < script.args_to: # pylint disable=consider-using-max-builtin
             last_arg_index = script.args_to
     # None everywhere except position 0 to initialize script args
     script_args = [None]*last_arg_index

@@ -168,6 +168,11 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         p.negative_embeds = []
         p.negative_pooleds = []
 
+        if (shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload) and hasattr(pipe, "_all_hooks") and hasattr(pipe, "maybe_free_model_hooks"):
+            # if the last job is interrupted, model will stay in the vram and cause oom, send everything back to cpu before continuing
+            pipe.maybe_free_model_hooks()
+            devices.torch_gc()
+
         for i in range(max(len(positive_schedule), len(negative_schedule))):
             positive_prompt = positive_schedule[i % len(positive_schedule)]
             negative_prompt = negative_schedule[i % len(negative_schedule)]
@@ -199,7 +204,11 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])
+        if (shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload) and hasattr(pipe, "_all_hooks") and hasattr(pipe, "maybe_free_model_hooks"):
+            # text encoder will stay in the vram and cause oom, send everything back to cpu before continuing
+            pipe.maybe_free_model_hooks()
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
+        devices.torch_gc()
         return
 
 

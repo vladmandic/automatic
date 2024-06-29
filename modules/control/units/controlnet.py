@@ -49,7 +49,8 @@ predefined_sdxl = {
     'Canny XL': 'diffusers/controlnet-canny-sdxl-1.0',
     'Depth Zoe XL': 'diffusers/controlnet-zoe-depth-sdxl-1.0',
     'Depth Mid XL': 'diffusers/controlnet-depth-sdxl-1.0-mid',
-    'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0',
+    'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/bin',
+    # 'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/OpenPoseXL2.safetensors',
     'Xinsir OpenPose XL': 'xinsir/controlnet-openpose-sdxl-1.0',
     'Xinsir Canny XL': 'xinsir/controlnet-canny-sdxl-1.0',
     'Xinsir Scribble XL': 'xinsir/controlnet-scribble-sdxl-1.0',
@@ -171,6 +172,9 @@ class ControlNet():
             if model_path.endswith('.safetensors'):
                 self.load_safetensors(model_path)
             else:
+                if '/bin' in model_path:
+                    model_path = model_path.replace('/bin', '')
+                    self.load_config['use_safetensors'] = False
                 self.model = ControlNetModel.from_pretrained(model_path, **self.load_config)
             if self.dtype is not None:
                 self.model.to(self.dtype)

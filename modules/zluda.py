@@ -1,4 +1,3 @@
-import os
 import sys
 from typing import Union
 import torch
@@ -6,15 +5,11 @@ from torch._prims_common import DeviceLikeType
 import onnxruntime as ort
 from modules import shared, devices
 from modules.onnx_impl.execution_providers import available_execution_providers, ExecutionProvider
+from modules.zluda_hijacks import do_hijack
 
 
 PLATFORM = sys.platform
 do_nothing = lambda _: None # pylint: disable=unnecessary-lambda-assignment
-
-
-def _join_rocm_home(*paths) -> str:
-    from torch.utils.cpp_extension import ROCM_HOME
-    return os.path.join(ROCM_HOME, *paths)
 
 
 def is_zluda(device: DeviceLikeType):
@@ -42,16 +37,9 @@ def initialize_zluda():
     if not devices.cuda_ok or not is_zluda(device):
         return
 
-    torch.version.hip = "5.7"
-    sys.platform = ""
-    from torch.utils import cpp_extension
-    sys.platform = PLATFORM
-    cpp_extension.IS_WINDOWS = PLATFORM == "win32"
-    cpp_extension.IS_MACOS = False
-    cpp_extension.IS_LINUX = sys.platform.startswith('linux')
-    cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
+    do_hijack()
 
-    if cpp_extension.IS_WINDOWS:
+    if PLATFORM == "win32":
         torch.backends.cudnn.enabled = False
         torch.backends.cuda.enable_flash_sdp(False)
         torch.backends.cuda.enable_flash_sdp = do_nothing

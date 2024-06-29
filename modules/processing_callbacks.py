@@ -38,7 +38,8 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
         return kwargs
     latents = kwargs.get('latents', None)
     debug_callback(f'Callback: step={step} timestep={timestep} latents={latents.shape if latents is not None else None} kwargs={list(kwargs)}')
-    shared.state.sampling_step = step
+    order = getattr(pipe.scheduler, "order", 1) if hasattr(pipe, 'scheduler') else 1
+    shared.state.sampling_step = step // order
     if shared.state.interrupted or shared.state.skipped:
         raise AssertionError('Interrupted...')
     if shared.state.paused:

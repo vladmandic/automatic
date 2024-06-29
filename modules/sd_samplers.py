@@ -14,7 +14,7 @@ samplers_map = {}
 loaded_config = None
 
 
-def list_samplers(backend_name = shared.backend):
+def list_samplers():
     global all_samplers # pylint: disable=global-statement
     global all_samplers_map # pylint: disable=global-statement
     global samplers # pylint: disable=global-statement

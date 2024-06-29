@@ -309,6 +309,9 @@ def check_deepcache(enable: bool):
 
 def compile_deepcache(sd_model):
     global deepcache_worker # pylint: disable=global-statement
+    if not hasattr(sd_model, 'unet'):
+        shared.log.warning(f'Model compile using deep-cache: {sd_model.__class__} not supported')
+        return sd_model
     try:
         from DeepCache import DeepCacheSDHelper
     except Exception as e:

@@ -38,6 +38,7 @@ sd_metadata_pending = 0
 sd_metadata_timer = 0
 debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug_load = os.environ.get('SD_LOAD_DEBUG', None)
+debug_process = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 diffusers_version = int(diffusers.__version__.split('.')[1])
 
 
@@ -546,7 +547,7 @@ def change_backend():
     shared.native = shared.backend == shared.Backend.DIFFUSERS
     checkpoints_loaded.clear()
     from modules.sd_samplers import list_samplers
-    list_samplers(shared.backend)
+    list_samplers()
     list_models()
     from modules.sd_vae import refresh_vae_list
     refresh_vae_list()
@@ -585,7 +586,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     guess = 'Stable Diffusion XL Instruct'
                 elif (size > 3138 and size < 3142): #3140
                     guess = 'Stable Diffusion XL'
-                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366):
+                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366) or (size > 15028 and size < 15228):
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
@@ -1297,6 +1298,7 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
 
 def clean_diffuser_pipe(pipe):
     if pipe is not None and shared.sd_model_type == 'sdxl' and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
+        debug_process(f'Pipeline clean: {pipe.__class__.__name__}')
         # diffusers adds requires_aesthetics_score with img2img and complains if requires_aesthetics_score exist in txt2img
         internal_dict = dict(pipe._internal_dict) # pylint: disable=protected-access
         internal_dict.pop('requires_aesthetics_score', None)

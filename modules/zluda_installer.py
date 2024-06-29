@@ -33,7 +33,7 @@ def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    if platform.system() != 'Windows': # TODO
+    if platform.system() != 'Windows': # Windows-only. (PyTorch should be rebuilt on Linux)
         return
 
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/{RELEASE}/ZLUDA-windows-amd64.zip', '_zluda')

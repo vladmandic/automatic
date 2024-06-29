@@ -1,4 +1,4 @@
-# TODO a1111 compatibility module
+# a1111 compatibility module
 
 import torch
 import tqdm

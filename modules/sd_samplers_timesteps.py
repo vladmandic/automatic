@@ -1,4 +1,4 @@
-# TODO a1111 compatibility module
+# a1111 compatibility module
 
 import torch
 from modules import sd_samplers_common, sd_samplers_timesteps_impl, sd_samplers_compvis

@@ -540,6 +540,27 @@ def install_rocm_zluda(torch_command):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
+
+        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
+            supported_archs = []
+            hipblaslt_available = True
+            libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
+            for file in os.listdir(libpath):
+                if not file.startswith('extop_'):
+                    continue
+                supported_archs.append(file[6:-3])
+            for gpu in amd_gpus:
+                if gpu not in supported_archs:
+                    hipblaslt_available = False
+                    break
+            log.info(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
+            if hipblaslt_available:
+                import ctypes
+                # Preload hipBLASLt.
+                ctypes.CDLL("/opt/rocm/lib/libhipblaslt.so", mode=ctypes.RTLD_GLOBAL)
+                os.environ["HIPBLASLT_TENSILE_LIBPATH"] = libpath
+            else:
+                os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
     return torch_command
 
 
@@ -680,6 +701,20 @@ def check_torch():
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     elif is_rocm_available(allow_rocm):
         torch_command = install_rocm_zluda(torch_command)
+
+        # WSL ROCm
+        if os.environ.get('WSL_DISTRO_NAME', None) is not None:
+            import ctypes
+            try:
+                # Preload stdc++ library. This will ignore Anaconda stdc++ library.
+                ctypes.CDLL("/lib/x86_64-linux-gnu/libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                pass
+            try:
+                # Preload HSA Runtime library.
+                ctypes.CDLL("/opt/rocm/lib/libhsa-runtime64.so", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
         torch_command = install_ipex(torch_command)
     elif allow_openvino and args.use_openvino:
@@ -894,6 +929,7 @@ def install_submodules(force=True):
                 branch(name)
         except Exception:
             log.error(f'Error updating submodule: {submodule}')
+    setup_logging()
     if args.profile:
         print_profile(pr, 'Submodule')
     return '\n'.join(res)
@@ -1051,20 +1087,20 @@ def check_ui(ver):
 
     if not same(ver):
         log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
-    cwd = os.getcwd()
-    try:
-        os.chdir('extensions-builtin/sdnext-modernui')
-        target = 'dev' if 'dev' in ver['branch'] else 'main'
-        git('checkout ' + target, ignore=True, optional=True)
+        cwd = os.getcwd()
+        try:
+            os.chdir('extensions-builtin/sdnext-modernui')
+            target = 'dev' if 'dev' in ver['branch'] else 'main'
+            git('checkout ' + target, ignore=True, optional=True)
+            os.chdir(cwd)
+            ver = get_version(force=True)
+            if not same(ver):
+                log.debug(f'Branch synchronized: {ver["branch"]}')
+            else:
+                log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
+        except Exception as e:
+            log.debug(f'Branch switch: {e}')
         os.chdir(cwd)
-        ver = get_version(force=True)
-        if not same(ver):
-            log.debug(f'Branch synchronized: {ver["branch"]}')
-        else:
-            log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
-    except Exception as e:
-        log.debug(f'Branch switch: {e}')
-    os.chdir(cwd)
 
 
 # check version of the main repo and optionally upgrade it
@@ -1164,7 +1200,7 @@ def check_timestamp():
 def add_args(parser):
     group = parser.add_argument_group('Setup options')
     group.add_argument('--reset', default = os.environ.get("SD_RESET",False), action='store_true', help = "Reset main repository to latest version, default: %(default)s")
-    group.add_argument('--upgrade', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
+    group.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     group.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
     group.add_argument('--quick', default = os.environ.get("SD_QUICK",False), action='store_true', help = "Bypass version checks, default: %(default)s")
     group.add_argument('--use-directml', default = os.environ.get("SD_USEDIRECTML",False), action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
