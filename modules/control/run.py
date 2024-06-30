@@ -397,7 +397,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
             while status:
                 if pipe is None: # pipe may have been reset externally
                     pipe = set_pipe()
-                    debug(f'Control pipeline reinit: class={pipe.__class__.__name__} args={vars(p)}')
+                    debug(f'Control pipeline reinit: class={pipe.__class__.__name__}')
                 processed_image = None
                 if frame is not None:
                     inputs = [Image.fromarray(frame)] # cv2 to pil
@@ -602,10 +602,11 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     output = None
                     script_run = False
                     if pipe is not None: # run new pipeline
-                        pipe.restore_pipeline = restore_pipeline
+                        if not hasattr(pipe, 'restore_pipeline') and video is None:
+                            pipe.restore_pipeline = restore_pipeline
                         debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
-                        debug(f'Control exec pipeline: p={vars(p)}')
-                        debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
+                        # debug(f'Control exec pipeline: p={vars(p)}')
+                        # debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
                         if sd_models.get_diffusers_task(pipe) != sd_models.DiffusersTaskType.TEXT_2_IMAGE: # force vae back to gpu if not in txt2img mode
                             sd_models.move_model(pipe.vae, devices.device)
 
