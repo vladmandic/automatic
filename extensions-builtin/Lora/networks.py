@@ -120,9 +120,15 @@ def load_network(name, network_on_disk) -> network.Network:
     assign_network_names_to_compvis_modules(shared.sd_model) # this should not be needed but is here as an emergency fix for an unknown error people are experiencing in 1.2.0
     keys_failed_to_match = {}
     matched_networks = {}
+    bundle_embeddings = {}
     convert = lora_convert.KeyConvert()
     for key_network, weight in sd.items():
         parts = key_network.split('.')
+        if parts[0] == "bundle_emb":
+            emb_name, vec_name = parts[1], key_network.split(".", 2)[-1]
+            emb_dict = bundle_embeddings.get(emb_name, {})
+            emb_dict[vec_name] = weight
+            bundle_embeddings[emb_name] = emb_dict
         if len(parts) > 5: # messy handler for diffusers peft lora
             key_network_without_network_parts = '_'.join(parts[:-2])
             if not key_network_without_network_parts.startswith('lora_'):
@@ -134,7 +140,8 @@ def load_network(name, network_on_disk) -> network.Network:
         #     shared.log.debug(f'LoRA load: name="{name}" full={key_network} network={network_part} key={key_network_without_network_parts}')
         key, sd_module = convert(key_network_without_network_parts)  # Now returns lists
         if sd_module[0] is None:
-            keys_failed_to_match[key_network] = key
+            if "bundle_emb" not in key_network:
+                keys_failed_to_match[key_network] = key
             continue
         for k, module in zip(key, sd_module):
             if k not in matched_networks:
@@ -158,6 +165,7 @@ def load_network(name, network_on_disk) -> network.Network:
         shared.log.debug(f"LoRA file={network_on_disk.filename} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}")
     lora_cache[name] = net
     t1 = time.time()
+    net.bundle_embeddings = bundle_embeddings
     timer['load'] += t1 - t0
     return net
 
@@ -217,6 +225,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             failed_to_load_networks.append(name)
             shared.log.error(f"LoRA unknown type: network={name}")
             continue
+        shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)
         net.te_multiplier = te_multipliers[i] if te_multipliers else 1.0
         net.unet_multiplier = unet_multipliers[i] if unet_multipliers else 1.0
         net.dyn_dim = dyn_dims[i] if dyn_dims else 1.0
