@@ -52,6 +52,7 @@ args = Dot({
     'reinstall': False,
     'version': False,
     'ignore': False,
+    'uv': False,
 })
 git_commit = "unknown"
 submodules_commit = {
@@ -235,23 +236,25 @@ def uninstall(package, quiet = False):
 
 
 @lru_cache()
-def pip(arg: str, ignore: bool = False, quiet: bool = False, uv=True):
+def pip(arg: str, ignore: bool = False, quiet: bool = False, forcePip = False):
+    uv = args.uv and not forcePip
+    pipCmd = "uv pip" if uv else "pip"
+    uvMode = "[uv] " if uv else ""
     arg = arg.replace('>=', '==')
     if not quiet and '-r ' not in arg:
-        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace("  ", " ").strip()}"')
+        log.info(f'{uvMode}Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace("  ", " ").strip()}"')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
-    log.debug(f'Running: pip="{pip_log}{arg} {env_args}"')
-    pipCmd = "uv pip" if uv else "pip"
+    log.debug(f'Running: {pipCmd}="{pip_log}{arg} {env_args}"')
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
     txt = txt.strip()
-    debug(f'Install pip: {txt}')
+    debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
         global errors # pylint: disable=global-statement
         errors += 1
-        log.error(f'Error running pip: {arg}')
+        log.error(f'Error running {pipCmd}: {arg}')
         log.debug(f'Pip output: {txt}')
     return txt
 
@@ -265,7 +268,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install {deps}{package}", ignore=ignore)
+        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, forcePip=(package == "uv"))
         try:
             import imp # pylint: disable=deprecated-module
             imp.reload(pkg_resources)
@@ -1224,6 +1227,7 @@ def add_args(parser):
     group.add_argument('--version', default = False, action='store_true', help = "Print version information")
     group.add_argument('--ignore', default = os.environ.get("SD_IGNORE",False), action='store_true', help = "Ignore any errors and attempt to continue")
     group.add_argument('--safe', default = os.environ.get("SD_SAFE",False), action='store_true', help = "Run in safe mode with no user extensions")
+    group.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
 
     group = parser.add_argument_group('Logging options')
     group.add_argument("--log", type=str, default=os.environ.get("SD_LOG", None), help="Set log file, default: %(default)s")

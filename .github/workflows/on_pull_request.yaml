@@ -29,3 +29,7 @@ jobs:
         run: |
           export COMMANDLINE_ARGS="--debug --test"
           python launch.py
+      - name: test-startup-with-uv
+        run: |
+          export COMMANDLINE_ARGS="--debug --test --uv"
+          python launch.py

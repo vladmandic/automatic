@@ -182,7 +182,6 @@ def start_server(immediate=True, server=None):
 
 def main():
     global args # pylint: disable=global-statement
-    installer.pip("install uv", uv=False)
     installer.ensure_base_requirements()
     init_args() # setup argparser and default folders
     installer.args = args
@@ -205,6 +204,9 @@ def main():
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
     if not args.skip_env:
         installer.set_environment()
+    if args.uv:
+        installer.install("uv", "uv")
+        installer.log.info('Using "uv pip" instead of "pip" for packages installation')
     installer.check_torch()
     installer.check_onnx()
     installer.check_diffusers()
