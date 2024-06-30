@@ -282,67 +282,72 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     else:
         pass
 
-    debug(f'Control: run type={unit_type} models={has_models}')
-    if has_models:
-        p.ops.append('control')
-        p.extra_generation_params["Control mode"] = unit_type # overriden later with pretty-print
-        p.extra_generation_params["Control conditioning"] = control_conditioning if isinstance(control_conditioning, list) else [control_conditioning]
-        p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
-        p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
-        p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
-        p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in p.extra_generation_params["Control conditioning"]])
-        p.extra_generation_params['Control start'] = ';'.join([str(c) for c in p.extra_generation_params['Control start']])
-        p.extra_generation_params['Control end'] = ';'.join([str(c) for c in p.extra_generation_params['Control end']])
-    if unit_type == 't2i adapter' and has_models:
-        p.extra_generation_params["Control mode"] = 'T2I-Adapter'
-        p.task_args['adapter_conditioning_scale'] = control_conditioning
-        instance = t2iadapter.AdapterPipeline(selected_models, shared.sd_model)
-        pipe = instance.pipeline
-        if inits is not None:
-            shared.log.warning('Control: T2I-Adapter does not support separate init image')
-    elif unit_type == 'controlnet' and has_models:
-        p.extra_generation_params["Control mode"] = 'ControlNet'
-        p.task_args['controlnet_conditioning_scale'] = control_conditioning
-        p.task_args['control_guidance_start'] = control_guidance_start
-        p.task_args['control_guidance_end'] = control_guidance_end
-        p.task_args['guess_mode'] = p.guess_mode
-        instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model)
-        pipe = instance.pipeline
-    elif unit_type == 'xs' and has_models:
-        p.extra_generation_params["Control mode"] = 'ControlNet-XS'
-        p.controlnet_conditioning_scale = control_conditioning
-        p.control_guidance_start = control_guidance_start
-        p.control_guidance_end = control_guidance_end
-        instance = xs.ControlNetXSPipeline(selected_models, shared.sd_model)
-        pipe = instance.pipeline
-        if inits is not None:
-            shared.log.warning('Control: ControlNet-XS does not support separate init image')
-    elif unit_type == 'lite' and has_models:
-        p.extra_generation_params["Control mode"] = 'ControlLLLite'
-        p.controlnet_conditioning_scale = control_conditioning
-        instance = lite.ControlLLitePipeline(shared.sd_model)
-        pipe = instance.pipeline
-        if inits is not None:
-            shared.log.warning('Control: ControlLLLite does not support separate init image')
-    elif unit_type == 'reference' and has_models:
-        p.extra_generation_params["Control mode"] = 'Reference'
-        p.extra_generation_params["Control attention"] = p.attention
-        p.task_args['reference_attn'] = 'Attention' in p.attention
-        p.task_args['reference_adain'] = 'Adain' in p.attention
-        p.task_args['attention_auto_machine_weight'] = p.query_weight
-        p.task_args['gn_auto_machine_weight'] = p.adain_weight
-        p.task_args['style_fidelity'] = p.fidelity
-        instance = reference.ReferencePipeline(shared.sd_model)
-        pipe = instance.pipeline
-        if inits is not None:
-            shared.log.warning('Control: ControlNet-XS does not support separate init image')
-    else: # run in txt2img/img2img mode
-        if len(active_strength) > 0:
-            p.strength = active_strength[0]
-        pipe = shared.sd_model
-        instance = None
+    def set_pipe():
+        global pipe, instance # pylint: disable=global-statement
+        pipe = None
+        if has_models:
+            p.ops.append('control')
+            p.extra_generation_params["Control mode"] = unit_type # overriden later with pretty-print
+            p.extra_generation_params["Control conditioning"] = control_conditioning if isinstance(control_conditioning, list) else [control_conditioning]
+            p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
+            p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
+            p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
+            p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in p.extra_generation_params["Control conditioning"]])
+            p.extra_generation_params['Control start'] = ';'.join([str(c) for c in p.extra_generation_params['Control start']])
+            p.extra_generation_params['Control end'] = ';'.join([str(c) for c in p.extra_generation_params['Control end']])
+        if unit_type == 't2i adapter' and has_models:
+            p.extra_generation_params["Control mode"] = 'T2I-Adapter'
+            p.task_args['adapter_conditioning_scale'] = control_conditioning
+            instance = t2iadapter.AdapterPipeline(selected_models, shared.sd_model)
+            pipe = instance.pipeline
+            if inits is not None:
+                shared.log.warning('Control: T2I-Adapter does not support separate init image')
+        elif unit_type == 'controlnet' and has_models:
+            p.extra_generation_params["Control mode"] = 'ControlNet'
+            p.task_args['controlnet_conditioning_scale'] = control_conditioning
+            p.task_args['control_guidance_start'] = control_guidance_start
+            p.task_args['control_guidance_end'] = control_guidance_end
+            p.task_args['guess_mode'] = p.guess_mode
+            instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model)
+            pipe = instance.pipeline
+        elif unit_type == 'xs' and has_models:
+            p.extra_generation_params["Control mode"] = 'ControlNet-XS'
+            p.controlnet_conditioning_scale = control_conditioning
+            p.control_guidance_start = control_guidance_start
+            p.control_guidance_end = control_guidance_end
+            instance = xs.ControlNetXSPipeline(selected_models, shared.sd_model)
+            pipe = instance.pipeline
+            if inits is not None:
+                shared.log.warning('Control: ControlNet-XS does not support separate init image')
+        elif unit_type == 'lite' and has_models:
+            p.extra_generation_params["Control mode"] = 'ControlLLLite'
+            p.controlnet_conditioning_scale = control_conditioning
+            instance = lite.ControlLLitePipeline(shared.sd_model)
+            pipe = instance.pipeline
+            if inits is not None:
+                shared.log.warning('Control: ControlLLLite does not support separate init image')
+        elif unit_type == 'reference' and has_models:
+            p.extra_generation_params["Control mode"] = 'Reference'
+            p.extra_generation_params["Control attention"] = p.attention
+            p.task_args['reference_attn'] = 'Attention' in p.attention
+            p.task_args['reference_adain'] = 'Adain' in p.attention
+            p.task_args['attention_auto_machine_weight'] = p.query_weight
+            p.task_args['gn_auto_machine_weight'] = p.adain_weight
+            p.task_args['style_fidelity'] = p.fidelity
+            instance = reference.ReferencePipeline(shared.sd_model)
+            pipe = instance.pipeline
+            if inits is not None:
+                shared.log.warning('Control: ControlNet-XS does not support separate init image')
+        else: # run in txt2img/img2img mode
+            if len(active_strength) > 0:
+                p.strength = active_strength[0]
+            pipe = shared.sd_model
+            instance = None
+        debug(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
+        return pipe
 
 
+    pipe = set_pipe()
     debug(f'Control pipeline: class={pipe.__class__.__name__} args={vars(p)}')
     t1, t2, t3 = time.time(), 0, 0
     status = True
@@ -390,6 +395,9 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     return [], '', '', 'Error: video open failed'
 
             while status:
+                if pipe is None: # pipe may have been reset externally
+                    pipe = set_pipe()
+                    debug(f'Control pipeline reinit: class={pipe.__class__.__name__} args={vars(p)}')
                 processed_image = None
                 if frame is not None:
                     inputs = [Image.fromarray(frame)] # cv2 to pil
@@ -426,9 +434,10 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     else:
                         debug(f'Control Init image: {i % len(inits) + 1} of {len(inits)}')
                         init_image = inits[i % len(inits)]
-                    index += 1
                     if video is not None and index % (video_skip_frames + 1) != 0:
+                        index += 1
                         continue
+                    index += 1
 
                     # resize before
                     if resize_mode_before != 0 and resize_name_before != 'None':
