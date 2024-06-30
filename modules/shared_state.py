@@ -12,6 +12,7 @@ class State:
     job = ""
     job_no = 0
     job_count = 0
+    frame_count = 0
     total_jobs = 0
     job_timestamp = '0'
     sampling_step = 0
@@ -71,6 +72,7 @@ class State:
         self.interrupted = False
         self.job = title
         self.job_count = -1
+        self.frame_count = -1
         self.job_no = 0
         self.job_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         self.paused = False
@@ -93,6 +95,7 @@ class State:
         self.job = ""
         self.job_count = 0
         self.job_no = 0
+        self.frame_count = 0
         self.paused = False
         self.interrupted = False
         self.skipped = False

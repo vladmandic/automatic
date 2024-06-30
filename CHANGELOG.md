@@ -1,12 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-28
+## Update for 2024-06-30
 
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
 - fix executing extensions with zero params  
 - fix nncf for lora, thanks @Disty0!
 - fix diffusers version detection for SD3
 - fix current step for higher order samplers
+- fix control input type video  
 - add SD3 with FP16 T5 to list of detected models
 - multiple ModernUI fixes
 
