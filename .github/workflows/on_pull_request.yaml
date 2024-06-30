@@ -7,6 +7,12 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flags:
+          - --debug --test --uv
+          - --debug --test
     steps:
       - name: checkout-code
         uses: actions/checkout@main
@@ -27,10 +33,5 @@ jobs:
           msg: apply code formatting and linting auto-fixes
       - name: test-startup
         run: |
-          export COMMANDLINE_ARGS="--debug --test"
-          python launch.py
-      - name: test-startup-with-uv
-        run: |
-          rm -rf venv
-          export COMMANDLINE_ARGS="--debug --test --uv"
+          export COMMANDLINE_ARGS="${{ matrix.flags }}"
           python launch.py
