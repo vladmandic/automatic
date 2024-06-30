@@ -236,16 +236,16 @@ def uninstall(package, quiet = False):
 
 
 @lru_cache()
-def pip(arg: str, ignore: bool = False, quiet: bool = False, forcePip = False):
-    uv = args.uv and not forcePip
+def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
+    uv = uv and args.uv
     pipCmd = "uv pip" if uv else "pip"
-    uvMode = "[uv] " if uv else ""
     arg = arg.replace('>=', '==')
     if not quiet and '-r ' not in arg:
         log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
-    log.debug(f'Running: {pipCmd}="{pip_log}{arg} {env_args}"')
-    result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    all_args = f'{pip_log}{arg} {env_args}'.strip()
+    log.debug(f'Running: {pipCmd}="{all_args}"')
+    result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
@@ -268,7 +268,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, forcePip=(package == "uv"))
+        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv")
         try:
             import imp # pylint: disable=deprecated-module
             imp.reload(pkg_resources)

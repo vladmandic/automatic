@@ -226,6 +226,7 @@ List of available parameters, run `webui --help` for the full & up-to-date list:
       --version                                          Print version information
       --ignore                                           Ignore any errors and attempt to continue
       --safe                                             Run in safe mode with no user extensions
+      --uv                                               Use uv as installer, default: False
 
     Logging options:
       --log LOG                                          Set log file, default: None

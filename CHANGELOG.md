@@ -2,6 +2,8 @@
 
 ## Update for 2024-06-30
 
+- add support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
+  to use, simply add `--uv` to your command line params  
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
 - fix executing extensions with zero params  
 - fix nncf for lora, thanks @Disty0!
