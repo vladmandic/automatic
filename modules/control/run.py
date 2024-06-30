@@ -388,6 +388,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     codec = util.decode_fourcc(video.get(cv2.CAP_PROP_FOURCC))
                     status, frame = video.read()
                     if status:
+                        shared.state.frame_count = 1 + frames // (video_skip_frames + 1)
                         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     shared.log.debug(f'Control: input video: path={inputs} frames={frames} fps={fps} size={w}x{h} codec={codec}')
                 except Exception as e:
