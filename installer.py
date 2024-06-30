@@ -242,7 +242,7 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, forcePip = False):
     uvMode = "[uv] " if uv else ""
     arg = arg.replace('>=', '==')
     if not quiet and '-r ' not in arg:
-        log.info(f'{uvMode}Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace("  ", " ").strip()}"')
+        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     log.debug(f'Running: {pipCmd}="{pip_log}{arg} {env_args}"')
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

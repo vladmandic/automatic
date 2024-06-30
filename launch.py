@@ -206,7 +206,6 @@ def main():
         installer.set_environment()
     if args.uv:
         installer.install("uv", "uv")
-        installer.log.info('Using "uv pip" instead of "pip" for packages installation')
     installer.check_torch()
     installer.check_onnx()
     installer.check_diffusers()
