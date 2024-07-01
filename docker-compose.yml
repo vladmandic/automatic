@@ -9,12 +9,8 @@ services:
       resources:
         reservations:
           devices:
-          - /dev/kfd
-          - /dev/dri
-          - capabilities:
-            - gpu
+          - capabilities: ["gpu"]
             count: all
-            driver: nvidia
     environment:
       SD_DATADIR: /data
     ports:
