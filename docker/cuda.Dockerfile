@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 COPY ./ ./
 
-RUN ls
+RUN chmod -R 755 ./
 
 RUN ./docker/setup.sh
 

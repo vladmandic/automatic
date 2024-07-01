@@ -4,9 +4,9 @@ cd -- "$(dirname -- "$0")"
 
 if [ "$1" = "--cuda" ] || [ "$1" = "--rocm" ] || [ "$1" = "--cpu" ]; then
     COMPUTE=${1#--}
-    echo "COMPUTE: $COMPUTE"
 else
     echo "Compute platform not specified, assuming compute platform is CUDA"
+    echo
     COMPUTE=cuda
 fi
 
