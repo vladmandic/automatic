@@ -23,8 +23,6 @@ RUN echo "Install apt packages" && \
     wget \
     aria2 > /dev/null
 
-RUN python3 -m venv /python/venv
-
 ENV venv_dir=/python/venv
 
-CMD ["./webui.sh", "--uv", "--listen"]
+CMD ["./webui.sh", "--uv", "--listen", "--use-rocm"]
