@@ -17,4 +17,4 @@ echo.
 
 docker build -t sd-next -f ./docker/Dockerfile --build-arg "BASE_IMG=%img%" .
 docker rm "SD-Next"
-docker run -it --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache -p 7860:7860 --gpus=all --name "SD-Next" sd-next
+docker run -it --device /dev/kfd --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache -p 7860:7860 --gpus=all --name "SD-Next" sd-next
