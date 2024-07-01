@@ -13,6 +13,7 @@ services:
             count: all
     environment:
       SD_DATADIR: /data
+      venv_dir: /data/venv
     ports:
     - 7860:7860
     stdin_open: true
