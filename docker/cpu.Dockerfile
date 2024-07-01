@@ -1,5 +1,4 @@
-ARG BASE_IMG
-FROM ${BASE_IMG}
+FROM ubuntu:22.04
 
 USER root
 WORKDIR /workspace

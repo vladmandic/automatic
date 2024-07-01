@@ -1,20 +1,18 @@
 @echo off
 
-if not defined PYTHON (set PYTHON=python)
-if not defined VENV_DIR (set "VENV_DIR=%~dp0%venv")
+if "%1"=="--cuda" GOTO build_and_run
+if "%1"=="--rocm" GOTO build_and_run
+if "%1"=="--cpu" GOTO build_and_run
 
-%PYTHON% -m venv "%VENV_DIR%"
 
-set PYTHON="%VENV_DIR%\Scripts\Python.exe"
+echo Please run with one of the following flags:
+echo --cuda, --rocm, --cpu
+exit /b 1
 
-for /f "usebackq delims=" %%i in (`%PYTHON% ./docker/docker.py %*`) do (
-    echo %%i
-    set "img=%%i"
-)
+:build_and_run
+set COMPUTE=%~1
+set COMPUTE=%COMPUTE:--=%
 
-@REM separate log between docker.py and docker
-echo.
-
-docker build -t sd-next -f ./docker/Dockerfile --build-arg "BASE_IMG=%img%" .
+docker build -t sd-next -f ./docker/%COMPUTE%.Dockerfile .
 docker rm "SD-Next"
-docker run -it --device /dev/kfd --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache -p 7860:7860 --gpus=all --name "SD-Next" sd-next
+docker run -it --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache --group-add video -p 7860:7860 --gpus=all --name "SD-Next" sd-next

@@ -2,27 +2,15 @@
 
 cd -- "$(dirname -- "$0")"
 
-if [[ -z "${PYTHON}" ]]
-then
-    PYTHON="python3"
+if [ "$1" = "--cuda" ] || [ "$1" = "--rocm" ] || [ "$1" = "--cpu" ]; then
+    COMPUTE=${1#--}
+    echo "COMPUTE: $COMPUTE"
+
+    docker build -t sd-next -f ./docker/$COMPUTE.Dockerfile .
+    docker rm "SD-Next"
+    docker run -it --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache --group-add video -p 7860:7860 --gpus=all --name "SD-Next" sd-next
+else
+    echo "Please run with one of the following flags:"
+    echo "--cuda, --rocm, --cpu"
+    exit 1
 fi
-if [[ -z "${venv_dir}" ]]
-then
-    venv_dir="venv"
-fi
-
-if [[ ! -d "${venv_dir}" ]]
-then
-    "${PYTHON}" -m venv "${venv_dir}"
-fi
-source "${venv_dir}"/bin/activate
-
-PYTHON="${venv_dir}/bin/python3"
-img=$(exec "${PYTHON}" ./docker/docker.py "$@" | tail -n 1)
-
-# separate log between docker.py and docker
-echo
-
-docker build -t sd-next -f ./docker/Dockerfile --build-arg "BASE_IMG=$img" .
-docker rm "SD-Next"
-docker run -it --device /dev/kfd --device /dev/dri -v SD-Next:/workspace -v SD-Next_Venv:/python/venv -v SD-Next_Cache:/root/.cache -p 7860:7860 --gpus=all --name "SD-Next" sd-next
