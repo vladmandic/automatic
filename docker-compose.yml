@@ -1,0 +1,27 @@
+name: sd-next
+services:
+  webui:
+    build:
+      args:
+        BASE_IMG: nvidia/cuda:12.5.0-runtime-ubuntu22.04
+      context: .
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - /dev/kfd
+          - /dev/dri
+          - capabilities:
+            - gpu
+            count: all
+            driver: nvidia
+    environment:
+      SD_DATADIR: /data
+    ports:
+    - 7860:7860
+    stdin_open: true
+    tty: true
+    volumes:
+    - SD-Next:/data
+volumes:
+  SD-Next: null
