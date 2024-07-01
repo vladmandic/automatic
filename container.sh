@@ -20,6 +20,7 @@ source "${venv_dir}"/bin/activate
 PYTHON="${venv_dir}/bin/python3"
 img=$(exec "${PYTHON}" ./docker/docker.py "$@" | tail -n 1)
 
+# separate log between docker.py and docker
 echo
 
 docker build -t sd-next -f ./docker/Dockerfile --build-arg "BASE_IMG=$img" .
