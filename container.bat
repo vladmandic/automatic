@@ -12,6 +12,7 @@ for /f "usebackq delims=" %%i in (`%PYTHON% ./docker/docker.py %*`) do (
     set "img=%%i"
 )
 
+@REM separate log between docker.py and docker
 echo.
 
 docker build -t sd-next -f ./docker/Dockerfile --build-arg "BASE_IMG=%img%" .
