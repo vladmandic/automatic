@@ -24,5 +24,4 @@ RUN echo "Install apt packages" && \
     wget \
     aria2 > /dev/null
 
-CMD ./webui.sh --uv
-# CMD ["sleep", "infinity"]
+CMD ["./webui.sh", "--uv", "--listen"]
