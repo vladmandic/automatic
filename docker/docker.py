@@ -79,10 +79,4 @@ if not IMAGE:
 if not IMAGE:
     IMAGE = "ubuntu:24.04"
 
-print(f'Use image: {IMAGE}\n\n')
-
-with open('./docker/docker-compose.yml', 'r') as file:
-    data = yaml.safe_load(file)
-data["services"]["webui"]["build"]["args"]["BASE_IMG"] = IMAGE
-with open('./docker/docker-compose.yml', 'w') as file:
-    yaml.dump(data, file)
+print(f'Use image:\n{IMAGE}')
