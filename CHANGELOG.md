@@ -1,7 +1,12 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-30
+TODO:
+- Requires `diffusers==0.30.0`
+- Alpha Lumina
 
+## Update for 2024-07-01
+
+- support for **HunyuanDiT 1.2**  
 - add support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
