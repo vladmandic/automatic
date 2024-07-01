@@ -58,7 +58,7 @@ def check_cuda():
 
 def check_rocm():
     try:
-        hcRes = subprocess.check_output(['hipconfig --version']).decode('utf-8')
+        hcRes = subprocess.check_output(['hipconfig --version'], shell=True).decode('utf-8')
     except Exception as e:
         print(e)
         print("ROCM not detected")
