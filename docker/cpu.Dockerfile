@@ -7,8 +7,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 COPY ./ ./
 
-RUN chmod -R 755 ./
-
 RUN ./docker/setup.sh
 
 ENV venv_dir=/python/venv
