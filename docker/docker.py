@@ -1,8 +1,13 @@
 import subprocess
 import re
-import yaml
+import sys
+try:
+    import yaml
+except ImportError:
+    subprocess.run(f'"{sys.executable}" -m pip install pyyaml', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    import yaml
 
-platformDict = {
+imageDict = {
     "CUDA": {
         "11.8": "11.8.0",
         "12.0": "12.0.1",
@@ -24,7 +29,7 @@ platformDict = {
 IMAGE = None
 
 def get_image_ver(ver, platform):
-    dict = platformDict[platform]
+    dict = imageDict[platform]
     ver = ".".join(ver.split(".")[0:2])
 
     dictKeys = sorted(dict.keys(), key=lambda x: float(re.sub(r"[^\d.]", "", x)))
@@ -35,6 +40,8 @@ def get_image_ver(ver, platform):
         useVer = dictKeys[-1]
     else:
         useVer = max(version for version in dictKeys if version <= ver)
+    
+    print(f'{platform} version {ver} detected')
 
     return dict[useVer]
 
@@ -71,11 +78,11 @@ if not IMAGE:
     IMAGE = check_rocm()
 if not IMAGE:
     IMAGE = "ubuntu:24.04"
-print(IMAGE)
 
-with open('docker-compose.yml', 'r') as file:
+print(f'Use image: {IMAGE}\n\n')
+
+with open('./docker/docker-compose.yml', 'r') as file:
     data = yaml.safe_load(file)
 data["services"]["webui"]["build"]["args"]["BASE_IMG"] = IMAGE
-print(data)
-with open('docker-compose.yml', 'w') as file:
+with open('./docker/docker-compose.yml', 'w') as file:
     yaml.dump(data, file)
