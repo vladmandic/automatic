@@ -41,7 +41,7 @@ def get_image_ver(ver, platform):
 
 def check_cuda():
     try:
-        smiRes = subprocess.check_output(['nvidia-smi']).decode('utf-8')
+        smiRes = subprocess.check_output(['nvidia-smi'], shell=True).decode('utf-8')
     except:
         print("Nvidia SMI not detected")
         return
