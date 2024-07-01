@@ -41,8 +41,8 @@ cache
 /*.lnk
 !webui.bat
 !webui.sh
-!compose.bat
-!compose.sh
+!container.bat
+!container.sh
 !package.json
 
 # all dynamic stuff
