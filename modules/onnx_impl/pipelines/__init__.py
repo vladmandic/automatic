@@ -34,7 +34,6 @@ class PipelineBase(TorchCompatibleModule, diffusers.DiffusionPipeline, metaclass
         self.model_type = self.__class__.__name__
 
     def to(self, *args, **kwargs):
-        import optimum.onnxruntime
         if self.__class__ == OnnxRawPipeline: # cannot move pipeline which is not preprocessed.
             return self
 
