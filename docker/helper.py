@@ -10,7 +10,7 @@ class MultilineHelpFormatter(argparse.HelpFormatter):
         lines.append("")
         return lines
 
-class CustomAction(argparse.Action):
+class VolumeAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         dictionary = getattr(namespace, self.dest)
         
@@ -21,7 +21,7 @@ class CustomAction(argparse.Action):
             elif key in dictionary:
                 del dictionary[key]
         else:
-            print(f"Invalid item '{values}'. Items must be in the format 'key:value'")
+            print(f"Invalid item '{values}'. Items must be in the format 'VOL_NAME:VOL_PATH'")
 
 argParser = argparse.ArgumentParser(conflict_handler='resolve', add_help=True, formatter_class=MultilineHelpFormatter)
 
@@ -37,7 +37,7 @@ argParser.add_argument('--compute', type=str, choices=['cuda', 'rocm', 'cpu'], d
 Specify the compute platform use by the container
 Default: cuda
 ''')
-argParser.add_argument('-v', '--volumes', action=CustomAction, default={
+argParser.add_argument('-v', '--volumes', action=VolumeAction, default={
     "SD-Next": "/workspace",
     "Cache": "/root/.cache",
     "Python": "/python"
