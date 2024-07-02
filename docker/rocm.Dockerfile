@@ -9,6 +9,4 @@ COPY ./ ./
 
 RUN ./docker/setup.sh
 
-ENV venv_dir=/python/venv
-
 CMD ["./webui.sh", "--uv", "--listen", "--use-rocm"]
