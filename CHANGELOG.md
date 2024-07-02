@@ -5,12 +5,14 @@ TODO:
 - Requires `diffusers==0.30.0`
 - Alpha Lumina
 
-## Update for 2024-07-01
+## Update for 2024-07-02
 
 - support for **HunyuanDiT 1.2**  
 - add support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
+- fix executing extensions with zero params  
+- add support for embeddings bundled in LoRA, thanks @AI-Casanova!
 - fix executing extensions with zero params  
 - fix nncf for lora, thanks @Disty0!
 - fix diffusers version detection for SD3

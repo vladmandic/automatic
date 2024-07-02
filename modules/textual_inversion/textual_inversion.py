@@ -12,6 +12,7 @@ from modules.files_cache import directory_files, directory_mtime, extension_filt
 debug = shared.log.trace if os.environ.get('SD_TI_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: TEXTUAL INVERSION')
 
+
 def list_embeddings(*dirs):
     is_ext = extension_filter(['.SAFETENSORS', '.PT' ] + ( ['.PNG', '.WEBP', '.JXL', '.AVIF', '.BIN' ] if not shared.native else [] ))
     is_not_preview = lambda fp: not next(iter(os.path.splitext(fp))).upper().endswith('.PREVIEW') # pylint: disable=unnecessary-lambda-assignment
@@ -48,8 +49,8 @@ def open_embeddings(filename):
                 vectors = torch.load(fullname, map_location=devices.device)["string_to_param"]["*"]
                 embedding.vec.append(vectors)
             embedding.tokens = [embedding.name if i == 0 else f"{embedding.name}_{i}" for i in range(len(embedding.vec[0]))]
-        except:
-            debug(f"Could not load embedding file {fullname}")
+        except Exception as e:
+            debug(f"Could not load embedding file {fullname} {e}")
         if embedding.vec:
             embeddings.append(embedding)
         else:
@@ -115,8 +116,8 @@ def deref_tokenizers(tokens, tokenizers):
             while last_token.replace(str(suffix), str(newsuffix)) in tokenizer.get_vocab():
                 idx = tokenizer.convert_tokens_to_ids(last_token.replace(str(suffix), str(newsuffix)))
                 debug(f"Textual inversion: deref idx={idx}")
-                del tokenizer._added_tokens_encoder[last_token.replace(str(suffix), str(newsuffix))]
-                tokenizer._added_tokens_decoder[idx].content = str(time.time())
+                del tokenizer._added_tokens_encoder[last_token.replace(str(suffix), str(newsuffix))] # pylint: disable=protected-access
+                tokenizer._added_tokens_decoder[idx].content = str(time.time()) # pylint: disable=protected-access
                 newsuffix += 1
 
 
@@ -277,7 +278,7 @@ class EmbeddingDatabase:
         overwrite = bool(data)
         if not shared.sd_loaded:
             return 0
-        embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
+        embeddings, _skipped = open_embeddings(filename) or convert_bundled(data)
         if not embeddings:
             return 0
         text_encoders, tokenizers, hiddensizes = get_text_encoders()
@@ -301,8 +302,11 @@ class EmbeddingDatabase:
         insert_tokens(embeddings, tokenizers)
         for embedding in embeddings:
             if embedding.name not in self.skipped_embeddings:
-                insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
-                self.register_embedding(embedding, shared.sd_model)
+                try:
+                    insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
+                    self.register_embedding(embedding, shared.sd_model)
+                except Exception as e:
+                    shared.log.error(e, f'Embedding load: name={embedding.name} fn={embedding.filename} {e}')
         return
 
     def load_from_file(self, path, filename):
