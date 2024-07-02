@@ -1,12 +1,21 @@
 # Change Log for SD.Next
 
-## Update for 2024-06-28
+TODO:
+- <https://github.com/huggingface/diffusers/issues/8771>
+- Requires `diffusers==0.30.0`
+- Alpha Lumina
 
+## Update for 2024-07-01
+
+- support for **HunyuanDiT 1.2**  
+- add support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
+  to use, simply add `--uv` to your command line params  
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
 - fix executing extensions with zero params  
 - fix nncf for lora, thanks @Disty0!
 - fix diffusers version detection for SD3
 - fix current step for higher order samplers
+- fix control input type video  
 - add SD3 with FP16 T5 to list of detected models
 - multiple ModernUI fixes
 

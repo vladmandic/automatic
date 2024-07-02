@@ -22,8 +22,7 @@ from diffusers.loaders import FromSingleFileMixin, LoraLoaderMixin, TextualInver
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.models.attention_processor import (
     AttnProcessor2_0,
-    LoRAAttnProcessor2_0,
-    LoRAXFormersAttnProcessor,
+    FusedAttnProcessor2_0,
     XFormersAttnProcessor,
 )
 from diffusers.configuration_utils import FrozenDict
@@ -631,8 +630,7 @@ class StableDiffusionXLDiffImg2ImgPipeline(DiffusionPipeline, FromSingleFileMixi
             (
                 AttnProcessor2_0,
                 XFormersAttnProcessor,
-                LoRAXFormersAttnProcessor,
-                LoRAAttnProcessor2_0,
+                FusedAttnProcessor2_0,
             ),
         )
         # if xformers or torch_2_0 is used attention block does not need

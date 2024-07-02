@@ -182,13 +182,20 @@
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
   
-  "Tencent HunyuanDiT 1.1": {
-    "path": "Tencent-Hunyuan/HunyuanDiT-v1.1-Diffusers",
+  "Tencent HunyuanDiT 1.2": {
+    "path": "Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
     "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
-  
+
+  "AlphaVLLM Lumina Next SFT": {
+    "path": "Alpha-VLLM/Lumina-Next-SFT-diffusers",
+    "desc": "The Lumina-Next-SFT is a Next-DiT model containing 2B parameters and utilizes Gemma-2B as the text encoder, enhanced through high-quality supervised fine-tuning (SFT).",
+    "preview": "Alpha-VLLM-Lumina-Next-SFT-diffusers.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+  }, 
+
   "Kandinsky 2.1": {
     "path": "kandinsky-community/kandinsky-2-1",
     "desc": "Kandinsky 2.1 is a text-conditional diffusion model based on unCLIP and latent diffusion, composed of a transformer-based image prior model, a unet diffusion model, and a decoder. Kandinsky 2.1 inherits best practices from Dall-E 2 and Latent diffusion while introducing some new ideas. It uses the CLIP model as a text and image encoder, and diffusion image prior (mapping) between latent spaces of CLIP modalities. This approach increases the visual performance of the model and unveils new horizons in blending images and text-guided image manipulation.",

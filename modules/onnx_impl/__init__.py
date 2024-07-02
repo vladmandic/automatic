@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import diffusers
 import onnxruntime as ort
-import optimum.onnxruntime
 
 initialized = False
 
@@ -201,6 +200,8 @@ def initialize_onnx():
         return
     try: # may fail on onnx import
         import onnx # pylint: disable=unused-import
+        import optimum.onnxruntime
+        optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
         from .execution_providers import ExecutionProvider, TORCH_DEVICE_TO_EP, available_execution_providers
         if devices.backend == "rocm":
             TORCH_DEVICE_TO_EP["cuda"] = ExecutionProvider.ROCm
@@ -233,8 +234,6 @@ def initialize_onnx():
 
         diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline # Huggingface model compatibility
         diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
-
-        optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
 
         log.debug(f'ONNX: version={ort.__version__} provider={opts.onnx_execution_provider}, available={available_execution_providers}')
     except Exception as e:

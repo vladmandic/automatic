@@ -388,6 +388,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             devices.torch_gc()
 
         if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
+            print('HERE RESTORE')
             shared.sd_model.restore_pipeline()
 
         t1 = time.time()

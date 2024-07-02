@@ -4,11 +4,8 @@ import shutil
 import tempfile
 from abc import ABCMeta
 from typing import Type, Tuple, List, Any, Dict
-from packaging import version
 import torch
 import diffusers
-import onnxruntime as ort
-import optimum.onnxruntime
 from installer import log, install
 from modules import shared
 from modules.paths import sd_configs_path, models_path
@@ -23,7 +20,6 @@ from modules.onnx_impl.execution_providers import ExecutionProvider, EP_TO_NAME,
 SUBMODELS_SD = ("text_encoder", "unet", "vae_encoder", "vae_decoder",)
 SUBMODELS_SDXL = ("text_encoder", "text_encoder_2", "unet", "vae_encoder", "vae_decoder",)
 SUBMODELS_SDXL_REFINER = ("text_encoder_2", "unet", "vae_encoder", "vae_decoder",)
-
 SUBMODELS_LARGE = ("text_encoder_2", "unet",)
 
 
@@ -37,6 +33,7 @@ class PipelineBase(TorchCompatibleModule, diffusers.DiffusionPipeline, metaclass
         self.model_type = self.__class__.__name__
 
     def to(self, *args, **kwargs):
+        import optimum.onnxruntime
         if self.__class__ == OnnxRawPipeline: # cannot move pipeline which is not preprocessed.
             return self
 
