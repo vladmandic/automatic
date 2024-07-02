@@ -103,12 +103,6 @@ def deref_tokenizers(tokens, tokenizers):
     we can ensure that a smaller embedding will not get tokenized as itself, plus the remaining vectors of the previous.
     """
     for tokenizer in tokenizers:
-        # if tokens[0] in tokenizer.get_vocab():
-        #     idx = tokenizer.convert_tokens_to_ids(tokens[0])
-        #     debug(f"deref idx: {idx}")
-        #     tokenizer._added_tokens_decoder[idx].content = str(time.time())
-        #     del tokenizer._added_tokens_encoder[tokens[0]]
-
         if len(tokens) > 1:
             last_token = tokens[-1]
             suffix = int(last_token.split("_")[-1])
@@ -280,7 +274,9 @@ class EmbeddingDatabase:
         overwrite = bool(data)
         if not shared.sd_loaded:
             return 0
-        embeddings, _skipped = open_embeddings(filename) or convert_bundled(data)
+        embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
+        for skip in skipped:
+            self.skipped_embeddings[skip.name] = skipped
         if not embeddings:
             return 0
         text_encoders, tokenizers, hiddensizes = get_text_encoders()
@@ -293,7 +289,9 @@ class EmbeddingDatabase:
                     convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
                                       text_encoders[hiddensizes.index(1280)]))
                 embedding.vector_sizes.append(1280)
-            if len(embedding.vector_sizes) > len(hiddensizes):
+            if (not all(vs in hiddensizes for vs in embedding.vector_sizes) or  # Skip SD2.1 in SD1.5/SDXL/SD3 vis versa
+                    len(embedding.vector_sizes) > len(hiddensizes) or  # Skip SDXL/SD3 in SD1.5
+                    (len(embedding.vector_sizes) < len(hiddensizes) and len(embedding.vector_sizes) != 2)):  # SD3 no T5
                 embedding.tokens = []
                 self.skipped_embeddings[embedding.name] = embedding
         if overwrite:
