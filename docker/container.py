@@ -4,7 +4,7 @@ args, _ = argParser.parse_known_args()
 
 compute, noV, V, port, name = args.compute, args.no_volume, args.volumes, args.port, args.name
 
-dockerArgs = ["-it", f"-p {port}:7860", f"--name {name}", '-e "venv_dir=/python/venv"']
+dockerArgs = ["-t", f"-p {port}:7860", f"--name {name}", '-e "venv_dir=/python/venv"']
 
 if compute == "cuda": dockerArgs.append("--gpus all")
 if compute == "rocm": dockerArgs.append("--device /dev/dri --device=/dev/kfd")
