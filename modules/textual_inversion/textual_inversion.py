@@ -140,6 +140,8 @@ def insert_vectors(embedding, tokenizers, text_encoders, hiddensizes):
     this may cause collisions.
     """
     for vector, size in zip(embedding.vec, embedding.vector_sizes):
+        if size not in hiddensizes:
+            continue
         idx = hiddensizes.index(size)
         unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
         if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
