@@ -1,6 +1,7 @@
 # Change Log for SD.Next
 
 TODO:
+- <https://github.com/huggingface/diffusers/issues/8771>
 - Requires `diffusers==0.30.0`
 - Alpha Lumina
 
