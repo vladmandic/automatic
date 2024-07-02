@@ -306,7 +306,7 @@ class EmbeddingDatabase:
                     insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception as e:
-                    shared.log.error(e, f'Embedding load: name={embedding.name} fn={embedding.filename} {e}')
+                    shared.log.error(f'Embedding load: name={embedding.name} fn={embedding.filename} {e}')
         return
 
     def load_from_file(self, path, filename):
