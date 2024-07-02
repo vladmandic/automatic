@@ -54,7 +54,7 @@ def open_embeddings(filename):
         if embedding.vec:
             embeddings.append(embedding)
         else:
-            skipped.append(name)
+            skipped.append(embedding)
     return embeddings, skipped
 
 
