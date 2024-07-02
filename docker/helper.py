@@ -5,13 +5,13 @@ import os
 class MultilineHelpFormatter(argparse.HelpFormatter):
     def __init__(self, prog):
         super().__init__("", 2, 55, 200)
-    def _split_lines(self, text, width):
+    def _split_lines(self, text, _):
         lines = text.splitlines()
         lines.append("")
         return lines
 
 class VolumeAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, namespace, values):
         dictionary = getattr(namespace, self.dest)
         
         if ":" in values:
