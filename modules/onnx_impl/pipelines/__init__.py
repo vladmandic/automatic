@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import shutil
 import tempfile
@@ -45,11 +46,13 @@ class PipelineBase(TorchCompatibleModule, diffusers.DiffusionPipeline, metaclass
 
             module = getattr(self, name)
 
-            if isinstance(module, optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart): # pylint: disable=protected-access
-                device = extract_device(args, kwargs)
-                if device is None:
-                    return self
-                module.session = move_inference_session(module.session, device)
+            if "optimum.onnxruntime" in sys.modules:
+                import optimum.onnxruntime
+                if isinstance(module, optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart): # pylint: disable=protected-access
+                    device = extract_device(args, kwargs)
+                    if device is None:
+                        return self
+                    module.session = move_inference_session(module.session, device)
 
             if not isinstance(module, diffusers.OnnxRuntimeModel):
                 continue
