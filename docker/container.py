@@ -2,15 +2,15 @@ from helper import argParser, cmdStream
 
 args, _ = argParser.parse_known_args()
 
-compute, noV, V, port, name = args.compute, args.no_volume, args.volumes, args.port, args.name
+compute, noVol, Vol, port, name = args.compute, args.no_volume, args.volumes.items(), args.port, args.name
 
 dockerArgs = ["-t", f"-p {port}:7860", f"--name {name}", '-e "venv_dir=/python/venv"']
 
 if compute == "cuda": dockerArgs.append("--gpus all")
 if compute == "rocm": dockerArgs.append("--device /dev/dri --device=/dev/kfd")
 
-if not noV:
-    for vName, vPath in V.items():
+if not noVol:
+    for vName, vPath in Vol:
         dockerArgs.append(f'-v {("SD-Next_" if not vName =="SD-Next" else "")+vName}:{vPath}')
 
 dockerArgs= " ".join(dockerArgs)
@@ -19,7 +19,7 @@ Container Settings:
     Name: {name}
     Port: {port}
     Compute Platform: {compute}
-    Volumes: {"Disabled" if noV else ", ".join([f'{key} -> {value}' for key, value in V.items()])}
+    Volumes: {"Disabled" if noVol else ", ".join([f'{key} -> {value}' for key, value in Vol])}
     Args: {dockerArgs}
 ''')
 cmdStream(f"docker container rm {name} -f", msg=f"Removing container named {name}...", expectErr=True)
