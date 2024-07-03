@@ -1,8 +1,6 @@
-from helper import argParser, cmdStream, IMG
+from helper import cmdStream, IMG, args
 
-args, _ = argParser.parse_known_args()
-
-compute, noVol, Vol, port, name, data_dir = args.compute, args.no_volume, args.volumes, args.port, args.name, args.data_dir
+name, port, compute, data_dir, Vol, noVol = args
 
 CMD = ["./webui.sh", "--uv", "--listen"]
 dockerArgs = ["-t", f"-p {port}:7860", f"--name {name}", '-e "venv_dir=/python/venv"']

@@ -38,7 +38,6 @@ def nonEmptyString(value):
     return value
 
 argParser = argparse.ArgumentParser(conflict_handler='resolve', add_help=True, formatter_class=MultilineHelpFormatter)
-
 argParser.add_argument('-n', '--name', type=str, default = os.environ.get("SD_CONTAINER_NAME","SD-Next"), help = '''\
 The name for the container
 Default: SD-Next
@@ -73,6 +72,9 @@ argParser.add_argument('--no-volume', default = os.environ.get("SD_CONTAINER_NO_
 Disable volume mounting (including default volume)
 Default: False
 ''')
+
+args, _ = argParser.parse_known_args()
+args = vars(args).values()
 
 wd = os.path.dirname(os.path.abspath(__file__))
 log = open(os.path.join(wd, "../docker.log"), "a+")
