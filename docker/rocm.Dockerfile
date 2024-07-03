@@ -9,4 +9,4 @@ COPY ./ ./
 
 RUN ./docker/setup.sh
 
-CMD ["./webui.sh", "--uv", "--listen", "--use-rocm"]
+ENTRYPOINT ["./docker/entrypoint.sh"]

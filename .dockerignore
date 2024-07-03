@@ -2,7 +2,6 @@ __pycache__
 .ruff_cache
 /cache.json
 /*.json
-/*.yaml
 *.log
 *.log.*
 *.bak
