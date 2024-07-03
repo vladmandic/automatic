@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+ARG BASE_IMG
+FROM ${BASE_IMG}
 
 USER root
 WORKDIR /workspace

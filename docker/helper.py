@@ -3,6 +3,12 @@ import subprocess
 import os
 import re
 
+IMG = {
+    "cuda": "nvidia/cuda:12.1.1-runtime-ubuntu22.04",
+    "rocm": "rocm/dev-ubuntu-22.04:6.0.2",
+    "cpu": "ubuntu:22.04",
+}
+
 class MultilineHelpFormatter(argparse.HelpFormatter):
     def __init__(self, prog):
         super().__init__("", 2, 55, 200)

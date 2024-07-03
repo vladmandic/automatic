@@ -1,4 +1,4 @@
-from helper import argParser, cmdStream
+from helper import argParser, cmdStream, IMG
 
 args, _ = argParser.parse_known_args()
 
@@ -37,5 +37,5 @@ Container Settings:
 ''')
 cmdStream(f"docker container rm {name} -f", msg=f"Removing container named {name}...", expectErr=True)
 cmdStream(f"docker image rm sd-next -f", msg="Removing image named sd-next...", expectErr=True)
-cmdStream(f"docker build -t sd-next -f ./{compute}.Dockerfile ../ --no-cache", msg="Building Docker Image (might takes few minutes)...")
+cmdStream(f'docker build -t sd-next -f ./Dockerfile --build-arg="BASE_IMG={IMG[compute]}" ../', msg="Building Docker Image (might takes few minutes)...")
 cmdStream(f'docker run {dockerArgs} sd-next {CMD}')
