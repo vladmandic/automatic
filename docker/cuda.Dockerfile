@@ -7,6 +7,10 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 COPY ./ ./
 
+RUN ls -al
+
 RUN ./docker/setup.sh
 
-CMD ["./webui.sh", "--uv", "--listen", "--use-cuda"]
+ENTRYPOINT ["./docker/entrypoint.sh"]
+
+# CMD ["./webui.sh", "--uv", "--listen", "--use-cuda"]
