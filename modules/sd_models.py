@@ -1150,7 +1150,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         timer.record("options")
 
         set_diffuser_offload(sd_model, op)
-        if op == 'model':
+        if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
             sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
