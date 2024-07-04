@@ -2,14 +2,17 @@ from helper import cmdStream, IMG, args
 
 name, port, compute, data_dir, Vol, noVol = args
 
+# Setup base args
 CMD = ["./webui.sh", "--uv", "--listen"]
 dockerArgs = ["-t", f"-p {port}:7860", f"--name {name}", '-e "venv_dir=/python/venv"']
 
+# Setup data dir
 if data_dir:
     dockerArgs.append(f'-e "SD_DATADIR={data_dir}"')
     Vol["Data"] = data_dir
 Vol = Vol.items()
 
+# Setup compute platform args
 if compute == "cuda":
     dockerArgs.append("--gpus all")
     CMD.append("--use-cuda")
@@ -18,6 +21,7 @@ elif compute == "rocm":
     CMD.append("--use-rocm")
 else: CMD.append("--use-cpu=all")
 
+# Setup volume args
 if not noVol:
     for vName, vPath in Vol:
         dockerArgs.append(f'-v "SD-Next_{vName}:{vPath}"')

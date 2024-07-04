@@ -9,6 +9,7 @@ IMG = {
     "cpu": "ubuntu:22.04",
 }
 
+# Arg parser utils
 class MultilineHelpFormatter(argparse.HelpFormatter):
     def __init__(self, prog):
         super().__init__("", 2, 55, 200)
@@ -16,7 +17,6 @@ class MultilineHelpFormatter(argparse.HelpFormatter):
         lines = text.splitlines()
         lines.append("")
         return lines
-
 class VolumeAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         dictionary = getattr(namespace, self.dest)
@@ -31,12 +31,12 @@ class VolumeAction(argparse.Action):
                 del dictionary[key]
         else:
             print(f"Invalid item '{values}'. Items must be in the format 'VOL_NAME:VOL_PATH'")
-
 def nonEmptyString(value):
     if value == "":
         raise argparse.ArgumentTypeError("Cannot be empty")
     return value
 
+# Initialize and expose args
 argParser = argparse.ArgumentParser(conflict_handler='resolve', add_help=True, formatter_class=MultilineHelpFormatter)
 argParser.add_argument('-n', '--name', type=str, default = os.environ.get("SD_CONTAINER_NAME","SD-Next"), help = '''\
 The name for the container
@@ -72,14 +72,13 @@ argParser.add_argument('--no-volume', default = os.environ.get("SD_CONTAINER_NO_
 Disable volume mounting (including default volume)
 Default: False
 ''')
-
 args, _ = argParser.parse_known_args()
 args = vars(args).values()
 
+# Command runner
 wd = os.path.dirname(os.path.abspath(__file__))
 log = open(os.path.join(wd, "../docker.log"), "a+")
 log.truncate(0)
-
 def cmdStream(cmd, msg=None, expectErr=False):
     print(msg or f"Running - {cmd}\n")
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, bufsize=1, cwd=wd)
