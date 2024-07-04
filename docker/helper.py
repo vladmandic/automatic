@@ -39,11 +39,11 @@ def nonEmptyString(value):
 # Initialize and expose args
 argParser = argparse.ArgumentParser(conflict_handler='resolve', add_help=True, formatter_class=MultilineHelpFormatter)
 argParser.add_argument('-n', '--name', type=str, default = os.environ.get("SD_CONTAINER_NAME","SD-Next"), help = '''\
-The name for the container
+Specify the name for the container
 Default: SD-Next
 ''')
 argParser.add_argument('-p', '--port', type=int, default = os.environ.get("SD_PORT",7860), help = '''\
-Port exposed by the container
+Specify the port exposed by the container
 Default: 7860
 ''')
 argParser.add_argument('--compute', type=str, choices=['cuda', 'rocm', 'cpu'], default = os.environ.get("SD_CONTAINER_COMPUTE","cuda"), help = '''\
@@ -52,7 +52,7 @@ Default: cuda
 ''')
 argParser.add_argument('--data-dir', type=nonEmptyString, default = os.environ.get("SD_DATADIR",None), help = '''\
 Specify the directory for SD Next data
-Default: /SD-Next
+Default: None
 ''')
 argParser.add_argument('-v', '--volumes', action=VolumeAction, default={
     "Cache": "/root/.cache",
@@ -84,7 +84,7 @@ def cmdStream(cmd, msg=None, expectErr=False):
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, bufsize=1, cwd=wd)
     for line in iter(process.stdout.readline, ''):
         if not msg: print(line, end='')
-        ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+        ansi_escape = re.compile(r'\x1b[^m]*m')
         line = ansi_escape.sub('', line)
         log.write(line)
         log.flush()
