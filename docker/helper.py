@@ -79,18 +79,18 @@ args = vars(args).values()
 wd = os.path.dirname(os.path.abspath(__file__))
 log = open(os.path.join(wd, "../docker.log"), "a+")
 log.truncate(0)
-def cmdStream(cmd, msg=None, expectErr=False):
+def cmd(cmd, msg=None, stream=False):
     print(msg or f"Running - {cmd}\n")
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, bufsize=1, cwd=wd)
     for line in iter(process.stdout.readline, ''):
-        if not msg: print(line, end='')
+        if stream: print(line, end='')
         ansi_escape = re.compile(r'\x1b[^m]*m')
         line = ansi_escape.sub('', line)
         log.write(line)
         log.flush()
     log.write("")
     process.wait()
-    if process.returncode != 0 and not expectErr:
+    if process.returncode != 0:
         print("An error has occurred, check docker.log for the details")
         exit(1)
     print("")

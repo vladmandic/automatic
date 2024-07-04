@@ -1,4 +1,4 @@
-from helper import cmdStream, IMG, args
+from helper import cmd, IMG, args
 
 name, port, compute, data_dir, Vol, noVol = args
 
@@ -37,7 +37,7 @@ Container Settings:
     Docker Args: {dockerArgs}
     Container CMD: {CMD}
 ''')
-cmdStream(f"docker container rm {name} -f", msg=f"Removing container named {name}...", expectErr=True)
-cmdStream(f"docker image rm sd-next -f", msg="Removing image named sd-next...", expectErr=True)
-cmdStream(f'docker build -t sd-next -f ./Dockerfile --build-arg="BASE_IMG={IMG[compute]}" ../', msg="Building Docker Image (might takes few minutes)...")
-cmdStream(f'docker run {dockerArgs} sd-next {CMD}')
+cmd(f"docker container rm {name} -f", msg=f"Removing container named {name}...")
+cmd(f"docker image rm sd-next -f", msg="Removing image named sd-next...")
+cmd(f'docker build -t sd-next -f ./Dockerfile --build-arg="BASE_IMG={IMG[compute]}" ../', msg="Building Docker Image (might takes few minutes)...")
+cmd(f'docker run {dockerArgs} sd-next {CMD}', msg="Running SD Next Container...", stream=True)
