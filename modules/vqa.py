@@ -1,3 +1,4 @@
+import json
 import torch
 import transformers
 import transformers.dynamic_module_utils
@@ -11,6 +12,7 @@ loaded: str = None
 MODELS = {
     "MS Florence 2 Base": "microsoft/Florence-2-base", # 0.5GB
     "MS Florence 2 Large": "microsoft/Florence-2-large", # 1.5GB
+    "CogFlorence 2 Large": "thwri/CogFlorence-2-Large-Freeze", # 1.6GB
     "Moondream 2": "vikhyatk/moondream2", # 3.7GB
     "GIT TextCaps Base": "microsoft/git-base-textcaps", # 0.7GB
     "GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB
@@ -166,6 +168,11 @@ def florence(question: str, image: Image.Image, repo: str = None):
 
     if 'task' in response:
         response = response['task']
+    if 'answer' in response:
+        response = response['answer']
+    if isinstance(response, dict):
+        response = json.dumps(response)
+    response = response.replace('\n', '').replace('\r', '').replace('\t', '').strip()
     shared.log.debug(f'VQA: task={task} response="{response}"')
     return response
 

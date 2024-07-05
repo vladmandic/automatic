@@ -10,11 +10,13 @@ TODO:
 - massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
   with over 20 new pages and articles, now includes guides for nearly all major features  
   thanks @GenesisArtemis!  
-- support for **HunyuanDiT 1.2**  
-- add support for DoRA networks, thanks @AI-Casanova!
-- add support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
+- support for [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+- support for DoRA networks, thanks @AI-Casanova!
+- support for [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
+- support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
 - enable `florence` VLM for all platforms, thanks @lshqqytiger!  
+- add SD3 with FP16 T5 to list of detected models
 - fix executing extensions with zero params  
 - add support for embeddings bundled in LoRA, thanks @AI-Casanova!
 - fix executing extensions with zero params  
@@ -22,7 +24,7 @@ TODO:
 - fix diffusers version detection for SD3
 - fix current step for higher order samplers
 - fix control input type video  
-- add SD3 with FP16 T5 to list of detected models
+- fix reset pipeline at the end of each iteration  
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23
