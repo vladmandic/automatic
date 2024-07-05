@@ -1,9 +1,9 @@
 # Change Log for SD.Next
 
 TODO:
-- <https://github.com/huggingface/diffusers/issues/8771>
 - Requires `diffusers==0.30.0`
-- Alpha Lumina
+- Alpha Lumina: https://github.com/huggingface/diffusers/pull/8652
+- LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
 
 ## Update for 2024-07-05
 
