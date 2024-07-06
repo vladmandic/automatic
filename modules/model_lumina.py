@@ -20,6 +20,5 @@ def load_lumina(_checkpoint_info, diffusers_load_config={}):
         cache_dir = shared.opts.diffusers_dir,
         **diffusers_load_config,
     )
-    print('HERE2', diffusers_load_config)
     devices.torch_gc()
     return pipe

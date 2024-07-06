@@ -2,8 +2,8 @@
 
 TODO:
 - Requires `diffusers==0.30.0`
-- AlphaVLLM Lumina-Next: https://github.com/huggingface/diffusers/pull/8652
 - LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
+- 
 - FlowMatchHeunDiscreteScheduler
 
 ## Update for 2024-07-05
@@ -12,10 +12,14 @@ TODO:
   with over 20 new pages and articles, now includes guides for nearly all major features  
   thanks @GenesisArtemis!  
 - support for [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  note: this is a large model at 8.6GB and uses T5 XXL variation of text encoder  
+  to use, simply select from *networks -> reference
+  use scheduler: default or euler flowmatch or heun flowmatch  
+  note: this model uses T5 XXL variation of text encoder  
   (previous version of Lumina used Gemma 2B as text encoder)  
 - support for [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+  to use, simply select from *networks -> reference
 - support for [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
+  to use, simply select in process -> visual query  
 - support for [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
 - support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
