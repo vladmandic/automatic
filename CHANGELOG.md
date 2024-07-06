@@ -3,7 +3,7 @@
 TODO:
 - Requires `diffusers==0.30.0`
 - LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
-- 
+- Kolors: https://github.com/huggingface/diffusers/issues/8801
 - FlowMatchHeunDiscreteScheduler
 
 ## Update for 2024-07-05
