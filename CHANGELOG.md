@@ -31,6 +31,7 @@ TODO:
 - fix current step for higher order samplers
 - fix control input type video  
 - fix reset pipeline at the end of each iteration  
+- fix faceswap when no faces detected  
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23

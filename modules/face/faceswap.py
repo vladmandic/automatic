@@ -22,6 +22,9 @@ def face_swap(p: processing.StableDiffusionProcessing, app, input_images: List[I
 
     np_image = cv2.cvtColor(np.array(source_image), cv2.COLOR_RGB2BGR)
     faces = app.get(np_image)
+    if faces is None or len(faces) == 0:
+        shared.log.warning('FaceSwap: No faces detected')
+        return
     source_face = faces[0]
     processed_images = []
     for image in input_images:
