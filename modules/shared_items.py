@@ -99,6 +99,8 @@ def get_pipelines():
     if hasattr(diffusers, 'StableDiffusion3Pipeline'):
         pipelines['Stable Diffusion 3'] = getattr(diffusers, 'StableDiffusion3Pipeline', None)
         pipelines['Stable Diffusion 3 Img2Img'] = getattr(diffusers, 'StableDiffusion3Img2ImgPipeline', None)
+    if hasattr(diffusers, 'LuminaText2ImgPipeline'):
+        pipelines['Lumina-Next'] = getattr(diffusers, 'LuminaText2ImgPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

@@ -193,6 +193,7 @@
     "path": "Alpha-VLLM/Lumina-Next-SFT-diffusers",
     "desc": "The Lumina-Next-SFT is a Next-DiT model containing 2B parameters and utilizes Gemma-2B as the text encoder, enhanced through high-quality supervised fine-tuning (SFT).",
     "preview": "Alpha-VLLM-Lumina-Next-SFT-diffusers.jpg",
+    "skip": true,
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   }, 
 

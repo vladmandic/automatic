@@ -2,22 +2,26 @@
 
 TODO:
 - Requires `diffusers==0.30.0`
-- Alpha Lumina: https://github.com/huggingface/diffusers/pull/8652
+- AlphaVLLM Lumina-Next: https://github.com/huggingface/diffusers/pull/8652
 - LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
+- FlowMatchHeunDiscreteScheduler
 
 ## Update for 2024-07-05
 
 - massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
   with over 20 new pages and articles, now includes guides for nearly all major features  
   thanks @GenesisArtemis!  
-- support for DoRA networks, thanks @AI-Casanova!
+- support for [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+  note: this is a large model at 8.6GB and uses T5 XXL variation of text encoder  
+  (previous version of Lumina used Gemma 2B as text encoder)  
 - support for [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 - support for [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
 - support for [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
 - support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
-- enable `Florence` VLM for all platforms, thanks @lshqqytiger!  
+- support for **DoRA** networks, thanks @AI-Casanova!
+- enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - add SD3 with FP16 T5 to list of detected models
 - fix executing extensions with zero params  
 - add support for embeddings bundled in LoRA, thanks @AI-Casanova!
