@@ -458,6 +458,10 @@ def install_rocm_zluda(torch_command):
             command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
             amd_gpus = [x.split(' ')[-1].strip() for x in amd_gpus if x.startswith('gcnArchName:')]
+        elif os.environ.get('WSL_DISTRO_NAME', None) is not None: # WSL does not have 'rocm_agent_enumerator'
+            command = subprocess.run('rocminfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+            amd_gpus = [x.strip().split(" ")[-1] for x in amd_gpus if x.startswith('  Name:') and "CPU" not in x]
         else:
             command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
