@@ -5,6 +5,7 @@ TODO:
 - AuraFlow/LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
 - Kolors: https://github.com/huggingface/diffusers/issues/8801
 - FlowMatchHeunDiscreteScheduler
+- ControlNet Union: https://huggingface.co/xinsir/controlnet-union-sdxl-1.0
 
 ## Update for 2024-07-07
 
@@ -16,7 +17,8 @@ Support for new models:
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 
-New fast-install mode, support for DoRA networks, additional VLM models, new AuraSR upscaler, and more...
+What else? Just a bit... ;)
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...
 
 ### New Models
 
@@ -31,6 +33,8 @@ New fast-install mode, support for DoRA networks, additional VLM models, new Aur
   however, this new encoder does support both English and Chinese prompting  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
   to use, simply select from *networks -> reference
+- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0  
+  new SDXL all-in-one controlnet that can process any kind of preprocessors!
 - [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
   to use, simply select in process -> visual query  
 - [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  

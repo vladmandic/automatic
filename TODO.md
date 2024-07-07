@@ -10,7 +10,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - init latents: variations, img2img
 - diffusers public callbacks  
 - include reference styles
-- lora: sc lora, dora, etc
+- lora: sc lora, etc
 
 ## Experimental
 
