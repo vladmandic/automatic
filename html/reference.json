@@ -197,6 +197,14 @@
     "extras": "width: 1024, height: 1024, sampler: Default"
   }, 
 
+  "Kwai Kolors": {
+    "path": "Kwai-Kolors/Kolors",
+    "desc": "Kolors is a large-scale text-to-image generation model based on latent diffusion, developed by the Kuaishou Kolors team. Trained on billions of text-image pairs, Kolors exhibits significant advantages over both open-source and proprietary models in visual quality, complex semantic accuracy, and text rendering for both Chinese and English characters. Furthermore, Kolors supports both Chinese and English inputs",
+    "preview": "Kwai-Kolors.jpg",
+    "skip": true,
+    "extras": "width: 1024, height: 1024"
+  }, 
+
   "Kandinsky 2.1": {
     "path": "kandinsky-community/kandinsky-2-1",
     "desc": "Kandinsky 2.1 is a text-conditional diffusion model based on unCLIP and latent diffusion, composed of a transformer-based image prior model, a unet diffusion model, and a decoder. Kandinsky 2.1 inherits best practices from Dall-E 2 and Latent diffusion while introducing some new ideas. It uses the CLIP model as a text and image encoder, and diffusion image prior (mapping) between latent spaces of CLIP modalities. This approach increases the visual performance of the model and unveils new horizons in blending images and text-guided image manipulation.",

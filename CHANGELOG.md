@@ -2,30 +2,53 @@
 
 TODO:
 - Requires `diffusers==0.30.0`
-- LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
+- AuraFlow/LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
 - Kolors: https://github.com/huggingface/diffusers/issues/8801
 - FlowMatchHeunDiscreteScheduler
 
-## Update for 2024-07-05
+## Update for 2024-07-07
 
-- massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
-  with over 20 new pages and articles, now includes guides for nearly all major features  
-  thanks @GenesisArtemis!  
-- support for [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+### Highlights
+
+Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
+Support for new models:
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+
+New fast-install mode, support for DoRA networks, additional VLM models, new AuraSR upscaler, and more...
+
+### New Models
+
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
   to use, simply select from *networks -> reference
   use scheduler: default or euler flowmatch or heun flowmatch  
   note: this model uses T5 XXL variation of text encoder  
   (previous version of Lumina used Gemma 2B as text encoder)  
-- support for [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
+  to use, simply select from *networks -> reference  
+  note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
+  however, this new encoder does support both English and Chinese prompting  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
   to use, simply select from *networks -> reference
-- support for [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
+- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
   to use, simply select in process -> visual query  
-- support for [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
+- [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
+
+### New Features
+
+- massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
+  with over 20 new pages and articles, now includes guides for nearly all major features  
+  thanks @GenesisArtemis!  
 - support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
 - support for **DoRA** networks, thanks @AI-Casanova!
+
+### Other
+
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
+- improve ROCm detection under WSL2, thanks @lshqqytiger!  
 - add SD3 with FP16 T5 to list of detected models
 - fix executing extensions with zero params  
 - add support for embeddings bundled in LoRA, thanks @AI-Casanova!

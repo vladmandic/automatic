@@ -613,6 +613,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'PixArt-Sigma'
             if 'lumina-next' in f.lower():
                 guess = 'Lumina-Next'
+            if 'kolors' in f.lower():
+                guess = 'Kolors'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -998,6 +1000,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 try:
                     from modules.model_lumina import load_lumina
                     sd_model = load_lumina(checkpoint_info, diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
+            elif model_type in ['Kolors']: # forced pipeline
+                try:
+                    from modules.model_kolors import load_kolors
+                    sd_model = load_kolors(checkpoint_info, diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
