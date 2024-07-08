@@ -69,10 +69,10 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 
 ### Highlights for 2024-06-23
 
-Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
+Following zero-day **SD3** release, a 10 days later heres a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
 
-But there's more than SD3:  
+But theres more than SD3:  
 - support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
@@ -110,7 +110,7 @@ But there's more than SD3:
 
 ### General Improvements for 2024-06-23
 
-- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
+- support FP4 quantized T5 text encoder, in addition to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
   *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
