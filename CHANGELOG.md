@@ -37,6 +37,9 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 
 ## Update for 2024-07-08
 
+This release is primary service release with cumulative fixes and several improvements, but no breaking changes.
+
+**New features...**
 - massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
   with over 20 new pages and articles, now includes guides for nearly all major features  
   *note*: this is work-in-progress, if you have any feedback or suggestions, please let us know!
@@ -44,7 +47,6 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 - support for **DoRA** networks, thanks @AI-Casanova!
 - support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
-
 - [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0)  
   new SDXL *all-in-one* controlnet that can process any kind of preprocessors!
 - [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model  
@@ -52,6 +54,7 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 - [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
 
+**And fixes...**
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
 - add SD3 with FP16 T5 to list of detected models
