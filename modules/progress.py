@@ -62,7 +62,7 @@ def progressapi(req: ProgressRequest):
     paused = shared.state.paused
     if not active:
         return InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, id_live_preview=-1, textinfo="Queued..." if queued else "Waiting...")
-    shared.state.job_count = max(shared.state.job_count, shared.state.job_no)
+    shared.state.job_count = max(shared.state.frame_count, shared.state.job_count, shared.state.job_no)
     batch_x = max(shared.state.job_no, 0)
     batch_y = max(shared.state.job_count, 1)
     step_x = max(shared.state.sampling_step, 0)

@@ -65,6 +65,7 @@ class Network:  # LoraModule
         self.unet_multiplier = [1.0] * 3
         self.dyn_dim = None
         self.modules = {}
+        self.bundle_embeddings = {}
         self.mtime = None
         self.mentioned_name = None
         """the text that was used to add the network to prompt - can be either name or an alias"""
@@ -87,6 +88,8 @@ class NetworkModule:
         self.bias = weights.w.get("bias")
         self.alpha = weights.w["alpha"].item() if "alpha" in weights.w else None
         self.scale = weights.w["scale"].item() if "scale" in weights.w else None
+        self.dora_scale = weights.w.get("dora_scale", None)
+        self.dora_norm_dims = len(self.shape) - 1
 
     def multiplier(self):
         unet_multiplier = 3 * [self.network.unet_multiplier] if not isinstance(self.network.unet_multiplier, list) else self.network.unet_multiplier
@@ -108,6 +111,27 @@ class NetworkModule:
             return self.alpha / self.dim
         return 1.0
 
+    def apply_weight_decompose(self, updown, orig_weight):
+        # Match the device/dtype
+        orig_weight = orig_weight.to(updown.dtype)
+        dora_scale = self.dora_scale.to(device=orig_weight.device, dtype=updown.dtype)
+        updown = updown.to(orig_weight.device)
+
+        merged_scale1 = updown + orig_weight
+        merged_scale1_norm = (
+            merged_scale1.transpose(0, 1)
+            .reshape(merged_scale1.shape[1], -1)
+            .norm(dim=1, keepdim=True)
+            .reshape(merged_scale1.shape[1], *[1] * self.dora_norm_dims)
+            .transpose(0, 1)
+        )
+
+        dora_merged = (
+                merged_scale1 * (dora_scale / merged_scale1_norm)
+        )
+        final_updown = dora_merged - orig_weight
+        return final_updown
+
     def finalize_updown(self, updown, orig_weight, output_shape, ex_bias=None):
         if self.bias is not None:
             updown = updown.reshape(self.bias.shape)
@@ -119,6 +143,8 @@ class NetworkModule:
             updown = updown.reshape(orig_weight.shape)
         if ex_bias is not None:
             ex_bias = ex_bias * self.multiplier()
+        if self.dora_scale is not None:
+            updown = self.apply_weight_decompose(updown, orig_weight)
         return updown * self.calc_scale() * self.multiplier(), ex_bias
 
     def calc_updown(self, target):

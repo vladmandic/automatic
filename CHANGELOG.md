@@ -1,13 +1,82 @@
 # Change Log for SD.Next
 
+## Update for 2024-07-09: WiP
+
+### Pending
+
+- Requires `diffusers==0.30.0`
+- [AuraFlow/LavenderFlow](https://github.com/huggingface/diffusers/pull/8796) (previously known as LavenderFlow)
+- [Kolors](https://github.com/huggingface/diffusers/pull/8812)
+- [ControlNet Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) pipeline
+- FlowMatchHeunDiscreteScheduler enable
+
+### Highlights
+
+Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
+Support for new models:
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+
+What else? Just a bit... ;)
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...
+
+### New Models
+
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+  to use, simply select from *networks -> reference
+  use scheduler: default or euler flowmatch or heun flowmatch  
+  note: this model uses T5 XXL variation of text encoder  
+  (previous version of Lumina used Gemma 2B as text encoder)  
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
+  to use, simply select from *networks -> reference  
+  note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
+  however, this new encoder does support both English and Chinese prompting  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+  to use, simply select from *networks -> reference
+
+## Update for 2024-07-08
+
+This release is primary service release with cumulative fixes and several improvements, but no breaking changes.
+
+**New features...**
+- massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
+  with over 20 new pages and articles, now includes guides for nearly all major features  
+  *note*: this is work-in-progress, if you have any feedback or suggestions, please let us know!
+  thanks @GenesisArtemis!  
+- support for **DoRA** networks, thanks @AI-Casanova!
+- support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
+  to use, simply add `--uv` to your command line params  
+- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0)  
+  new SDXL *all-in-one* controlnet that can process any kind of preprocessors!
+- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model  
+  to use, simply select in process -> visual query  
+- [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
+  note: this is a large upscaler at 2.5GB  
+
+**And fixes...**
+- enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
+- improve ROCm detection under WSL2, thanks @lshqqytiger!  
+- add SD3 with FP16 T5 to list of detected models
+- fix executing extensions with zero params  
+- add support for embeddings bundled in LoRA, thanks @AI-Casanova!
+- fix executing extensions with zero params  
+- fix nncf for lora, thanks @Disty0!
+- fix diffusers version detection for SD3
+- fix current step for higher order samplers
+- fix control input type video  
+- fix reset pipeline at the end of each iteration  
+- fix faceswap when no faces detected  
+- multiple ModernUI fixes
+
 ## Update for 2024-06-23
 
 ### Highlights for 2024-06-23
 
-Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
+Following zero-day **SD3** release, a 10 days later heres a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
 
-But there's more than SD3:  
+But theres more than SD3:  
 - support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
@@ -17,7 +86,7 @@ But there's more than SD3:
 - additional efficiencies for users with low VRAM GPUs  
 - over 20 overall fixes  
 
-### Model Improvements
+### Model Improvements for 2024-06-23
 
 - **SD3**: enable tiny-VAE (TAESD) preview and non-full quality mode  
 - SD3: enable base LoRA support  
@@ -43,9 +112,9 @@ But there's more than SD3:
 - **MS Florence**: integration of Microsoft Florence VLM/VQA Base and Large models  
   simply select in *process -> visual query*!
 
-### General Improvements
+### General Improvements for 2024-06-23
 
-- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
+- support FP4 quantized T5 text encoder, in addition to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
   *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  
@@ -67,7 +136,7 @@ But there's more than SD3:
 - Lora support without reloading the model  
 - ControlNet compression support  
 
-### Fixes
+### Fixes for 2024-06-23
 
 - fix unsaturated outputs, force apply vae config on model load  
 - fix hidiffusion handling of non-square aspect ratios, thanks @ShenZhang-Shin!
@@ -105,7 +174,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 
 ### Full Changelog for 2024-06-13
 
-#### New Models
+#### New Models for 2024-06-23
 
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)  
   yup, supported!  
@@ -116,7 +185,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   note: this is a very large model at ~17GB, but can be used with less VRAM using model offloading  
   simply select from networks -> models -> reference, model will be auto-downloaded on first use  
 
-#### New Functionality
+#### New Functionality for 2024-06-23
 
 - [MuLan](https://github.com/mulanai/MuLan) Multi-language prompts
   write your prompts in ~110 auto-detected languages!  
@@ -153,7 +222,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
   typical differences are not large and its disabled by default as it does have some performance impact  
 - new sampler: **Euler FlowMatch**  
 
-#### Improvements
+#### Improvements Fixes 2024-06-13
 
 - additional modernui themes
 - reintroduce prompt attention normalization, disabled by default, enable in settings -> execution  
@@ -173,7 +242,7 @@ Plus tons of minor features such as optimized initial install experience, **T-Ga
 - auto-synchronize modernui and core branches  
 - add option to pad prompt with zeros, thanks @Disty
 
-#### Fixes
+#### Fixes 2024-06-13
 
 - cumulative fixes since the last release  
 - fix apply/unapply hidiffusion for sd15  

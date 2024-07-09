@@ -1,5 +1,5 @@
-# TODO a1111 compatibility module
-# TODO cfg_denoiser implementation missing
+# a1111 compatibility module
+# cfg_denoiser implementation missing
 
 import torch
 from modules import prompt_parser, devices, sd_samplers_common
@@ -95,7 +95,7 @@ class CFGDenoiser(torch.nn.Module):
         if state.interrupted or state.skipped:
             raise sd_samplers_common.InterruptedException
 
-        # TODO cfg_scale implementation missing
+        # cfg_scale implementation missing for original backend
         # if sd_samplers_common.apply_refiner(self):
         #     cond = self.sampler.sampler_extra_args['cond']
         #    uncond = self.sampler.sampler_extra_args['uncond']

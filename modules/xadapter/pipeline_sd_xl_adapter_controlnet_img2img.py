@@ -31,8 +31,7 @@ from diffusers.models import AutoencoderKL, ControlNetModel
 
 from diffusers.models.attention_processor import (
     AttnProcessor2_0,
-    LoRAAttnProcessor2_0,
-    LoRAXFormersAttnProcessor,
+    FusedAttnProcessor2_0,
     XFormersAttnProcessor,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
@@ -571,8 +570,7 @@ class StableDiffusionXLAdapterControlnetI2IPipeline(DiffusionPipeline, FromSingl
             (
                 AttnProcessor2_0,
                 XFormersAttnProcessor,
-                LoRAXFormersAttnProcessor,
-                LoRAAttnProcessor2_0,
+                FusedAttnProcessor2_0,
             ),
         )
         # if xformers or torch_2_0 is used attention block does not need

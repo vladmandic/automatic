@@ -71,15 +71,20 @@ def get_pipelines():
         'Kandinsky 3': getattr(diffusers, 'Kandinsky3Pipeline', None),
         'DeepFloyd IF': getattr(diffusers, 'IFPipeline', None),
         'Custom Diffusers Pipeline': getattr(diffusers, 'DiffusionPipeline', None),
+        'Kolors': getattr(diffusers, 'StableDiffusionXLPipeline', None),
         'InstaFlow': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
     }
-    if hasattr(diffusers, 'OnnxStableDiffusionXLPipeline'):
+    if hasattr(diffusers, 'OnnxStableDiffusionPipeline'):
         onnx_pipelines = {
             'ONNX Stable Diffusion': getattr(diffusers, 'OnnxStableDiffusionPipeline', None),
             'ONNX Stable Diffusion Img2Img': getattr(diffusers, 'OnnxStableDiffusionImg2ImgPipeline', None),
             'ONNX Stable Diffusion Inpaint': getattr(diffusers, 'OnnxStableDiffusionInpaintPipeline', None),
             'ONNX Stable Diffusion Upscale': getattr(diffusers, 'OnnxStableDiffusionUpscalePipeline', None),
+        }
+        pipelines.update(onnx_pipelines)
+    if hasattr(diffusers, 'OnnxStableDiffusionXLPipeline'):
+        onnx_pipelines = {
             'ONNX Stable Diffusion XL': getattr(diffusers, 'OnnxStableDiffusionXLPipeline', None),
             'ONNX Stable Diffusion XL Img2Img': getattr(diffusers, 'OnnxStableDiffusionXLImg2ImgPipeline', None),
         }
@@ -95,6 +100,8 @@ def get_pipelines():
     if hasattr(diffusers, 'StableDiffusion3Pipeline'):
         pipelines['Stable Diffusion 3'] = getattr(diffusers, 'StableDiffusion3Pipeline', None)
         pipelines['Stable Diffusion 3 Img2Img'] = getattr(diffusers, 'StableDiffusion3Img2ImgPipeline', None)
+    if hasattr(diffusers, 'LuminaText2ImgPipeline'):
+        pipelines['Lumina-Next'] = getattr(diffusers, 'LuminaText2ImgPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

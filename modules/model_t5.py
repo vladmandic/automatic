@@ -75,3 +75,4 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
         else:
             pipe.maybe_free_model_hooks()
     devices.torch_gc()
+    return pipe

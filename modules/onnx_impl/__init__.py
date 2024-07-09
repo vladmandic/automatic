@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import diffusers
 import onnxruntime as ort
-import optimum.onnxruntime
 
 initialized = False
 
@@ -208,8 +207,6 @@ def initialize_onnx():
         from .pipelines.onnx_stable_diffusion_img2img_pipeline import OnnxStableDiffusionImg2ImgPipeline
         from .pipelines.onnx_stable_diffusion_inpaint_pipeline import OnnxStableDiffusionInpaintPipeline
         from .pipelines.onnx_stable_diffusion_upscale_pipeline import OnnxStableDiffusionUpscalePipeline
-        from .pipelines.onnx_stable_diffusion_xl_pipeline import OnnxStableDiffusionXLPipeline
-        from .pipelines.onnx_stable_diffusion_xl_img2img_pipeline import OnnxStableDiffusionXLImg2ImgPipeline
 
         OnnxRuntimeModel.__module__ = 'diffusers' # OnnxRuntimeModel Hijack.
         diffusers.OnnxRuntimeModel = OnnxRuntimeModel
@@ -225,6 +222,16 @@ def initialize_onnx():
 
         diffusers.OnnxStableDiffusionUpscalePipeline = OnnxStableDiffusionUpscalePipeline
 
+        log.debug(f'ONNX: version={ort.__version__} provider={opts.onnx_execution_provider}, available={available_execution_providers}')
+    except Exception as e:
+        log.error(f'ONNX failed to initialize: {e}')
+
+    try:
+        # load xl pipelines. may fail if the user has the latest diffusers (0.30.x)
+        import optimum.onnxruntime
+        from .pipelines.onnx_stable_diffusion_xl_pipeline import OnnxStableDiffusionXLPipeline
+        from .pipelines.onnx_stable_diffusion_xl_img2img_pipeline import OnnxStableDiffusionXLImg2ImgPipeline
+
         diffusers.OnnxStableDiffusionXLPipeline = OnnxStableDiffusionXLPipeline
         diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["onnx-stable-diffusion-xl"] = diffusers.OnnxStableDiffusionXLPipeline
 
@@ -235,10 +242,9 @@ def initialize_onnx():
         diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
         optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
+    except Exception:
+        pass
 
-        log.debug(f'ONNX: version={ort.__version__} provider={opts.onnx_execution_provider}, available={available_execution_providers}')
-    except Exception as e:
-        log.error(f'ONNX failed to initialize: {e}')
     initialized = True
 
 

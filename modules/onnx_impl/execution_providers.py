@@ -52,8 +52,8 @@ def get_execution_provider_options():
     execution_provider_options = { "device_id": int(cmd_opts.device_id or 0) }
     if opts.onnx_execution_provider == ExecutionProvider.ROCm:
         if ExecutionProvider.ROCm in available_execution_providers:
-            execution_provider_options["tunable_op_enable"] = 1
-            execution_provider_options["tunable_op_tuning_enable"] = 1
+            execution_provider_options["tunable_op_enable"] = True
+            execution_provider_options["tunable_op_tuning_enable"] = True
     elif opts.onnx_execution_provider == ExecutionProvider.OpenVINO:
         from modules.intel.openvino import get_device as get_raw_openvino_device
         device = get_raw_openvino_device()

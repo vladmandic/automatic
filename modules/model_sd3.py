@@ -13,9 +13,9 @@ def load_sd3(fn=None, cache_dir=None, config=None):
     if fn is not None and fn.endswith('.safetensors') and os.path.exists(fn):
         model_id = fn
         loader = diffusers.StableDiffusion3Pipeline.from_single_file
-        diffusers_minor = int(diffusers.__version__.split('.')[1])
+        _diffusers_major, diffusers_minor, diffusers_micro = int(diffusers.__version__.split('.')[0]), int(diffusers.__version__.split('.')[1]), int(diffusers.__version__.split('.')[2])
         fn_size = os.path.getsize(fn)
-        if diffusers_minor < 30 or fn_size < 5e9: # te1/te2 do not get loaded correctly in diffusers 0.29.0 or model is without te1/te2
+        if (diffusers_minor <= 29 and diffusers_micro < 1) or fn_size < 5e9: # te1/te2 do not get loaded correctly in diffusers 0.29.0 if model is without te1/te2
             kwargs = {
                 'text_encoder': transformers.CLIPTextModelWithProjection.from_pretrained(
                     repo_id,

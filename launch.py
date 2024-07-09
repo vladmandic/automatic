@@ -204,6 +204,8 @@ def main():
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
     if not args.skip_env:
         installer.set_environment()
+    if args.uv:
+        installer.install("uv", "uv")
     installer.check_torch()
     installer.check_onnx()
     installer.check_diffusers()

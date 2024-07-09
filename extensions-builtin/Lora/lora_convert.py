@@ -164,6 +164,8 @@ class KeyConvert:
 
     def diffusers(self, key):
         if self.is_sdxl:
+            if "diffusion_model" in key:  # Fix NTC Slider naming error
+                key = key.replace("diffusion_model", "lora_unet")
             map_keys = list(self.UNET_CONVERSION_MAP.keys())  # prefix of U-Net modules
             map_keys.sort()
             search_key = key.replace(self.LORA_PREFIX_UNET, "").replace(self.OFT_PREFIX_UNET, "").replace(self.LORA_PREFIX_TEXT_ENCODER1, "").replace(self.LORA_PREFIX_TEXT_ENCODER2, "")

@@ -547,7 +547,7 @@ def change_backend():
     shared.native = shared.backend == shared.Backend.DIFFUSERS
     checkpoints_loaded.clear()
     from modules.sd_samplers import list_samplers
-    list_samplers(shared.backend)
+    list_samplers()
     list_models()
     from modules.sd_vae import refresh_vae_list
     refresh_vae_list()
@@ -586,7 +586,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     guess = 'Stable Diffusion XL Instruct'
                 elif (size > 3138 and size < 3142): #3140
                     guess = 'Stable Diffusion XL'
-                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366):
+                elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366) or (size > 15028 and size < 15228):
                     guess = 'Stable Diffusion 3'
             # guess by name
             """
@@ -611,6 +611,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Cascade'
             if 'pixart-sigma' in f.lower():
                 guess = 'PixArt-Sigma'
+            if 'lumina-next' in f.lower():
+                guess = 'Lumina-Next'
+            if 'kolors' in f.lower():
+                guess = 'Kolors'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -992,6 +996,24 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if debug_load:
                         errors.display(e, 'Load')
                     return
+            elif model_type in ['Lumina-Next']: # forced pipeline
+                try:
+                    from modules.model_lumina import load_lumina
+                    sd_model = load_lumina(checkpoint_info, diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
+            elif model_type in ['Kolors']: # forced pipeline
+                try:
+                    from modules.model_kolors import load_kolors
+                    sd_model = load_kolors(checkpoint_info, diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
             elif model_type in ['Stable Diffusion 3']:
                 try:
                     from modules.model_sd3 import load_sd3
@@ -1150,7 +1172,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         timer.record("options")
 
         set_diffuser_offload(sd_model, op)
-        if op == 'model':
+        if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
             sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')

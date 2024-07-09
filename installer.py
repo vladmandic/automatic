@@ -52,6 +52,7 @@ args = Dot({
     'reinstall': False,
     'version': False,
     'ignore': False,
+    'uv': False,
 })
 git_commit = "unknown"
 submodules_commit = {
@@ -235,22 +236,25 @@ def uninstall(package, quiet = False):
 
 
 @lru_cache()
-def pip(arg: str, ignore: bool = False, quiet: bool = False):
+def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
+    uv = uv and args.uv
+    pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
     if not quiet and '-r ' not in arg:
-        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace("  ", " ").strip()}"')
+        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
-    log.debug(f'Running: pip="{pip_log}{arg} {env_args}"')
-    result = subprocess.run(f'"{sys.executable}" -m pip {pip_log}{arg} {env_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    all_args = f'{pip_log}{arg} {env_args}'.strip()
+    log.debug(f'Running: {pipCmd}="{all_args}"')
+    result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
     txt = txt.strip()
-    debug(f'Install pip: {txt}')
+    debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
         global errors # pylint: disable=global-statement
         errors += 1
-        log.error(f'Error running pip: {arg}')
+        log.error(f'Error running {pipCmd}: {arg}')
         log.debug(f'Pip output: {txt}')
     return txt
 
@@ -264,7 +268,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install --upgrade {deps}{package}", ignore=ignore)
+        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv")
         try:
             import imp # pylint: disable=deprecated-module
             imp.reload(pkg_resources)
@@ -454,6 +458,10 @@ def install_rocm_zluda(torch_command):
             command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
             amd_gpus = [x.split(' ')[-1].strip() for x in amd_gpus if x.startswith('gcnArchName:')]
+        elif os.environ.get('WSL_DISTRO_NAME', None) is not None: # WSL does not have 'rocm_agent_enumerator'
+            command = subprocess.run('rocminfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
+            amd_gpus = [x.strip().split(" ")[-1] for x in amd_gpus if x.startswith('  Name:') and "CPU" not in x]
         else:
             command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
@@ -529,7 +537,10 @@ def install_rocm_zluda(torch_command):
         if rocm_ver is None: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
         elif rocm_ver == "6.1": # need nightlies
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
+            if args.experimental:
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
+            else:
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
         elif float(rocm_ver) < 5.5: # oldest supported version is 5.5
             log.warning(f"Unsupported ROCm version detected: {rocm_ver}")
             log.warning("Minimum supported ROCm version is 5.5")
@@ -540,6 +551,27 @@ def install_rocm_zluda(torch_command):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
+
+        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
+            supported_archs = []
+            hipblaslt_available = True
+            libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
+            for file in os.listdir(libpath):
+                if not file.startswith('extop_'):
+                    continue
+                supported_archs.append(file[6:-3])
+            for gpu in amd_gpus:
+                if gpu not in supported_archs:
+                    hipblaslt_available = False
+                    break
+            log.info(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
+            if hipblaslt_available:
+                import ctypes
+                # Preload hipBLASLt.
+                ctypes.CDLL("/opt/rocm/lib/libhipblaslt.so", mode=ctypes.RTLD_GLOBAL)
+                os.environ["HIPBLASLT_TENSILE_LIBPATH"] = libpath
+            else:
+                os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
     return torch_command
 
 
@@ -680,6 +712,20 @@ def check_torch():
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     elif is_rocm_available(allow_rocm):
         torch_command = install_rocm_zluda(torch_command)
+
+        # WSL ROCm
+        if os.environ.get('WSL_DISTRO_NAME', None) is not None:
+            import ctypes
+            try:
+                # Preload stdc++ library. This will ignore Anaconda stdc++ library.
+                ctypes.CDLL("/lib/x86_64-linux-gnu/libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                pass
+            try:
+                # Preload HSA Runtime library.
+                ctypes.CDLL("/opt/rocm/lib/libhsa-runtime64.so", mode=ctypes.RTLD_GLOBAL)
+            except OSError:
+                log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
         torch_command = install_ipex(torch_command)
     elif allow_openvino and args.use_openvino:
@@ -1052,20 +1098,20 @@ def check_ui(ver):
 
     if not same(ver):
         log.debug(f'Branch mismatch: sdnext={ver["branch"]} ui={ver["ui"]}')
-    cwd = os.getcwd()
-    try:
-        os.chdir('extensions-builtin/sdnext-modernui')
-        target = 'dev' if 'dev' in ver['branch'] else 'main'
-        git('checkout ' + target, ignore=True, optional=True)
+        cwd = os.getcwd()
+        try:
+            os.chdir('extensions-builtin/sdnext-modernui')
+            target = 'dev' if 'dev' in ver['branch'] else 'main'
+            git('checkout ' + target, ignore=True, optional=True)
+            os.chdir(cwd)
+            ver = get_version(force=True)
+            if not same(ver):
+                log.debug(f'Branch synchronized: {ver["branch"]}')
+            else:
+                log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
+        except Exception as e:
+            log.debug(f'Branch switch: {e}')
         os.chdir(cwd)
-        ver = get_version(force=True)
-        if not same(ver):
-            log.debug(f'Branch synchronized: {ver["branch"]}')
-        else:
-            log.debug(f'Branch sync failed: sdnext={ver["branch"]} ui={ver["ui"]}')
-    except Exception as e:
-        log.debug(f'Branch switch: {e}')
-    os.chdir(cwd)
 
 
 # check version of the main repo and optionally upgrade it
@@ -1165,7 +1211,7 @@ def check_timestamp():
 def add_args(parser):
     group = parser.add_argument_group('Setup options')
     group.add_argument('--reset', default = os.environ.get("SD_RESET",False), action='store_true', help = "Reset main repository to latest version, default: %(default)s")
-    group.add_argument('--upgrade', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
+    group.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     group.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
     group.add_argument('--quick', default = os.environ.get("SD_QUICK",False), action='store_true', help = "Bypass version checks, default: %(default)s")
     group.add_argument('--use-directml', default = os.environ.get("SD_USEDIRECTML",False), action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
@@ -1188,6 +1234,7 @@ def add_args(parser):
     group.add_argument('--version', default = False, action='store_true', help = "Print version information")
     group.add_argument('--ignore', default = os.environ.get("SD_IGNORE",False), action='store_true', help = "Ignore any errors and attempt to continue")
     group.add_argument('--safe', default = os.environ.get("SD_SAFE",False), action='store_true', help = "Run in safe mode with no user extensions")
+    group.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
 
     group = parser.add_argument_group('Logging options')
     group.add_argument("--log", type=str, default=os.environ.get("SD_LOG", None), help="Set log file, default: %(default)s")
