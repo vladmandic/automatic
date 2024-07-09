@@ -1,13 +1,14 @@
 # Change Log for SD.Next
 
-TODO:
-- Requires `diffusers==0.30.0`
-- AuraFlow/LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
-- Kolors: https://github.com/huggingface/diffusers/issues/8801
-- FlowMatchHeunDiscreteScheduler
-- ControlNet Union: https://huggingface.co/xinsir/controlnet-union-sdxl-1.0
+## Update for 2024-07-09: WiP
 
-## Update for 2024-07-07
+### Pending
+
+- Requires `diffusers==0.30.0`
+- [AuraFlow/LavenderFlow](https://github.com/huggingface/diffusers/pull/8796) (previously known as LavenderFlow)
+- [Kolors](https://github.com/huggingface/diffusers/pull/8812)
+- [ControlNet Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) pipeline
+- FlowMatchHeunDiscreteScheduler enable
 
 ### Highlights
 
@@ -33,23 +34,23 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
   however, this new encoder does support both English and Chinese prompting  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
   to use, simply select from *networks -> reference
-- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0  
-  new SDXL all-in-one controlnet that can process any kind of preprocessors!
-- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
-  to use, simply select in process -> visual query  
-- [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
-  note: this is a large upscaler at 2.5GB  
 
-### New Features
+## Update for 2024-07-08
 
 - massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
   with over 20 new pages and articles, now includes guides for nearly all major features  
+  *note*: this is work-in-progress, if you have any feedback or suggestions, please let us know!
   thanks @GenesisArtemis!  
+- support for **DoRA** networks, thanks @AI-Casanova!
 - support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
   to use, simply add `--uv` to your command line params  
-- support for **DoRA** networks, thanks @AI-Casanova!
 
-### Other
+- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0)  
+  new SDXL *all-in-one* controlnet that can process any kind of preprocessors!
+- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model  
+  to use, simply select in process -> visual query  
+- [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
+  note: this is a large upscaler at 2.5GB  
 
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
