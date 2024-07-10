@@ -2,12 +2,11 @@ import torch
 import diffusers
 
 
-repo_id = 'Kwai-Kolors/Kolors'
+repo_id = 'Kwai-Kolors/Kolors-diffusers'
 
 
 def load_kolors(_checkpoint_info, diffusers_load_config={}):
-    from modules import shared, devices, modelloader
-    modelloader.hf_login()
+    from modules import shared, devices
     diffusers_load_config['variant'] = "fp16"
     if 'torch_dtype' not in diffusers_load_config:
         diffusers_load_config['torch_dtype'] = torch.float16
@@ -23,5 +22,6 @@ def load_kolors(_checkpoint_info, diffusers_load_config={}):
         cache_dir = shared.opts.diffusers_dir,
         **diffusers_load_config,
     )
+    pipe.vae.config.force_upcast = True
     devices.torch_gc()
     return pipe
