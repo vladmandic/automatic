@@ -101,6 +101,9 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
     elif model_type == 'Embedding':
         model_file = os.path.join(shared.opts.embeddings_dir, model_path, model_name)
         temp_file = os.path.join(shared.opts.embeddings_dir, model_path, temp_file)
+    elif model_type == 'VAE':
+        model_file = os.path.join(shared.opts.vae_dir, model_path, model_name)
+        temp_file = os.path.join(shared.opts.vae_dir, model_path, temp_file)
     else:
         model_file = os.path.join(shared.opts.ckpt_dir, model_path, model_name)
         temp_file = os.path.join(shared.opts.ckpt_dir, model_path, temp_file)

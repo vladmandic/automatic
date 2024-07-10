@@ -67,6 +67,7 @@ This release is primary service release with cumulative fixes and several improv
 - fix control input type video  
 - fix reset pipeline at the end of each iteration  
 - fix faceswap when no faces detected  
+- fix civitai search
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23
