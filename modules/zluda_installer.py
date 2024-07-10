@@ -13,7 +13,7 @@ DLL_MAPPING = {
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0601.dll',]
+HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
@@ -23,7 +23,7 @@ def get_path() -> str:
 
 def find_hip_sdk() -> Union[str, None]:
     program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
-    hip_path_default = rf'{program_files}\AMD\ROCm\6.1'
+    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
     if not os.path.exists(hip_path_default):
         hip_path_default = None
     return os.environ.get('HIP_PATH', hip_path_default)
