@@ -24,16 +24,16 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 ### New Models
 
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  to use, simply select from *networks -> reference
+  to use, simply select from *networks -> reference  
   use scheduler: default or euler flowmatch or heun flowmatch  
   note: this model uses T5 XXL variation of text encoder  
   (previous version of Lumina used Gemma 2B as text encoder)  
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
   to use, simply select from *networks -> reference  
   note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
   however, this new encoder does support both English and Chinese prompting  
-- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
-  to use, simply select from *networks -> reference
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
+  to use, simply select from *networks -> reference  
 
 ## Update for 2024-07-08
 
