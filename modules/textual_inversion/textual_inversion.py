@@ -121,7 +121,8 @@ def insert_tokens(embeddings: list, tokenizers: list):
     """
     tokens = []
     for embedding in embeddings:
-        tokens += embedding.tokens
+        if embedding is not None:
+            tokens += embedding.tokens
     for tokenizer in tokenizers:
         tokenizer.add_tokens(tokens)
 
@@ -295,7 +296,8 @@ class EmbeddingDatabase:
                         (len(embedding.vector_sizes) < len(hiddensizes) and len(embedding.vector_sizes) != 2)):  # SD3 no T5
                     embedding.tokens = []
                     self.skipped_embeddings[embedding.name] = embedding
-            except Exception:
+            except Exception as e:
+                shared.log.error(f'Embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
                 self.skipped_embeddings[embedding.name] = embedding
         if overwrite:
             shared.log.info(f"Loading Bundled embeddings: {list(data.keys())}")
