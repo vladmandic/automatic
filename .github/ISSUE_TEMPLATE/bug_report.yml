@@ -80,7 +80,7 @@ body:
       label: UI
       description: Which UI are you're using?
       options:
-        - None
+        - API
         - Standard
         - ModernUI
       default: 1
