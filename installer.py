@@ -977,7 +977,7 @@ def install_requirements():
     if not installed('diffusers', quiet=True): # diffusers are not installed, so run initial installation
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-        log.info('Installing requirements: this make take a while...')
+        log.info('Installing requirements: this may take a while...')
         pip('install -r requirements.txt')
     installed('torch', reload=True) # reload packages cache
     log.info('Verifying requirements')
