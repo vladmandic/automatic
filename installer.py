@@ -249,8 +249,8 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
-        if uv:
-            log.warning(f'Cannot install with uv, fallback to pip')
+        if uv and result.returncode != 0:
+            log.warning('Cannot install with uv, fallback to pip')
             return pip(originalArg, ignore, quiet, uv=False)
         else:
             txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
