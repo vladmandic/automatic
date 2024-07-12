@@ -10,26 +10,26 @@
 
 ### Highlights
 
-Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
-Support for new models:
+Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features  
+Support for new models:  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 
-What else? Just a bit... ;)
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...
+What else? Just a bit... ;)  
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...  
 
 ### New Models
 
 To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use.  
 
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)  
-  AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license
-  This is a very large model at 6.8B params and nearly 23GB in size, smaller variants are expected in the future
+  AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license  
+  This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
   Use scheduler: default or euler flowmatch or heun flowmatch  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)
+  Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)  
   This model uses T5 XXL variation of text encoder (previous version of Lumina used Gemma 2B as text encoder)  
   Use scheduler: default or euler flowmatch or heun flowmatch  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
