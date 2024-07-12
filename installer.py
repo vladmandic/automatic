@@ -511,8 +511,6 @@ def install_rocm_zluda(torch_command):
         try:
             if args.reinstall_zluda:
                 zluda_installer.uninstall()
-            if args.experimental:
-                zluda_installer.enable_runtime_api()
             zluda_path = zluda_installer.get_path()
             zluda_installer.install(zluda_path)
             zluda_installer.make_copy(zluda_path)
@@ -654,8 +652,8 @@ def is_rocm_available(allow_rocm):
         log.debug('DirectML installation is detected. Skipping HIP SDK check.')
         return False
     if platform.system() == 'Windows':
-        from modules.zluda_installer import find_hip_sdk
-        return find_hip_sdk() is not None
+        from modules.zluda_installer import HIPSDK
+        return HIPSDK.is_installed
     else:
         return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
 

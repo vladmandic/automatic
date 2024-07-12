@@ -4,29 +4,61 @@ import shutil
 import zipfile
 import platform
 import urllib.request
-from typing import Union
+from typing import Union, Tuple
+from packaging.version import Version
 
 
-RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '11cc5844514f93161e0e74387f04e2c537705a82')}"
+class HIPSDK:
+    is_installed = False
+
+    version: str
+    path: str
+    targets: Tuple[str]
+
+    def __init__(self) -> Union[str, None]:
+        program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
+        rocm_path = rf'{program_files}\AMD\ROCm'
+        default_version = None
+        if os.path.exists(rocm_path):
+            versions = os.listdir(rocm_path)
+            for s in versions:
+                version = None
+                try:
+                    version = Version(s)
+                except Exception:
+                    continue
+                if default_version is None:
+                    default_version = version
+                    continue
+                if version > default_version:
+                    default_version = version
+
+        self.path = os.environ.get('HIP_PATH', default_version or os.path.join(rocm_path, str(default_version)))
+        if self.path is None:
+            raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
+
+        if os.environ.get("HIP_PATH_61", None) is not None:
+            self.version = "6.1"
+        elif os.environ.get("HIP_PATH_57", None) is not None:
+            self.version = "5.7"
+        else:
+            self.version = os.path.basename(self.path) or os.path.basename(os.path.dirname(self.path))
+
+        self.targets = ['rocblas.dll', 'rocsolver.dll', f'hiprtc{"".join([v.zfill(2) for v in self.version.split(".")])}.dll']
+HIPSDK = HIPSDK()
+HIPSDK.is_installed = True
+
+
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
 def get_path() -> str:
     return os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
-
-
-def find_hip_sdk() -> Union[str, None]:
-    program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
-    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
-    if not os.path.exists(hip_path_default):
-        hip_path_default = None
-    return os.environ.get('HIP_PATH', hip_path_default)
 
 
 def install(zluda_path: os.PathLike) -> None:
@@ -36,7 +68,13 @@ def install(zluda_path: os.PathLike) -> None:
     if platform.system() != 'Windows': # Windows-only. (PyTorch should be rebuilt on Linux)
         return
 
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/{RELEASE}/ZLUDA-windows-amd64.zip', '_zluda')
+    default_hash = None
+    if HIPSDK.version == "6.1":
+        #default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
+        raise RuntimeError('Could not automatically download ZLUDA for HIP SDK 6.1 at this moment. Please download it from GitHub.')
+    elif HIPSDK.version == "5.7":
+        default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
+    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", default_hash)}/ZLUDA-windows-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:
@@ -51,10 +89,6 @@ def uninstall() -> None:
         shutil.rmtree('.zluda')
 
 
-def enable_runtime_api():
-    DLL_MAPPING['cudart.dll'] = 'cudart64_110.dll'
-
-
 def make_copy(zluda_path: os.PathLike) -> None:
     for k, v in DLL_MAPPING.items():
         if not os.path.exists(os.path.join(zluda_path, v)):
@@ -65,11 +99,8 @@ def make_copy(zluda_path: os.PathLike) -> None:
 
 
 def load(zluda_path: os.PathLike) -> None:
-    hip_path = find_hip_sdk()
-    if hip_path is None:
-        raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
-    for v in HIP_TARGETS:
-        ctypes.windll.LoadLibrary(os.path.join(hip_path, 'bin', v))
+    for v in HIPSDK.targets:
+        ctypes.windll.LoadLibrary(os.path.join(HIPSDK.path, 'bin', v))
     for v in ZLUDA_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
     for v in DLL_MAPPING.values():
