@@ -4,7 +4,7 @@ import shutil
 import zipfile
 import platform
 import urllib.request
-from typing import Union, Tuple
+from typing import Tuple
 from packaging.version import Version
 
 
@@ -15,7 +15,7 @@ class HIPSDK:
     path: str
     targets: Tuple[str]
 
-    def __init__(self) -> Union[str, None]:
+    def __init__(self):
         program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
         rocm_path = rf'{program_files}\AMD\ROCm'
         default_version = None
