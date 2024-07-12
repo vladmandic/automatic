@@ -5,9 +5,7 @@
 ### Pending
 
 - Requires `diffusers==0.30.0`
-- [AuraFlow/LavenderFlow](https://github.com/huggingface/diffusers/pull/8796) (previously known as LavenderFlow)
-- [Kolors](https://github.com/huggingface/diffusers/pull/8812)
-- [ControlNet Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) pipeline
+- AuraFlow, Kolors, AlphaVLLM Lumina
 - FlowMatchHeunDiscreteScheduler enable
 
 ### Highlights
@@ -15,6 +13,7 @@
 Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
 Support for new models:
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 
@@ -23,17 +22,21 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 
 ### New Models
 
+To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use.  
+
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)  
+  AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license
+  This is a very large model at 6.8B params and nearly 23GB in size, smaller variants are expected in the future
+  Use scheduler: default or euler flowmatch or heun flowmatch  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  to use, simply select from *networks -> reference  
-  use scheduler: default or euler flowmatch or heun flowmatch  
-  note: this model uses T5 XXL variation of text encoder  
-  (previous version of Lumina used Gemma 2B as text encoder)  
+  Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)
+  This model uses T5 XXL variation of text encoder (previous version of Lumina used Gemma 2B as text encoder)  
+  Use scheduler: default or euler flowmatch or heun flowmatch  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
-  to use, simply select from *networks -> reference  
-  note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
-  however, this new encoder does support both English and Chinese prompting  
+  Kolors is a large-scale text-to-image generation model based on latent diffusion  
+  This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
-  to use, simply select from *networks -> reference  
+  Hunyuan-DiT is a powerful multi-resolution diffusion transformer (DiT) with fine-grained Chinese understanding  
 
 ## Update for 2024-07-08
 
