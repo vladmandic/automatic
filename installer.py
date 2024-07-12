@@ -237,6 +237,7 @@ def uninstall(package, quiet = False):
 
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
+    originalArg = arg
     uv = uv and args.uv
     pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
@@ -248,7 +249,11 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
-        txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
+        if uv:
+            log.warning(f'Cannot install with uv, fallback to pip')
+            return pip(originalArg, ignore, quiet, uv=False)
+        else:
+            txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
     txt = txt.strip()
     debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
