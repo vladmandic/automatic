@@ -17,7 +17,7 @@ class HIPSDK:
 
     def __init__(self):
         if platform.system() != 'Windows':
-            raise RuntimeError('ZLUDA cannot be automatically installed on Linux. Please use --use-cuda instead.')
+            raise RuntimeError('ZLUDA cannot be automatically installed on Linux. Please select --use-cuda for ZLUDA or --use-rocm for ROCm.')
 
         program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
         rocm_path = rf'{program_files}\AMD\ROCm'
