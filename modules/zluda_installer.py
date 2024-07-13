@@ -16,6 +16,9 @@ class HIPSDK:
     targets: Tuple[str]
 
     def __init__(self):
+        if platform.system() != 'Windows':
+            raise RuntimeError('ZLUDA cannot be automatically installed on Linux. Please use --use-cuda instead.')
+
         program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
         rocm_path = rf'{program_files}\AMD\ROCm'
         default_version = None
@@ -65,13 +68,9 @@ def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    if platform.system() != 'Windows': # Windows-only. (PyTorch should be rebuilt on Linux)
-        return
-
     default_hash = None
     if HIPSDK.version == "6.1":
-        #default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
-        raise RuntimeError('Could not automatically download ZLUDA for HIP SDK 6.1 at this moment. Please download it from GitHub.')
+        default_hash = 'd7714d84c0c13bbf816eaaac32693e4e75e58a87'
     elif HIPSDK.version == "5.7":
         default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", default_hash)}/ZLUDA-windows-amd64.zip', '_zluda')
