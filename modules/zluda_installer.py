@@ -5,7 +5,20 @@ import zipfile
 import platform
 import urllib.request
 from typing import Tuple
-from packaging.version import Version
+
+
+class HIPSDKVersion:
+    major: int
+    minor: int
+
+    def __init__(self, version: str):
+        self.major, self.minor = [int(v) for v in version.strip().split(".")]
+
+    def __gt__(self, other):
+        return self.major * 10 + other.minor > other.major * 10 + other.minor
+
+    def __str__(self):
+        return f"{self.major}.{self.minor}"
 
 
 class HIPSDK:
@@ -27,7 +40,7 @@ class HIPSDK:
             for s in versions:
                 version = None
                 try:
-                    version = Version(s)
+                    version = HIPSDKVersion(s)
                 except Exception:
                     continue
                 if default_version is None:
