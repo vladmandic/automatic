@@ -565,7 +565,7 @@ def install_rocm_zluda(torch_command):
                     continue
                 supported_archs.append(file[6:-3])
             for gpu in hip_visible_devices:
-                if gpu not in supported_archs:
+                if gpu[1] not in supported_archs:
                     hipblaslt_available = False
                     break
             log.debug(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
