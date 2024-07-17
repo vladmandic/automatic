@@ -7,20 +7,6 @@ import urllib.request
 from typing import Tuple
 
 
-class HIPSDKVersion:
-    major: int
-    minor: int
-
-    def __init__(self, version: str):
-        self.major, self.minor = [int(v) for v in version.strip().split(".")]
-
-    def __gt__(self, other):
-        return self.major * 10 + other.minor > other.major * 10 + other.minor
-
-    def __str__(self):
-        return f"{self.major}.{self.minor}"
-
-
 class HIPSDK:
     is_installed = False
 
@@ -36,11 +22,24 @@ class HIPSDK:
         rocm_path = rf'{program_files}\AMD\ROCm'
         default_version = None
         if os.path.exists(rocm_path):
+            class Version:
+                major: int
+                minor: int
+
+                def __init__(self, version: str):
+                    self.major, self.minor = [int(v) for v in version.strip().split(".")]
+
+                def __gt__(self, other):
+                    return self.major * 10 + other.minor > other.major * 10 + other.minor
+
+                def __str__(self):
+                    return f"{self.major}.{self.minor}"
+
             versions = os.listdir(rocm_path)
             for s in versions:
                 version = None
                 try:
-                    version = HIPSDKVersion(s)
+                    version = Version(s)
                 except Exception:
                     continue
                 if default_version is None:

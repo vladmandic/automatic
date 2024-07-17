@@ -484,7 +484,8 @@ def install_rocm_zluda(torch_command):
         if gpu in ['gfx1030', 'gfx1031', 'gfx1032', 'gfx1034']: # experimental navi 2x support
             hip_visible_devices.append((idx, gpu, 'navi2x'))
             break
-    if len(hip_visible_devices) > 0:
+    hip_found_device = len(hip_visible_devices) > 0
+    if hip_found_device:
         idx, gpu, arch = hip_visible_devices[0]
         log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu} arch={arch}')
         os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
@@ -557,17 +558,17 @@ def install_rocm_zluda(torch_command):
 
         if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
             supported_archs = []
-            hipblaslt_available = True
+            hipblaslt_available = hip_found_device
             libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
             for file in os.listdir(libpath):
                 if not file.startswith('extop_'):
                     continue
                 supported_archs.append(file[6:-3])
-            for gpu in amd_gpus:
+            for gpu in hip_visible_devices:
                 if gpu not in supported_archs:
                     hipblaslt_available = False
                     break
-            log.info(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
+            log.debug(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
             if hipblaslt_available:
                 import ctypes
                 # Preload hipBLASLt.
