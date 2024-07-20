@@ -497,6 +497,7 @@ def install_rocm_zluda(torch_command):
             os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
         else:
             log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
+
     try:
         command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         arr = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
@@ -505,6 +506,7 @@ def install_rocm_zluda(torch_command):
     except Exception as e:
         log.debug(f'ROCm hipconfig failed: {e}')
         rocm_ver = None
+
     if args.use_zluda:
         log.warning("ZLUDA support: experimental")
         error = None

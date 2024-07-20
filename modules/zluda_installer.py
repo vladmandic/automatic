@@ -14,6 +14,19 @@ class HIPSDK:
     path: str
     targets: Tuple[str]
 
+    class Version:
+        major: int
+        minor: int
+
+        def __init__(self, version: str):
+            self.major, self.minor = [int(v) for v in version.strip().split(".")]
+
+        def __gt__(self, other):
+            return self.major * 10 + other.minor > other.major * 10 + other.minor
+
+        def __str__(self):
+            return f"{self.major}.{self.minor}"
+
     def __init__(self):
         if platform.system() != 'Windows':
             raise RuntimeError('ZLUDA cannot be automatically installed on Linux. Please select --use-cuda for ZLUDA or --use-rocm for ROCm.')
@@ -22,24 +35,11 @@ class HIPSDK:
         rocm_path = rf'{program_files}\AMD\ROCm'
         default_version = None
         if os.path.exists(rocm_path):
-            class Version:
-                major: int
-                minor: int
-
-                def __init__(self, version: str):
-                    self.major, self.minor = [int(v) for v in version.strip().split(".")]
-
-                def __gt__(self, other):
-                    return self.major * 10 + other.minor > other.major * 10 + other.minor
-
-                def __str__(self):
-                    return f"{self.major}.{self.minor}"
-
             versions = os.listdir(rocm_path)
             for s in versions:
                 version = None
                 try:
-                    version = Version(s)
+                    version = HIPSDK.Version(s)
                 except Exception:
                     continue
                 if default_version is None:
@@ -48,14 +48,16 @@ class HIPSDK:
                 if version > default_version:
                     default_version = version
 
-        self.path = os.environ.get('HIP_PATH', default_version or os.path.join(rocm_path, str(default_version)))
+        self.path = os.environ.get('HIP_PATH', None)
         if self.path is None:
-            raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
-
-        if os.environ.get("HIP_PATH_61", None) is not None:
-            self.version = "6.1"
-        elif os.environ.get("HIP_PATH_57", None) is not None:
-            self.version = "5.7"
+            if os.environ.get("HIP_PATH_61", None) is not None:
+                self.version = "6.1"
+            elif os.environ.get("HIP_PATH_57", None) is not None:
+                self.version = "5.7"
+            elif default_version is None:
+                raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
+            else:
+                self.version = str(default_version)
         else:
             self.version = os.path.basename(self.path) or os.path.basename(os.path.dirname(self.path))
 
