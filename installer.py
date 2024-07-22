@@ -644,11 +644,8 @@ def is_rocm_available(allow_rocm):
     if installed('torch-directml', quiet=True):
         log.debug('DirectML installation is detected. Skipping HIP SDK check.')
         return False
-    if platform.system() == 'Windows':
-        from modules.rocm import is_installed
-        return is_installed
-    else:
-        return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
+    from modules.rocm import is_installed
+    return is_installed
 
 
 def install_torch_addons():
