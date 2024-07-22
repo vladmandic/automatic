@@ -2,68 +2,8 @@ import os
 import ctypes
 import shutil
 import zipfile
-import platform
 import urllib.request
-from typing import Tuple
-
-
-class HIPSDK:
-    is_installed = False
-
-    version: str
-    path: str
-    targets: Tuple[str]
-
-    class Version:
-        major: int
-        minor: int
-
-        def __init__(self, version: str):
-            self.major, self.minor = [int(v) for v in version.strip().split(".")]
-
-        def __gt__(self, other):
-            return self.major * 10 + other.minor > other.major * 10 + other.minor
-
-        def __str__(self):
-            return f"{self.major}.{self.minor}"
-
-    def __init__(self):
-        if platform.system() != 'Windows':
-            raise RuntimeError('ZLUDA cannot be automatically installed on Linux. Please select --use-cuda for ZLUDA or --use-rocm for ROCm.')
-
-        program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
-        rocm_path = rf'{program_files}\AMD\ROCm'
-        default_version = None
-        if os.path.exists(rocm_path):
-            versions = os.listdir(rocm_path)
-            for s in versions:
-                version = None
-                try:
-                    version = HIPSDK.Version(s)
-                except Exception:
-                    continue
-                if default_version is None:
-                    default_version = version
-                    continue
-                if version > default_version:
-                    default_version = version
-
-        self.path = os.environ.get('HIP_PATH', None)
-        if self.path is None:
-            if os.environ.get("HIP_PATH_61", None) is not None:
-                self.version = "6.1"
-            elif os.environ.get("HIP_PATH_57", None) is not None:
-                self.version = "5.7"
-            elif default_version is None:
-                raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
-            else:
-                self.version = str(default_version)
-        else:
-            self.version = os.path.basename(self.path) or os.path.basename(os.path.dirname(self.path))
-
-        self.targets = ['rocblas.dll', 'rocsolver.dll', f'hiprtc{"".join([v.zfill(2) for v in self.version.split(".")])}.dll']
-HIPSDK = HIPSDK()
-HIPSDK.is_installed = True
+from modules import rocm
 
 
 DLL_MAPPING = {
@@ -71,6 +11,7 @@ DLL_MAPPING = {
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
+HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll']
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
@@ -83,10 +24,12 @@ def install(zluda_path: os.PathLike) -> None:
         return
 
     default_hash = None
-    if HIPSDK.version == "6.1":
+    if rocm.version == "6.1":
         default_hash = 'd7714d84c0c13bbf816eaaac32693e4e75e58a87'
-    elif HIPSDK.version == "5.7":
+    elif rocm.version == "5.7":
         default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
+    else:
+        raise RuntimeError(f'Unsupported HIP SDK version: {rocm.version}')
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", default_hash)}/ZLUDA-windows-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
@@ -112,8 +55,8 @@ def make_copy(zluda_path: os.PathLike) -> None:
 
 
 def load(zluda_path: os.PathLike) -> None:
-    for v in HIPSDK.targets:
-        ctypes.windll.LoadLibrary(os.path.join(HIPSDK.path, 'bin', v))
+    for v in HIPSDK_TARGETS:
+        ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
     for v in ZLUDA_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
     for v in DLL_MAPPING.values():
