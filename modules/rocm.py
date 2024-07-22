@@ -86,7 +86,7 @@ else:
         return resolve_link("/opt/rocm")
 
     def get_version() -> str:
-        arr = spawn(f"{os.path.join(path, 'hipconfig')} --version").split(".")
+        arr = spawn(f"{os.path.join(path, 'bin', 'hipconfig')} --version").split(".")
         return f'{arr[0]}.{arr[1]}' if len(arr) >= 2 else None
 
     def get_agents() -> List[str]:
