@@ -99,5 +99,8 @@ else:
 
     is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', None) is not None
 path = find()
-is_installed = path is not None
-version = get_version()
+is_installed = False
+version = None
+if path is not None:
+    is_installed = True
+    version = get_version()
