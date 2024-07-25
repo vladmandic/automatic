@@ -532,11 +532,6 @@ def install_rocm_zluda(torch_command):
     else:
         if rocm.version is None: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
-        elif rocm.version == "6.1": # need nightlies
-            if args.experimental:
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
-            else:
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
         elif float(rocm.version) < 5.5: # oldest supported version is 5.5
             log.warning(f"Unsupported ROCm version detected: {rocm.version}")
             log.warning("Minimum supported ROCm version is 5.5")
