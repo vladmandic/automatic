@@ -466,33 +466,24 @@ def install_rocm_zluda(torch_command):
     #    os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
     try:
         amd_gpus = rocm.get_agents()
-        log.info(f'ROCm agents detected: {amd_gpus}')
+        log.info(f'ROCm agents detected: {[gpu.name for gpu in amd_gpus]}')
     except Exception as e:
         log.warning(f'ROCm agent enumerator failed: {e}')
         amd_gpus = []
 
-    hip_visible_devices = [] # use the first available amd gpu by default
+    hip_default_device = None
     for idx, gpu in enumerate(amd_gpus):
-        if gpu in ['gfx1100', 'gfx1101', 'gfx1102']:
-            hip_visible_devices.append((idx, gpu, 'navi3x'))
-            break
-        if gpu in ['gfx1030', 'gfx1031', 'gfx1032', 'gfx1034']: # experimental navi 2x support
-            hip_visible_devices.append((idx, gpu, 'navi2x'))
-            break
-
-    hip_found_device = len(hip_visible_devices) > 0
-    if hip_found_device:
-        idx, gpu, arch = hip_visible_devices[0]
-        log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu} arch={arch}')
-        os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
-        if arch == 'navi3x':
-            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '11.0.0')
+        gfx_version = gpu.get_gfx_version()
+        if gfx_version is None:
+            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
+        else:
+            hip_default_device = gpu
+            log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu.name}')
+            os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
             # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
             #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-        elif arch == 'navi2x':
-            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
-        else:
-            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
+            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_version)
+            break
 
     log.info(f'ROCm version detected: {rocm.version}')
 
@@ -528,7 +519,7 @@ def install_rocm_zluda(torch_command):
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
             # conceal ROCm installed
-            conceal_rocm()
+            rocm.conceal()
     else:
         if rocm.version is None: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
@@ -544,37 +535,9 @@ def install_rocm_zluda(torch_command):
         install(ort_package, 'onnxruntime-training')
 
         if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
-            supported_archs = []
-            hipblaslt_available = hip_found_device
-            libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
-            for file in os.listdir(libpath):
-                if not file.startswith('extop_'):
-                    continue
-                supported_archs.append(file[6:-3])
-            for gpu in hip_visible_devices:
-                if gpu[1] not in supported_archs:
-                    hipblaslt_available = False
-                    break
-            log.debug(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
-            if hipblaslt_available:
-                import ctypes
-                # Preload hipBLASLt.
-                ctypes.CDLL("/opt/rocm/lib/libhipblaslt.so", mode=ctypes.RTLD_GLOBAL)
-                os.environ["HIPBLASLT_TENSILE_LIBPATH"] = libpath
-            else:
-                os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
+            log.debug(f'hipBLASLt arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
+            rocm.set_blaslt_enabled(hip_default_device.blaslt_supported)
     return torch_command
-
-
-def conceal_rocm():
-    os.environ.pop("ROCM_HOME", None)
-    os.environ.pop("ROCM_PATH", None)
-    paths = os.environ["PATH"].split(";")
-    paths_no_rocm = []
-    for path in paths:
-        if "ROCm" not in path:
-            paths_no_rocm.append(path)
-    os.environ["PATH"] = ";".join(paths_no_rocm)
 
 
 def install_ipex(torch_command):
@@ -701,17 +664,10 @@ def check_torch():
     elif is_rocm_available(allow_rocm):
         torch_command = install_rocm_zluda(torch_command)
 
-        # WSL ROCm
-        if os.environ.get('WSL_DISTRO_NAME', None) is not None:
-            import ctypes
+        from modules import rocm
+        if rocm.is_wsl: # WSL ROCm
             try:
-                # Preload stdc++ library. This will ignore Anaconda stdc++ library.
-                ctypes.CDLL("/lib/x86_64-linux-gnu/libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
-            except OSError:
-                pass
-            try:
-                # Preload HSA Runtime library.
-                ctypes.CDLL("/opt/rocm/lib/libhsa-runtime64.so", mode=ctypes.RTLD_GLOBAL)
+                rocm.load_hsa_runtime()
             except OSError:
                 log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
@@ -728,7 +684,9 @@ def check_torch():
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
-            conceal_rocm()
+            from modules import rocm
+            if rocm.is_installed:
+                rocm.conceal()
         else:
             if args.use_zluda:
                 log.warning("ZLUDA failed to initialize: no HIP SDK found")

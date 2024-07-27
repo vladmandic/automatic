@@ -1,5 +1,6 @@
 import os
 import sys
+import ctypes
 import shutil
 import subprocess
 from typing import Union, List
@@ -20,6 +21,60 @@ def dirname(path_: str, r: int = 1) -> str:
 def spawn(command: str) -> str:
     process = subprocess.run(command, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process.stdout.decode(encoding="utf8", errors="ignore")
+
+
+def load_library_global(path_: str):
+    ctypes.CDLL(path_, mode=ctypes.RTLD_GLOBAL)
+
+
+def conceal():
+    os.environ.pop("ROCM_HOME", None)
+    os.environ.pop("ROCM_PATH", None)
+    paths = os.environ["PATH"].split(";")
+    paths_no_rocm = []
+    for path_ in paths:
+        if "rocm" not in path_.lower():
+            paths_no_rocm.append(path_)
+    os.environ["PATH"] = ";".join(paths_no_rocm)
+
+
+class Agent:
+    name: str
+    is_navi4x: bool = False
+    is_navi3a: bool = False # 3.5
+    is_navi3x: bool = False
+    is_navi2x: bool = False
+    is_navi1x: bool = False
+    is_gcn: bool = False
+    if sys.platform != "win32":
+        blaslt_supported: bool
+
+    def __init__(self, name: str):
+        self.name = name
+        gfx_version = name[3:6]
+        if gfx_version == "120":
+            self.is_navi4x = True
+        elif gfx_version == "115":
+            self.is_navi3a = True
+        elif gfx_version == "110":
+            self.is_navi3x = True
+        elif gfx_version == "103":
+            self.is_navi2x = True
+        elif gfx_version == "101":
+            self.is_navi1x = True
+        else:
+            self.is_gcn = True
+        if sys.platform != "win32":
+            self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
+
+    def get_gfx_version(self) -> Union[str, None]:
+        if self.is_navi3x:
+            return "11.0.0"
+        elif self.is_navi2x:
+            return "10.3.0"
+        #elif self.is_navi1x:
+        #    return "10.3.0" # maybe?
+        return None
 
 
 if sys.platform == "win32":
@@ -72,11 +127,13 @@ if sys.platform == "win32":
     def get_version() -> str: # cannot just run hipconfig as it requires Perl installed on Windows.
         return os.path.basename(path)
 
-    def get_agents() -> List[str]:
-        return [x.split(' ')[-1].strip() for x in spawn("hipinfo").split("\n") if x.startswith('gcnArchName:')]
+    def get_agents() -> List[Agent]:
+        return [Agent(x.split(' ')[-1].strip()) for x in spawn("hipinfo").split("\n") if x.startswith('gcnArchName:')]
 
     is_wsl: bool = False
 else:
+    HIPBLASLT_TENSILE_LIBPATH = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
+
     def find() -> Union[str, None]:
         rocm_path = shutil.which("hipconfig")
         if rocm_path is not None:
@@ -89,13 +146,30 @@ else:
         arr = spawn(f"{os.path.join(path, 'bin', 'hipconfig')} --version").split(".")
         return f'{arr[0]}.{arr[1]}' if len(arr) >= 2 else None
 
-    def get_agents() -> List[str]:
+    def get_agents() -> List[Agent]:
         if is_wsl: # WSL does not have 'rocm_agent_enumerator'
             agents = spawn("rocminfo").split("\n")
-            return [x.strip().split(" ")[-1] for x in agents if x.startswith('  Name:') and "CPU" not in x]
+            agents = [x.strip().split(" ")[-1] for x in agents if x.startswith('  Name:') and "CPU" not in x]
         else:
             agents = spawn("rocm_agent_enumerator").split("\n")
-            return [x for x in agents if x and x != 'gfx000']
+            agents = [x for x in agents if x and x != 'gfx000']
+        return [Agent(x) for x in agents]
+
+    def load_hsa_runtime() -> None:
+        try:
+            # Preload stdc++ library. This will ignore Anaconda stdc++ library.
+            load_library_global("/lib/x86_64-linux-gnu/libstdc++.so.6")
+        except OSError:
+            pass
+        # Preload HSA Runtime library.
+        load_library_global("/opt/rocm/lib/libhsa-runtime64.so")
+
+    def set_blaslt_enabled(enabled: bool) -> None:
+        if enabled:
+            load_library_global("/opt/rocm/lib/libhipblaslt.so") # Preload hipBLASLt.
+            os.environ["HIPBLASLT_TENSILE_LIBPATH"] = HIPBLASLT_TENSILE_LIBPATH
+        else:
+            os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
 
     is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', None) is not None
 path = find()
