@@ -129,7 +129,7 @@ if sys.platform == "win32":
         return os.path.join(hip_path, str(latest))
 
     def get_version() -> str: # cannot just run hipconfig as it requires Perl installed on Windows.
-        return os.path.basename(path)
+        return os.path.basename(path) or os.path.basename(os.path.dirname(path))
 
     def get_agents() -> List[Agent]:
         return [Agent(x.split(' ')[-1].strip()) for x in spawn("hipinfo").split("\n") if x.startswith('gcnArchName:')]
