@@ -6,6 +6,10 @@ import subprocess
 from typing import Union, List
 
 
+HIPBLASLT_TENSILE_LIBPATH = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", None if sys.platform == "win32" # not available
+                                           else "/opt/rocm/lib/hipblaslt/library")
+
+
 def resolve_link(path_: str) -> str:
     if not os.path.islink(path_):
         return path_
@@ -132,8 +136,6 @@ if sys.platform == "win32":
 
     is_wsl: bool = False
 else:
-    HIPBLASLT_TENSILE_LIBPATH = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
-
     def find() -> Union[str, None]:
         rocm_path = shutil.which("hipconfig")
         if rocm_path is not None:

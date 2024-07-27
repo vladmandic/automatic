@@ -475,7 +475,7 @@ def install_rocm_zluda(torch_command):
     for idx, gpu in enumerate(amd_gpus):
         gfx_version = gpu.get_gfx_version()
         if gfx_version is None:
-            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
+            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu.name}')
         else:
             hip_default_device = gpu
             log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu.name}')
