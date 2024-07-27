@@ -61,7 +61,7 @@ def single_sample_to_image(sample, approximation=None):
         if approximation == 2: # TAESD
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
-        elif sd_cascade:
+        elif sd_cascade and not approximation == 3:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
@@ -70,7 +70,7 @@ def single_sample_to_image(sample, approximation=None):
             if shared.sd_model_type == "sdxl":
                 x_sample = x_sample[[2,1,0], :, :] # BGR to RGB
         elif approximation == 3: # Full VAE
-            x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0] * 0.5 + 0.5
+            x_sample = processing.decode_first_stage(shared.sd_model, sample.unsqueeze(0))[0]
         else:
             warn_once(f"Unknown latent decode type: {approximation}")
             return Image.new(mode="RGB", size=(512, 512))
