@@ -537,7 +537,7 @@ def save_intermediate(p, latents, suffix):
 
 def update_sampler(p, sd_model, second_pass=False):
     sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
-    if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
+    if hasattr(sd_model, 'scheduler'):
         sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
         if sampler is None:
             shared.log.warning(f'Sampler: sampler="{sampler_selection}" not found')
@@ -548,7 +548,7 @@ def update_sampler(p, sd_model, second_pass=False):
             else:
                 shared.opts.schedulers_use_karras = False
         sampler = sd_samplers.create_sampler(sampler.name, sd_model)
-        if sampler is None:
+        if sampler is None or sampler_selection == 'Default':
             return
         sampler_options = []
         if sampler.config.get('use_karras_sigmas', False):

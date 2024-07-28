@@ -1,4 +1,5 @@
 import os
+import copy
 import re
 import inspect
 from modules import shared
@@ -115,20 +116,16 @@ class DiffusionSampler:
         self.config = {}
         if not hasattr(model, 'scheduler'):
             return
+        if getattr(model, "default_scheduler", None) is None: # sanity check
+            model.default_scheduler = copy.deepcopy(model.scheduler)
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
         debug(f'Sampler: all="{self.config}"')
-        if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
-            orig_config = model.scheduler.scheduler_config
+        if hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
+            orig_config = model.default_scheduler.scheduler_config
         else:
-            orig_config = model.scheduler.config
-        if not hasattr(model, 'orig_scheduler'): # store settings from initial scheduler
-            model.orig_scheduler = orig_config.copy()
-        else:
-            for key, value in model.orig_scheduler.items(): # apply scheduler defaults
-                if key in self.config:
-                    self.config[key] = value
-            debug(f'Sampler: original="{model.orig_scheduler}"')
+            orig_config = model.default_scheduler.config
+        debug(f'Sampler: original="{orig_config}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
