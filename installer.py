@@ -699,8 +699,11 @@ def check_torch():
             import torch
             log.info(f'Torch {torch.__version__}')
             if args.use_ipex and allow_ipex:
-                import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-                log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
+                try:
+                    import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
+                    log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
+                except Exception:
+                    log.warning('IPEX not found')
                 if shutil.which('icpx') is not None:
                     log.info(f'{os.popen("icpx --version").read().rstrip()}')
                 for device in range(torch.xpu.device_count()):

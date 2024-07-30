@@ -2,11 +2,10 @@ import os
 from functools import wraps
 from contextlib import nullcontext
 import torch
-import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
 import numpy as np
 from modules import devices, errors
 
-device_supports_fp64 = torch.xpu.has_fp64_dtype()
+device_supports_fp64 = torch.xpu.get_device_properties("xpu").has_fp64
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long, unnecessary-lambda, no-else-return
 
@@ -253,6 +252,14 @@ def torch_zeros(*args, device=None, **kwargs):
     else:
         return original_torch_zeros(*args, device=device, **kwargs)
 
+original_torch_full = torch.full
+@wraps(torch.full)
+def torch_full(*args, device=None, **kwargs):
+    if check_device(device):
+        return original_torch_full(*args, device=return_xpu(device), **kwargs)
+    else:
+        return original_torch_full(*args, device=device, **kwargs)
+
 original_torch_linspace = torch.linspace
 @wraps(torch.linspace)
 def torch_linspace(*args, device=None, **kwargs):
@@ -292,6 +299,7 @@ def ipex_hijacks():
     torch.randn = torch_randn
     torch.ones = torch_ones
     torch.zeros = torch_zeros
+    torch.full = torch_full
     torch.linspace = torch_linspace
     torch.Generator = torch_Generator
     torch.load = torch_load

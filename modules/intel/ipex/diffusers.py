@@ -1,7 +1,6 @@
 import os
 import torch
-import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-import diffusers #0.24.0 # pylint: disable=import-error
+import diffusers #0.29.1 # pylint: disable=import-error
 from diffusers.models.attention_processor import Attention
 from diffusers.utils import USE_PEFT_BACKEND
 from functools import cache
