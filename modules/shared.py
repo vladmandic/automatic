@@ -446,11 +446,13 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cuda_compile_precompile": OptionInfo(False, "Model compile precompile"),
     "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
     "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
-    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
-    "nncf_sep": OptionInfo("<h2>Model Compress</h2>", "", gr.HTML),
-    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "quant_sep": OptionInfo("<h2>Model Quantization</h2>", "", gr.HTML),
+    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
+    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF INT8", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "optimum_quanto_weights": OptionInfo([], "Quantize Model weights with Optimum Quanto", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "optimum_quanto_weights_type": OptionInfo("qint8", "Quant mode for Optimum Quanto", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),

@@ -626,6 +626,8 @@ def install_torch_addons():
         install('olive-ai')
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
+    if opts.get('optimum_quanto_weights', False):
+        install('optimum-quanto', 'optimum-quanto')
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
 

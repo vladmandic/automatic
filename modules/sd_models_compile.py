@@ -145,11 +145,37 @@ def nncf_compress_weights(sd_model):
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
 
         t1 = time.time()
-        shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
+        shared.log.info(f"NNCF Compress Weights: time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.warning(f"Compress Weights: error: {e}")
+        shared.log.warning(f"NNCF Compress Weights: error: {e}")
     return sd_model
 
+def optimum_quanto_model(model):
+    from optimum import quanto
+    model.eval()
+    backup_embeddings = None
+    if hasattr(model, "get_input_embeddings"):
+        backup_embeddings = copy.deepcopy(model.get_input_embeddings())
+    quanto.quantize(model, weights=getattr(quanto, shared.opts.optimum_quanto_weights_type))
+    quanto.freeze(model)
+    if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
+        model.set_input_embeddings(backup_embeddings)
+    devices.torch_gc(force=True)
+    return model
+
+def optimum_quanto_weights(sd_model):
+    try:
+        t0 = time.time()
+        from installer import install
+        install('optimum-quanto', quiet=True)
+
+        sd_model = apply_compile_to_model(sd_model, optimum_quanto_model, shared.opts.optimum_quanto_weights, op="optimum-quanto")
+
+        t1 = time.time()
+        shared.log.info(f"Optimum Quanto Weights: time={t1-t0:.2f}")
+    except Exception as e:
+        shared.log.warning(f"Optimum Quanto Weights: error: {e}")
+    return sd_model
 
 def optimize_openvino(sd_model):
     try:
