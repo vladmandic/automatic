@@ -150,13 +150,14 @@ def nncf_compress_weights(sd_model):
         shared.log.warning(f"NNCF Compress Weights: error: {e}")
     return sd_model
 
-def optimum_quanto_model(model):
+def optimum_quanto_model(model, weights=None):
     from optimum import quanto
+    weights = getattr(quanto, weights) if weights is not None else getattr(quanto, shared.opts.optimum_quanto_weights_type)
     model.eval()
     backup_embeddings = None
     if hasattr(model, "get_input_embeddings"):
         backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-    quanto.quantize(model, weights=getattr(quanto, shared.opts.optimum_quanto_weights_type))
+    quanto.quantize(model, weights=weights)
     quanto.freeze(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
