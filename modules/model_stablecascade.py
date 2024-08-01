@@ -120,6 +120,14 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
     sd_model.decoder_pipe.text_encoder = sd_model.text_encoder = None  # Nothing uses the decoder's text encoder
     sd_model.prior_pipe.image_encoder = sd_model.prior_image_encoder = None # No img2img is implemented yet
     sd_model.prior_pipe.feature_extractor = sd_model.prior_feature_extractor = None # No img2img is implemented yet
+    #de-dupe
+    del sd_model.decoder_pipe.text_encoder
+    del sd_model.prior_prior
+    del sd_model.prior_text_encoder
+    del sd_model.prior_tokenizer
+    del sd_model.prior_scheduler
+    del sd_model.prior_feature_extractor
+    del sd_model.prior_image_encoder
     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
 
     return sd_model
