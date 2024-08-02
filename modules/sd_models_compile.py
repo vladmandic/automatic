@@ -145,6 +145,7 @@ def nncf_compress_model(model):
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
+        shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
         from installer import install
         install('nncf==2.7.0', quiet=True)
 
@@ -173,6 +174,7 @@ def optimum_quanto_model(model, weights=None):
 def optimum_quanto_weights(sd_model):
     try:
         t0 = time.time()
+        shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
         from installer import install
         install('optimum-quanto', quiet=True)
 

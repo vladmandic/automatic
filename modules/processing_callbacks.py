@@ -82,7 +82,10 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             pipe._guidance_scale = 0.0  # pylint: disable=protected-access
             for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
                 kwargs[key] = kwargs[key].chunk(2)[-1]
-    shared.state.current_latent = kwargs['latents']
+    if hasattr(pipe, "_unpack_latents") and hasattr(pipe, "vae_scale_factor"): # FLUX
+        shared.state.current_latent = pipe._unpack_latents(kwargs['latents'], p.height, p.width, pipe.vae_scale_factor)
+    else:
+        shared.state.current_latent = kwargs['latents']
     if shared.cmd_opts.profile and shared.profiler is not None:
         shared.profiler.step()
     return kwargs
