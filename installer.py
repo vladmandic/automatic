@@ -534,7 +534,7 @@ def install_rocm_zluda(torch_command):
         ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
         install(ort_package, 'onnxruntime-training')
 
-        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
+        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))) and rocm.version != "6.2":
             log.debug(f'hipBLASLt arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
             rocm.set_blaslt_enabled(hip_default_device.blaslt_supported)
     return torch_command
