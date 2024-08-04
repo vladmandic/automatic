@@ -190,7 +190,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     elif 'callback_on_step_end' in possible:
         args['callback_on_step_end'] = diffusers_callback
         if 'callback_on_step_end_tensor_inputs' in possible:
-            if 'prompt_embeds' in possible and 'negative_prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):
+            if 'prompt_embeds' in possible and hasattr(model, '_callback_tensor_inputs'):
                 args['callback_on_step_end_tensor_inputs'] = model._callback_tensor_inputs # pylint: disable=protected-access
             else:
                 args['callback_on_step_end_tensor_inputs'] = ['latents']
