@@ -449,6 +449,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
     "quant_sep": OptionInfo("<h2>Model Quantization</h2>", "", gr.HTML),
+    "quant_shuffle_weights": OptionInfo(False, "Shuffle the weights between GPU and CPU when quantizing"),
     "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF INT8", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights": OptionInfo([], "Quantize Model weights with Optimum Quanto", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
