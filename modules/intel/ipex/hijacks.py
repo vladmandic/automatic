@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from modules import devices, errors
 
-device_supports_fp64 = torch.xpu.get_device_properties("xpu").has_fp64
+device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long, unnecessary-lambda, no-else-return
 
