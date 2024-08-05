@@ -144,15 +144,6 @@ def functional_conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1,
         bias.data = bias.data.to(dtype=weight.data.dtype)
     return original_functional_conv2d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
 
-# A1111 Embedding BF16
-original_torch_cat = torch.cat
-@wraps(torch.cat)
-def torch_cat(tensor, *args, **kwargs):
-    if len(tensor) == 3 and (tensor[0].dtype != tensor[1].dtype or tensor[2].dtype != tensor[1].dtype):
-        return original_torch_cat([tensor[0].to(tensor[1].dtype), tensor[1], tensor[2].to(tensor[1].dtype)], *args, **kwargs)
-    else:
-        return original_torch_cat(tensor, *args, **kwargs)
-
 # SwinIR BF16:
 original_functional_pad = torch.nn.functional.pad
 @wraps(torch.nn.functional.pad)
@@ -318,7 +309,6 @@ def ipex_hijacks():
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm
-    torch.cat = torch_cat
     if not device_supports_fp64:
         torch.from_numpy = from_numpy
         torch.as_tensor = as_tensor
