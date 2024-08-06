@@ -52,6 +52,7 @@ def create_sampler(name, model):
             model.scheduler = copy.deepcopy(model.default_scheduler)
             if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
                 model.prior_pipe.scheduler = copy.deepcopy(model.default_scheduler)
+                model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
         shared.log.debug(f'Sampler default {type(model.scheduler).__name__}: {config}')
         return model.scheduler
@@ -73,6 +74,7 @@ def create_sampler(name, model):
         model.scheduler = sampler.sampler
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
+            model.prior_pipe.scheduler.config.clip_sample = False
         shared.log.debug(f'Sampler: sampler="{sampler.name}" config={sampler.config}')
         return sampler.sampler
     else:
