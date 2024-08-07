@@ -1160,11 +1160,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
-        if model_type not in ['Stable Cascade']: # it will be handled in load_cascade if the detection works
-            sd_unet.load_unet(sd_model)
         if "StableCascade" in sd_model.__class__.__name__: # detection can fail so we are applying post load here
             from modules.model_stablecascade import cascade_post_load
             cascade_post_load(sd_model)
+        if model_type not in ['Stable Cascade']: # it will be handled in load_cascade if the detection works
+            sd_unet.load_unet(sd_model)
         timer.record("load")
 
         if op == 'refiner':
