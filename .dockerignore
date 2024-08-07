@@ -23,3 +23,6 @@ __pycache__
 !webui.bat
 !webui.sh
 !package.json
+!config.json
+!ui-config.json
+!params.txt
