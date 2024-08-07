@@ -1,4 +1,5 @@
 import os
+import copy
 from modules import shared, devices
 
 def load_text_encoder(path):
@@ -117,9 +118,17 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
     else:
         sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
 
+    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
+
+    return sd_model
+
+def cascade_post_load(sd_model):
+    sd_model.prior_pipe.scheduler.config.clip_sample = False
+    sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler)
     sd_model.decoder_pipe.text_encoder = sd_model.text_encoder = None  # Nothing uses the decoder's text encoder
     sd_model.prior_pipe.image_encoder = sd_model.prior_image_encoder = None # No img2img is implemented yet
     sd_model.prior_pipe.feature_extractor = sd_model.prior_feature_extractor = None # No img2img is implemented yet
+
     #de-dupe
     del sd_model.decoder_pipe.text_encoder
     del sd_model.prior_prior
@@ -128,6 +137,4 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
     del sd_model.prior_scheduler
     del sd_model.prior_feature_extractor
     del sd_model.prior_image_encoder
-    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
-
     return sd_model
