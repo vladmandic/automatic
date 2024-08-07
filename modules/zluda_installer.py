@@ -2,18 +2,16 @@ import os
 import ctypes
 import shutil
 import zipfile
-import platform
 import urllib.request
-from typing import Union
+from modules import rocm
 
 
-RELEASE = f"rel.{os.environ.get('ZLUDA_HASH', '11cc5844514f93161e0e74387f04e2c537705a82')}"
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIP_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hiprtc0507.dll',]
+HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll']
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 
@@ -21,22 +19,18 @@ def get_path() -> str:
     return os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 
 
-def find_hip_sdk() -> Union[str, None]:
-    program_files = os.environ.get('ProgramFiles', r'C:\Program Files')
-    hip_path_default = rf'{program_files}\AMD\ROCm\5.7'
-    if not os.path.exists(hip_path_default):
-        hip_path_default = None
-    return os.environ.get('HIP_PATH', hip_path_default)
-
-
 def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    if platform.system() != 'Windows': # Windows-only. (PyTorch should be rebuilt on Linux)
-        return
-
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/{RELEASE}/ZLUDA-windows-amd64.zip', '_zluda')
+    default_hash = None
+    if rocm.version == "6.1":
+        default_hash = 'd7714d84c0c13bbf816eaaac32693e4e75e58a87'
+    elif rocm.version == "5.7":
+        default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
+    else:
+        raise RuntimeError(f'Unsupported HIP SDK version: {rocm.version}')
+    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", default_hash)}/ZLUDA-windows-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:
@@ -51,10 +45,6 @@ def uninstall() -> None:
         shutil.rmtree('.zluda')
 
 
-def enable_runtime_api():
-    DLL_MAPPING['cudart.dll'] = 'cudart64_110.dll'
-
-
 def make_copy(zluda_path: os.PathLike) -> None:
     for k, v in DLL_MAPPING.items():
         if not os.path.exists(os.path.join(zluda_path, v)):
@@ -65,11 +55,8 @@ def make_copy(zluda_path: os.PathLike) -> None:
 
 
 def load(zluda_path: os.PathLike) -> None:
-    hip_path = find_hip_sdk()
-    if hip_path is None:
-        raise RuntimeError('Could not find AMD HIP SDK, please install it from https://www.amd.com/en/developer/resources/rocm-hub/hip-sdk.html')
-    for v in HIP_TARGETS:
-        ctypes.windll.LoadLibrary(os.path.join(hip_path, 'bin', v))
+    for v in HIPSDK_TARGETS:
+        ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
     for v in ZLUDA_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
     for v in DLL_MAPPING.values():

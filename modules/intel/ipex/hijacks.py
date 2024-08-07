@@ -2,11 +2,10 @@ import os
 from functools import wraps
 from contextlib import nullcontext
 import torch
-import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
 import numpy as np
 from modules import devices, errors
 
-device_supports_fp64 = torch.xpu.has_fp64_dtype()
+device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long, unnecessary-lambda, no-else-return
 
@@ -145,15 +144,6 @@ def functional_conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1,
         bias.data = bias.data.to(dtype=weight.data.dtype)
     return original_functional_conv2d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
 
-# A1111 Embedding BF16
-original_torch_cat = torch.cat
-@wraps(torch.cat)
-def torch_cat(tensor, *args, **kwargs):
-    if len(tensor) == 3 and (tensor[0].dtype != tensor[1].dtype or tensor[2].dtype != tensor[1].dtype):
-        return original_torch_cat([tensor[0].to(tensor[1].dtype), tensor[1], tensor[2].to(tensor[1].dtype)], *args, **kwargs)
-    else:
-        return original_torch_cat(tensor, *args, **kwargs)
-
 # SwinIR BF16:
 original_functional_pad = torch.nn.functional.pad
 @wraps(torch.nn.functional.pad)
@@ -253,6 +243,14 @@ def torch_zeros(*args, device=None, **kwargs):
     else:
         return original_torch_zeros(*args, device=device, **kwargs)
 
+original_torch_full = torch.full
+@wraps(torch.full)
+def torch_full(*args, device=None, **kwargs):
+    if check_device(device):
+        return original_torch_full(*args, device=return_xpu(device), **kwargs)
+    else:
+        return original_torch_full(*args, device=device, **kwargs)
+
 original_torch_linspace = torch.linspace
 @wraps(torch.linspace)
 def torch_linspace(*args, device=None, **kwargs):
@@ -292,6 +290,7 @@ def ipex_hijacks():
     torch.randn = torch_randn
     torch.ones = torch_ones
     torch.zeros = torch_zeros
+    torch.full = torch_full
     torch.linspace = torch_linspace
     torch.Generator = torch_Generator
     torch.load = torch_load
@@ -310,7 +309,6 @@ def ipex_hijacks():
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm
-    torch.cat = torch_cat
     if not device_supports_fp64:
         torch.from_numpy = from_numpy
         torch.as_tensor = as_tensor

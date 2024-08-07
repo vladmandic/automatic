@@ -418,12 +418,14 @@ def create_ui():
                 def civit_search_model(name, tag, model_type):
                     # types = 'LORA' if model_type == 'LoRA' else 'Checkpoint'
                     url = 'https://civitai.com/api/v1/models?limit=25&Sort=Newest'
-                    if model_type == 'SD 1.5' or model_type == 'SD XL':
+                    if model_type == 'Model':
                         url += '&types=Checkpoint'
                     elif model_type == 'LoRA':
-                        url += '&types=LORA'
+                        url += '&types=LORA&types=DoRA&types=LoCon'
                     elif model_type == 'Embedding':
                         url += '&types=TextualInversion'
+                    elif model_type == 'VAE':
+                        url += '&types=VAE'
                     if name is not None and len(name) > 0:
                         url += f'&query={name}'
                     if tag is not None and len(tag) > 0:
@@ -431,28 +433,26 @@ def create_ui():
                     r = req(url)
                     log.debug(f'CivitAI search: name="{name}" tag={tag or "none"} url="{url}" status={r.status_code}')
                     if r.status_code != 200:
+                        log.warning(f'CivitAI search: name="{name}" tag={tag} status={r.status_code}')
                         return [], gr.update(visible=False, value=[]), gr.update(visible=False, value=None), gr.update(visible=False, value=None)
-                    body = r.json()
+                    try:
+                        body = r.json()
+                    except Exception as e:
+                        log.error(f'CivitAI search: name="{name}" tag={tag} {e}')
+                        return [], gr.update(visible=False, value=[]), gr.update(visible=False, value=None), gr.update(visible=False, value=None)
                     nonlocal data
                     data = body.get('items', [])
                     data1 = []
                     for model in data:
                         found = 0
-                        if model_type == 'LoRA' and model['type'] in ['LORA', 'LoCon']:
+                        if model_type == 'LoRA' and model['type'].lower() in ['lora', 'locon', 'dora', 'lycoris']:
                             found += 1
-                        elif model_type == 'Embedding' and model['type'] == 'TextualInversion':
+                        elif model_type == 'Embedding' and model['type'].lower() in ['textualinversion', 'embedding']:
                             found += 1
-                        elif model_type.startswith('SD') and model['type'] == 'Checkpoint':
-                            for variant in model['modelVersions']:
-                                if model_type == 'SD 1.5':
-                                    if 'SD 1.' in variant['baseModel']:
-                                        found += 1
-                                if model_type == 'SD XL':
-                                    if 'SDXL' in variant['baseModel']:
-                                        found += 1
-                                else:
-                                    if 'SD 1.' not in variant['baseModel'] and 'SDXL' not in variant['baseModel']:
-                                        found += 1
+                        elif model_type == 'Model' and model['type'].lower() in ['checkpoint']:
+                            found += 1
+                        elif model_type == 'VAE' and model['type'].lower() in ['vae']:
+                            found += 1
                         elif model_type == 'Other':
                             found += 1
                         if found > 0:
@@ -464,8 +464,7 @@ def create_ui():
                                 model['stats']['rating']
                             ])
                     res = f'Search result: name={name} tag={tag or "none"} type={model_type} models={len(data1)}'
-                    return res, gr.update(visible=len(data1) > 0, value=data1 if len(data1) > 0 else []), gr.update(
-                        visible=False, value=None), gr.update(visible=False, value=None)
+                    return res, gr.update(visible=len(data1) > 0, value=data1 if len(data1) > 0 else []), gr.update(visible=False, value=None), gr.update(visible=False, value=None)
 
                 def civit_select1(evt: gr.SelectData, in_data):
                     model_id = in_data[evt.index[0]][0]
@@ -596,7 +595,7 @@ def create_ui():
                     gr.HTML('<h2>Search for models</h2>')
                 with gr.Row():
                     with gr.Column(scale=1):
-                        civit_model_type = gr.Dropdown(label='Model type', choices=['SD 1.5', 'SD XL', 'LoRA', 'Embedding', 'Other'], value='LoRA')
+                        civit_model_type = gr.Dropdown(label='Model type', choices=['Model', 'LoRA', 'Embedding', 'VAE', 'Other'], value='Model')
                     with gr.Column(scale=15):
                         with gr.Row():
                             civit_search_text = gr.Textbox('', label='Search models', placeholder='keyword')

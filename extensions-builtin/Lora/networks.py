@@ -225,7 +225,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             failed_to_load_networks.append(name)
             shared.log.error(f"LoRA unknown type: network={name}")
             continue
-        shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)
+        if shared.native:
+            shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)
         net.te_multiplier = te_multipliers[i] if te_multipliers else 1.0
         net.unet_multiplier = unet_multipliers[i] if unet_multipliers else 1.0
         net.dyn_dim = dyn_dims[i] if dyn_dims else 1.0

@@ -189,6 +189,15 @@ class ControlNet():
                     self.model = nncf_compress_model(self.model)
                 except Exception as e:
                     log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" error={e}')
+            elif "ControlNet" in opts.optimum_quanto_weights:
+                try:
+                    log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
+                    from installer import install
+                    install('optimum-quanto', quiet=True)
+                    from modules.sd_models_compile import optimum_quanto_model
+                    self.model = optimum_quanto_model(self.model)
+                except Exception as e:
+                    log.error(f'Control {what} model Optimum Quanto failed: id="{model_id}" error={e}')
             if self.device is not None:
                 self.model.to(self.device)
             t1 = time.time()

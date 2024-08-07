@@ -196,9 +196,9 @@ def decode_first_stage(model, x, full_quality=True):
         try:
             if full_quality:
                 if hasattr(model, 'decode_first_stage'):
-                    x_sample = model.decode_first_stage(x)
+                    x_sample = model.decode_first_stage(x) * 0.5 + 0.5
                 elif hasattr(model, 'vae'):
-                    x_sample = model.vae(x)
+                    x_sample = processing_vae.vae_decode(latents=x, model=model, output_type='np', full_quality=full_quality)
                 else:
                     x_sample = x
                     shared.log.error('Decode VAE unknown model')
@@ -206,7 +206,7 @@ def decode_first_stage(model, x, full_quality=True):
                 from modules import sd_vae_taesd
                 x_sample = torch.zeros((len(x), 3, x.shape[2] * 8, x.shape[3] * 8), dtype=devices.dtype_vae, device=devices.device)
                 for i in range(len(x_sample)):
-                    x_sample[i] = sd_vae_taesd.decode(x[i])
+                    x_sample[i] = sd_vae_taesd.decode(x[i]) * 0.5 + 0.5
         except Exception as e:
             x_sample = x
             shared.log.error(f'Decode VAE: {e}')
@@ -537,7 +537,7 @@ def save_intermediate(p, latents, suffix):
 
 def update_sampler(p, sd_model, second_pass=False):
     sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
-    if hasattr(sd_model, 'scheduler') and sampler_selection != 'Default':
+    if hasattr(sd_model, 'scheduler'):
         sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
         if sampler is None:
             shared.log.warning(f'Sampler: sampler="{sampler_selection}" not found')
@@ -548,7 +548,7 @@ def update_sampler(p, sd_model, second_pass=False):
             else:
                 shared.opts.schedulers_use_karras = False
         sampler = sd_samplers.create_sampler(sampler.name, sd_model)
-        if sampler is None:
+        if sampler is None or sampler_selection == 'Default':
             return
         sampler_options = []
         if sampler.config.get('use_karras_sigmas', False):

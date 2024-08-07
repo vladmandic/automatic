@@ -1,3 +1,4 @@
+import torch
 import transformers
 
 
@@ -37,12 +38,24 @@ def load_t5(t5=None, cache_dir=None):
             cache_dir=cache_dir,
             torch_dtype=devices.dtype,
         )
+    elif 'qint8' in t5.lower():
+        modelloader.hf_login()
+        from installer import install
+        install('optimum-quanto', quiet=True)
+        from modules.sd_models_compile import optimum_quanto_model
+        t5 = transformers.T5EncoderModel.from_pretrained(
+            repo_id,
+            subfolder='text_encoder_3',
+            cache_dir=cache_dir,
+            torch_dtype=devices.dtype,
+        )
+        t5 = optimum_quanto_model(t5, weights="qint8")
     elif 'int8' in t5.lower():
         modelloader.hf_login()
         from installer import install
         install('nncf==2.7.0', quiet=True)
         from modules.sd_models_compile import nncf_compress_model
-        from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
+        from modules.sd_hijack import NNCF_T5DenseGatedActDense
         t5 = transformers.T5EncoderModel.from_pretrained(
             repo_id,
             subfolder='text_encoder_3',
@@ -51,7 +64,8 @@ def load_t5(t5=None, cache_dir=None):
         )
         for i in range(len(t5.encoder.block)):
             t5.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
-                t5.encoder.block[i].layer[1].DenseReluDense
+                t5.encoder.block[i].layer[1].DenseReluDense,
+                dtype=torch.float32 if devices.dtype != torch.bfloat16 else torch.bfloat16
             )
         t5 = nncf_compress_model(t5)
     else:

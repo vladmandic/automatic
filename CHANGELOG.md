@@ -1,56 +1,63 @@
 # Change Log for SD.Next
 
-TODO:
-- Requires `diffusers==0.30.0`
-- AuraFlow/LavenderFlow: https://github.com/huggingface/diffusers/pull/8796
-- Kolors: https://github.com/huggingface/diffusers/issues/8801
-- FlowMatchHeunDiscreteScheduler
-- ControlNet Union: https://huggingface.co/xinsir/controlnet-union-sdxl-1.0
+## Update for 2024-07-09: WiP
 
-## Update for 2024-07-07
+### Pending
+
+- Requires `diffusers==0.30.0`
+- AuraFlow, Kolors, AlphaVLLM Lumina
+- FlowMatchHeunDiscreteScheduler enable
 
 ### Highlights
 
-Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
-Support for new models:
+Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features  
+Support for new models:  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 
-What else? Just a bit... ;)
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...
+What else? Just a bit... ;)  
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...  
 
 ### New Models
 
+To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use.  
+
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)  
+  AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license  
+  This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
+  Use scheduler: default or euler flowmatch or heun flowmatch  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  to use, simply select from *networks -> reference
-  use scheduler: default or euler flowmatch or heun flowmatch  
-  note: this model uses T5 XXL variation of text encoder  
-  (previous version of Lumina used Gemma 2B as text encoder)  
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
-  to use, simply select from *networks -> reference  
-  note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
-  however, this new encoder does support both English and Chinese prompting  
-- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
-  to use, simply select from *networks -> reference
-- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0  
-  new SDXL all-in-one controlnet that can process any kind of preprocessors!
-- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model
+  Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)  
+  This model uses T5 XXL variation of text encoder (previous version of Lumina used Gemma 2B as text encoder)  
+  Use scheduler: default or euler flowmatch or heun flowmatch  
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
+  Kolors is a large-scale text-to-image generation model based on latent diffusion  
+  This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
+  Hunyuan-DiT is a powerful multi-resolution diffusion transformer (DiT) with fine-grained Chinese understanding  
+
+## Update for 2024-07-08
+
+This release is primary service release with cumulative fixes and several improvements, but no breaking changes.
+
+**New features...**
+- massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
+  with over 20 new pages and articles, now includes guides for nearly all major features  
+  *note*: this is work-in-progress, if you have any feedback or suggestions, please let us know!
+  thanks @GenesisArtemis!  
+- support for **DoRA** networks, thanks @AI-Casanova!
+- support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
+  to use, simply add `--uv` to your command line params  
+- [Xinsir ControlNet++ Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0)  
+  new SDXL *all-in-one* controlnet that can process any kind of preprocessors!
+- [CogFlorence 2 Large](https://huggingface.co/thwri/CogFlorence-2-Large-Freeze) VLM model  
   to use, simply select in process -> visual query  
 - [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
 
-### New Features
-
-- massive updates to [Wiki](https://github.com/vladmandic/automatic/wiki)  
-  with over 20 new pages and articles, now includes guides for nearly all major features  
-  thanks @GenesisArtemis!  
-- support for [uv](https://pypi.org/project/uv/), extremely fast installer, thanks @Yoinky3000!  
-  to use, simply add `--uv` to your command line params  
-- support for **DoRA** networks, thanks @AI-Casanova!
-
-### Other
-
+**And fixes...**
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
 - add SD3 with FP16 T5 to list of detected models
@@ -63,16 +70,17 @@ New **fast-install** mode, new **controlnet-union** *all-in-one* model, support 
 - fix control input type video  
 - fix reset pipeline at the end of each iteration  
 - fix faceswap when no faces detected  
+- fix civitai search
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23
 
 ### Highlights for 2024-06-23
 
-Following zero-day **SD3** release, a 10 days later here's a refresh with 10+ improvements  
+Following zero-day **SD3** release, a 10 days later heres a refresh with 10+ improvements  
 including full prompt attention, support for compressed weights, additional text-encoder quantization modes.  
 
-But there's more than SD3:  
+But theres more than SD3:  
 - support for quantized **T5** text encoder *FP16/FP8/FP4/INT8* in all models that use T5: SD3, PixArt-Σ, etc.  
 - support for **PixArt-Sigma** in small/medium/large variants  
 - support for **HunyuanDiT 1.1**  
@@ -110,7 +118,7 @@ But there's more than SD3:
 
 ### General Improvements for 2024-06-23
 
-- support FP4 quantized T5 text encoder, in addtion to existing FP8 and FP16
+- support FP4 quantized T5 text encoder, in addition to existing FP8 and FP16
 - support for T5 text-encoder loader in **all** models that use T5  
   *example*: load FP4 or FP8 quantized T5 text-encoder into PixArt Sigma!
 - support for `torch-directml` **0.2.2**, thanks @lshqqytiger!  

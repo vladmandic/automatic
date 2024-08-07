@@ -263,7 +263,7 @@ def set_cuda_params():
                         if backup_sdpa is None:
                             backup_sdpa = torch.nn.functional.scaled_dot_product_attention
                         def sdpa_hijack(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-                            if query.shape[3] <= 128 and attn_mask is None:
+                            if query.shape[3] <= 128 and attn_mask is None and query.dtype != torch.float32:
                                 return flash_attn_func(q=query.transpose(1, 2), k=key.transpose(1, 2), v=value.transpose(1, 2), dropout_p=dropout_p, causal=is_causal, softmax_scale=scale).transpose(1, 2)
                             else:
                                 return backup_sdpa(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)

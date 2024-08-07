@@ -237,6 +237,7 @@ def uninstall(package, quiet = False):
 
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
+    originalArg = arg
     uv = uv and args.uv
     pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
@@ -248,7 +249,11 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
-        txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
+        if uv and result.returncode != 0:
+            log.warning('Cannot install with uv, fallback to pip')
+            return pip(originalArg, ignore, quiet, uv=False)
+        else:
+            txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
     txt = txt.strip()
     debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
@@ -447,143 +452,92 @@ def check_onnx():
 
 
 def install_rocm_zluda(torch_command):
+    from modules import rocm
+
+    if not rocm.is_installed:
+        log.warning('Could not find ROCm toolkit installed.')
+        log.info('Using CPU-only torch')
+        return os.environ.get('TORCH_COMMAND', 'torch torchvision')
+
     check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
-    is_windows = platform.system() == 'Windows'
     log.info('AMD ROCm toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
     # if not is_windows:
     #    os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
     try:
-        if is_windows:
-            command = subprocess.run('hipinfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
-            amd_gpus = [x.split(' ')[-1].strip() for x in amd_gpus if x.startswith('gcnArchName:')]
-        elif os.environ.get('WSL_DISTRO_NAME', None) is not None: # WSL does not have 'rocm_agent_enumerator'
-            command = subprocess.run('rocminfo', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
-            amd_gpus = [x.strip().split(" ")[-1] for x in amd_gpus if x.startswith('  Name:') and "CPU" not in x]
-        else:
-            command = subprocess.run('rocm_agent_enumerator', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            amd_gpus = command.stdout.decode(encoding="utf8", errors="ignore").split('\n')
-            amd_gpus = [x for x in amd_gpus if x and x != 'gfx000']
-        log.debug(f'ROCm agents detected: {amd_gpus}')
+        amd_gpus = rocm.get_agents()
+        log.info(f'ROCm agents detected: {[gpu.name for gpu in amd_gpus]}')
     except Exception as e:
-        log.debug(f'ROCm agent enumerator failed: {e}')
+        log.warning(f'ROCm agent enumerator failed: {e}')
         amd_gpus = []
 
-    hip_visible_devices = [] # use the first available amd gpu by default
+    hip_default_device = None
     for idx, gpu in enumerate(amd_gpus):
-        if gpu in ['gfx1100', 'gfx1101', 'gfx1102']:
-            hip_visible_devices.append((idx, gpu, 'navi3x'))
-            break
-        if gpu in ['gfx1030', 'gfx1031', 'gfx1032', 'gfx1034']: # experimental navi 2x support
-            hip_visible_devices.append((idx, gpu, 'navi2x'))
-            break
-    if len(hip_visible_devices) > 0:
-        idx, gpu, arch = hip_visible_devices[0]
-        log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu} arch={arch}')
-        os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
-        if arch == 'navi3x':
-            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '11.0.0')
+        gfx_version = gpu.get_gfx_version()
+        if gfx_version is None:
+            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu.name}')
+        else:
+            hip_default_device = gpu
+            log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu.name}')
+            os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
             # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
             #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-        elif arch == 'navi2x':
-            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', '10.3.0')
-        else:
-            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu}')
-    try:
-        command = subprocess.run('hipconfig --version', shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        arr = command.stdout.decode(encoding="utf8", errors="ignore").split('.')
-        rocm_ver = f'{arr[0]}.{arr[1]}' if len(arr) >= 2 else None
-        log.debug(f'ROCm version detected: {rocm_ver}')
-    except Exception as e:
-        log.debug(f'ROCm hipconfig failed: {e}')
-        rocm_ver = None
-    if args.use_zluda:
-        log.warning("ZLUDA support: experimental")
-        error = None
-        from modules import zluda_installer
-        try:
-            if args.reinstall_zluda:
-                zluda_installer.uninstall()
-            if args.experimental:
-                zluda_installer.enable_runtime_api()
-            zluda_path = zluda_installer.get_path()
-            zluda_installer.install(zluda_path)
-            zluda_installer.make_copy(zluda_path)
-        except Exception as e:
-            error = e
-            log.warning(f'Failed to install ZLUDA: {e}')
-        if error is None:
+            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_version)
+            break
+
+    log.info(f'ROCm version detected: {rocm.version}')
+
+    if sys.platform == "win32":
+        if args.use_zluda:
+            log.warning("ZLUDA support: experimental")
+            error = None
+            from modules import zluda_installer
             try:
-                zluda_installer.load(zluda_path)
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
-                log.info(f'Using ZLUDA in {zluda_path}')
+                if args.reinstall_zluda:
+                    zluda_installer.uninstall()
+                zluda_path = zluda_installer.get_path()
+                zluda_installer.install(zluda_path)
+                zluda_installer.make_copy(zluda_path)
             except Exception as e:
                 error = e
-                log.warning(f'Failed to load ZLUDA: {e}')
-        if error is not None:
+                log.warning(f'Failed to install ZLUDA: {e}')
+            if error is None:
+                try:
+                    zluda_installer.load(zluda_path)
+                    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                    log.info(f'Using ZLUDA in {zluda_path}')
+                except Exception as e:
+                    error = e
+                    log.warning(f'Failed to load ZLUDA: {e}')
+            if error is not None:
+                log.info('Using CPU-only torch')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+        else: # TODO TBD after ROCm for Windows is released
+            log.warning("HIP SDK is detected, but no Torch release for Windows available")
+            log.info("For ZLUDA support specify '--use-zluda'")
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-    elif is_windows: # TODO TBD after ROCm for Windows is released
-        log.warning("HIP SDK is detected, but no Torch release for Windows available")
-        log.info("For ZLUDA support specify '--use-zluda'")
-        log.info('Using CPU-only torch')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
-        # conceal ROCm installed
-        conceal_rocm()
+            # conceal ROCm installed
+            rocm.conceal()
     else:
-        if rocm_ver is None: # assume the latest if version check fails
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
-        elif rocm_ver == "6.1": # need nightlies
-            if args.experimental:
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --pre --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
-            else:
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0')
-        elif float(rocm_ver) < 5.5: # oldest supported version is 5.5
-            log.warning(f"Unsupported ROCm version detected: {rocm_ver}")
+        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif float(rocm.version) < 5.5: # oldest supported version is 5.5
+            log.warning(f"Unsupported ROCm version detected: {rocm.version}")
             log.warning("Minimum supported ROCm version is 5.5")
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
         else:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm_ver}')
-        if rocm_ver is not None:
-            ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
-            ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm_ver[0]}{rocm_ver[2]} --extra-index-url https://pypi.org/simple")
-            install(ort_package, 'onnxruntime-training')
+            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
-        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))):
-            supported_archs = []
-            hipblaslt_available = True
-            libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", "/opt/rocm/lib/hipblaslt/library")
-            for file in os.listdir(libpath):
-                if not file.startswith('extop_'):
-                    continue
-                supported_archs.append(file[6:-3])
-            for gpu in amd_gpus:
-                if gpu not in supported_archs:
-                    hipblaslt_available = False
-                    break
-            log.info(f'hipBLASLt supported_archs={supported_archs}, available={hipblaslt_available}')
-            if hipblaslt_available:
-                import ctypes
-                # Preload hipBLASLt.
-                ctypes.CDLL("/opt/rocm/lib/libhipblaslt.so", mode=ctypes.RTLD_GLOBAL)
-                os.environ["HIPBLASLT_TENSILE_LIBPATH"] = libpath
-            else:
-                os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
+        ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
+        ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
+        install(ort_package, 'onnxruntime-training')
+
+        if bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1"))) and rocm.version != "6.2":
+            log.debug(f'hipBLASLt arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
+            rocm.set_blaslt_enabled(hip_default_device.blaslt_supported)
     return torch_command
-
-
-def conceal_rocm():
-    os.environ.pop("ROCM_HOME", None)
-    os.environ.pop("ROCM_PATH", None)
-    paths = os.environ["PATH"].split(";")
-    paths_no_rocm = []
-    for path in paths:
-        if "ROCm" not in path:
-            paths_no_rocm.append(path)
-    os.environ["PATH"] = ";".join(paths_no_rocm)
 
 
 def install_ipex(torch_command):
@@ -648,11 +602,8 @@ def is_rocm_available(allow_rocm):
     if installed('torch-directml', quiet=True):
         log.debug('DirectML installation is detected. Skipping HIP SDK check.')
         return False
-    if platform.system() == 'Windows':
-        from modules.zluda_installer import find_hip_sdk
-        return find_hip_sdk() is not None
-    else:
-        return shutil.which('rocminfo') is not None or os.path.exists('/opt/rocm/bin/rocminfo') or os.path.exists('/dev/kfd')
+    from modules.rocm import is_installed
+    return is_installed
 
 
 def install_torch_addons():
@@ -675,6 +626,8 @@ def install_torch_addons():
         install('olive-ai')
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
+    if opts.get('optimum_quanto_weights', False):
+        install('optimum-quanto', 'optimum-quanto')
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
 
@@ -713,17 +666,10 @@ def check_torch():
     elif is_rocm_available(allow_rocm):
         torch_command = install_rocm_zluda(torch_command)
 
-        # WSL ROCm
-        if os.environ.get('WSL_DISTRO_NAME', None) is not None:
-            import ctypes
+        from modules import rocm
+        if rocm.is_wsl: # WSL ROCm
             try:
-                # Preload stdc++ library. This will ignore Anaconda stdc++ library.
-                ctypes.CDLL("/lib/x86_64-linux-gnu/libstdc++.so.6", mode=ctypes.RTLD_GLOBAL)
-            except OSError:
-                pass
-            try:
-                # Preload HSA Runtime library.
-                ctypes.CDLL("/opt/rocm/lib/libhsa-runtime64.so", mode=ctypes.RTLD_GLOBAL)
+                rocm.load_hsa_runtime()
             except OSError:
                 log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
@@ -740,7 +686,9 @@ def check_torch():
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
-            conceal_rocm()
+            from modules import rocm
+            if rocm.is_installed:
+                rocm.conceal()
         else:
             if args.use_zluda:
                 log.warning("ZLUDA failed to initialize: no HIP SDK found")
@@ -753,8 +701,11 @@ def check_torch():
             import torch
             log.info(f'Torch {torch.__version__}')
             if args.use_ipex and allow_ipex:
-                import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-                log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
+                try:
+                    import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
+                    log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
+                except Exception:
+                    log.warning('IPEX not found')
                 if shutil.which('icpx') is not None:
                     log.info(f'{os.popen("icpx --version").read().rstrip()}')
                 for device in range(torch.xpu.device_count()):
@@ -974,7 +925,7 @@ def install_requirements():
     if not installed('diffusers', quiet=True): # diffusers are not installed, so run initial installation
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-        log.info('Installing requirements: this make take a while...')
+        log.info('Installing requirements: this may take a while...')
         pip('install -r requirements.txt')
     installed('torch', reload=True) # reload packages cache
     log.info('Verifying requirements')

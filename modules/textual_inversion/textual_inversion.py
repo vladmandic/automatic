@@ -121,7 +121,8 @@ def insert_tokens(embeddings: list, tokenizers: list):
     """
     tokens = []
     for embedding in embeddings:
-        tokens += embedding.tokens
+        if embedding is not None:
+            tokens += embedding.tokens
     for tokenizer in tokenizers:
         tokenizer.add_tokens(tokens)
 
@@ -283,16 +284,20 @@ class EmbeddingDatabase:
         if not all([text_encoders, tokenizers, hiddensizes]):
             return 0
         for embedding in embeddings:
-            embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
-            if shared.opts.diffusers_convert_embed and 768 in hiddensizes and 1280 in hiddensizes and 1280 not in embedding.vector_sizes and 768 in embedding.vector_sizes:
-                embedding.vec.append(
-                    convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
-                                      text_encoders[hiddensizes.index(1280)]))
-                embedding.vector_sizes.append(1280)
-            if (not all(vs in hiddensizes for vs in embedding.vector_sizes) or  # Skip SD2.1 in SD1.5/SDXL/SD3 vis versa
-                    len(embedding.vector_sizes) > len(hiddensizes) or  # Skip SDXL/SD3 in SD1.5
-                    (len(embedding.vector_sizes) < len(hiddensizes) and len(embedding.vector_sizes) != 2)):  # SD3 no T5
-                embedding.tokens = []
+            try:
+                embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
+                if shared.opts.diffusers_convert_embed and 768 in hiddensizes and 1280 in hiddensizes and 1280 not in embedding.vector_sizes and 768 in embedding.vector_sizes:
+                    embedding.vec.append(
+                        convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
+                                        text_encoders[hiddensizes.index(1280)]))
+                    embedding.vector_sizes.append(1280)
+                if (not all(vs in hiddensizes for vs in embedding.vector_sizes) or  # Skip SD2.1 in SD1.5/SDXL/SD3 vis versa
+                        len(embedding.vector_sizes) > len(hiddensizes) or  # Skip SDXL/SD3 in SD1.5
+                        (len(embedding.vector_sizes) < len(hiddensizes) and len(embedding.vector_sizes) != 2)):  # SD3 no T5
+                    embedding.tokens = []
+                    self.skipped_embeddings[embedding.name] = embedding
+            except Exception as e:
+                shared.log.error(f'Embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
                 self.skipped_embeddings[embedding.name] = embedding
         if overwrite:
             shared.log.info(f"Loading Bundled embeddings: {list(data.keys())}")

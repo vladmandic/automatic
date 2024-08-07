@@ -71,9 +71,10 @@ def get_pipelines():
         'Kandinsky 3': getattr(diffusers, 'Kandinsky3Pipeline', None),
         'DeepFloyd IF': getattr(diffusers, 'IFPipeline', None),
         'Custom Diffusers Pipeline': getattr(diffusers, 'DiffusionPipeline', None),
-        'Kolors': getattr(diffusers, 'StableDiffusionXLPipeline', None),
         'InstaFlow': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
+        'Kolors': getattr(diffusers, 'KolorsPipeline', None),
+        'AuraFlow': getattr(diffusers, 'AuraFlowPipeline', None),
     }
     if hasattr(diffusers, 'OnnxStableDiffusionPipeline'):
         onnx_pipelines = {

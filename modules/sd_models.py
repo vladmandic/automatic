@@ -615,6 +615,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Lumina-Next'
             if 'kolors' in f.lower():
                 guess = 'Kolors'
+            if 'auraflow' in f.lower():
+                guess = 'AuraFlow'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -1014,6 +1016,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if debug_load:
                         errors.display(e, 'Load')
                     return
+            elif model_type in ['AuraFlow']: # forced pipeline
+                try:
+                    from modules.model_auraflow import load_auraflow
+                    sd_model = load_auraflow(checkpoint_info, diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
             elif model_type in ['Stable Diffusion 3']:
                 try:
                     from modules.model_sd3 import load_sd3
@@ -1149,7 +1160,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
-        sd_unet.load_unet(sd_model)
+        if "StableCascade" in sd_model.__class__.__name__: # detection can fail so we are applying post load here
+            from modules.model_stablecascade import cascade_post_load
+            cascade_post_load(sd_model)
+        if model_type not in ['Stable Cascade']: # it will be handled in load_cascade if the detection works
+            sd_unet.load_unet(sd_model)
         timer.record("load")
 
         if op == 'refiner':
@@ -1169,6 +1184,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         set_diffuser_options(sd_model, vae, op, offload=False)
         if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
             sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
+        if shared.opts.optimum_quanto_weights:
+            sd_model = sd_models_compile.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
         timer.record("options")
 
         set_diffuser_offload(sd_model, op)
