@@ -582,7 +582,7 @@ def install_ipex(torch_command):
 
 
 def install_openvino(torch_command):
-    check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
+    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('Using OpenVINO')
     torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
