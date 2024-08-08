@@ -517,9 +517,6 @@ def install_rocm_zluda(torch_command):
             log.info("For ZLUDA support specify '--use-zluda'")
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-
-            # conceal ROCm installed
-            rocm.conceal()
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
@@ -596,16 +593,6 @@ def install_openvino(torch_command):
     return torch_command
 
 
-def is_rocm_available(allow_rocm):
-    if not allow_rocm:
-        return False
-    if installed('torch-directml', quiet=True):
-        log.debug('DirectML installation is detected. Skipping HIP SDK check.')
-        return False
-    from modules.rocm import is_installed
-    return is_installed
-
-
 def install_torch_addons():
     xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers') if opts.get('cross_attention_optimization', '') == 'xFormers' or args.use_xformers else 'none'
     triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
@@ -648,6 +635,7 @@ def check_torch():
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
+    from modules import rocm
     allow_cuda = not (args.use_rocm or args.use_directml or args.use_ipex or args.use_openvino)
     allow_rocm = not (args.use_cuda or args.use_directml or args.use_ipex or args.use_openvino)
     allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml or args.use_openvino)
@@ -663,15 +651,8 @@ def check_torch():
         log.info('nVidia CUDA toolkit detected: nvidia-smi present')
         torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
-    elif is_rocm_available(allow_rocm):
+    elif allow_rocm and rocm.is_installed:
         torch_command = install_rocm_zluda(torch_command)
-
-        from modules import rocm
-        if rocm.is_wsl: # WSL ROCm
-            try:
-                rocm.load_hsa_runtime()
-            except OSError:
-                log.error("Failed to preload HSA Runtime library.")
     elif is_ipex_available(allow_ipex):
         torch_command = install_ipex(torch_command)
     elif allow_openvino and args.use_openvino:
@@ -686,9 +667,6 @@ def check_torch():
             if 'torch' in torch_command and not args.version:
                 install(torch_command, 'torch torchvision')
             install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
-            from modules import rocm
-            if rocm.is_installed:
-                rocm.conceal()
         else:
             if args.use_zluda:
                 log.warning("ZLUDA failed to initialize: no HIP SDK found")
@@ -734,6 +712,14 @@ def check_torch():
             log.error(f'Could not load torch: {e}')
             if not args.ignore:
                 sys.exit(1)
+    if rocm.is_installed:
+        if sys.platform == "win32": # CPU, DirectML, ZLUDA
+            rocm.conceal()
+        elif rocm.is_wsl: # WSL ROCm
+            try:
+                rocm.load_hsa_runtime()
+            except OSError:
+                log.error("Failed to preload HSA Runtime library.")
     if args.version:
         return
     if not args.skip_all:

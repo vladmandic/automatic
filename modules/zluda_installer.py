@@ -1,4 +1,5 @@
 import os
+import sys
 import ctypes
 import shutil
 import zipfile
@@ -61,3 +62,17 @@ def load(zluda_path: os.PathLike) -> None:
         ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
     for v in DLL_MAPPING.values():
         ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
+
+    def conceal():
+        import torch # pylint: disable=unused-import
+        platform = sys.platform
+        sys.platform = ""
+        from torch.utils import cpp_extension
+        sys.platform = platform
+        cpp_extension.IS_WINDOWS = platform == "win32"
+        cpp_extension.IS_MACOS = False
+        cpp_extension.IS_LINUX = platform.startswith('linux')
+        def _join_rocm_home(*paths) -> str:
+            return os.path.join(cpp_extension.ROCM_HOME, *paths)
+        cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
+    rocm.conceal = conceal
