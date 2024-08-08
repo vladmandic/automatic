@@ -83,7 +83,11 @@ class Agent:
 
 
 def get_version_torch() -> Union[str, None]:
-    version_ = importlib.metadata.version("torch")
+    version_ = None
+    try:
+        version_ = importlib.metadata.version("torch")
+    except importlib.metadata.PackageNotFoundError:
+        return None
     if "+rocm" not in version_: # unofficial build, non-rocm torch.
         return None
     return version_.split("+rocm")[1]
