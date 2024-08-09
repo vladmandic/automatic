@@ -1,6 +1,7 @@
 import os
 import copy
 import torch
+import diffusers
 from modules import shared, devices
 
 def get_timestep_ratio_conditioning(t, alphas_cumprod):
@@ -149,4 +150,192 @@ def cascade_post_load(sd_model):
     del sd_model.prior_scheduler
     del sd_model.prior_feature_extractor
     del sd_model.prior_image_encoder
+
+    # Custom sampler support
+    sd_model.decoder_pipe = StableCascadeDecoderPipelineFixed(
+        decoder=sd_model.decoder_pipe.decoder,
+        tokenizer=sd_model.decoder_pipe.tokenizer,
+        scheduler=sd_model.decoder_pipe.scheduler,
+        vqgan=sd_model.decoder_pipe.vqgan,
+        text_encoder=None,
+        latent_dim_scale=sd_model.decoder_pipe.config.latent_dim_scale,
+    )
+
     return sd_model
+
+# Custom sampler support. Remove after the changes gets upstreamed: https://github.com/huggingface/diffusers/pull/9132
+class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
+    def guidance_scale(self):
+        return self._guidance_scale
+
+    def do_classifier_free_guidance(self):
+        return self._guidance_scale > 1
+
+    @torch.no_grad()
+    def __call__(
+        self,
+        image_embeddings,
+        prompt=None,
+        num_inference_steps=10,
+        guidance_scale=0.0,
+        negative_prompt=None,
+        prompt_embeds=None,
+        prompt_embeds_pooled=None,
+        negative_prompt_embeds=None,
+        negative_prompt_embeds_pooled=None,
+        num_images_per_prompt=1,
+        generator=None,
+        latents=None,
+        output_type="pil",
+        return_dict=True,
+        callback_on_step_end=None,
+        callback_on_step_end_tensor_inputs=["latents"],
+    ):
+        
+        # 0. Define commonly used variables
+        self.guidance_scale = guidance_scale
+        self.do_classifier_free_guidance = self.guidance_scale > 1
+        device = self._execution_device
+        dtype = self.decoder.dtype
+
+        # 1. Check inputs. Raise error if not correct
+        self.check_inputs(
+            prompt,
+            negative_prompt=negative_prompt,
+            prompt_embeds=prompt_embeds,
+            negative_prompt_embeds=negative_prompt_embeds,
+            callback_on_step_end_tensor_inputs=callback_on_step_end_tensor_inputs,
+        )
+        if isinstance(image_embeddings, list):
+            image_embeddings = torch.cat(image_embeddings, dim=0)
+
+        if prompt is not None and isinstance(prompt, str):
+            batch_size = 1
+        elif prompt is not None and isinstance(prompt, list):
+            batch_size = len(prompt)
+        else:
+            batch_size = prompt_embeds.shape[0]
+
+        # Compute the effective number of images per prompt
+        # We must account for the fact that the image embeddings from the prior can be generated with num_images_per_prompt > 1
+        # This results in a case where a single prompt is associated with multiple image embeddings
+        # Divide the number of image embeddings by the batch size to determine if this is the case.
+        num_images_per_prompt = num_images_per_prompt * (image_embeddings.shape[0] // batch_size)
+
+        # 2. Encode caption
+        if prompt_embeds is None and negative_prompt_embeds is None:
+            _, prompt_embeds_pooled, _, negative_prompt_embeds_pooled = self.encode_prompt(
+                prompt=prompt,
+                device=device,
+                batch_size=batch_size,
+                num_images_per_prompt=num_images_per_prompt,
+                do_classifier_free_guidance=self.do_classifier_free_guidance,
+                negative_prompt=negative_prompt,
+                prompt_embeds=prompt_embeds,
+                prompt_embeds_pooled=prompt_embeds_pooled,
+                negative_prompt_embeds=negative_prompt_embeds,
+                negative_prompt_embeds_pooled=negative_prompt_embeds_pooled,
+            )
+
+        # The pooled embeds from the prior are pooled again before being passed to the decoder
+        prompt_embeds_pooled = (
+            torch.cat([prompt_embeds_pooled, negative_prompt_embeds_pooled])
+            if self.do_classifier_free_guidance
+            else prompt_embeds_pooled
+        )
+        effnet = (
+            torch.cat([image_embeddings, torch.zeros_like(image_embeddings)])
+            if self.do_classifier_free_guidance
+            else image_embeddings
+        )
+
+        self.scheduler.set_timesteps(num_inference_steps, device=device)
+        timesteps = self.scheduler.timesteps
+
+        # 5. Prepare latents
+        latents = self.prepare_latents(
+            batch_size, image_embeddings, num_images_per_prompt, dtype, device, generator, latents, self.scheduler
+        )
+
+        if isinstance(self.scheduler, diffusers.DDPMWuerstchenScheduler):
+            timesteps = timesteps[:-1]
+        else:
+            if hasattr(self.scheduler.config, "clip_sample") and self.scheduler.config.clip_sample:
+                self.scheduler.config.clip_sample = False  # disample sample clipping
+                logger.warning(" set `clip_sample` to be False")
+
+        # 6. Run denoising loop
+        if hasattr(self.scheduler, "betas"):
+            alphas = 1.0 - self.scheduler.betas
+            alphas_cumprod = torch.cumprod(alphas, dim=0)
+        else:
+            alphas_cumprod = []
+
+        self._num_timesteps = len(timesteps)
+        for i, t in enumerate(self.progress_bar(timesteps)):
+            if not isinstance(self.scheduler, diffusers.DDPMWuerstchenScheduler):
+                if len(alphas_cumprod) > 0:
+                    timestep_ratio = get_timestep_ratio_conditioning(t.long().cpu(), alphas_cumprod)
+                    timestep_ratio = timestep_ratio.expand(latents.size(0)).to(dtype).to(device)
+                else:
+                    timestep_ratio = t.float().div(self.scheduler.timesteps[-1]).expand(latents.size(0)).to(dtype)
+            else:
+                timestep_ratio = t.expand(latents.size(0)).to(dtype)
+
+            # 7. Denoise latents
+            predicted_latents = self.decoder(
+                sample=torch.cat([latents] * 2) if self.do_classifier_free_guidance else latents,
+                timestep_ratio=torch.cat([timestep_ratio] * 2) if self.do_classifier_free_guidance else timestep_ratio,
+                clip_text_pooled=prompt_embeds_pooled,
+                effnet=effnet,
+                return_dict=False,
+            )[0]
+
+            # 8. Check for classifier free guidance and apply it
+            if self.do_classifier_free_guidance:
+                predicted_latents_text, predicted_latents_uncond = predicted_latents.chunk(2)
+                predicted_latents = torch.lerp(predicted_latents_uncond, predicted_latents_text, self.guidance_scale)
+
+            # 9. Renoise latents to next timestep
+            if not isinstance(self.scheduler, diffusers.DDPMWuerstchenScheduler):
+                timestep_ratio = t
+            latents = self.scheduler.step(
+                model_output=predicted_latents,
+                timestep=timestep_ratio,
+                sample=latents,
+                generator=generator,
+            ).prev_sample
+
+            if callback_on_step_end is not None:
+                callback_kwargs = {}
+                for k in callback_on_step_end_tensor_inputs:
+                    callback_kwargs[k] = locals()[k]
+                callback_outputs = callback_on_step_end(self, i, t, callback_kwargs)
+
+                latents = callback_outputs.pop("latents", latents)
+                prompt_embeds = callback_outputs.pop("prompt_embeds", prompt_embeds)
+                negative_prompt_embeds = callback_outputs.pop("negative_prompt_embeds", negative_prompt_embeds)
+
+        if output_type not in ["pt", "np", "pil", "latent"]:
+            raise ValueError(
+                f"Only the output types `pt`, `np`, `pil` and `latent` are supported not output_type={output_type}"
+            )
+
+        if not output_type == "latent":
+            # 10. Scale and decode the image latents with vq-vae
+            latents = self.vqgan.config.scale_factor * latents
+            images = self.vqgan.decode(latents).sample.clamp(0, 1)
+            if output_type == "np":
+                images = images.permute(0, 2, 3, 1).cpu().float().numpy()  # float() as bfloat16-> numpy doesnt work
+            elif output_type == "pil":
+                images = images.permute(0, 2, 3, 1).cpu().float().numpy()  # float() as bfloat16-> numpy doesnt work
+                images = self.numpy_to_pil(images)
+        else:
+            images = latents
+
+        # Offload all models
+        self.maybe_free_model_hooks()
+
+        if not return_dict:
+            return images
+        return diffusers.ImagePipelineOutput(images)
