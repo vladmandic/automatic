@@ -819,6 +819,19 @@ def move_model(model, device=None, force=False):
     devices.torch_gc()
 
 
+def move_base(model, device):
+    key = 'unet'
+    if isinstance(model, diffusers.FluxPipeline):
+        key = 'transformer'
+    if not hasattr(model, key):
+        return None
+    shared.log.debug(f'Moving to CPU: model={key}')
+    model = getattr(model, key)
+    R = model.device
+    move_model(model, device)
+    return R
+
+
 def get_load_config(model_file, model_type, config_type='yaml'):
     if config_type == 'yaml':
         yaml = os.path.splitext(model_file)[0] + '.yaml'
