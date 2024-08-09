@@ -188,7 +188,7 @@ else:
     def get_blaslt_enabled() -> bool:
         return bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1")))
 
-    is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', None) is not None
+    is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', 'unknown' if spawn('wslpath -w /') else None) is not None
 path = find()
 is_installed = False
 version = None
