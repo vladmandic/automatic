@@ -173,6 +173,8 @@ else:
         try:
             # Preload stdc++ library. This will ignore Anaconda stdc++ library.
             load_library_global("/lib/x86_64-linux-gnu/libstdc++.so.6")
+            # Use tcmalloc if possible.
+            load_library_global("/usr/lib/x86_64-linux-gnu/libtcmalloc_minimal.so.4")
         except OSError:
             pass
         # Preload HSA Runtime library.
