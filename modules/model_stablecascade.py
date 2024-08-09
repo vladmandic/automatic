@@ -191,7 +191,7 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         callback_on_step_end=None,
         callback_on_step_end_tensor_inputs=["latents"],
     ):
-        
+
         # 0. Define commonly used variables
         self.guidance_scale = guidance_scale
         self.do_classifier_free_guidance = self.guidance_scale > 1
@@ -262,7 +262,6 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         else:
             if hasattr(self.scheduler.config, "clip_sample") and self.scheduler.config.clip_sample:
                 self.scheduler.config.clip_sample = False  # disample sample clipping
-                logger.warning(" set `clip_sample` to be False")
 
         # 6. Run denoising loop
         if hasattr(self.scheduler, "betas"):
