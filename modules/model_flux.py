@@ -2,7 +2,6 @@ import json
 import torch
 import diffusers
 import transformers
-from optimum.quanto import requantize
 from safetensors.torch import load_file
 from huggingface_hub import hf_hub_download
 
@@ -11,6 +10,7 @@ from modules import devices, shared
 
 
 def load_quanto_transformer(repo_path):
+    from optimum.quanto import requantize
     with open(repo_path + "/" + "transformer/quantization_map.json", "r") as f:
         quantization_map = json.load(f)
     with torch.device("meta"):
@@ -21,6 +21,7 @@ def load_quanto_transformer(repo_path):
 
 
 def load_quanto_text_encoder_2(repo_path):
+    from optimum.quanto import requantize
     with open(repo_path + "/" + "text_encoder_2/quantization_map.json", "r") as f:
         quantization_map = json.load(f)
     with open(repo_path + "/" + "text_encoder_2/config.json") as f:
@@ -33,6 +34,8 @@ def load_quanto_text_encoder_2(repo_path):
 
 def load_flux(checkpoint_info, diffusers_load_config):
     if "qint8" in checkpoint_info.name.lower() or "qint4" in checkpoint_info.name.lower():
+        from installer import install
+        install('optimum-quanto', quiet=True)
         shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=True')
         pipe = diffusers.FluxPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, transformer=None, text_encoder_2=None, **diffusers_load_config)
         pipe.transformer = load_quanto_transformer(checkpoint_info.path)
