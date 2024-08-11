@@ -147,7 +147,12 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
-    if 'StableDiffusion' not in pipe.__class__.__name__ and 'DemoFusion' not in pipe.__class__.__name__ and 'StableCascade' not in pipe.__class__.__name__:
+    if (
+        'StableDiffusion' not in pipe.__class__.__name__ and
+        'DemoFusion' not in pipe.__class__.__name__ and
+        'StableCascade' not in pipe.__class__.__name__ and
+        'Flux' not in pipe.__class__.__name__
+    ):
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
     elif shared.opts.sd_textencoder_cache and prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
@@ -168,7 +173,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         p.negative_embeds = []
         p.negative_pooleds = []
 
-        if shared.opts.diffusers_offload_mode in {"balanced", "cpu"} and hasattr(pipe, "_all_hooks") and hasattr(pipe, "maybe_free_model_hooks"):
+        if hasattr(pipe, "maybe_free_model_hooks"):
             # if the last job is interrupted, model will stay in the vram and cause oom, send everything back to cpu before continuing
             pipe.maybe_free_model_hooks()
             devices.torch_gc()
@@ -204,7 +209,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])
-        if shared.opts.diffusers_offload_mode in {"balanced", "cpu"} and hasattr(pipe, "_all_hooks") and hasattr(pipe, "maybe_free_model_hooks"):
+        if hasattr(pipe, "maybe_free_model_hooks"):
             # text encoder will stay in the vram and cause oom, send everything back to cpu before continuing
             pipe.maybe_free_model_hooks()
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
@@ -331,6 +336,10 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         positive_weights.pop(0)
         negatives.pop(0)
         negative_weights.pop(0)
+
+    if "Flux" in pipe.__class__.__name__: # clip is only used for the pooled embeds
+        prompt_embeds, pooled_prompt_embeds, _ = pipe.encode_prompt(prompt=prompt, prompt_2=prompt_2, device=device, num_images_per_prompt=1)
+        return prompt_embeds, pooled_prompt_embeds, None, None # no negative support
 
     embedding_providers = prepare_embedding_providers(pipe, clip_skip)
     empty_embedding_providers = None

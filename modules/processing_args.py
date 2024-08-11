@@ -110,7 +110,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                     shared.log.error(f'Sampler timesteps: {e}')
             else:
                 shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
-    if shared.opts.prompt_attention != 'Fixed attention' and ('StableDiffusion' in model.__class__.__name__ or 'StableCascade' in model.__class__.__name__) and 'Onnx' not in model.__class__.__name__:
+    if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
+        'StableDiffusion' in model.__class__.__name__ or
+        'StableCascade' in model.__class__.__name__ or
+        'Flux' in model.__class__.__name__
+    ):
         try:
             prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
             parser = shared.opts.prompt_attention
@@ -131,6 +135,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             elif 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
             elif 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
+                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
+            elif 'Flux' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
         else:
             args['prompt'] = prompts

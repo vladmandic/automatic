@@ -86,7 +86,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
     elif shared.opts.diffusers_offload_mode == "cpu":
         if not hasattr(pipe, "_all_hooks") or len(pipe._all_hooks) == 0: # pylint: disable=protected-access
             pipe.enable_model_cpu_offload(device=devices.device)
-        else:
-            pipe.maybe_free_model_hooks()
+    if hasattr(pipe, "maybe_free_model_hooks"):
+        pipe.maybe_free_model_hooks()
     devices.torch_gc()
     return pipe
