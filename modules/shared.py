@@ -352,12 +352,12 @@ def temp_disable_extensions():
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
 
+gpu_memory = 0
+offload_mode_default = "none"
 
 mem_stat = memory_stats()
 if "gpu" in mem_stat:
     gpu_memory = mem_stat['gpu']['total']
-else:
-    gpu_memory = 0
 
 if not (cmd_opts.lowvram or cmd_opts.medvram):
     if "gpu" in mem_stat:
