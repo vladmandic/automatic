@@ -727,15 +727,10 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
-    if (shared.opts.diffusers_model_cpu_offload or shared.cmd_opts.medvram) and (shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram):
-        shared.log.warning(f'Setting {op}: Model CPU offload and Sequential CPU offload are not compatible')
-        shared.log.debug(f'Setting {op}: disabling model CPU offload')
-        shared.opts.diffusers_model_cpu_offload=False
-        shared.cmd_opts.medvram=False
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
-        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
+        if shared.opts.diffusers_offload_mode == "cpu":
             shared.log.debug(f'Setting {op}: enable model CPU offload')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
@@ -748,7 +743,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
                 sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = True
     if hasattr(sd_model, "enable_sequential_cpu_offload"):
-        if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
+        if shared.opts.diffusers_offload_mode == "sequential":
             shared.log.debug(f'Setting {op}: enable sequential CPU offload')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
@@ -921,6 +916,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "requires_safety_checker": False,
         # "use_safetensors": True,
     }
+    if shared.opts.diffusers_offload_mode == "balanced":
+        diffusers_load_config['device_map'] = "balanced"
+        if shared.opts.diffusers_offload_max_memory != 0:
+            diffusers_load_config['max_memory'] = {0:f"{shared.opts.diffusers_offload_max_memory}GB"}
+
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
@@ -1195,6 +1195,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         insert_parser_highjack(sd_model.__class__.__name__)
 
         set_diffuser_options(sd_model, vae, op, offload=False)
+        if shared.opts.diffusers_offload_mode == "balanced":
+            sd_model.has_accelerate = True
         if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
             sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
         if shared.opts.optimum_quanto_weights:

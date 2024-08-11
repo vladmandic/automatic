@@ -150,7 +150,7 @@ def nncf_compress_model(model, op=None, sd_model=None):
             else:
                 getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
             devices.torch_gc(force=True)
-        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload or shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram:
+        if shared.cmd_opts.medvram or shared.cmd_opts.lowvram or shared.opts.diffusers_offload_mode != "none":
             quant_last_model_name = op
             quant_last_model_device = model.device
         else:
@@ -205,7 +205,7 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None):
             else:
                 getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
             devices.torch_gc(force=True)
-        if shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload or shared.opts.diffusers_seq_cpu_offload or shared.cmd_opts.lowvram:
+        if shared.cmd_opts.medvram or shared.cmd_opts.lowvram or shared.opts.diffusers_offload_mode != "none":
             quant_last_model_name = op
             quant_last_model_device = model.device
         else:

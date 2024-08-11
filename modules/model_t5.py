@@ -79,11 +79,11 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
         return pipe
     t5 = load_t5(t5=t5, cache_dir=cache_dir)
     setattr(pipe, module, t5)
-    if shared.cmd_opts.lowvram or shared.opts.diffusers_seq_cpu_offload:
+    if shared.opts.diffusers_offload_mode == "sequential":
         from accelerate import cpu_offload
         getattr(pipe, module).to("cpu")
         cpu_offload(getattr(pipe, module), devices.device, offload_buffers=len(getattr(pipe, module)._parameters) > 0) # pylint: disable=protected-access
-    elif shared.cmd_opts.medvram or shared.opts.diffusers_model_cpu_offload:
+    elif shared.opts.diffusers_offload_mode == "cpu":
         if not hasattr(pipe, "_all_hooks") or len(pipe._all_hooks) == 0: # pylint: disable=protected-access
             pipe.enable_model_cpu_offload(device=devices.device)
         else:

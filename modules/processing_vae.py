@@ -35,7 +35,7 @@ def full_vae_decode(latents, model):
     t0 = time.time()
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
-    if not shared.cmd_opts.lowvram and not shared.opts.diffusers_seq_cpu_offload and hasattr(model, 'vae'):
+    if not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
         sd_models.move_model(model.vae, devices.device)
     latents.to(model.vae.device)
 
@@ -80,7 +80,7 @@ def full_vae_encode(image, model):
         debug('Moving to CPU: model=UNet')
         unet_device = model.unet.device
         sd_models.move_model(model.unet, devices.cpu)
-    if not shared.cmd_opts.lowvram and not shared.opts.diffusers_seq_cpu_offload and hasattr(model, 'vae'):
+    if not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
         sd_models.move_model(model.vae, devices.device)
     encoded = model.vae.encode(image.to(model.vae.device, model.vae.dtype)).latent_dist.sample()
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and hasattr(model, 'unet'):

@@ -358,11 +358,14 @@ if not (cmd_opts.lowvram or cmd_opts.medvram):
     if "gpu" in mem_stat:
         if mem_stat['gpu']['total'] <= 4:
             cmd_opts.lowvram = True
+            offload_mode_default = "sequential"
             log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=lowvram")
         elif mem_stat['gpu']['total'] <= 8:
             cmd_opts.medvram = True
+            offload_mode_default = "cpu"
             log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=medvram")
         else:
+            offload_mode_default = "none"
             log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=none")
 
 
@@ -425,7 +428,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
     "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": native}),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 24, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
@@ -527,8 +530,8 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_model_cpu_offload": OptionInfo(cmd_opts.medvram, "Model CPU offload (--medvram)"),
-    "diffusers_seq_cpu_offload": OptionInfo(cmd_opts.lowvram, "Sequential CPU offload (--lowvram)"),
+    "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'cpu', 'sequential']}),
+    "diffusers_offload_max_memory": OptionInfo(0, "Max memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": 24, "step": 0.1,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
