@@ -104,7 +104,7 @@ def get_pipelines():
     if hasattr(diffusers, 'LuminaText2ImgPipeline'):
         pipelines['Lumina-Next'] = getattr(diffusers, 'LuminaText2ImgPipeline', None)
     if hasattr(diffusers, 'FluxPipeline'):
-        pipelines['Flux'] = getattr(diffusers, 'FluxPipeline', None)
+        pipelines['FLUX'] = getattr(diffusers, 'FluxPipeline', None)
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:

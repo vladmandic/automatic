@@ -617,6 +617,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Kolors'
             if 'auraflow' in f.lower():
                 guess = 'AuraFlow'
+            if 'flux.1' in f.lower() or 'flux1' in f.lower():
+                guess = 'FLUX'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -1036,6 +1038,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 try:
                     from modules.model_auraflow import load_auraflow
                     sd_model = load_auraflow(checkpoint_info, diffusers_load_config)
+                except Exception as e:
+                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
+                    if debug_load:
+                        errors.display(e, 'Load')
+                    return
+            elif model_type in ['FLUX']:
+                try:
+                    from modules.model_flux import load_flux
+                    sd_model = load_flux(checkpoint_info, diffusers_load_config)
                 except Exception as e:
                     shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
                     if debug_load:
