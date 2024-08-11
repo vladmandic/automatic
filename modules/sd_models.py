@@ -918,7 +918,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     }
     if shared.opts.diffusers_offload_mode == "balanced":
         diffusers_load_config['device_map'] = "balanced"
-        if shared.opts.diffusers_offload_max_memory != 0:
+        if shared.opts.diffusers_offload_max_memory > 0:
             device_index = torch.device(devices.device).index
             if device_index is None:
                 device_index = 0

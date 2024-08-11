@@ -353,20 +353,25 @@ def temp_disable_extensions():
     return disabled
 
 
+mem_stat = memory_stats()
+if "gpu" in mem_stat:
+    gpu_memory = mem_stat['gpu']['total']
+else:
+    gpu_memory = 0
+
 if not (cmd_opts.lowvram or cmd_opts.medvram):
-    mem_stat = memory_stats()
     if "gpu" in mem_stat:
-        if mem_stat['gpu']['total'] <= 4:
+        if gpu_memory <= 4:
             cmd_opts.lowvram = True
             offload_mode_default = "sequential"
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=lowvram")
-        elif mem_stat['gpu']['total'] <= 8:
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=lowvram")
+        elif gpu_memory <= 8:
             cmd_opts.medvram = True
             offload_mode_default = "cpu"
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=medvram")
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=medvram")
         else:
             offload_mode_default = "none"
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=none")
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=none")
 
 
 if devices.backend == "directml": # Force BMM for DirectML instead of SDP
@@ -531,7 +536,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'cpu', 'sequential']}),
-    "diffusers_offload_max_memory": OptionInfo(0, "Max memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": 24, "step": 0.1,}),
+    "diffusers_offload_max_memory": OptionInfo(gpu_memory * 0.8, "Max memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.1,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
