@@ -96,14 +96,14 @@ def torch_bmm(input, mat2, *, out=None):
     return original_torch_bmm(input, mat2, out=out)
 
 @wraps(torch.nn.functional.scaled_dot_product_attention)
-def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False):
+def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
     if query.dtype != key.dtype:
         key = key.to(dtype=query.dtype)
     if query.dtype != value.dtype:
         value = value.to(dtype=query.dtype)
     if attn_mask is not None and query.dtype != attn_mask.dtype:
         attn_mask = attn_mask.to(dtype=query.dtype)
-    return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal)
+    return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
 
 # A1111 FP16
 original_functional_group_norm = torch.nn.functional.group_norm
