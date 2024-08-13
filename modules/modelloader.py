@@ -308,7 +308,7 @@ def find_diffuser(name: str):
     models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
-        return models[0].modelId
+        return models[0].id
     return None
 
 

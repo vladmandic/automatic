@@ -362,12 +362,11 @@ def create_ui():
                 def hf_search(keyword):
                     import huggingface_hub as hf
                     hf_api = hf.HfApi()
-                    model_filter = hf.ModelFilter(model_name=keyword, library=['diffusers'])
-                    models = hf_api.list_models(filter=model_filter, full=True, limit=50, sort="downloads", direction=-1)
+                    models = hf_api.list_models(model_name=keyword, full=True, library="diffusers", limit=50, sort="downloads", direction=-1)
                     data.clear()
                     for model in models:
                         tags = [t for t in model.tags if not t.startswith('diffusers') and not t.startswith('license') and not t.startswith('arxiv') and len(t) > 2]
-                        data.append([model.modelId, model.pipeline_tag, tags, model.downloads, model.lastModified, f'https://huggingface.co/{model.modelId}'])
+                        data.append([model.id, model.pipeline_tag, tags, model.downloads, model.lastModified, f'https://huggingface.co/{model.id}'])
                     return data
 
                 def hf_select(evt: gr.SelectData, data):
