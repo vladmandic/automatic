@@ -763,6 +763,12 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
                 sd_model.enable_sequential_cpu_offload(device=devices.device)
             sd_model.has_accelerate = True
 
+def normalize_device(device):
+    if torch.device(device).type in {"cpu", "mps"}:
+        return torch.device(device)
+    if torch.device(device).index is None:
+        return torch.device(str(device) + ":0")
+    return torch.device(device)
 
 def move_model(model, device=None, force=False):
     if model is None or device is None:
@@ -789,9 +795,13 @@ def move_model(model, device=None, force=False):
                             shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
+    if hasattr(model, "device") and normalize_device(model.device) == normalize_device(device):
+        return
     try:
         try:
             model.to(device)
+            if hasattr(model, "prior_pipe"):
+                model.prior_pipe.to(device)
         except Exception as e0:
             if 'Cannot copy out of meta tensor' in str(e0):
                 if hasattr(model, "components"):
@@ -809,8 +819,6 @@ def move_model(model, device=None, force=False):
                 pass # ignore model move if sequential offload is enabled
             else:
                 raise e0
-        if hasattr(model, "prior_pipe"):
-            model.prior_pipe.to(device)
     except Exception as e1:
         shared.log.error(f'Model move: device={device} {e1}')
     devices.torch_gc()
