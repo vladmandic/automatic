@@ -764,7 +764,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             sd_model.has_accelerate = True
 
 def normalize_device(device):
-    if torch.device(device).type in {"cpu", "mps"}:
+    if torch.device(device).type in {"cpu", "mps", "meta"}:
         return torch.device(device)
     if torch.device(device).index is None:
         return torch.device(str(device) + ":0")
