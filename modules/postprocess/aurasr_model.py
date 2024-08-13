@@ -30,7 +30,7 @@ class UpscalerAuraSR(Upscaler):
         image = self.model.upscale_4x(img)
         self.model.upsampler.to(devices.cpu)
 
-        if shared.opts.upscaler_unload and selected_model in self.models:
+        if shared.opts.upscaler_unload:
             self.model = None
             shared.log.debug(f"Upscaler unloaded: type={self.name} model={selected_model}")
             devices.torch_gc(force=True)
