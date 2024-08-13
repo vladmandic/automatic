@@ -53,8 +53,8 @@ config = {
     'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
     'DPM++ 3M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 3 },
     'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
-    'Euler a': { 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
-    'Euler': { 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
+    'Euler a': { 'steps_offset': 0, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
+    'Euler': { 'steps_offset': 0, 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace' },
     'Heun': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace' },
     'DDPM': { 'variance_type': "fixed_small", 'clip_sample': False, 'thresholding': False, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
     'KDPM2': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
@@ -125,13 +125,14 @@ class DiffusionSampler:
             orig_config = model.default_scheduler.scheduler_config
         else:
             orig_config = model.default_scheduler.config
+        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
+            self.config[key] = value
+        debug(f'Sampler: diffusers="{self.config}"')
         debug(f'Sampler: original="{orig_config}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
         debug(f'Sampler: default="{self.config}"')
-        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
-            self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
             if key in self.config:
                 self.config[key] = value
