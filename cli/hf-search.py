@@ -14,5 +14,5 @@ if __name__ == "__main__":
         library=['diffusers'],
     )
     res = hf_api.list_models(filter=model_filter, full=True, limit=50, sort="downloads", direction=-1)
-    models = [{ 'name': m.modelId, 'downloads': m.downloads, 'mtime': m.lastModified, 'url': f'https://huggingface.co/{m.modelId}', 'pipeline': m.pipeline_tag, 'tags': m.tags } for m in res]
+    models = [{ 'name': m.id, 'downloads': m.downloads, 'mtime': m.lastModified, 'url': f'https://huggingface.co/{m.id}', 'pipeline': m.pipeline_tag, 'tags': m.tags } for m in res]
     print(models)
