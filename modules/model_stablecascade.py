@@ -322,6 +322,10 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
             )
 
         if not output_type == "latent":
+            if shared.opts.diffusers_offload_mode == "balanced":
+                shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+            else:
+                self.maybe_free_model_hooks()
             # 10. Scale and decode the image latents with vq-vae
             latents = self.vqgan.config.scale_factor * latents
             images = self.vqgan.decode(latents).sample.clamp(0, 1)
@@ -334,9 +338,10 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
             images = latents
 
         # Offload all models
-        self.maybe_free_model_hooks()
         if shared.opts.diffusers_offload_mode == "balanced":
             shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+        else:
+            self.maybe_free_model_hooks()
 
         if not return_dict:
             return images
