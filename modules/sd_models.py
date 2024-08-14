@@ -777,15 +777,12 @@ def apply_balanced_offload(sd_model):
                 device_index = 0
             max_memory = {device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB", "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB"}
             self.device_map = infer_auto_device_map(module, max_memory=max_memory)
-            model_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
-            if model_name is None:
-                model_name = ""
-            self.accelerate_offload_path = os.path.join(shared.opts.accelerate_offload_path, model_name)
+            self.offload_dir = module.offload_dir
             return module
         def pre_forward(self, module, *args, **kwargs):
             if normalize_device(module.device) != normalize_device(devices.device):
                 module = remove_hook_from_module(module, recurse=True)
-                module = dispatch_model(module, device_map=self.device_map, offload_dir=self.accelerate_offload_path)
+                module = dispatch_model(module, device_map=self.device_map, offload_dir=self.offload_dir)
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                 module._hf_hook.execution_device = torch.device(devices.device)
             return args, kwargs
@@ -796,11 +793,16 @@ def apply_balanced_offload(sd_model):
 
     def apply_balanced_offload_to_module(pipe):
         module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
-        for module in module_names:
-            module = getattr(pipe, module)
+        for module_name in module_names:
+            module = getattr(pipe, module_name)
             if isinstance(module, torch.nn.Module):
+                checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
+                if checkpoint_name is None:
+                    checkpoint_name = pipe.__class__.__name__
+                offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
                 module = remove_hook_from_module(module, recurse=True)
                 module = module.to("cpu")
+                module.offload_dir = offload_dir
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                 module._hf_hook.execution_device = torch.device(devices.device)
 
