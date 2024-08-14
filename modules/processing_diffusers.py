@@ -243,6 +243,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if shared.state.interrupted or shared.state.skipped:
             shared.sd_model = orig_pipeline
             return results
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         if shared.opts.diffusers_move_refiner:
             sd_models.move_model(shared.sd_refiner, devices.device)
         p.ops.append('refine')
@@ -296,7 +298,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 for refiner_image in refiner_images:
                     results.append(refiner_image)
 
-        if shared.opts.diffusers_move_refiner:
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_refiner = sd_models.apply_balanced_offload(shared.sd_refiner)
+        elif shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving to CPU: model=refiner')
             sd_models.move_model(shared.sd_refiner, devices.cpu)
         shared.state.job = prev_job

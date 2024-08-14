@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import json
+import psutil
 import threading
 import contextlib
 from types import SimpleNamespace
@@ -354,6 +355,7 @@ def temp_disable_extensions():
 
 gpu_memory = 0
 offload_mode_default = "none"
+cpu_memory = psutil.virtual_memory().total / 1024 / 1024 / 1024
 
 mem_stat = memory_stats()
 if "gpu" in mem_stat:
@@ -536,7 +538,8 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'cpu', 'sequential']}),
-    "diffusers_offload_max_memory": OptionInfo(gpu_memory * 0.8, "Max memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.1,}),
+    "diffusers_offload_max_gpu_memory": OptionInfo(gpu_memory * 0.8, "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.1,}),
+    "diffusers_offload_max_cpu_memory": OptionInfo(cpu_memory * 0.8, "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.1,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
@@ -585,6 +588,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "clip_models_path": OptionInfo(os.path.join(paths.models_path, 'CLIP'), "Folder with CLIP models", folder=True),
     "other_paths_sep_options": OptionInfo("<h2>Other paths</h2>", "", gr.HTML),
     "openvino_cache_path": OptionInfo('cache', "Directory for OpenVINO cache", folder=True),
+    "accelerate_offload_path": OptionInfo('cache/accelerate', "Directory for disk offload with Accelerate", folder=True),
     "onnx_cached_models_path": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'cache'), "Folder with ONNX cached models", folder=True),
     "onnx_temp_dir": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'temp'), "Directory for ONNX conversion and Olive optimization process", folder=True),
     "temp_dir": OptionInfo("", "Directory for temporary images; leave empty for default", folder=True),

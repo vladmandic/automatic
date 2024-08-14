@@ -35,7 +35,9 @@ def full_vae_decode(latents, model):
     t0 = time.time()
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
-    if not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    elif not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
         sd_models.move_model(model.vae, devices.device)
     latents.to(model.vae.device)
 

@@ -5,7 +5,7 @@ import typing
 import torch
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
-from modules import shared, prompt_parser, devices
+from modules import shared, prompt_parser, devices, sd_models
 
 
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
@@ -173,7 +173,9 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         p.negative_embeds = []
         p.negative_pooleds = []
 
-        if hasattr(pipe, "maybe_free_model_hooks"):
+        if shared.opts.diffusers_offload_mode == "balanced":
+            pipe = sd_models.apply_balanced_offload(pipe)
+        elif hasattr(pipe, "maybe_free_model_hooks"):
             # if the last job is interrupted, model will stay in the vram and cause oom, send everything back to cpu before continuing
             pipe.maybe_free_model_hooks()
             devices.torch_gc()
@@ -209,7 +211,9 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         if debug_enabled:
             get_tokens('positive', prompts[0])
             get_tokens('negative', negative_prompts[0])
-        if hasattr(pipe, "maybe_free_model_hooks"):
+        if shared.opts.diffusers_offload_mode == "balanced":
+            pipe = sd_models.apply_balanced_offload(pipe)
+        elif hasattr(pipe, "maybe_free_model_hooks"):
             # text encoder will stay in the vram and cause oom, send everything back to cpu before continuing
             pipe.maybe_free_model_hooks()
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
@@ -247,7 +251,7 @@ def get_prompts_with_weights(prompt: str):
 
 
 def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
-    device = pipe.device if str(pipe.device) != 'meta' else devices.device
+    device = devices.device
     embeddings_providers = []
     if 'StableCascade' in pipe.__class__.__name__:
         embedding_type = -(clip_skip)
@@ -272,7 +276,7 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
 def pad_to_same_length(pipe, embeds, empty_embedding_providers=None):
     if not hasattr(pipe, 'encode_prompt') and 'StableCascade' not in pipe.__class__.__name__:
         return embeds
-    device = pipe.device if str(pipe.device) != 'meta' else devices.device
+    device = devices.device
     if shared.opts.diffusers_zeros_prompt_pad or 'StableDiffusion3' in pipe.__class__.__name__:
         empty_embed = [torch.zeros((1, 77, embeds[0].shape[2]), device=device, dtype=embeds[0].dtype)]
     else:
@@ -317,7 +321,7 @@ def split_prompts(prompt, SD3 = False):
 
 
 def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
-    device = pipe.device if str(pipe.device) != 'meta' else devices.device
+    device = devices.device
     SD3 = hasattr(pipe, 'text_encoder_3')
     prompt, prompt_2, prompt_3 = split_prompts(prompt, SD3)
     neg_prompt, neg_prompt_2, neg_prompt_3 = split_prompts(neg_prompt, SD3)
@@ -418,7 +422,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     if prompt_embeds.shape[1] != negative_prompt_embeds.shape[1]:
         [prompt_embeds, negative_prompt_embeds] = pad_to_same_length(pipe, [prompt_embeds, negative_prompt_embeds], empty_embedding_providers=empty_embedding_providers)
     if SD3:
-        device = pipe.device if str(pipe.device) != 'meta' else devices.device
+        device = devices.device
         t5_prompt_embed = pipe._get_t5_prompt_embeds( # pylint: disable=protected-access
             prompt=prompt_3,
             num_images_per_prompt=prompt_embeds.shape[0],

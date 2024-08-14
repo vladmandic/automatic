@@ -762,6 +762,56 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             else:
                 sd_model.enable_sequential_cpu_offload(device=devices.device)
             sd_model.has_accelerate = True
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_model = apply_balanced_offload(sd_model)
+
+
+def apply_balanced_offload(sd_model):
+    from accelerate import infer_auto_device_map, dispatch_model
+    from accelerate.hooks import add_hook_to_module, remove_hook_from_module, ModelHook
+
+    class dispatch_from_cpu_hook(ModelHook):
+        def init_hook(self, module):
+            device_index = torch.device(devices.device).index
+            if device_index is None:
+                device_index = 0
+            max_memory = {device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB", "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB"}
+            self.device_map = infer_auto_device_map(module, max_memory=max_memory)
+            model_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
+            if model_name is None:
+                model_name = ""
+            self.accelerate_offload_path = os.path.join(shared.opts.accelerate_offload_path, model_name)
+            return module
+        def pre_forward(self, module, *args, **kwargs):
+            if normalize_device(module.device) != normalize_device(devices.device):
+                module = remove_hook_from_module(module, recurse=True)
+                module = dispatch_model(module, device_map=self.device_map, offload_dir=self.accelerate_offload_path)
+                module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
+                module._hf_hook.execution_device = torch.device(devices.device)
+            return args, kwargs
+        def post_forward(self, module, output):
+            return output
+        def detach_hook(self, module):
+            return module
+
+    def apply_balanced_offload_to_module(pipe):
+        module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
+        for module in module_names:
+            module = getattr(pipe, module)
+            if isinstance(module, torch.nn.Module):
+                module = remove_hook_from_module(module, recurse=True)
+                module = module.to("cpu")
+                module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
+                module._hf_hook.execution_device = torch.device(devices.device)
+
+    apply_balanced_offload_to_module(sd_model)
+    if hasattr(sd_model, "prior_pipe"):
+        apply_balanced_offload_to_module(sd_model.prior_pipe)
+    if hasattr(sd_model, "decoder_pipe"):
+        apply_balanced_offload_to_module(sd_model.decoder_pipe)
+    sd_model.has_accelerate = True
+    return sd_model
+
 
 def normalize_device(device):
     if torch.device(device).type in {"cpu", "mps", "meta"}:
@@ -926,14 +976,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "requires_safety_checker": False,
         # "use_safetensors": True,
     }
-    if shared.opts.diffusers_offload_mode == "balanced":
-        diffusers_load_config['device_map'] = "balanced"
-        if shared.opts.diffusers_offload_max_memory > 0:
-            device_index = torch.device(devices.device).index
-            if device_index is None:
-                device_index = 0
-            diffusers_load_config['max_memory'] = {device_index:f"{shared.opts.diffusers_offload_max_memory}GB"}
-
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
@@ -1217,8 +1259,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         insert_parser_highjack(sd_model.__class__.__name__)
 
         set_diffuser_options(sd_model, vae, op, offload=False)
-        if shared.opts.diffusers_offload_mode == "balanced":
-            sd_model.has_accelerate = True
         if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
             sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
         if shared.opts.optimum_quanto_weights:
