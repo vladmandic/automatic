@@ -9,18 +9,19 @@ from modules import devices, shared
 
 
 
-def load_quanto_transformer(repo_path):
+def load_quanto_transformer(repo_path, device):
     from optimum.quanto import requantize
     with open(repo_path + "/" + "transformer/quantization_map.json", "r") as f:
         quantization_map = json.load(f)
     with torch.device("meta"):
         transformer = diffusers.FluxTransformer2DModel.from_config(repo_path + "/" + "transformer/config.json").to(torch.bfloat16)
     state_dict = load_file(repo_path + "/" + "transformer/diffusion_pytorch_model.safetensors")
-    requantize(transformer, state_dict, quantization_map, device=torch.device("cpu"))
+    requantize(transformer, state_dict, quantization_map, device=torch.device(device))
+    transformer.eval()
     return transformer
 
 
-def load_quanto_text_encoder_2(repo_path):
+def load_quanto_text_encoder_2(repo_path, device):
     from optimum.quanto import requantize
     with open(repo_path + "/" + "text_encoder_2/quantization_map.json", "r") as f:
         quantization_map = json.load(f)
@@ -29,17 +30,21 @@ def load_quanto_text_encoder_2(repo_path):
     with torch.device("meta"):
         text_encoder_2 = transformers.T5EncoderModel(t5_config).to(torch.bfloat16)
     state_dict = load_file(repo_path + "/" + "text_encoder_2/model.safetensors")
-    requantize(text_encoder_2, state_dict, quantization_map, device=torch.device("cpu"))
+    requantize(text_encoder_2, state_dict, quantization_map, device=torch.device(device))
+    text_encoder_2.eval()
     return text_encoder_2
 
 def load_flux(checkpoint_info, diffusers_load_config):
     if "qint8" in checkpoint_info.name.lower() or "qint4" in checkpoint_info.name.lower():
+        shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=True')
         from installer import install
         install('optimum-quanto', quiet=True)
-        shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=True')
+        from optimum import quanto
+        quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
+        device = devices.device if shared.opts.diffusers_offload_mode == "none" else "cpu"
         pipe = diffusers.FluxPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, transformer=None, text_encoder_2=None, **diffusers_load_config)
-        pipe.transformer = load_quanto_transformer(checkpoint_info.path)
-        pipe.text_encoder_2 = load_quanto_text_encoder_2(checkpoint_info.path)
+        pipe.transformer = load_quanto_transformer(checkpoint_info.path, device)
+        pipe.text_encoder_2 = load_quanto_text_encoder_2(checkpoint_info.path, device)
     else:
         pipe = diffusers.FluxPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
         shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=False')

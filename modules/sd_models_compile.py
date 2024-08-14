@@ -222,6 +222,8 @@ def optimum_quanto_weights(sd_model):
         global quant_last_model_name, quant_last_model_device
         from installer import install
         install('optimum-quanto', quiet=True)
+        from optimum import quanto
+        quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
 
         sd_model = apply_compile_to_model(sd_model, optimum_quanto_model, shared.opts.optimum_quanto_weights, op="optimum-quanto")
         if quant_last_model_name is not None:
