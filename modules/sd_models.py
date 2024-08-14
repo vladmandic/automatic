@@ -805,6 +805,7 @@ def apply_balanced_offload(sd_model):
                 module.offload_dir = offload_dir
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                 module._hf_hook.execution_device = torch.device(devices.device)
+                devices.torch_gc()
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "prior_pipe"):
