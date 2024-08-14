@@ -69,7 +69,9 @@ def full_vae_decode(latents, model):
             model.vae.apply(sd_models.convert_to_faketensors)
             devices.torch_gc(force=True)
 
-    if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    elif shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
         sd_models.move_base(model, base_device)
     t1 = time.time()
     debug(f'VAE decode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={upcast} images={latents.shape[0]} latents={latents.shape} time={round(t1-t0, 3)}')

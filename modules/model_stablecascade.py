@@ -2,7 +2,7 @@ import os
 import copy
 import torch
 import diffusers
-from modules import shared, devices
+from modules import shared, devices, sd_models
 
 def get_timestep_ratio_conditioning(t, alphas_cumprod):
     s = torch.tensor([0.008]) # diffusers uses 0.003 while the original is 0.008
@@ -191,7 +191,8 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         callback_on_step_end=None,
         callback_on_step_end_tensor_inputs=["latents"],
     ):
-
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         # 0. Define commonly used variables
         self.guidance_scale = guidance_scale
         self.do_classifier_free_guidance = self.guidance_scale > 1
@@ -334,6 +335,8 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
 
         # Offload all models
         self.maybe_free_model_hooks()
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
         if not return_dict:
             return images
