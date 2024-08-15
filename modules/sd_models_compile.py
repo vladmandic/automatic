@@ -217,6 +217,9 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None):
 
 def optimum_quanto_weights(sd_model):
     try:
+        if shared.opts.diffusers_offload_mode in {"balanced", "sequential"}:
+            shared.log.warn(f"Optimum Quanto Weights is incompatible with {shared.opts.diffusers_offload_mode} offload!")
+            return sd_model
         t0 = time.time()
         shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
         global quant_last_model_name, quant_last_model_device
