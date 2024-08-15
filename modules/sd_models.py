@@ -772,17 +772,17 @@ def apply_balanced_offload(sd_model):
 
     class dispatch_from_cpu_hook(ModelHook):
         def init_hook(self, module):
-            device_index = torch.device(devices.device).index
-            if device_index is None:
-                device_index = 0
-            max_memory = {device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB", "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB"}
-            self.device_map = infer_auto_device_map(module, max_memory=max_memory)
-            self.offload_dir = module.offload_dir
             return module
         def pre_forward(self, module, *args, **kwargs):
             if normalize_device(module.device) != normalize_device(devices.device):
+                device_index = torch.device(devices.device).index
+                if device_index is None:
+                    device_index = 0
+                max_memory = {device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB", "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB"}
+                device_map = infer_auto_device_map(module, max_memory=max_memory)
                 module = remove_hook_from_module(module, recurse=True)
-                module = dispatch_model(module, device_map=self.device_map, offload_dir=self.offload_dir)
+                offload_dir = getattr(module, "offload_dir", os.path.join(shared.opts.accelerate_offload_path, module.__class__.__name__))
+                module = dispatch_model(module, device_map=device_map, offload_dir=offload_dir)
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                 module._hf_hook.execution_device = torch.device(devices.device)
             return args, kwargs
