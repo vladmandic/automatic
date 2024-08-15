@@ -575,7 +575,7 @@ def install_ipex(torch_command):
                 install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.0'), 'impi-devel')
         torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino', ignore=True)
-    install('nncf==2.7.0', 'nncf', ignore=True)
+    install('nncf==2.12.0', 'nncf', ignore=True)
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     return torch_command
 
@@ -614,7 +614,7 @@ def install_torch_addons():
     if opts.get('cuda_compile_backend', '') == 'olive-ai':
         install('olive-ai')
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
-        install('nncf==2.7.0', 'nncf')
+        install('nncf==2.12.0', 'nncf')
     if opts.get('optimum_quanto_weights', False):
         install('optimum-quanto', 'optimum-quanto')
     if triton_command is not None:

@@ -53,7 +53,7 @@ def load_t5(t5=None, cache_dir=None):
     elif 'int8' in t5.lower():
         modelloader.hf_login()
         from installer import install
-        install('nncf==2.7.0', quiet=True)
+        install('nncf==2.12.0', quiet=True)
         from modules.sd_models_compile import nncf_compress_model
         from modules.sd_hijack import NNCF_T5DenseGatedActDense
         t5 = transformers.T5EncoderModel.from_pretrained(

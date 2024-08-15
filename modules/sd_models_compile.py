@@ -166,7 +166,7 @@ def nncf_compress_weights(sd_model):
         shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
         global quant_last_model_name, quant_last_model_device
         from installer import install
-        install('nncf==2.7.0', quiet=True)
+        install('nncf==2.12.0', quiet=True)
 
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
         if quant_last_model_name is not None:
