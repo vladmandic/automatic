@@ -260,6 +260,9 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         if isinstance(self, torch.nn.MultiheadAttention):
             self.in_proj_weight.copy_(weights_backup[0])
             self.out_proj.weight.copy_(weights_backup[1])
+        elif hasattr(self, "qweight") and hasattr(self, "freeze"):
+            self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
+            self.freeze()
         else:
             self.weight.copy_(weights_backup)
     if bias_backup is not None:
@@ -315,11 +318,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if module is not None and hasattr(self, 'weight'):
                 try:
                     with devices.inference_context():
-                        updown, ex_bias = module.calc_updown(self.weight)
-                        if len(self.weight.shape) == 4 and self.weight.shape[1] == 9:
+                        weight = self.weight # calculate quant weights once
+                        updown, ex_bias = module.calc_updown(weight)
+                        if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        self.weight = torch.nn.Parameter(self.weight + updown)
+                        self.weight = torch.nn.Parameter(weight + updown)
+                        if hasattr(self, "qweight") and hasattr(self, "freeze"):
+                            self.freeze()
                         if ex_bias is not None and hasattr(self, 'bias'):
                             if self.bias is None:
                                 self.bias = torch.nn.Parameter(ex_bias)
@@ -399,6 +405,13 @@ def network_Linear_forward(self, input): # pylint: disable=W0622
     return originals.Linear_forward(self, input)
 
 
+def network_QLinear_forward(self, input): # pylint: disable=W0622
+    if shared.opts.lora_functional:
+        return network_forward(self, input, originals.Linear_forward)
+    network_apply_weights(self)
+    return torch.nn.functional.linear(input, self.qweight, bias=self.bias)
+
+
 def network_Linear_load_state_dict(self, *args, **kwargs):
     network_reset_cached_weight(self)
     return originals.Linear_load_state_dict(self, *args, **kwargs)
@@ -409,6 +422,13 @@ def network_Conv2d_forward(self, input): # pylint: disable=W0622
         return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return originals.Conv2d_forward(self, input)
+
+
+def network_QConv2d_forward(self, input): # pylint: disable=W0622
+    if shared.opts.lora_functional:
+        return network_forward(self, input, originals.Conv2d_forward)
+    network_apply_weights(self)
+    return self._conv_forward(input, self.qweight, self.bias)
 
 
 def network_Conv2d_load_state_dict(self, *args, **kwargs):
