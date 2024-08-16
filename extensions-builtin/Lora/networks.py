@@ -171,6 +171,9 @@ def load_network(name, network_on_disk) -> network.Network:
 
 
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_models.disable_offload(shared.sd_model)
+        sd_models.move_model(shared.sd_model, devices.cpu)
     networks_on_disk = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
@@ -246,6 +249,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_models.apply_balanced_offload(shared.sd_model)
 
 
 def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv]):
@@ -289,6 +294,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     if network_layer_name is None:
         return
     t0 = time.time()
+    weight = self.weight # calculate quant weights once
     current_names = getattr(self, "network_current_names", ())
     wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
     weights_backup = getattr(self, "network_weights_backup", None)
@@ -298,7 +304,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.to(devices.cpu, copy=True), self.out_proj.weight.to(devices.cpu, copy=True))
         else:
-            weights_backup = self.weight.to(devices.cpu, copy=True)
+            weights_backup = weight.to(devices.cpu, copy=True)
         self.network_weights_backup = weights_backup
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
@@ -318,7 +324,6 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if module is not None and hasattr(self, 'weight'):
                 try:
                     with devices.inference_context():
-                        weight = self.weight # calculate quant weights once
                         updown, ex_bias = module.calc_updown(weight)
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
