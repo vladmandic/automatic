@@ -294,7 +294,6 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     if network_layer_name is None:
         return
     t0 = time.time()
-    weight = self.weight # calculate quant weights once
     current_names = getattr(self, "network_current_names", ())
     wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
     weights_backup = getattr(self, "network_weights_backup", None)
@@ -304,7 +303,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.to(devices.cpu, copy=True), self.out_proj.weight.to(devices.cpu, copy=True))
         else:
-            weights_backup = weight.to(devices.cpu, copy=True)
+            weights_backup = self.weight.to(devices.cpu, copy=True)
         self.network_weights_backup = weights_backup
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
@@ -324,6 +323,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if module is not None and hasattr(self, 'weight'):
                 try:
                     with devices.inference_context():
+                        weight = self.weight # calculate quant weights once
                         updown, ex_bias = module.calc_updown(weight)
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9

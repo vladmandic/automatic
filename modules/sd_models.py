@@ -1766,6 +1766,7 @@ def disable_offload(sd_model):
         if not isinstance(model, torch.nn.Module):
             continue
         remove_hook_from_module(model, recurse=True)
+    sd_model.has_accelerate = False
 
 
 def unload_model_weights(op='model'):

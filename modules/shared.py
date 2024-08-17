@@ -374,6 +374,10 @@ if not (cmd_opts.lowvram or cmd_opts.medvram):
         else:
             offload_mode_default = "none"
             log.info(f"VRAM: Detected={gpu_memory} GB Optimization=none")
+elif cmd_opts.medvram:
+    offload_mode_default = "cpu"
+elif cmd_opts.lowvram:
+    offload_mode_default = "sequential"
 
 
 if devices.backend == "directml": # Force BMM for DirectML instead of SDP
