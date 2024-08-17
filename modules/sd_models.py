@@ -1525,9 +1525,6 @@ def set_diffusers_attention(pipe):
     elif shared.opts.cross_attention_optimization == "Dynamic Attention BMM":
         from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorBMM
         set_attn(pipe, DynamicAttnProcessorBMM())
-    elif shared.opts.cross_attention_optimization == "Dynamic Attention SDP":
-        from modules.sd_hijack_dynamic_atten import DynamicAttnProcessorSDP
-        set_attn(pipe, DynamicAttnProcessorSDP())
 
     pipe.current_attn_name = shared.opts.cross_attention_optimization
 

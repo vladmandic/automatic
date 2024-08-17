@@ -31,8 +31,7 @@ def list_crossattention(diffusers=False):
             "xFormers",
             "Batch matrix-matrix",
             "Split attention",
-            "Dynamic Attention BMM",
-            "Dynamic Attention SDP"
+            "Dynamic Attention BMM"
         ]
     else:
         return [

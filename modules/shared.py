@@ -359,7 +359,7 @@ cpu_memory = psutil.virtual_memory().total / 1024 / 1024 / 1024
 
 mem_stat = memory_stats()
 if "gpu" in mem_stat:
-    gpu_memory = mem_stat['gpu']['total']
+    gpu_memory = mem_stat['gpu']['total'] + 0.1
 
 if not (cmd_opts.lowvram or cmd_opts.medvram):
     if "gpu" in mem_stat:
@@ -382,13 +382,11 @@ elif cmd_opts.lowvram:
 
 if devices.backend == "directml": # Force BMM for DirectML instead of SDP
     cross_attention_optimization_default = "Dynamic Attention BMM" if native else "Sub-quadratic"
-elif native and (cmd_opts.lowvram or cmd_opts.medvram):
-    cross_attention_optimization_default = "Dynamic Attention SDP"
 elif devices.backend == "cpu":
     cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
 elif devices.backend == "mps":
     cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
-else: # cuda, rocm, ipex
+else: # cuda, rocm, ipex, openvino
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
 
@@ -398,6 +396,9 @@ if devices.backend == "rocm":
 #    sdp_options_default =  ['Math attention']
 else:
     sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
+
+if (cmd_opts.lowvram or cmd_opts.medvram) and 'Flash attention' not in sdp_options_default:
+    sdp_options_default.append('Dynamic attention')
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
@@ -437,9 +438,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
-    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
+    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 24, "step": 0.1, "visible": native}),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
