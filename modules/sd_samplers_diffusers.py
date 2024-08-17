@@ -34,7 +34,7 @@ try:
         PNDMScheduler,
         SASolverScheduler,
         FlowMatchEulerDiscreteScheduler,
-        # FlowMatchHeunDiscreteScheduler,
+        FlowMatchHeunDiscreteScheduler,
     )
 except Exception as e:
     import diffusers
@@ -68,8 +68,8 @@ config = {
     'Euler EDM': { },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
-    'Euler FlowMatch': { 'shift': 1, },
-    # 'Heun FlowMatch': { 'shift': 1, },
+    'Euler FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, },
+    'Heun FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, },
     'IPNDM': { },
 }
 
@@ -102,7 +102,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
-    # sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Same as primary', None, [], {}),
 ]
