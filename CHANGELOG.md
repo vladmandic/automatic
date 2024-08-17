@@ -1,12 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-07-09: WiP
-
-### Pending
-
-- Requires `diffusers==0.30.0`
-- AuraFlow, Kolors, AlphaVLLM Lumina
-- FlowMatchHeunDiscreteScheduler enable
+## Update for 2024-08-18: WiP
 
 ### Highlights
 
@@ -18,7 +12,7 @@ Support for new models:
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
 
 What else? Just a bit... ;)  
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...  
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** quantization mode, and more...  
 
 ### New Models
 
@@ -56,21 +50,37 @@ This release is primary service release with cumulative fixes and several improv
   to use, simply select in process -> visual query  
 - [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
+- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0!  
+  to use, go to Compute Settings and enable "Quantize Model weights with Optimum Quanto" option.  
+  note: Optimum Quanto requires PyTorch 2.4  
+- support for **Balanced Offload**, thanks @Disty0!  
+  balanced offload will dynamically split and offload models from the gpu based on the max gpu and cpu memory size.  
+  note: balanced offload will force loading Loras with Diffusers method and it is not compatible with Optimum Quanto.  
+
+***Changes...**
+ - samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
+ - convert Dynamic Attention SDP into a global SDP option, thanks @Disty0!  
+ - convert offload options into a single choice list, thanks @Disty0!  
+ - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 
 **And fixes...**
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
-- add SD3 with FP16 T5 to list of detected models
+- general ROCm fixes, thanks @lshqqytiger!  
+- add SD3 with FP16 T5 to list of detected models  
 - fix executing extensions with zero params  
-- add support for embeddings bundled in LoRA, thanks @AI-Casanova!
+- add support for embeddings bundled in LoRA, thanks @AI-Casanova!  
 - fix executing extensions with zero params  
-- fix nncf for lora, thanks @Disty0!
-- fix diffusers version detection for SD3
-- fix current step for higher order samplers
+- fix nncf for lora, thanks @Disty0!  
+- fix diffusers version detection for SD3  
+- fix current step for higher order samplers  
 - fix control input type video  
 - fix reset pipeline at the end of each iteration  
 - fix faceswap when no faces detected  
 - fix civitai search
+- fix full vae previews, thanks @Disty0!  
+- fix default scheduler not being applied, thanks @Disty0!  
+- fix Stable Cascade with custom schedulers, thanks @Disty0!  
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23
