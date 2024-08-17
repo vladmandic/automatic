@@ -1507,7 +1507,7 @@ def set_diffusers_attention(pipe):
         for module in modules:
             if module.__class__.__name__ in ['SD3Transformer2DModel']:
                 module.set_attn_processor(p.JointAttnProcessor2_0())
-            elif module.__class__.__name__ in ['HunyuanDiT2DModel']:
+            elif module.__class__.__name__ in ['HunyuanDiT2DModel', 'FluxTransformer2DModel']:
                 pass
             else:
                 module.set_attn_processor(attention)
