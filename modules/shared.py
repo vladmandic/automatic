@@ -359,7 +359,7 @@ cpu_memory = psutil.virtual_memory().total / 1024 / 1024 / 1024
 
 mem_stat = memory_stats()
 if "gpu" in mem_stat:
-    gpu_memory = mem_stat['gpu']['total'] + 0.1
+    gpu_memory = mem_stat['gpu']['total']
 
 if not (cmd_opts.lowvram or cmd_opts.medvram):
     if "gpu" in mem_stat:
