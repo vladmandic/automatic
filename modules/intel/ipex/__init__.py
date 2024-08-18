@@ -149,8 +149,8 @@ def ipex_init(): # pylint: disable=too-many-statements
 
             # AMP:
             if legacy:
-                torch.xpu.amp.custom_fwd = torch.amp.custom_fwd
-                torch.xpu.amp.custom_bwd = torch.amp.custom_bwd
+                torch.xpu.amp.custom_fwd = torch.cuda.amp.custom_fwd
+                torch.xpu.amp.custom_bwd = torch.cuda.amp.custom_bwd
                 torch.cuda.amp = torch.xpu.amp
                 torch.is_autocast_enabled = torch.xpu.is_autocast_xpu_enabled
                 torch.get_autocast_gpu_dtype = torch.xpu.get_autocast_xpu_dtype
