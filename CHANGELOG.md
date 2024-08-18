@@ -57,10 +57,13 @@ This release is primary service release with cumulative fixes and several improv
   balanced offload will dynamically split and offload models from the gpu based on the max gpu and cpu memory size.  
   note: balanced offload will force loading Loras with Diffusers method and it is not compatible with Optimum Quanto.  
 
-***Changes...**
+**Changes...**
  - samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
- - convert Dynamic Attention SDP into a global SDP option, thanks @Disty0!  
+ - convert Dynamic Attention SDP into a global SDP option, thanks @Disty0!
+   note: will require re-setting the attention option.
+ - don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
  - convert offload options into a single choice list, thanks @Disty0!  
+   note: will require re-setting the offload option.  
  - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 
 **And fixes...**
