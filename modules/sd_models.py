@@ -706,15 +706,12 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         except Exception as e:
             shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_eval:
-        if hasattr(sd_model, "unet") and hasattr(sd_model.unet, "requires_grad_"):
-            sd_model.unet.requires_grad_(False)
-            sd_model.unet.eval()
-        if hasattr(sd_model, "vae") and hasattr(sd_model.vae, "requires_grad_"):
-            sd_model.vae.requires_grad_(False)
-            sd_model.vae.eval()
-        if hasattr(sd_model, "text_encoder") and hasattr(sd_model.text_encoder, "requires_grad_"):
-            sd_model.text_encoder.requires_grad_(False)
-            sd_model.text_encoder.eval()
+        def eval_model(model, op=None, sd_model=None):
+            if hasattr(model, "requires_grad_"):
+                model.requires_grad_(False)
+                model.eval()
+            return model
+        sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
     if shared.opts.diffusers_quantization:
         sd_model = sd_models_compile.dynamic_quantization(sd_model)
 
