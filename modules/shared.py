@@ -355,7 +355,7 @@ def temp_disable_extensions():
 
 gpu_memory = 0
 offload_mode_default = "none"
-cpu_memory = psutil.virtual_memory().total / 1024 / 1024 / 1024
+cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 
 mem_stat = memory_stats()
 if "gpu" in mem_stat:
@@ -543,8 +543,8 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_max_gpu_memory": OptionInfo(gpu_memory * 0.75, "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.1,}),
-    "diffusers_offload_max_cpu_memory": OptionInfo(cpu_memory * 0.75, "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.1,}),
+    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 2), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
+    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 2), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
