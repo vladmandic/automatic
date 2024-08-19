@@ -83,7 +83,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
         from accelerate import cpu_offload
         getattr(pipe, module).to("cpu")
         cpu_offload(getattr(pipe, module), devices.device, offload_buffers=len(getattr(pipe, module)._parameters) > 0) # pylint: disable=protected-access
-    elif shared.opts.diffusers_offload_mode == "cpu":
+    elif shared.opts.diffusers_offload_mode == "model":
         if not hasattr(pipe, "_all_hooks") or len(pipe._all_hooks) == 0: # pylint: disable=protected-access
             pipe.enable_model_cpu_offload(device=devices.device)
     if hasattr(pipe, "maybe_free_model_hooks"):

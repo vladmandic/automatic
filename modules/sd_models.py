@@ -732,7 +732,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
-        if shared.opts.diffusers_offload_mode == "cpu":
+        if shared.opts.diffusers_offload_mode == "model":
             shared.log.debug(f'Setting {op}: enable model CPU offload')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False

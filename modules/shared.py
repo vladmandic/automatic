@@ -369,13 +369,13 @@ if not (cmd_opts.lowvram or cmd_opts.medvram):
             log.info(f"VRAM: Detected={gpu_memory} GB Optimization=lowvram")
         elif gpu_memory <= 8:
             cmd_opts.medvram = True
-            offload_mode_default = "cpu"
+            offload_mode_default = "model"
             log.info(f"VRAM: Detected={gpu_memory} GB Optimization=medvram")
         else:
             offload_mode_default = "none"
             log.info(f"VRAM: Detected={gpu_memory} GB Optimization=none")
 elif cmd_opts.medvram:
-    offload_mode_default = "cpu"
+    offload_mode_default = "model"
 elif cmd_opts.lowvram:
     offload_mode_default = "sequential"
 
@@ -542,7 +542,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'cpu', 'sequential']}),
+    "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
     "diffusers_offload_max_gpu_memory": OptionInfo(gpu_memory * 0.75, "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.1,}),
     "diffusers_offload_max_cpu_memory": OptionInfo(cpu_memory * 0.75, "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.1,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
