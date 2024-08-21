@@ -45,10 +45,10 @@ def full_vae_decode(latents, model):
     if upcast: # this is done by diffusers automatically if output_type != 'latent'
         model.upcast_vae()
 
-    if shared.opts.no_half_vae:
-        latents = latents.to(torch.float32)
-    elif getattr(model.vae, "post_quant_conv", None) is not None:
+    if getattr(model.vae, "post_quant_conv", None) is not None:
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
+    elif shared.opts.no_half_vae:
+        latents = latents.to(torch.float32)
 
     # normalize latents
     latents_mean = model.vae.config.get("latents_mean", None)
