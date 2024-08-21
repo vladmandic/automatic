@@ -188,7 +188,7 @@ def nncf_compress_weights(sd_model):
 def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
     from optimum import quanto
     global quant_last_model_name, quant_last_model_device
-    if sd_model is not None and "Flux" in sd_model.__class__.__name__: # GroupNorm is not supported
+    if sd_model is not None and "Flux" in sd_model.__class__.__name__: # LayerNorm is not supported
         exclude_list = ["transformer_blocks.*.norm1.norm", "transformer_blocks.*.norm2", "transformer_blocks.*.norm1_context.norm", "transformer_blocks.*.norm2_context", "single_transformer_blocks.*.norm.norm", "norm_out.norm"]
     else:
         exclude_list = None
@@ -260,6 +260,13 @@ def optimum_quanto_weights(sd_model):
                 return model
             if shared.opts.diffusers_offload_mode == "model":
                 sd_model.enable_model_cpu_offload(device=devices.device)
+                if hasattr(sd_model, "encode_prompt"):
+                    original_encode_prompt = sd_model.encode_prompt
+                    def encode_prompt(*args, **kwargs):
+                        embeds = original_encode_prompt(*args, **kwargs)
+                        sd_model.maybe_free_model_hooks() # Diffusers keeps the TE on VRAM
+                        return embeds
+                    sd_model.encode_prompt = encode_prompt
             else:
                 sd_models.move_model(sd_model, devices.device)
             with quanto.Calibration(momentum=0.9):
@@ -268,6 +275,8 @@ def optimum_quanto_weights(sd_model):
             if shared.opts.diffusers_offload_mode == "model":
                 sd_models.disable_offload(sd_model)
                 sd_models.move_model(sd_model, devices.cpu)
+                if hasattr(sd_model, "encode_prompt"):
+                    sd_model.encode_prompt = original_encode_prompt
             devices.torch_gc(force=True)
 
         t1 = time.time()
