@@ -678,10 +678,11 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
             shared.log.debug(f'Setting {op} VAE: name={sd_vae.loaded_vae_file}')
         if shared.opts.diffusers_vae_upcast != 'default':
             sd_model.vae.config.force_upcast = True if shared.opts.diffusers_vae_upcast == 'true' else False
-            if shared.opts.no_half_vae:
-                devices.dtype_vae = torch.float32
-                sd_model.vae.to(devices.dtype_vae)
             shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.force_upcast}')
+        if shared.opts.no_half_vae:
+            devices.dtype_vae = torch.float32
+            sd_model.vae.to(devices.dtype_vae)
+            shared.log.debug(f'Setting {op} VAE: no-half')
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
             shared.log.debug(f'Setting {op}: enable VAE slicing')
