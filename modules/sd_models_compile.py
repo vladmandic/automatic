@@ -185,16 +185,23 @@ def nncf_compress_weights(sd_model):
         shared.log.warning(f"NNCF Compress Weights: error: {e}")
     return sd_model
 
-def optimum_quanto_model(model, op=None, sd_model=None, weights=None):
+def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
     from optimum import quanto
     global quant_last_model_name, quant_last_model_device
     weights = getattr(quanto, weights) if weights is not None else getattr(quanto, shared.opts.optimum_quanto_weights_type)
+    if activations is not None:
+        activations = getattr(quanto, activations) if activations != 'none' else None
+    elif shared.opts.optimum_quanto_activations_type != 'none':
+        activations = getattr(quanto, shared.opts.optimum_quanto_activations_type)
+    else:
+        activations = None
     model.eval()
     backup_embeddings = None
     if hasattr(model, "get_input_embeddings"):
         backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-    quanto.quantize(model, weights=weights)
-    quanto.freeze(model)
+    quanto.quantize(model, weights=weights, activations=activations)
+    if activations is not None:
+        quanto.freeze(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
     if op is not None and shared.opts.quant_shuffle_weights:
@@ -238,6 +245,27 @@ def optimum_quanto_weights(sd_model):
             devices.torch_gc(force=True)
         quant_last_model_name = None
         quant_last_model_device = None
+
+        if shared.opts.optimum_quanto_activations_type != 'none':
+            activations = getattr(quanto, shared.opts.optimum_quanto_activations_type)
+        else:
+            activations = None
+
+        if activations is not None:
+            def optimum_quanto_freeze(model, op=None, sd_model=None):
+                quanto.freeze(model)
+                return model
+            if shared.opts.diffusers_offload_mode == "model":
+                sd_model.enable_model_cpu_offload(device=devices.device)
+            else:
+                sd_models.move_model(sd_model, devices.device)
+            with quanto.Calibration(momentum=0.9):
+                sd_model(prompt="dummy", height=512, width=512, guidance_scale=4.0, num_inference_steps=10)
+            sd_model = apply_compile_to_model(sd_model, optimum_quanto_freeze, shared.opts.optimum_quanto_weights, op="optimum-quanto-freeze")
+            if shared.opts.diffusers_offload_mode == "model":
+                sd_models.disable_offload(sd_model)
+                sd_models.move_model(sd_model, devices.cpu)
+            devices.torch_gc(force=True)
 
         t1 = time.time()
         shared.log.info(f"Optimum Quanto Weights: time={t1-t0:.2f}")

@@ -49,7 +49,7 @@ def load_t5(t5=None, cache_dir=None):
             cache_dir=cache_dir,
             torch_dtype=devices.dtype,
         )
-        t5 = optimum_quanto_model(t5, weights="qint8")
+        t5 = optimum_quanto_model(t5, weights="qint8", activations="none")
     elif 'int8' in t5.lower():
         modelloader.hf_login()
         from installer import install
