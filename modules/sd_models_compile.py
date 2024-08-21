@@ -270,7 +270,7 @@ def optimum_quanto_weights(sd_model):
             else:
                 sd_models.move_model(sd_model, devices.device)
             with quanto.Calibration(momentum=0.9):
-                sd_model(prompt="dummy", height=512, width=512, guidance_scale=4.0, num_inference_steps=10)
+                sd_model(prompt="dummy prompt", num_inference_steps=10)
             sd_model = apply_compile_to_model(sd_model, optimum_quanto_freeze, shared.opts.optimum_quanto_weights, op="optimum-quanto-freeze")
             if shared.opts.diffusers_offload_mode == "model":
                 sd_models.disable_offload(sd_model)
