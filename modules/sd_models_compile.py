@@ -200,7 +200,7 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
     if hasattr(model, "get_input_embeddings"):
         backup_embeddings = copy.deepcopy(model.get_input_embeddings())
     quanto.quantize(model, weights=weights, activations=activations)
-    if activations is not None:
+    if activations is None:
         quanto.freeze(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
