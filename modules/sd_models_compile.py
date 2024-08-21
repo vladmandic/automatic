@@ -188,6 +188,10 @@ def nncf_compress_weights(sd_model):
 def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
     from optimum import quanto
     global quant_last_model_name, quant_last_model_device
+    if sd_model is not None and "Flux" in sd_model.__class__.__name__: # GroupNorm is not supported
+        exclude_list = ["transformer_blocks.*.norm1.norm", "transformer_blocks.*.norm2", "transformer_blocks.*.norm1_context.norm", "transformer_blocks.*.norm2_context", "single_transformer_blocks.*.norm.norm", "norm_out.norm"]
+    else:
+        exclude_list = None
     weights = getattr(quanto, weights) if weights is not None else getattr(quanto, shared.opts.optimum_quanto_weights_type)
     if activations is not None:
         activations = getattr(quanto, activations) if activations != 'none' else None
@@ -199,7 +203,7 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
     backup_embeddings = None
     if hasattr(model, "get_input_embeddings"):
         backup_embeddings = copy.deepcopy(model.get_input_embeddings())
-    quanto.quantize(model, weights=weights, activations=activations)
+    quanto.quantize(model, weights=weights, activations=activations, exclude=exclude_list)
     quanto.freeze(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
