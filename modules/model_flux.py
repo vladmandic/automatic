@@ -37,9 +37,6 @@ def load_quanto_text_encoder_2(repo_path):
     return text_encoder_2
 
 def load_flux(checkpoint_info, diffusers_load_config):
-    if devices.dtype == torch.float16 and not shared.opts.no_half_vae:
-        shared.log.warning("FLUX VAE doesn't support FP16! Enabling no-half-vae")
-        shared.opts.no_half_vae = True
     if "qint8" in checkpoint_info.name.lower() or "qint4" in checkpoint_info.name.lower():
         shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=True')
         from installer import install
@@ -64,4 +61,7 @@ def load_flux(checkpoint_info, diffusers_load_config):
     else:
         pipe = diffusers.FluxPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
         shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" quant=False')
+    if devices.dtype == torch.float16 and not shared.opts.no_half_vae:
+        shared.log.warning("FLUX VAE doesn't support FP16! Enabling no-half-vae")
+        shared.opts.no_half_vae = True
     return pipe
