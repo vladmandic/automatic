@@ -1,4 +1,5 @@
 import torch
+from modules import rocm
 
 
 _topk = torch.topk
@@ -14,6 +15,6 @@ def jit_script(f, *_, **__): # experiment / provide dummy graph
 
 
 def do_hijack():
-    torch.version.hip = "5.7"
+    torch.version.hip = rocm.version
     torch.topk = topk
     torch.jit.script = jit_script

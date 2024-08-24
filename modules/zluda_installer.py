@@ -26,7 +26,7 @@ def install(zluda_path: os.PathLike) -> None:
 
     default_hash = None
     if rocm.version == "6.1":
-        default_hash = 'd7714d84c0c13bbf816eaaac32693e4e75e58a87'
+        default_hash = '2f2e38a8adebb456ad75390e60871f2c8ba18fa7'
     elif rocm.version == "5.7":
         default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
     else:
