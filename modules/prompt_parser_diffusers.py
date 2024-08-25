@@ -9,7 +9,6 @@ from modules import shared, prompt_parser, devices, sd_models
 from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, \
     get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
 
-print("testing")
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PROMPT')
@@ -450,7 +449,6 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
 
 
 def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
-    print("using xhinker parser")
     device = devices.device
     SD3 = hasattr(pipe, 'text_encoder_3')
     prompt, prompt_2, prompt_3 = split_prompts(prompt, SD3)
