@@ -6,8 +6,7 @@ import torch
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
 from modules import shared, prompt_parser, devices, sd_models
-from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, \
-    get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
+from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
 
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -449,22 +448,21 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
 
 
 def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
-    device = devices.device
     SD3 = hasattr(pipe, 'text_encoder_3')
-    prompt, prompt_2, prompt_3 = split_prompts(prompt, SD3)
-    neg_prompt, neg_prompt_2, neg_prompt_3 = split_prompts(neg_prompt, SD3)
+    prompt, prompt_2, _prompt_3 = split_prompts(prompt, SD3)
+    neg_prompt, neg_prompt_2, _neg_prompt_3 = split_prompts(neg_prompt, SD3)
     try:
         prompt = pipe.maybe_convert_prompt(prompt, pipe.tokenizer)
         neg_prompt = pipe.maybe_convert_prompt(neg_prompt, pipe.tokenizer)
         prompt_2 = pipe.maybe_convert_prompt(prompt_2, pipe.tokenizer_2)
         neg_prompt_2 = pipe.maybe_convert_prompt(neg_prompt_2, pipe.tokenizer_2)
-    except:
+    except Exception:
         pass
     prompt_embed = positive_pooled = negative_embed = negative_pooled = None
     if SD3:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
     elif 'Flux' in pipe.__class__.__name__:
-        prompt_embed, positive_pooled = get_weighted_text_embeddings_flux1(pipe=pipe, prompt=prompt, prompt_2=prompt_2)
+        prompt_embed, positive_pooled = get_weighted_text_embeddings_flux1(pipe=pipe, prompt=prompt, prompt2=prompt_2, device=devices.device)
     elif 'XL' in pipe.__class__.__name__:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sdxl_2p(pipe=pipe, prompt=prompt, prompt_2=prompt_2, neg_prompt=neg_prompt, neg_prompt_2=neg_prompt_2)
     else:
