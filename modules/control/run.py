@@ -380,7 +380,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 try:
                     video = cv2.VideoCapture(inputs)
                     if not video.isOpened():
-                        yield terminate(f'Control: video open failed: path={inputs}')
+                        if is_generator:
+                            yield terminate(f'Control: video open failed: path={inputs}')
                         return [], '', '', 'Error: video open failed'
                     frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
                     fps = int(video.get(cv2.CAP_PROP_FPS))
@@ -392,7 +393,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     shared.log.debug(f'Control: input video: path={inputs} frames={frames} fps={fps} size={w}x{h} codec={codec}')
                 except Exception as e:
-                    yield terminate(f'Control: video open failed: path={inputs} {e}')
+                    if is_generator:
+                        yield terminate(f'Control: video open failed: path={inputs} {e}')
                     return [], '', '', 'Error: video open failed'
 
             while status:
@@ -409,7 +411,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         continue
                     if shared.state.interrupted:
                         shared.state.interrupted = False
-                        yield terminate('Control interrupted')
+                        if is_generator:
+                            yield terminate('Control interrupted')
                         return [], '', '', 'Interrupted'
                     # get input
                     if isinstance(input_image, str):
@@ -497,7 +500,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         except Exception:
                             pass
                         if any(img is None for img in processed_images):
-                            yield terminate('Control: attempting process but output is none')
+                            if is_generator:
+                                yield terminate('Control: attempting process but output is none')
                             return [], '', '', 'Error: output is none'
                         if len(processed_images) > 1 and len(active_process) != len(active_model):
                             processed_image = [np.array(i) for i in processed_images]
@@ -515,7 +519,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             debug(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
                             p.init_images = processed_images
                         elif isinstance(selected_models, list) and len(processed_images) != len(selected_models):
-                            yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
+                            if is_generator:
+                                yield terminate(f'Control: number of inputs does not match: input={len(processed_images)} models={len(selected_models)}')
                             return [], '', '', 'Error: number of inputs does not match'
                         elif selected_models is not None:
                             p.init_images = processed_image
@@ -529,7 +534,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         p.task_args['ref_image'] = p.ref_image
                         debug(f'Control: process=None image={p.ref_image}')
                         if p.ref_image is None:
-                            yield terminate('Control: attempting reference mode but image is none')
+                            if is_generator:
+                                yield terminate('Control: attempting reference mode but image is none')
                             return [], '', '', 'Reference mode without image'
                     elif unit_type == 'controlnet' and input_type == 1 and has_models: # Init image same as control
                         p.task_args['control_image'] = p.init_images # switch image and control_image
@@ -589,7 +595,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     # final check
                     if has_models:
                         if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None and getattr(p, 'init_images', None) is None:
-                            yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
+                            if is_generator:
+                                yield terminate(f'Control: mode={p.extra_generation_params.get("Control mode", None)} input image is none')
                             return [], '', '', 'Error: Input image is none'
 
                     # resize mask
@@ -659,8 +666,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                                     msg = f'Control output | {index} of {frames} skip {video_skip_frames} | Frame {image_txt}'
                                 else:
                                     msg = f'Control output | {index} of {len(inputs)} | Image {image_txt}'
-                                if is_generator:
-                                    yield (output_image, blended_image, msg) # result is control_output, proces_output
+                                yield (output_image, blended_image, msg) # result is control_output, proces_output
 
                 if video is not None and frame is not None:
                     status, frame = video.read()

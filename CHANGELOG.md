@@ -80,6 +80,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - fix Stable Cascade with custom schedulers, thanks @Disty0!  
 - fix LoRA apply with force-diffusers
 - fix LoRA scales with force-diffusers
+- fix control API
 
 ## Update for 2024-07-08
 

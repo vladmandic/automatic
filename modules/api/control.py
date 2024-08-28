@@ -143,7 +143,7 @@ class APIControl():
         # prepare args
         args = req.copy(update={  # Override __init__ params
             "sampler_index": processing_helpers.get_sampler_index(req.sampler_name),
-            "is_generator": False,
+            "is_generator": True,
             "inputs": [helpers.decode_base64_to_image(x) for x in req.inputs] if req.inputs else None,
             "inits": [helpers.decode_base64_to_image(x) for x in req.inits] if req.inits else None,
             "mask": helpers.decode_base64_to_image(req.mask) if req.mask else None,
@@ -164,8 +164,10 @@ class APIControl():
                     output_images += item[0] if item[0] is not None else []
                     output_processed += [item[1]] if item[1] is not None else []
                     output_info += item[2] if len(item) > 2 and item[2] is not None else ''
-                else:
+                elif isinstance(item, str):
                     output_info += item
+                else:
+                    pass
             shared.state.end(api=False)
 
         # return
