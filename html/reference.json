@@ -113,6 +113,50 @@
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 7.0"
   },
 
+  "Black Forest Labs FLUX.1 Dev": {
+    "path": "black-forest-labs/FLUX.1-dev",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Schnell": {
+    "path": "black-forest-labs/FLUX.1-schnell",
+    "preview": "black-forest-labs--FLUX.1-schnell.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching. Trained using latent adversarial diffusion distillation, FLUX.1 [schnell] can generate high-quality images in only 1 to 4 steps",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev qint8": {
+    "path": "Disty0/FLUX.1-dev-qint8",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev qint4": {
+    "path": "Disty0/FLUX.1-dev-qint4",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev nf4": {
+    "path": "sayakpaul/flux.1-dev-nf4",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+
+  "AuraFlow 0.1": {
+    "path": "https://huggingface.co/fal/AuraFlow",
+    "desc": "AuraFlow v0.1, an Open Exploration of Large Rectified Flow Models is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license. This model achieves state-of-the-art results on the GenEval benchmark.",
+    "preview": "fal--AuraFlow.jpg",
+    "skip": true,
+    "extras": "width: 1024, height: 1024"
+  }, 
+
   "Segmind Vega": {
     "path": "huggingface/segmind/Segmind-Vega",
     "preview": "segmind--Segmind-Vega.jpg",
@@ -185,14 +229,14 @@
   "Tencent HunyuanDiT 1.2": {
     "path": "Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
-    "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
+    "preview": "Tencent-Hunyuan--HunyuanDiT-v1.2-Diffusers.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
 
   "AlphaVLLM Lumina Next SFT": {
     "path": "Alpha-VLLM/Lumina-Next-SFT-diffusers",
     "desc": "The Lumina-Next-SFT is a Next-DiT model containing 2B parameters and utilizes Gemma-2B as the text encoder, enhanced through high-quality supervised fine-tuning (SFT).",
-    "preview": "Alpha-VLLM-Lumina-Next-SFT-diffusers.jpg",
+    "preview": "Alpha-VLLM--Lumina-Next-SFT-diffusers.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024, sampler: Default"
   }, 
@@ -200,19 +244,11 @@
   "Kwai Kolors": {
     "path": "Kwai-Kolors/Kolors-diffusers",
     "desc": "Kolors is a large-scale text-to-image generation model based on latent diffusion, developed by the Kuaishou Kolors team. Trained on billions of text-image pairs, Kolors exhibits significant advantages over both open-source and proprietary models in visual quality, complex semantic accuracy, and text rendering for both Chinese and English characters. Furthermore, Kolors supports both Chinese and English inputs",
-    "preview": "Kwai-Kolors.jpg",
+    "preview": "Kwai-Kolors--Kolors-diffusers.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024"
   }, 
 
-  "AuraFlow 0.1": {
-    "path": "https://huggingface.co/fal/AuraFlow",
-    "desc": "AuraFlow v0.1, an Open Exploration of Large Rectified Flow Models is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license. This model achieves state-of-the-art results on the GenEval benchmark.",
-    "preview": "fal-AuraFlow.jpg",
-    "skip": true,
-    "extras": "width: 1024, height: 1024"
-  }, 
-  
   "Kandinsky 2.1": {
     "path": "kandinsky-community/kandinsky-2-1",
     "desc": "Kandinsky 2.1 is a text-conditional diffusion model based on unCLIP and latent diffusion, composed of a transformer-based image prior model, a unet diffusion model, and a decoder. Kandinsky 2.1 inherits best practices from Dall-E 2 and Latent diffusion while introducing some new ideas. It uses the CLIP model as a text and image encoder, and diffusion image prior (mapping) between latent spaces of CLIP modalities. This approach increases the visual performance of the model and unveils new horizons in blending images and text-guided image manipulation.",

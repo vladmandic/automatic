@@ -3,12 +3,12 @@ import os
 import sys
 import time
 import json
-import psutil
 import threading
 import contextlib
 from types import SimpleNamespace
 from urllib.parse import urlparse
 from enum import Enum
+import psutil
 import requests
 import gradio as gr
 import fasteners
