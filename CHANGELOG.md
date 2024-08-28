@@ -79,6 +79,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - automatically offload disabled controlnet units  
 - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 - general **ROCm** fixes, thanks @lshqqytiger!  
+- support for HIP SDK 6.1 on ZLUDA backend, thanks @lshqqytiger!
 - fix full vae previews, thanks @Disty0!  
 - fix default scheduler not being applied, thanks @Disty0!  
 - fix Stable Cascade with custom schedulers, thanks @Disty0!  
