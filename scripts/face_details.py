@@ -140,6 +140,7 @@ class FaceRestorerYolo(FaceRestoration):
         }
         if args['denoising_strength'] == 0:
             shared.log.debug('Face HiRes skip: strength=0')
+            return np_image
         control_pipeline = None
         orig_class = shared.sd_model.__class__
         if getattr(p, 'is_control', False):
