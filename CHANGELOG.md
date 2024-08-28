@@ -1,23 +1,43 @@
 # Change Log for SD.Next
 
-## Update for 2024-08-18: WiP
+## Update for 2024-08-28
 
-### Highlights
+### Highlights for 2024-08-28
 
-Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features  
-Support for new models:  
-- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
-- [AuraFlow](https://huggingface.co/fal/AuraFlow)
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
-- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
+Summer break is over and we are back with a massive update!  
+
+Support for all of the new models:  
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) original variations and multiple quantized variations (*qint8, qint4, nf4*)!  
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)  
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
 
 What else? Just a bit... ;)  
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** quantization mode, and more...  
 
-### New Models
+New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode and more...  
 
-To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use.  
+**Breaking Changes...**
 
+Due to internal changes, you'll need to reset your **attention** and **offload** settings!
+
+### Details for 2024-08-27
+
+**New Models...**
+
+To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use  
+
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
+  FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching  
+  This is a very large model at ~32GB in size, its recommended to use a) offloading, b) quantization  
+  *Note*: [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) variant is a gated model, you need to accept the terms and conditions to use it  
+  Use scheduler: default or euler flowmatch  
+  Use of FLUX.1 LoRAs is supported  
+  For more information, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
+  SD.Next supports:  
+  - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
+  - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
+  - additional [nf4](https://huggingface.co/sayakpaul/flux.1-dev-nf4) quantized variation  
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)  
   AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license  
   This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
@@ -31,6 +51,33 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
   Hunyuan-DiT is a powerful multi-resolution diffusion transformer (DiT) with fine-grained Chinese understanding  
+
+**New Features...**
+
+- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0!  
+  to use, go to Compute Settings and enable "Quantize Model weights with Optimum Quanto" option.  
+  note: Optimum Quanto requires PyTorch 2.4  
+- support for **Balanced Offload**, thanks @Disty0!  
+  balanced offload will dynamically split and offload models from the gpu based on the max gpu and cpu memory size.  
+  *note*: balanced offload will force loading Loras with Diffusers method and it is not compatible with Optimum Quanto.  
+
+**Changes & Fixes...**
+
+- update default **CUDA** version from 12.1 to 12.4
+- updated `requirements`
+- samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
+- convert **Dynamic Attention SDP** into a global SDP option, thanks @Disty0!  
+  *note*: requires reset of selected attention option
+- don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
+- convert offload options into a single choice list, thanks @Disty0!  
+  *note*: requires reset of selected offload option  
+- update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
+- general **ROCm** fixes, thanks @lshqqytiger!  
+- fix full vae previews, thanks @Disty0!  
+- fix default scheduler not being applied, thanks @Disty0!  
+- fix Stable Cascade with custom schedulers, thanks @Disty0!  
+- fix LoRA apply with force-diffusers
+- fix LoRA scales with force-diffusers
 
 ## Update for 2024-07-08
 
@@ -50,26 +97,10 @@ This release is primary service release with cumulative fixes and several improv
   to use, simply select in process -> visual query  
 - [AuraSR](https://huggingface.co/fal/AuraSR) high-quality 4x GAN-style upscaling model  
   note: this is a large upscaler at 2.5GB  
-- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0!  
-  to use, go to Compute Settings and enable "Quantize Model weights with Optimum Quanto" option.  
-  note: Optimum Quanto requires PyTorch 2.4  
-- support for **Balanced Offload**, thanks @Disty0!  
-  balanced offload will dynamically split and offload models from the gpu based on the max gpu and cpu memory size.  
-  note: balanced offload will force loading Loras with Diffusers method and it is not compatible with Optimum Quanto.  
-
-**Changes...**
- - samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
- - convert Dynamic Attention SDP into a global SDP option, thanks @Disty0!
-   note: will require re-setting the attention option.
- - don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
- - convert offload options into a single choice list, thanks @Disty0!  
-   note: will require re-setting the offload option.  
- - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 
 **And fixes...**
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
-- general ROCm fixes, thanks @lshqqytiger!  
 - add SD3 with FP16 T5 to list of detected models  
 - fix executing extensions with zero params  
 - add support for embeddings bundled in LoRA, thanks @AI-Casanova!  
@@ -81,9 +112,6 @@ This release is primary service release with cumulative fixes and several improv
 - fix reset pipeline at the end of each iteration  
 - fix faceswap when no faces detected  
 - fix civitai search
-- fix full vae previews, thanks @Disty0!  
-- fix default scheduler not being applied, thanks @Disty0!  
-- fix Stable Cascade with custom schedulers, thanks @Disty0!  
 - multiple ModernUI fixes
 
 ## Update for 2024-06-23

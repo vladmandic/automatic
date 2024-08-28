@@ -314,7 +314,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
             if hasattr(shared.sd_model, "_unpack_latents") and hasattr(shared.sd_model, "vae_scale_factor"): # FLUX
-                output.images = shared.sd_model._unpack_latents(output.images, p.height, p.width, shared.sd_model.vae_scale_factor)
+                output.images = shared.sd_model._unpack_latents(output.images, p.height, p.width, shared.sd_model.vae_scale_factor) # pylint: disable=protected-access
             if torch.is_tensor(output.images) and len(output.images) > 0 and any(s >= 512 for s in output.images.shape):
                 results = output.images.float().cpu().numpy()
             elif hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:

@@ -651,7 +651,7 @@ def check_torch():
         pass
     elif is_cuda_available(allow_cuda):
         log.info('nVidia CUDA toolkit detected: nvidia-smi present')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu121')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
         install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     elif allow_rocm and rocm.is_installed:
         torch_command = install_rocm_zluda(torch_command)

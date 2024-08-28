@@ -3,8 +3,8 @@ import gc
 import sys
 import time
 import contextlib
-import torch
 from functools import wraps
+import torch
 from modules.errors import log
 from modules import cmd_args, shared, memstats, errors
 

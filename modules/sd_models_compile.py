@@ -96,7 +96,7 @@ def ipex_optimize(sd_model):
     try:
         t0 = time.time()
 
-        def ipex_optimize_model(model, op=None, sd_model=None):
+        def ipex_optimize_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
             model.eval()
             model.training = False
@@ -133,7 +133,7 @@ def nncf_send_to_device(model):
 
 def nncf_compress_model(model, op=None, sd_model=None):
     import nncf
-    global quant_last_model_name, quant_last_model_device
+    global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
     model.eval()
     backup_embeddings = None
     if hasattr(model, "get_input_embeddings"):
@@ -164,7 +164,7 @@ def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
         shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
-        global quant_last_model_name, quant_last_model_device
+        global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
         from installer import install
         install('nncf==2.7.0', quiet=True)
 
@@ -186,8 +186,8 @@ def nncf_compress_weights(sd_model):
     return sd_model
 
 def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
-    from optimum import quanto
-    global quant_last_model_name, quant_last_model_device
+    from optimum import quanto # pylint: disable=no-name-in-module
+    global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
     if sd_model is not None and "Flux" in sd_model.__class__.__name__: # LayerNorm is not supported
         exclude_list = ["transformer_blocks.*.norm1.norm", "transformer_blocks.*.norm2", "transformer_blocks.*.norm1_context.norm", "transformer_blocks.*.norm2_context", "single_transformer_blocks.*.norm.norm", "norm_out.norm"]
     else:
@@ -228,14 +228,14 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
 def optimum_quanto_weights(sd_model):
     try:
         if shared.opts.diffusers_offload_mode in {"balanced", "sequential"}:
-            shared.log.warn(f"Optimum Quanto Weights is incompatible with {shared.opts.diffusers_offload_mode} offload!")
+            shared.log.warning(f"Optimum Quanto Weights is incompatible with {shared.opts.diffusers_offload_mode} offload!")
             return sd_model
         t0 = time.time()
         shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
-        global quant_last_model_name, quant_last_model_device
+        global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
         from installer import install
         install('optimum-quanto', quiet=True)
-        from optimum import quanto
+        from optimum import quanto # pylint: disable=no-name-in-module
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
 
         sd_model = apply_compile_to_model(sd_model, optimum_quanto_model, shared.opts.optimum_quanto_weights, op="optimum-quanto")
@@ -255,7 +255,7 @@ def optimum_quanto_weights(sd_model):
             activations = None
 
         if activations is not None:
-            def optimum_quanto_freeze(model, op=None, sd_model=None):
+            def optimum_quanto_freeze(model, op=None, sd_model=None): # pylint: disable=unused-argument
                 quanto.freeze(model)
                 return model
             if shared.opts.diffusers_offload_mode == "model":
@@ -382,7 +382,7 @@ def compile_torch(sd_model):
         torch._dynamo.reset() # pylint: disable=protected-access
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
-        def torch_compile_model(model, op=None, sd_model=None):
+        def torch_compile_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if model.device.type != "meta":
                 return_device = model.device
                 model = torch.compile(model.to(devices.device),

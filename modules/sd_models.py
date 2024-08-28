@@ -79,13 +79,15 @@ class CheckpointInfo:
             self.filename = filename
             self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{relname}")
             self.type = ext
+            if 'nf4' in filename:
+                self.type = 'transformer'
         else: # maybe a diffuser
             if self.hash is None:
                 repo = [r for r in modelloader.diffuser_repos if self.filename == r['name']]
             else:
                 repo = [r for r in modelloader.diffuser_repos if self.hash == r['hash']]
             if len(repo) == 0:
-                self.name = relname
+                self.name = filename
                 self.filename = filename
                 self.sha256 = None
                 self.type = 'unknown'
@@ -707,7 +709,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         except Exception as e:
             shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_eval:
-        def eval_model(model, op=None, sd_model=None):
+        def eval_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if hasattr(model, "requires_grad_"):
                 model.requires_grad_(False)
                 model.eval()
@@ -782,7 +784,7 @@ def apply_balanced_offload(sd_model):
                 offload_dir = getattr(module, "offload_dir", os.path.join(shared.opts.accelerate_offload_path, module.__class__.__name__))
                 module = dispatch_model(module, device_map=device_map, offload_dir=offload_dir)
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
-                module._hf_hook.execution_device = torch.device(devices.device)
+                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
             return args, kwargs
         def post_forward(self, module, output):
             return output
@@ -802,7 +804,7 @@ def apply_balanced_offload(sd_model):
                 module = module.to("cpu")
                 module.offload_dir = offload_dir
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
-                module._hf_hook.execution_device = torch.device(devices.device)
+                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
                 devices.torch_gc()
 
     apply_balanced_offload_to_module(sd_model)
@@ -1029,7 +1031,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         shared.log.debug(f'Diffusers loading: path="{checkpoint_info.path}"')
         pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
-        if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface':
+        if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface' or checkpoint_info.type == 'transformer':
             files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
             if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
                 diffusers_load_config['variant'] = 'fp16'

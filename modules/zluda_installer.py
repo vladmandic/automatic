@@ -24,14 +24,7 @@ def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    default_hash = None
-    if rocm.version == "6.1":
-        default_hash = '2f2e38a8adebb456ad75390e60871f2c8ba18fa7'
-    elif rocm.version == "5.7":
-        default_hash = '11cc5844514f93161e0e74387f04e2c537705a82'
-    else:
-        raise RuntimeError(f'Unsupported HIP SDK version: {rocm.version}')
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", default_hash)}/ZLUDA-windows-amd64.zip', '_zluda')
+    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", "1c238a959f2aafdb9900f6801b61d9c0318040a2")}/ZLUDA-windows-rocm{rocm.version[0]}-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:
