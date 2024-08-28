@@ -54,7 +54,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 
 **New Features...**
 
-- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0!  
+- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0 and @Trojaner!  
   to use, go to Settings -> Compute Settings and enable "Quantize Model weights with Optimum Quanto" option  
   note: Optimum Quanto requires PyTorch 2.4  
 - support for **Balanced Offload**, thanks @Disty0!  

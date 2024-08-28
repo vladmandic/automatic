@@ -58,6 +58,7 @@ urllib3==1.26.19
 Pillow==10.4.0
 timm==0.9.16
 pydantic==1.10.15
+pyparsing==3.1.4
 typing-extensions==4.11.0
 torchdiffeq
 dctorch
