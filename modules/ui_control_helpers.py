@@ -44,7 +44,7 @@ def initialize():
     except Exception:
         pass
     scripts.scripts_current = scripts.scripts_control
-    scripts.scripts_current.initialize_scripts(is_img2img=True)
+    scripts.scripts_control.initialize_scripts(is_img2img=False, is_control=True)
 
 
 def interrogate_clip():
