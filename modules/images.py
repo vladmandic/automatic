@@ -288,6 +288,8 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
         return res
 
+    if resize_mode is None:
+        resize_mode = 0
     if resize_mode == 0 or (im.width == width and im.height == height): # none
         res = im.copy()
     elif resize_mode == 1: # fixed
@@ -301,8 +303,8 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
     else:
-        res = None
-        raise ValueError(f'Invalid resize mode: {resize_mode}')
+        res = im.copy()
+        shared.log.error(f'Invalid resize mode: {resize_mode}')
     if output_type == 'np':
         return np.array(res)
     return res
