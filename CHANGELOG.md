@@ -73,6 +73,8 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
 - convert offload options into a single choice list, thanks @Disty0!  
   *note*: requires reset of selected offload option  
+- control module allows reszing of indivudual process override images to match input image  
+  for example: set size->before->method:nearest, mode:fixed or mode:fill  
 - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 - general **ROCm** fixes, thanks @lshqqytiger!  
 - fix full vae previews, thanks @Disty0!  
