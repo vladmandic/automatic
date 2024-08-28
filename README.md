@@ -53,6 +53,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 ![Screenshot-Dark](html/screenshot-text2image.jpg)
 
 *Main interface using **ModernUI***:  
+![Screenshot-Dark](html/screenshot-modernui-f1.jpg)
 ![Screenshot-Dark](html/screenshot-modernui.jpg)
 ![Screenshot-Dark](html/screenshot-modernui-sd3.jpg)
 
@@ -69,6 +70,10 @@ Additional models will be added as they become available and there is public int
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)
 - [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
 - [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) Dev, Schnell  
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
 - [Playground](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*
 - [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
 - [aMUSEd 256](https://huggingface.co/amused/amused-256) 256 and 512

@@ -33,6 +33,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   *Note*: [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) variant is a gated model, you need to accept the terms and conditions to use it  
   Use scheduler: default or euler flowmatch  
   Use of FLUX.1 LoRAs is supported  
+  Use of TAESD for preview is supported  
   For more information, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
   SD.Next supports:  
   - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
