@@ -213,13 +213,13 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         num_units += 1
         debug(f'Control unit: i={num_units} type={u.type} enabled={u.enabled}')
         if not u.enabled:
-            shared.log.debug(f'Control unit disabled: i={num_units}')
             if u.controlnet is not None and u.controlnet.model is not None:
-                shared.log.debug(f'Control unit offload: model="{u.controlnet.model_id}"')
+                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
                 sd_models.move_model(u.controlnet.model, devices.cpu)
             continue
         else:
             if u.controlnet is not None and u.controlnet.model is not None:
+                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
                 sd_models.move_model(u.controlnet.model, devices.device)
         if unit_type == 't2i adapter' and u.adapter.model is not None:
             active_process.append(u.process)
