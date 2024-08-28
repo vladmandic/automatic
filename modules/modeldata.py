@@ -101,6 +101,8 @@ class Shared(sys.modules[__name__].__class__):
                 model_type = 'hunyuandit'
             elif "Cascade" in self.sd_model.__class__.__name__:
                 model_type = 'sc'
+            elif "FluxPipeline" in self.sd_model.__class__.__name__:
+                model_type = 'f1'
             else:
                 model_type = self.sd_model.__class__.__name__
         except Exception:

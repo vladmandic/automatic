@@ -69,7 +69,7 @@ def create_sampler(name, model):
         return sampler
     elif shared.native:
         sampler = config.constructor(model)
-        if shared.sd_model_type == 'FluxPipeline':
+        if shared.sd_model_type == 'f1':
             if 'base_image_seq_len' not in sampler.sampler.config or 'max_image_seq_len' not in sampler.sampler.config or 'base_shift' not in sampler.sampler.config or 'max_shift' not in sampler.sampler.config:
                 shared.log.warning('FLUX sampler: attempting to use a non compatible scheduler')
                 return None

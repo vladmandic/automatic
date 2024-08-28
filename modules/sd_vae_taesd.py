@@ -18,6 +18,8 @@ taesd_models = {
     'sdxl-encoder': None,
     'sd3-decoder': None,
     'sd3-encoder': None,
+    'f1-decoder': None,
+    'f1-encoder': None,
 }
 previous_warnings = False
 
@@ -65,13 +67,21 @@ class TAESD2(nn.Module): # pylint: disable=abstract-method
         """Initialize pretrained TAESD on the given device from the given checkpoints."""
         super().__init__()
         if latent_channels is None:
-            latent_channels = 16 if "taesd3" in str(encoder_path) else 4
+            latent_channels = self.guess_latent_channels(str(encoder_path))
         self.encoder = Encoder(latent_channels)
         self.decoder = Decoder(latent_channels)
         if encoder_path is not None:
             self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
         if decoder_path is not None:
             self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"))
+
+    def guess_latent_channels(self, encoder_path):
+        """guess latent channel count based on encoder filename"""
+        if "taef1" in encoder_path:
+            return 16
+        if "taesd3" in encoder_path:
+            return 16
+        return 4
 
     @staticmethod
     def scale_latents(x):
@@ -92,13 +102,21 @@ class TAESD(nn.Module): # pylint: disable=abstract-method
         """Initialize pretrained TAESD on the given device from the given checkpoints."""
         super().__init__()
         if latent_channels is None:
-            latent_channels = 16 if "taesd3" in str(encoder_path) or "taesd3" in str(decoder_path) else 4
+            latent_channels = self.guess_latent_channels(str(decoder_path), str(encoder_path))
         self.encoder = Encoder(latent_channels)
         self.decoder = Decoder(latent_channels)
         if encoder_path is not None:
             self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
         if decoder_path is not None:
             self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"))
+
+    def guess_latent_channels(self, decoder_path, encoder_path):
+        """guess latent channel count based on encoder filename"""
+        if "taef1" in encoder_path or "taef1" in decoder_path:
+            return 16
+        if "taesd3" in encoder_path or "taesd3" in decoder_path:
+            return 16
+        return 4
 
     @staticmethod
     def scale_latents(x):
@@ -148,7 +166,7 @@ def decode(latents):
     if model_class == 'ldm':
         model_class = 'sd'
     dtype = devices.dtype_vae if devices.dtype_vae != torch.bfloat16 else torch.float16 # taesd does not support bf16
-    if 'sd' not in model_class:
+    if 'sd' not in model_class and 'f1' not in model_class:
         if not previous_warnings:
             previous_warnings = True
             shared.log.warning(f'TAESD unsupported model type: {model_class}')
@@ -162,6 +180,11 @@ def decode(latents):
             shared.log.debug(f'VAE load: type=taesd model={model_path}')
             vae = taesd_models[f'{model_class}-decoder']
             vae.decoder.to(devices.device, dtype)
+        else:
+            shared.log.error(f'VAE load: type=taesd model={model_path} not found')
+            return latents
+    if vae is None:
+        return latents
     try:
         with devices.inference_context():
             latents = latents.detach().clone().to(devices.device, dtype)
@@ -188,7 +211,7 @@ def encode(image):
     model_class = shared.sd_model_type
     if model_class == 'ldm':
         model_class = 'sd'
-    if 'sd' not in model_class:
+    if 'sd' not in model_class and 'f1' not in model_class:
         if not previous_warnings:
             previous_warnings = True
             shared.log.warning(f'TAESD unsupported model type: {model_class}')
