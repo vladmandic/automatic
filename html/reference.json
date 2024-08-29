@@ -149,9 +149,9 @@
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
   },
 
-  "AuraFlow 0.1": {
-    "path": "https://huggingface.co/fal/AuraFlow",
-    "desc": "AuraFlow v0.1, an Open Exploration of Large Rectified Flow Models is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license. This model achieves state-of-the-art results on the GenEval benchmark.",
+  "AuraFlow 0.3": {
+    "path": "https://huggingface.co/fal/AuraFlow-v0.3",
+    "desc": "AuraFlow v0.3 is the fully open-sourced flow-based text-to-image generation model. The model was trained with more compute compared to the previous version, AuraFlow-v0.2. Compared to AuraFlow-v0.2, the model is fine-tuned on more aesthetic datasets and now supports various aspect ratio, (now width and height up to 1536 pixels).",
     "preview": "fal--AuraFlow.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024"

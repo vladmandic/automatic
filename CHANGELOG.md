@@ -37,7 +37,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
   - additional [nf4](https://huggingface.co/sayakpaul/flux.1-dev-nf4) quantized variation  
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)  
-  AuraFlow v0.1 is the fully open-sourced largest flow-based text-to-image generation model  
+  AuraFlow v0.3 is the fully open-sourced largest flow-based text-to-image generation model  
   This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
   Use scheduler: Default or Euler FlowMatch or Heun FlowMatch  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  

@@ -773,12 +773,16 @@ def apply_balanced_offload(sd_model):
     class dispatch_from_cpu_hook(ModelHook):
         def init_hook(self, module):
             return module
+
         def pre_forward(self, module, *args, **kwargs):
             if normalize_device(module.device) != normalize_device(devices.device):
                 device_index = torch.device(devices.device).index
                 if device_index is None:
                     device_index = 0
-                max_memory = {device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB", "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB"}
+                max_memory = {
+                    device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB",
+                    "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB",
+                }
                 device_map = infer_auto_device_map(module, max_memory=max_memory)
                 module = remove_hook_from_module(module, recurse=True)
                 offload_dir = getattr(module, "offload_dir", os.path.join(shared.opts.accelerate_offload_path, module.__class__.__name__))
@@ -786,8 +790,10 @@ def apply_balanced_offload(sd_model):
                 module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                 module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
             return args, kwargs
+
         def post_forward(self, module, output):
             return output
+
         def detach_hook(self, module):
             return module
 
