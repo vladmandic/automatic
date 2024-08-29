@@ -91,7 +91,6 @@ def crop_images(images, crops):
                     if len(faces) > 0:
                         cropped.append(faces[0].face)
                 if len(cropped) == len(images[i]):
-                    print('HERE0')
                     images[i] = cropped
                 else:
                     shared.log.error(f'IP adapter: failed to crop image: source={len(images[i])} faces={len(cropped)}')
