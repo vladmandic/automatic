@@ -1,3 +1,5 @@
+from installer import install, log
+
 nvml_initialized = False
 
 
@@ -20,17 +22,22 @@ def get_nvml():
     global nvml_initialized # pylint: disable=global-statement
     try:
         if not nvml_initialized:
-            from installer import install, log
             install('pynvml', quiet=True)
             import pynvml # pylint: disable=redefined-outer-name
             pynvml.nvmlInit()
             log.debug('NVML initialized')
             nvml_initialized = True
+        else:
+            import pynvml
         devices = []
         for i in range(pynvml.nvmlDeviceGetCount()):
             dev = pynvml.nvmlDeviceGetHandleByIndex(i)
+            try:
+                name = pynvml.nvmlDeviceGetName(dev)
+            except Exception:
+                name = ''
             device = {
-                'name': pynvml.nvmlDeviceGetName(dev),
+                'name': name,
                 'version': {
                     'cuda': pynvml.nvmlSystemGetCudaDriverVersion(),
                     'driver': pynvml.nvmlSystemGetDriverVersion(),

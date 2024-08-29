@@ -87,6 +87,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - fix LoRA apply with force-diffusers
 - fix LoRA scales with force-diffusers
 - fix control API
+- fix NVML gpu monitoring
 
 ## Update for 2024-07-08
 
