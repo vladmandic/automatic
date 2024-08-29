@@ -653,7 +653,7 @@ def check_torch():
             torch_command = install_cuda()
         elif is_rocm_available and (args.use_rocm or args.use_zluda): # prioritize rocm
             torch_command = install_rocm_zluda()
-        elif is_ipex_available and args.use_ipex: # prioritize ipex
+        elif allow_ipex and args.use_ipex: # prioritize ipex
             torch_command = install_ipex(torch_command)
         elif allow_openvino and args.use_openvino: # prioritize openvino
             torch_command = install_openvino(torch_command)
