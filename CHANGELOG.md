@@ -31,22 +31,19 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching  
   This is a very large model at ~32GB in size, its recommended to use a) offloading, b) quantization  
   *Note*: [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) variant is a gated model, you need to accept the terms and conditions to use it  
-  Use scheduler: default or euler flowmatch  
-  Use of FLUX.1 LoRAs is supported  
-  Use of TAESD for preview is supported  
   For more information, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
   SD.Next supports:  
   - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
   - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
   - additional [nf4](https://huggingface.co/sayakpaul/flux.1-dev-nf4) quantized variation  
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)  
-  AuraFlow is inspired by SD3 and is by far the largest text-to-image generation model that comes with an Apache 2.0 license  
+  AuraFlow v0.1 is the fully open-sourced largest flow-based text-to-image generation model  
   This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
-  Use scheduler: default or euler flowmatch or heun flowmatch  
+  Use scheduler: Default or Euler FlowMatch or Heun FlowMatch  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
   Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)  
   This model uses T5 XXL variation of text encoder (previous version of Lumina used Gemma 2B as text encoder)  
-  Use scheduler: default or euler flowmatch or heun flowmatch  
+  Use scheduler: Default or Euler FlowMatch or Heun FlowMatch  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
   Kolors is a large-scale text-to-image generation model based on latent diffusion  
   This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  

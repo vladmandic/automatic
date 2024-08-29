@@ -5,7 +5,8 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 ## Future Candidates
 
 - cogvideo-x: <https://huggingface.co/THUDM/CogVideoX-5b>
-- animatediff-sdxl <https://github.com/huggingface/diffusers/pull/6721>
+- animatediff-sdxl: <https://github.com/huggingface/diffusers/pull/6721>
+- animatediff prompt-travel: <https://github.com/huggingface/diffusers/pull/9231>
 - async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
 - fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
 - init latents: variations, img2img

@@ -66,6 +66,9 @@ predefined_sdxl = {
     # 'StabilityAI Recolor R256': 'stabilityai/control-lora/control-LoRAs-rank256/control-lora-recolor-rank256.safetensors',
     # 'StabilityAI Sketch R256': 'stabilityai/control-lora/control-LoRAs-rank256/control-lora-sketch-rank256.safetensors',
 }
+predefined_f1 = {
+    'Shakker-Labs ControlNet Union': 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
+}
 models = {}
 all_models = {}
 all_models.update(predefined_sd15)
@@ -102,6 +105,8 @@ def list_models(refresh=False):
         models = ['None'] + list(predefined_sdxl) + sorted(find_models())
     elif modules.shared.sd_model_type == 'sd':
         models = ['None'] + list(predefined_sd15) + sorted(find_models())
+    elif modules.shared.sd_model_type == 'f1':
+        models = ['None'] + list(predefined_f1) + sorted(find_models())
     else:
         log.warning(f'Control {what} model list failed: unknown model type')
         models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(find_models())
@@ -244,6 +249,8 @@ class ControlNetPipeline():
                 controlnet=controlnet, # can be a list
             )
             sd_models.move_model(self.pipeline, pipeline.device)
+        elif detect.is_f1(pipeline):
+            log.warning('Control model pipeline: class=FluxPipeline unsupported model type')
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return
