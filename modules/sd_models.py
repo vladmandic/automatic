@@ -261,7 +261,7 @@ def select_checkpoint(op='model'):
         return None
     # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
-        if model_checkpoint != 'model.ckpt' and model_checkpoint != 'runwayml/stable-diffusion-v1-5':
+        if model_checkpoint != 'model.ckpt' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
             shared.log.warning(f'Selected: {op}="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
@@ -997,7 +997,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     # if 'LCM' in checkpoint_info.path:
         #    diffusers_load_config['custom_pipeline'] = 'latent_consistency_txt2img'
     if shared.opts.data.get('sd_model_checkpoint', '') == 'model.ckpt' or shared.opts.data.get('sd_model_checkpoint', '') == '':
-        shared.opts.data['sd_model_checkpoint'] = "runwayml/stable-diffusion-v1-5"
+        shared.opts.data['sd_model_checkpoint'] = "stabilityai/stable-diffusion-xl-base-1.0"
 
     if op == 'model' or op == 'dict':
         if (model_data.sd_model is not None) and (checkpoint_info is not None) and (checkpoint_info.hash == model_data.sd_model.sd_checkpoint_info.hash): # trying to load the same model
