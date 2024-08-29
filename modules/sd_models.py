@@ -734,37 +734,46 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
         if shared.opts.diffusers_offload_mode == "model":
-            shared.log.debug(f'Setting {op}: enable model CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                sd_model.enable_model_cpu_offload(device=devices.device)
-            else:
-                sd_model.maybe_free_model_hooks()
-            sd_model.has_accelerate = True
+            try:
+                shared.log.debug(f'Setting {op}: enable model CPU offload')
+                if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                    shared.opts.diffusers_move_base = False
+                    shared.opts.diffusers_move_unet = False
+                    shared.opts.diffusers_move_refiner = False
+                    shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
+                if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                    sd_model.enable_model_cpu_offload(device=devices.device)
+                else:
+                    sd_model.maybe_free_model_hooks()
+                sd_model.has_accelerate = True
+            except Exception as e:
+                shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
     if hasattr(sd_model, "enable_sequential_cpu_offload"):
         if shared.opts.diffusers_offload_mode == "sequential":
-            shared.log.debug(f'Setting {op}: enable sequential CPU offload')
-            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                shared.opts.diffusers_move_base = False
-                shared.opts.diffusers_move_unet = False
-                shared.opts.diffusers_move_refiner = False
-                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
-            if sd_model.has_accelerate:
-                if op == "vae": # reapply sequential offload to vae
-                    from accelerate import cpu_offload
-                    sd_model.vae.to("cpu")
-                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0) # pylint: disable=protected-access
+            try:
+                shared.log.debug(f'Setting {op}: enable sequential CPU offload')
+                if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                    shared.opts.diffusers_move_base = False
+                    shared.opts.diffusers_move_unet = False
+                    shared.opts.diffusers_move_refiner = False
+                    shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
+                if sd_model.has_accelerate:
+                    if op == "vae": # reapply sequential offload to vae
+                        from accelerate import cpu_offload
+                        sd_model.vae.to("cpu")
+                        cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0) # pylint: disable=protected-access
+                    else:
+                        pass # do nothing if offload is already applied
                 else:
-                    pass # do nothing if offload is already applied
-            else:
-                sd_model.enable_sequential_cpu_offload(device=devices.device)
-            sd_model.has_accelerate = True
+                    sd_model.enable_sequential_cpu_offload(device=devices.device)
+                sd_model.has_accelerate = True
+            except Exception as e:
+                shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
-        sd_model = apply_balanced_offload(sd_model)
+        try:
+            sd_model = apply_balanced_offload(sd_model)
+        except Exception as e:
+            shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
 
 
 def apply_balanced_offload(sd_model):

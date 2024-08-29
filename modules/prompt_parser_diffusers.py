@@ -448,9 +448,9 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
 
 
 def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", clip_skip: int = None):
-    SD3 = hasattr(pipe, 'text_encoder_3')
-    prompt, prompt_2, _prompt_3 = split_prompts(prompt, SD3)
-    neg_prompt, neg_prompt_2, _neg_prompt_3 = split_prompts(neg_prompt, SD3)
+    is_sd3 = hasattr(pipe, 'text_encoder_3')
+    prompt, prompt_2, _prompt_3 = split_prompts(prompt, is_sd3)
+    neg_prompt, neg_prompt_2, _neg_prompt_3 = split_prompts(neg_prompt, is_sd3)
     try:
         prompt = pipe.maybe_convert_prompt(prompt, pipe.tokenizer)
         neg_prompt = pipe.maybe_convert_prompt(neg_prompt, pipe.tokenizer)
@@ -471,7 +471,7 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
         te3_device = pipe.text_encoder_3.device
         pipe.text_encoder_3 = pipe.text_encoder_3.to(devices.device)
 
-    if SD3:
+    if is_sd3:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
     elif 'Flux' in pipe.__class__.__name__:
         prompt_embed, positive_pooled = get_weighted_text_embeddings_flux1(pipe=pipe, prompt=prompt, prompt2=prompt_2, device=devices.device)

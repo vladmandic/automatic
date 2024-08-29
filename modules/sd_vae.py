@@ -2,7 +2,7 @@ import os
 import glob
 from copy import deepcopy
 import torch
-from modules import shared, paths, devices, script_callbacks, sd_models
+from modules import shared, errors, paths, devices, script_callbacks, sd_models
 
 
 vae_ignore_keys = {"model_ema.decay", "model_ema.num_updates"}
@@ -11,6 +11,7 @@ base_vae = None
 loaded_vae_file = None
 checkpoint_info = None
 vae_path = os.path.abspath(os.path.join(paths.models_path, 'VAE'))
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
 
 
 def get_base_vae(model):
@@ -154,6 +155,8 @@ def load_vae(model, vae_file=None, vae_source="unknown-source"):
             _load_vae_dict(model, vae_dict_1)
         except Exception as e:
             shared.log.error(f"Loading VAE failed: model={vae_file} source={vae_source} {e}")
+            if debug:
+                errors.display(e, 'VAE')
             restore_base_vae(model)
         vae_opt = get_filename(vae_file)
         if vae_opt not in vae_dict:
@@ -229,6 +232,8 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
         return vae
     except Exception as e:
         shared.log.error(f"Loading VAE failed: model={vae_file} {e}")
+        if debug:
+            errors.display(e, 'VAE')
     return None
 
 
