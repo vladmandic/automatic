@@ -212,9 +212,13 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
         import diffusers
         if os.path.isfile(vae_file):
             _pipeline, model_type = sd_models.detect_pipeline(model_file, 'vae')
-            diffusers_load_config = { "config_file":  paths.sd_default_config if model_type != 'Stable Diffusion XL' else os.path.join(paths.sd_configs_path, 'sd_xl_base.yaml')}
-            if os.path.getsize(vae_file) > 1310944880:
+            diffusers_load_config = {
+                "config": os.path.join(sd_models.get_load_config(model_file, model_type, config_type='json'), 'vae'),
+            }
+            if os.path.getsize(vae_file) > 1310944880: # 1.3GB
                 vae = diffusers.ConsistencyDecoderVAE.from_pretrained('openai/consistency-decoder', **diffusers_load_config) # consistency decoder does not have from single file, so we'll just download it once more
+            elif os.path.getsize(vae_file) < 10000000: # 10MB
+                vae = diffusers.AutoencoderTiny.from_single_file(vae_file, **diffusers_load_config)
             else:
                 vae = diffusers.AutoencoderKL.from_single_file(vae_file, **diffusers_load_config)
                 if getattr(vae.config, 'scaling_factor', 0) == 0.18125 and shared.sd_model_type == 'sdxl':

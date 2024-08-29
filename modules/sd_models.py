@@ -817,10 +817,13 @@ def apply_balanced_offload(sd_model):
                     checkpoint_name = pipe.__class__.__name__
                 offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
                 module = remove_hook_from_module(module, recurse=True)
-                module = module.to("cpu")
-                module.offload_dir = offload_dir
-                module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
-                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                try:
+                    module = module.to("cpu")
+                    module.offload_dir = offload_dir
+                    module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
+                    module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                except Exception as e:
+                    shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc()
 
     apply_balanced_offload_to_module(sd_model)
@@ -933,6 +936,8 @@ def get_load_config(model_file, model_type, config_type='yaml'):
             return 'configs/sdxl'
         if model_type == 'Stable Diffusion 3':
             return 'configs/sd3'
+        if model_type == 'FLUX':
+            return 'configs/flux'
     return None
 
 
@@ -1669,6 +1674,7 @@ def reload_text_encoder(initial=False):
         return # dont unload
     signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
+    print('HERE', signature.items())
     if len(t5) > 0:
         from modules.model_t5 import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
