@@ -150,7 +150,7 @@
   },
 
   "AuraFlow 0.3": {
-    "path": "https://huggingface.co/fal/AuraFlow-v0.3",
+    "path": "fal/AuraFlow-v0.3",
     "desc": "AuraFlow v0.3 is the fully open-sourced flow-based text-to-image generation model. The model was trained with more compute compared to the previous version, AuraFlow-v0.2. Compared to AuraFlow-v0.2, the model is fine-tuned on more aesthetic datasets and now supports various aspect ratio, (now width and height up to 1536 pixels).",
     "preview": "fal--AuraFlow.jpg",
     "skip": true,

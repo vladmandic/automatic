@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-08-28
+## Update for 2024-08-29
 
-### Highlights for 2024-08-28
+### Highlights for 2024-08-29
 
 Summer break is over and we are back with a massive update!  
 
@@ -15,13 +15,14 @@ Support for all of the new models:
 
 What else? Just a bit... ;)  
 
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode and more...  
+New **fast-install** mode, new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode and more...  
 
 **Breaking Changes...**
 
-Due to internal changes, you'll need to reset your **attention** and **offload** settings!
+Due to internal changes, you'll need to reset your **attention** and **offload** settings!  
+But...For a good reason, new *balanced offload* is magic when it comes to memory utilization while sacrificing minimal performance!
 
-### Details for 2024-08-27
+### Details for 2024-08-29
 
 **New Models...**
 

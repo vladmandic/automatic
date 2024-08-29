@@ -1392,9 +1392,6 @@ def get_weighted_text_embeddings_flux1(
 
     # use avg pooling embeddings
     pool_embeds_list = []
-    te_device = pipe.text_encoder.device
-    if pipe.text_encoder.device != device:
-        pipe.text_encoder = pipe.text_encoder.to(device)
     for token_group in prompt_token_groups:
         token_tensor = torch.tensor(
             [token_group]
@@ -1407,7 +1404,7 @@ def get_weighted_text_embeddings_flux1(
         )
         pooled_prompt_embeds = prompt_embeds_1.pooler_output.squeeze(0)
         pool_embeds_list.append(pooled_prompt_embeds)
-    pipe.text_encoder = pipe.text_encoder.to(te_device)
+
     prompt_embeds = torch.stack(pool_embeds_list, dim=0)
 
     # get the avg pool
