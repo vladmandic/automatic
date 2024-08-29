@@ -451,7 +451,13 @@ def check_onnx():
         install('onnxruntime', 'onnxruntime', ignore=True)
 
 
-def install_rocm_zluda(torch_command):
+def install_cuda():
+    log.info('nVidia CUDA toolkit detected: nvidia-smi present')
+    install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
+    return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
+
+
+def install_rocm_zluda():
     from modules import rocm
 
     if not rocm.is_installed:
@@ -488,37 +494,34 @@ def install_rocm_zluda(torch_command):
     log.info(f'ROCm version detected: {rocm.version}')
 
     if sys.platform == "win32":
-        if args.use_zluda:
-            log.warning("ZLUDA support: experimental")
-            error = None
-            from modules import zluda_installer
+        #if args.use_zluda:
+        log.warning("ZLUDA support: experimental")
+        error = None
+        from modules import zluda_installer
+        try:
+            if args.reinstall_zluda:
+                zluda_installer.uninstall()
+            zluda_path = zluda_installer.get_path()
+            zluda_installer.install(zluda_path)
+            zluda_installer.make_copy(zluda_path)
+        except Exception as e:
+            error = e
+            log.warning(f'Failed to install ZLUDA: {e}')
+        if error is None:
+            if args.device_id is not None:
+                os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
             try:
-                if args.reinstall_zluda:
-                    zluda_installer.uninstall()
-                zluda_path = zluda_installer.get_path()
-                zluda_installer.install(zluda_path)
-                zluda_installer.make_copy(zluda_path)
+                zluda_installer.load(zluda_path)
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                log.info(f'Using ZLUDA in {zluda_path}')
             except Exception as e:
                 error = e
-                log.warning(f'Failed to install ZLUDA: {e}')
-            if error is None:
-                if args.device_id is not None:
-                    os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
-                try:
-                    zluda_installer.load(zluda_path)
-                    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
-                    log.info(f'Using ZLUDA in {zluda_path}')
-                except Exception as e:
-                    error = e
-                    log.warning(f'Failed to load ZLUDA: {e}')
-            if error is not None:
-                log.info('Using CPU-only torch')
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-        else: # TODO TBD after ROCm for Windows is released
-            log.warning("HIP SDK is detected, but no Torch release for Windows available")
-            log.info("For ZLUDA support specify '--use-zluda'")
+                log.warning(f'Failed to load ZLUDA: {e}')
+        if error is not None:
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+        #else:
+        # TODO TBD after ROCm for Windows is released
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
@@ -621,14 +624,6 @@ def install_torch_addons():
         install(triton_command, 'triton', quiet=True)
 
 
-def is_cuda_available(allow_cuda):
-    return allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe')))
-
-
-def is_ipex_available(allow_ipex):
-    return allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI"))
-
-
 # check torch version
 def check_torch():
     if args.skip_torch:
@@ -649,31 +644,44 @@ def check_torch():
 
     if torch_command != '':
         pass
-    elif is_cuda_available(allow_cuda):
-        log.info('nVidia CUDA toolkit detected: nvidia-smi present')
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
-        install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
-    elif allow_rocm and rocm.is_installed:
-        torch_command = install_rocm_zluda(torch_command)
-    elif is_ipex_available(allow_ipex):
-        torch_command = install_ipex(torch_command)
-    elif allow_openvino and args.use_openvino:
-        torch_command = install_openvino(torch_command)
     else:
-        machine = platform.machine()
-        if sys.platform == 'darwin':
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-        elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
-            log.info('Using DirectML Backend')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
-            if 'torch' in torch_command and not args.version:
-                install(torch_command, 'torch torchvision')
-            install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
+        is_cuda_available = allow_cuda and (shutil.which('nvidia-smi') is not None or args.use_xformers or os.path.exists(os.path.join(os.environ.get('SystemRoot') or r'C:\Windows', 'System32', 'nvidia-smi.exe')))
+        is_rocm_available = allow_rocm and rocm.is_installed
+        is_ipex_available = allow_ipex and (args.use_ipex or shutil.which('sycl-ls') is not None or shutil.which('sycl-ls.exe') is not None or os.environ.get('ONEAPI_ROOT') is not None or os.path.exists('/opt/intel/oneapi') or os.path.exists("C:/Program Files (x86)/Intel/oneAPI") or os.path.exists("C:/oneAPI"))
+
+        if is_cuda_available and args.use_cuda: # prioritize cuda
+            torch_command = install_cuda()
+        elif is_rocm_available and (args.use_rocm or args.use_zluda): # prioritize rocm
+            torch_command = install_rocm_zluda()
+        elif is_ipex_available and args.use_ipex: # prioritize ipex
+            torch_command = install_ipex(torch_command)
+        elif allow_openvino and args.use_openvino: # prioritize openvino
+            torch_command = install_openvino(torch_command)
+
+        elif is_cuda_available:
+            torch_command = install_cuda()
+        elif is_rocm_available:
+            torch_command = install_rocm_zluda()
+        elif is_ipex_available:
+            torch_command = install_ipex(torch_command)
+        elif allow_openvino:
+            torch_command = install_openvino(torch_command)
+
         else:
-            if args.use_zluda:
-                log.warning("ZLUDA failed to initialize: no HIP SDK found")
-            log.info('Using CPU-only Torch')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+            machine = platform.machine()
+            if sys.platform == 'darwin':
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
+            elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
+                log.info('Using DirectML Backend')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
+                if 'torch' in torch_command and not args.version:
+                    install(torch_command, 'torch torchvision')
+                install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)
+            else:
+                if args.use_zluda:
+                    log.warning("ZLUDA failed to initialize: no HIP SDK found")
+                log.info('Using CPU-only Torch')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
         install(torch_command, 'torch torchvision', quiet=True)
     else:
