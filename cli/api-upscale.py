@@ -86,5 +86,5 @@ if __name__ == "__main__":
     parser.add_argument('--upscaler', required=False, default='Nearest', help='upscaler name')
     parser.add_argument('--scale', required=False, default=2, help='upscaler scale')
     args = parser.parse_args()
-    log.info(f'upscale: {args}')
+    log.info(f'api-upscale: {args}')
     upscale(args)

@@ -38,7 +38,7 @@ def post(endpoint: str, payload: dict = None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'api-txt2img')
+    parser = argparse.ArgumentParser(description = 'api-json')
     parser.add_argument('endpoint', nargs=1, help='endpoint')
     parser.add_argument('json', nargs=1, help='json data or file')
     args = parser.parse_args()

@@ -132,7 +132,7 @@ def generate(args): # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = 'api-img2img')
+    parser = argparse.ArgumentParser(description = 'api-control')
     parser.add_argument('--init', required=False, default=None, help='init image')
     parser.add_argument('--input', required=False, default=None, help='input image')
     parser.add_argument('--mask', required=False, help='mask image')
@@ -148,5 +148,5 @@ if __name__ == "__main__":
     parser.add_argument('--control', required=False, help='control units')
     parser.add_argument('--ipadapter', required=False, help='ipadapter units')
     args = parser.parse_args()
-    log.info(f'img2img: {args}')
+    log.info(f'api-control: {args}')
     generate(args)

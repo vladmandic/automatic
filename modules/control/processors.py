@@ -212,7 +212,6 @@ class Processor():
     def __call__(self, image_input: Image, mode: str = 'RGB', resize_mode: int = 0, resize_name: str = 'None', scale_tab: int = 1, scale_by: float = 1.0, local_config: dict = {}):
         if self.override is not None:
             debug(f'Control Processor: id="{self.processor_id}" override={self.override}')
-            print('HERE1', image_input)
             if image_input is not None and image_input.size != self.override.size:
                 debug(f'Control resize: op=override image={self.override} width={image_input.width} height={image_input.height} mode={resize_mode} name={resize_name}')
                 image_input = images.resize_image(resize_mode, self.override, image_input.width, image_input.height, resize_name)
@@ -224,7 +223,6 @@ class Processor():
                     debug(f'Control resize: op=before image={image_input} width={width_before} height={height_before} mode={resize_mode} name={resize_name}')
                     image_input = images.resize_image(resize_mode, image_input, width_before, height_before, resize_name)
         if self.processor_id is None or self.processor_id == 'None':
-            print('HERE3', self.override)
             return image_input
         image_process = image_input
         if image_input is None:

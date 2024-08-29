@@ -72,5 +72,5 @@ if __name__ == "__main__":
     parser.add_argument('--model', required=True, help='preprocessing model')
     parser.add_argument('--output', required=False, help='output image')
     args = parser.parse_args()
-    log.info(f'info: {args}')
+    log.info(f'api-preprocess: {args}')
     info(args)

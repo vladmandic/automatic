@@ -76,6 +76,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   for example: set size->before->method:nearest, mode:fixed or mode:fill  
 - control tab includes superset of txt and img scripts
 - automatically offload disabled controlnet units  
+- ipadapter option to auto-crop input images to faces to improve efficiency of face-transfter ipadapters  
 - update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
 - general **ROCm** fixes, thanks @lshqqytiger!  
 - support for HIP SDK 6.1 on ZLUDA backend, thanks @lshqqytiger!

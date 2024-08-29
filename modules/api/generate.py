@@ -64,6 +64,7 @@ class APIGenerate():
         if hasattr(request, "ip_adapter") and request.ip_adapter:
             p.ip_adapter_names = []
             p.ip_adapter_scales = []
+            p.ip_adapter_crops = []
             p.ip_adapter_starts = []
             p.ip_adapter_ends = []
             p.ip_adapter_images = []
@@ -72,6 +73,7 @@ class APIGenerate():
                     continue
                 p.ip_adapter_names.append(ipadapter.adapter)
                 p.ip_adapter_scales.append(ipadapter.scale)
+                p.ip_adapter_crops.append(ipadapter.crop)
                 p.ip_adapter_starts.append(ipadapter.start)
                 p.ip_adapter_ends.append(ipadapter.end)
                 p.ip_adapter_images.append([helpers.decode_base64_to_image(x) for x in ipadapter.images])

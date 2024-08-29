@@ -7,10 +7,11 @@ from modules import devices, processing_class
 
 
 class YoLoResult:
-    def __init__(self, score: float, box: list[int], mask: Image.Image = None, size: float = 0, width = 0, height = 0, args = {}):
+    def __init__(self, score: float, box: list[int], mask: Image.Image = None, face: Image.Image = None, size: float = 0, width = 0, height = 0, args = {}):
         self.score = score
         self.box = box
         self.mask = mask
+        self.face = face
         self.size = size
         self.width = width
         self.height = height
@@ -82,7 +83,8 @@ class FaceRestorerYolo(FaceRestoration):
                         mask_image = Image.new('L', image.size, 0)
                         draw = ImageDraw.Draw(mask_image)
                         draw.rectangle(box, fill="white", outline=None, width=0)
-                    result.append(YoLoResult(score=round(score, 2), box=box, mask=mask_image, size=size, width=w, height=h, args=args))
+                        face_image = image.crop(box)
+                    result.append(YoLoResult(score=round(score, 2), box=box, mask=mask_image, face=face_image, size=size, width=w, height=h, args=args))
         return result
 
     def load(self):

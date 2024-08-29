@@ -26,6 +26,13 @@ class ReqMask(BaseModel):
     model: Optional[str] = Field(title="Model", description="The model to use for preprocessing")
     params: Optional[dict] = Field(default={}, title="Settings", description="Preprocessor settings")
 
+class ReqFace(BaseModel):
+    image: str = Field(title="Image", description="The base64 encoded image")
+
+class ResFace(BaseModel):
+    images: List[str] = Field(title="Image", description="The base64 encoded images of detected faces")
+    scores: List[float] = Field(title="Scores", description="The scores of the detected faces")
+
 class ResMask(BaseModel):
     mask: str = Field(default='', title="Image", description="The processed image in base64 format")
 
@@ -98,3 +105,18 @@ class APIProcess():
             return JSONResponse(status_code=400, content={"error": "Mask is none"})
         image = encode_pil_to_base64(processed)
         return ResMask(mask=image)
+
+    def post_face(self, req: ReqFace):
+        from scripts.face_details import yolo # pylint: disable=no-name-in-module
+        image = decode_base64_to_image(req.image)
+        shared.state.begin('API-FACE', api=True)
+        images = []
+        scores = []
+        with self.queue_lock:
+            yolo.load()
+            faces = yolo.predict(image)
+            for face in faces:
+                images.append(encode_pil_to_base64(face.face))
+                scores.append(face.score)
+        shared.state.end(api=False)
+        return ResFace(images=images, scores=scores)

@@ -211,7 +211,8 @@ def get_closet_checkpoint_match(search_string):
     if found and len(found) > 0:
         return found[0]
     for v in shared.reference_models.values():
-        if search_string in v['path'] or os.path.basename(search_string) in v['path']:
+        pth = v['path'].split('@')[-1]
+        if search_string in pth or os.path.basename(search_string) in pth:
             model_name = search_string.replace('huggingface/', '')
             checkpoint_info = CheckpointInfo(v['path']) # create a virutal model info
             checkpoint_info.type = 'huggingface'

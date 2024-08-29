@@ -55,6 +55,7 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ResProcessBatch)
         self.add_api_route("/sdapi/v1/preprocess", self.process.post_preprocess, methods=["POST"])
         self.add_api_route("/sdapi/v1/mask", self.process.post_mask, methods=["POST"])
+        self.add_api_route("/sdapi/v1/faces", self.process.post_face, methods=["POST"])
 
         # api dealing with optional scripts
         self.add_api_route("/sdapi/v1/scripts", script.get_scripts_list, methods=["GET"], response_model=models.ResScripts)

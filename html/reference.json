@@ -1,4 +1,29 @@
 {
+  "Juggernaut SD-XL XI": {
+    "path": "juggernautXL_juggXIByRundiffusion.safetensors@https://civitai.com/api/download/models/782002",
+    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
+  "Juggernaut SD-XL X Hyper": {
+    "path": "Juggernaut_X_RunDiffusion_Hyper.safetensors@https://civitai.com/api/download/models/471120",
+    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
+  "Juggernaut SD-XL IX Lightning": {
+    "path": "juggernautXL_v9Rdphoto2Lightning.safetensors@https://civitai.com/api/download/models/357609",
+    "preview": "juggernautXL_v9Rdphoto2Lightning.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
+  },
+  "Juggernaut SD Reborn": {
+    "original": true,
+    "path": "juggernaut_reborn.safetensors@https://civitai.com/api/download/models/274039",
+    "preview": "juggernaut_reborn.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion 1.5",
+    "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
 
   "DreamShaper SD v8": {
     "original": true,
@@ -19,31 +44,14 @@
     "desc": "Showcase finetuned model based on Stable diffusion XL",
     "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 8, cfg_scale: 2.0"
   }, 
-  "Juggernaut SD Reborn": {
-    "original": true,
-    "path": "juggernaut_reborn.safetensors@https://civitai.com/api/download/models/274039",
-    "preview": "juggernaut_reborn.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion 1.5",
-    "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
-  },
-  "Juggernaut SD-XL v9": {
-    "path": "juggernautXL_v9Rundiffusionphoto2.safetensors@https://civitai.com/api/download/models/348913",
-    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
-  },
-  "Juggernaut SD-XL v9 Lightning": {
-    "path": "juggernautXL_v9Rdphoto2Lightning.safetensors@https://civitai.com/api/download/models/357609",
-    "preview": "juggernautXL_v9Rdphoto2Lightning.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
-  },
+
   "Tempest SD-XL v0.1": {
     "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
     "preview": "TempestV0.1-Artistic.jpg",
     "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
     "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
   },
+
   "SDXS DreamShaper 512": {
     "path": "IDKiro/sdxs-512-dreamshaper",
     "preview": "IDKiro--sdxs-512-dreamshaper.jpg",
@@ -152,7 +160,7 @@
   "AuraFlow 0.3": {
     "path": "fal/AuraFlow-v0.3",
     "desc": "AuraFlow v0.3 is the fully open-sourced flow-based text-to-image generation model. The model was trained with more compute compared to the previous version, AuraFlow-v0.2. Compared to AuraFlow-v0.2, the model is fine-tuned on more aesthetic datasets and now supports various aspect ratio, (now width and height up to 1536 pixels).",
-    "preview": "fal--AuraFlow.jpg",
+    "preview": "fal--AuraFlow-v0.3.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024"
   }, 

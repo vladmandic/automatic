@@ -60,5 +60,5 @@ if __name__ == "__main__":
     parser.add_argument('--model', required=False, help='vqa model')
     parser.add_argument('--question', required=False, help='question')
     args = parser.parse_args()
-    log.info(f'info: {args}')
+    log.info(f'api-vqa: {args}')
     info(args)

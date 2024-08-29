@@ -51,6 +51,7 @@ class Script(scripts.Script):
             starts = []
             ends = []
             files = []
+            crops = []
             masks = []
             image_galleries = []
             mask_galleries = []
@@ -61,6 +62,7 @@ class Script(scripts.Script):
                     with gr.Row():
                         adapters.append(gr.Dropdown(label='Adapter', choices=list(ipadapter.ADAPTERS), value='None'))
                         scales.append(gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                        crops.append(gr.Checkbox(label='Crop', default=False, interactive=True))
                     with gr.Row():
                         starts.append(gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.1, value=0))
                         ends.append(gr.Slider(label='End', minimum=0.0, maximum=1.0, step=0.1, value=1))
@@ -80,7 +82,7 @@ class Script(scripts.Script):
             layers_label = gr.HTML('<a href="https://huggingface.co/docs/diffusers/main/en/using-diffusers/ip_adapter#style--layout-control" target="_blank">InstantStyle: advanced layer activation</a>', visible=False)
             layers = gr.Text(label='Layer scales', placeholder='{\n"down": {"block_2": [0.0, 1.0]},\n"up": {"block_0": [0.0, 1.0, 0.0]}\n}', rows=1, type='text', interactive=True, lines=5, visible=False, show_label=False)
             layers_active.change(fn=self.display_advanced, inputs=[layers_active], outputs=[layers_label, layers])
-        return [num_adapters] + adapters + scales + files + starts + ends + masks + [layers_active] + [layers]
+        return [num_adapters] + adapters + scales + files + crops + starts + ends + masks + [layers_active] + [layers]
 
     def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if not shared.native:
@@ -95,14 +97,16 @@ class Script(scripts.Script):
             p.ip_adapter_scales = args[MAX_ADAPTERS:MAX_ADAPTERS*2][:units]
         if getattr(p, 'ip_adapter_images', []) == []:
             p.ip_adapter_images = args[MAX_ADAPTERS*2:MAX_ADAPTERS*3][:units]
+        if getattr(p, 'ip_adapter_crops', []) == []:
+            p.ip_adapter_crops = args[MAX_ADAPTERS*3:MAX_ADAPTERS*4][:units]
         if getattr(p, 'ip_adapter_starts', [0.0]) == [0.0]:
-            p.ip_adapter_starts = args[MAX_ADAPTERS*3:MAX_ADAPTERS*4][:units]
+            p.ip_adapter_starts = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
         if getattr(p, 'ip_adapter_ends', [1.0]) == [1.0]:
-            p.ip_adapter_ends = args[MAX_ADAPTERS*4:MAX_ADAPTERS*5][:units]
+            p.ip_adapter_ends = args[MAX_ADAPTERS*5:MAX_ADAPTERS*6][:units]
         if getattr(p, 'ip_adapter_masks', []) == []:
-            p.ip_adapter_masks = args[MAX_ADAPTERS*5:MAX_ADAPTERS*6][:units]
+            p.ip_adapter_masks = args[MAX_ADAPTERS*6:MAX_ADAPTERS*7][:units]
             p.ip_adapter_masks = [x for x in p.ip_adapter_masks if x]
-        layers_active, layers = args[MAX_ADAPTERS*6:MAX_ADAPTERS*7]
+        layers_active, layers = args[MAX_ADAPTERS*7:MAX_ADAPTERS*8]
         if layers_active and len(layers) > 0:
             try:
                 layers = json.loads(layers)

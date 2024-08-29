@@ -95,7 +95,7 @@ class APIControl():
 
     def prepare_ip_adapter(self, request):
         if hasattr(request, "ip_adapter") and request.ip_adapter:
-            args = { 'ip_adapter_names': [], 'ip_adapter_scales': [], 'ip_adapter_starts': [], 'ip_adapter_ends': [], 'ip_adapter_images': [], 'ip_adapter_masks': [] }
+            args = { 'ip_adapter_names': [], 'ip_adapter_scales': [], 'ip_adapter_crops': [], 'ip_adapter_starts': [], 'ip_adapter_ends': [], 'ip_adapter_images': [], 'ip_adapter_masks': [] }
             for ipadapter in request.ip_adapter:
                 if not ipadapter.images or len(ipadapter.images) == 0:
                     continue
