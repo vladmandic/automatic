@@ -11,9 +11,6 @@ def load_unet(model):
     if shared.opts.sd_unet not in list(unet_dict):
         shared.log.error(f'UNet model not found: {shared.opts.sd_unet}')
         return
-    if (not hasattr(model, 'unet') or model.unet is None) and not (hasattr(model, 'prior_pipe') and hasattr(model.prior_pipe, "prior")):
-        shared.log.error('UNet not found in current model')
-        return
     config_file = os.path.splitext(unet_dict[shared.opts.sd_unet])[0] + '.json'
     if os.path.exists(config_file):
         config = shared.readfile(config_file)
@@ -24,12 +21,28 @@ def load_unet(model):
         if "StableCascade" in model.__class__.__name__:
             from modules.model_stablecascade import load_prior
             prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet], config_file=config_file)
-            model.prior_pipe.prior = None # Prevent OOM
-            model.prior_pipe.prior = prior_unet.to(devices.device, dtype=devices.dtype_unet)
+            if prior_unet is not None:
+                model.prior_pipe.prior = None # Prevent OOM
+                model.prior_pipe.prior = prior_unet.to(devices.device, dtype=devices.dtype_unet)
             if prior_text_encoder is not None:
                 model.prior_pipe.text_encoder = None # Prevent OOM
                 model.prior_pipe.text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
+        if "Flux" in model.__class__.__name__:
+            shared.log.info(f'Loading UNet: name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" offload={shared.opts.diffusers_offload_mode}')
+            from modules.model_flux import load_transformer
+            transformer = load_transformer(unet_dict[shared.opts.sd_unet])
+            if transformer is not None:
+                model.transformer = None
+                if shared.opts.diffusers_offload_mode == 'none':
+                    model.transformer = transformer.to(devices.device, devices.dtype)
+                else:
+                    model.transformer = transformer
+                from modules.sd_models import set_diffuser_offload
+                set_diffuser_offload(model, 'model')
         else:
+            if not hasattr(model, 'unet') or model.unet is None:
+                shared.log.error('UNet not found in current model')
+                return
             shared.log.info(f'Loading UNet: name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" config="{config_file}"')
             from diffusers import UNet2DConditionModel
             from safetensors.torch import load_file
@@ -38,9 +51,9 @@ def load_unet(model):
             unet.load_state_dict(state_dict)
             model.unet = unet.to(devices.device, devices.dtype_unet)
     except Exception as e:
-        unet = None
         shared.log.error(f'Failed to load UNet model: {e}')
         return
+    devices.torch_gc()
 
 
 def refresh_unet_list():

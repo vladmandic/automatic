@@ -166,7 +166,6 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config):
             raise
 
     with init_empty_weights():
-        # config = FluxTransformer2DModel.load_config(checkpoint_info.path)
         config = FluxTransformer2DModel.load_config("black-forest-labs/flux.1-dev", subfolder="transformer")
         model = FluxTransformer2DModel.from_config(config).to(devices.dtype)
         expected_state_dict_keys = list(model.state_dict().keys())

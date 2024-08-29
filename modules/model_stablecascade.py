@@ -271,7 +271,7 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         else:
             alphas_cumprod = []
 
-        self._num_timesteps = len(timesteps)
+        self._num_timesteps = len(timesteps) # pylint: disable=attribute-defined-outside-init
         for i, t in enumerate(self.progress_bar(timesteps)):
             if not isinstance(self.scheduler, diffusers.DDPMWuerstchenScheduler):
                 if len(alphas_cumprod) > 0:
@@ -321,7 +321,7 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
                 f"Only the output types `pt`, `np`, `pil` and `latent` are supported not output_type={output_type}"
             )
 
-        if not output_type == "latent":
+        if output_type != "latent":
             if shared.opts.diffusers_offload_mode == "balanced":
                 shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
             else:

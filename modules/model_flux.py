@@ -1,4 +1,3 @@
-import os
 import json
 import torch
 import diffusers
@@ -34,6 +33,19 @@ def load_quanto_text_encoder_2(repo_path):
     requantize(text_encoder_2, state_dict, quantization_map, device=torch.device("cpu"))
     text_encoder_2.eval()
     return text_encoder_2
+
+
+def load_transformer(file_path):
+    diffusers_load_config = {
+        "low_cpu_mem_usage": True,
+        "torch_dtype": devices.dtype,
+        "cache_dir": shared.opts.hfcache_dir,
+    }
+    from diffusers import FluxTransformer2DModel
+    transformer = FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
+    if transformer is None:
+        shared.log.error('Failed to load UNet model')
+    return transformer
 
 
 def load_flux(checkpoint_info, diffusers_load_config):
