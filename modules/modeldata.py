@@ -94,13 +94,15 @@ class Shared(sys.modules[__name__].__class__):
             elif "InstaFlowPipeline" in self.sd_model.__class__.__name__:
                 model_type = 'sd' # instaflow is compatible with sd
             elif "AnimateDiffPipeline" in self.sd_model.__class__.__name__:
-                model_type = 'sd' # sd is compatible with sd
+                model_type = 'sd' # animatediff is compatible with sd
             elif "Kandinsky" in self.sd_model.__class__.__name__:
                 model_type = 'kandinsky'
             elif "HunyuanDiT" in self.sd_model.__class__.__name__:
                 model_type = 'hunyuandit'
             elif "Cascade" in self.sd_model.__class__.__name__:
                 model_type = 'sc'
+            elif "AuraFlow" in self.sd_model.__class__.__name__:
+                model_type = 'auraflow'
             elif "FluxPipeline" in self.sd_model.__class__.__name__:
                 model_type = 'f1'
             else:
