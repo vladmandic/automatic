@@ -70,11 +70,12 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 **Changes & Fixes...**
 
 - default resolution bumped from 512x512 to 1024x1024, time to move on ;)
-- update default **CUDA** version from 12.1 to 12.4
-- updated `requirements`
-- samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
 - convert **Dynamic Attention SDP** into a global SDP option, thanks @Disty0!  
   *note*: requires reset of selected attention option
+- update default **CUDA** version from 12.1 to 12.4
+- update `requirements`
+- samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
+- improve xyz grid for lora handling and add lora strength option  
 - don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
 - convert offload options into a single choice list, thanks @Disty0!  
   *note*: requires reset of selected offload option  

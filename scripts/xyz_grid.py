@@ -1,5 +1,6 @@
 # pylint: disable=unused-argument
 
+import os
 import re
 import csv
 import random
@@ -143,13 +144,14 @@ def apply_vae(p, x, xs):
 def list_lora():
     import sys
     lora = [v for k, v in sys.modules.items() if k == 'networks'][0]
-    loras = [v.name for v in lora.available_networks.values()]
+    loras = [v.fullname for v in lora.available_networks.values()]
     return ['None'] + loras
 
 
 def apply_lora(p, x, xs):
     if x == 'None':
         return
+    x = os.path.basename(x)
     p.prompt = p.prompt + f" <lora:{x}:{shared.opts.extra_networks_default_multiplier}>"
 
 
@@ -251,12 +253,13 @@ axis_options = [
     AxisOption("Model", str, apply_checkpoint, fmt=format_value, cost=1.0, choices=lambda: sorted(sd_models.checkpoints_list)),
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
     AxisOption("LoRA", str, apply_lora, cost=0.5, choices=list_lora),
+    AxisOption("LoRA strength", float, apply_setting('extra_networks_default_multiplier')),
     AxisOption("Text encoder", str, apply_te, cost=0.7, choices=lambda: ['None', 'T5 FP4', 'T5 FP8', 'T5 FP16']),
     AxisOption("Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),
-    AxisOption("CFG Scale", float, apply_field("cfg_scale")),
-    AxisOption("Guidance End", float, apply_field("cfg_end")),
+    AxisOption("CFG scale", float, apply_field("cfg_scale")),
+    AxisOption("Guidance end", float, apply_field("cfg_end")),
     AxisOption("Variation seed", int, apply_field("subseed")),
     AxisOption("Variation strength", float, apply_field("subseed_strength")),
     AxisOption("Clip skip", float, apply_clip_skip),
@@ -271,14 +274,14 @@ axis_options = [
     AxisOption("[Sampler] Sigma max", float, apply_field("s_max")),
     AxisOption("[Sampler] Sigma tmin", float, apply_field("s_tmin")),
     AxisOption("[Sampler] Sigma tmax", float, apply_field("s_tmax")),
-    AxisOption("[Sampler] Sigma Churn", float, apply_field("s_churn")),
+    AxisOption("[Sampler] Sigma churn", float, apply_field("s_churn")),
     AxisOption("[Sampler] Sigma noise", float, apply_field("s_noise")),
     AxisOption("[Sampler] Shift", float, apply_setting("schedulers_shift")),
     AxisOption("[Sampler] ETA", float, apply_setting("scheduler_eta")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
     AxisOption("[Second pass] Upscaler", str, apply_field("hr_upscaler"), choices=lambda: [*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]]),
     AxisOption("[Second pass] Sampler", str, apply_hr_sampler_name, fmt=format_value, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
-    AxisOption("[Second pass] Denoising Strength", float, apply_field("denoising_strength")),
+    AxisOption("[Second pass] Denoising strength", float, apply_field("denoising_strength")),
     AxisOption("[Second pass] Hires steps", int, apply_field("hr_second_pass_steps")),
     AxisOption("[Second pass] CFG scale", float, apply_field("image_cfg_scale")),
     AxisOption("[Second pass] Guidance rescale", float, apply_field("diffusers_guidance_rescale")),
@@ -295,8 +298,8 @@ axis_options = [
     AxisOption("[HDR] Clamp threshold", float, apply_field("hdr_threshold")),
     AxisOption("[HDR] Maximize center shift", float, apply_field("hdr_max_center")),
     AxisOption("[HDR] Maximize boundary", float, apply_field("hdr_max_boundry")),
-    AxisOption("[HDR] Tint Color Hex", str, apply_field("hdr_color_picker")),
-    AxisOption("[HDR] Tint Ratio", float, apply_field("hdr_tint_ratio")),
+    AxisOption("[HDR] Tint color hex", str, apply_field("hdr_color_picker")),
+    AxisOption("[HDR] Tint ratio", float, apply_field("hdr_tint_ratio")),
     AxisOption("[Token Merging] ToMe ratio", float, apply_setting('tome_ratio')),
     AxisOption("[Token Merging] ToDo ratio", float, apply_setting('todo_ratio')),
     AxisOption("[FreeU] 1st stage backbone factor", float, apply_setting('freeu_b1')),

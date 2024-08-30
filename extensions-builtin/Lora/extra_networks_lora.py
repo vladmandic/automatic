@@ -105,13 +105,14 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
 
     def deactivate(self, p):
         if shared.native and hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
-            if 'CLIP' in shared.sd_model.text_encoder.__class__.__name__ and not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
-                if shared.opts.lora_fuse_diffusers:
-                    shared.sd_model.unfuse_lora()
+            if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
                 try:
+                    if shared.opts.lora_fuse_diffusers:
+                        shared.sd_model.unfuse_lora()
                     shared.sd_model.unload_lora_weights() # fails for non-CLIP models
-                except Exception:
-                    pass
+                    shared.log.debug("LoRA unload")
+                except Exception as e:
+                    shared.log.warning(f"LoRA unload: {e}")
         if not self.active and getattr(networks, "originals", None ) is not None:
             networks.originals.undo() # remove patches
             if networks.debug:
