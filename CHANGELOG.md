@@ -53,12 +53,13 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 
 **New Features...**
 
+- support for **Balanced Offload**, thanks @Disty0!  
+  balanced offload will dynamically split and offload models from the GPU based on the max gpu and cpu memory size: model parts that dont fit in the GPU will be dynamically sliced and offloaded to the CPU  
+  see *Settings -> Diffusers Settings -> Max GPU memory and Max CPU memory*  
+  *note*: balanced offload will force loading LoRA with Diffusers method and it is not compatible with Optimum Quanto  
 - support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0 and @Trojaner!  
   to use, go to Settings -> Compute Settings and enable "Quantize Model weights with Optimum Quanto" option  
   note: Optimum Quanto requires PyTorch 2.4  
-- support for **Balanced Offload**, thanks @Disty0!  
-  balanced offload will dynamically split and offload models from the gpu based on the max gpu and cpu memory size  
-  *note*: balanced offload will force loading LoRA with Diffusers method and it is not compatible with Optimum Quanto  
 - new prompt attention mode: **xhinker** which brings support for prompt attention to new models such as FLUX.1 and SD3  
   to use, enable in Settings -> Execution -> Prompt attention
 
@@ -87,6 +88,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - fix LoRA apply with force-diffusers
 - fix LoRA scales with force-diffusers
 - fix control API
+- fix VAE load refrerencing incorrect configuration
 - fix NVML gpu monitoring
 
 ## Update for 2024-07-08

@@ -1674,7 +1674,6 @@ def reload_text_encoder(initial=False):
         return # dont unload
     signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
-    print('HERE', signature.items())
     if len(t5) > 0:
         from modules.model_t5 import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
