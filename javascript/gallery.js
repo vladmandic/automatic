@@ -273,7 +273,7 @@ async function gallerySearch(evt) {
 
 async function gallerySort(btn) {
   const t0 = performance.now();
-  const arr = Array.from(el.files.children);
+  const arr = Array.from(el.files.children).filter((node) => node.name); // filter out separators
   const fragment = document.createDocumentFragment();
   el.files.innerHTML = '';
   switch (btn.charCodeAt(0)) {
