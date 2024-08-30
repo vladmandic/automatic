@@ -50,18 +50,22 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
   Hunyuan-DiT is a powerful multi-resolution diffusion transformer (DiT) with fine-grained Chinese understanding  
+- [AnimateDiff](https://github.com/guoyww/animatediff/)  
+  support for additional models: **SD 1.5 v3** (Sparse), **SD Lightning** (4-step), **SDXL Beta**  
 
 **New Features...**
 
 - support for **Balanced Offload**, thanks @Disty0!  
-  balanced offload will dynamically split and offload models from the GPU based on the max gpu and cpu memory size: model parts that dont fit in the GPU will be dynamically sliced and offloaded to the CPU  
+  balanced offload will dynamically split and offload models from the GPU based on the max configured GPU and CPU memory size  
+  model parts that dont fit in the GPU will be dynamically sliced and offloaded to the CPU  
   see *Settings -> Diffusers Settings -> Max GPU memory and Max CPU memory*  
-  *note*: balanced offload will force loading LoRA with Diffusers method and it is not compatible with Optimum Quanto  
+  *note*: balanced offload will force loading LoRA with Diffusers method  
+  *note*: balanced offload is not compatible with Optimum Quanto  
 - support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0 and @Trojaner!  
   to use, go to Settings -> Compute Settings and enable "Quantize Model weights with Optimum Quanto" option  
-  note: Optimum Quanto requires PyTorch 2.4  
+  *note*: Optimum Quanto requires PyTorch 2.4  
 - new prompt attention mode: **xhinker** which brings support for prompt attention to new models such as FLUX.1 and SD3  
-  to use, enable in Settings -> Execution -> Prompt attention
+  to use, enable in *Settings -> Execution -> Prompt attention*
 
 **Changes & Fixes...**
 
