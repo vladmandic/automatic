@@ -89,8 +89,8 @@ def ar_change(ar, width, height):
 
 
 def create_resolution_inputs(tab):
-    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=512, elem_id=f"{tab}_width")
-    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=512, elem_id=f"{tab}_height")
+    width = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=1024, elem_id=f"{tab}_width")
+    height = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=1024, elem_id=f"{tab}_height")
     ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
     ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
     for c in [ar_dropdown, width, height]:

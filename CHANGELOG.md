@@ -69,6 +69,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 
 **Changes & Fixes...**
 
+- default resolution bumped from 512x512 to 1024x1024, time to move on ;)
 - update default **CUDA** version from 12.1 to 12.4
 - updated `requirements`
 - samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
