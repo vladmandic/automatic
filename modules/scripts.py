@@ -351,8 +351,13 @@ class ScriptRunner:
                 script.filename = path
                 script.is_txt2img = not is_img2img
                 script.is_img2img = is_img2img
-                if is_control:
-                    visibility = True
+                if is_control: # this is messy but show is a legacy function that is not aware of control tab
+                    v1 = script.show(script.is_txt2img)
+                    v2 = script.show(script.is_img2img)
+                    if v1 == AlwaysVisible or v2 == AlwaysVisible:
+                        visibility = AlwaysVisible
+                    else:
+                        visibility = v1 or v2
                 else:
                     visibility = script.show(script.is_img2img)
                 if visibility == AlwaysVisible:
