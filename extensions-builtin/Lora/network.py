@@ -24,7 +24,6 @@ class NetworkOnDisk:
             self.fullname = os.path.splitext(filename[len(shared.cmd_opts.lora_dir):].strip("/"))[0]
         else:
             self.fullname = name
-        print('HERE', self.fullname, self.filename)
         self.metadata = {}
         self.is_safetensors = os.path.splitext(filename)[1].lower() == ".safetensors"
         if self.is_safetensors:

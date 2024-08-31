@@ -66,6 +66,8 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   *note*: Optimum Quanto requires PyTorch 2.4  
 - new prompt attention mode: **xhinker** which brings support for prompt attention to new models such as FLUX.1 and SD3  
   to use, enable in *Settings -> Execution -> Prompt attention*
+- use [PEFT](https://huggingface.co/docs/peft/main/en/index) for **LoRA** handling on all models other than SD15/SD21/SDXL  
+  this improves LoRA compatibility for SC, SD3, AuraFlow, Flux, etc.  
 
 **Changes & Fixes...**
 
