@@ -97,10 +97,17 @@ def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
     try:
         shared.sd_model.load_lora_weights(network_on_disk.filename, adapter_name=name)
     except Exception as e:
-        errors.display(e, "LoRA")
-        return None
-    diffuser_loaded.append(name)
-    diffuser_scales.append(lora_scale)
+        if 'already in use' in str(e):
+            # shared.log.warning(f"LoRA load failed: file={network_on_disk.filename} {e}")
+            pass
+        else:
+            shared.log.error(f"LoRA load failed: file={network_on_disk.filename} {e}")
+            if debug:
+                errors.display(e, "LoRA")
+            return None
+    if name not in diffuser_loaded:
+        diffuser_loaded.append(name)
+        diffuser_scales.append(lora_scale)
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
     # lora_cache[name] = net
