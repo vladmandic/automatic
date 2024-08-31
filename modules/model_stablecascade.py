@@ -4,6 +4,7 @@ import torch
 import diffusers
 from modules import shared, devices, sd_models
 
+
 def get_timestep_ratio_conditioning(t, alphas_cumprod):
     s = torch.tensor([0.008]) # diffusers uses 0.003 while the original is 0.008
     clamp_range = [0, 1]
@@ -13,6 +14,7 @@ def get_timestep_ratio_conditioning(t, alphas_cumprod):
     s, min_var = s.to(var.device), min_var.to(var.device)
     ratio = (((var * min_var) ** 0.5).acos() / (torch.pi * 0.5)) * (1 + s) - s
     return ratio
+
 
 def load_text_encoder(path):
     from transformers import CLIPTextConfig, CLIPTextModelWithProjection
@@ -131,8 +133,8 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
         sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
 
     shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
-
     return sd_model
+
 
 def cascade_post_load(sd_model):
     sd_model.prior_pipe.scheduler.config.clip_sample = False
@@ -160,8 +162,8 @@ def cascade_post_load(sd_model):
         text_encoder=None,
         latent_dim_scale=sd_model.decoder_pipe.config.latent_dim_scale,
     )
-
     return sd_model
+
 
 # Custom sampler support. Remove after the changes gets upstreamed: https://github.com/huggingface/diffusers/pull/9132
 class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):

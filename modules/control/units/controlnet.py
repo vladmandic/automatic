@@ -67,7 +67,14 @@ predefined_sdxl = {
     # 'StabilityAI Sketch R256': 'stabilityai/control-lora/control-LoRAs-rank256/control-lora-sketch-rank256.safetensors',
 }
 predefined_f1 = {
-    'Shakker-Labs ControlNet Union': 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
+    "InstantX Union": 'InstantX/FLUX.1-dev-Controlnet-Union',
+    "InstantX Canny": 'InstantX/FLUX.1-dev-Controlnet-Canny',
+    "Shakker-Labs Union": 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
+    "Shakker-Labs Pose": 'Shakker-Labs/FLUX.1-dev-ControlNet-Pose',
+    "Shakker-Labs Depth": 'Shakker-Labs/FLUX.1-dev-ControlNet-Depth',
+    "XLabs-AI Canny": 'XLabs-AI/flux-controlnet-canny-v3',
+    "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-v3',
+    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-v3',
 }
 models = {}
 all_models = {}

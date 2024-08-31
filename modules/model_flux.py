@@ -1,32 +1,43 @@
+import os
 import json
 import torch
 import diffusers
 import transformers
 from safetensors.torch import load_file
-from accelerate.utils import compute_module_sizes
+from huggingface_hub import hf_hub_download
 from modules import shared, devices
 
 
-def load_quanto_transformer(repo_path):
+def load_quanto_transformer(checkpoint_info):
     from optimum.quanto import requantize # pylint: disable=no-name-in-module
-    with open(repo_path + "/" + "transformer/quantization_map.json", "r", encoding='utf8') as f:
+    repo_path = checkpoint_info.path
+    quantization_map = os.path.join(repo_path, "transformer", "quantization_map.json")
+    if not os.path.exists(quantization_map):
+        repo_id = checkpoint_info.name.replace('Diffusers/', '')
+        quantization_map = hf_hub_download(repo_id, subfolder='transformer', filename='quantization_map.json', cache_dir=shared.opts.diffusers_dir)
+    with open(quantization_map, "r", encoding='utf8') as f:
         quantization_map = json.load(f)
-    state_dict = load_file(repo_path + "/" + "transformer/diffusion_pytorch_model.safetensors")
+    state_dict = load_file(os.path.join(repo_path, "transformer", "diffusion_pytorch_model.safetensors"))
     dtype = state_dict['context_embedder.bias'].dtype
     with torch.device("meta"):
-        transformer = diffusers.FluxTransformer2DModel.from_config(repo_path + "/" + "transformer/config.json").to(dtype=dtype)
+        transformer = diffusers.FluxTransformer2DModel.from_config(os.path.join(repo_path, "transformer", "config.json")).to(dtype=dtype)
     requantize(transformer, state_dict, quantization_map, device=torch.device("cpu"))
     transformer.eval()
     return transformer
 
 
-def load_quanto_text_encoder_2(repo_path):
+def load_quanto_text_encoder_2(checkpoint_info):
     from optimum.quanto import requantize # pylint: disable=no-name-in-module
-    with open(repo_path + "/" + "text_encoder_2/quantization_map.json", "r", encoding='utf8') as f:
+    repo_path = checkpoint_info.path
+    quantization_map = os.path.join(repo_path, "text_encoder_2", "quantization_map.json")
+    if not os.path.exists(quantization_map):
+        repo_id = checkpoint_info.name.replace('Diffusers/', '')
+        quantization_map = hf_hub_download(repo_id, subfolder='text_encoder_2', filename='quantization_map.json', cache_dir=shared.opts.diffusers_dir)
+    with open(quantization_map, "r", encoding='utf8') as f:
         quantization_map = json.load(f)
-    with open(repo_path + "/" + "text_encoder_2/config.json", encoding='utf8') as f:
+    with open(os.path.join(repo_path, "text_encoder_2", "config.json"), encoding='utf8') as f:
         t5_config = transformers.T5Config(**json.load(f))
-    state_dict = load_file(repo_path + "/" + "text_encoder_2/model.safetensors")
+    state_dict = load_file(os.path.join(repo_path, "text_encoder_2", "model.safetensors"))
     dtype = state_dict['encoder.block.0.layer.0.SelfAttention.relative_attention_bias.weight'].dtype
     with torch.device("meta"):
         text_encoder_2 = transformers.T5EncoderModel(t5_config).to(dtype=dtype)
@@ -78,8 +89,8 @@ def load_flux(checkpoint_info, diffusers_load_config):
             raise
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
         pipe = diffusers.FluxPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, transformer=None, text_encoder_2=None, **diffusers_load_config)
-        pipe.transformer = load_quanto_transformer(checkpoint_info.path)
-        pipe.text_encoder_2 = load_quanto_text_encoder_2(checkpoint_info.path)
+        pipe.transformer = load_quanto_transformer(checkpoint_info)
+        pipe.text_encoder_2 = load_quanto_text_encoder_2(checkpoint_info)
         if pipe.transformer.dtype != devices.dtype:
             try:
                 pipe.transformer = pipe.transformer.to(dtype=devices.dtype)
@@ -97,5 +108,6 @@ def load_flux(checkpoint_info, diffusers_load_config):
     if devices.dtype == torch.float16 and not shared.opts.no_half_vae:
         shared.log.warning("FLUX: does not support FP16 VAE, enabling no-half-vae")
         shared.opts.no_half_vae = True
-    shared.log.debug(f'FLUX computed size: {round(compute_module_sizes(pipe.transformer)[""] / 1024 / 1204)}')
+    # from accelerate.utils import compute_module_sizes
+    # shared.log.debug(f'FLUX computed size: {round(compute_module_sizes(pipe.transformer)[""] / 1024 / 1204)}')
     return pipe

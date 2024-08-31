@@ -615,8 +615,8 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
 
     "image_sep_metadata": OptionInfo("<h2>Metadata/Logging</h2>", "", gr.HTML),
     "image_metadata": OptionInfo(True, "Include metadata"),
-    "save_txt": OptionInfo(False, "Create info file per image"),
-    "save_log_fn": OptionInfo("", "Update JSON log file per image", component_args=hide_dirs),
+    "save_txt": OptionInfo(False, "Create image info text file"),
+    "save_log_fn": OptionInfo("", "Append image info JSON file", component_args=hide_dirs),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
