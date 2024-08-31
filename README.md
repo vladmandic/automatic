@@ -84,7 +84,7 @@ Additional models will be added as they become available and there is public int
 - [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*
 - [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)
 - [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)
-- [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
+- [Tencent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
 - [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
 - [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
 - [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
