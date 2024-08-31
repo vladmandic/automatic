@@ -1,14 +1,31 @@
 import os
 import torch
-import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
-import diffusers #0.24.0 # pylint: disable=import-error
+import diffusers #0.29.1 # pylint: disable=import-error
 from diffusers.models.attention_processor import Attention
+from diffusers.models import transformers
 from diffusers.utils import USE_PEFT_BACKEND
 from functools import cache
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
+device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
+
+# fp64 error
+def rope(pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
+    assert dim % 2 == 0, "The dimension must be even."
+
+    scale = torch.arange(0, dim, 2, dtype=torch.float32, device=pos.device) / dim # force fp32 instead of fp64
+    omega = 1.0 / (theta**scale)
+
+    batch_size, seq_length = pos.shape
+    out = torch.einsum("...n,d->...nd", pos, omega)
+    cos_out = torch.cos(out)
+    sin_out = torch.sin(out)
+
+    stacked_out = torch.stack([cos_out, -sin_out, sin_out, cos_out], dim=-1)
+    out = stacked_out.view(batch_size, -1, dim // 2, 2, 2)
+    return out.float()
 
 @cache
 def find_slice_size(slice_size, slice_block_size):
@@ -307,3 +324,5 @@ def ipex_diffusers():
     #ARC GPUs can't allocate more than 4GB to a single block:
     diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
     diffusers.models.attention_processor.AttnProcessor = AttnProcessor
+    if not device_supports_fp64 and hasattr(transformers, "transformer_flux"):
+        diffusers.models.transformers.transformer_flux.rope = rope

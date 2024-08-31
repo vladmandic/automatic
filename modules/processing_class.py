@@ -122,6 +122,7 @@ class StableDiffusionProcessing:
         self.ip_adapter_images = []
         self.ip_adapter_starts = [0.0]
         self.ip_adapter_ends = [1.0]
+        self.ip_adapter_crops = []
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness

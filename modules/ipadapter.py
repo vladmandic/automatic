@@ -72,6 +72,33 @@ def get_scales(adapter_scales, adapter_images):
     return output_scales
 
 
+def get_crops(adapter_crops, adapter_images):
+    output_crops = [adapter_crops] if not isinstance(adapter_crops, list) else adapter_crops
+    while len(output_crops) < len(adapter_images):
+        output_crops.append(output_crops[-1])
+    return output_crops
+
+
+def crop_images(images, crops):
+    try:
+        for i in range(len(images)):
+            if crops[i]:
+                from scripts.face_details import yolo # pylint: disable=no-name-in-module
+                yolo.load()
+                cropped = []
+                for image in images[i]:
+                    faces = yolo.predict(image)
+                    if len(faces) > 0:
+                        cropped.append(faces[0].face)
+                if len(cropped) == len(images[i]):
+                    images[i] = cropped
+                else:
+                    shared.log.error(f'IP adapter: failed to crop image: source={len(images[i])} faces={len(cropped)}')
+    except Exception as e:
+        shared.log.error(f'IP adapter: failed to crop image: {e}')
+    return images
+
+
 def unapply(pipe): # pylint: disable=arguments-differ
     try:
         if hasattr(pipe, 'set_ip_adapter_scale'):
@@ -84,7 +111,7 @@ def unapply(pipe): # pylint: disable=arguments-differ
         pass
 
 
-def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
+def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_crops=[False], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
     global clip_loaded # pylint: disable=global-statement
     # overrides
     if hasattr(p, 'ip_adapter_names'):
@@ -104,6 +131,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         return False
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
+    if hasattr(p, 'ip_adapter_crops'):
+        adapter_crops = p.ip_adapter_crops
     if hasattr(p, 'ip_adapter_starts'):
         adapter_starts = p.ip_adapter_starts
     if hasattr(p, 'ip_adapter_ends'):
@@ -131,6 +160,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         return False
     adapter_scales = get_scales(adapter_scales, adapter_images)
     p.ip_adapter_scales = adapter_scales.copy()
+    adapter_crops = get_crops(adapter_crops, adapter_images)
+    p.ip_adapter_crops = adapter_crops.copy()
     adapter_starts = get_scales(adapter_starts, adapter_images)
     p.ip_adapter_starts = adapter_starts.copy()
     adapter_ends = get_scales(adapter_ends, adapter_images)
@@ -202,7 +233,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                     adapter_scales[i] = 0.00
             pipe.set_ip_adapter_scale(adapter_scales)
             ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
-        p.task_args['ip_adapter_image'] = adapter_images
+        p.task_args['ip_adapter_image'] = crop_images(adapter_images, adapter_crops)
         if len(adapter_masks) > 0:
             p.cross_attention_kwargs = { 'ip_adapter_masks': adapter_masks }
         p.extra_generation_params["IP Adapter"] = ';'.join(ip_str)

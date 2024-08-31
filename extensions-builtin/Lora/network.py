@@ -20,6 +20,10 @@ class NetworkOnDisk:
     def __init__(self, name, filename):
         self.name = name
         self.filename = filename
+        if filename.startswith(shared.cmd_opts.lora_dir):
+            self.fullname = os.path.splitext(filename[len(shared.cmd_opts.lora_dir):].strip("/"))[0]
+        else:
+            self.fullname = name
         self.metadata = {}
         self.is_safetensors = os.path.splitext(filename)[1].lower() == ".safetensors"
         if self.is_safetensors:

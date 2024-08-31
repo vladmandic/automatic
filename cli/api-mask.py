@@ -79,5 +79,5 @@ if __name__ == "__main__":
     parser.add_argument('--type', required=False, help='output mask type')
     parser.add_argument('--output', required=False, help='output image')
     args = parser.parse_args()
-    log.info(f'info: {args}')
+    log.info(f'api-mask: {args}')
     info(args)

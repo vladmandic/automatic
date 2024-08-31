@@ -53,5 +53,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'api-info')
     parser.add_argument('--input', required=True, help='input image')
     args = parser.parse_args()
-    log.info(f'info: {args}')
+    log.info(f'api-info: {args}')
     info(args)

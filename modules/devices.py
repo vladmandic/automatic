@@ -3,6 +3,7 @@ import gc
 import sys
 import time
 import contextlib
+from functools import wraps
 import torch
 from modules.errors import log
 from modules import cmd_args, shared, memstats, errors
@@ -12,7 +13,6 @@ if sys.platform == "darwin":
 
 
 previous_oom = 0
-backup_sdpa = None
 debug = os.environ.get('SD_DEVICE_DEBUG', None) is not None
 
 
@@ -250,20 +250,19 @@ def set_cuda_params():
             except Exception:
                 pass
     try:
-        if shared.opts.cross_attention_optimization == "Scaled-Dot-Product" or shared.opts.cross_attention_optimization == "Dynamic Attention SDP":
+        if shared.opts.cross_attention_optimization == "Scaled-Dot-Product":
             torch.backends.cuda.enable_flash_sdp('Flash attention' in shared.opts.sdp_options)
             torch.backends.cuda.enable_mem_efficient_sdp('Memory attention' in shared.opts.sdp_options)
             torch.backends.cuda.enable_math_sdp('Math attention' in shared.opts.sdp_options)
             if backend == "rocm":
-                global backup_sdpa # pylint: disable=global-statement
                 if 'Flash attention' in shared.opts.sdp_options:
                     try:
                         # https://github.com/huggingface/diffusers/discussions/7172
                         from flash_attn import flash_attn_func
-                        if backup_sdpa is None:
-                            backup_sdpa = torch.nn.functional.scaled_dot_product_attention
+                        backup_sdpa = torch.nn.functional.scaled_dot_product_attention
+                        @wraps(torch.nn.functional.scaled_dot_product_attention)
                         def sdpa_hijack(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-                            if query.shape[3] <= 128 and attn_mask is None:
+                            if query.shape[3] <= 128 and attn_mask is None and query.dtype != torch.float32:
                                 return flash_attn_func(q=query.transpose(1, 2), k=key.transpose(1, 2), v=value.transpose(1, 2), dropout_p=dropout_p, causal=is_causal, softmax_scale=scale).transpose(1, 2)
                             else:
                                 return backup_sdpa(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
@@ -271,8 +270,9 @@ def set_cuda_params():
                         shared.log.debug('ROCm Flash Attention Hijacked')
                     except Exception as err:
                         log.error(f'ROCm Flash Attention failed: {err}')
-                elif backup_sdpa is not None: # Restore original SDPA
-                    torch.nn.functional.scaled_dot_product_attention = backup_sdpa
+            if 'Dynamic attention' in shared.opts.sdp_options:
+                from modules.sd_hijack_dynamic_atten import sliced_scaled_dot_product_attention
+                torch.nn.functional.scaled_dot_product_attention = sliced_scaled_dot_product_attention
     except Exception:
         pass
     if shared.cmd_opts.profile:

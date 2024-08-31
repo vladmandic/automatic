@@ -25,8 +25,8 @@ class NetworkModuleLora(network.NetworkModule):
         if weight is None and none_ok:
             return None
         linear_modules = [torch.nn.Linear, torch.nn.modules.linear.NonDynamicallyQuantizableLinear, torch.nn.MultiheadAttention, diffusers_lora.LoRACompatibleLinear]
-        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ == "NNCFLinear"
-        is_conv = type(self.sd_module) in [torch.nn.Conv2d, diffusers_lora.LoRACompatibleConv] or self.sd_module.__class__.__name__ == "NNCFConv2d"
+        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ in {"NNCFLinear", "QLinear"}
+        is_conv = type(self.sd_module) in [torch.nn.Conv2d, diffusers_lora.LoRACompatibleConv] or self.sd_module.__class__.__name__ in {"NNCFConv2d", "QConv2d"}
         if is_linear:
             weight = weight.reshape(weight.shape[0], -1)
             module = torch.nn.Linear(weight.shape[1], weight.shape[0], bias=False)

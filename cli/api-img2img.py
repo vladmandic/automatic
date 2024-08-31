@@ -94,5 +94,5 @@ if __name__ == "__main__":
     parser.add_argument('--output', required=False, default=None, help='output image file')
     parser.add_argument('--model', required=False, help='model name')
     args = parser.parse_args()
-    log.info(f'img2img: {args}')
+    log.info(f'api-img2img: {args}')
     generate(args)

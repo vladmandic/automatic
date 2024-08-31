@@ -243,6 +243,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if shared.state.interrupted or shared.state.skipped:
             shared.sd_model = orig_pipeline
             return results
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         if shared.opts.diffusers_move_refiner:
             sd_models.move_model(shared.sd_refiner, devices.device)
         p.ops.append('refine')
@@ -296,7 +298,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 for refiner_image in refiner_images:
                     results.append(refiner_image)
 
-        if shared.opts.diffusers_move_refiner:
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_refiner = sd_models.apply_balanced_offload(shared.sd_refiner)
+        elif shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving to CPU: model=refiner')
             sd_models.move_model(shared.sd_refiner, devices.cpu)
         shared.state.job = prev_job
@@ -309,8 +313,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
+            if hasattr(shared.sd_model, "_unpack_latents") and hasattr(shared.sd_model, "vae_scale_factor"): # FLUX
+                output.images = shared.sd_model._unpack_latents(output.images, p.height, p.width, shared.sd_model.vae_scale_factor) # pylint: disable=protected-access
             if torch.is_tensor(output.images) and len(output.images) > 0 and any(s >= 512 for s in output.images.shape):
-                results = output.images.cpu().numpy()
+                results = output.images.float().cpu().numpy()
             elif hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                 results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality)
             elif hasattr(output, 'images'):

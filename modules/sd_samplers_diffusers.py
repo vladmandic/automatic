@@ -1,4 +1,5 @@
 import os
+import copy
 import re
 import inspect
 from modules import shared
@@ -33,7 +34,7 @@ try:
         PNDMScheduler,
         SASolverScheduler,
         FlowMatchEulerDiscreteScheduler,
-        # FlowMatchHeunDiscreteScheduler,
+        FlowMatchHeunDiscreteScheduler,
     )
 except Exception as e:
     import diffusers
@@ -52,8 +53,8 @@ config = {
     'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
     'DPM++ 3M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 3 },
     'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
-    'Euler a': { 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
-    'Euler': { 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
+    'Euler a': { 'steps_offset': 0, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
+    'Euler': { 'steps_offset': 0, 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace' },
     'Heun': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace' },
     'DDPM': { 'variance_type': "fixed_small", 'clip_sample': False, 'thresholding': False, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
     'KDPM2': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
@@ -67,8 +68,8 @@ config = {
     'Euler EDM': { },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
-    'Euler FlowMatch': { 'shift': 1, },
-    # 'Heun FlowMatch': { 'shift': 1, },
+    'Euler FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, },
+    'Heun FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, },
     'IPNDM': { },
 }
 
@@ -101,7 +102,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
-    # sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Same as primary', None, [], {}),
 ]
@@ -115,26 +116,23 @@ class DiffusionSampler:
         self.config = {}
         if not hasattr(model, 'scheduler'):
             return
+        if getattr(model, "default_scheduler", None) is None: # sanity check
+            model.default_scheduler = copy.deepcopy(model.scheduler)
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
         debug(f'Sampler: all="{self.config}"')
-        if hasattr(model.scheduler, 'scheduler_config'): # find model defaults
-            orig_config = model.scheduler.scheduler_config
+        if hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
+            orig_config = model.default_scheduler.scheduler_config
         else:
-            orig_config = model.scheduler.config
-        if not hasattr(model, 'orig_scheduler'): # store settings from initial scheduler
-            model.orig_scheduler = orig_config.copy()
-        else:
-            for key, value in model.orig_scheduler.items(): # apply scheduler defaults
-                if key in self.config:
-                    self.config[key] = value
-            debug(f'Sampler: original="{model.orig_scheduler}"')
+            orig_config = model.default_scheduler.config
+        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
+            self.config[key] = value
+        debug(f'Sampler: diffusers="{self.config}"')
+        debug(f'Sampler: original="{orig_config}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
         debug(f'Sampler: default="{self.config}"')
-        for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
-            self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
             if key in self.config:
                 self.config[key] = value

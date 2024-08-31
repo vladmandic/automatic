@@ -66,6 +66,16 @@ predefined_sdxl = {
     # 'StabilityAI Recolor R256': 'stabilityai/control-lora/control-LoRAs-rank256/control-lora-recolor-rank256.safetensors',
     # 'StabilityAI Sketch R256': 'stabilityai/control-lora/control-LoRAs-rank256/control-lora-sketch-rank256.safetensors',
 }
+predefined_f1 = {
+    "InstantX Union": 'InstantX/FLUX.1-dev-Controlnet-Union',
+    "InstantX Canny": 'InstantX/FLUX.1-dev-Controlnet-Canny',
+    "Shakker-Labs Union": 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
+    "Shakker-Labs Pose": 'Shakker-Labs/FLUX.1-dev-ControlNet-Pose',
+    "Shakker-Labs Depth": 'Shakker-Labs/FLUX.1-dev-ControlNet-Depth',
+    "XLabs-AI Canny": 'XLabs-AI/flux-controlnet-canny-v3',
+    "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-v3',
+    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-v3',
+}
 models = {}
 all_models = {}
 all_models.update(predefined_sd15)
@@ -102,6 +112,8 @@ def list_models(refresh=False):
         models = ['None'] + list(predefined_sdxl) + sorted(find_models())
     elif modules.shared.sd_model_type == 'sd':
         models = ['None'] + list(predefined_sd15) + sorted(find_models())
+    elif modules.shared.sd_model_type == 'f1':
+        models = ['None'] + list(predefined_f1) + sorted(find_models())
     else:
         log.warning(f'Control {what} model list failed: unknown model type')
         models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(find_models())
@@ -189,6 +201,15 @@ class ControlNet():
                     self.model = nncf_compress_model(self.model)
                 except Exception as e:
                     log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" error={e}')
+            elif "ControlNet" in opts.optimum_quanto_weights:
+                try:
+                    log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
+                    from installer import install
+                    install('optimum-quanto', quiet=True)
+                    from modules.sd_models_compile import optimum_quanto_model
+                    self.model = optimum_quanto_model(self.model)
+                except Exception as e:
+                    log.error(f'Control {what} model Optimum Quanto failed: id="{model_id}" error={e}')
             if self.device is not None:
                 self.model.to(self.device)
             t1 = time.time()
@@ -235,6 +256,8 @@ class ControlNetPipeline():
                 controlnet=controlnet, # can be a list
             )
             sd_models.move_model(self.pipeline, pipeline.device)
+        elif detect.is_f1(pipeline):
+            log.warning('Control model pipeline: class=FluxPipeline unsupported model type')
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return

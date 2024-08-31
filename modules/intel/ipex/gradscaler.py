@@ -5,7 +5,7 @@ import intel_extension_for_pytorch._C as core # pylint: disable=import-error, un
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
-device_supports_fp64 = torch.xpu.has_fp64_dtype()
+device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 OptState = ipex.cpu.autocast._grad_scaler.OptState
 _MultiDeviceReplicator = ipex.cpu.autocast._grad_scaler._MultiDeviceReplicator
 _refresh_per_optimizer_state = ipex.cpu.autocast._grad_scaler._refresh_per_optimizer_state

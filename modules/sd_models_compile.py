@@ -24,60 +24,70 @@ class CompiledModelState:
         self.partitioned_modules = {}
 
 
+quant_last_model_name = None
+quant_last_model_device = None
 deepcache_worker = None
 
 
 def apply_compile_to_model(sd_model, function, options, op=None):
     if "Model" in options:
         if hasattr(sd_model, 'unet') and hasattr(sd_model.unet, 'config'):
-            sd_model.unet = function(sd_model.unet)
+            sd_model.unet = function(sd_model.unet, op="unet", sd_model=sd_model)
         if hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'config'):
-            sd_model.transformer = function(sd_model.transformer)
+            sd_model.transformer = function(sd_model.transformer, op="transformer", sd_model=sd_model)
         if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model, 'decoder'):
             sd_model.decoder = None
-            sd_model.decoder = sd_model.decoder_pipe.decoder = function(sd_model.decoder_pipe.decoder)
-        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_prior'):
-            sd_model.prior_prior = None
+            sd_model.decoder = sd_model.decoder_pipe.decoder = function(sd_model.decoder_pipe.decoder, op="decoder_pipe.decoder", sd_model=sd_model)
+        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model.prior_pipe, 'prior'):
             if op == "nncf" and "StableCascade" in sd_model.__class__.__name__: # fixes dtype errors
                 backup_clip_txt_pooled_mapper = copy.deepcopy(sd_model.prior_pipe.prior.clip_txt_pooled_mapper)
-            sd_model.prior_prior = sd_model.prior_pipe.prior = function(sd_model.prior_pipe.prior)
+            sd_model.prior_pipe.prior = function(sd_model.prior_pipe.prior, op="prior_pipe.prior", sd_model=sd_model)
             if op == "nncf" and "StableCascade" in sd_model.__class__.__name__:
-                sd_model.prior_prior.clip_txt_pooled_mapper = sd_model.prior_pipe.prior.clip_txt_pooled_mapper = backup_clip_txt_pooled_mapper
-    if "VAE" in options:
-        if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-            sd_model.vae = function(sd_model.vae)
-        if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-            sd_model.movq = function(sd_model.movq)
-        if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-            sd_model.vqgan = function(sd_model.vqgan)
-        if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
-            sd_model.image_encoder = function(sd_model.image_encoder)
+                sd_model.prior_pipe.prior.clip_txt_pooled_mapper = backup_clip_txt_pooled_mapper
     if "Text Encoder" in options:
         if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-            if hasattr(sd_model, 'decoder_pipe'):
-                sd_model.text_encoder = None
-                sd_model.text_encoder = sd_model.decoder_pipe.text_encoder = function(sd_model.decoder_pipe.text_encoder)
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'text_encoder'):
+                sd_model.decoder_pipe.text_encoder = function(sd_model.decoder_pipe.text_encoder, op="decoder_pipe.text_encoder", sd_model=sd_model)
             else:
-                if op == "nncf" and sd_model.text_encoder.__class__.__name__ == "T5EncoderModel":
+                if op == "nncf" and sd_model.text_encoder.__class__.__name__ in {"T5EncoderModel", "UMT5EncoderModel"}:
                     from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
                     for i in range(len(sd_model.text_encoder.encoder.block)):
                         sd_model.text_encoder.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
-                            sd_model.text_encoder.encoder.block[i].layer[1].DenseReluDense
+                            sd_model.text_encoder.encoder.block[i].layer[1].DenseReluDense,
+                            dtype=torch.float32 if devices.dtype != torch.bfloat16 else torch.bfloat16
                         )
-                sd_model.text_encoder = function(sd_model.text_encoder)
+                sd_model.text_encoder = function(sd_model.text_encoder, op="text_encoder", sd_model=sd_model)
         if hasattr(sd_model, 'text_encoder_2') and hasattr(sd_model.text_encoder_2, 'config'):
-            sd_model.text_encoder_2 = function(sd_model.text_encoder_2)
+            if op == "nncf" and sd_model.text_encoder_2.__class__.__name__ in {"T5EncoderModel", "UMT5EncoderModel"}:
+                from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
+                for i in range(len(sd_model.text_encoder_2.encoder.block)):
+                    sd_model.text_encoder_2.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
+                        sd_model.text_encoder_2.encoder.block[i].layer[1].DenseReluDense,
+                        dtype=torch.float32 if devices.dtype != torch.bfloat16 else torch.bfloat16
+                    )
+            sd_model.text_encoder_2 = function(sd_model.text_encoder_2, op="text_encoder_2", sd_model=sd_model)
         if hasattr(sd_model, 'text_encoder_3') and hasattr(sd_model.text_encoder_3, 'config'):
-            if op == "nncf" and sd_model.text_encoder_3.__class__.__name__ == "T5EncoderModel":
+            if op == "nncf" and sd_model.text_encoder_3.__class__.__name__ in {"T5EncoderModel", "UMT5EncoderModel"}:
                 from modules.sd_hijack import NNCF_T5DenseGatedActDense # T5DenseGatedActDense uses fp32
                 for i in range(len(sd_model.text_encoder_3.encoder.block)):
                     sd_model.text_encoder_3.encoder.block[i].layer[1].DenseReluDense = NNCF_T5DenseGatedActDense(
-                        sd_model.text_encoder_3.encoder.block[i].layer[1].DenseReluDense
+                        sd_model.text_encoder_3.encoder.block[i].layer[1].DenseReluDense,
+                        dtype=torch.float32 if devices.dtype != torch.bfloat16 else torch.bfloat16
                     )
-            sd_model.text_encoder_3 = function(sd_model.text_encoder_3)
-        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model, 'prior_text_encoder'):
-            sd_model.prior_text_encoder = None
-            sd_model.prior_text_encoder = sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder)
+            sd_model.text_encoder_3 = function(sd_model.text_encoder_3, op="text_encoder_3", sd_model=sd_model)
+        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model.prior_pipe, 'text_encoder'):
+            sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder, op="prior_pipe.text_encoder", sd_model=sd_model)
+    if "VAE" in options:
+        if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
+            sd_model.vae = function(sd_model.vae, op="vae", sd_model=sd_model)
+        if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
+            sd_model.movq = function(sd_model.movq, op="movq", sd_model=sd_model)
+        if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
+            sd_model.vqgan = function(sd_model.vqgan, op="vqgan", sd_model=sd_model)
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'vqgan'):
+                sd_model.decoder_pipe.vqgan = sd_model.vqgan
+        if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
+            sd_model.image_encoder = function(sd_model.image_encoder, op="image_encoder", sd_model=sd_model)
 
     return sd_model
 
@@ -86,7 +96,7 @@ def ipex_optimize(sd_model):
     try:
         t0 = time.time()
 
-        def ipex_optimize_model(model):
+        def ipex_optimize_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
             model.eval()
             model.training = False
@@ -121,8 +131,9 @@ def nncf_send_to_device(model):
             child.zero_point = child.zero_point.to(devices.device)
         nncf_send_to_device(child)
 
-def nncf_compress_model(model):
+def nncf_compress_model(model, op=None, sd_model=None):
     import nncf
+    global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
     model.eval()
     backup_embeddings = None
     if hasattr(model, "get_input_embeddings"):
@@ -131,23 +142,148 @@ def nncf_compress_model(model):
     nncf_send_to_device(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
+    if op is not None and shared.opts.quant_shuffle_weights:
+        if quant_last_model_name is not None:
+            if "." in quant_last_model_name:
+                last_model_names = quant_last_model_name.split(".")
+                getattr(getattr(sd_model, last_model_names[0]), last_model_names[1]).to(quant_last_model_device)
+            else:
+                getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
+            devices.torch_gc(force=True)
+        if shared.cmd_opts.medvram or shared.cmd_opts.lowvram or shared.opts.diffusers_offload_mode != "none":
+            quant_last_model_name = op
+            quant_last_model_device = model.device
+        else:
+            quant_last_model_name = None
+            quant_last_model_device = None
+        model.to(devices.device)
     devices.torch_gc(force=True)
     return model
 
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
+        shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
+        global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
         from installer import install
         install('nncf==2.7.0', quiet=True)
 
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
+        if quant_last_model_name is not None:
+            if "." in quant_last_model_name:
+                last_model_names = quant_last_model_name.split(".")
+                getattr(getattr(sd_model, last_model_names[0]), last_model_names[1]).to(quant_last_model_device)
+            else:
+                getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
+            devices.torch_gc(force=True)
+        quant_last_model_name = None
+        quant_last_model_device = None
 
         t1 = time.time()
-        shared.log.info(f"Compress Weights: time={t1-t0:.2f}")
+        shared.log.info(f"NNCF Compress Weights: time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.warning(f"Compress Weights: error: {e}")
+        shared.log.warning(f"NNCF Compress Weights: error: {e}")
     return sd_model
 
+def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
+    from optimum import quanto # pylint: disable=no-name-in-module
+    global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
+    if sd_model is not None and "Flux" in sd_model.__class__.__name__: # LayerNorm is not supported
+        exclude_list = ["transformer_blocks.*.norm1.norm", "transformer_blocks.*.norm2", "transformer_blocks.*.norm1_context.norm", "transformer_blocks.*.norm2_context", "single_transformer_blocks.*.norm.norm", "norm_out.norm"]
+    else:
+        exclude_list = None
+    weights = getattr(quanto, weights) if weights is not None else getattr(quanto, shared.opts.optimum_quanto_weights_type)
+    if activations is not None:
+        activations = getattr(quanto, activations) if activations != 'none' else None
+    elif shared.opts.optimum_quanto_activations_type != 'none':
+        activations = getattr(quanto, shared.opts.optimum_quanto_activations_type)
+    else:
+        activations = None
+    model.eval()
+    backup_embeddings = None
+    if hasattr(model, "get_input_embeddings"):
+        backup_embeddings = copy.deepcopy(model.get_input_embeddings())
+    quanto.quantize(model, weights=weights, activations=activations, exclude=exclude_list)
+    quanto.freeze(model)
+    if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
+        model.set_input_embeddings(backup_embeddings)
+    if op is not None and shared.opts.quant_shuffle_weights:
+        if quant_last_model_name is not None:
+            if "." in quant_last_model_name:
+                last_model_names = quant_last_model_name.split(".")
+                getattr(getattr(sd_model, last_model_names[0]), last_model_names[1]).to(quant_last_model_device)
+            else:
+                getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
+            devices.torch_gc(force=True)
+        if shared.cmd_opts.medvram or shared.cmd_opts.lowvram or shared.opts.diffusers_offload_mode != "none":
+            quant_last_model_name = op
+            quant_last_model_device = model.device
+        else:
+            quant_last_model_name = None
+            quant_last_model_device = None
+        model.to(devices.device)
+    devices.torch_gc(force=True)
+    return model
+
+def optimum_quanto_weights(sd_model):
+    try:
+        if shared.opts.diffusers_offload_mode in {"balanced", "sequential"}:
+            shared.log.warning(f"Optimum Quanto Weights is incompatible with {shared.opts.diffusers_offload_mode} offload!")
+            return sd_model
+        t0 = time.time()
+        shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
+        global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
+        from installer import install
+        install('optimum-quanto', quiet=True)
+        from optimum import quanto # pylint: disable=no-name-in-module
+        quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
+
+        sd_model = apply_compile_to_model(sd_model, optimum_quanto_model, shared.opts.optimum_quanto_weights, op="optimum-quanto")
+        if quant_last_model_name is not None:
+            if "." in quant_last_model_name:
+                last_model_names = quant_last_model_name.split(".")
+                getattr(getattr(sd_model, last_model_names[0]), last_model_names[1]).to(quant_last_model_device)
+            else:
+                getattr(sd_model, quant_last_model_name).to(quant_last_model_device)
+            devices.torch_gc(force=True)
+        quant_last_model_name = None
+        quant_last_model_device = None
+
+        if shared.opts.optimum_quanto_activations_type != 'none':
+            activations = getattr(quanto, shared.opts.optimum_quanto_activations_type)
+        else:
+            activations = None
+
+        if activations is not None:
+            def optimum_quanto_freeze(model, op=None, sd_model=None): # pylint: disable=unused-argument
+                quanto.freeze(model)
+                return model
+            if shared.opts.diffusers_offload_mode == "model":
+                sd_model.enable_model_cpu_offload(device=devices.device)
+                if hasattr(sd_model, "encode_prompt"):
+                    original_encode_prompt = sd_model.encode_prompt
+                    def encode_prompt(*args, **kwargs):
+                        embeds = original_encode_prompt(*args, **kwargs)
+                        sd_model.maybe_free_model_hooks() # Diffusers keeps the TE on VRAM
+                        return embeds
+                    sd_model.encode_prompt = encode_prompt
+            else:
+                sd_models.move_model(sd_model, devices.device)
+            with quanto.Calibration(momentum=0.9):
+                sd_model(prompt="dummy prompt", num_inference_steps=10)
+            sd_model = apply_compile_to_model(sd_model, optimum_quanto_freeze, shared.opts.optimum_quanto_weights, op="optimum-quanto-freeze")
+            if shared.opts.diffusers_offload_mode == "model":
+                sd_models.disable_offload(sd_model)
+                sd_models.move_model(sd_model, devices.cpu)
+                if hasattr(sd_model, "encode_prompt"):
+                    sd_model.encode_prompt = original_encode_prompt
+            devices.torch_gc(force=True)
+
+        t1 = time.time()
+        shared.log.info(f"Optimum Quanto Weights: time={t1-t0:.2f}")
+    except Exception as e:
+        shared.log.warning(f"Optimum Quanto Weights: error: {e}")
+    return sd_model
 
 def optimize_openvino(sd_model):
     try:
@@ -246,7 +382,7 @@ def compile_torch(sd_model):
         torch._dynamo.reset() # pylint: disable=protected-access
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
-        def torch_compile_model(model):
+        def torch_compile_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if model.device.type != "meta":
                 return_device = model.device
                 model = torch.compile(model.to(devices.device),

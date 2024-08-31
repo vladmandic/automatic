@@ -52,7 +52,7 @@ class Script:
 
     def show(self, is_img2img): # pylint: disable=unused-argument
         """
-        is_img2img is True if this function is called for the img2img interface, and Fasle otherwise
+        is_img2img is True if this function is called for the img2img interface, and False otherwise
         This function should return:
          - False if the script should not be shown in UI at all
          - True if the script should be shown in UI if it's selected in the scripts dropdown
@@ -329,7 +329,7 @@ class ScriptRunner:
         self.is_img2img = False
         self.inputs = [None]
 
-    def initialize_scripts(self, is_img2img):
+    def initialize_scripts(self, is_img2img=False, is_control=False):
         from modules import scripts_auto_postprocessing
 
         self.scripts.clear()
@@ -351,7 +351,15 @@ class ScriptRunner:
                 script.filename = path
                 script.is_txt2img = not is_img2img
                 script.is_img2img = is_img2img
-                visibility = script.show(script.is_img2img)
+                if is_control: # this is messy but show is a legacy function that is not aware of control tab
+                    v1 = script.show(script.is_txt2img)
+                    v2 = script.show(script.is_img2img)
+                    if v1 == AlwaysVisible or v2 == AlwaysVisible:
+                        visibility = AlwaysVisible
+                    else:
+                        visibility = v1 or v2
+                else:
+                    visibility = script.show(script.is_img2img)
                 if visibility == AlwaysVisible:
                     self.scripts.append(script)
                     self.alwayson_scripts.append(script)

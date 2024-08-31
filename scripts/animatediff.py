@@ -13,6 +13,7 @@ TODO animatediff items:
 import os
 import gradio as gr
 import diffusers
+from safetensors.torch import load_file
 from modules import scripts, processing, shared, devices, sd_models
 
 
@@ -25,7 +26,9 @@ ADAPTERS = {
     'Motion 1.4': 'guoyww/animatediff-motion-adapter-v1-4',
     'TemporalDiff': 'vladmandic/temporaldiff',
     'AnimateFace': 'vladmandic/animateface',
-    'SDXL Beta': 'guoyww/animatediff-motion-adapter-sdxl-beta',
+    'Lightning': 'ByteDance/AnimateDiff-Lightning/animatediff_lightning_4step_diffusers.safetensors',
+    'SDXL Beta': 'a-r-r-o-w/animatediff-motion-adapter-sdxl-beta',
+    # 'SDXL Beta': 'guoyww/animatediff-motion-adapter-sdxl-beta',
     # 'LongAnimateDiff 32': 'vladmandic/longanimatediff-32',
     # 'LongAnimateDiff 64': 'vladmandic/longanimatediff-64',
 }
@@ -81,11 +84,14 @@ def set_adapter(adapter_name: str = 'None'):
     try:
         shared.log.info(f'AnimateDiff load: adapter="{adapter_name}"')
         motion_adapter = None
-        if shared.sd_model_type == 'sd':
+        if adapter_name.endswith('.safetensors'):
+            motion_adapter = diffusers.MotionAdapter().to(shared.device, devices.dtype)
+            motion_adapter.load_state_dict(load_file(adapter_name))
+        elif shared.sd_model_type == 'sd':
             motion_adapter = diffusers.MotionAdapter.from_pretrained(adapter_name, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype, low_cpu_mem_usage=False, device_map=None)
         elif shared.sd_model_type == 'sdxl':
             motion_adapter = diffusers.MotionAdapter.from_pretrained(adapter_name, cache_dir=shared.opts.diffusers_dir, torch_dtype=devices.dtype, low_cpu_mem_usage=False, device_map=None, variant='fp16')
-        motion_adapter.to(shared.device)
+        sd_models.move_model(motion_adapter, devices.device) # move pipeline to device
         sd_models.set_diffuser_options(motion_adapter, vae=None, op='adapter')
         loaded_adapter = adapter_name
         new_pipe = None
@@ -123,6 +129,7 @@ def set_adapter(adapter_name: str = 'None'):
         sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
         sd_models.copy_diffuser_options(new_pipe, orig_pipe)
         sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
+        sd_models.move_model(shared.sd_model.unet, devices.device) # move pipeline to device
         shared.log.debug(f'AnimateDiff create: pipeline="{shared.sd_model.__class__}" adapter="{loaded_adapter}"')
     except Exception as e:
         motion_adapter = None

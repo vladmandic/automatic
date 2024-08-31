@@ -1,39 +1,104 @@
 # Change Log for SD.Next
 
-## Update for 2024-07-09: WiP
+## Update for 2024-08-31
 
-### Pending
+### Highlights for 2024-08-31
 
-- Requires `diffusers==0.30.0`
-- [AuraFlow/LavenderFlow](https://github.com/huggingface/diffusers/pull/8796) (previously known as LavenderFlow)
-- [Kolors](https://github.com/huggingface/diffusers/pull/8812)
-- [ControlNet Union](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) pipeline
-- FlowMatchHeunDiscreteScheduler enable
+Summer break is over and we are back with a massive update!  
 
-### Highlights
-
-Massive update to WiKi with over 20 new pages and articles, now includes guides for nearly all major features
-Support for new models:
-- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
-- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
-
-What else? Just a bit... ;)
-New **fast-install** mode, new **controlnet-union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, and more...
-
-### New Models
-
+Support for all of the new models:  
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
+- [AuraFlow 0.3](https://huggingface.co/fal/AuraFlow)  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-  to use, simply select from *networks -> reference
-  use scheduler: default or euler flowmatch or heun flowmatch  
-  note: this model uses T5 XXL variation of text encoder  
-  (previous version of Lumina used Gemma 2B as text encoder)  
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)
-  to use, simply select from *networks -> reference  
-  note: this is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder  
-  however, this new encoder does support both English and Chinese prompting  
-- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)
-  to use, simply select from *networks -> reference
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
+
+What else? Just a bit... ;)  
+
+New **fast-install** mode, new **Optimum Quanto** and **BitsAndBytes** based quantization modes, new **balanced offload** mode that dynamically offloads GPU<->CPU as needed, and more...  
+And from previous service-pack: new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler  
+
+**Breaking Changes...**
+
+Due to internal changes, you'll need to reset your **attention** and **offload** settings!  
+But...For a good reason, new *balanced offload* is magic when it comes to memory utilization while sacrificing minimal performance!
+
+### Details for 2024-08-31
+
+**New Models...**
+
+To use and of the new models, simply select model from *Networks -> Reference* and it will be auto-downloaded on first use  
+
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
+  FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching  
+  This is a very large model at ~32GB in size, its recommended to use a) offloading, b) quantization  
+  For more information on variations, requirements, options, and how to donwload and use FLUX.1, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
+  SD.Next supports:  
+  - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
+  - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
+  - additional [nf4](https://huggingface.co/sayakpaul/flux.1-dev-nf4) quantized variation  
+- [AuraFlow](https://huggingface.co/fal/AuraFlow)  
+  AuraFlow v0.3 is the fully open-sourced largest flow-based text-to-image generation model  
+  This is a very large model at 6.8B params and nearly 31GB in size, smaller variants are expected in the future  
+  Use scheduler: Default or Euler FlowMatch or Heun FlowMatch  
+- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+  Lumina-Next-SFT is a Next-DiT model containing 2B parameters, enhanced through high-quality supervised fine-tuning (SFT)  
+  This model uses T5 XXL variation of text encoder (previous version of Lumina used Gemma 2B as text encoder)  
+  Use scheduler: Default or Euler FlowMatch or Heun FlowMatch  
+- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
+  Kolors is a large-scale text-to-image generation model based on latent diffusion  
+  This is an SDXL style model that replaces standard CLiP-L and CLiP-G text encoders with a massive `chatglm3-6b` encoder supporting both English and Chinese prompting  
+- [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
+  Hunyuan-DiT is a powerful multi-resolution diffusion transformer (DiT) with fine-grained Chinese understanding  
+- [AnimateDiff](https://github.com/guoyww/animatediff/)  
+  support for additional models: **SD 1.5 v3** (Sparse), **SD Lightning** (4-step), **SDXL Beta**  
+
+**New Features...**
+
+- support for **Balanced Offload**, thanks @Disty0!  
+  balanced offload will dynamically split and offload models from the GPU based on the max configured GPU and CPU memory size  
+  model parts that dont fit in the GPU will be dynamically sliced and offloaded to the CPU  
+  see *Settings -> Diffusers Settings -> Max GPU memory and Max CPU memory*  
+  *note*: recommended value for max GPU memory is ~80% of your total GPU memory  
+  *note*: balanced offload will force loading LoRA with Diffusers method  
+  *note*: balanced offload is not compatible with Optimum Quanto  
+- support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0 and @Trojaner!  
+  to use, go to Settings -> Compute Settings and enable "Quantize Model weights with Optimum Quanto" option  
+  *note*: Optimum Quanto requires PyTorch 2.4  
+- new prompt attention mode: **xhinker** which brings support for prompt attention to new models such as FLUX.1 and SD3  
+  to use, enable in *Settings -> Execution -> Prompt attention*
+- use [PEFT](https://huggingface.co/docs/peft/main/en/index) for **LoRA** handling on all models other than SD15/SD21/SDXL  
+  this improves LoRA compatibility for SC, SD3, AuraFlow, Flux, etc.  
+
+**Changes & Fixes...**
+
+- default resolution bumped from 512x512 to 1024x1024, time to move on ;)
+- convert **Dynamic Attention SDP** into a global SDP option, thanks @Disty0!  
+  *note*: requires reset of selected attention option
+- update default **CUDA** version from 12.1 to 12.4
+- update `requirements`
+- samplers now prefers the model defaults over the diffusers defaults, thanks @Disty0!  
+- improve xyz grid for lora handling and add lora strength option  
+- don't enable Dynamic Attention by default on platforms that support Flash Attention, thanks @Disty0!  
+- convert offload options into a single choice list, thanks @Disty0!  
+  *note*: requires reset of selected offload option  
+- control module allows reszing of indivudual process override images to match input image  
+  for example: set size->before->method:nearest, mode:fixed or mode:fill  
+- control tab includes superset of txt and img scripts
+- automatically offload disabled controlnet units  
+- prioritize specified backend if `--use-*` option is used, thanks @lshqqytiger
+- ipadapter option to auto-crop input images to faces to improve efficiency of face-transfter ipadapters  
+- update **IPEX** to 2.1.40+xpu on Linux, thanks @Disty0!  
+- general **ROCm** fixes, thanks @lshqqytiger!  
+- support for HIP SDK 6.1 on ZLUDA backend, thanks @lshqqytiger!
+- fix full vae previews, thanks @Disty0!  
+- fix default scheduler not being applied, thanks @Disty0!  
+- fix Stable Cascade with custom schedulers, thanks @Disty0!  
+- fix LoRA apply with force-diffusers
+- fix LoRA scales with force-diffusers
+- fix control API
+- fix VAE load refrerencing incorrect configuration
+- fix NVML gpu monitoring
 
 ## Update for 2024-07-08
 
@@ -57,13 +122,13 @@ This release is primary service release with cumulative fixes and several improv
 **And fixes...**
 - enable **Florence VLM**  for all platforms, thanks @lshqqytiger!  
 - improve ROCm detection under WSL2, thanks @lshqqytiger!  
-- add SD3 with FP16 T5 to list of detected models
+- add SD3 with FP16 T5 to list of detected models  
 - fix executing extensions with zero params  
-- add support for embeddings bundled in LoRA, thanks @AI-Casanova!
+- add support for embeddings bundled in LoRA, thanks @AI-Casanova!  
 - fix executing extensions with zero params  
-- fix nncf for lora, thanks @Disty0!
-- fix diffusers version detection for SD3
-- fix current step for higher order samplers
+- fix nncf for lora, thanks @Disty0!  
+- fix diffusers version detection for SD3  
+- fix current step for higher order samplers  
 - fix control input type video  
 - fix reset pipeline at the end of each iteration  
 - fix faceswap when no faces detected  

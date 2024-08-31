@@ -1,4 +1,29 @@
 {
+  "Juggernaut SD-XL XI": {
+    "path": "juggernautXL_juggXIByRundiffusion.safetensors@https://civitai.com/api/download/models/782002",
+    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
+  "Juggernaut SD-XL X Hyper": {
+    "path": "Juggernaut_X_RunDiffusion_Hyper.safetensors@https://civitai.com/api/download/models/471120",
+    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
+  "Juggernaut SD-XL IX Lightning": {
+    "path": "juggernautXL_v9Rdphoto2Lightning.safetensors@https://civitai.com/api/download/models/357609",
+    "preview": "juggernautXL_v9Rdphoto2Lightning.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion XL",
+    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
+  },
+  "Juggernaut SD Reborn": {
+    "original": true,
+    "path": "juggernaut_reborn.safetensors@https://civitai.com/api/download/models/274039",
+    "preview": "juggernaut_reborn.jpg",
+    "desc": "Showcase finetuned model based on Stable diffusion 1.5",
+    "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+  },
 
   "DreamShaper SD v8": {
     "original": true,
@@ -19,31 +44,14 @@
     "desc": "Showcase finetuned model based on Stable diffusion XL",
     "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 8, cfg_scale: 2.0"
   }, 
-  "Juggernaut SD Reborn": {
-    "original": true,
-    "path": "juggernaut_reborn.safetensors@https://civitai.com/api/download/models/274039",
-    "preview": "juggernaut_reborn.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion 1.5",
-    "extras": "width: 512, height: 512, sampler: DEIS, steps: 20, cfg_scale: 6.0"
-  },
-  "Juggernaut SD-XL v9": {
-    "path": "juggernautXL_v9Rundiffusionphoto2.safetensors@https://civitai.com/api/download/models/348913",
-    "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
-  },
-  "Juggernaut SD-XL v9 Lightning": {
-    "path": "juggernautXL_v9Rdphoto2Lightning.safetensors@https://civitai.com/api/download/models/357609",
-    "preview": "juggernautXL_v9Rdphoto2Lightning.jpg",
-    "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
-  },
+
   "Tempest SD-XL v0.1": {
     "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
     "preview": "TempestV0.1-Artistic.jpg",
     "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
     "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
   },
+
   "SDXS DreamShaper 512": {
     "path": "IDKiro/sdxs-512-dreamshaper",
     "preview": "IDKiro--sdxs-512-dreamshaper.jpg",
@@ -112,6 +120,50 @@
     "preview": "stabilityai--stable-diffusion-3.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 7.0"
   },
+
+  "Black Forest Labs FLUX.1 Dev": {
+    "path": "black-forest-labs/FLUX.1-dev",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Schnell": {
+    "path": "black-forest-labs/FLUX.1-schnell",
+    "preview": "black-forest-labs--FLUX.1-schnell.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching. Trained using latent adversarial diffusion distillation, FLUX.1 [schnell] can generate high-quality images in only 1 to 4 steps",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev qint8": {
+    "path": "Disty0/FLUX.1-dev-qint8",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev qint4": {
+    "path": "Disty0/FLUX.1-dev-qint4",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+  "Black Forest Labs FLUX.1 Dev nf4": {
+    "path": "sayakpaul/flux.1-dev-nf4",
+    "preview": "black-forest-labs--FLUX.1-dev.jpg",
+    "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
+    "skip": true,
+    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+  },
+
+  "AuraFlow 0.3": {
+    "path": "fal/AuraFlow-v0.3",
+    "desc": "AuraFlow v0.3 is the fully open-sourced flow-based text-to-image generation model. The model was trained with more compute compared to the previous version, AuraFlow-v0.2. Compared to AuraFlow-v0.2, the model is fine-tuned on more aesthetic datasets and now supports various aspect ratio, (now width and height up to 1536 pixels).",
+    "preview": "fal--AuraFlow-v0.3.jpg",
+    "skip": true,
+    "extras": "width: 1024, height: 1024"
+  }, 
 
   "Segmind Vega": {
     "path": "huggingface/segmind/Segmind-Vega",
@@ -185,22 +237,22 @@
   "Tencent HunyuanDiT 1.2": {
     "path": "Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
-    "preview": "Tencent-Hunyuan-HunyuanDiT.jpg",
+    "preview": "Tencent-Hunyuan--HunyuanDiT-v1.2-Diffusers.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
   },
 
   "AlphaVLLM Lumina Next SFT": {
     "path": "Alpha-VLLM/Lumina-Next-SFT-diffusers",
     "desc": "The Lumina-Next-SFT is a Next-DiT model containing 2B parameters and utilizes Gemma-2B as the text encoder, enhanced through high-quality supervised fine-tuning (SFT).",
-    "preview": "Alpha-VLLM-Lumina-Next-SFT-diffusers.jpg",
+    "preview": "Alpha-VLLM--Lumina-Next-SFT-diffusers.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024, sampler: Default"
   }, 
 
   "Kwai Kolors": {
-    "path": "Kwai-Kolors/Kolors",
+    "path": "Kwai-Kolors/Kolors-diffusers",
     "desc": "Kolors is a large-scale text-to-image generation model based on latent diffusion, developed by the Kuaishou Kolors team. Trained on billions of text-image pairs, Kolors exhibits significant advantages over both open-source and proprietary models in visual quality, complex semantic accuracy, and text rendering for both Chinese and English characters. Furthermore, Kolors supports both Chinese and English inputs",
-    "preview": "Kwai-Kolors.jpg",
+    "preview": "Kwai-Kolors--Kolors-diffusers.jpg",
     "skip": true,
     "extras": "width: 1024, height: 1024"
   }, 

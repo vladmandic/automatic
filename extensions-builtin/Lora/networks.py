@@ -29,6 +29,8 @@ loaded_networks: List[network.Network] = []
 timer = { 'load': 0, 'apply': 0, 'restore': 0 }
 # networks_in_memory = {}
 lora_cache = {}
+diffuser_loaded = []
+diffuser_scales = []
 available_network_hash_lookup = {}
 forbidden_network_aliases = {}
 re_network_name = re.compile(r"(.*)\s*\([0-9a-fA-F]+\)")
@@ -82,26 +84,26 @@ def assign_network_names_to_compvis_modules(sd_model):
 
 def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
     t0 = time.time()
-    cached = lora_cache.get(name, None)
-    # if debug:
-    shared.log.debug(f'LoRA load: name="{name}" file="{network_on_disk.filename}" type=diffusers {"cached" if cached else ""} fuse={shared.opts.lora_fuse_diffusers}')
-    if cached is not None:
-        return cached
+    name = name.replace(".", "_")
+    #cached = lora_cache.get(name, None)
+    shared.log.debug(f'LoRA load: name="{name}" file="{network_on_disk.filename}" type=diffusers scale={lora_scale} fuse={shared.opts.lora_fuse_diffusers}')
+    # if cached is not None:
+    #    return cached
     if not shared.native:
         return None
     if not hasattr(shared.sd_model, 'load_lora_weights'):
         shared.log.error(f"LoRA load failed: class={shared.sd_model.__class__} does not implement load lora")
         return None
     try:
-        shared.sd_model.load_lora_weights(network_on_disk.filename)
+        shared.sd_model.load_lora_weights(network_on_disk.filename, adapter_name=name)
     except Exception as e:
         errors.display(e, "LoRA")
         return None
-    if shared.opts.lora_fuse_diffusers:
-        shared.sd_model.fuse_lora(lora_scale=lora_scale)
+    diffuser_loaded.append(name)
+    diffuser_scales.append(lora_scale)
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
-    lora_cache[name] = net
+    # lora_cache[name] = net
     t1 = time.time()
     timer['load'] += t1 - t0
     return net
@@ -171,6 +173,9 @@ def load_network(name, network_on_disk) -> network.Network:
 
 
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_models.disable_offload(shared.sd_model)
+        sd_models.move_model(shared.sd_model, devices.cpu)
     networks_on_disk = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
@@ -199,6 +204,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         shared.opts.cuda_compile = backup_cuda_compile
 
     loaded_networks.clear()
+    diffuser_loaded.clear()
+    diffuser_scales.clear()
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
         net = None
         if network_on_disk is not None:
@@ -208,19 +215,18 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             try:
                 if recompile_model:
                     shared.compiled_model_state.lora_model.append(f"{name}:{te_multipliers[i] if te_multipliers else 1.0}")
-                if shared.native and shared.opts.lora_force_diffusers: # OpenVINO only works with Diffusers LoRa loading
-                    net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
-                elif shared.native and network_overrides.check_override(shorthash):
+                if shared.native and (shared.opts.lora_force_diffusers or network_overrides.check_override(shorthash)): # OpenVINO only works with Diffusers LoRa loading
                     net = load_diffusers(name, network_on_disk, lora_scale=te_multipliers[i] if te_multipliers else 1.0)
                 else:
                     net = load_network(name, network_on_disk)
+                if net is not None:
+                    net.mentioned_name = name
+                    network_on_disk.read_hash()
             except Exception as e:
                 shared.log.error(f"LoRA load failed: file={network_on_disk.filename} {e}")
                 if debug:
                     errors.display(e, f"LoRA load failed file={network_on_disk.filename}")
                 continue
-            net.mentioned_name = name
-            network_on_disk.read_hash()
         if net is None:
             failed_to_load_networks.append(name)
             shared.log.error(f"LoRA unknown type: network={name}")
@@ -235,6 +241,12 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     while len(lora_cache) > shared.opts.lora_in_memory_limit:
         name = next(iter(lora_cache))
         lora_cache.pop(name, None)
+    if len(diffuser_loaded) > 0:
+        shared.log.debug(f'LoRA loaded={diffuser_loaded} scales={diffuser_scales}')
+        shared.sd_model.set_adapters(adapter_names=diffuser_loaded, adapter_weights=diffuser_scales)
+        if shared.opts.lora_fuse_diffusers:
+            shared.sd_model.fuse_lora(adapter_names=diffuser_loaded, lora_scale=1.0, fuse_unet=True, fuse_text_encoder=True)
+            shared.sd_model.unload_lora_weights()
     if len(loaded_networks) > 0 and debug:
         shared.log.debug(f'LoRA loaded={len(loaded_networks)} cache={list(lora_cache)}')
     devices.torch_gc()
@@ -246,6 +258,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_models.apply_balanced_offload(shared.sd_model)
 
 
 def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv]):
@@ -260,6 +274,9 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         if isinstance(self, torch.nn.MultiheadAttention):
             self.in_proj_weight.copy_(weights_backup[0])
             self.out_proj.weight.copy_(weights_backup[1])
+        elif hasattr(self, "qweight") and hasattr(self, "freeze"):
+            self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
+            self.freeze()
         else:
             self.weight.copy_(weights_backup)
     if bias_backup is not None:
@@ -315,11 +332,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if module is not None and hasattr(self, 'weight'):
                 try:
                     with devices.inference_context():
-                        updown, ex_bias = module.calc_updown(self.weight)
-                        if len(self.weight.shape) == 4 and self.weight.shape[1] == 9:
+                        weight = self.weight # calculate quant weights once
+                        updown, ex_bias = module.calc_updown(weight)
+                        if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        self.weight = torch.nn.Parameter(self.weight + updown)
+                        self.weight = torch.nn.Parameter(weight + updown)
+                        if hasattr(self, "qweight") and hasattr(self, "freeze"):
+                            self.freeze()
                         if ex_bias is not None and hasattr(self, 'bias'):
                             if self.bias is None:
                                 self.bias = torch.nn.Parameter(ex_bias)
@@ -399,6 +419,13 @@ def network_Linear_forward(self, input): # pylint: disable=W0622
     return originals.Linear_forward(self, input)
 
 
+def network_QLinear_forward(self, input): # pylint: disable=W0622
+    if shared.opts.lora_functional:
+        return network_forward(self, input, originals.Linear_forward)
+    network_apply_weights(self)
+    return torch.nn.functional.linear(input, self.qweight, bias=self.bias)
+
+
 def network_Linear_load_state_dict(self, *args, **kwargs):
     network_reset_cached_weight(self)
     return originals.Linear_load_state_dict(self, *args, **kwargs)
@@ -409,6 +436,13 @@ def network_Conv2d_forward(self, input): # pylint: disable=W0622
         return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return originals.Conv2d_forward(self, input)
+
+
+def network_QConv2d_forward(self, input): # pylint: disable=W0622
+    if shared.opts.lora_functional:
+        return network_forward(self, input, originals.Conv2d_forward)
+    network_apply_weights(self)
+    return self._conv_forward(input, self.qweight, self.bias) # pylint: disable=protected-access
 
 
 def network_Conv2d_load_state_dict(self, *args, **kwargs):

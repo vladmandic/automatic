@@ -8,6 +8,7 @@ import contextlib
 from types import SimpleNamespace
 from urllib.parse import urlparse
 from enum import Enum
+import psutil
 import requests
 import gradio as gr
 import fasteners
@@ -352,29 +353,40 @@ def temp_disable_extensions():
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
 
+gpu_memory = 0
+offload_mode_default = "none"
+cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
+
+mem_stat = memory_stats()
+if "gpu" in mem_stat:
+    gpu_memory = mem_stat['gpu']['total']
 
 if not (cmd_opts.lowvram or cmd_opts.medvram):
-    mem_stat = memory_stats()
     if "gpu" in mem_stat:
-        if mem_stat['gpu']['total'] <= 4:
+        if gpu_memory <= 4:
             cmd_opts.lowvram = True
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=lowvram")
-        elif mem_stat['gpu']['total'] <= 8:
+            offload_mode_default = "sequential"
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=lowvram")
+        elif gpu_memory <= 8:
             cmd_opts.medvram = True
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=medvram")
+            offload_mode_default = "model"
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=medvram")
         else:
-            log.info(f"VRAM: Detected={mem_stat['gpu']['total']} GB Optimization=none")
+            offload_mode_default = "none"
+            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=none")
+elif cmd_opts.medvram:
+    offload_mode_default = "model"
+elif cmd_opts.lowvram:
+    offload_mode_default = "sequential"
 
 
 if devices.backend == "directml": # Force BMM for DirectML instead of SDP
     cross_attention_optimization_default = "Dynamic Attention BMM" if native else "Sub-quadratic"
-elif native and (cmd_opts.lowvram or cmd_opts.medvram):
-    cross_attention_optimization_default = "Dynamic Attention SDP"
 elif devices.backend == "cpu":
     cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
 elif devices.backend == "mps":
     cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
-else: # cuda, rocm, ipex
+else: # cuda, rocm, ipex, openvino
     cross_attention_optimization_default ="Scaled-Dot-Product"
 
 
@@ -385,13 +397,16 @@ if devices.backend == "rocm":
 else:
     sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
 
+if (cmd_opts.lowvram or cmd_opts.medvram) and 'Flash attention' not in sdp_options_default:
+    sdp_options_default.append('Dynamic attention')
+
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
-    "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": ['None', 'T5 FP4', 'T5 FP8', 'T5 INT8', 'T5 FP16']}),
+    "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": ['None', 'T5 FP4', 'T5 FP8', 'T5 INT8', 'T5 QINT8', 'T5 FP16']}),
     "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
     "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results"),
@@ -399,7 +414,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "model_reuse_dict": OptionInfo(False, "Reuse loaded model dictionary", gr.Checkbox, {"visible": False}),
     "prompt_mean_norm": OptionInfo(False, "Prompt attention normalization", gr.Checkbox),
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
-    "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "A1111 parser", "Fixed attention"] }),
+    "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "xhinker parser", "A1111 parser", "Fixed attention"] }),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
     "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
@@ -423,9 +438,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
     "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
-    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention'] }),
+    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": 16, "step": 0.1, "visible": native}),
+    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
@@ -446,11 +461,15 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cuda_compile_precompile": OptionInfo(False, "Model compile precompile"),
     "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
     "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
-    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
-    "nncf_sep": OptionInfo("<h2>Model Compress</h2>", "", gr.HTML),
-    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "quant_sep": OptionInfo("<h2>Model Quantization</h2>", "", gr.HTML),
+    "quant_shuffle_weights": OptionInfo(False, "Shuffle the weights between GPU and CPU when quantizing"),
+    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
+    "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF INT8", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "optimum_quanto_weights": OptionInfo([], "Quantize Model weights with Optimum Quanto", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "optimum_quanto_weights_type": OptionInfo("qint8", "Weights type for Optimum Quanto", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
+    "optimum_quanto_activations_type": OptionInfo("none", "Activations type for Optimum Quanto", gr.Radio, {"choices": ['none', 'qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2'], "visible": native}),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
@@ -524,8 +543,9 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_model_cpu_offload": OptionInfo(cmd_opts.medvram, "Model CPU offload (--medvram)"),
-    "diffusers_seq_cpu_offload": OptionInfo(cmd_opts.lowvram, "Sequential CPU offload (--lowvram)"),
+    "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
+    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 2), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
+    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 2), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
@@ -574,6 +594,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "clip_models_path": OptionInfo(os.path.join(paths.models_path, 'CLIP'), "Folder with CLIP models", folder=True),
     "other_paths_sep_options": OptionInfo("<h2>Other paths</h2>", "", gr.HTML),
     "openvino_cache_path": OptionInfo('cache', "Directory for OpenVINO cache", folder=True),
+    "accelerate_offload_path": OptionInfo('cache/accelerate', "Directory for disk offload with Accelerate", folder=True),
     "onnx_cached_models_path": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'cache'), "Folder with ONNX cached models", folder=True),
     "onnx_temp_dir": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'temp'), "Directory for ONNX conversion and Olive optimization process", folder=True),
     "temp_dir": OptionInfo("", "Directory for temporary images; leave empty for default", folder=True),
@@ -594,8 +615,8 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
 
     "image_sep_metadata": OptionInfo("<h2>Metadata/Logging</h2>", "", gr.HTML),
     "image_metadata": OptionInfo(True, "Include metadata"),
-    "save_txt": OptionInfo(False, "Create info file per image"),
-    "save_log_fn": OptionInfo("", "Update JSON log file per image", component_args=hide_dirs),
+    "save_txt": OptionInfo(False, "Create image info text file"),
+    "save_log_fn": OptionInfo("", "Append image info JSON file", component_args=hide_dirs),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
     "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
@@ -688,6 +709,7 @@ options_templates.update(options_section(('live-preview', "Live Previews"), {
     "show_progress_type": OptionInfo("Approximate", "Live preview method", gr.Radio, {"choices": ["Simple", "Approximate", "TAESD", "Full VAE"]}),
     "live_preview_content": OptionInfo("Combined", "Live preview subject", gr.Radio, {"choices": ["Combined", "Prompt", "Negative prompt"], "visible": False}),
     "live_preview_refresh_period": OptionInfo(500, "Progress update period", gr.Slider, {"minimum": 0, "maximum": 5000, "step": 25}),
+    "live_preview_taesd_layers": OptionInfo(3, "TAESD decode layers", gr.Slider, {"minimum": 1, "maximum": 3, "step": 1}),
     "logmonitor_show": OptionInfo(True, "Show log view"),
     "logmonitor_refresh_period": OptionInfo(5000, "Log view update period", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
 }))

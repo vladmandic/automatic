@@ -19,7 +19,7 @@ def create_ui():
     shared.log.debug('UI initialize: txt2img')
     import modules.txt2img # pylint: disable=redefined-outer-name
     modules.scripts.scripts_current = modules.scripts.scripts_txt2img
-    modules.scripts.scripts_txt2img.initialize_scripts(is_img2img=False)
+    modules.scripts.scripts_txt2img.initialize_scripts(is_img2img=False, is_control=False)
     with gr.Blocks(analytics_enabled=False) as _txt2img_interface:
         txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, txt2img_submit, txt2img_paste, txt2img_extra_networks_button, txt2img_token_counter, txt2img_token_button, txt2img_negative_token_counter, txt2img_negative_token_button = ui_sections.create_toprow(is_img2img=False, id_part="txt2img")
 
