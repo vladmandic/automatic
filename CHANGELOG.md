@@ -1,28 +1,29 @@
 # Change Log for SD.Next
 
-## Update for 2024-08-29
+## Update for 2024-08-31
 
-### Highlights for 2024-08-29
+### Highlights for 2024-08-31
 
 Summer break is over and we are back with a massive update!  
 
 Support for all of the new models:  
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
-- [AuraFlow](https://huggingface.co/fal/AuraFlow)  
+- [AuraFlow 0.3](https://huggingface.co/fal/AuraFlow)  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
 - [HunyuanDiT 1.2](https://huggingface.co/Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers)  
 
 What else? Just a bit... ;)  
 
-New **fast-install** mode, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode, new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler,  and more...  
+New **fast-install** mode, new **Optimum Quanto** and **BitsAndBytes** based quantization modes, new **balanced offload** mode that dynamically offloads GPU<->CPU as needed, and more...  
+And from previous service-pack: new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler  
 
 **Breaking Changes...**
 
 Due to internal changes, you'll need to reset your **attention** and **offload** settings!  
 But...For a good reason, new *balanced offload* is magic when it comes to memory utilization while sacrificing minimal performance!
 
-### Details for 2024-08-29
+### Details for 2024-08-31
 
 **New Models...**
 
@@ -31,7 +32,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
   FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching  
   This is a very large model at ~32GB in size, its recommended to use a) offloading, b) quantization  
-  For more information on how to donwload and use FLUX.1, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
+  For more information on variations, requirements, options, and how to donwload and use FLUX.1, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
   SD.Next supports:  
   - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
   - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
