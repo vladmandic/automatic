@@ -7,7 +7,7 @@
 Summer break is over and we are back with a massive update!  
 
 Support for all of the new models:  
-- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) original variations and multiple quantized variations (*qint8, qint4, nf4*)!  
+- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)  
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
@@ -15,7 +15,7 @@ Support for all of the new models:
 
 What else? Just a bit... ;)  
 
-New **fast-install** mode, new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode and more...  
+New **fast-install** mode, new **Optimum Quanto** and **BitsAndBytes** quantization modes, new **balanced offload** mode, new **ControlNet-Union** *all-in-one* model, support for **DoRA** networks, additional **VLM** models, new **AuraSR** upscaler,  and more...  
 
 **Breaking Changes...**
 
@@ -31,8 +31,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/)  
   FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching  
   This is a very large model at ~32GB in size, its recommended to use a) offloading, b) quantization  
-  *Note*: [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) variant is a gated model, you need to accept the terms and conditions to use it  
-  For more information, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
+  For more information on how to donwload and use FLUX.1, see [Wiki](https://github.com/vladmandic/automatic/wiki/FLUX)  
   SD.Next supports:  
   - [FLUX.1 Dev](https://huggingface.co/black-forest-labs/FLUX.1-dev) and [FLUX.1 Schnell](https://huggingface.co/black-forest-labs/FLUX.1-schnell) original variations  
   - additional [qint8](https://huggingface.co/Disty0/FLUX.1-dev-qint8) and [qint4](https://huggingface.co/Disty0/FLUX.1-dev-qint4) quantized variations  
@@ -59,6 +58,7 @@ To use and of the new models, simply select model from *Networks -> Reference* a
   balanced offload will dynamically split and offload models from the GPU based on the max configured GPU and CPU memory size  
   model parts that dont fit in the GPU will be dynamically sliced and offloaded to the CPU  
   see *Settings -> Diffusers Settings -> Max GPU memory and Max CPU memory*  
+  *note*: recommended value for max GPU memory is ~80% of your total GPU memory  
   *note*: balanced offload will force loading LoRA with Diffusers method  
   *note*: balanced offload is not compatible with Optimum Quanto  
 - support for **Optimum Quanto** with 8 bit and 4 bit quantization options, thanks @Disty0 and @Trojaner!  

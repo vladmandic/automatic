@@ -50,48 +50,28 @@ def Encoder(latent_channels=4):
     )
 
 def Decoder(latent_channels=4):
-    return nn.Sequential(
-        Clamp(), conv(latent_channels, 64), nn.ReLU(),
-        Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
-        Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
-        Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
-        Block(64, 64), conv(64, 3),
-    )
-
-
-class TAESD2(nn.Module): # pylint: disable=abstract-method
-    latent_magnitude = 3
-    latent_shift = 0.5
-
-    def __init__(self, encoder_path="taesd_encoder.pth", decoder_path="taesd_decoder.pth", latent_channels=None):
-        """Initialize pretrained TAESD on the given device from the given checkpoints."""
-        super().__init__()
-        if latent_channels is None:
-            latent_channels = self.guess_latent_channels(str(encoder_path))
-        self.encoder = Encoder(latent_channels)
-        self.decoder = Decoder(latent_channels)
-        if encoder_path is not None:
-            self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
-        if decoder_path is not None:
-            self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"))
-
-    def guess_latent_channels(self, encoder_path):
-        """guess latent channel count based on encoder filename"""
-        if "taef1" in encoder_path:
-            return 16
-        if "taesd3" in encoder_path:
-            return 16
-        return 4
-
-    @staticmethod
-    def scale_latents(x):
-        """raw latents -> [0, 1]"""
-        return x.div(2 * TAESD.latent_magnitude).add(TAESD.latent_shift).clamp(0, 1)
-
-    @staticmethod
-    def unscale_latents(x):
-        """[0, 1] -> raw latents"""
-        return x.sub(TAESD.latent_shift).mul(2 * TAESD.latent_magnitude)
+    from modules import shared
+    if shared.opts.live_preview_taesd_layers == 1:
+        return nn.Sequential(
+            Clamp(), conv(latent_channels, 64), nn.ReLU(),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), conv(64, 3),
+        )
+    elif shared.opts.live_preview_taesd_layers == 2:
+        return nn.Sequential(
+            Clamp(), conv(latent_channels, 64), nn.ReLU(),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), conv(64, 3),
+        )
+    else:
+        return nn.Sequential(
+            Clamp(), conv(latent_channels, 64), nn.ReLU(),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), conv(64, 3),
+        )
 
 
 class TAESD(nn.Module): # pylint: disable=abstract-method

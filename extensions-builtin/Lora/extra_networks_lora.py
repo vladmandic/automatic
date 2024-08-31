@@ -110,9 +110,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                     if shared.opts.lora_fuse_diffusers:
                         shared.sd_model.unfuse_lora()
                     shared.sd_model.unload_lora_weights() # fails for non-CLIP models
-                    shared.log.debug("LoRA unload")
-                except Exception as e:
-                    shared.log.warning(f"LoRA unload: {e}")
+                    # shared.log.debug("LoRA unload")
+                except Exception:
+                    # shared.log.warning(f"LoRA unload: {e}")
+                    pass
         if not self.active and getattr(networks, "originals", None ) is not None:
             networks.originals.undo() # remove patches
             if networks.debug:

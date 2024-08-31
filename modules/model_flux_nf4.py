@@ -149,13 +149,16 @@ def create_quantized_param(
 
 
 def load_flux_nf4(checkpoint_info, diffusers_load_config):
-    if os.path.exists(checkpoint_info.path) and os.path.isfile(checkpoint_info.path):
-        ckpt_path = checkpoint_info.path
+    repo_path = checkpoint_info.path
+    if os.path.exists(repo_path) and os.path.isfile(repo_path):
+        ckpt_path = repo_path
+    if os.path.exists(repo_path) and os.path.isdir(repo_path) and os.path.exists(os.path.join(repo_path, "diffusion_pytorch_model.safetensors")):
+        ckpt_path = os.path.join(repo_path, "diffusion_pytorch_model.safetensors")
     else:
-        ckpt_path = hf_hub_download(checkpoint_info.path, filename="diffusion_pytorch_model.safetensors", cache_dir=shared.opts.diffusers_dir)
+        ckpt_path = hf_hub_download(repo_path, filename="diffusion_pytorch_model.safetensors", cache_dir=shared.opts.diffusers_dir)
     original_state_dict = safetensors.torch.load_file(ckpt_path)
 
-    if 'sayakpaul/flux.1-dev-nf4' in checkpoint_info.path:
+    if 'sayakpaul' in checkpoint_info.path:
         converted_state_dict = original_state_dict # already converted
     else:
         try:
