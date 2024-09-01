@@ -24,6 +24,7 @@ import modules.scripts
 import modules.sd_models
 import modules.sd_vae
 import modules.sd_unet
+import modules.model_t5
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -88,6 +89,9 @@ def initialize():
     timer.startup.record("vae")
 
     modules.sd_unet.refresh_unet_list()
+    timer.startup.record("unet")
+
+    modules.model_t5.refresh_t5_list()
     timer.startup.record("unet")
 
     extensions.list_extensions()

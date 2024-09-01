@@ -463,13 +463,13 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
     te1_device, te2_device, te3_device = None, None, None
     if hasattr(pipe, "text_encoder") and pipe.text_encoder.device != devices.device:
         te1_device = pipe.text_encoder.device
-        pipe.text_encoder = pipe.text_encoder.to(devices.device)
+        sd_models.move_model(pipe.text_encoder, devices.device)
     if hasattr(pipe, "text_encoder_2") and pipe.text_encoder_2.device != devices.device:
         te2_device = pipe.text_encoder_2.device
-        pipe.text_encoder_2 = pipe.text_encoder_2.to(devices.device)
+        sd_models.move_model(pipe.text_encoder_2, devices.device)
     if hasattr(pipe, "text_encoder_3") and pipe.text_encoder_3.device != devices.device:
         te3_device = pipe.text_encoder_3.device
-        pipe.text_encoder_3 = pipe.text_encoder_3.to(devices.device)
+        sd_models.move_model(pipe.text_encoder_3, devices.device)
 
     if is_sd3:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
@@ -481,10 +481,10 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
         prompt_embed, negative_embed = get_weighted_text_embeddings_sd15(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, clip_skip=clip_skip)
 
     if te1_device is not None:
-        pipe.text_encoder = pipe.text_encoder.to(te1_device)
+        sd_models.move_model(pipe.text_encoder, te1_device)
     if te2_device is not None:
-        pipe.text_encoder_2 = pipe.text_encoder_2.to(te2_device)
+        sd_models.move_model(pipe.text_encoder_2, te1_device)
     if te3_device is not None:
-        pipe.text_encoder_3 = pipe.text_encoder_3.to(te3_device)
+        sd_models.move_model(pipe.text_encoder_3, te1_device)
 
     return prompt_embed, positive_pooled, negative_embed, negative_pooled

@@ -99,7 +99,7 @@ def taesd_vae_decode(latents):
     debug(f'VAE decode: name=TAESD images={len(latents)} latents={latents.shape} slicing={shared.opts.diffusers_vae_slicing}')
     if len(latents) == 0:
         return []
-    if shared.opts.diffusers_vae_slicing:
+    if shared.opts.diffusers_vae_slicing and len(latents) > 1:
         decoded = torch.zeros((len(latents), 3, latents.shape[2] * 8, latents.shape[3] * 8), dtype=devices.dtype_vae, device=devices.device)
         for i in range(latents.shape[0]):
             decoded[i] = sd_vae_taesd.decode(latents[i])

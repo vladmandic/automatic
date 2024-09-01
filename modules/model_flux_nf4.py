@@ -5,7 +5,6 @@ Copied from: https://github.com/huggingface/diffusers/issues/9165
 import os
 import torch
 import torch.nn as nn
-import bitsandbytes as bnb
 from transformers.quantizers.quantizers_utils import get_module_from_name
 from huggingface_hub import hf_hub_download
 from accelerate import init_empty_weights
@@ -14,6 +13,22 @@ from diffusers import FluxTransformer2DModel, FluxPipeline
 from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
 import safetensors.torch
 from modules import shared, devices
+
+
+bnb = None
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
+
+
+def load_bnb():
+    from installer import install
+    install('bitsandbytes', quiet=True)
+    try:
+        import bitsandbytes
+        global bnb # pylint: disable=global-statement
+        bnb = bitsandbytes
+    except Exception as e:
+        shared.log.error(f"FLUX: Failed to import bitsandbytes: {e}")
+        raise
 
 
 def _replace_with_bnb_linear(
@@ -148,25 +163,31 @@ def create_quantized_param(
     module._parameters[tensor_name] = new_value # pylint: disable=protected-access
 
 
-def load_flux_nf4(checkpoint_info, diffusers_load_config):
-    repo_path = checkpoint_info.path
+def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer_only=False):
+    load_bnb()
+    if isinstance(checkpoint_info, str):
+        repo_path = checkpoint_info
+    else:
+        repo_path = checkpoint_info.path
     if os.path.exists(repo_path) and os.path.isfile(repo_path):
         ckpt_path = repo_path
-    if os.path.exists(repo_path) and os.path.isdir(repo_path) and os.path.exists(os.path.join(repo_path, "diffusion_pytorch_model.safetensors")):
+    elif os.path.exists(repo_path) and os.path.isdir(repo_path) and os.path.exists(os.path.join(repo_path, "diffusion_pytorch_model.safetensors")):
         ckpt_path = os.path.join(repo_path, "diffusion_pytorch_model.safetensors")
     else:
         ckpt_path = hf_hub_download(repo_path, filename="diffusion_pytorch_model.safetensors", cache_dir=shared.opts.diffusers_dir)
     original_state_dict = safetensors.torch.load_file(ckpt_path)
 
-    if 'sayakpaul' in checkpoint_info.path:
+    if 'sayakpaul' in repo_path:
         converted_state_dict = original_state_dict # already converted
     else:
         try:
             converted_state_dict = convert_flux_transformer_checkpoint_to_diffusers(original_state_dict)
         except Exception as e:
-            from modules import errors
-            errors.display(e, 'FLUX convert:')
-            raise
+            shared.log.error(f"FLUX: Failed to convert UNET: {e}")
+            if debug:
+                from modules import errors
+                errors.display(e, 'FLUX convert:')
+            converted_state_dict = original_state_dict
 
     with init_empty_weights():
         config = FluxTransformer2DModel.load_config("black-forest-labs/flux.1-dev", subfolder="transformer")
@@ -187,6 +208,9 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config):
             create_quantized_param(model, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
 
     del original_state_dict
-    pipe = FluxPipeline.from_pretrained("black-forest-labs/flux.1-dev", transformer=model, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
     devices.torch_gc(force=True)
-    return pipe
+    if transformer_only:
+        return model
+    else:
+        pipe = FluxPipeline.from_pretrained("black-forest-labs/flux.1-dev", transformer=model, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+        return pipe

@@ -1,5 +1,24 @@
 # Change Log for SD.Next
 
+## Update for 2024-09-01
+
+- flux improve logging, warn when attempting to load unet as base model  
+- flux unet support fp8/fp4 quantization  
+- flux vae support fp16  
+- flux lora support additional training tools (*1)  
+- flux model support loading all-in-one safetensors (*1)  
+  not recommended due to massive duplication of components, but added due to popular demand  
+- taesd configurable number of layers  
+  can be used to speed-up taesd decoding by reducing number of ops  
+  e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
+  set via *settings -> live preview -> taesd decode layers*  
+- xhinker prompt parser handle offloaded models  
+- t5 enum manually downloaded models (*2)  
+
+*notes*:
+- (*1) requires `diffusers==0.31.0.dev0`
+- (*2) work-in-progress
+
 ## Update for 2024-08-31
 
 ### Highlights for 2024-08-31

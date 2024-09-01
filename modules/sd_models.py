@@ -566,7 +566,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             # guess by size
             if os.path.isfile(f) and f.endswith('.safetensors'):
                 size = round(os.path.getsize(f) / 1024 / 1024)
-                if size < 128:
+                if (size > 0 and size < 128):
                     warn(f'Model size smaller than expected: {f} size={size} MB')
                 elif (size >= 316 and size <= 324) or (size >= 156 and size <= 164): # 320 or 160
                     warn(f'Model detected as VAE model, but attempting to load as model: {op}={f} size={size} MB')
@@ -591,6 +591,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     guess = 'Stable Diffusion XL'
                 elif (size > 5692 and size < 5698) or (size > 4134 and size < 4138) or (size > 10362 and size < 10366) or (size > 15028 and size < 15228):
                     guess = 'Stable Diffusion 3'
+                elif (size > 20000 and size < 40000):
+                    guess = 'FLUX'
             # guess by name
             """
             if 'LCM_' in f.upper() or 'LCM-' in f.upper() or '_LCM' in f.upper() or '-LCM' in f.upper():
@@ -620,8 +622,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Kolors'
             if 'auraflow' in f.lower():
                 guess = 'AuraFlow'
-            if 'flux.1' in f.lower() or 'flux1' in f.lower():
+            if 'flux' in f.lower():
                 guess = 'FLUX'
+                if size > 11000 and size < 20000:
+                    warn(f'Model detected as FLUX UNET model, but attempting to load a base model: {op}={f} size={size} MB')
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'

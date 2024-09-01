@@ -233,6 +233,8 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
         global loaded_vae_file # pylint: disable=global-statement
         loaded_vae_file = os.path.basename(vae_file)
         # shared.log.debug(f'Diffusers VAE config: {vae.config}')
+        if shared.opts.diffusers_offload_mode == 'none':
+            sd_models.move_model(vae, devices.device)
         return vae
     except Exception as e:
         shared.log.error(f"Loading VAE failed: model={vae_file} {e}")
