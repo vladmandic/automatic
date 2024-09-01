@@ -510,6 +510,7 @@ def install_rocm_zluda():
         if error is None:
             if args.device_id is not None:
                 os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
+                del args.device_id
             try:
                 zluda_installer.load(zluda_path)
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
