@@ -26,7 +26,7 @@ def load_bnb():
         global bnb # pylint: disable=global-statement
         bnb = bitsandbytes
     except Exception as e:
-        shared.log.error(f"FLUX: Failed to import bitsandbytes: {e}")
+        shared.log.error(f"Loading FLUX: Failed to import bitsandbytes: {e}")
         raise
 
 
@@ -162,8 +162,10 @@ def create_quantized_param(
     module._parameters[tensor_name] = new_value # pylint: disable=protected-access
 
 
-def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer, text_encoder_2):
+def load_flux_nf4(checkpoint_info, diffusers_load_config):
     load_bnb()
+    transformer = None
+    text_encoder_2 = None
     if isinstance(checkpoint_info, str):
         repo_path = checkpoint_info
     else:
@@ -182,7 +184,7 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer, text_enco
         try:
             converted_state_dict = convert_flux_transformer_checkpoint_to_diffusers(original_state_dict)
         except Exception as e:
-            shared.log.error(f"FLUX: Failed to convert UNET: {e}")
+            shared.log.error(f"Loading FLUX: Failed to convert UNET: {e}")
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX convert:')
@@ -209,3 +211,4 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer, text_enco
 
     del original_state_dict
     devices.torch_gc(force=True)
+    return transformer, text_encoder_2
