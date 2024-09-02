@@ -7,7 +7,7 @@ Major refactor of FLUX.1 support:
   model load will load selected components first and then initialize model using pre-loaded components  
   components that were not pre-loaded will be downloaded and initialized as needed  
   as usual, components can also be loaded after initial model load  
-  *note*: use of transformer/unet is recommended as those are flux.1 finetunes
+  *note*: use of transformer/unet is recommended as those are flux.1 finetunes  
   *note*: manually selecting vae and text-encoder is not recommended  
   *note*: mix-and-match of different quantizations for different components can lead to unexpected errors  
   - transformer/unet is list of manually downloaded safetensors  
