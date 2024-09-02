@@ -196,7 +196,8 @@ def decode_first_stage(model, x, full_quality=True):
         try:
             if full_quality:
                 if hasattr(model, 'decode_first_stage'):
-                    x_sample = model.decode_first_stage(x) * 0.5 + 0.5
+                    # x_sample = model.decode_first_stage(x) * 0.5 + 0.5
+                    x_sample = model.decode_first_stage(x)
                 elif hasattr(model, 'vae'):
                     x_sample = processing_vae.vae_decode(latents=x, model=model, output_type='np', full_quality=full_quality)
                 else:

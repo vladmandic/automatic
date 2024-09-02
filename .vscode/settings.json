@@ -8,5 +8,6 @@
     "./repositories/taming"
   ],
   "python.analysis.typeCheckingMode": "off",
-  "editor.formatOnSave": false
+  "editor.formatOnSave": false,
+  "python.REPL.enableREPLSmartSend": false
 }

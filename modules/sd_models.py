@@ -737,6 +737,9 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         set_diffuser_offload(sd_model, op)
 
 def set_diffuser_offload(sd_model, op: str = 'model'):
+    if not shared.native:
+        shared.log.warning('Attempting to use offload with backend=original')
+        return
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
@@ -837,6 +840,8 @@ def apply_balanced_offload(sd_model):
                     shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc(fast=True)
 
+    if not shared.native:
+        return
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "prior_pipe"):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
@@ -859,6 +864,19 @@ def normalize_device(device):
 def move_model(model, device=None, force=False):
     if model is None or device is None:
         return
+
+    if not shared.native:
+        if type(model).__name__ == 'LatentDiffusion':
+            model = model.to(device)
+            if hasattr(model, 'model'):
+                model.model = model.model.to(device)
+            if hasattr(model, 'first_stage_model'):
+                model.first_stage_model = model.first_stage_model.to(device)
+            if hasattr(model, 'cond_stage_model'):
+                model.cond_stage_model = model.cond_stage_model.to(device)
+        devices.torch_gc()
+        return
+
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
         if device == devices.device and model.vae.device.type != "meta": # force vae back to gpu if not in txt2img mode
             model.vae.to(device)

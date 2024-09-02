@@ -265,7 +265,6 @@ class EmbeddingsWithFixes(torch.nn.Module):
     def forward(self, input_ids):
         batch_fixes = self.embeddings.fixes
         self.embeddings.fixes = None
-
         inputs_embeds = self.wrapped(input_ids)
 
         if batch_fixes is None or len(batch_fixes) == 0 or max([len(x) for x in batch_fixes]) == 0:

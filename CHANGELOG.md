@@ -38,7 +38,10 @@ Other improvements:
   improves quality of the flow-matching samplers  
 - t5 support manually downloaded models  
   applies to all models that use t5 transformer  
+
+Fixes:
 - fix handling of model configs if offline config is not available  
+- fix vae decode in backend original
 
 Work-in-progress:
 - flux controlnet support: (*1)
