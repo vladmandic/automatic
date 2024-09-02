@@ -435,19 +435,17 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    pass # noop for now, can be used to force specific version based on conditions
+    pkg = pkg_resources.working_set.by_key.get('diffusers', None)
+    minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
+    if minor < 31:
+        pip('install git+https://github.com/huggingface/diffusers@007ad0e', ignore=False, quiet=True, uv=False)
 
 
 # check onnx version
 def check_onnx():
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
-    if not installed('onnxruntime', quiet=True) and not (
-        installed('onnxruntime-gpu', quiet=True) or
-        installed('onnxruntime-openvino', quiet=True) or
-        installed('onnxruntime-training', quiet=True)
-        ): # allow either
-
+    if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
         install('onnxruntime', 'onnxruntime', ignore=True)
 
 

@@ -4,7 +4,9 @@
 
 ### Highlights
 
-Major refactor of FLUX.1 support: faster, more flexible loading, full ControlNet support, better LoRA support, full prompt attention support, additional quantization options, and more...
+Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
+- Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
+- faster, more flexible loading, with additional quantization options, and more...
 
 ### Details
 
@@ -19,45 +21,44 @@ Major refactor of FLUX.1 support: faster, more flexible loading, full ControlNet
   - transformer/unet is list of manually downloaded safetensors  
   - vae is list of manually downloaded safetensors  
   - text-encoder is list of predefined and manually downloaded text-encoders  
-- **controlnet** support: (*1)
+- **controlnet** support:
   support for **InstantX/Shakker-Labs** models including [Union-Pro](InstantX/FLUX.1-dev-Controlnet-Union)  
   note that flux controlnet models are large, up to 6.6GB on top of already large base model!  
   as such, you may need to use offloading:sequential which is not as fast, but uses far less memory  
   when using union model, you must also select control mode in the control unit  
   flux does not yet support *img2img* so to use controlnet, you need to set contronet input via control unit override  
-- model support loading **all-in-one** safetensors (*1)  
+- model support loading **all-in-one** safetensors  
   not recommended due to massive duplication of components, but added due to popular demand  
   each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
 - improve logging, warn when attempting to load unet as base model  
 - transformer/unet support *fp8/fp4* quantization  
-- vae support *fp16* (*1)  
-- **lora** support additional training tools (*1)  
-- support fuse-qkv projections (*1)  
+  this brings supported quants to: *nf4/fp8/fp4/qint8/qint4*
+- vae support *fp16*  
+- **lora** support additional training tools  
+- support fuse-qkv projections  
   can speed up generate  
   enable via *settings -> compute -> fused projections*  
 
 **Other improvements:**
-- taesd configurable number of layers  
+- **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
   set via *settings -> live preview -> taesd decode layers*  
-- xhinker prompt parser handle offloaded models  
-- control better handle offloading
+- **xhinker** prompt parser handle offloaded models  
+- **control** better handle offloading
 - speed up some garbage collection ops  
-- sampler settings add dynamic shift  
+- sampler settings add **dynamic shift**  
   used by flow-matching samplers to adjust between structure and details  
 - sampler settings force base shift  
   improves quality of the flow-matching samplers  
-- t5 support manually downloaded models  
+- **t5** support manually downloaded models  
   applies to all models that use t5 transformer  
+- use `diffusers` from main branch, no longer tied to release  
 
 **Fixes:**
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original
 - fix model path typos
-
-*notes*:
-- (*1) requires `diffusers==0.31.0.dev0`
 
 ## Update for 2024-08-31
 
