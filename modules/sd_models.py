@@ -689,20 +689,21 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         if shared.opts.no_half_vae:
             devices.dtype_vae = torch.float32
             sd_model.vae.to(devices.dtype_vae)
-            shared.log.debug(f'Setting {op} VAE: no-half')
+            shared.log.debug(f'Setting {op} VAE: no-half=True')
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
-            shared.log.debug(f'Setting {op}: enable VAE slicing')
+            shared.log.debug(f'Setting {op}: slicing=True')
             sd_model.enable_vae_slicing()
         else:
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
         if shared.opts.diffusers_vae_tiling:
-            shared.log.debug(f'Setting {op}: enable VAE tiling')
+            shared.log.debug(f'Setting {op}: tiling=True')
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
     if hasattr(sd_model, "vqvae"):
+        shared.log.debug(f'Setting {op} VQVAE: upcast=True')
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
     set_diffusers_attention(sd_model)
@@ -710,13 +711,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
         try:
             sd_model.fuse_qkv_projections()
-            shared.log.debug(f'Setting {op}: enable fused projections')
+            shared.log.debug(f'Setting {op}: fused-qkv=True')
         except Exception as e:
             shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'fuse_qkv_projections'):
         try:
             sd_model.transformer.fuse_qkv_projections()
-            shared.log.debug(f'Setting {op}: enable fused projections')
+            shared.log.debug(f'Setting {op}: fused-qkv=True')
         except Exception as e:
             shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_eval:
@@ -730,7 +731,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         sd_model = sd_models_compile.dynamic_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
-        shared.log.debug(f'Setting {op}: enable channels last')
+        shared.log.debug(f'Setting {op}: channels-last=True')
         sd_model.unet.to(memory_format=torch.channels_last)
 
     if offload:
@@ -743,13 +744,12 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
-    shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
         if shared.opts.diffusers_offload_mode == "model":
             try:
-                shared.log.debug(f'Setting {op}: enable model CPU offload')
+                shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
                 if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                     shared.opts.diffusers_move_base = False
                     shared.opts.diffusers_move_unet = False
@@ -765,7 +765,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if hasattr(sd_model, "enable_sequential_cpu_offload"):
         if shared.opts.diffusers_offload_mode == "sequential":
             try:
-                shared.log.debug(f'Setting {op}: enable sequential CPU offload')
+                shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
                 if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                     shared.opts.diffusers_move_base = False
                     shared.opts.diffusers_move_unet = False
@@ -785,6 +785,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
                 shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
         try:
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
             sd_model = apply_balanced_offload(sd_model)
         except Exception as e:
             shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
@@ -840,8 +841,6 @@ def apply_balanced_offload(sd_model):
                     shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc(fast=True)
 
-    if not shared.native:
-        return
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "prior_pipe"):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
@@ -860,6 +859,7 @@ def normalize_device(device):
     if torch.device(device).index is None:
         return torch.device(str(device) + ":0")
     return torch.device(device)
+
 
 def move_model(model, device=None, force=False):
     if model is None or device is None:
@@ -1558,11 +1558,16 @@ def set_diffusers_attention(pipe):
         for module in modules:
             if module.__class__.__name__ in ['SD3Transformer2DModel']:
                 module.set_attn_processor(p.JointAttnProcessor2_0())
-            elif module.__class__.__name__ in ['HunyuanDiT2DModel', 'FluxTransformer2DModel']:
-                pass
+            elif module.__class__.__name__ in ['FluxTransformer2DModel']:
+                module.set_attn_processor(p.FluxAttnProcessor2_0())
+            elif module.__class__.__name__ in ['HunyuanDiT2DModel']:
+                module.set_attn_processor(p.HunyuanAttnProcessor2_0())
             else:
                 module.set_attn_processor(attention)
 
+    if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
+        return
+    shared.log.debug(f"Setting model: attention={shared.opts.cross_attention_optimization}")
     if shared.opts.cross_attention_optimization == "Disabled":
         pass # do nothing
     elif shared.opts.cross_attention_optimization == "Scaled-Dot-Product": # The default set by Diffusers

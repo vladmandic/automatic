@@ -1,8 +1,14 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-01
+## Update for 2024-09-02
 
-Major refactor of FLUX.1 support:
+### Highlights
+
+Major refactor of FLUX.1 support: faster, more flexible loading, full ControlNet support, better LoRA support, full prompt attention support, additional quantization options, and more...
+
+### Details
+
+**Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
   model load will load selected components first and then initialize model using pre-loaded components  
   components that were not pre-loaded will be downloaded and initialized as needed  
@@ -13,18 +19,24 @@ Major refactor of FLUX.1 support:
   - transformer/unet is list of manually downloaded safetensors  
   - vae is list of manually downloaded safetensors  
   - text-encoder is list of predefined and manually downloaded text-encoders  
-- model support loading all-in-one safetensors (*1)  
+- **controlnet** support: (*1)
+  support for **InstantX/Shakker-Labs** models including [Union-Pro](InstantX/FLUX.1-dev-Controlnet-Union)  
+  note that flux controlnet models are large, up to 6.6GB on top of already large base model!  
+  as such, you may need to use offloading:sequential which is not as fast, but uses far less memory  
+  when using union model, you must also select control mode in the control unit  
+  flux does not yet support *img2img* so to use controlnet, you need to set contronet input via control unit override  
+- model support loading **all-in-one** safetensors (*1)  
   not recommended due to massive duplication of components, but added due to popular demand  
   each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
 - improve logging, warn when attempting to load unet as base model  
-- transformer/unet support fp8/fp4 quantization  
-- vae support fp16 (*1)  
-- lora support additional training tools (*1)  
+- transformer/unet support *fp8/fp4* quantization  
+- vae support *fp16* (*1)  
+- **lora** support additional training tools (*1)  
 - support fuse-qkv projections (*1)  
   can speed up generate  
   enable via *settings -> compute -> fused projections*  
 
-Other improvements:
+**Other improvements:**
 - taesd configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
@@ -39,18 +51,13 @@ Other improvements:
 - t5 support manually downloaded models  
   applies to all models that use t5 transformer  
 
-Fixes:
+**Fixes:**
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original
 
 Work-in-progress:
-- flux controlnet support: (*1)
-  - instanx models
-  - shakker-labs models
-  - TBD: add controlnet_mode for union models
-  - TBD: validate control_image vs input_type
-  - TBD: not enough values to unpack
-  - TBD: xlabs models
+- TBD: flux controlnet XLabs-AI models
+- TBD: flux img2img/inpaint  
 
 *notes*:
 - (*1) requires `diffusers==0.31.0.dev0`

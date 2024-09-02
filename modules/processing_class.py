@@ -456,6 +456,7 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.controlnet_conditioning_scale = None
         self.control_guidance_start = None
         self.control_guidance_end = None
+        self.control_mode = None
         self.reference_attn = None
         self.reference_adain = None
         self.attention_auto_machine_weight = None

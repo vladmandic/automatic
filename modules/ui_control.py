@@ -204,6 +204,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                     model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0-i/10)
                                     control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0)
                                     control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
+                                    control_mode = gr.Dropdown(label="Mode", choices=['', 'Canny', 'Tile', 'Depth', 'Blur', 'Pose', 'Gray', 'LQ'], value=0, type='index', visible=False)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -226,6 +227,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 image_preview = image_preview,
                                 control_start = control_start,
                                 control_end = control_end,
+                                control_mode = control_mode,
                                 extra_controls = extra_controls,
                                 )
                             )
