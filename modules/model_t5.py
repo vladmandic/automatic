@@ -1,6 +1,8 @@
 import os
+import json
 import torch
 import transformers
+from safetensors.torch import load_file
 from modules import shared, devices, files_cache
 
 
@@ -12,8 +14,25 @@ def load_t5(t5=None, cache_dir=None):
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     fn = t5_dict.get(t5) if t5 in t5_dict else None
     if fn is not None:
-        shared.log.error(f'Loading T5: file="{fn}" unsupported')
-        t5 = None
+        from accelerate.utils import set_module_tensor_to_device
+        with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
+            t5_config = transformers.T5Config(**json.load(f))
+        state_dict = load_file(fn)
+        dtype = state_dict['encoder.block.0.layer.0.SelfAttention.relative_attention_bias.weight'].dtype
+        with torch.device("meta"):
+            t5 = transformers.T5EncoderModel(t5_config).to(dtype=dtype)
+        for param_name, param in state_dict.items():
+            is_param_float8_e4m3fn = hasattr(torch, "float8_e4m3fn") and param.dtype == torch.float8_e4m3fn
+            if torch.is_floating_point(param) and not is_param_float8_e4m3fn:
+                param = param.to(devices.dtype)
+                set_module_tensor_to_device(t5, param_name, device=0, value=param)
+        t5.eval()
+        if t5.dtype != devices.dtype:
+            try:
+                t5 = t5.to(dtype=devices.dtype)
+            except Exception:
+                shared.log.error(f"FLUX: Failed to cast text encoder to {devices.dtype}, set dtype to {t5.dtype}")
+                raise
     elif 'fp16' in t5.lower():
         modelloader.hf_login()
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)

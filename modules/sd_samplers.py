@@ -72,6 +72,7 @@ def create_sampler(name, model):
         if shared.sd_model_type == 'f1':
             if 'base_image_seq_len' not in sampler.sampler.config or 'max_image_seq_len' not in sampler.sampler.config or 'base_shift' not in sampler.sampler.config or 'max_shift' not in sampler.sampler.config:
                 shared.log.warning(f'FLUX: sampler="{name}" non compatible')
+                # sampler.sampler.register_to_config(base_image_seq_len=256, max_image_seq_len=4096, base_shift=0.5, max_shift=1.15)
                 return None
         if not hasattr(model, 'scheduler_config'):
             model.scheduler_config = sampler.sampler.config.copy()

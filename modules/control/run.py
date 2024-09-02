@@ -544,17 +544,23 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             if is_generator:
                                 yield terminate('Control: attempting reference mode but image is none')
                             return [], '', '', 'Reference mode without image'
-                    elif unit_type == 'controlnet' and input_type == 1 and has_models: # Init image same as control
-                        p.task_args['control_image'] = p.init_images # switch image and control_image
-                        p.task_args['strength'] = p.denoising_strength
-                        p.init_images = [p.override or input_image] * len(active_model)
-                    elif unit_type == 'controlnet' and input_type == 2 and has_models: # Separate init image
-                        if init_image is None:
-                            shared.log.warning('Control: separate init image not provided')
-                            init_image = input_image
-                        p.task_args['control_image'] = p.init_images # switch image and control_image
-                        p.task_args['strength'] = p.denoising_strength
-                        p.init_images = [init_image] * len(active_model)
+                    elif unit_type == 'controlnet' and has_models:
+                        if input_type == 0: # Control only
+                            if shared.sd_model_type == 'f1':
+                                if is_generator:
+                                    yield terminate('Control: Flux control invalid input type')
+                                return [], '', '', 'Flux control invalid input type'
+                        elif input_type == 1: # Init image same as control
+                            p.task_args['control_image'] = p.init_images # switch image and control_image
+                            p.task_args['strength'] = p.denoising_strength
+                            p.init_images = [p.override or input_image] * len(active_model)
+                        elif input_type == 2: # Separate init image
+                            if init_image is None:
+                                shared.log.warning('Control: separate init image not provided')
+                                init_image = input_image
+                            p.task_args['control_image'] = p.init_images # switch image and control_image
+                            p.task_args['strength'] = p.denoising_strength
+                            p.init_images = [init_image] * len(active_model)
 
                     if is_generator:
                         image_txt = f'{blended_image.width}x{blended_image.height}' if blended_image is not None else 'None'

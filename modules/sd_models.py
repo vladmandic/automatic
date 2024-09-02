@@ -713,6 +713,12 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
             shared.log.debug(f'Setting {op}: enable fused projections')
         except Exception as e:
             shared.log.error(f'Error enabling fused projections: {e}')
+    if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'fuse_qkv_projections'):
+        try:
+            sd_model.transformer.fuse_qkv_projections()
+            shared.log.debug(f'Setting {op}: enable fused projections')
+        except Exception as e:
+            shared.log.error(f'Error enabling fused projections: {e}')
     if shared.opts.diffusers_eval:
         def eval_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if hasattr(model, "requires_grad_"):
@@ -734,6 +740,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if sd_model is None:
         shared.log.warning(f'{op} is not loaded')
         return
+    shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload"):
@@ -828,7 +835,7 @@ def apply_balanced_offload(sd_model):
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
                 except Exception as e:
                     shared.log.error(f'Balanced offload: module={module_name} {e}')
-                devices.torch_gc()
+                devices.torch_gc(fast=True)
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "prior_pipe"):
@@ -1046,16 +1053,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             unload_model_weights(op=op)
             return
 
+        shared.log.debug(f'Diffusers loading: path="{checkpoint_info.path}"')
+        pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
+
         vae = None
         sd_vae.loaded_vae_file = None
-        if op == 'model' or op == 'refiner':
+        if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
             vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename)
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)
             if vae is not None:
                 diffusers_load_config["vae"] = vae
 
-        shared.log.debug(f'Diffusers loading: path="{checkpoint_info.path}"')
-        pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
         if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface' or checkpoint_info.type == 'transformer':
             files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
             if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
@@ -1462,7 +1470,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline']:
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxPipeline', 'FluxControlNetPipeline']: # TODO flux does not have inpaint/img2img yet
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe

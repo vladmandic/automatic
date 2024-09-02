@@ -128,7 +128,7 @@ def get_device_for(task):
     return get_optimal_device()
 
 
-def torch_gc(force=False):
+def torch_gc(force=False, fast=False):
     t0 = time.time()
     mem = memstats.memory_stats()
     gpu = mem.get('gpu', {})
@@ -151,7 +151,7 @@ def torch_gc(force=False):
         return
 
     # actual gc
-    collected = gc.collect() # python gc
+    collected = gc.collect() if not fast else 0 # python gc
     if cuda_ok:
         try:
             with torch.cuda.device(get_cuda_device_string()):

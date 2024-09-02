@@ -9,7 +9,6 @@ from transformers.quantizers.quantizers_utils import get_module_from_name
 from huggingface_hub import hf_hub_download
 from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
-from diffusers import FluxTransformer2DModel, FluxPipeline
 from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
 import safetensors.torch
 from modules import shared, devices
@@ -163,7 +162,7 @@ def create_quantized_param(
     module._parameters[tensor_name] = new_value # pylint: disable=protected-access
 
 
-def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer_only=False):
+def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer, text_encoder_2):
     load_bnb()
     if isinstance(checkpoint_info, str):
         repo_path = checkpoint_info
@@ -190,11 +189,12 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer_only=False
             converted_state_dict = original_state_dict
 
     with init_empty_weights():
+        from diffusers import FluxTransformer2DModel
         config = FluxTransformer2DModel.load_config("black-forest-labs/flux.1-dev", subfolder="transformer")
-        model = FluxTransformer2DModel.from_config(config).to(devices.dtype)
-        expected_state_dict_keys = list(model.state_dict().keys())
+        transformer = FluxTransformer2DModel.from_config(config).to(devices.dtype)
+        expected_state_dict_keys = list(transformer.state_dict().keys())
 
-    _replace_with_bnb_linear(model, "nf4")
+    _replace_with_bnb_linear(transformer, "nf4")
 
     for param_name, param in converted_state_dict.items():
         if param_name not in expected_state_dict_keys:
@@ -202,15 +202,10 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer_only=False
         is_param_float8_e4m3fn = hasattr(torch, "float8_e4m3fn") and param.dtype == torch.float8_e4m3fn
         if torch.is_floating_point(param) and not is_param_float8_e4m3fn:
             param = param.to(devices.dtype)
-        if not check_quantized_param(model, param_name):
-            set_module_tensor_to_device(model, param_name, device=0, value=param)
+        if not check_quantized_param(transformer, param_name):
+            set_module_tensor_to_device(transformer, param_name, device=0, value=param)
         else:
-            create_quantized_param(model, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
+            create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
 
     del original_state_dict
     devices.torch_gc(force=True)
-    if transformer_only:
-        return model
-    else:
-        pipe = FluxPipeline.from_pretrained("black-forest-labs/flux.1-dev", transformer=model, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-        return pipe

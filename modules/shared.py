@@ -742,6 +742,7 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     'schedulers_timesteps': OptionInfo('', "Timesteps"),
     "schedulers_rescale_betas": OptionInfo(False, "Rescale betas with zero terminal SNR", gr.Checkbox),
     'schedulers_shift': OptionInfo(1, "Sampler shift", gr.Slider, {"minimum": 0.1, "maximum": 10, "step": 0.1}),
+    'schedulers_dynamic_shift': OptionInfo(True, "Sampler dynamic shift"),
 
     # managed from ui.py for backend original k-diffusion
     "schedulers_sep_kdiffusers": OptionInfo("<h2>K-Diffusion specific config</h2>", "", gr.HTML),

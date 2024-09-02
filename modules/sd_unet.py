@@ -30,7 +30,8 @@ def load_unet(model):
                 model.prior_pipe.text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
         if "Flux" in model.__class__.__name__:
             from modules.model_flux import load_transformer
-            transformer = load_transformer(unet_dict[shared.opts.sd_unet])
+            transformer = None
+            load_transformer(unet_dict[shared.opts.sd_unet], transformer)
             if transformer is not None:
                 model.transformer = None
                 if shared.opts.diffusers_offload_mode == 'none':

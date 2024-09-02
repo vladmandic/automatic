@@ -2,22 +2,54 @@
 
 ## Update for 2024-09-01
 
-- flux improve logging, warn when attempting to load unet as base model  
-- flux unet support fp8/fp4 quantization  
-- flux vae support fp16  
-- flux lora support additional training tools (*1)  
-- flux model support loading all-in-one safetensors (*1)  
+Major refactor of FLUX.1 support:
+- allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
+  model load will load selected components first and then initialize model using pre-loaded components  
+  components that were not pre-loaded will be downloaded and initialized as needed  
+  as usual, components can also be loaded after initial model load  
+  *note*: use of transformer/unet is recommended as those are flux.1 finetunes
+  *note*: manually selecting vae and text-encoder is not recommended  
+  *note*: mix-and-match of different quantizations for different components can lead to unexpected errors  
+  - transformer/unet is list of manually downloaded safetensors  
+  - vae is list of manually downloaded safetensors  
+  - text-encoder is list of predefined and manually downloaded text-encoders  
+- model support loading all-in-one safetensors (*1)  
   not recommended due to massive duplication of components, but added due to popular demand  
+  each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
+- improve logging, warn when attempting to load unet as base model  
+- transformer/unet support fp8/fp4 quantization  
+- vae support fp16 (*1)  
+- lora support additional training tools (*1)  
+- support fuse-qkv projections (*1)  
+  can speed up generate  
+  enable via *settings -> compute -> fused projections*  
+
+Other improvements:
 - taesd configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
   set via *settings -> live preview -> taesd decode layers*  
 - xhinker prompt parser handle offloaded models  
-- t5 enum manually downloaded models (*2)  
+- control better handle offloading
+- speed up some garbage collection ops  
+- sampler settings add dynamic shift  
+  used by flow-matching samplers to adjust between structure and details  
+- sampler settings force base shift  
+  improves quality of the flow-matching samplers  
+- t5 support manually downloaded models  
+  applies to all models that use t5 transformer  
+
+Work-in-progress:
+- flux controlnet support: (*1)
+  - instanx models
+  - shakker-labs models
+  - TBD: add controlnet_mode for union models
+  - TBD: validate control_image vs input_type
+  - TBD: not enough values to unpack
+  - TBD: xlabs models
 
 *notes*:
 - (*1) requires `diffusers==0.31.0.dev0`
-- (*2) work-in-progress
 
 ## Update for 2024-08-31
 

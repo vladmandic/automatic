@@ -1,10 +1,10 @@
 import os
 import time
 from typing import Union
-from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, ControlNetModel, StableDiffusionControlNetPipeline, StableDiffusionXLControlNetPipeline
+from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, ControlNetModel
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
-from modules import errors, sd_models
+from modules import errors, sd_models, devices
 
 
 what = 'ControlNet'
@@ -80,6 +80,7 @@ models = {}
 all_models = {}
 all_models.update(predefined_sd15)
 all_models.update(predefined_sdxl)
+all_models.update(predefined_f1)
 cache_dir = 'models/control/controlnet'
 
 
@@ -139,6 +140,19 @@ class ControlNet():
         self.model = None
         self.model_id = None
 
+    def get_class(self):
+        import modules.shared
+        if modules.shared.sd_model_type == 'sd':
+            from diffusers import ControlNetModel as model_class # pylint: disable=reimported
+        elif modules.shared.sd_model_type == 'sdxl':
+            from diffusers import ControlNetModel as model_class # pylint: disable=reimported # sdxl shares same model class
+        elif modules.shared.sd_model_type == 'f1':
+            from diffusers import FluxControlNetModel as model_class
+        else:
+            log.error(f'Control {what}: type={modules.shared.sd_model_type} unsupported model')
+            return None
+        return model_class
+
     def load_safetensors(self, model_path):
         name = os.path.splitext(model_path)[0]
         config_path = None
@@ -164,7 +178,8 @@ class ControlNet():
             config_path = f'{name}.json'
         if config_path is not None:
             self.load_config['original_config_file '] = config_path
-        self.model = ControlNetModel.from_single_file(model_path, **self.load_config)
+        cls = self.get_class()
+        self.model = cls.from_single_file(model_path, **self.load_config)
 
     def load(self, model_id: str = None) -> str:
         try:
@@ -189,7 +204,8 @@ class ControlNet():
                 if '/bin' in model_path:
                     model_path = model_path.replace('/bin', '')
                     self.load_config['use_safetensors'] = False
-                self.model = ControlNetModel.from_pretrained(model_path, **self.load_config)
+                cls = self.get_class()
+                self.model = cls.from_pretrained(model_path, **self.load_config)
             if self.dtype is not None:
                 self.model.to(self.dtype)
             if "ControlNet" in opts.nncf_compress_weights:
@@ -223,7 +239,7 @@ class ControlNet():
 
 
 class ControlNetPipeline():
-    def __init__(self, controlnet: Union[ControlNetModel, list[ControlNetModel]], pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline], dtype = None):
+    def __init__(self, controlnet: Union[ControlNetModel, list[ControlNetModel]], pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline, FluxPipeline], dtype = None):
         t0 = time.time()
         self.orig_pipeline = pipeline
         self.pipeline = None
@@ -231,6 +247,7 @@ class ControlNetPipeline():
             log.error('Control model pipeline: model not loaded')
             return
         elif detect.is_sdxl(pipeline):
+            from diffusers import StableDiffusionXLControlNetPipeline
             self.pipeline = StableDiffusionXLControlNetPipeline(
                 vae=pipeline.vae,
                 text_encoder=pipeline.text_encoder,
@@ -242,8 +259,8 @@ class ControlNetPipeline():
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
                 controlnet=controlnet, # can be a list
             )
-            sd_models.move_model(self.pipeline, pipeline.device)
         elif detect.is_sd15(pipeline):
+            from diffusers import StableDiffusionControlNetPipeline
             self.pipeline = StableDiffusionControlNetPipeline(
                 vae=pipeline.vae,
                 text_encoder=pipeline.text_encoder,
@@ -257,17 +274,33 @@ class ControlNetPipeline():
             )
             sd_models.move_model(self.pipeline, pipeline.device)
         elif detect.is_f1(pipeline):
-            log.warning('Control model pipeline: class=FluxPipeline unsupported model type')
+            from diffusers import FluxControlNetPipeline
+            self.pipeline = FluxControlNetPipeline(
+                vae=pipeline.vae,
+                text_encoder=pipeline.text_encoder,
+                text_encoder_2=pipeline.text_encoder_2,
+                tokenizer=pipeline.tokenizer,
+                tokenizer_2=pipeline.tokenizer_2,
+                transformer=pipeline.transformer,
+                scheduler=pipeline.scheduler,
+                controlnet=controlnet, # can be a list
+            )
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return
-        if dtype is not None and self.pipeline is not None:
-            self.pipeline = self.pipeline.to(dtype)
-        t1 = time.time()
-        if self.pipeline is not None:
-            log.debug(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
-        else:
+
+        if self.pipeline is None:
             log.error(f'Control {what} pipeline: not initialized')
+            return
+        if dtype is not None:
+            self.pipeline = self.pipeline.to(dtype)
+        if opts.diffusers_offload_mode == 'none':
+            sd_models.move_model(self.pipeline, devices.device)
+        from modules.sd_models import set_diffuser_offload
+        set_diffuser_offload(self.pipeline, 'model')
+
+        t1 = time.time()
+        log.debug(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
 
     def restore(self):
         self.pipeline = None
