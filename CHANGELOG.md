@@ -54,10 +54,7 @@ Major refactor of FLUX.1 support: faster, more flexible loading, full ControlNet
 **Fixes:**
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original
-
-Work-in-progress:
-- TBD: flux controlnet XLabs-AI models
-- TBD: flux img2img/inpaint  
+- fix model path typos
 
 *notes*:
 - (*1) requires `diffusers==0.31.0.dev0`
