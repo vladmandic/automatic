@@ -190,7 +190,7 @@ def load_flux_nf4(checkpoint_info, diffusers_load_config, transformer, text_enco
 
     with init_empty_weights():
         from diffusers import FluxTransformer2DModel
-        config = FluxTransformer2DModel.load_config("black-forest-labs/flux.1-dev", subfolder="transformer")
+        config = FluxTransformer2DModel.load_config("black-forest-labs/FLUX.1-dev", subfolder="transformer")
         transformer = FluxTransformer2DModel.from_config(config).to(devices.dtype)
         expected_state_dict_keys = list(transformer.state_dict().keys())
 

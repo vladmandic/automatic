@@ -171,5 +171,5 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if vae is not None:
         components['vae'] = vae
     debug(f'Loading FLUX: preloaded={list(components)}')
-    pipe = diffusers.FluxPipeline.from_pretrained('black-forest-labs/flux.1-dev', cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
+    pipe = diffusers.FluxPipeline.from_pretrained('black-forest-labs/FLUX.1-dev', cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
     return pipe
