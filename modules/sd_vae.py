@@ -212,9 +212,11 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
         import diffusers
         if os.path.isfile(vae_file):
             _pipeline, model_type = sd_models.detect_pipeline(model_file, 'vae')
-            diffusers_load_config = {
-                "config": os.path.join(sd_models.get_load_config(model_file, model_type, config_type='json'), 'vae'),
-            }
+            vae_config = sd_models.get_load_config(model_file, model_type, config_type='json')
+            if vae_config is not None:
+                diffusers_load_config = {
+                    "config": os.path.join(vae_config, 'vae'),
+                }
             if os.path.getsize(vae_file) > 1310944880: # 1.3GB
                 vae = diffusers.ConsistencyDecoderVAE.from_pretrained('openai/consistency-decoder', **diffusers_load_config) # consistency decoder does not have from single file, so we'll just download it once more
             elif os.path.getsize(vae_file) < 10000000: # 10MB

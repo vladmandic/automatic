@@ -1213,10 +1213,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 if model_type.startswith('Stable Diffusion'):
                     if shared.opts.diffusers_force_zeros:
                         diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
-                    if diffusers_version < 28:
-                        diffusers_load_config['original_config_file'] = get_load_config(checkpoint_info.path, model_type, config_type='yaml')
                     else:
-                        diffusers_load_config['config'] = get_load_config(checkpoint_info.path, model_type, config_type='json')
+                        model_config = get_load_config(checkpoint_info.path, model_type, config_type='json')
+                        if model_config is not None:
+                            diffusers_load_config['config_files'] = model_config
                 if model_type.startswith('Stable Diffusion 3'):
                     from modules.model_sd3 import load_sd3
                     sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
