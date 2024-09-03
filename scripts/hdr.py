@@ -85,17 +85,16 @@ class Script(scripts.Script):
         if len(imgs) > 1:
             hdr, ldr = self.merge(imgs, is_tonemap, gamma, scale, saturation)
             img = Image.fromarray(ldr)
-            imgs.insert(0, img)
             if save_hdr:
-                fn, _txt = images.save_image(img, shared.opts.outdir_save, "", p.seed, p.prompt, opts.grid_format, info=processed.info, p=p)
-                fn = os.path.splitext(fn)[0] + '-hdr.png'
-                shared.log.debug(f'Save: image="{fn}" type=PNG channels=16')
+                saved_fn, _txt, _exif = images.save_image(img, shared.opts.outdir_save, "", p.seed, p.prompt, opts.grid_format, info=processed.info, p=p)
+                fn = os.path.splitext(saved_fn)[0] + '-hdr.png'
+                # cv2.imwrite(fn, hdr, [cv2.IMWRITE_PNG_COMPRESSION, 6, cv2.IMWRITE_PNG_STRATEGY, cv2.IMWRITE_PNG_STRATEGY_HUFFMAN_ONLY, cv2.IMWRITE_HDR_COMPRESSION, cv2.IMWRITE_HDR_COMPRESSION_RLE])
                 cv2.imwrite(fn, hdr)
+                shared.log.debug(f'Save: image="{fn}" type=PNG mode=HDR channels=16 size={os.path.getsize(fn)}')
             # if opts.grid_save:
             #    images.save_image(grid, p.outpath_grids, "grid", p.seed, p.prompt, opts.grid_format, info=processed.info, grid=True, p=p)
-            if opts.return_grid:
-                grid = images.image_grid(imgs, rows=1)
-                imgs.append(grid)
+            grid = [images.image_grid(imgs, rows=1)] if opts.return_grid else []
+            imgs = [img] + grid
 
         processed = Processed(p, images_list=imgs, seed=p.seed, info=info)
         return processed

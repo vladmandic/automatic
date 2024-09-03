@@ -621,9 +621,9 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
     debug(f'Save: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     if image is None:
         shared.log.warning('Image is none')
-        return None, None
+        return None, None, None
     if not check_grid_size([image]):
-        return None, None
+        return None, None, None
     if path is None or path == '': # set default path to avoid errors when functions are triggered manually or via api and param is not set
         path = shared.opts.outdir_save
     namegen = FilenameGenerator(p, seed, prompt, image, grid=grid)
@@ -668,7 +668,7 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
         debug(f'Image marked: "{params.filename}"')
         params.image.already_saved_as = params.filename
     script_callbacks.image_saved_callback(params)
-    return params.filename, filename_txt
+    return params.filename, filename_txt, exifinfo
 
 
 def save_video_atomic(images, filename, video_type: str = 'none', duration: float = 2.0, loop: bool = False, interpolate: int = 0, scale: float = 1.0, pad: int = 1, change: float = 0.3):

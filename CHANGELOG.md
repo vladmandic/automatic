@@ -43,9 +43,12 @@ Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 
 **Other improvements:**
 - **HDR** high-dynamic-range image create for SD and SDXL  
-  create HDR images from in multiple exposures by latent-space modifications during generation  
+  create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  
-  *note*: save hdr saves image in standard 8bit/channel *and* 16bit/channel PNG format  
+  option *save hdr images* creates images in standard 8bit/channel (hdr-effect) *and* 16bit/channel (full-hdr) PNG format  
+  ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
+  grid image can be disabled via settings -> user interface -> show grid  
+  actual full-hdr image is not displayed in ui, only optionally saved to disk  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  

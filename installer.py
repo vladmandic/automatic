@@ -438,7 +438,10 @@ def check_diffusers():
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     if minor < 31:
-        pip('install git+https://github.com/huggingface/diffusers@007ad0e', ignore=False, quiet=True, uv=False)
+        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}')
+        if minor > 0:
+            pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
+        pip('install --upgrade git+https://github.com/huggingface/diffusers@8ba90aa706a733f45d83508a5b221da3c59fe4cd', ignore=False, quiet=True, uv=False)
 
 
 # check onnx version
