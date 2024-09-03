@@ -8,6 +8,8 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
 - faster, more flexible loading, with additional quantization options, and more...
 
+Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
+
 ### Details
 
 **Major refactor of FLUX.1 support:**
@@ -40,6 +42,10 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
   enable via *settings -> compute -> fused projections*  
 
 **Other improvements:**
+- **HDR** high-dynamic-range image create for SD and SDXL  
+  create HDR images from in multiple exposures by latent-space modifications during generation  
+  use via *scripts -> hdr*  
+  *note*: save hdr saves image in standard 8bit/channel *and* 16bit/channel PNG format  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
