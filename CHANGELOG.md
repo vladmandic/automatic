@@ -1,12 +1,14 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-02
+## Update for 2024-09-03
 
 ### Highlights
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
-- faster, more flexible loading, with additional quantization options, and more...
+- Faster execution, more flexible loading, additional quantization options, and more...
+- Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
+  try enabling **NNCF** for quantization/compression on-the-fly!
 
 Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 
