@@ -105,6 +105,8 @@ class Shared(sys.modules[__name__].__class__):
                 model_type = 'auraflow'
             elif "FluxPipeline" in self.sd_model.__class__.__name__ or "FluxControlNetPipeline" in self.sd_model.__class__.__name__:
                 model_type = 'f1'
+            elif "CogVideoXPipeline" in self.sd_model.__class__.__name__ or "CogVideoXVideoToVideoPipeline":
+                model_type = 'cogvideox'
             else:
                 model_type = self.sd_model.__class__.__name__
         except Exception:

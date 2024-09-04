@@ -596,7 +596,7 @@ def atomically_save_image():
             shared.log.error(f'Save failed: file="{fn}" format={image_format} args={save_args} {e}')
             errors.display(e, 'Image save')
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
-        shared.log.info(f'Save: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
+        shared.log.info(f'Save: image="{fn}" type={image_format} width={image.width} height={image.height} size={size}')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -719,7 +719,9 @@ def save_video(p, images, filename = None, video_type: str = 'none', duration: f
         return None
     image = images[0]
     if p is not None:
-        namegen = FilenameGenerator(p, seed=p.all_seeds[0], prompt=p.all_prompts[0], image=image)
+        seed = p.all_seeds[0] if getattr(p, 'all_seeds', None) is not None else p.seed
+        prompt = p.all_prompts[0] if getattr(p, 'all_prompts', None) is not None else p.prompt
+        namegen = FilenameGenerator(p, seed=seed, prompt=prompt, image=image)
     else:
         namegen = FilenameGenerator(None, seed=0, prompt='', image=image)
     if filename is None and p is not None:

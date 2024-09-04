@@ -658,8 +658,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
 
 
 def copy_diffuser_options(new_pipe, orig_pipe):
-    new_pipe.sd_checkpoint_info = orig_pipe.sd_checkpoint_info
-    new_pipe.sd_model_checkpoint = orig_pipe.sd_model_checkpoint
+    new_pipe.sd_checkpoint_info = getattr(orig_pipe, 'sd_checkpoint_info', None)
+    new_pipe.sd_model_checkpoint = getattr(orig_pipe, 'sd_model_checkpoint', None)
     new_pipe.embedding_db = getattr(orig_pipe, 'embedding_db', None)
     new_pipe.sd_model_hash = getattr(orig_pipe, 'sd_model_hash', None)
     new_pipe.has_accelerate = getattr(orig_pipe, 'has_accelerate', False)

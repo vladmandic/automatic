@@ -8,6 +8,7 @@ from modules import shared, devices, errors, images, scripts, memstats, lowvram,
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
+from modules.modeldata import model_data
 from modules import pag
 
 
@@ -37,7 +38,7 @@ class Processed:
         self.images = images_list
         self.prompt = p.prompt
         self.negative_prompt = p.negative_prompt
-        self.seed = seed
+        self.seed = seed if seed != -1 else p.seed
         self.subseed = subseed
         self.subseed_strength = p.subseed_strength
         self.info = info
@@ -51,7 +52,7 @@ class Processed:
         self.batch_size = p.batch_size
         self.restore_faces = p.restore_faces
         self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
-        self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '')
+        self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
         self.denoising_strength = p.denoising_strength
@@ -112,7 +113,6 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
-
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:

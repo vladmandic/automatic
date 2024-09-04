@@ -70,7 +70,7 @@ def pil_to_temp_file(self, img: Image, dir: str, format="png") -> str: # pylint:
         img.save(name, pnginfo=(metadata if use_metadata else None))
         img.already_saved_as = name
         size = os.path.getsize(name)
-        shared.log.debug(f'Save temp: image="{name}" resolution={img.width}x{img.height} size={size}')
+        shared.log.debug(f'Save temp: image="{name}" width={img.width} height={img.height} size={size}')
     params = ', '.join([f'{k}: {v}' for k, v in img.info.items()])
     params = params[12:] if params.startswith('parameters: ') else params
     with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:

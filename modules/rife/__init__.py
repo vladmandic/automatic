@@ -113,5 +113,5 @@ def interpolate(images: list, count: int = 2, scale: float = 1.0, pad: int = 1, 
     while not buffer.empty():
         time.sleep(0.1)
     t1 = time.time()
-    shared.log.info(f'RIFE interpolate: input={len(images)} frames={len(interpolated)} resolution={w}x{h} interpolate={count} scale={scale} pad={pad} change={change} time={round(t1 - t0, 2)}')
+    shared.log.info(f'RIFE interpolate: input={len(images)} frames={len(interpolated)} width={w} height={h} interpolate={count} scale={scale} pad={pad} change={change} time={round(t1 - t0, 2)}')
     return interpolated
