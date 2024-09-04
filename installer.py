@@ -25,6 +25,7 @@ class Dot(dict): # dot notation access to dictionary attributes
 version = None
 current_branch = None
 log = logging.getLogger("sd")
+console = None
 debug = log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 pip_log = '--log pip.log ' if os.environ.get('SD_PIP_DEBUG', None) is not None else ''
 log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
@@ -109,6 +110,7 @@ def setup_logging():
 
     level = logging.DEBUG if args.debug else logging.INFO
     log.setLevel(logging.DEBUG) # log to file is always at level debug for facility `sd`
+    global console # pylint: disable=global-statement
     console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",

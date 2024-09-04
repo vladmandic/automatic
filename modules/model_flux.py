@@ -9,7 +9,6 @@ from modules import shared, devices, modelloader
 
 
 debug = shared.log.trace if os.environ.get('SD_LOAD_DEBUG', None) is not None else lambda *args, **kwargs: None
-base_repo = 'black-forest-labs/FLUX.1-dev'
 
 
 def get_quant(file_path):
@@ -45,8 +44,9 @@ def load_flux_quanto(checkpoint_info, diffusers_load_config):
 
     try:
         quantization_map = os.path.join(repo_path, "transformer", "quantization_map.json")
+        debug(f'Loading FLUX: quantization map="{quantization_map}" repo="{checkpoint_info.name}" component="transformer"')
         if not os.path.exists(quantization_map):
-            repo_id = checkpoint_info.name.replace('Diffusers/', '')
+            repo_id = checkpoint_info.name.replace('Diffusers/', '').replace('models--', '').replace('--', '/')
             quantization_map = hf_hub_download(repo_id, subfolder='transformer', filename='quantization_map.json', **diffusers_load_config)
         with open(quantization_map, "r", encoding='utf8') as f:
             quantization_map = json.load(f)
@@ -69,8 +69,9 @@ def load_flux_quanto(checkpoint_info, diffusers_load_config):
 
     try:
         quantization_map = os.path.join(repo_path, "text_encoder_2", "quantization_map.json")
+        debug(f'Loading FLUX: quantization map="{quantization_map}" repo="{checkpoint_info.name}" component="text_encoder_2"')
         if not os.path.exists(quantization_map):
-            repo_id = checkpoint_info.name.replace('Diffusers/', '')
+            repo_id = checkpoint_info.name.replace('Diffusers/', '').replace('models--', '').replace('--', '/')
             quantization_map = hf_hub_download(repo_id, subfolder='text_encoder_2', filename='quantization_map.json', **diffusers_load_config)
         with open(quantization_map, "r", encoding='utf8') as f:
             quantization_map = json.load(f)
@@ -152,7 +153,9 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
 
 def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_checkpoint change
     quant = get_quant(checkpoint_info.path)
-    shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" unet="{shared.opts.sd_unet}" t5="{shared.opts.sd_text_encoder}" vae="{shared.opts.sd_vae}" quant={quant} offload={shared.opts.diffusers_offload_mode} dtype={devices.dtype}')
+    repo_id = checkpoint_info.name.replace('Diffusers/', '').replace('models--', '').replace('--', '/')
+    shared.log.debug(f'Loading FLUX: model="{checkpoint_info.name}" repo="{repo_id}" unet="{shared.opts.sd_unet}" t5="{shared.opts.sd_text_encoder}" vae="{shared.opts.sd_vae}" quant={quant} offload={shared.opts.diffusers_offload_mode} dtype={devices.dtype}')
+    debug(f'Loading FLUX: config={diffusers_load_config}')
     modelloader.hf_login()
 
     transformer = None
@@ -235,5 +238,5 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if vae is not None:
         components['vae'] = vae
     shared.log.debug(f'Loading FLUX: preloaded={list(components)}')
-    pipe = diffusers.FluxPipeline.from_pretrained(base_repo, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
+    pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
     return pipe
