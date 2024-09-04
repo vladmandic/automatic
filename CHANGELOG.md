@@ -1,12 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-03
+## Update for 2024-09-04
 
-### Highlights
+### Highlights for 2024-09-04
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
 - Faster execution, more flexible loading, additional quantization options, and more...
+- Added **image-to-image**, **inpaint** and **outpaint** modes  
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
@@ -14,7 +15,7 @@ And support for [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) text to v
 
 Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 
-### Details
+### Details for 2024-09-04
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -37,6 +38,9 @@ Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
   not recommended due to massive duplication of components, but added due to popular demand  
   each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
 - improve logging, warn when attempting to load unet as base model  
+- **img2img**, **inpaint** and **outpaint** support  
+  *note* flux may require higher denoising strength than typical sd/sdxl models  
+  *note*: img2img is not yet supported with controlnet  
 - transformer/unet support *fp8/fp4* quantization  
   this brings supported quants to: *nf4/fp8/fp4/qint8/qint4*
 - vae support *fp16*  

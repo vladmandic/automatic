@@ -238,5 +238,13 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if vae is not None:
         components['vae'] = vae
     shared.log.debug(f'Loading FLUX: preloaded={list(components)}')
+    if repo_id == 'sayakpaul/flux.1-dev-nf4':
+        repo_id = 'black-forest-labs/FLUX.1-dev' # TODO fix for since sayakpaul model is missing model_index.json
     pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
+    try:
+        diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxImg2ImgPipeline
+        diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING["flux"] = diffusers.FluxInpaintPipeline
+    except Exception:
+        pass
     return pipe

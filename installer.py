@@ -443,7 +443,7 @@ def check_diffusers():
         log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}')
         if minor > 0:
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
-        pip('install --upgrade git+https://github.com/huggingface/diffusers@8ba90aa706a733f45d83508a5b221da3c59fe4cd', ignore=False, quiet=True, uv=False)
+        pip('install --upgrade git+https://github.com/huggingface/diffusers@300055172988c73b72d5190fad5c30999c6717be', ignore=False, quiet=True, uv=False)
 
 
 # check onnx version

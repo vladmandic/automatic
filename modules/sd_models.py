@@ -1488,7 +1488,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxPipeline', 'FluxControlNetPipeline']: # TODO flux does not have inpaint/img2img yet
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxControlNetPipeline']: # TODO flux does not have inpaint/img2img yet
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe

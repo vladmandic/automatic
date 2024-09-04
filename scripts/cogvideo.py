@@ -60,10 +60,11 @@ class Script(scripts.Script):
         return [model, sampler, frames, guidance, offload, override, video_type, duration, loop, pad, interpolate, image, video]
 
     def load(self, model, txt):
-        if shared.sd_model_type != 'cogvideox' and model != 'None':
+        if (shared.sd_model_type != 'cogvideox' or shared.sd_model.sd_model_checkpoint != model) and model != 'None':
             sd_models.unload_model_weights('model')
             shared.log.info(f'CogVideoX load: model="{model}"')
             try:
+                shared.sd_model = None
                 shared.sd_model = diffusers.CogVideoXPipeline.from_pretrained(model, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
                 shared.sd_model.sd_checkpoint_info = sd_models.CheckpointInfo(model)
                 shared.sd_model.sd_model_checkpoint = model
@@ -71,7 +72,6 @@ class Script(scripts.Script):
                 shared.log.error(f'Loading CogVideoX: {e}')
                 if debug:
                     errors.display(e, 'CogVideoX')
-            devices.torch_gc()
         if shared.sd_model_type == 'cogvideox' and model != 'None':
             shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXPipeline if txt else diffusers.CogVideoXVideoToVideoPipeline, shared.sd_model)
             shared.sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m', ncols=80, colour='#327fba')
@@ -80,13 +80,14 @@ class Script(scripts.Script):
             shared.log.info(f'CogVideoX unload: model={model}')
             shared.sd_model = None
             devices.torch_gc(force=True)
+        devices.torch_gc()
 
     def offload(self, offload):
         if shared.sd_model_type != 'cogvideox':
             return
         if offload == 'none':
             sd_models.move_model(shared.sd_model, devices.device)
-        shared.log.info(f'CogVideoX: offload={offload}')
+        shared.log.debug(f'CogVideoX: offload={offload}')
         if offload == 'balanced':
             sd_models.apply_balanced_offload(shared.sd_model)
         if offload == 'model':
@@ -97,6 +98,7 @@ class Script(scripts.Script):
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
 
+    """
     def prepare(self, p, video):
         import imageio # TODO dont use imageio
         from torchvision import transforms
@@ -108,6 +110,7 @@ class Script(scripts.Script):
         tensor = torch.stack(frames).to(devices.device).permute(1, 0, 2, 3).unsqueeze(0).to(devices.dtype)
         encoded = shared.sd_model.vae.encode(tensor)[0].sample()
         return encoded
+    """
 
     def generate(self, p: processing.StableDiffusionProcessing):
         if shared.sd_model_type != 'cogvideox':
@@ -136,10 +139,10 @@ class Script(scripts.Script):
                 callback_on_step_end_tensor_inputs=['latents'],
             )
             if getattr(p, 'image', False):
-                raise ValueError('CogVideoX: image not supported')
+                raise ValueError('CogVideoX: image not supported') # TODO image2video
                 # args['latents'] = self.prepare(p, [p.image])
             elif getattr(p, 'video', False):
-                raise ValueError('CogVideoX: video not supported')
+                raise ValueError('CogVideoX: video not supported') # TODO video2video
                 # args['video'] = self.prepare(p, p.video)
             else:
                 args['num_frames'] = p.frames # only txt2vid has num_frames
@@ -180,8 +183,8 @@ class Script(scripts.Script):
         self.load(model, txt)
         self.offload(offload)
         frames = self.generate(p)
-        info = 'whatever'
-        processed = processing.Processed(p, images_list=frames, info=info)
+        devices.torch_gc()
+        processed = processing.Processed(p, images_list=frames)
         shared.state.end()
         return processed
 
