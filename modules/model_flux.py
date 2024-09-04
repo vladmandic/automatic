@@ -47,7 +47,7 @@ def load_flux_quanto(checkpoint_info, diffusers_load_config):
         debug(f'Loading FLUX: quantization map="{quantization_map}" repo="{checkpoint_info.name}" component="transformer"')
         if not os.path.exists(quantization_map):
             repo_id = checkpoint_info.name.replace('Diffusers/', '').replace('Diffusers\\', '').replace('models--', '').replace('--', '/')
-            quantization_map = hf_hub_download(repo_id, subfolder='transformer', filename='quantization_map.json', **diffusers_load_config)
+            quantization_map = hf_hub_download(repo_id, subfolder='transformer', filename='quantization_map.json', cache_dir=shared.opts.diffusers_dir)
         with open(quantization_map, "r", encoding='utf8') as f:
             quantization_map = json.load(f)
         state_dict = load_file(os.path.join(repo_path, "transformer", "diffusion_pytorch_model.safetensors"))
@@ -72,7 +72,7 @@ def load_flux_quanto(checkpoint_info, diffusers_load_config):
         debug(f'Loading FLUX: quantization map="{quantization_map}" repo="{checkpoint_info.name}" component="text_encoder_2"')
         if not os.path.exists(quantization_map):
             repo_id = checkpoint_info.name.replace('Diffusers/', '').replace('Diffusers\\', '').replace('models--', '').replace('--', '/')
-            quantization_map = hf_hub_download(repo_id, subfolder='text_encoder_2', filename='quantization_map.json', **diffusers_load_config)
+            quantization_map = hf_hub_download(repo_id, subfolder='text_encoder_2', filename='quantization_map.json', cache_dir=shared.opts.diffusers_dir)
         with open(quantization_map, "r", encoding='utf8') as f:
             quantization_map = json.load(f)
         with open(os.path.join(repo_path, "text_encoder_2", "config.json"), encoding='utf8') as f:
@@ -97,7 +97,7 @@ def load_flux_quanto(checkpoint_info, diffusers_load_config):
     return transformer, text_encoder_2
 
 
-def load_flux_bnb(checkpoint_info, diffusers_load_config, ): # pylint: disable=unused-argument
+def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unused-argument
     transformer, text_encoder_2 = None, None
     if isinstance(checkpoint_info, str):
         repo_path = checkpoint_info

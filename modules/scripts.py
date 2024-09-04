@@ -500,10 +500,10 @@ class ScriptRunner:
         s = ScriptSummary('after')
         script_index = args[0] if len(args) > 0 else 0
         if script_index == 0:
-            return None
+            return processed
         script = self.selectable_scripts[script_index-1]
         if script is None or not hasattr(script, 'after'):
-            return None
+            return processed
         parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
         after_processed = script.after(p, processed, *parsed)
         if after_processed is not None:
