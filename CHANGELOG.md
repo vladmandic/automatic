@@ -10,6 +10,8 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
+And support for [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) text to video!
+
 Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 
 ### Details
@@ -44,6 +46,10 @@ Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
   enable via *settings -> compute -> fused projections*  
 
 **Other improvements:**
+- [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b)  
+  - support for both **2B** and **5B** variations  
+  - simply select in scripts -> cogvideox  
+  - as with any video modules, includes additional frame interpolation using RIFE  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  

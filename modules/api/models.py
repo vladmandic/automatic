@@ -149,12 +149,13 @@ class ItemEmbedding(BaseModel):
     vectors: int = Field(title="Vectors", description="The number of vectors in the embedding")
 
 class ItemIPAdapter(BaseModel):
-    adapter: str = Field(title="Adapter", default="Base", description="")
-    images: List[str] = Field(title="Image", default=[], description="")
-    masks: Optional[List[str]] = Field(title="Mask", default=[], description="")
-    scale: float = Field(title="Scale", default=0.5, ge=0, le=1, description="")
-    start: float = Field(title="Start", default=0.0, ge=0, le=1, description="")
-    end: float = Field(title="End", default=1.0, gt=0, le=1, description="")
+    adapter: str = Field(title="Adapter", default="Base", description="IP adapter name")
+    images: List[str] = Field(title="Image", default=[], description="IP adapter input images")
+    masks: Optional[List[str]] = Field(title="Mask", default=[], description="IP adapter mask images")
+    scale: float = Field(title="Scale", default=0.5, ge=0, le=1, description="IP adapter scale")
+    start: float = Field(title="Start", default=0.0, ge=0, le=1, description="IP adapter start step")
+    end: float = Field(title="End", default=1.0, gt=0, le=1, description="IP adapter end step")
+    crop: bool = Field(title="Crop", default=False, description="IP adapter crop face from input")
 
 class ItemFace(BaseModel):
     mode: str = Field(title="Mode", default="FaceID", description="The mode to use (available values: FaceID, FaceSwap, PhotoMaker, InstantID).")

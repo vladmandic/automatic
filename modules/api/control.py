@@ -103,6 +103,7 @@ class APIControl():
                 args['ip_adapter_scales'].append(ipadapter.scale)
                 args['ip_adapter_starts'].append(ipadapter.start)
                 args['ip_adapter_ends'].append(ipadapter.end)
+                args['ip_adapter_crops'].append(ipadapter.end)
                 args['ip_adapter_images'].append([helpers.decode_base64_to_image(x) for x in ipadapter.images])
                 if ipadapter.masks:
                     args['ip_adapter_masks'].append([helpers.decode_base64_to_image(x) for x in ipadapter.masks])

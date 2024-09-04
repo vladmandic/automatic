@@ -3,6 +3,7 @@ models: https://huggingface.co/THUDM/CogVideoX-2b https://huggingface.co/THUDM/C
 source: https://github.com/THUDM/CogVideo
 quanto: https://gist.github.com/a-r-r-o-w/31be62828b00a9292821b85c1017effa
 torchao: https://gist.github.com/a-r-r-o-w/4d9732d17412888c885480c6521a9897
+venhancer: https://github.com/THUDM/CogVideo/blob/dcb82ae30b454ab898aeced0633172d75dbd55b8/tools/venhancer/README.md
 """
 import os
 import time
@@ -96,6 +97,18 @@ class Script(scripts.Script):
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
 
+    def prepare(self, p, video):
+        import imageio # TODO dont use imageio
+        from torchvision import transforms
+        reader = imageio.get_reader(video, "ffmpeg")
+        frames = [transforms.ToTensor()(frame) for frame in reader]
+        frames = [transforms.Resize((p.height, p.width))(frame) for frame in frames]
+        frames = frames[:p.frames] # TODO drop interim frames instead of cropping the list
+        reader.close()
+        tensor = torch.stack(frames).to(devices.device).permute(1, 0, 2, 3).unsqueeze(0).to(devices.dtype)
+        encoded = shared.sd_model.vae.encode(tensor)[0].sample()
+        return encoded
+
     def generate(self, p: processing.StableDiffusionProcessing):
         if shared.sd_model_type != 'cogvideox':
             return []
@@ -124,10 +137,10 @@ class Script(scripts.Script):
             )
             if getattr(p, 'image', False):
                 raise ValueError('CogVideoX: image not supported')
-                # args['latents'] = [p.image]
+                # args['latents'] = self.prepare(p, [p.image])
             elif getattr(p, 'video', False):
                 raise ValueError('CogVideoX: video not supported')
-                # args['video'] = p.video
+                # args['video'] = self.prepare(p, p.video)
             else:
                 args['num_frames'] = p.frames # only txt2vid has num_frames
             if debug:
