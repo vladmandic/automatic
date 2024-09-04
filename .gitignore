@@ -18,6 +18,7 @@ venv
 .history
 cache
 **/.DS_Store
+tunableop_results*.csv
 
 # all models and temp files
 *.log
