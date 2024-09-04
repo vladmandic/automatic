@@ -89,6 +89,7 @@ def txt2img(id_task,
     processed = scripts.scripts_txt2img.run(p, *args)
     if processed is None:
         processed = processing.process_images(p)
+    processed = scripts.scripts_txt2img.after(p, processed, *args)
     p.close()
     if processed is None:
         return [], '', '', 'Error: processing failed'

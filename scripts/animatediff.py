@@ -1,15 +1,3 @@
-"""
-Lightweight AnimateDiff implementation in Diffusers
-Docs: <https://huggingface.co/docs/diffusers/api/pipelines/animatediff>
-TODO animatediff items:
-- SDXL
-- Custom models
-- Custom LORAs
-- Enable second pass
-- TemporalDiff: https://huggingface.co/CiaraRowles/TemporalDiff/tree/main
-- AnimateFace: https://huggingface.co/nlper2022/animatediff_face_512/tree/main
-"""
-
 import os
 import gradio as gr
 import diffusers
@@ -141,8 +129,9 @@ class Script(scripts.Script):
     def title(self):
         return 'AnimateDiff'
 
-    def show(self, _is_img2img):
-        return scripts.AlwaysVisible if shared.native else False
+    def show(self, is_img2img):
+        # return scripts.AlwaysVisible if shared.native else False
+        return not is_img2img
 
 
     def ui(self, _is_img2img):
@@ -154,38 +143,39 @@ class Script(scripts.Script):
                 gr.update(visible=video_type == 'MP4'),
             ]
 
-        with gr.Accordion('AnimateDiff', open=False, elem_id='animatediff'):
+        with gr.Row():
+            gr.HTML("<span>&nbsp AnimateDiff</span><br>")
+        with gr.Row():
+            adapter_index = gr.Dropdown(label='Adapter', choices=list(ADAPTERS), value='None')
+            frames = gr.Slider(label='Frames', minimum=1, maximum=64, step=1, value=16)
+        with gr.Row():
+            override_scheduler = gr.Checkbox(label='Override sampler', value=True)
+        with gr.Row():
+            lora_index = gr.Dropdown(label='Lora', choices=list(LORAS), value='None')
+            strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.05, value=1.0)
+        with gr.Row():
+            latent_mode = gr.Checkbox(label='Latent mode', value=True, visible=False)
+        with gr.Row():
+            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
+            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
+        with gr.Accordion('FreeInit', open=False):
             with gr.Row():
-                adapter_index = gr.Dropdown(label='Adapter', choices=list(ADAPTERS), value='None')
-                frames = gr.Slider(label='Frames', minimum=1, maximum=64, step=1, value=16)
+                fi_method = gr.Dropdown(label='Method', choices=['none', 'butterworth', 'ideal', 'gaussian'], value='none')
             with gr.Row():
-                override_scheduler = gr.Checkbox(label='Override sampler', value=True)
+                # fi_fast = gr.Checkbox(label='Fast sampling', value=False)
+                fi_iters = gr.Slider(label='Iterations', minimum=1, maximum=10, step=1, value=3)
+                fi_order = gr.Slider(label='Order', minimum=1, maximum=10, step=1, value=4)
             with gr.Row():
-                lora_index = gr.Dropdown(label='Lora', choices=list(LORAS), value='None')
-                strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.05, value=1.0)
-            with gr.Row():
-                latent_mode = gr.Checkbox(label='Latent mode', value=True, visible=False)
-            with gr.Row():
-                video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-                duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
-            with gr.Accordion('FreeInit', open=False):
-                with gr.Row():
-                    fi_method = gr.Dropdown(label='Method', choices=['none', 'butterworth', 'ideal', 'gaussian'], value='none')
-                with gr.Row():
-                    # fi_fast = gr.Checkbox(label='Fast sampling', value=False)
-                    fi_iters = gr.Slider(label='Iterations', minimum=1, maximum=10, step=1, value=3)
-                    fi_order = gr.Slider(label='Order', minimum=1, maximum=10, step=1, value=4)
-                with gr.Row():
-                    fi_spatial = gr.Slider(label='Spatial frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
-                    fi_temporal = gr.Slider(label='Temporal frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
-            with gr.Row():
-                gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-                mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-                mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-            video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
+                fi_spatial = gr.Slider(label='Spatial frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
+                fi_temporal = gr.Slider(label='Temporal frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
+        with gr.Row():
+            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
+            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
+            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
         return [adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal]
 
-    def process(self, p: processing.StableDiffusionProcessing, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument
         adapter = ADAPTERS[adapter_index]
         lora = LORAS[lora_index]
         set_adapter(adapter)
@@ -228,7 +218,7 @@ class Script(scripts.Script):
         if not latent_mode:
             p.task_args['output_type'] = 'np'
 
-    def postprocess(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument
+    def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument
         from modules.images import save_video
         if video_type != 'None':
             save_video(p, filename=None, images=processed.images, video_type=video_type, duration=duration, loop=gif_loop, pad=mp4_pad, interpolate=mp4_interpolate)

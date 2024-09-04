@@ -646,6 +646,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             processed: processing.Processed = processing.process_images(p) # run actual pipeline
                         else:
                             script_run = True
+                        processed = p.scripts.after(p, processed, *p.script_args)
                         output = None
                         if processed is not None:
                             output = processed.images

@@ -103,6 +103,7 @@ def process_batch(p, input_files, input_dir, output_dir, inpaint_mask_dir, args)
             for k, v in items.items():
                 image.info[k] = v
             images.save_image(image, path=output_dir, basename=basename, seed=None, prompt=None, extension=ext, info=geninfo, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="extras", existing_info=image.info, forced_filename=forced_filename)
+        proce = modules.scripts.scripts_img2img.after(p, proc, *args)
         shared.log.debug(f'Processed: images={len(batch_image_files)} memory={memory_stats()} batch')
 
 

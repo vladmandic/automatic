@@ -488,7 +488,26 @@ class ScriptRunner:
             if not hasattr(p, 'init_images') and p.task_args.get('image', None) is not None:
                 p.init_images = p.task_args['image']
         parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
-        processed = script.run(p, *parsed)
+        if hasattr(script, 'run'):
+            processed = script.run(p, *parsed)
+        else:
+            errors.log.error(f'Script: file="{script.filename}" no run function defined')
+        s.record(script.title())
+        s.report()
+        return processed
+
+    def after(self, p, processed, *args):
+        s = ScriptSummary('after')
+        script_index = args[0] if len(args) > 0 else 0
+        if script_index == 0:
+            return None
+        script = self.selectable_scripts[script_index-1]
+        if script is None or not hasattr(script, 'after'):
+            return None
+        parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
+        after_processed = script.after(p, processed, *parsed)
+        if after_processed is not None:
+            processed = after_processed
         s.record(script.title())
         s.report()
         return processed
