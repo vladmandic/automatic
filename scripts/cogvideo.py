@@ -70,6 +70,7 @@ class Script(scripts.Script):
                 shared.sd_model = None
                 shared.sd_model = diffusers.CogVideoXPipeline.from_pretrained(model, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
                 shared.sd_model.sd_checkpoint_info = sd_models.CheckpointInfo(model)
+                shared.sd_model.sd_model_hash = ''
                 shared.sd_model.sd_model_checkpoint = model
             except Exception as e:
                 shared.log.error(f'Loading CogVideoX: {e}')

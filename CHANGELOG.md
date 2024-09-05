@@ -14,8 +14,8 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 And few video related goodies:
 - [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) 2b and 5b variants  
   with support for *text-to-video* and *video-to-video*!  
-- **AnimateDiff** prompt travel!  
-  create video which travels between different prompts  
+- **AnimateDiff** prompt travel and long context windows!  
+  create video which travels between different prompts and at long video lengths!  
 
 Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)  
 Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
@@ -61,12 +61,16 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   - simply select in *scripts -> cogvideox*  
   - as with any video modules, includes additional frame interpolation using RIFE  
   - if init video is used, it will be automatically resized and interpolated to desired number of frames  
-- **AnimateDiff prompt travel**:  
-  create video which travels between different prompts at different steps!  
-  example prompt:
-  > 0: dog  
-  > 5: cat  
-  > 10: bird  
+- **AnimateDiff**:  
+  - **prompt travel**  
+     create video which travels between different prompts at different steps!  
+     example prompt:
+      > 0: dog  
+      > 5: cat  
+      > 10: bird  
+  - support for **v3** model (finally)  
+  - support for **LCM** model  
+  - support for rolling context window, automatically enabled if frames > 16  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  

@@ -8,7 +8,7 @@ from modules import scripts, processing, shared, devices, sd_models
 # config
 ADAPTERS = {
     'None': None,
-    'Motion 1.5 v3' :'vladmandic/animatediff-v3',
+    'Motion 1.5 v3' :'diffusers/animatediff-motion-adapter-v1-5-3',
     'Motion 1.5 v2' :'guoyww/animatediff-motion-adapter-v1-5-2',
     'Motion 1.5 v1': 'guoyww/animatediff-motion-adapter-v1-5',
     'Motion 1.4': 'guoyww/animatediff-motion-adapter-v1-4',
@@ -31,6 +31,7 @@ LORAS = {
     'Tilt-down': 'guoyww/animatediff-motion-lora-tilt-down',
     'Roll-left': 'guoyww/animatediff-motion-lora-rolling-anticlockwise',
     'Roll-right': 'guoyww/animatediff-motion-lora-rolling-clockwise',
+    'LCM': 'wangfuyun/AnimateLCM/AnimateLCM_sd15_t2v_lora.safetensors'
 }
 
 # state
@@ -126,34 +127,26 @@ def set_adapter(adapter_name: str = 'None'):
         shared.log.error(f'AnimateDiff load error: adapter="{adapter_name}" {e}')
 
 
-def set_scheduler(p, override_scheduler: bool = False):
-    if override_scheduler:
-        shared.log.debug('AnimateDiff: override scheduler')
+def set_scheduler(p, model, override: bool = False):
+    if override:
         p.sampler_name = 'Default'
-        shared.sd_model.scheduler = diffusers.DDIMScheduler(
-            beta_start=0.00085,
-            beta_end=0.012,
-            beta_schedule="linear",
-            clip_sample=False,
-            num_train_timesteps=1000,
-            rescale_betas_zero_snr=False,
-            set_alpha_to_one=True,
-            steps_offset=0,
-            timestep_spacing="linspace",
-            trained_betas=None,
-        )
+        if 'LCM' in model:
+            shared.sd_model.scheduler = diffusers.LCMScheduler.from_config(shared.sd_model.scheduler.config)
+        else:
+            shared.sd_model.scheduler = diffusers.DDIMScheduler.from_config(shared.sd_model.scheduler.config)
+    shared.log.debug(f'AnimateDiff: scheduler={shared.sd_model.scheduler.__class__.__name__}')
 
 
 def set_prompt(p):
     p.prompt = shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)
     p.negative_prompt = shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)
     prompts = p.prompt.split('\n')
-    if all(':' in x.lower() for x in prompts):
+    try:
         prompt = {}
         for line in prompts:
             k, v = line.split(':')
             prompt[int(k.strip())] = v.strip()
-    else:
+    except Exception:
         prompt = p.prompt
     shared.log.debug(f'AnimateDiff prompt: {prompt}')
     p.task_args['prompt'] = prompt
@@ -163,7 +156,12 @@ def set_prompt(p):
 def set_lora(p, lora, strength):
     if lora is not None and lora != 'None':
         shared.log.debug(f'AnimateDiff: lora="{lora}" strength={strength}')
-        shared.sd_model.load_lora_weights(lora, adapter_name=lora)
+        if lora.endswith('.safetensors'):
+            fn = os.path.basename(lora)
+            lora = lora.replace(f'/{fn}', '')
+            shared.sd_model.load_lora_weights(lora, weight_name=fn, adapter_name=lora)
+        else:
+            shared.sd_model.load_lora_weights(lora, adapter_name=lora)
         shared.sd_model.set_adapters([lora], adapter_weights=[strength])
         p.extra_generation_params['AnimateDiff Lora'] = f'{lora}:{strength}'
 
@@ -184,16 +182,9 @@ def set_free_init(method, iters, order, spatial, temporal):
 def set_free_noise(frames):
     context_length = 16
     context_stride = 4
-    shared.log.debug(f'AnimateDiff free noise: frames={frames} context={context_length} stride={context_stride}')
-    shared.sd_model.enable_free_noise(context_length=context_length, context_stride=context_stride)
-    # shared.sd_model.unet.enable_attn_chunking(context_length)  # Temporal chunking across batch_size x num_frames
-    # shared.sd_model.unet.enable_motion_module_chunking((512 // 8 // 4) ** 2)  # Spatial chunking across batch_size x latent height x latent width
-    # shared.sd_model.unet.enable_resnet_chunking(context_length)
-    # shared.sd_model.unet.enable_forward_chunking(context_length)
-    # pipe.enable_free_noise(context_length=context_length, context_stride=context_stride)
-    # shared.sd_model.enable_free_noise_chunked_inference()
-    # pipe.unet.enable_forward_chunking(context_length)
-
+    if frames >= context_length:
+        shared.log.debug(f'AnimateDiff free noise: frames={frames} context={context_length} stride={context_stride}')
+        shared.sd_model.enable_free_noise(context_length=context_length, context_stride=context_stride)
 
 
 class Script(scripts.Script):
@@ -218,7 +209,7 @@ class Script(scripts.Script):
             gr.HTML("<span>&nbsp AnimateDiff</span><br>")
         with gr.Row():
             adapter_index = gr.Dropdown(label='Adapter', choices=list(ADAPTERS), value='None')
-            frames = gr.Slider(label='Frames', minimum=1, maximum=64, step=1, value=16)
+            frames = gr.Slider(label='Frames', minimum=1, maximum=256, step=1, value=16)
         with gr.Row():
             override_scheduler = gr.Checkbox(label='Override sampler', value=True)
         with gr.Row():
@@ -252,7 +243,7 @@ class Script(scripts.Script):
         set_adapter(adapter)
         if motion_adapter is None:
             return
-        set_scheduler(p, override_scheduler)
+        set_scheduler(p, adapter, override_scheduler)
         set_lora(p, lora, strength)
         set_free_init(fi_method, fi_iters, fi_order, fi_spatial, fi_temporal)
         set_free_noise(frames)
