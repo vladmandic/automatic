@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-04
+## Update for 2024-09-05
 
-### Highlights for 2024-09-04
+### Highlights for 2024-09-05
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
@@ -11,7 +11,7 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
-And support for [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) text to video!
+And support for [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) *text-to-video* and *video-to-video*!
 
 Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 
@@ -52,8 +52,10 @@ Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
 **Other improvements:**
 - [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b)  
   - support for both **2B** and **5B** variations  
-  - simply select in scripts -> cogvideox  
+  - support for both **text2video** and **video2video** modes
+  - simply select in *scripts -> cogvideox*  
   - as with any video modules, includes additional frame interpolation using RIFE  
+  - if init video is used, it will be automatically resized and interpolated to desired number of frames  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  

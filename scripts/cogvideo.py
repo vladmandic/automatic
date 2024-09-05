@@ -7,9 +7,12 @@ venhancer: https://github.com/THUDM/CogVideo/blob/dcb82ae30b454ab898aeced0633172
 """
 import os
 import time
+import cv2
 import gradio as gr
 import torch
+from torchvision import transforms
 import diffusers
+import numpy as np
 from modules import scripts, shared, devices, errors, sd_models, processing
 from modules.processing_callbacks import diffusers_callback, set_callbacks_p
 
@@ -48,10 +51,10 @@ class Script(scripts.Script):
         with gr.Row():
             video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
             duration = gr.Slider(label='Duration', minimum=0.25, maximum=30, step=0.25, value=8, visible=False)
-        with gr.Accordion('Optional init image or video', open=False):
+        with gr.Accordion('Optional init video', open=False):
             with gr.Row():
-                image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256)
-                video = gr.Video(value=None, label='Video', source='upload', width=256, height=256)
+                image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256, visible=False)
+                video = gr.Video(value=None, label='Video', source='upload', width=256, height=256, visible=True)
         with gr.Row():
             loop = gr.Checkbox(label='Loop', value=True, visible=False)
             pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
@@ -98,18 +101,47 @@ class Script(scripts.Script):
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
 
+    def video(self, p, fn):
+        frames = []
+        try:
+            from modules.control.util import decode_fourcc
+            video = cv2.VideoCapture(fn)
+            if not video.isOpened():
+                shared.log.error(f'Video: file="{fn}" open failed')
+                return frames
+            frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = int(video.get(cv2.CAP_PROP_FPS))
+            w, h = int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            codec = decode_fourcc(video.get(cv2.CAP_PROP_FOURCC))
+            shared.log.debug(f'CogVideoX input: video="{fn}" fps={fps} width={w} height={h} codec={codec} frames={frame_count} target={len(frames)}')
+            frames = []
+            while True:
+                ok, frame = video.read()
+                if not ok:
+                    break
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = cv2.resize(frame, (p.width, p.height))
+                frames.append(frame)
+            video.release()
+            if len(frames) > p.frames:
+                frames = np.asarray(frames)
+                indices = np.linspace(0, len(frames) - 1, p.frames).astype(int) # reduce array from n_frames to p_frames
+                frames = frames[indices]
+                shared.log.debug(f'CogVideoX input reduce: source={len(frames)} target={p.frames}')
+            frames = [transforms.ToTensor()(frame) for frame in frames]
+        except Exception as e:
+            shared.log.error(f'Video: file="{fn}" {e}')
+            if debug:
+                errors.display(e, 'CogVideoX')
+        return frames
+
     """
-    def prepare(self, p, video):
-        import imageio # TODO dont use imageio
-        from torchvision import transforms
-        reader = imageio.get_reader(video, "ffmpeg")
-        frames = [transforms.ToTensor()(frame) for frame in reader]
-        frames = [transforms.Resize((p.height, p.width))(frame) for frame in frames]
-        frames = frames[:p.frames] # TODO drop interim frames instead of cropping the list
-        reader.close()
-        tensor = torch.stack(frames).to(devices.device).permute(1, 0, 2, 3).unsqueeze(0).to(devices.dtype)
-        encoded = shared.sd_model.vae.encode(tensor)[0].sample()
-        return encoded
+    def image(self, p, img):
+        shared.log.debug(f'CogVideoX input: image={img}')
+        img = img.resize((p.width, p.height))
+        frames = [np.array(img)]
+        frames = [transforms.ToTensor()(frame) for frame in frames]
+        return frames
     """
 
     def generate(self, p: processing.StableDiffusionProcessing):
@@ -140,10 +172,9 @@ class Script(scripts.Script):
             )
             if getattr(p, 'image', False):
                 raise ValueError('CogVideoX: image not supported') # TODO image2video
-                # args['latents'] = self.prepare(p, [p.image])
+                # args['latents'] = self.image(p, p.image)
             elif getattr(p, 'video', False):
-                raise ValueError('CogVideoX: video not supported') # TODO video2video
-                # args['video'] = self.prepare(p, p.video)
+                args['video'] = self.video(p, p.video)
             else:
                 args['num_frames'] = p.frames # only txt2vid has num_frames
             if debug:
