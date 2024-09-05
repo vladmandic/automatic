@@ -16,6 +16,7 @@ ADAPTERS = {
     'AnimateFace': 'vladmandic/animateface',
     'Lightning': 'ByteDance/AnimateDiff-Lightning/animatediff_lightning_4step_diffusers.safetensors',
     'SDXL Beta': 'a-r-r-o-w/animatediff-motion-adapter-sdxl-beta',
+    'LCM': 'wangfuyun/AnimateLCM',
     # 'SDXL Beta': 'guoyww/animatediff-motion-adapter-sdxl-beta',
     # 'LongAnimateDiff 32': 'vladmandic/longanimatediff-32',
     # 'LongAnimateDiff 64': 'vladmandic/longanimatediff-64',
@@ -58,7 +59,7 @@ def set_adapter(adapter_name: str = 'None'):
         shared.log.warning(f'AnimateDiff: unsupported model type: {shared.sd_model.__class__.__name__}')
         return
     if motion_adapter is not None and loaded_adapter == adapter_name and (shared.sd_model.__class__.__name__ == 'AnimateDiffPipeline' or shared.sd_model.__class__.__name__ == 'AnimateDiffSDXLPipeline'):
-        shared.log.debug(f'AnimateDiff cache: adapter="{adapter_name}"')
+        shared.log.debug(f'AnimateDiff: adapter="{adapter_name}" cached')
         return
     if getattr(shared.sd_model, 'image_encoder', None) is not None:
         shared.log.debug('AnimateDiff: unloading IP adapter')
@@ -118,11 +119,81 @@ def set_adapter(adapter_name: str = 'None'):
         sd_models.copy_diffuser_options(new_pipe, orig_pipe)
         sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
         sd_models.move_model(shared.sd_model.unet, devices.device) # move pipeline to device
-        shared.log.debug(f'AnimateDiff create: pipeline="{shared.sd_model.__class__}" adapter="{loaded_adapter}"')
+        shared.log.debug(f'AnimateDiff: adapter="{loaded_adapter}"')
     except Exception as e:
         motion_adapter = None
         loaded_adapter = None
         shared.log.error(f'AnimateDiff load error: adapter="{adapter_name}" {e}')
+
+
+def set_scheduler(p, override_scheduler: bool = False):
+    if override_scheduler:
+        shared.log.debug('AnimateDiff: override scheduler')
+        p.sampler_name = 'Default'
+        shared.sd_model.scheduler = diffusers.DDIMScheduler(
+            beta_start=0.00085,
+            beta_end=0.012,
+            beta_schedule="linear",
+            clip_sample=False,
+            num_train_timesteps=1000,
+            rescale_betas_zero_snr=False,
+            set_alpha_to_one=True,
+            steps_offset=0,
+            timestep_spacing="linspace",
+            trained_betas=None,
+        )
+
+
+def set_prompt(p):
+    p.prompt = shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)
+    p.negative_prompt = shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)
+    prompts = p.prompt.split('\n')
+    if all(':' in x.lower() for x in prompts):
+        prompt = {}
+        for line in prompts:
+            k, v = line.split(':')
+            prompt[int(k.strip())] = v.strip()
+    else:
+        prompt = p.prompt
+    shared.log.debug(f'AnimateDiff prompt: {prompt}')
+    p.task_args['prompt'] = prompt
+    p.task_args['negative_prompt'] = p.negative_prompt
+
+
+def set_lora(p, lora, strength):
+    if lora is not None and lora != 'None':
+        shared.log.debug(f'AnimateDiff: lora="{lora}" strength={strength}')
+        shared.sd_model.load_lora_weights(lora, adapter_name=lora)
+        shared.sd_model.set_adapters([lora], adapter_weights=[strength])
+        p.extra_generation_params['AnimateDiff Lora'] = f'{lora}:{strength}'
+
+
+def set_free_init(method, iters, order, spatial, temporal):
+    if hasattr(shared.sd_model, 'enable_free_init') and method != 'none':
+        shared.log.debug(f'AnimateDiff free init: method={method} iters={iters} order={order} spatial={spatial} temporal={temporal}')
+        shared.sd_model.enable_free_init(
+            num_iters=iters,
+            use_fast_sampling=False,
+            method=method,
+            order=order,
+            spatial_stop_frequency=spatial,
+            temporal_stop_frequency=temporal,
+        )
+
+
+def set_free_noise(frames):
+    context_length = 16
+    context_stride = 4
+    shared.log.debug(f'AnimateDiff free noise: frames={frames} context={context_length} stride={context_stride}')
+    shared.sd_model.enable_free_noise(context_length=context_length, context_stride=context_stride)
+    # shared.sd_model.unet.enable_attn_chunking(context_length)  # Temporal chunking across batch_size x num_frames
+    # shared.sd_model.unet.enable_motion_module_chunking((512 // 8 // 4) ** 2)  # Spatial chunking across batch_size x latent height x latent width
+    # shared.sd_model.unet.enable_resnet_chunking(context_length)
+    # shared.sd_model.unet.enable_forward_chunking(context_length)
+    # pipe.enable_free_noise(context_length=context_length, context_stride=context_stride)
+    # shared.sd_model.enable_free_noise_chunked_inference()
+    # pipe.unet.enable_forward_chunking(context_length)
+
 
 
 class Script(scripts.Script):
@@ -181,44 +252,30 @@ class Script(scripts.Script):
         set_adapter(adapter)
         if motion_adapter is None:
             return
-        if override_scheduler:
-            p.sampler_name = 'Default'
-            shared.sd_model.scheduler = diffusers.DDIMScheduler(
-                beta_start=0.00085,
-                beta_end=0.012,
-                beta_schedule="linear",
-                clip_sample=False,
-                num_train_timesteps=1000,
-                rescale_betas_zero_snr=False,
-                set_alpha_to_one=True,
-                steps_offset=0,
-                timestep_spacing="linspace",
-                trained_betas=None,
-            )
-        shared.log.debug(f'AnimateDiff: adapter="{adapter}" lora="{lora}" strength={strength} video={video_type} scheduler={shared.sd_model.scheduler.__class__.__name__ if override_scheduler else p.sampler_name}')
-        if lora is not None and lora != 'None':
-            shared.sd_model.load_lora_weights(lora, adapter_name=lora)
-            shared.sd_model.set_adapters([lora], adapter_weights=[strength])
-            p.extra_generation_params['AnimateDiff Lora'] = f'{lora}:{strength}'
-        if hasattr(shared.sd_model, 'enable_free_init') and fi_method != 'none':
-            shared.sd_model.enable_free_init(
-                num_iters=fi_iters,
-                use_fast_sampling=False,
-                method=fi_method,
-                order=fi_order,
-                spatial_stop_frequency=fi_spatial,
-                temporal_stop_frequency=fi_temporal,
-            )
+        set_scheduler(p, override_scheduler)
+        set_lora(p, lora, strength)
+        set_free_init(fi_method, fi_iters, fi_order, fi_spatial, fi_temporal)
+        set_free_noise(frames)
+        processing.fix_seed(p)
         p.extra_generation_params['AnimateDiff'] = loaded_adapter
         p.do_not_save_grid = True
-        if 'animatediff' not in p.ops:
-            p.ops.append('animatediff')
+        p.ops.append('animatediff')
+        p.task_args['generator'] = None
         p.task_args['num_frames'] = frames
         p.task_args['num_inference_steps'] = p.steps
-        if not latent_mode:
-            p.task_args['output_type'] = 'np'
+        p.task_args['output_type'] = 'np'
+        shared.log.debug(f'AnimateDiff args: {p.task_args}')
+        set_prompt(p)
+        orig_prompt_attention = shared.opts.data['prompt_attention']
+        shared.opts.data['prompt_attention'] = 'Fixed attention'
+        processed: processing.Processed = processing.process_images(p) # runs processing using main loop
+        shared.opts.data['prompt_attention'] = orig_prompt_attention
+        devices.torch_gc()
+        return processed
+
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument
         from modules.images import save_video
         if video_type != 'None':
+            shared.log.debug(f'AnimateDiff video: type={video_type} duration={duration} loop={gif_loop} pad={mp4_pad} interpolate={mp4_interpolate}')
             save_video(p, filename=None, images=processed.images, video_type=video_type, duration=duration, loop=gif_loop, pad=mp4_pad, interpolate=mp4_interpolate)

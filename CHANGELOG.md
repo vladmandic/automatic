@@ -11,11 +11,16 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
-And support for [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) *text-to-video* and *video-to-video*!
+And few video related goodies:
+- [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) 2b and 5b variants  
+  with support for *text-to-video* and *video-to-video*!  
+- **AnimateDiff** prompt travel!  
+  create video which travels between different prompts  
 
-Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
+Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)  
+Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
-### Details for 2024-09-04
+### Details for 2024-09-05
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -56,6 +61,12 @@ Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)
   - simply select in *scripts -> cogvideox*  
   - as with any video modules, includes additional frame interpolation using RIFE  
   - if init video is used, it will be automatically resized and interpolated to desired number of frames  
+- **AnimateDiff prompt travel**:  
+  create video which travels between different prompts at different steps!  
+  example prompt:
+  > 0: dog  
+  > 5: cat  
+  > 10: bird  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  
