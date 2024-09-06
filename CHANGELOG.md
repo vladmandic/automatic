@@ -7,7 +7,7 @@
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
 - Faster execution, more flexible loading, additional quantization options, and more...
-- Added **image-to-image**, **inpaint** and **outpaint** modes  
+- Added **image-to-image**, **inpaint**, **outpaint**, **hires** modes  
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
@@ -50,7 +50,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   this brings supported quants to: *nf4/fp8/fp4/qint8/qint4*
 - vae support *fp16*  
 - **lora** support additional training tools  
-- support fuse-qkv projections  
+- **face-hires** support
+- support **fuse-qkv** projections  
   can speed up generate  
   enable via *settings -> compute -> fused projections*  
 
