@@ -70,7 +70,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
       > 10: bird  
   - support for **v3** model (finally)  
   - support for **LCM** model  
-  - support for rolling context window, automatically enabled if frames > 16  
+  - support for **free-noise** rolling context window  
+    allow for creation of much longer videos, automatically enabled if frames > 16  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  
