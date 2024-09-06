@@ -421,7 +421,7 @@ def compile_torch(sd_model):
         except Exception as e:
             shared.log.error(f"Torch inductor config error: {e}")
 
-        sd_model = apply_compile_to_model(sd_model, torch_compile_model, shared.opts.cuda_compile, op="compile")
+        sd_model = apply_compile_to_model(sd_model, function=torch_compile_model, options=shared.opts.cuda_compile, op="compile")
 
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
@@ -462,7 +462,7 @@ def compile_deepcache(sd_model):
 
 
 def compile_diffusers(sd_model):
-    if not shared.opts.cuda_compile:
+    if 'Model' not in shared.opts.cuda_compile:
         return sd_model
     if shared.opts.cuda_compile_backend == 'none':
         shared.log.warning('Model compile enabled but no backend specified')
@@ -518,7 +518,7 @@ def dynamic_quantization(sd_model):
 
 
 def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes
-    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
+    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
         if shared.opts.cuda_compile_backend == "openvino_fx":
             compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
             compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
@@ -541,7 +541,7 @@ def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a pa
 
 
 def openvino_post_compile(op="base"): # delete unet after OpenVINO compile
-    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
+    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
         if shared.compiled_model_state.first_pass and op == "base":
             shared.compiled_model_state.first_pass = False
             if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):

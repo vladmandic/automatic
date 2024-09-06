@@ -1,7 +1,7 @@
 
 from functools import cache, wraps
 import torch
-from diffusers.utils import USE_PEFT_BACKEND
+from diffusers.utils import USE_PEFT_BACKEND # pylint: disable=unused-import
 from modules import shared, devices
 
 
@@ -107,8 +107,7 @@ class DynamicAttnProcessorBMM:
     based on AttnProcessor V1
     """
 
-    def __call__(self, attn, hidden_states: torch.Tensor, encoder_hidden_states=None, attention_mask=None,
-    temb=None, *args, **kwargs) -> torch.Tensor: # pylint: disable=too-many-statements, too-many-locals, too-many-branches
+    def __call__(self, attn, hidden_states: torch.Tensor, encoder_hidden_states=None, attention_mask=None, temb=None, *args, **kwargs) -> torch.Tensor: # pylint: disable=too-many-statements, too-many-locals, too-many-branches, keyword-arg-before-vararg
 
         residual = hidden_states
 

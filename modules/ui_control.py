@@ -136,7 +136,7 @@ def create_ui(_blocks: gr.Blocks=None):
             with gr.Row(variant='compact', elem_id="control_extra_networks", visible=False) as extra_networks_ui:
                 from modules import timer, ui_extra_networks
                 extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, btn_extra, 'control', skip_indexing=shared.opts.extra_network_skip_indexing)
-                timer.startup.record('ui-en')
+                timer.startup.record('ui-networks')
 
             with gr.Row(elem_id='control-inputs'):
                 with gr.Column(scale=9, elem_id='control-input-column', visible=True) as _column_input:

@@ -61,7 +61,7 @@ def single_sample_to_image(sample, approximation=None):
         if approximation == 2: # TAESD
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
-        elif sd_cascade and not approximation == 3:
+        elif sd_cascade and approximation != 3:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5

@@ -491,6 +491,7 @@ class ScriptRunner:
         if hasattr(script, 'run'):
             processed = script.run(p, *parsed)
         else:
+            processed = None
             errors.log.error(f'Script: file="{script.filename}" no run function defined')
         s.record(script.title())
         s.report()

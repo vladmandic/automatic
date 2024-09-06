@@ -78,7 +78,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
         return pipe
     t5 = load_t5(t5=t5, cache_dir=cache_dir)
     if module == "text_encoder_2" and t5 is None: # do not unload te2
-        return
+        return None
     setattr(pipe, module, t5)
     if shared.opts.diffusers_offload_mode == "sequential":
         from accelerate import cpu_offload

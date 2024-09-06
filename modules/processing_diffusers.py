@@ -26,20 +26,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return p.enable_hr and p.refiner_steps > 0 and p.refiner_start > 0 and p.refiner_start < 1 and shared.sd_refiner is not None
 
     def update_pipeline(sd_model, p: processing.StableDiffusionProcessing):
-        """
-        import diffusers
-        if p.sag_scale > 0 and is_txt2img():
-            update_sampler(shared.sd_model)
-            supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
-            if hasattr(sd_model, 'sfast'):
-                shared.log.warning(f'SAG incompatible compile mode: backend={shared.opts.cuda_compile_backend}')
-            elif sd_model.scheduler.__class__.__name__ in supported:
-                sd_model = sd_models.switch_pipe(diffusers.StableDiffusionSAGPipeline, sd_model)
-                p.extra_generation_params["SAG scale"] = p.sag_scale
-                p.task_args['sag_scale'] = p.sag_scale
-            else:
-                shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
-        """
         if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
             shared.log.warning('Processing: mode=inpaint mask=None')
             sd_model = sd_models.set_diffuser_pipe(sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)

@@ -162,7 +162,7 @@ def create_quantized_param(
     module._parameters[tensor_name] = new_value # pylint: disable=protected-access
 
 
-def load_flux_nf4(checkpoint_info, diffusers_load_config):
+def load_flux_nf4(checkpoint_info):
     load_bnb()
     transformer = None
     text_encoder_2 = None

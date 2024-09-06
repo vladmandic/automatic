@@ -243,9 +243,11 @@ def create_ui(startup_timer = None):
         if cmd_opts.use_directml:
             directml_override_opts()
         if cmd_opts.use_openvino:
-            if not shared.opts.cuda_compile:
-                shared.log.warning("OpenVINO: Enabling Torch Compile")
-                shared.opts.cuda_compile = True
+            shared.log.warning("OpenVINO: Enabling Torch Compile")
+            if "Model" not in shared.opts.cuda_compile:
+                shared.opts.cuda_compile.append("Model")
+            if "VAE" not in shared.opts.cuda_compile:
+                shared.opts.cuda_compile.append("VAE")
             if shared.opts.cuda_compile_backend != "openvino_fx":
                 shared.log.warning("OpenVINO: Setting Torch Compiler backend to OpenVINO FX")
                 shared.opts.cuda_compile_backend = "openvino_fx"

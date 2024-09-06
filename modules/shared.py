@@ -419,6 +419,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
     "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
+    "diffusers_version": OptionInfo("", "Diffusers version", gr.Textbox, {"visible": False}),
 }))
 
 options_templates.update(options_section(('cuda', "Compute Settings"), {

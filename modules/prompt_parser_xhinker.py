@@ -679,12 +679,12 @@ def get_weighted_text_embeddings_sdxl_refiner(
 
         for j in range(len(weight_tensor_2)):
             if weight_tensor_2[j] != 1.0:
-                ow = weight_tensor_2[j] - 1
+                # ow = weight_tensor_2[j] - 1
 
                 # optional process
                 # To map number of (0,1) to (-1,1)
-                tanh_weight = (math.exp(ow) / (math.exp(ow) + 1) - 0.5) * 2
-                weight = 1 + tanh_weight
+                # tanh_weight = (math.exp(ow) / (math.exp(ow) + 1) - 0.5) * 2
+                # weight = 1 + tanh_weight
 
                 # add weight method 1:
                 # token_embedding[j] = token_embedding[j] * weight

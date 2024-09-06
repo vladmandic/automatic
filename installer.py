@@ -437,13 +437,16 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
+    sha = '8cdcdd9e32925200ce5e1cf410fe14a774f3c3a6'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
-    if minor < 31:
-        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}')
+    cur = opts.get('diffusers_version', '') if minor > 0 else ''
+    if (minor == 0) or (cur != sha):
+        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}: current={pkg}@{cur} target={sha}')
         if minor > 0:
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
-        pip('install --upgrade git+https://github.com/huggingface/diffusers@d269cc8a4e9b7380d52daef1ee7ec4c82c942a13', ignore=False, quiet=True, uv=False)
+        pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
+        opts['diffusers_version'] = sha
 
 
 # check onnx version
@@ -495,7 +498,7 @@ def install_rocm_zluda():
             break
 
     log.info(f'ROCm version detected: {rocm.version}')
-
+    torch_command = ''
     if sys.platform == "win32":
         #if args.use_zluda:
         log.warning("ZLUDA support: experimental")

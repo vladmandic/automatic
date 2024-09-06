@@ -18,6 +18,8 @@ exclude = [
     "modules/segmoe",
     "modules/control/proc",
     "modules/control/units",
+    "modules/prompt_parser_xhinker.py",
+    "modules/postprocess/aurasr_arch.py",
     "repositories",
     "extensions-builtin/sd-extension-chainner/nodes",
     "extensions-builtin/sd-webui-agent-scheduler",
@@ -80,4 +82,4 @@ line-ending = "auto"
 docstring-code-format = false
 
 [lint.mccabe]
-max-complexity = 99
+max-complexity = 150

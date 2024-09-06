@@ -217,10 +217,9 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
                 sd_models.move_model(u.controlnet.model, devices.cpu)
             continue
-        else:
-            if u.controlnet is not None and u.controlnet.model is not None:
-                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
-                sd_models.move_model(u.controlnet.model, devices.device)
+        if u.controlnet is not None and u.controlnet.model is not None:
+            debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
+            sd_models.move_model(u.controlnet.model, devices.device)
         if unit_type == 't2i adapter' and u.adapter.model is not None:
             active_process.append(u.process)
             active_model.append(u.adapter)
@@ -548,7 +547,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                     elif unit_type == 'controlnet' and has_models:
                         if input_type == 0: # Control only
                             if shared.sd_model_type == 'f1':
-                                p.task_args['control_image'] = p.init_images # TODO flux controlnet mandates this
+                                p.task_args['control_image'] = p.init_images # flux controlnet mandates this
                                 p.task_args['strength'] = p.denoising_strength
                         elif input_type == 1: # Init image same as control
                             p.task_args['control_image'] = p.init_images # switch image and control_image

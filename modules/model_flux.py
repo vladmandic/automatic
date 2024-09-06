@@ -25,7 +25,7 @@ def get_quant(file_path):
     return 'none'
 
 
-def load_flux_quanto(checkpoint_info, diffusers_load_config):
+def load_flux_quanto(checkpoint_info):
     transformer, text_encoder_2 = None, None
     from installer import install
     install('optimum-quanto', quiet=True)
@@ -132,11 +132,11 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
     shared.log.info(f'Loading UNet: type=FLUX file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
     if 'nf4' in quant:
         from modules.model_flux_nf4 import load_flux_nf4
-        _transformer, _text_encoder_2 = load_flux_nf4(file_path, diffusers_load_config)
+        _transformer, _text_encoder_2 = load_flux_nf4(file_path)
         if _transformer is not None:
             transformer = _transformer
     elif quant == 'qint8' or quant == 'qint4':
-        _transformer, _text_encoder_2 = load_flux_quanto(file_path, diffusers_load_config)
+        _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
     elif quant == 'fp8' or quant == 'fp4':
@@ -206,7 +206,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if quant == 'nf4':
         try:
             from modules.model_flux_nf4 import load_flux_nf4
-            _transformer, _text_encoder = load_flux_nf4(checkpoint_info, diffusers_load_config)
+            _transformer, _text_encoder = load_flux_nf4(checkpoint_info)
             if _transformer is not None:
                 transformer = _transformer
             if _text_encoder is not None:
@@ -218,7 +218,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 errors.display(e, 'FLUX NF4:')
     if quant == 'qint8' or quant == 'qint4':
         try:
-            _transformer, _text_encoder = load_flux_quanto(checkpoint_info, diffusers_load_config)
+            _transformer, _text_encoder = load_flux_quanto(checkpoint_info)
             if _transformer is not None:
                 transformer = _transformer
             if _text_encoder is not None:
@@ -239,7 +239,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
         components['vae'] = vae
     shared.log.debug(f'Loading FLUX: preloaded={list(components)}')
     if repo_id == 'sayakpaul/flux.1-dev-nf4':
-        repo_id = 'black-forest-labs/FLUX.1-dev' # TODO fix for since sayakpaul model is missing model_index.json
+        repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
     pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
     try:
         diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxPipeline

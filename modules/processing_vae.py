@@ -33,6 +33,7 @@ def create_latents(image, p, dtype=None, device=None):
 
 def full_vae_decode(latents, model):
     t0 = time.time()
+    base_device = None
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
     if shared.opts.diffusers_offload_mode == "balanced":
@@ -66,7 +67,7 @@ def full_vae_decode(latents, model):
     decoded = model.vae.decode(latents, return_dict=False)[0]
 
     # delete vae after OpenVINO compile
-    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
+    if 'VAE' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
         shared.compiled_model_state.first_pass_vae = False
         if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "vae"):
             model.vae.apply(sd_models.convert_to_faketensors)
@@ -136,8 +137,6 @@ def vae_decode(latents, model, output_type='np', full_quality=True):
         decoded = full_vae_decode(latents=latents, model=shared.sd_model)
     else:
         decoded = taesd_vae_decode(latents=latents)
-    # TODO validate decoded sample diffusers
-    # decoded = validate_sample(decoded)
     if hasattr(model, 'image_processor'):
         imgs = model.image_processor.postprocess(decoded, output_type=output_type)
     else:

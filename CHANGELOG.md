@@ -54,7 +54,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   can speed up generate  
   enable via *settings -> compute -> fused projections*  
 
-**Other improvements:**
+**Other improvements & Fixes:**
 - [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b)  
   - support for both **2B** and **5B** variations  
   - support for both **text2video** and **video2video** modes
@@ -93,13 +93,12 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   improves quality of the flow-matching samplers  
 - **t5** support manually downloaded models  
   applies to all models that use t5 transformer  
-- **modern-ui** add override field
+- **modern-ui** add override field  
+- full **lint** updates  
 - use `diffusers` from main branch, no longer tied to release  
-
-**Fixes:**
 - fix handling of model configs if offline config is not available  
-- fix vae decode in backend original
-- fix model path typos
+- fix vae decode in backend original  
+- fix model path typos  
 
 ## Update for 2024-08-31
 

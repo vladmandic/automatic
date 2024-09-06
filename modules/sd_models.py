@@ -907,7 +907,7 @@ def move_model(model, device=None, force=False):
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
-            if 'Cannot copy out of meta tensor' in str(e0) or 'must be Tensor, not NoneType':
+            if 'Cannot copy out of meta tensor' in str(e0) or 'must be Tensor, not NoneType' in str(e0):
                 if hasattr(model, "components"):
                     for _name, component in model.components.items():
                         if hasattr(component, 'modules'):
@@ -1316,7 +1316,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         insert_parser_highjack(sd_model.__class__.__name__)
 
         set_diffuser_options(sd_model, vae, op, offload=False)
-        if shared.opts.nncf_compress_weights and not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+        if shared.opts.nncf_compress_weights and not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
             sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
         if shared.opts.optimum_quanto_weights:
             sd_model = sd_models_compile.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
@@ -1337,7 +1337,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
 
-        if (shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none'):
+        if ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none'):
             sd_model = sd_models_compile.compile_diffusers(sd_model)
         timer.record("compile")
 
@@ -1488,7 +1488,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxControlNetPipeline']: # TODO flux does not have inpaint/img2img yet
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxControlNetPipeline']:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe
@@ -1832,7 +1832,7 @@ def unload_model_weights(op='model'):
                 from modules import sd_hijack
                 move_model(model_data.sd_model, devices.cpu)
                 sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
-            elif not (shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            elif not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
                 disable_offload(model_data.sd_model)
                 move_model(model_data.sd_model, 'meta')
             model_data.sd_model = None

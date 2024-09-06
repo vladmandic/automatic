@@ -206,7 +206,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if recompile_model:
         backup_cuda_compile = shared.opts.cuda_compile
         sd_models.unload_model_weights(op='model')
-        shared.opts.cuda_compile = False
+        shared.opts.cuda_compile = []
         sd_models.reload_model_weights(op='model')
         shared.opts.cuda_compile = backup_cuda_compile
 
@@ -261,7 +261,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if recompile_model:
         shared.log.info("LoRA recompiling model")
         backup_lora_model = shared.compiled_model_state.lora_model
-        if shared.opts.cuda_compile:
+        if 'Model' in shared.opts.cuda_compile:
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model

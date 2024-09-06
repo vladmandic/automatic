@@ -44,7 +44,7 @@ def create_ui():
         with gr.Row(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks_ui:
             from modules import ui_extra_networks
             extra_networks_ui_img2img = ui_extra_networks.create_ui(extra_networks_ui, img2img_extra_networks_button, 'img2img', skip_indexing=shared.opts.extra_network_skip_indexing)
-            timer.startup.record('ui-en')
+            timer.startup.record('ui-networks')
 
         with gr.Row(elem_id="img2img_interface", equal_height=False):
             with gr.Column(variant='compact', elem_id="img2img_settings"):
