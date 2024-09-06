@@ -215,8 +215,6 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
 
 
 def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
-    if im.width == width and im.height == height:
-        shared.log.debug(f'Image resize: input={im} target={width}x{height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
     def latent(im, w, h, upscaler):
@@ -305,9 +303,8 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
     else:
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
-    if output_type == 'np':
-        return np.array(res)
-    return res
+    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" type={output_type} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    return np.array(res) if output_type == 'np' else res
 
 
 re_nonletters = re.compile(r'[\s' + string.punctuation + ']+')

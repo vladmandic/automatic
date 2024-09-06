@@ -907,7 +907,7 @@ def move_model(model, device=None, force=False):
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
-            if 'Cannot copy out of meta tensor' in str(e0):
+            if 'Cannot copy out of meta tensor' in str(e0) or 'must be Tensor, not NoneType':
                 if hasattr(model, "components"):
                     for _name, component in model.components.items():
                         if hasattr(component, 'modules'):
@@ -1926,3 +1926,11 @@ def remove_token_merging(sd_model):
             sd_model.applied_todo = 0
     except Exception:
         pass
+
+
+def path_to_repo(fn: str = ''):
+    repo_id = fn
+    repo_id = repo_id.replace('Diffusers/', '').replace('Diffusers\\', '')
+    repo_id = repo_id.replace('diffusers/', '').replace('diffusers\\', '')
+    repo_id = repo_id.replace('models--', '').replace('--', '/')
+    return repo_id

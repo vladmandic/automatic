@@ -3,7 +3,7 @@ import time
 import logging
 import torch
 from modules import shared, devices, sd_models
-from installer import setup_logging
+from installer import install, setup_logging
 
 
 #Used by OpenVINO, can be used with TensorRT or Olive
@@ -165,7 +165,6 @@ def nncf_compress_weights(sd_model):
         t0 = time.time()
         shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
-        from installer import install
         install('nncf==2.7.0', quiet=True)
 
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
@@ -233,7 +232,6 @@ def optimum_quanto_weights(sd_model):
         t0 = time.time()
         shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
-        from installer import install
         install('optimum-quanto', quiet=True)
         from optimum import quanto # pylint: disable=no-name-in-module
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
@@ -484,11 +482,14 @@ def compile_diffusers(sd_model):
 
 def dynamic_quantization(sd_model):
     try:
-        from torchao.quantization import quant_api
+        install('torchao', quiet=True)
+        from torchao.quantization import autoquant
     except Exception as e:
         shared.log.error(f"Model dynamic quantization not supported: {e}")
         return sd_model
 
+    """
+    from torchao.quantization import quant_api
     def dynamic_quant_filter_fn(mod, *args): # pylint: disable=unused-argument
         return (isinstance(mod, torch.nn.Linear) and mod.in_features > 16 and (mod.in_features, mod.out_features)
                 not in [(1280, 640), (1920, 1280), (1920, 640), (2048, 1280), (2048, 2560), (2560, 1280), (256, 128), (2816, 1280), (320, 640), (512, 1536), (512, 256), (512, 512), (640, 1280), (640, 1920), (640, 320), (640, 5120), (640, 640), (960, 320), (960, 640)])
@@ -496,14 +497,23 @@ def dynamic_quantization(sd_model):
     def conv_filter_fn(mod, *args): # pylint: disable=unused-argument
         return (isinstance(mod, torch.nn.Conv2d) and mod.kernel_size == (1, 1) and 128 in [mod.in_channels, mod.out_channels])
 
+    quant_api.swap_conv2d_1x1_to_linear(sd_model.unet, conv_filter_fn)
+    quant_api.swap_conv2d_1x1_to_linear(sd_model.vae, conv_filter_fn)
+    quant_api.apply_dynamic_quant(sd_model.unet, dynamic_quant_filter_fn)
+    quant_api.apply_dynamic_quant(sd_model.vae, dynamic_quant_filter_fn)
+    """
+
     shared.log.info(f"Model dynamic quantization: pipeline={sd_model.__class__.__name__}")
     try:
-        quant_api.swap_conv2d_1x1_to_linear(sd_model.unet, conv_filter_fn)
-        quant_api.swap_conv2d_1x1_to_linear(sd_model.vae, conv_filter_fn)
-        quant_api.apply_dynamic_quant(sd_model.unet, dynamic_quant_filter_fn)
-        quant_api.apply_dynamic_quant(sd_model.vae, dynamic_quant_filter_fn)
+        if shared.sd_model_type == 'sd' or shared.sd_model_type == 'sdxl':
+            sd_model.unet = sd_model.unet.to(devices.device)
+            sd_model.unet = autoquant(sd_model.unet, error_on_unseen=False)
+        elif shared.sd_model_type == 'f1':
+            sd_model.transformer = autoquant(sd_model.transformer, error_on_unseen=False)
+        else:
+            shared.log.error(f"Model dynamic quantization not supported: {shared.sd_model_type}")
     except Exception as e:
-        shared.log.error(f"Model dynamic quantization error: {e}")
+        shared.log.error(f"Model dynamic quantization: {e}")
     return sd_model
 
 

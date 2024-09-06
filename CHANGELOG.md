@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-05
+## Update for 2024-09-06
 
-### Highlights for 2024-09-05
+### Highlights for 2024-09-06
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
@@ -84,6 +84,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   set via *settings -> live preview -> taesd decode layers*  
 - **xhinker** prompt parser handle offloaded models  
 - **control** better handle offloading
+- **control** upscale will use resize-to if set to non-zero values over resize-by  
 - speed up some garbage collection ops  
 - sampler settings add **dynamic shift**  
   used by flow-matching samplers to adjust between structure and details  
@@ -91,6 +92,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   improves quality of the flow-matching samplers  
 - **t5** support manually downloaded models  
   applies to all models that use t5 transformer  
+- **modern-ui** add override field
 - use `diffusers` from main branch, no longer tied to release  
 
 **Fixes:**

@@ -496,15 +496,20 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def init_hr(self, scale = None, upscaler = None, force = False):
         scale = scale or self.scale_by
         upscaler = upscaler or self.resize_name
-        if upscaler == 'None' or scale == 1.0:
+        use_scale = self.hr_resize_x == 0 or self.hr_resize_y == 0
+        if upscaler == 'None' or (use_scale and scale == 1.0):
             return
         self.is_hr_pass = True
         self.hr_force = force
         self.hr_upscaler = upscaler
-        self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
+        use_scale = self.hr_resize_x == 0 or self.hr_resize_y == 0
+        if use_scale:
+            self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
+        else:
+            self.hr_upscale_to_x, self.hr_upscale_to_y = self.hr_resize_x, self.hr_resize_y
         # hypertile_set(self, hr=True)
         shared.state.job_count = 2 * self.n_iter
-        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" upscale={scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        shared.log.debug(f'Control hires: upscaler="{self.hr_upscaler}" scale={scale} fixed={not use_scale} size={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
 
 
 def switch_class(p: StableDiffusionProcessing, new_class: type, dct: dict = None):
