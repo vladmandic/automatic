@@ -76,7 +76,7 @@ restricted_opts = {
     "outdir_save",
     "outdir_init_images"
 }
-resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint"]
+resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint", "Seam-Carving Add", "Seam-Carving Subtract"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
 console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
