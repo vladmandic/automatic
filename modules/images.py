@@ -11,6 +11,7 @@ import random
 import hashlib
 import datetime
 import threading
+import seam_carving
 from pathlib import Path
 from collections import namedtuple
 import numpy as np
@@ -300,6 +301,29 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         from modules import masking
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
+    elif resize_mode == 5:  # seam-add
+        ratio = min(width / im.width, height / im.height)
+        im = resize(im, int(im.width * ratio), int(im.height * ratio))
+        res = Image.fromarray(seam_carving.resize(
+            im,  # source image (rgb or gray)
+            size=(width, height),  # target size
+            energy_mode="backward",  # choose from {backward, forward}
+            order="width-first",  # choose from {width-first, height-first}
+            keep_mask=None,  # object mask to protect from removal
+        ))
+    elif resize_mode == 6:  # seam-delete
+        ratio = width / height
+        src_ratio = im.width / im.height
+        src_w = width if ratio > src_ratio else im.width * height // im.height
+        src_h = height if ratio <= src_ratio else im.height * width // im.width
+        resized = resize(im, src_w, src_h)
+        res = Image.fromarray(seam_carving.resize(
+            resized,  # source image (rgb or gray)
+            size=(width, height),  # target size
+            energy_mode="backward",  # choose from {backward, forward}
+            order="width-first",  # choose from {width-first, height-first}
+            keep_mask=None,  # object mask to protect from removal
+        ))
     else:
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
