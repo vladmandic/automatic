@@ -12,7 +12,7 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
   try enabling **NNCF** for quantization/compression on-the-fly!  
 
 Few image related goodies...  
-- **Context-aware** image resize that allows for *img2img* or *inpaint* even at massively different aspect ratios!
+- **Context-aware** resize that allows for *img2img/inpaint* even at massively different aspect ratios without distortions!
 - Auto **HDR** image create for SD and SDXL with both 16ch true-HDR and 8-ch HDR-effect images ;)  
 
 And few video related goodies...  
@@ -78,8 +78,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
     allow for creation of much longer videos, automatically enabled if frames > 16  
 - **Context-aware** image resize, thanks @AI-Casanova!  
   based on [seam-carving](https://github.com/li-plus/seam-carving)  
-  allows for img2img or inpaint even at massively different aspect ratios!  
-  simply select as resize method when using img2img or control tabs  
+  allows for *img2img/inpaint* even at massively different aspect ratios without distortions!  
+  simply select as resize method when using *img2img* or *control* tabs  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  

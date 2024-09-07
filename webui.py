@@ -11,7 +11,7 @@ from threading import Thread
 import modules.loader
 import torch # pylint: disable=wrong-import-order
 from modules import timer, errors, paths # pylint: disable=unused-import
-from installer import log, git_commit, diffusers_commit, custom_excepthook
+from installer import log, git_commit, custom_excepthook
 import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
 from modules import shared, extensions, gr_tempdir, modelloader # pylint: disable=ungrouped-imports
 from modules import extra_networks, ui_extra_networks # pylint: disable=ungrouped-imports
@@ -34,7 +34,7 @@ import modules.textual_inversion.textual_inversion
 import modules.hypernetworks.hypernetwork
 import modules.script_callbacks
 from modules.api.middleware import setup_middleware
-from modules.shared import cmd_opts, opts
+from modules.shared import cmd_opts, opts # pylint: disable=unused-import
 
 
 sys.excepthook = custom_excepthook
@@ -220,8 +220,12 @@ def start_common():
     create_paths(shared.opts)
     async_policy()
     initialize()
-    if diffusers_commit != 'unknown':
-        shared.opts.diffusers_version = diffusers_commit # update installed diffusers version
+    try:
+        from installer import diffusers_commit
+        if diffusers_commit != 'unknown':
+            shared.opts.diffusers_version = diffusers_commit # update installed diffusers version
+    except Exception:
+        pass
     if shared.opts.clean_temp_dir_at_start:
         gr_tempdir.cleanup_tmpdr()
         timer.startup.record("cleanup")
