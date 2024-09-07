@@ -4,28 +4,26 @@
 
 ### Highlights for 2024-09-07
 
-Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
-- Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
-- Faster execution, more flexible loading, additional quantization options, and more...
+Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
+- Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,  
+- Faster execution, more flexible loading, additional quantization options, and more...  
 - Added **image-to-image**, **inpaint**, **outpaint**, **hires** modes  
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
-  try enabling **NNCF** for quantization/compression on-the-fly!
+  try enabling **NNCF** for quantization/compression on-the-fly!  
 
-Few image related goodies...
-- **Context-aware** image resize that allows for img2img or inpaint even at massively different aspect ratios!
+Few image related goodies...  
+- **Context-aware** image resize that allows for *img2img* or *inpaint* even at massively different aspect ratios!
 - Auto **HDR** image create for SD and SDXL with both 16ch true-HDR and 8-ch HDR-effect images ;)  
 
-And few video related goodies...
+And few video related goodies...  
 - [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) 2b and 5b variants  
   with support for *text-to-video* and *video-to-video*!  
-- **AnimateDiff** prompt travel and long context windows!  
+- [AnimateDiff](https://github.com/guoyww/animatediff/) prompt travel and long context windows!  
   create video which travels between different prompts and at long video lengths!  
 
-
-Oh, as a sidenote, and also new 
 Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
-### Details for 2024-09-05
+### Details for 2024-09-07
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
