@@ -97,11 +97,11 @@ def create_ui(_blocks: gr.Blocks=None):
                 with gr.Accordion(open=False, label="Size", elem_id="control_size", elem_classes=["small-accordion"]):
                     with gr.Tabs():
                         with gr.Tab('Before'):
-                            resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control_before', [], accordion=False, latent=True)
+                            resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control_before', [], accordion=False, latent=True)
                         with gr.Tab('After'):
-                            resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control_after', [], accordion=False, latent=False)
+                            resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control_after', [], accordion=False, latent=False)
                         with gr.Tab('Mask'):
-                            resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False)
+                            resize_mode_mask, resize_name_mask, resize_context_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False)
 
                 with gr.Accordion(open=False, label="Sampler", elem_id="control_sampler", elem_classes=["small-accordion"]):
                     steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "control")
@@ -504,9 +504,9 @@ def create_ui(_blocks: gr.Blocks=None):
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
                 cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, restore_faces, tiling, hidiffusion,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
-                resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
-                resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
-                resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
+                resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
+                resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
+                resize_mode_mask, resize_name_mask, resize_context_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
                 denoising_strength, batch_count, batch_size,
                 enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps,
                 refiner_start, refiner_prompt, refiner_negative,

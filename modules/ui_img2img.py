@@ -119,7 +119,7 @@ def create_ui():
                     with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
                         steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
                         ui_sections.create_sampler_options('img2img')
-                    resize_mode, resize_name, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
+                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
                     batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 
@@ -187,7 +187,7 @@ def create_ui():
                 selected_scale_tab,
                 height, width,
                 scale_by,
-                resize_mode, resize_name,
+                resize_mode, resize_name, resize_context,
                 inpaint_full_res, inpaint_full_res_padding, inpainting_mask_invert,
                 img2img_batch_files, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,

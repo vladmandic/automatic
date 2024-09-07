@@ -171,6 +171,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             p.hr_force = True
 
         # hires
+        p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
+        if p.hr_force and p.denoising_strength == 0:
+            shared.log.warning('HiRes skip: denoising=0')
+            p.hr_force = False
         if p.hr_force:
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)

@@ -308,8 +308,16 @@ def create_resize_inputs(tab, images, accordion=True, latent=False):
     with gr.Accordion(open=False, label="Resize", elem_classes=["small-accordion"], elem_id=f"{tab}_resize_group") if accordion else gr.Group():
         with gr.Row():
             resize_mode = gr.Dropdown(label="Mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
-            resize_name = gr.Dropdown(label="Method", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode)
+            resize_name = gr.Dropdown(label="Method", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode, visible=True)
+            resize_context_choices = ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]
+            resize_context = gr.Dropdown(label="Context", elem_id=f"{tab}_resize_context", choices=resize_context_choices, value=resize_context_choices[0], visible=False)
             ui_common.create_refresh_button(resize_name, modelloader.load_upscalers, lambda: {"choices": modelloader.load_upscalers()}, 'refresh_upscalers')
+
+            def resize_mode_change(mode):
+                if mode is None or mode == 0:
+                    return gr.update(visible=False), gr.update(visible=False)
+                return gr.update(visible=(mode != 5)), gr.update(visible=(mode == 5))
+            resize_mode.change(fn=resize_mode_change, inputs=[resize_mode], outputs=[resize_name, resize_context])
 
         with gr.Row(visible=True) as _resize_group:
             with gr.Column(elem_id=f"{tab}_column_size"):
@@ -337,4 +345,4 @@ def create_resize_inputs(tab, images, accordion=True, latent=False):
             tab_scale_to.select(fn=lambda: 0, inputs=[], outputs=[selected_scale_tab])
             tab_scale_by.select(fn=lambda: 1, inputs=[], outputs=[selected_scale_tab])
             # resize_mode.change(fn=lambda x: gr.update(visible=x != 0), inputs=[resize_mode], outputs=[_resize_group])
-    return resize_mode, resize_name, width, height, scale_by, selected_scale_tab
+    return resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab

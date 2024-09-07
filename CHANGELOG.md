@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-06
+## Update for 2024-09-07
 
-### Highlights for 2024-09-06
+### Highlights for 2024-09-07
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** support,
@@ -11,13 +11,18 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!
 
-And few video related goodies:
+Few image related goodies...
+- **Context-aware** image resize that allows for img2img or inpaint even at massively different aspect ratios!
+- Auto **HDR** image create for SD and SDXL with both 16ch true-HDR and 8-ch HDR-effect images ;)  
+
+And few video related goodies...
 - [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) 2b and 5b variants  
   with support for *text-to-video* and *video-to-video*!  
 - **AnimateDiff** prompt travel and long context windows!  
   create video which travels between different prompts and at long video lengths!  
 
-Oh, as a sidenote, and also new auto **HDR** image create for SD and SDXL ;)  
+
+Oh, as a sidenote, and also new 
 Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
 ### Details for 2024-09-05
@@ -50,7 +55,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   this brings supported quants to: *nf4/fp8/fp4/qint8/qint4*
 - vae support *fp16*  
 - **lora** support additional training tools  
-- **face-hires** support
+- **face-hires** support  
 - support **fuse-qkv** projections  
   can speed up generate  
   enable via *settings -> compute -> fused projections*  
@@ -73,6 +78,10 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   - support for **LCM** model  
   - support for **free-noise** rolling context window  
     allow for creation of much longer videos, automatically enabled if frames > 16  
+- **Context-aware** image resize, thanks @AI-Casanova!  
+  based on [seam-carving](https://github.com/li-plus/seam-carving)  
+  allows for img2img or inpaint even at massively different aspect ratios!  
+  simply select as resize method when using img2img or control tabs  
 - **HDR** high-dynamic-range image create for SD and SDXL  
   create hdr images from in multiple exposures by latent-space modifications during generation  
   use via *scripts -> hdr*  

@@ -171,6 +171,10 @@ def apply_upscaler(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
     p.hr_upscaler = opt
 
 
+def apply_context(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
+    p.resize_mode = 5
+    p.resize_context = opt
+
 def apply_face_restore(p, opt, x):
     opt = opt.lower()
     if opt == 'codeformer':
@@ -289,6 +293,7 @@ axis_options = [
     AxisOption("[Refiner] Refiner start", float, apply_field("refiner_start")),
     AxisOption("[Refiner] Refiner steps", float, apply_field("refiner_steps")),
     AxisOption("[Postprocess] Upscaler", str, apply_upscaler, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
+    AxisOption("[Postprocess] Context", str, apply_context, choices=lambda: ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]),
     AxisOption("[Postprocess] Face restore", str, apply_face_restore, fmt=format_value),
     AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
     AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),

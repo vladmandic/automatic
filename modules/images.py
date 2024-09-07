@@ -5,13 +5,13 @@ import sys
 import math
 import json
 import uuid
+import time
 import queue
 import string
 import random
 import hashlib
 import datetime
 import threading
-import seam_carving
 from pathlib import Path
 from collections import namedtuple
 import numpy as np
@@ -215,7 +215,7 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
     return draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin)
 
 
-def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
+def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image', context=None):
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
     def latent(im, w, h, upscaler):
@@ -287,6 +287,37 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
         return res
 
+    def context_aware(im, width, height, context):
+        import seam_carving # https://github.com/li-plus/seam-carving
+        if 'forward' in context:
+            energy_mode = "forward"
+        elif 'backward' in context:
+            energy_mode = "backward"
+        else:
+            return im
+        if 'Add' in context:
+            src_ratio = min(width / im.width, height / im.height)
+            src_w = int(im.width * src_ratio)
+            src_h = int(im.height * src_ratio)
+            src_image = resize(im, src_w, src_h)
+        elif 'Remove' in context:
+            ratio = width / height
+            src_ratio = im.width / im.height
+            src_w = width if ratio > src_ratio else im.width * height // im.height
+            src_h = height if ratio <= src_ratio else im.height * width // im.width
+            src_image = resize(im, src_w, src_h)
+        else:
+            return im
+        res = Image.fromarray(seam_carving.resize(
+            src_image, # source image (rgb or gray)
+            size=(width, height),  # target size
+            energy_mode=energy_mode,  # choose from {backward, forward}
+            order="width-first",  # choose from {width-first, height-first}
+            keep_mask=None,  # object mask to protect from removal
+        ))
+        return res
+
+    t0 = time.time()
     if resize_mode is None:
         resize_mode = 0
     if resize_mode == 0 or (im.width == width and im.height == height): # none
@@ -301,33 +332,13 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         from modules import masking
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
-    elif resize_mode == 5:  # seam-add
-        ratio = min(width / im.width, height / im.height)
-        im = resize(im, int(im.width * ratio), int(im.height * ratio))
-        res = Image.fromarray(seam_carving.resize(
-            im,  # source image (rgb or gray)
-            size=(width, height),  # target size
-            energy_mode="backward",  # choose from {backward, forward}
-            order="width-first",  # choose from {width-first, height-first}
-            keep_mask=None,  # object mask to protect from removal
-        ))
-    elif resize_mode == 6:  # seam-delete
-        ratio = width / height
-        src_ratio = im.width / im.height
-        src_w = width if ratio > src_ratio else im.width * height // im.height
-        src_h = height if ratio <= src_ratio else im.height * width // im.width
-        resized = resize(im, src_w, src_h)
-        res = Image.fromarray(seam_carving.resize(
-            resized,  # source image (rgb or gray)
-            size=(width, height),  # target size
-            energy_mode="backward",  # choose from {backward, forward}
-            order="width-first",  # choose from {width-first, height-first}
-            keep_mask=None,  # object mask to protect from removal
-        ))
+    elif resize_mode == 5:  # context-aware
+        res = context_aware(im, width, height, context)
     else:
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
-    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" type={output_type} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    t1 = time.time()
+    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     return np.array(res) if output_type == 'np' else res
 
 

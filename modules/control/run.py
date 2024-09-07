@@ -62,9 +62,9 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, hidiffusion: bool = False,
                 hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95,
                 hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0,
-                resize_mode_before: int = 0, resize_name_before: str = 'None', width_before: int = 512, height_before: int = 512, scale_by_before: float = 1.0, selected_scale_tab_before: int = 0,
-                resize_mode_after: int = 0, resize_name_after: str = 'None', width_after: int = 0, height_after: int = 0, scale_by_after: float = 1.0, selected_scale_tab_after: int = 0,
-                resize_mode_mask: int = 0, resize_name_mask: str = 'None', width_mask: int = 0, height_mask: int = 0, scale_by_mask: float = 1.0, selected_scale_tab_mask: int = 0,
+                resize_mode_before: int = 0, resize_name_before: str = 'None', resize_context_before: str = 'None', width_before: int = 512, height_before: int = 512, scale_by_before: float = 1.0, selected_scale_tab_before: int = 0,
+                resize_mode_after: int = 0, resize_name_after: str = 'None', resize_context_after: str = 'None', width_after: int = 0, height_after: int = 0, scale_by_after: float = 1.0, selected_scale_tab_after: int = 0,
+                resize_mode_mask: int = 0, resize_name_mask: str = 'None', resize_context_mask: str = 'None', width_mask: int = 0, height_mask: int = 0, scale_by_mask: float = 1.0, selected_scale_tab_mask: int = 0,
                 denoising_strength: float = 0, batch_count: int = 1, batch_size: int = 1,
                 enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
                 hr_scale: float = 1.0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0.0, refiner_prompt: str = '', refiner_negative: str = '',
@@ -456,8 +456,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             width_before, height_before = int(input_image.width * scale_by_before), int(input_image.height * scale_by_before)
                         if input_image is not None:
                             p.extra_generation_params["Control resize"] = f'{resize_name_before}'
-                            debug(f'Control resize: op=before image={input_image} width={width_before} height={height_before} mode={resize_mode_before} name={resize_name_before}')
-                            input_image = images.resize_image(resize_mode_before, input_image, width_before, height_before, resize_name_before)
+                            debug(f'Control resize: op=before image={input_image} width={width_before} height={height_before} mode={resize_mode_before} name={resize_name_before} context="{resize_context_before}"')
+                            input_image = images.resize_image(resize_mode_before, input_image, width_before, height_before, resize_name_before, context=resize_context_before)
                     if input_image is not None and init_image is not None and init_image.size != input_image.size:
                         debug(f'Control resize init: image={init_image} target={input_image}')
                         init_image = images.resize_image(resize_mode=1, im=init_image, width=input_image.width, height=input_image.height)
@@ -618,7 +618,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                         if selected_scale_tab_mask == 1:
                             width_mask, height_mask = int(input_image.width * scale_by_mask), int(input_image.height * scale_by_mask)
                         p.width, p.height = width_mask, height_mask
-                        debug(f'Control resize: op=mask image={mask} width={width_mask} height={height_mask} mode={resize_mode_mask} name={resize_name_mask}')
+                        debug(f'Control resize: op=mask image={mask} width={width_mask} height={height_mask} mode={resize_mode_mask} name={resize_name_mask} context="{resize_context_mask}"')
 
                     # pipeline
                     output = None
@@ -667,8 +667,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                                 width_after = int(output_image.width * scale_by_after)
                                 height_after = int(output_image.height * scale_by_after)
                             if resize_mode_after != 0 and resize_name_after != 'None' and not is_grid:
-                                debug(f'Control resize: op=after image={output_image} width={width_after} height={height_after} mode={resize_mode_after} name={resize_name_after}')
-                                output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after)
+                                debug(f'Control resize: op=after image={output_image} width={width_after} height={height_after} mode={resize_mode_after} name={resize_name_after} context="{resize_context_after}"')
+                                output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after, context=resize_context_after)
 
                             output_images.append(output_image)
                             if shared.opts.include_mask and not script_run:
