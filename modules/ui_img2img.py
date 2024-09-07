@@ -241,6 +241,7 @@ def create_ui():
                 (steps, "Steps"),
                 # resize
                 (resize_mode, "Resize mode"),
+                (resize_name, "Resize name"),
                 (width, "Size-1"),
                 (height, "Size-2"),
                 (scale_by, "Resize scale"),

@@ -306,8 +306,6 @@ def create_hires_inputs(tab):
 def create_resize_inputs(tab, images, accordion=True, latent=False):
     dummy_component = gr.Number(visible=False, value=0)
     with gr.Accordion(open=False, label="Resize", elem_classes=["small-accordion"], elem_id=f"{tab}_resize_group") if accordion else gr.Group():
-        # with gr.Row():
-        #    resize_mode = gr.Radio(label="Mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
         with gr.Row():
             resize_mode = gr.Dropdown(label="Mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
             resize_name = gr.Dropdown(label="Method", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode)
