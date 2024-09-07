@@ -11,7 +11,7 @@ from threading import Thread
 import modules.loader
 import torch # pylint: disable=wrong-import-order
 from modules import timer, errors, paths # pylint: disable=unused-import
-from installer import log, git_commit, custom_excepthook
+from installer import log, git_commit, diffusers_commit, custom_excepthook
 import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
 from modules import shared, extensions, gr_tempdir, modelloader # pylint: disable=ungrouped-imports
 from modules import extra_networks, ui_extra_networks # pylint: disable=ungrouped-imports
@@ -64,6 +64,7 @@ import modules.sd_hijack
 timer.startup.record("ldm")
 modules.loader.initialized = True
 
+
 def check_rollback_vae():
     if shared.cmd_opts.rollback_vae:
         if not torch.cuda.is_available():
@@ -75,7 +76,6 @@ def check_rollback_vae():
         elif 0 < torch.cuda.get_device_capability()[0] < 8:
             log.error('Rollback VAE functionality device capabilities not met')
             shared.cmd_opts.rollback_vae = False
-
 
 
 def initialize():
@@ -102,10 +102,10 @@ def initialize():
     timer.startup.record("models")
 
     import modules.postprocess.codeformer_model as codeformer
-    codeformer.setup_model(opts.codeformer_models_path)
+    codeformer.setup_model(shared.opts.codeformer_models_path)
     sys.modules["modules.codeformer_model"] = codeformer
     import modules.postprocess.gfpgan_model as gfpgan
-    gfpgan.setup_model(opts.gfpgan_models_path)
+    gfpgan.setup_model(shared.opts.gfpgan_models_path)
     timer.startup.record("face-restore")
 
     log.debug('Load extensions')
@@ -159,7 +159,7 @@ def initialize():
 
 def load_model():
     modules.devices.set_cuda_params()
-    if not opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
+    if not shared.opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
         log.debug('Model auto load disabled')
     else:
         shared.state.begin('Load')
@@ -217,9 +217,11 @@ def start_common():
         log.info(f'Using data path: {shared.cmd_opts.data_dir}')
     if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0 and shared.cmd_opts.models_dir != 'models':
         log.info(f'Using models path: {shared.cmd_opts.models_dir}')
-    create_paths(opts)
+    create_paths(shared.opts)
     async_policy()
     initialize()
+    if diffusers_commit != 'unknown':
+        shared.opts.diffusers_version = diffusers_commit # update installed diffusers version
     if shared.opts.clean_temp_dir_at_start:
         gr_tempdir.cleanup_tmpdr()
         timer.startup.record("cleanup")

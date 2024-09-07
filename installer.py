@@ -56,6 +56,7 @@ args = Dot({
     'uv': False,
 })
 git_commit = "unknown"
+diffusers_commit = "unknown"
 submodules_commit = {
     'sd-webui-controlnet': 'ecd33eb',
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
@@ -446,7 +447,8 @@ def check_diffusers():
         if minor > 0:
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
         pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
-        opts['diffusers_version'] = sha
+        global diffusers_commit # pylint: disable=global-statement
+        diffusers_commit = sha
 
 
 # check onnx version
