@@ -396,7 +396,7 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
     resized_images = []
     for img in first_pass_images:
         if latent_upscaler is None:
-            resized_image = images.resize_image(1, img, p.hr_upscale_to_x, p.hr_upscale_to_y, upscaler_name=p.hr_upscaler)
+            resized_image = images.resize_image(p.hr_resize_mode, img, p.hr_upscale_to_x, p.hr_upscale_to_y, upscaler_name=p.hr_upscaler, context=p.hr_resize_context)
         else:
             resized_image = img
         resized_images.append(resized_image)

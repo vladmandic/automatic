@@ -66,7 +66,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 resize_mode_after: int = 0, resize_name_after: str = 'None', resize_context_after: str = 'None', width_after: int = 0, height_after: int = 0, scale_by_after: float = 1.0, selected_scale_tab_after: int = 0,
                 resize_mode_mask: int = 0, resize_name_mask: str = 'None', resize_context_mask: str = 'None', width_mask: int = 0, height_mask: int = 0, scale_by_mask: float = 1.0, selected_scale_tab_mask: int = 0,
                 denoising_strength: float = 0, batch_count: int = 1, batch_size: int = 1,
-                enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
+                enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_resize_mode: int = 0, hr_resize_context: str = 'None', hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
                 hr_scale: float = 1.0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0.0, refiner_prompt: str = '', refiner_negative: str = '',
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
                 *input_script_args
@@ -180,6 +180,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     p.enable_hr = enable_hr
     p.hr_sampler_name = processing.get_sampler_name(hr_sampler_index)
     p.hr_denoising_strength = hr_denoising_strength
+    p.hr_resize_mode = hr_resize_mode
+    p.hr_resize_context = hr_resize_context
     p.hr_upscaler = hr_upscaler
     p.hr_force = hr_force
     p.hr_second_pass_steps = hr_second_pass_steps

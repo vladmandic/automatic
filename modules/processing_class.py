@@ -81,6 +81,8 @@ class StableDiffusionProcessing:
         self.enable_hr = None
         self.hr_scale = None
         self.hr_upscaler = None
+        self.hr_resize_mode = 0
+        self.hr_resize_context = 'None'
         self.hr_resize_x = 0
         self.hr_resize_y = 0
         self.hr_upscale_to_x = 0
@@ -187,13 +189,15 @@ class StableDiffusionProcessing:
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
-    def __init__(self, enable_hr: bool = False, denoising_strength: float = 0.75, firstphase_width: int = 0, firstphase_height: int = 0, hr_scale: float = 2.0, hr_force: bool = False, hr_upscaler: str = None, hr_second_pass_steps: int = 0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0, refiner_prompt: str = '', refiner_negative: str = '', **kwargs):
+    def __init__(self, enable_hr: bool = False, denoising_strength: float = 0.75, firstphase_width: int = 0, firstphase_height: int = 0, hr_scale: float = 2.0, hr_force: bool = False, hr_resize_mode: int = 0, hr_resize_context: str = 'None', hr_upscaler: str = None, hr_second_pass_steps: int = 0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0, refiner_prompt: str = '', refiner_negative: str = '', **kwargs):
 
         super().__init__(**kwargs)
         self.enable_hr = enable_hr
         self.denoising_strength = denoising_strength
         self.hr_scale = hr_scale
         self.hr_upscaler = hr_upscaler
+        self.hr_resize_mode = hr_resize_mode
+        self.hr_resize_context = hr_resize_context
         self.hr_force = hr_force
         self.hr_second_pass_steps = hr_second_pass_steps
         self.hr_resize_x = hr_resize_x
@@ -240,6 +244,9 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 self.hr_upscale_to_y = self.hr_resize_x * self.height // self.width
             elif self.hr_resize_x == 0:
                 self.hr_upscale_to_x = self.hr_resize_y * self.width // self.height
+                self.hr_upscale_to_y = self.hr_resize_y
+            elif self.hr_resize_x > 0 and self.hr_resize_y > 0 and shared.native:
+                self.hr_upscale_to_x = self.hr_resize_x
                 self.hr_upscale_to_y = self.hr_resize_y
             else:
                 target_w = self.hr_resize_x

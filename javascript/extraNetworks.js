@@ -421,21 +421,23 @@ function setupExtraNetworksForTab(tabname) {
   // card hover
   let hoverTimer = null;
   let previousCard = null;
-  gradioApp().getElementById(`${tabname}_extra_tabs`).onmouseover = (e) => {
-    const el = e.target.closest('.card'); // bubble-up to card
-    if (!el || (el.title === previousCard)) return;
-    if (!hoverTimer) {
-      hoverTimer = setTimeout(() => {
-        readCardDescription(el.dataset.page, el.dataset.name);
-        readCardTags(el, el.dataset.tags);
-        previousCard = el.title;
-      }, 300);
-    }
-    el.onmouseout = () => {
-      clearTimeout(hoverTimer);
-      hoverTimer = null;
+  if (window.opts.extra_networks_fetch) {
+    gradioApp().getElementById(`${tabname}_extra_tabs`).onmouseover = async (e) => {
+      const el = e.target.closest('.card'); // bubble-up to card
+      if (!el || (el.title === previousCard)) return;
+      if (!hoverTimer) {
+        hoverTimer = setTimeout(() => {
+          readCardDescription(el.dataset.page, el.dataset.name);
+          readCardTags(el, el.dataset.tags);
+          previousCard = el.title;
+        }, 300);
+      }
+      el.onmouseout = () => {
+        clearTimeout(hoverTimer);
+        hoverTimer = null;
+      };
     };
-  };
+  }
 
   // en style
   if (!en) return;

@@ -91,6 +91,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
   grid image can be disabled via settings -> user interface -> show grid  
   actual full-hdr image is not displayed in ui, only optionally saved to disk  
+- **hires** workflow now allows for full resize options, not just limited width/height/scale  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
@@ -98,6 +99,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
 - **xhinker** prompt parser handle offloaded models  
 - **control** better handle offloading
 - **control** upscale will use resize-to if set to non-zero values over resize-by  
+- **networks** add option `extra_networks_fetch` to choose if mouse-over on network should attempt to fetch additional info  
 - speed up some garbage collection ops  
 - sampler settings add **dynamic shift**  
   used by flow-matching samplers to adjust between structure and details  

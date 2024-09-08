@@ -153,8 +153,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model.restore_pipeline()
 
         # upscale
-        if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
-            shared.log.info(f'Upscale: upscaler="{p.hr_upscaler}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
+        if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_resize_mode >0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
+            shared.log.info(f'Upscale: mode={p.hr_resize_mode} upscaler="{p.hr_upscaler}" context="{p.hr_resize_context}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
             p.ops.append('upscale')
             if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
@@ -304,7 +304,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
             if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                if p.hr_upscaler is not None and p.hr_upscaler != 'None':
+                if p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
                     width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
                     height = max(getattr(p, 'height', 0), getattr(p, 'hr_upscale_to_y', 0))
                 else:

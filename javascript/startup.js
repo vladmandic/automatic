@@ -17,7 +17,6 @@ async function initStartup() {
   initImageViewer();
   initGallery();
   setupControlUI();
-  setupExtraNetworks();
 
   // reconnect server session
   await reconnectUI();
@@ -25,6 +24,7 @@ async function initStartup() {
   // make sure all of the ui is ready and options are loaded
   while (Object.keys(window.opts).length === 0) await sleep(50);
   executeCallbacks(uiReadyCallbacks);
+  setupExtraNetworks();
 
   // optinally wait for modern ui
   if (window.waitForUiReady) await waitForUiReady();
