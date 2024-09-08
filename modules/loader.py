@@ -56,6 +56,15 @@ import diffusers.loaders.single_file # pylint: disable=W0611,C0411
 logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
 from tqdm.rich import tqdm # pylint: disable=W0611,C0411
 diffusers.loaders.single_file.logging.tqdm = partial(tqdm, unit='C')
+
+import tqdm as tqdm_lib
+class _tqdm_cls:
+    def __call__(self, *args, **kwargs):
+        bar_format = 'Diffusers {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
+        return tqdm_lib.tqdm(*args, bar_format=bar_format, ncols=80, colour='#327fba', **kwargs)
+
+transformers.utils.logging.tqdm = _tqdm_cls()
+diffusers.pipelines.pipeline_utils.logging.tqdm = _tqdm_cls()
 timer.startup.record("diffusers")
 
 def get_packages():

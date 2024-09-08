@@ -313,7 +313,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
-        if self.init_images is not None and len(self.init_images) > 0:
+        if hasattr(self, 'init_images') and self.init_images is not None and len(self.init_images) > 0:
             if self.width is None or self.width == 0:
                 self.width = int(8 * (self.init_images[0].width * self.scale_by // 8))
             if self.height is None or self.height == 0:
