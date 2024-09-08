@@ -81,7 +81,8 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
         else:
             pipe._guidance_scale = 0.0  # pylint: disable=protected-access
             for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
-                kwargs[key] = kwargs[key].chunk(2)[-1]
+                if kwargs[key] is not None:
+                    kwargs[key] = kwargs[key].chunk(2)[-1]
     try:
         if hasattr(pipe, "_unpack_latents") and hasattr(pipe, "vae_scale_factor"): # FLUX
             if p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):

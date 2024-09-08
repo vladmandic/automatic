@@ -235,6 +235,7 @@ def img2img(id_task: str, mode: int,
         resize_mode=resize_mode,
         resize_name=resize_name,
         resize_context=resize_context,
+        scale_by=scale_by,
         denoising_strength=denoising_strength,
         image_cfg_scale=image_cfg_scale,
         diffusers_guidance_rescale=diffusers_guidance_rescale,
@@ -248,8 +249,6 @@ def img2img(id_task: str, mode: int,
         hdr_boundary=hdr_boundary, hdr_threshold=hdr_threshold, hdr_maximize=hdr_maximize, hdr_max_center=hdr_max_center, hdr_max_boundry=hdr_max_boundry, hdr_color_picker=hdr_color_picker, hdr_tint_ratio=hdr_tint_ratio,
         override_settings=override_settings,
     )
-    if selected_scale_tab == 1 and resize_mode != 0:
-        p.scale_by = scale_by
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
     if mask:

@@ -119,7 +119,7 @@ def create_ui():
                     with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
                         steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
                         ui_sections.create_sampler_options('img2img')
-                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
+                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True, non_zero=False)
                     batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 

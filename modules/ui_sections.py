@@ -330,15 +330,15 @@ def create_resize_inputs(tab, images, accordion=True, latent=False, non_zero=Tru
                         with gr.Row():
                             with gr.Column(elem_id=f"{tab}_column_size_fixed"):
                                 with gr.Row():
-                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label="Width" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}_width")
-                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label="Height" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}_height")
+                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label="Width" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_width")
+                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label="Height" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_height")
                                     ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
-                                    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_ar", elem_classes=["ar-dropdown"])
+                                    ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_resize_ar", elem_classes=["ar-dropdown"])
                                     for c in [ar_dropdown, width, height]:
                                         c.change(fn=ar_change, inputs=[ar_dropdown, width, height], outputs=[width, height], show_progress=False)
-                                    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_res_switch_btn")
+                                    res_switch_btn = ToolButton(value=ui_symbols.switch, elem_id=f"{tab}_resize_switch_size_btn")
                                     res_switch_btn.click(lambda w, h: (h, w), inputs=[width, height], outputs=[width, height], show_progress=False)
-                                    detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_detect_image_size_btn")
+                                    detect_image_size_btn = ToolButton(value=ui_symbols.detect, elem_id=f"{tab}_resize_detect_size_btn")
                                     el = tab.split('_')[0]
                                     detect_image_size_btn.click(fn=lambda w, h, _: (w or gr.update(), h or gr.update()), _js=f'currentImageResolution{el}', inputs=[dummy_component, dummy_component, dummy_component], outputs=[width, height], show_progress=False)
                     with gr.Tab(label="Scale", id=1, elem_id=f"{tab}_scale_tab_scale") as tab_scale_by:

@@ -320,7 +320,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
     t0 = time.time()
     if resize_mode is None:
         resize_mode = 0
-    if resize_mode == 0 or (im.width == width and im.height == height): # none
+    if resize_mode == 0 or (im.width == width and im.height == height) or (width == 0 and height == 0): # none
         res = im.copy()
     elif resize_mode == 1: # fixed
         res = resize(im, width, height)
@@ -338,7 +338,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
     t1 = time.time()
-    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_filename}:{sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     return np.array(res) if output_type == 'np' else res
 
 

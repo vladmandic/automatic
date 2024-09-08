@@ -268,7 +268,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             self.is_hr_pass = True
             hypertile_set(self, hr=True)
             shared.state.job_count = 2 * self.n_iter
-            shared.log.debug(f'Init hires: upscaler="{self.hr_upscaler}" sampler="{self.hr_sampler_name}" resize={self.hr_resize_x}x{self.hr_resize_y} upscale={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
+        shared.log.debug(f'Init hires: upscaler="{self.hr_upscaler}" sampler="{self.hr_sampler_name}" resize={self.hr_resize_x}x{self.hr_resize_y} upscale={self.hr_upscale_to_x}x{self.hr_upscale_to_y}')
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
         from modules import processing_original
@@ -313,6 +313,11 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
         self.script_args = []
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
+        if self.init_images is not None and len(self.init_images) > 0:
+            if self.width is None or self.width == 0:
+                self.width = int(8 * (self.init_images[0].width * self.scale_by // 8))
+            if self.height is None or self.height == 0:
+                self.height = int(8 * (self.init_images[0].height * self.scale_by // 8))
         if shared.native and getattr(self, 'image_mask', None) is not None:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.INPAINTING)
         elif shared.native and getattr(self, 'init_images', None) is not None:
@@ -392,8 +397,6 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             if shared.opts.save_init_img:
                 images.save_image(img, path=shared.opts.outdir_init_images, basename=None, forced_filename=self.init_img_hash, suffix="-init-image")
             image = images.flatten(img, shared.opts.img2img_background_color)
-            if self.width is None or self.height is None:
-                self.width, self.height = image.width, image.height
             if crop_region is None and self.resize_mode > 0:
                 image = images.resize_image(self.resize_mode, image, self.width, self.height, upscaler_name=self.resize_name, context=self.resize_context)
                 self.width = image.width
@@ -511,7 +514,6 @@ class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
         self.is_hr_pass = True
         self.hr_force = force
         self.hr_upscaler = upscaler
-        use_scale = self.hr_resize_x == 0 or self.hr_resize_y == 0
         if use_scale:
             self.hr_upscale_to_x, self.hr_upscale_to_y = 8 * int(self.width * scale / 8), 8 * int(self.height * scale / 8)
         else:

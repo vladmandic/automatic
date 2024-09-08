@@ -18,18 +18,21 @@ import modules.ui_symbols as symbols
 
 def apply_field(field):
     def fun(p, x, xs):
+        shared.log.debug(f'XYZ grid apply field: {field}={x}')
         setattr(p, field, x)
     return fun
 
 
 def apply_task_args(field):
     def fun(p, x, xs):
+        shared.log.debug(f'XYZ grid apply task-arg: {field}={x}')
         p.task_args[field] = x
     return fun
 
 
 def apply_setting(field):
     def fun(p, x, xs):
+        shared.log.debug(f'XYZ grid apply setting: {field}={x}')
         shared.opts.data[field] = x
     return fun
 
@@ -40,6 +43,7 @@ def apply_prompt(p, x, xs):
     else:
         p.prompt = p.prompt.replace(xs[0], x)
         p.negative_prompt = p.negative_prompt.replace(xs[0], x)
+        shared.log.debug(f'XYZ grid apply prompt: "{xs[0]}"="{x}"')
 
 
 def apply_order(p, x, xs):
@@ -65,6 +69,7 @@ def apply_sampler(p, x, xs):
         shared.log.warning(f"XYZ grid: unknown sampler: {x}")
     else:
         p.sampler_name = sampler_name
+    shared.log.debug(f'XYZ grid apply sampler: "{x}"')
 
 
 def apply_hr_sampler_name(p, x, xs):
@@ -73,6 +78,7 @@ def apply_hr_sampler_name(p, x, xs):
         shared.log.warning(f"XYZ grid: unknown sampler: {x}")
     else:
         p.hr_sampler_name = hr_sampler_name
+    shared.log.debug(f'XYZ grid apply HR sampler: "{x}"')
 
 
 def confirm_samplers(p, xs):
@@ -90,6 +96,7 @@ def apply_checkpoint(p, x, xs):
     else:
         sd_models.reload_model_weights(shared.sd_model, info)
         p.override_settings['sd_model_checkpoint'] = info.name
+    shared.log.debug(f'XYZ grid apply checkpoint: "{x}"')
 
 
 def apply_refiner(p, x, xs):
@@ -103,6 +110,7 @@ def apply_refiner(p, x, xs):
     else:
         sd_models.reload_model_weights(shared.sd_refiner, info)
         p.override_settings['sd_model_refiner'] = info.name
+    shared.log.debug(f'XYZ grid apply refiner: "{x}"')
 
 
 def apply_dict(p, x, xs):
@@ -116,11 +124,13 @@ def apply_dict(p, x, xs):
         shared.opts.sd_model_dict = info_dict.name # this will trigger reload_model_weights via onchange handler
         p.override_settings['sd_model_checkpoint'] = info_ckpt.name
         p.override_settings['sd_model_dict'] = info_dict.name
+    shared.log.debug(f'XYZ grid apply model dict: "{x}"')
 
 
 def apply_clip_skip(p, x, xs):
     p.clip_skip = x
     shared.opts.data["clip_skip"] = x
+    shared.log.debug(f'XYZ grid apply clip-skip: "{x}"')
 
 
 def find_vae(name: str):
@@ -139,6 +149,7 @@ def find_vae(name: str):
 
 def apply_vae(p, x, xs):
     sd_vae.reload_vae_weights(shared.sd_model, vae_file=find_vae(x))
+    shared.log.debug(f'XYZ grid apply VAE: "{x}"')
 
 
 def list_lora():
@@ -153,15 +164,18 @@ def apply_lora(p, x, xs):
         return
     x = os.path.basename(x)
     p.prompt = p.prompt + f" <lora:{x}:{shared.opts.extra_networks_default_multiplier}>"
+    shared.log.debug(f'XYZ grid apply LoRA: "{x}"')
 
 
 def apply_te(p, x, xs):
     shared.opts.data["sd_text_encoder"] = x
     sd_models.reload_text_encoder()
+    shared.log.debug(f'XYZ grid apply text-encoder: "{x}"')
 
 
 def apply_styles(p: processing.StableDiffusionProcessingTxt2Img, x: str, _):
     p.styles.extend(x.split(','))
+    shared.log.debug(f'XYZ grid apply style: "{x}"')
 
 
 def apply_upscaler(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
@@ -169,11 +183,14 @@ def apply_upscaler(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
     p.hr_force = True
     p.denoising_strength = 0.0
     p.hr_upscaler = opt
+    shared.log.debug(f'XYZ grid apply upscaler: "{x}"')
 
 
 def apply_context(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
     p.resize_mode = 5
     p.resize_context = opt
+    shared.log.debug(f'XYZ grid apply resize-context: "{x}"')
+
 
 def apply_face_restore(p, opt, x):
     opt = opt.lower()
@@ -186,11 +203,13 @@ def apply_face_restore(p, opt, x):
     else:
         is_active = opt in ('true', 'yes', 'y', '1')
     p.restore_faces = is_active
+    shared.log.debug(f'XYZ grid apply face-restore: "{x}"')
 
 
 def apply_override(field):
     def fun(p, x, xs):
         p.override_settings[field] = x
+        shared.log.debug(f'XYZ grid apply override: "{field}"="{x}"')
     return fun
 
 

@@ -91,7 +91,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
   grid image can be disabled via settings -> user interface -> show grid  
   actual full-hdr image is not displayed in ui, only optionally saved to disk  
-- **hires** workflow now allows for full resize options, not just limited width/height/scale  
+- **hires** workflow now allows for full resize options  
+  not just limited width/height/scale  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
@@ -114,6 +115,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original  
 - fix model path typos  
+- fix guidance end handler  
 
 ## Update for 2024-08-31
 
