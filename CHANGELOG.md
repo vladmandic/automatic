@@ -99,7 +99,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
 - **xhinker** prompt parser handle offloaded models  
 - **control** better handle offloading
 - **control** upscale will use resize-to if set to non-zero values over resize-by  
-- **networks** add option `extra_networks_fetch` to choose if mouse-over on network should attempt to fetch additional info  
+- **networks** add option to choose if mouse-over on network should attempt to fetch additional info  
+  option:`extra_networks_fetch` enable/disable in *settings -> networks*  
 - speed up some garbage collection ops  
 - sampler settings add **dynamic shift**  
   used by flow-matching samplers to adjust between structure and details  
