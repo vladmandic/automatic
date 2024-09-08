@@ -34,6 +34,10 @@ def task_specific_kwargs(p, model):
             'image': p.init_images,
             'strength': p.denoising_strength,
         }
+        if model.__class__.__name__ == 'FluxImg2ImgPipeline': # needs explicit width/height
+            p.width = 8 * math.ceil(p.init_images[0].width / 8)
+            p.height = 8 * math.ceil(p.init_images[0].height / 8)
+            task_args['width'], task_args['height'] = p.width, p.height
     elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INSTRUCT and len(getattr(p, 'init_images', [])) > 0:
         p.ops.append('instruct')
         task_args = {
@@ -228,6 +232,15 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if args.get('cross_attention_kwargs', None) is None:
             args['cross_attention_kwargs'] = {}
         args['cross_attention_kwargs'][k] = v
+
+    # handle missing resolution
+    if args.get('image', None) is not None and ('width' not in args or 'height' not in args):
+        if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
+            args['width'] = 8 * args['image'].shape[-1]
+            args['height'] = 8 * args['image'].shape[-2]
+        else:
+            args['width'] = 8 * math.ceil(args['image'][0].width / 8)
+            args['height'] = 8 * math.ceil(args['image'][0].height / 8)
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:

@@ -82,10 +82,19 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             pipe._guidance_scale = 0.0  # pylint: disable=protected-access
             for key in {"prompt_embeds", "negative_prompt_embeds", "add_text_embeds", "add_time_ids"} & set(kwargs):
                 kwargs[key] = kwargs[key].chunk(2)[-1]
-    if hasattr(pipe, "_unpack_latents") and hasattr(pipe, "vae_scale_factor"): # FLUX
-        shared.state.current_latent = pipe._unpack_latents(kwargs['latents'], p.height, p.width, pipe.vae_scale_factor) # pylint: disable=protected-access
-    else:
-        shared.state.current_latent = kwargs['latents']
+    try:
+        if hasattr(pipe, "_unpack_latents") and hasattr(pipe, "vae_scale_factor"): # FLUX
+            if p.hr_upscaler is not None and p.hr_upscaler != 'None':
+                width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
+                height = max(getattr(p, 'height', 0), getattr(p, 'hr_upscale_to_y', 0))
+            else:
+                width = getattr(p, 'width', 0)
+                height = getattr(p, 'height', 0)
+            shared.state.current_latent = pipe._unpack_latents(kwargs['latents'], height, width, pipe.vae_scale_factor) # pylint: disable=protected-access
+        else:
+            shared.state.current_latent = kwargs['latents']
+    except Exception as e:
+        shared.log.error(f'Callback: {e}')
     if shared.cmd_opts.profile and shared.profiler is not None:
         shared.profiler.step()
     return kwargs

@@ -115,7 +115,7 @@ def taesd_vae_encode(image):
     return encoded
 
 
-def vae_decode(latents, model, output_type='np', full_quality=True):
+def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
     t0 = time.time()
     prev_job = shared.state.job
     shared.state.job = 'VAE'
@@ -129,11 +129,15 @@ def vae_decode(latents, model, output_type='np', full_quality=True):
     if not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
+    if hasattr(model, "_unpack_latents") and hasattr(model, "vae_scale_factor") and width is not None and height is not None: # FLUX
+        latents = model._unpack_latents(latents, height, width, model.vae_scale_factor) # pylint: disable=protected-access
     if len(latents.shape) == 3: # lost a batch dim in hires
         latents = latents.unsqueeze(0)
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
-    if full_quality:
+    if any(s >= 512 for s in latents.shape):
+        imgs = latents.float().cpu().numpy()
+    elif full_quality and hasattr(shared.sd_model, "vae"):
         decoded = full_vae_decode(latents=latents, model=shared.sd_model)
     else:
         decoded = taesd_vae_decode(latents=latents)

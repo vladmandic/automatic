@@ -383,13 +383,13 @@ def resize_init_images(p):
 def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler else latent
     if not torch.is_tensor(latents):
         shared.log.warning('Hires: input is not tensor')
-        first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+        first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
         return first_pass_images
     latent_upscaler = shared.latent_upscale_modes.get(p.hr_upscaler, None)
     # shared.log.info(f'Hires: upscaler={p.hr_upscaler} width={p.hr_upscale_to_x} height={p.hr_upscale_to_y} images={latents.shape[0]}')
     if latent_upscaler is not None:
         return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
-    first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+    first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
     if p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr'):
         shared.log.error('Hires: missing upscaling dimensions')
         return first_pass_images
@@ -531,7 +531,7 @@ def save_intermediate(p, latents, suffix):
     for i in range(len(latents)):
         from modules.processing import create_infotext
         info=create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, [], iteration=p.iteration, position_in_batch=i)
-        decoded = processing_vae.vae_decode(latents=latents, model=shared.sd_model, output_type='pil', full_quality=p.full_quality)
+        decoded = processing_vae.vae_decode(latents=latents, model=shared.sd_model, output_type='pil', full_quality=p.full_quality, width=p.width, height=p.height)
         for j in range(len(decoded)):
             images.save_image(decoded[j], path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix=suffix)
 

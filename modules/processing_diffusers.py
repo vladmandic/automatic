@@ -181,7 +181,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil') # controlnet cannnot deal with latent input
+                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
                     p.task_args['image'] = output.images # replace so hires uses new output
             sd_models.move_model(shared.sd_model, devices.device)
             orig_denoise = p.denoising_strength
@@ -246,8 +246,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             image = output.images[i]
             noise_level = round(350 * p.denoising_strength)
             output_type='latent' if hasattr(shared.sd_refiner, 'vae') else 'np'
-            if shared.sd_refiner.__class__.__name__ == 'StableDiffusionUpscalePipeline':
-                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux in shared.sd_refiner.__class__.__name__':
+                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
             if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
@@ -284,7 +284,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.log.info(e)
 
             if not shared.state.interrupted and not shared.state.skipped:
-                refiner_images = processing_vae.vae_decode(latents=refiner_output.images, model=shared.sd_refiner, full_quality=True)
+                refiner_images = processing_vae.vae_decode(latents=refiner_output.images, model=shared.sd_refiner, full_quality=True, width=max(p.width, p.hr_upscale_to_x), height=max(p.height, p.hr_upscale_to_y))
                 for refiner_image in refiner_images:
                     results.append(refiner_image)
 
@@ -303,12 +303,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
-            if hasattr(shared.sd_model, "_unpack_latents") and hasattr(shared.sd_model, "vae_scale_factor"): # FLUX
-                output.images = shared.sd_model._unpack_latents(output.images, p.height, p.width, shared.sd_model.vae_scale_factor) # pylint: disable=protected-access
-            if torch.is_tensor(output.images) and len(output.images) > 0 and any(s >= 512 for s in output.images.shape):
-                results = output.images.float().cpu().numpy()
-            elif hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality)
+            if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
+                if p.hr_upscaler is not None and p.hr_upscaler != 'None':
+                    width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
+                    height = max(getattr(p, 'height', 0), getattr(p, 'hr_upscale_to_y', 0))
+                else:
+                    width = getattr(p, 'width', 0)
+                    height = getattr(p, 'height', 0)
+                results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, width=width, height=height)
             elif hasattr(output, 'images'):
                 results = output.images
             else:

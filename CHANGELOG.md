@@ -1,13 +1,14 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-07
+## Update for 2024-09-08
 
-### Highlights for 2024-09-07
+### Highlights for 2024-09-08
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
 - Faster execution, more flexible loading, additional quantization options, and more...  
 - Added **image-to-image**, **inpaint**, **outpaint**, **hires** modes  
+- Added workflow where FLUX can be used as **refiner** for other models  
 - Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
   try enabling **NNCF** for quantization/compression on-the-fly!  
 
@@ -23,7 +24,7 @@ And few video related goodies...
 
 Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
-### Details for 2024-09-07
+### Details for 2024-09-08
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -46,6 +47,9 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   not recommended due to massive duplication of components, but added due to popular demand  
   each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
 - improve logging, warn when attempting to load unet as base model  
+- **refiner** support  
+  FLUX.1 can be used as refiner for other models such as sd/sdxl  
+  simply load sd/sdxl model as base and flux model as refiner and use as usual refiner workflow  
 - **img2img**, **inpaint** and **outpaint** support  
   *note* flux may require higher denoising strength than typical sd/sdxl models  
   *note*: img2img is not yet supported with controlnet  
