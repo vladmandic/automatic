@@ -116,6 +116,8 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
 - **modern-ui** add override field  
 - full **lint** updates  
 - use `diffusers` from main branch, no longer tied to release  
+- improve diffusers/transformers/huggingface_hub progress reporting  
+- use unique identifiers for all ui components  
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original  
 - fix model path typos  

@@ -179,7 +179,7 @@ def create_correction_inputs(tab):
     with gr.Accordion(open=False, label="Corrections", elem_id=f"{tab}_corrections", elem_classes=["small-accordion"], visible=shared.native):
         with gr.Group(visible=shared.native):
             with gr.Row(elem_id=f"{tab}_hdr_mode_row"):
-                hdr_mode = gr.Dropdown(label="Mode", choices=["Relative values", "Absolute values"], type="index", value="Relative values", elem_id=f"{tab}_hdr_mode", show_label=False)
+                hdr_mode = gr.Dropdown(label="Correction mode", choices=["Relative values", "Absolute values"], type="index", value="Relative values", elem_id=f"{tab}_hdr_mode", show_label=False)
                 gr.HTML('<br>')
             with gr.Row(elem_id=f"{tab}_correction_row"):
                 hdr_brightness = gr.Slider(minimum=-1.0, maximum=1.0, step=0.1, value=0,  label='Brightness', elem_id=f"{tab}_hdr_brightness")

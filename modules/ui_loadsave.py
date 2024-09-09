@@ -125,6 +125,8 @@ class UiLoadsave:
 
     def iter_changes(self, values):
         for i, name in enumerate(self.component_mapping):
+            # if '__init__' in name:
+            #    continue
             component = self.component_mapping[name]
             choices = getattr(component, 'choices', None)
             if type(choices) is list and len(choices) > 0: # fix gradio radio button choices being tuples
