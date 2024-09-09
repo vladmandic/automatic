@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-08
+## Update for 2024-09-09
 
-### Highlights for 2024-09-08
+### Highlights for 2024-09-09
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
@@ -25,7 +25,7 @@ And few video related goodies...
 
 Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
-### Details for 2024-09-08
+### Details for 2024-09-09
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -92,6 +92,7 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
   grid image can be disabled via settings -> user interface -> show grid  
   actual full-hdr image is not displayed in ui, only optionally saved to disk  
+- new scheduler: [DC Solver](https://github.com/wl-zhao/DC-Solver)  
 - **color grading** apply professional color grading to your images  
   using industry-standard *.cube* LUTs!
   enable via *scripts -> color-grading*  

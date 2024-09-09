@@ -5,8 +5,9 @@ import torchvision.transforms.functional as TF
 from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd
 
 
-debug = shared.log.trace if os.environ.get('SD_VAE_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: VAE')
+debug = os.environ.get('SD_VAE_DEBUG', None) is not None
+log_debug = shared.log.trace if debug else lambda *args, **kwargs: None
+log_debug('Trace: VAE')
 
 
 def create_latents(image, p, dtype=None, device=None):
@@ -33,6 +34,8 @@ def create_latents(image, p, dtype=None, device=None):
 
 def full_vae_decode(latents, model):
     t0 = time.time()
+    if debug:
+        shared.mem_mon.reset()
     base_device = None
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
@@ -78,14 +81,16 @@ def full_vae_decode(latents, model):
     elif shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
         sd_models.move_base(model, base_device)
     t1 = time.time()
-    debug(f'VAE decode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={upcast} images={latents.shape[0]} latents={latents.shape} time={round(t1-t0, 3)}')
+    if debug:
+        log_debug(f'VAE memory: {shared.mem_mon.read()}')
+    log_debug(f'VAE decode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={upcast} images={latents.shape[0]} latents={latents.shape} time={round(t1-t0, 3)}')
     return decoded
 
 
 def full_vae_encode(image, model):
-    debug(f'VAE encode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={model.vae.config.get("force_upcast", None)}')
+    log_debug(f'VAE encode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={model.vae.config.get("force_upcast", None)}')
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and hasattr(model, 'unet'):
-        debug('Moving to CPU: model=UNet')
+        log_debug('Moving to CPU: model=UNet')
         unet_device = model.unet.device
         sd_models.move_model(model.unet, devices.cpu)
     if not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
@@ -97,7 +102,7 @@ def full_vae_encode(image, model):
 
 
 def taesd_vae_decode(latents):
-    debug(f'VAE decode: name=TAESD images={len(latents)} latents={latents.shape} slicing={shared.opts.diffusers_vae_slicing}')
+    log_debug(f'VAE decode: name=TAESD images={len(latents)} latents={latents.shape} slicing={shared.opts.diffusers_vae_slicing}')
     if len(latents) == 0:
         return []
     if shared.opts.diffusers_vae_slicing and len(latents) > 1:
@@ -110,7 +115,7 @@ def taesd_vae_decode(latents):
 
 
 def taesd_vae_encode(image):
-    debug(f'VAE encode: name=TAESD image={image.shape}')
+    log_debug(f'VAE encode: name=TAESD image={image.shape}')
     encoded = sd_vae_taesd.encode(image)
     return encoded
 
@@ -148,7 +153,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         image_processor = diffusers.image_processor.VaeImageProcessor()
         imgs = image_processor.postprocess(decoded, output_type=output_type)
     shared.state.job = prev_job
-    if shared.cmd_opts.profile:
+    if shared.cmd_opts.profile or debug:
         t1 = time.time()
         shared.log.debug(f'Profile: VAE decode: {t1-t0:.2f}')
     devices.torch_gc()
