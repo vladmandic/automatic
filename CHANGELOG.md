@@ -119,6 +119,11 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
 - use `diffusers` from main branch, no longer tied to release  
 - improve diffusers/transformers/huggingface_hub progress reporting  
 - use unique identifiers for all ui components  
+- **visual query** (a.ka vqa or vlm) added support for several models
+  - [MiaoshouAI PromptGen 1.5 Base](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v1.5)
+  - [MiaoshouAI PromptGen 1.5 Large](https://huggingface.co/MiaoshouAI/Florence-2-large-PromptGen-v1.5)
+  - [CogFlorence 2.2 Large](https://huggingface.co/thwri/CogFlorence-2.2-Large)
+- **modernui** update  
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original  
 - fix model path typos  

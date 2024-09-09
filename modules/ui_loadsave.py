@@ -37,6 +37,8 @@ class UiLoadsave:
                 pass
             elif condition and not condition(saved_value):
                 pass
+            # elif getattr(obj, 'type', '') == 'index':
+            #     pass # may need special handling
             else:
                 setattr(obj, field, saved_value)
                 if init_field is not None:
