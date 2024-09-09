@@ -14,6 +14,7 @@ Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-la
 
 Few image related goodies...  
 - **Context-aware** resize that allows for *img2img/inpaint* even at massively different aspect ratios without distortions!
+- **LUT Color grading** apply professional color grading to your images using industry-standard *.cube* LUTs!
 - Auto **HDR** image create for SD and SDXL with both 16ch true-HDR and 8-ch HDR-effect images ;)  
 
 And few video related goodies...  
@@ -91,6 +92,9 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
   grid image can be disabled via settings -> user interface -> show grid  
   actual full-hdr image is not displayed in ui, only optionally saved to disk  
+- **color grading** apply professional color grading to your images  
+  using industry-standard *.cube* LUTs!
+  enable via *scripts -> color-grading*  
 - **hires** workflow now allows for full resize options  
   not just limited width/height/scale  
 - **taesd** configurable number of layers  
