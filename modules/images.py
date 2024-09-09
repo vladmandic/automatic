@@ -221,7 +221,7 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
     def latent(im, w, h, upscaler):
         from modules.processing_vae import vae_encode, vae_decode
         import torch
-        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode
+        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode for resize-latent
         latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
         im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
         return im

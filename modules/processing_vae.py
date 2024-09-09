@@ -124,6 +124,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     t0 = time.time()
     prev_job = shared.state.job
     shared.state.job = 'VAE'
+    decoded = None
     if not torch.is_tensor(latents): # already decoded
         return latents
     if latents.shape[0] == 0:
@@ -134,24 +135,28 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     if not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
+
     if hasattr(model, "_unpack_latents") and hasattr(model, "vae_scale_factor") and width is not None and height is not None: # FLUX
         latents = model._unpack_latents(latents, height, width, model.vae_scale_factor) # pylint: disable=protected-access
     if len(latents.shape) == 3: # lost a batch dim in hires
         latents = latents.unsqueeze(0)
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
-    if any(s >= 512 for s in latents.shape):
-        imgs = latents.float().cpu().numpy()
+
+    if any(s >= 512 for s in latents.shape): # not a latent, likely an image
+        decoded = latents.float().cpu().numpy()
     elif full_quality and hasattr(shared.sd_model, "vae"):
         decoded = full_vae_decode(latents=latents, model=shared.sd_model)
     else:
         decoded = taesd_vae_decode(latents=latents)
+
     if hasattr(model, 'image_processor'):
         imgs = model.image_processor.postprocess(decoded, output_type=output_type)
     else:
         import diffusers
-        image_processor = diffusers.image_processor.VaeImageProcessor()
-        imgs = image_processor.postprocess(decoded, output_type=output_type)
+        model.image_processor = diffusers.image_processor.VaeImageProcessor()
+        imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+
     shared.state.job = prev_job
     if shared.cmd_opts.profile or debug:
         t1 = time.time()

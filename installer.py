@@ -530,7 +530,7 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         #else:
-        # TODO TBD after ROCm for Windows is released
+        # TODO after ROCm for Windows is released
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')

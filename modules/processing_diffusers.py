@@ -179,7 +179,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
-            if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux in shared.sd_refiner.__class__.__name__':
+            if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__:
                 output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
@@ -248,7 +248,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             image = output.images[i]
             noise_level = round(350 * p.denoising_strength)
             output_type='latent' if hasattr(shared.sd_refiner, 'vae') else 'np'
-            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux in shared.sd_refiner.__class__.__name__':
+            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux' in shared.sd_refiner.__class__.__name__:
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'

@@ -13,6 +13,7 @@ exclude = [
     "modules/todo",
     "modules/unipc",
     "modules/xadapter",
+    "modules/dcsolver",
     "modules/intel/openvino",
     "modules/intel/ipex",
     "modules/segmoe",
