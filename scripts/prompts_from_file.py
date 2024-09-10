@@ -92,7 +92,7 @@ def load_prompt_file(file):
 
 class Script(scripts.Script):
     def title(self):
-        return "Prompts from File"
+        return "Prompts from file"
 
     def ui(self, is_img2img):
         with gr.Row():

@@ -39,7 +39,7 @@ def draw_xy_grid(xs, ys, x_label, y_label, cell):
 
 class Script(scripts.Script):
     def title(self):
-        return "Prompt Matrix"
+        return "Prompt matrix"
 
     def ui(self, is_img2img):
         with gr.Row():
