@@ -44,11 +44,11 @@ class Script(scripts.Script):
         input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.to(devices.device)
         self.model = self.model.to(devices.device)
         kwargs = {
-            'max_length': max_length,
-            'num_return_sequences': num_return_sequences,
+            'max_length': int(max_length),
+            'num_return_sequences': int(num_return_sequences),
             'do_sample': True,
-            'temperature': temperature,
-            'repetition_penalty': repetition_penalty
+            'temperature': float(temperature),
+            'repetition_penalty': float(repetition_penalty),
         }
         try:
             outputs = self.model.generate(input_ids, **kwargs)
