@@ -228,6 +228,11 @@ def test_bf16():
 def set_cuda_params():
     if debug:
         log.debug(f'Verifying Torch settings: cuda={cuda_ok}')
+    if backend == "ipex":
+        try:
+            torch.xpu.set_fp32_math_mode(mode=torch.xpu.FP32MathMode.TF32)
+        except Exception:
+            pass
     if cuda_ok:
         try:
             torch.backends.cuda.matmul.allow_tf32 = True
