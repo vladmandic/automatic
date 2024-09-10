@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-09
+## Update for 2024-09-10
 
-### Highlights for 2024-09-09
+### Highlights for 2024-09-10
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
@@ -23,9 +23,11 @@ And few video related goodies...
 - [AnimateDiff](https://github.com/guoyww/animatediff/) **prompt travel** and **long context windows**!  
   create video which travels between different prompts and at long video lengths!  
 
-Plus tons of minor items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
+Plus tons of other items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
+Examples:
+- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, etc.
 
-### Details for 2024-09-09
+### Details for 2024-09-10
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -98,6 +100,9 @@ Plus tons of minor items and fixes - see [changelog](https://github.com/vladmand
   enable via *scripts -> color-grading*  
 - **hires** workflow now allows for full resize options  
   not just limited width/height/scale  
+- **prompt enhance**: improve quality and/or verbosity of your prompts  
+  simply select in *scripts -> prompt enhance*
+  uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
