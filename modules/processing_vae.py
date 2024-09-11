@@ -82,6 +82,7 @@ def full_vae_decode(latents, model):
         sd_models.move_base(model, base_device)
     t1 = time.time()
     if debug:
+        log_debug(f'VAE config: {model.vae.config}')
         log_debug(f'VAE memory: {shared.mem_mon.read()}')
     log_debug(f'VAE decode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={upcast} images={latents.shape[0]} latents={latents.shape} time={round(t1-t0, 3)}')
     return decoded

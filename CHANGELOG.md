@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-10
+## Update for 2024-09-11
 
-### Highlights for 2024-09-10
+### Highlights for 2024-09-11
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
@@ -27,7 +27,7 @@ Plus tons of other items and fixes - see [changelog](https://github.com/vladmand
 Examples:
 - Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, etc.
 
-### Details for 2024-09-10
+### Details for 2024-09-11
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -129,6 +129,8 @@ Examples:
   - [MiaoshouAI PromptGen 1.5 Large](https://huggingface.co/MiaoshouAI/Florence-2-large-PromptGen-v1.5)
   - [CogFlorence 2.2 Large](https://huggingface.co/thwri/CogFlorence-2.2-Large)
 - **modernui** update  
+- **zluda** update to 3.8.4, thanks @lshqqytiger
+- update `requirements`
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original  
 - fix model path typos  
