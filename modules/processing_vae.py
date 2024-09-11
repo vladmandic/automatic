@@ -35,6 +35,7 @@ def create_latents(image, p, dtype=None, device=None):
 def full_vae_decode(latents, model):
     t0 = time.time()
     if debug:
+        devices.torch_gc(force=True)
         shared.mem_mon.reset()
     base_device = None
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
