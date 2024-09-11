@@ -682,7 +682,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
-            shared.log.debug(f'Setting {op} VAE: name={sd_vae.loaded_vae_file}')
+            shared.log.debug(f'Setting {op} VAE: name="{sd_vae.loaded_vae_file}"')
         if shared.opts.diffusers_vae_upcast != 'default':
             sd_model.vae.config.force_upcast = True if shared.opts.diffusers_vae_upcast == 'true' else False
             shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.force_upcast}')
@@ -1234,6 +1234,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     else:
                         model_config = get_load_config(checkpoint_info.path, model_type, config_type='json')
                         if model_config is not None:
+                            if debug_load:
+                                shared.log.debug(f'Model config: path="{model_config}"')
                             diffusers_load_config['config_files'] = model_config
                 if model_type.startswith('Stable Diffusion 3'):
                     from modules.model_sd3 import load_sd3
@@ -1257,6 +1259,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 else:
                     shared.log.error(f'Diffusers {op} cannot load safetensor model: {checkpoint_info.path} {shared.opts.diffusers_pipeline}')
                     return
+                if shared.opts.diffusers_vae_upcast != 'default' and model_type in ['Stable Diffusion', 'Stable Diffusion XL']:
+                    diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
                 if debug_load:
                     shared.log.debug(f'Model args: {diffusers_load_config}')
                 if sd_model is not None:

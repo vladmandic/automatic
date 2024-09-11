@@ -438,7 +438,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '8cdcdd9e32925200ce5e1cf410fe14a774f3c3a6'
+    sha = '5e1427a7da6e878b958fd5a2422c7763a94ff02b'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''

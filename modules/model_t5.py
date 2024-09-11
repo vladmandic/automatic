@@ -4,6 +4,7 @@ import torch
 import transformers
 from safetensors.torch import load_file
 from modules import shared, devices, files_cache
+from installer import install
 
 
 t5_dict = {}
@@ -11,6 +12,7 @@ t5_dict = {}
 
 def load_t5(t5=None, cache_dir=None):
     from modules import modelloader
+    modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     fn = t5_dict.get(t5) if t5 in t5_dict else None
     if fn is not None:
@@ -34,30 +36,21 @@ def load_t5(t5=None, cache_dir=None):
                 shared.log.error(f"FLUX: Failed to cast text encoder to {devices.dtype}, set dtype to {t5.dtype}")
                 raise
     elif 'fp16' in t5.lower():
-        modelloader.hf_login()
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'fp4' in t5.lower():
-        modelloader.hf_login()
-        from installer import install
         install('bitsandbytes', quiet=True)
         quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'fp8' in t5.lower():
-        modelloader.hf_login()
-        from installer import install
         install('bitsandbytes', quiet=True)
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'qint8' in t5.lower():
-        modelloader.hf_login()
-        from installer import install
         install('optimum-quanto', quiet=True)
         from modules.sd_models_compile import optimum_quanto_model
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
         t5 = optimum_quanto_model(t5, weights="qint8", activations="none")
     elif 'int8' in t5.lower():
-        modelloader.hf_login()
-        from installer import install
         install('nncf==2.7.0', quiet=True)
         from modules.sd_models_compile import nncf_compress_model
         from modules.sd_hijack import NNCF_T5DenseGatedActDense
