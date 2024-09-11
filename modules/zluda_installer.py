@@ -24,7 +24,7 @@ def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", "1c238a959f2aafdb9900f6801b61d9c0318040a2")}/ZLUDA-windows-rocm{rocm.version[0]}-amd64.zip', '_zluda')
+    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", "c0804ca624963aab420cb418412b1c7fbae3454b")}/ZLUDA-windows-rocm{rocm.version[0]}-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:
@@ -49,6 +49,8 @@ def make_copy(zluda_path: os.PathLike) -> None:
 
 
 def load(zluda_path: os.PathLike) -> None:
+    os.environ["ZLUDA_COMGR_LOG_LEVEL"] = "1"
+
     for v in HIPSDK_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
     for v in ZLUDA_TARGETS:
