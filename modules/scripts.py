@@ -545,7 +545,9 @@ class ScriptRunner:
             try:
                 if (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
-                    processed = script.process_images(p, *args, **kwargs)
+                    _processed = script.process_images(p, *args, **kwargs)
+                    if _processed is not None:
+                        processed = _processed
             except Exception as e:
                 errors.display(e, f'Running script process images: {script.filename}')
             s.record(script.title())

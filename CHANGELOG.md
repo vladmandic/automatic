@@ -25,7 +25,7 @@ And few video related goodies...
 
 Plus tons of other items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 Examples:
-- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, etc.
+- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, global XYZ grid management, etc.
 
 ### Details for 2024-09-12
 
@@ -100,6 +100,7 @@ Examples:
   enable via *scripts -> color-grading*  
 - **hires** workflow now allows for full resize options  
   not just limited width/height/scale  
+- **xyz grid** is now availabe as both local and global script!
 - **prompt enhance**: improve quality and/or verbosity of your prompts  
   simply select in *scripts -> prompt enhance*
   uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
