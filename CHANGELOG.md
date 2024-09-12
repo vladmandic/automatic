@@ -108,8 +108,9 @@ Examples:
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
   set via *settings -> live preview -> taesd decode layers*  
 - **xhinker** prompt parser handle offloaded models  
-- **control** better handle offloading
-- **control** upscale will use resize-to if set to non-zero values over resize-by  
+- **control** better handle offloading  
+- **upscale** will use resize-to if set to non-zero values over resize-by  
+  applies to any upscale options, including refine workflow  
 - **networks** add option to choose if mouse-over on network should attempt to fetch additional info  
   option:`extra_networks_fetch` enable/disable in *settings -> networks*  
 - speed up some garbage collection ops  
@@ -131,6 +132,7 @@ Examples:
 - **modernui** update  
 - **zluda** update to 3.8.4, thanks @lshqqytiger
 - update `requirements`
+- fix **AuraFlow**  
 - fix handling of model configs if offline config is not available  
 - fix vae decode in backend original  
 - fix model path typos  

@@ -1236,7 +1236,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         if model_config is not None:
                             if debug_load:
                                 shared.log.debug(f'Model config: path="{model_config}"')
-                            diffusers_load_config['config_files'] = model_config
+                            diffusers_load_config['config'] = model_config
                 if model_type.startswith('Stable Diffusion 3'):
                     from modules.model_sd3 import load_sd3
                     sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
@@ -1566,6 +1566,10 @@ def set_diffusers_attention(pipe):
                 module.set_attn_processor(p.FluxAttnProcessor2_0())
             elif module.__class__.__name__ in ['HunyuanDiT2DModel']:
                 module.set_attn_processor(p.HunyuanAttnProcessor2_0())
+            elif module.__class__.__name__ in ['AuraFlowTransformer2DModel']:
+                module.set_attn_processor(p.AuraFlowAttnProcessor2_0())
+            elif 'Transformer' in module.__class__.__name__:
+                pass # unknown transformer so probably dont want to force attention processor
             else:
                 module.set_attn_processor(attention)
 
