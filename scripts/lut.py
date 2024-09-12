@@ -10,7 +10,7 @@ from modules import scripts, shared, processing
 
 class Script(scripts.Script):
     def title(self):
-        return 'Color grading'
+        return 'LUT Color grading'
 
     def show(self, is_img2img):
         return shared.native

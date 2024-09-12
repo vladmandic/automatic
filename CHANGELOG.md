@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-11
+## Update for 2024-09-12
 
-### Highlights for 2024-09-11
+### Highlights for 2024-09-12
 
 Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
 - Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
@@ -27,7 +27,7 @@ Plus tons of other items and fixes - see [changelog](https://github.com/vladmand
 Examples:
 - Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, etc.
 
-### Details for 2024-09-11
+### Details for 2024-09-12
 
 **Major refactor of FLUX.1 support:**
 - allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
@@ -135,6 +135,7 @@ Examples:
 - fix vae decode in backend original  
 - fix model path typos  
 - fix guidance end handler  
+- fix script sorting  
 
 ## Update for 2024-08-31
 
