@@ -132,6 +132,8 @@ Examples:
   - [CogFlorence 2.2 Large](https://huggingface.co/thwri/CogFlorence-2.2-Large)
 - **modernui** update  
 - **zluda** update to 3.8.4, thanks @lshqqytiger
+- **ipex** update to 2.3.110+xpu on linux, thanks @Disty0!
+- **openvino** update to 2024.3.0, thanks @Disty0!
 - update `requirements`
 - fix **AuraFlow**  
 - fix handling of model configs if offline config is not available  
