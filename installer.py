@@ -585,19 +585,19 @@ def install_ipex(torch_command):
                 install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.13.0'), 'oneccl-devel')
                 install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.13.0'), 'impi-devel')
         torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino', ignore=True)
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', 'nncf', ignore=True)
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     return torch_command
 
 
 def install_openvino(torch_command):
-    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
+    check_python(supported_minors=[8, 9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('Using OpenVINO')
-    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
+    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu')
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino')
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
-    install('nncf==2.8.1', 'nncf')
+    install('nncf==2.12.0', 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')

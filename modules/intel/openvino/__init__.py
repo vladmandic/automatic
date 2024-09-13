@@ -12,6 +12,7 @@ from torch._dynamo.backends.common import fake_tensor_unsupported
 from torch._dynamo.backends.registry import register_backend
 from torch.fx.experimental.proxy_tensor import make_fx
 from torch.fx import GraphModule
+from torch._subclasses.fake_tensor import FakeTensorMode
 from torch.utils._pytree import tree_flatten
 
 from types import MappingProxyType
@@ -21,32 +22,13 @@ import functools
 from modules import shared, devices, sd_models
 
 
-def BUILD_MAP_UNPACK(self, inst):
-        items = self.popn(inst.argval)
-        # ensure everything is a dict
-        items = [BuiltinVariable(dict).call_function(self, [x], {}) for x in items] # noqa: F821
-        result = dict()
-        for x in items:
-            assert isinstance(x, ConstDictVariable) # noqa: F821
-        result.update(x.items)
-        self.push(
-            ConstDictVariable( # noqa: F821
-                result,
-                dict,
-                mutable_local=MutableLocal(), # noqa: F821
-                **VariableTracker.propagate(items), # noqa: F821
-            )
-        )
-tmp_torch = sys.modules["torch"]
-tmp_torch.BUILD_MAP_UNPACK_WITH_CALL = BUILD_MAP_UNPACK
-max_openvino_partitions = 0
-
 DEFAULT_OPENVINO_PYTHON_CONFIG = MappingProxyType(
     {
         "use_python_fusion_cache": True,
         "allow_single_op_fusion": True,
     },
 )
+
 
 class OpenVINOGraphModule(torch.nn.Module):
     def __init__(self, gm, partition_id, use_python_fusion_cache, model_hash_str: str = None, file_name=""):
@@ -61,9 +43,11 @@ class OpenVINOGraphModule(torch.nn.Module):
         result = openvino_execute(self.gm, *args, executor_parameters=self.executor_parameters, partition_id=self.partition_id, file_name=self.file_name)
         return result
 
+
 def get_device_list():
     core = Core()
     return core.available_devices
+
 
 def get_device():
     if hasattr(shared, "opts") and len(shared.opts.openvino_devices) == 1:
@@ -96,12 +80,14 @@ def get_device():
         shared.log.warning(f"OpenVINO: No compatible GPU detected! Using {device}")
     return device
 
+
 def get_openvino_device():
     core = Core()
     try:
         return core.get_property(get_device(), "FULL_DEVICE_NAME")
     except Exception:
         return f"OpenVINO {get_device()}"
+
 
 def cached_model_name(model_hash_str, device, args, cache_root, reversed = False):
     if model_hash_str is None:
@@ -120,9 +106,14 @@ def cached_model_name(model_hash_str, device, args, cache_root, reversed = False
     for input_data in args:
         if isinstance(input_data, torch.SymInt):
             if reversed:
-                inputs_str = "_" + "torch.SymInt" + inputs_str
+                inputs_str = "_" + "torch.SymInt1" + inputs_str
             else:
                 inputs_str += "_" + "torch.SymInt1"
+        elif isinstance(input_data, int):
+            if reversed:
+                inputs_str = "_" + "int" + inputs_str
+            else:
+                inputs_str += "_" + "int"
         else:
             if reversed:
                 inputs_str = "_" + str(input_data.type()) + str(input_data.size())[11:-1].replace(" ", "") + inputs_str
@@ -133,18 +124,6 @@ def cached_model_name(model_hash_str, device, args, cache_root, reversed = False
 
     return file_name
 
-def check_fully_supported(self, graph_module: GraphModule) -> bool:
-    num_fused = 0
-    for node in graph_module.graph.nodes:
-        if node.op == "call_module" and "fused_" in node.name:
-            num_fused += 1
-        elif node.op != "placeholder" and node.op != "output":
-            return False
-    if num_fused == 1:
-        return True
-    return False
-
-Partitioner.check_fully_supported = functools.partial(check_fully_supported, Partitioner)
 
 def execute(
     gm,
@@ -160,6 +139,7 @@ def execute(
 
     msg = "Received unexpected value for 'executor': {0}. Allowed values are: openvino, strictly_openvino.".format(executor)
     raise ValueError(msg)
+
 
 def execute_cached(compiled_model, *args):
     flat_args, _ = tree_flatten(args)
@@ -192,18 +172,21 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         for input_data in example_inputs:
             if isinstance(input_data, torch.SymInt):
                 input_types.append(torch.SymInt)
-                input_shapes.append(1)
+                input_shapes.append(torch.Size([1]))
+            elif isinstance(input_data, int):
+                input_types.append(torch.int64)
+                input_shapes.append(torch.Size([1]))
             else:
                 input_types.append(input_data.type())
                 input_shapes.append(input_data.size())
 
-        decoder = TorchFXPythonDecoder(gm, gm, input_shapes=input_shapes, input_types=input_types)
+        decoder = TorchFXPythonDecoder(gm, input_shapes=input_shapes, input_types=input_types)
 
         im = fe.load(decoder)
 
         om = fe.convert(im)
 
-        if (file_name is not None):
+        if file_name is not None:
             serialize(om, file_name + ".xml", file_name + ".bin")
             if (shared.compiled_model_state.cn_model != []):
                 f = open(file_name + ".txt", "w")
@@ -224,8 +207,12 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
     }
 
     for idx, input_data in enumerate(example_inputs):
-        om.inputs[idx].get_node().set_element_type(dtype_mapping[input_data.dtype])
-        om.inputs[idx].get_node().set_partial_shape(PartialShape(list(input_data.shape)))
+        if isinstance(input_data, int):
+            om.inputs[idx].get_node().set_element_type(dtype_mapping[torch.int64])
+            om.inputs[idx].get_node().set_partial_shape(PartialShape(list(torch.Size([1]))))
+        else:
+            om.inputs[idx].get_node().set_element_type(dtype_mapping[input_data.dtype])
+            om.inputs[idx].get_node().set_partial_shape(PartialShape(list(input_data.shape)))
     om.validate_nodes_and_infer_types()
 
     if shared.opts.nncf_quantize and not dont_use_quant:
@@ -255,6 +242,7 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
 
     compiled_model = core.compile_model(om, device)
     return compiled_model
+
 
 def openvino_compile_cached_model(cached_model_path, *example_inputs):
     core = Core()
@@ -306,6 +294,7 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
     compiled_model = core.compile_model(om, get_device())
     return compiled_model
 
+
 def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition_id, file_name=""):
     executor_parameters = executor_parameters or DEFAULT_OPENVINO_PYTHON_CONFIG
 
@@ -320,6 +309,7 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
 
     if use_cache and (partition_id in shared.compiled_model_state.compiled_cache):
         compiled = shared.compiled_model_state.compiled_cache[partition_id]
+        req = shared.compiled_model_state.req_cache[partition_id]
     else:
         if (shared.compiled_model_state.cn_model != [] and file_name is not None
                 and os.path.isfile(file_name + ".xml") and os.path.isfile(file_name + ".bin")):
@@ -327,16 +317,21 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
         else:
             compiled = openvino_compile(gm, *args, model_hash_str=model_hash_str, file_name=file_name)
         shared.compiled_model_state.compiled_cache[partition_id] = compiled
+        req = compiled.create_infer_request()
+        shared.compiled_model_state.req_cache[partition_id] = req
 
     flat_args, _ = tree_flatten(args)
-    ov_inputs = [a.detach().cpu().numpy() for a in flat_args]
+    ov_inputs = []
+    for arg in flat_args:
+        ov_inputs.append((arg if isinstance(arg, int) else arg.detach().cpu().numpy()))
 
-    res = compiled(ov_inputs)
+    res = req.infer(ov_inputs, share_inputs=True, share_outputs=True)
 
     results1 = [torch.from_numpy(res[out]) for out in compiled.outputs]
     if len(results1) == 1:
         return results1[0]
     return results1
+
 
 def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=None, file_name=""):
     executor_parameters = executor_parameters or DEFAULT_OPENVINO_PYTHON_CONFIG
@@ -360,8 +355,8 @@ def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=Non
 
     return shared.compiled_model_state.partitioned_modules[signature](*args)
 
+
 def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_str: str = None, file_name=""):
-    global max_openvino_partitions
     for node in gm.graph.nodes:
         if node.op == "call_module" and "fused_" in node.name:
             openvino_submodule = getattr(gm, node.name)
@@ -375,15 +370,18 @@ def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_s
 
     return gm
 
+
 def generate_subgraph_str(tensor):
     if hasattr(tensor, "weight"):
         shared.compiled_model_state.model_hash_str = shared.compiled_model_state.model_hash_str + sha256(str(tensor.weight).encode('utf-8')).hexdigest()
     return tensor
 
+
 def get_subgraph_type(tensor):
     global subgraph_type
     subgraph_type.append(type(tensor))
     return tensor
+
 
 @register_backend
 @fake_tensor_unsupported
@@ -483,14 +481,15 @@ def openvino_fx(subgraph, example_inputs):
 
     if inputs_reversed:
         example_inputs.reverse()
-    model = make_fx(subgraph)(*example_inputs)
+    with FakeTensorMode(allow_non_fake_inputs=True):
+        model = make_fx(subgraph)(*example_inputs)
     for node in model.graph.nodes:
         if node.target == torch.ops.aten.mul_.Tensor:
             node.target = torch.ops.aten.mul.Tensor
     with devices.inference_context():
         model.eval()
-    partitioner = Partitioner()
-    compiled_model = partitioner.make_partitions(model)
+    partitioner = Partitioner(options=None)
+    compiled_model = partitioner.make_partitions(model, options=None)
 
     if executor_parameters is not None and 'model_hash_str' in executor_parameters:
         # Check if the model is fully supported.
@@ -499,7 +498,6 @@ def openvino_fx(subgraph, example_inputs):
             executor_parameters["model_hash_str"] += "_fs"
 
     def _call(*args):
-        res = execute(compiled_model, *args, executor="openvino",
-                        executor_parameters=executor_parameters, file_name=maybe_fs_cached_name)
+        res = execute(compiled_model, *args, executor="openvino", executor_parameters=executor_parameters, file_name=maybe_fs_cached_name)
         return res
     return _call

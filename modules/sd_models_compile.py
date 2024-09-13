@@ -21,6 +21,7 @@ class CompiledModelState:
         self.cn_model = []
         self.lora_model = []
         self.compiled_cache = {}
+        self.req_cache = {}
         self.partitioned_modules = {}
 
 
@@ -79,13 +80,29 @@ def apply_compile_to_model(sd_model, function, options, op=None):
             sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder, op="prior_pipe.text_encoder", sd_model=sd_model)
     if "VAE" in options:
         if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-            sd_model.vae = function(sd_model.vae, op="vae", sd_model=sd_model)
+            if op == "compile":
+                sd_model.vae.decode = function(sd_model.vae.decode, op="vae_decode", sd_model=sd_model)
+                sd_model.vae.encode = function(sd_model.vae.encode, op="vae_encode", sd_model=sd_model)
+            else:
+                sd_model.vae = function(sd_model.vae, op="vae", sd_model=sd_model)
         if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-            sd_model.movq = function(sd_model.movq, op="movq", sd_model=sd_model)
+            if op == "compile":
+                sd_model.movq.decode = function(sd_model.movq.decode, op="movq_decode", sd_model=sd_model)
+                sd_model.movq.encode = function(sd_model.movq.encode, op="movq_encode", sd_model=sd_model)
+            else:
+                sd_model.movq = function(sd_model.movq, op="movq", sd_model=sd_model)
         if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-            sd_model.vqgan = function(sd_model.vqgan, op="vqgan", sd_model=sd_model)
+            if op == "compile":
+                sd_model.vqgan.decode = function(sd_model.vqgan.decode, op="vqgan_decode", sd_model=sd_model)
+                sd_model.vqgan.encode = function(sd_model.vqgan.encode, op="vqgan_encode", sd_model=sd_model)
+            else:
+                sd_model.vqgan = function(sd_model.vqgan, op="vqgan", sd_model=sd_model)
             if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'vqgan'):
-                sd_model.decoder_pipe.vqgan = sd_model.vqgan
+                if op == "compile":
+                    sd_model.decoder_pipe.vqgan.decode = function(sd_model.decoder_pipe.vqgan.decode, op="vqgan_decode", sd_model=sd_model)
+                    sd_model.decoder_pipe.vqgan.encode = function(sd_model.decoder_pipe.vqgan.encode, op="vqgan_encode", sd_model=sd_model)
+                else:
+                    sd_model.decoder_pipe.vqgan = sd_model.vqgan
         if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
             sd_model.image_encoder = function(sd_model.image_encoder, op="image_encoder", sd_model=sd_model)
 
@@ -289,6 +306,7 @@ def optimize_openvino(sd_model):
         torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
         if shared.compiled_model_state is not None:
             shared.compiled_model_state.compiled_cache.clear()
+            shared.compiled_model_state.req_cache.clear()
             shared.compiled_model_state.partitioned_modules.clear()
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
@@ -381,7 +399,7 @@ def compile_torch(sd_model):
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
         def torch_compile_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
-            if model.device.type != "meta":
+            if hasattr(model, "device") and model.device.type != "meta":
                 return_device = model.device
                 model = torch.compile(model.to(devices.device),
                     mode=shared.opts.cuda_compile_mode,
