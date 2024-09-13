@@ -3,7 +3,7 @@ import time
 import logging
 import torch
 from modules import shared, devices, sd_models
-from installer import setup_logging
+from installer import install, setup_logging
 
 
 #Used by OpenVINO, can be used with TensorRT or Olive
@@ -21,6 +21,7 @@ class CompiledModelState:
         self.cn_model = []
         self.lora_model = []
         self.compiled_cache = {}
+        self.req_cache = {}
         self.partitioned_modules = {}
 
 
@@ -79,13 +80,29 @@ def apply_compile_to_model(sd_model, function, options, op=None):
             sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder, op="prior_pipe.text_encoder", sd_model=sd_model)
     if "VAE" in options:
         if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
-            sd_model.vae = function(sd_model.vae, op="vae", sd_model=sd_model)
+            if op == "compile":
+                sd_model.vae.decode = function(sd_model.vae.decode, op="vae_decode", sd_model=sd_model)
+                sd_model.vae.encode = function(sd_model.vae.encode, op="vae_encode", sd_model=sd_model)
+            else:
+                sd_model.vae = function(sd_model.vae, op="vae", sd_model=sd_model)
         if hasattr(sd_model, 'movq') and hasattr(sd_model.movq, 'decode'):
-            sd_model.movq = function(sd_model.movq, op="movq", sd_model=sd_model)
+            if op == "compile":
+                sd_model.movq.decode = function(sd_model.movq.decode, op="movq_decode", sd_model=sd_model)
+                sd_model.movq.encode = function(sd_model.movq.encode, op="movq_encode", sd_model=sd_model)
+            else:
+                sd_model.movq = function(sd_model.movq, op="movq", sd_model=sd_model)
         if hasattr(sd_model, 'vqgan') and hasattr(sd_model.vqgan, 'decode'):
-            sd_model.vqgan = function(sd_model.vqgan, op="vqgan", sd_model=sd_model)
+            if op == "compile":
+                sd_model.vqgan.decode = function(sd_model.vqgan.decode, op="vqgan_decode", sd_model=sd_model)
+                sd_model.vqgan.encode = function(sd_model.vqgan.encode, op="vqgan_encode", sd_model=sd_model)
+            else:
+                sd_model.vqgan = function(sd_model.vqgan, op="vqgan", sd_model=sd_model)
             if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'vqgan'):
-                sd_model.decoder_pipe.vqgan = sd_model.vqgan
+                if op == "compile":
+                    sd_model.decoder_pipe.vqgan.decode = function(sd_model.decoder_pipe.vqgan.decode, op="vqgan_decode", sd_model=sd_model)
+                    sd_model.decoder_pipe.vqgan.encode = function(sd_model.decoder_pipe.vqgan.encode, op="vqgan_encode", sd_model=sd_model)
+                else:
+                    sd_model.decoder_pipe.vqgan = sd_model.vqgan
         if hasattr(sd_model, 'image_encoder') and hasattr(sd_model.image_encoder, 'config'):
             sd_model.image_encoder = function(sd_model.image_encoder, op="image_encoder", sd_model=sd_model)
 
@@ -165,7 +182,6 @@ def nncf_compress_weights(sd_model):
         t0 = time.time()
         shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
-        from installer import install
         install('nncf==2.7.0', quiet=True)
 
         sd_model = apply_compile_to_model(sd_model, nncf_compress_model, shared.opts.nncf_compress_weights, op="nncf")
@@ -233,7 +249,6 @@ def optimum_quanto_weights(sd_model):
         t0 = time.time()
         shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
-        from installer import install
         install('optimum-quanto', quiet=True)
         from optimum import quanto # pylint: disable=no-name-in-module
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
@@ -291,6 +306,7 @@ def optimize_openvino(sd_model):
         torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
         if shared.compiled_model_state is not None:
             shared.compiled_model_state.compiled_cache.clear()
+            shared.compiled_model_state.req_cache.clear()
             shared.compiled_model_state.partitioned_modules.clear()
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
@@ -383,7 +399,7 @@ def compile_torch(sd_model):
         shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
         def torch_compile_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
-            if model.device.type != "meta":
+            if hasattr(model, "device") and model.device.type != "meta":
                 return_device = model.device
                 model = torch.compile(model.to(devices.device),
                     mode=shared.opts.cuda_compile_mode,
@@ -423,7 +439,7 @@ def compile_torch(sd_model):
         except Exception as e:
             shared.log.error(f"Torch inductor config error: {e}")
 
-        sd_model = apply_compile_to_model(sd_model, torch_compile_model, shared.opts.cuda_compile, op="compile")
+        sd_model = apply_compile_to_model(sd_model, function=torch_compile_model, options=shared.opts.cuda_compile, op="compile")
 
         setup_logging() # compile messes with logging so reset is needed
         if shared.opts.cuda_compile_precompile:
@@ -464,7 +480,7 @@ def compile_deepcache(sd_model):
 
 
 def compile_diffusers(sd_model):
-    if not shared.opts.cuda_compile:
+    if 'Model' not in shared.opts.cuda_compile:
         return sd_model
     if shared.opts.cuda_compile_backend == 'none':
         shared.log.warning('Model compile enabled but no backend specified')
@@ -484,11 +500,14 @@ def compile_diffusers(sd_model):
 
 def dynamic_quantization(sd_model):
     try:
-        from torchao.quantization import quant_api
+        install('torchao', quiet=True)
+        from torchao.quantization import autoquant
     except Exception as e:
         shared.log.error(f"Model dynamic quantization not supported: {e}")
         return sd_model
 
+    """
+    from torchao.quantization import quant_api
     def dynamic_quant_filter_fn(mod, *args): # pylint: disable=unused-argument
         return (isinstance(mod, torch.nn.Linear) and mod.in_features > 16 and (mod.in_features, mod.out_features)
                 not in [(1280, 640), (1920, 1280), (1920, 640), (2048, 1280), (2048, 2560), (2560, 1280), (256, 128), (2816, 1280), (320, 640), (512, 1536), (512, 256), (512, 512), (640, 1280), (640, 1920), (640, 320), (640, 5120), (640, 640), (960, 320), (960, 640)])
@@ -496,19 +515,28 @@ def dynamic_quantization(sd_model):
     def conv_filter_fn(mod, *args): # pylint: disable=unused-argument
         return (isinstance(mod, torch.nn.Conv2d) and mod.kernel_size == (1, 1) and 128 in [mod.in_channels, mod.out_channels])
 
+    quant_api.swap_conv2d_1x1_to_linear(sd_model.unet, conv_filter_fn)
+    quant_api.swap_conv2d_1x1_to_linear(sd_model.vae, conv_filter_fn)
+    quant_api.apply_dynamic_quant(sd_model.unet, dynamic_quant_filter_fn)
+    quant_api.apply_dynamic_quant(sd_model.vae, dynamic_quant_filter_fn)
+    """
+
     shared.log.info(f"Model dynamic quantization: pipeline={sd_model.__class__.__name__}")
     try:
-        quant_api.swap_conv2d_1x1_to_linear(sd_model.unet, conv_filter_fn)
-        quant_api.swap_conv2d_1x1_to_linear(sd_model.vae, conv_filter_fn)
-        quant_api.apply_dynamic_quant(sd_model.unet, dynamic_quant_filter_fn)
-        quant_api.apply_dynamic_quant(sd_model.vae, dynamic_quant_filter_fn)
+        if shared.sd_model_type == 'sd' or shared.sd_model_type == 'sdxl':
+            sd_model.unet = sd_model.unet.to(devices.device)
+            sd_model.unet = autoquant(sd_model.unet, error_on_unseen=False)
+        elif shared.sd_model_type == 'f1':
+            sd_model.transformer = autoquant(sd_model.transformer, error_on_unseen=False)
+        else:
+            shared.log.error(f"Model dynamic quantization not supported: {shared.sd_model_type}")
     except Exception as e:
-        shared.log.error(f"Model dynamic quantization error: {e}")
+        shared.log.error(f"Model dynamic quantization: {e}")
     return sd_model
 
 
 def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes
-    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
+    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
         if shared.opts.cuda_compile_backend == "openvino_fx":
             compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
             compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
@@ -531,7 +559,7 @@ def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a pa
 
 
 def openvino_post_compile(op="base"): # delete unet after OpenVINO compile
-    if shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
+    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
         if shared.compiled_model_state.first_pass and op == "base":
             shared.compiled_model_state.first_pass = False
             if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):

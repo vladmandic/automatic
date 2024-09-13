@@ -85,8 +85,7 @@ def correction(p, timestep, latent):
     if timestep > 950 and p.hdr_clamp:
         p.extra_generation_params["HDR clamp"] = f'{p.hdr_threshold}/{p.hdr_boundary}'
         latent = soft_clamp_tensor(latent, threshold=p.hdr_threshold, boundary=p.hdr_boundary)
-    if 500 < timestep < 800 and (p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_tint_ratio != 0):
-        p.extra_generation_params["HDR center"] = f'{p.hdr_color}/{p.hdr_brightness}'
+    if 600 < timestep < 900 and (p.hdr_color != 0 or p.hdr_tint_ratio != 0):
         if p.hdr_brightness != 0:
             latent[0:1] = center_tensor(latent[0:1], full_shift=float(p.hdr_mode), offset=2*p.hdr_brightness)  # Brightness
             p.extra_generation_params["HDR brightness"] = f'{p.hdr_brightness}'
@@ -98,6 +97,11 @@ def correction(p, timestep, latent):
         if p.hdr_tint_ratio != 0:
             latent = color_adjust(latent, p.hdr_color_picker, p.hdr_tint_ratio)
             p.hdr_tint_ratio = 0
+    if timestep < 200 and (p.hdr_brightness != 0): # do it late so it doesn't change the composition
+        if p.hdr_brightness != 0:
+            latent[0:1] = center_tensor(latent[0:1], full_shift=float(p.hdr_mode), offset=2*p.hdr_brightness)  # Brightness
+            p.extra_generation_params["HDR brightness"] = f'{p.hdr_brightness}'
+            p.hdr_brightness = 0
     if timestep < 350 and p.hdr_sharpen != 0:
         p.extra_generation_params["HDR sharpen"] = f'{p.hdr_sharpen}'
         per_step_ratio = 2 ** (timestep / 250) * p.hdr_sharpen / 16

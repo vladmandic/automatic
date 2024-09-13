@@ -103,8 +103,10 @@ class Shared(sys.modules[__name__].__class__):
                 model_type = 'sc'
             elif "AuraFlow" in self.sd_model.__class__.__name__:
                 model_type = 'auraflow'
-            elif "FluxPipeline" in self.sd_model.__class__.__name__:
+            elif "Flux" in self.sd_model.__class__.__name__:
                 model_type = 'f1'
+            elif "CogVideo" in self.sd_model.__class__.__name__:
+                model_type = 'cogvideox'
             else:
                 model_type = self.sd_model.__class__.__name__
         except Exception:

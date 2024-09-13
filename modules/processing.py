@@ -8,6 +8,7 @@ from modules import shared, devices, errors, images, scripts, memstats, lowvram,
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
+from modules.modeldata import model_data
 from modules import pag
 
 
@@ -35,23 +36,23 @@ images_tensor_to_samples = processing_helpers.images_tensor_to_samples
 class Processed:
     def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
         self.images = images_list
-        self.prompt = p.prompt
-        self.negative_prompt = p.negative_prompt
-        self.seed = seed
+        self.prompt = p.prompt or ''
+        self.negative_prompt = p.negative_prompt or ''
+        self.seed = seed if seed != -1 else p.seed
         self.subseed = subseed
         self.subseed_strength = p.subseed_strength
         self.info = info
-        self.comments = comments
+        self.comments = comments or ''
         self.width = p.width if hasattr(p, 'width') else (self.images[0].width if len(self.images) > 0 else 0)
         self.height = p.height if hasattr(p, 'height') else (self.images[0].height if len(self.images) > 0 else 0)
-        self.sampler_name = p.sampler_name
-        self.cfg_scale = p.cfg_scale
-        self.image_cfg_scale = p.image_cfg_scale
-        self.steps = p.steps
-        self.batch_size = p.batch_size
-        self.restore_faces = p.restore_faces
+        self.sampler_name = p.sampler_name or ''
+        self.cfg_scale = p.cfg_scale or 0
+        self.image_cfg_scale = p.image_cfg_scale or 0
+        self.steps = p.steps or 0
+        self.batch_size = max(1, p.batch_size)
+        self.restore_faces = p.restore_faces or False
         self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
-        self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '')
+        self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
         self.denoising_strength = p.denoising_strength
@@ -112,7 +113,6 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
-
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:

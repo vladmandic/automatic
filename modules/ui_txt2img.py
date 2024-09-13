@@ -29,7 +29,7 @@ def create_ui():
         with gr.Row(variant='compact', elem_id="txt2img_extra_networks", visible=False) as extra_networks_ui:
             from modules import ui_extra_networks
             extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, txt2img_extra_networks_button, 'txt2img', skip_indexing=shared.opts.extra_network_skip_indexing)
-            timer.startup.record('ui-en')
+            timer.startup.record('ui-networks')
 
         with gr.Row(elem_id="txt2img_interface", equal_height=False):
             with gr.Column(variant='compact', elem_id="txt2img_settings"):
@@ -48,7 +48,7 @@ def create_ui():
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('txt2img')
                     _cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, _cfg_end = ui_sections.create_advanced_inputs('txt2img', base=False)
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('txt2img')
-                    enable_hr, hr_sampler_index, denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
+                    enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
                     override_settings = ui_common.create_override_inputs('txt2img')
 
                 with gr.Group(elem_id="txt2img_script_container"):
@@ -70,7 +70,7 @@ def create_ui():
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
                 height, width,
                 enable_hr, denoising_strength,
-                hr_scale, hr_upscaler, hr_force, hr_second_pass_steps, hr_resize_x, hr_resize_y,
+                hr_scale, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_resize_x, hr_resize_y,
                 refiner_steps, refiner_start, refiner_prompt, refiner_negative,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 override_settings,
@@ -118,14 +118,19 @@ def create_ui():
                 (hidiffusion, "HiDiffusion"),
                 # second pass
                 (enable_hr, "Second pass"),
-                (hr_sampler_index, "Hires sampler"),
                 (denoising_strength, "Denoising strength"),
+                (hr_sampler_index, "Hires sampler"),
+                (hr_resize_mode, "Hires resize mode"),
+                (hr_resize_context, "Hires resize context"),
                 (hr_upscaler, "Hires upscaler"),
                 (hr_force, "Hires force"),
                 (hr_second_pass_steps, "Hires steps"),
                 (hr_scale, "Hires upscale"),
+                (hr_scale, "Hires scale"),
                 (hr_resize_x, "Hires resize-1"),
                 (hr_resize_y, "Hires resize-2"),
+                (hr_resize_x, "Hires size-1"),
+                (hr_resize_y, "Hires size-2"),
                 # refiner
                 (refiner_start, "Refiner start"),
                 (refiner_steps, "Refiner steps"),

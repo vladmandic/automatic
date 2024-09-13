@@ -72,7 +72,7 @@ class Script(scripts.Script):
                 id_strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.01, value=1.0)
                 id_conditioning = gr.Slider(label='Control', minimum=0.0, maximum=2.0, step=0.01, value=0.5)
             with gr.Row(visible=True):
-                id_cache = gr.Checkbox(label='Cache model', value=False)
+                id_cache = gr.Checkbox(label='Cache model', value=True)
         with gr.Group(visible=False) as cfg_photomaker:
             with gr.Row():
                 gr.HTML('<a href="https://photo-maker.github.io/" target="_blank">&nbsp Tenecent ARC Lab PhotoMaker</a><br>')

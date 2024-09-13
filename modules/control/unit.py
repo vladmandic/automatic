@@ -36,6 +36,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                  image_preview = None,
                  control_start = None,
                  control_end = None,
+                 control_mode = None,
                  result_txt = None,
                  extra_controls: list = [],
         ):
@@ -46,6 +47,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
         self.end = end or 1
         self.start = min(self.start, self.end)
         self.end = max(self.start, self.end)
+        self.mode = None
         # processor always exists, adapter and controlnet are optional
         self.process: processors.Processor = processors.Processor()
         self.adapter: t2iadapter.Adapter = None
@@ -82,6 +84,12 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
         def control_change(start, end):
             self.start = min(start, end)
             self.end = max(start, end)
+
+        def control_mode_change(mode):
+            self.mode = mode - 1 if mode > 0 else None
+
+        def control_mode_show(model_id):
+            return gr.update(visible='union' in model_id.lower())
 
         def adapter_extra(c1):
             self.factor = c1
@@ -156,6 +164,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                     self.controlnet.load(model_id)
                 else:
                     model_id.change(fn=self.controlnet.load, inputs=[model_id], outputs=[result_txt], show_progress=True)
+                    model_id.change(fn=control_mode_show, inputs=[model_id], outputs=[control_mode], show_progress=False)
             if extra_controls is not None and len(extra_controls) > 0:
                 extra_controls[0].change(fn=controlnet_extra, inputs=extra_controls)
         elif self.type == 'xs':
@@ -202,3 +211,5 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
         if control_start is not None and control_end is not None:
             control_start.change(fn=control_change, inputs=[control_start, control_end])
             control_end.change(fn=control_change, inputs=[control_start, control_end])
+        if control_mode is not None:
+            control_mode.change(fn=control_mode_change, inputs=[control_mode])

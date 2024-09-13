@@ -161,7 +161,7 @@ class FaceRestorerYolo(FaceRestoration):
             p.negative_prompt = orig_p.get('all_negative_prompts', [''])[0]
 
         report = [{'score': f.score, 'size': f'{f.width}x{f.height}' } for f in faces]
-        shared.log.debug(f'Face HiRes: faces={report} args={faces[0].args} denoise={p.denoising_strength} blur={p.mask_blur} resolution={p.width}x{p.height} padding={p.inpaint_full_res_padding}')
+        shared.log.debug(f'Face HiRes: faces={report} args={faces[0].args} denoise={p.denoising_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
 
         mask_all = []
         for face in faces:

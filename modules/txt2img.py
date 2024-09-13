@@ -18,13 +18,13 @@ def txt2img(id_task,
             seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
             height, width,
             enable_hr, denoising_strength,
-            hr_scale, hr_upscaler, hr_force, hr_second_pass_steps, hr_resize_x, hr_resize_y,
+            hr_scale, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_resize_x, hr_resize_y,
             refiner_steps, refiner_start, refiner_prompt, refiner_negative,
             hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
             override_settings_texts,
             *args):
 
-    debug(f'txt2img: id_task={id_task}|prompt={prompt}|negative={negative_prompt}|styles={prompt_styles}|steps={steps}|sampler_index={sampler_index}|hr_sampler_index={hr_sampler_index}|full_quality={full_quality}|restore_faces={restore_faces}|tiling={tiling}|hidiffusion={hidiffusion}|batch_count={n_iter}|batch_size={batch_size}|cfg_scale={cfg_scale}|clip_skip={clip_skip}|seed={seed}|subseed={subseed}|subseed_strength={subseed_strength}|seed_resize_from_h={seed_resize_from_h}|seed_resize_from_w={seed_resize_from_w}|height={height}|width={width}|enable_hr={enable_hr}|denoising_strength={denoising_strength}|hr_scale={hr_scale}|hr_upscaler={hr_upscaler}|hr_force={hr_force}|hr_second_pass_steps={hr_second_pass_steps}|hr_resize_x={hr_resize_x}|hr_resize_y={hr_resize_y}|image_cfg_scale={image_cfg_scale}|diffusers_guidance_rescale={diffusers_guidance_rescale}|refiner_steps={refiner_steps}|refiner_start={refiner_start}|refiner_prompt={refiner_prompt}|refiner_negative={refiner_negative}|override_settings={override_settings_texts}')
+    debug(f'txt2img: id_task={id_task}|prompt={prompt}|negative={negative_prompt}|styles={prompt_styles}|steps={steps}|sampler_index={sampler_index}|hr_sampler_index={hr_sampler_index}|full_quality={full_quality}|restore_faces={restore_faces}|tiling={tiling}|hidiffusion={hidiffusion}|batch_count={n_iter}|batch_size={batch_size}|cfg_scale={cfg_scale}|clip_skip={clip_skip}|seed={seed}|subseed={subseed}|subseed_strength={subseed_strength}|seed_resize_from_h={seed_resize_from_h}|seed_resize_from_w={seed_resize_from_w}|height={height}|width={width}|enable_hr={enable_hr}|denoising_strength={denoising_strength}|hr_resize_mode={hr_resize_mode}|hr_resize_context={hr_resize_context}|hr_scale={hr_scale}|hr_upscaler={hr_upscaler}|hr_force={hr_force}|hr_second_pass_steps={hr_second_pass_steps}|hr_resize_x={hr_resize_x}|hr_resize_y={hr_resize_y}|image_cfg_scale={image_cfg_scale}|diffusers_guidance_rescale={diffusers_guidance_rescale}|refiner_steps={refiner_steps}|refiner_start={refiner_start}|refiner_prompt={refiner_prompt}|refiner_negative={refiner_negative}|override_settings={override_settings_texts}')
 
     if shared.sd_model is None:
         shared.log.warning('Model not loaded')
@@ -71,6 +71,8 @@ def txt2img(id_task,
         enable_hr=enable_hr,
         denoising_strength=denoising_strength,
         hr_scale=hr_scale,
+        hr_resize_mode=hr_resize_mode,
+        hr_resize_context=hr_resize_context,
         hr_upscaler=hr_upscaler,
         hr_force=hr_force,
         hr_second_pass_steps=hr_second_pass_steps,
@@ -89,6 +91,7 @@ def txt2img(id_task,
     processed = scripts.scripts_txt2img.run(p, *args)
     if processed is None:
         processed = processing.process_images(p)
+    processed = scripts.scripts_txt2img.after(p, processed, *args)
     p.close()
     if processed is None:
         return [], '', '', 'Error: processing failed'

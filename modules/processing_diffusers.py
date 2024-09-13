@@ -26,20 +26,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         return p.enable_hr and p.refiner_steps > 0 and p.refiner_start > 0 and p.refiner_start < 1 and shared.sd_refiner is not None
 
     def update_pipeline(sd_model, p: processing.StableDiffusionProcessing):
-        """
-        import diffusers
-        if p.sag_scale > 0 and is_txt2img():
-            update_sampler(shared.sd_model)
-            supported = ['DDIMScheduler', 'PNDMScheduler', 'DDPMScheduler', 'DEISMultistepScheduler', 'UniPCMultistepScheduler', 'DPMSolverMultistepScheduler', 'DPMSolverSinlgestepScheduler']
-            if hasattr(sd_model, 'sfast'):
-                shared.log.warning(f'SAG incompatible compile mode: backend={shared.opts.cuda_compile_backend}')
-            elif sd_model.scheduler.__class__.__name__ in supported:
-                sd_model = sd_models.switch_pipe(diffusers.StableDiffusionSAGPipeline, sd_model)
-                p.extra_generation_params["SAG scale"] = p.sag_scale
-                p.task_args['sag_scale'] = p.sag_scale
-            else:
-                shared.log.warning(f'SAG incompatible scheduler: current={sd_model.scheduler.__class__.__name__} supported={supported}')
-        """
         if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
             shared.log.warning('Processing: mode=inpaint mask=None')
             sd_model = sd_models.set_diffuser_pipe(sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
@@ -167,8 +153,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model.restore_pipeline()
 
         # upscale
-        if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_upscaler is not None and p.hr_upscaler != 'None':
-            shared.log.info(f'Upscale: upscaler="{p.hr_upscaler}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
+        if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_resize_mode >0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
+            shared.log.info(f'Upscale: mode={p.hr_resize_mode} upscaler="{p.hr_upscaler}" context="{p.hr_resize_context}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
             p.ops.append('upscale')
             if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
@@ -185,13 +171,19 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             p.hr_force = True
 
         # hires
+        p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
+        if p.hr_force and p.denoising_strength == 0:
+            shared.log.warning('HiRes skip: denoising=0')
+            p.hr_force = False
         if p.hr_force:
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
+            if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__:
+                output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil') # controlnet cannnot deal with latent input
+                    output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
                     p.task_args['image'] = output.images # replace so hires uses new output
             sd_models.move_model(shared.sd_model, devices.device)
             orig_denoise = p.denoising_strength
@@ -256,8 +248,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             image = output.images[i]
             noise_level = round(350 * p.denoising_strength)
             output_type='latent' if hasattr(shared.sd_refiner, 'vae') else 'np'
-            if shared.sd_refiner.__class__.__name__ == 'StableDiffusionUpscalePipeline':
-                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil')
+            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux' in shared.sd_refiner.__class__.__name__:
+                image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
             if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
@@ -294,7 +286,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
                 shared.log.info(e)
 
             if not shared.state.interrupted and not shared.state.skipped:
-                refiner_images = processing_vae.vae_decode(latents=refiner_output.images, model=shared.sd_refiner, full_quality=True)
+                refiner_images = processing_vae.vae_decode(latents=refiner_output.images, model=shared.sd_refiner, full_quality=True, width=max(p.width, p.hr_upscale_to_x), height=max(p.height, p.hr_upscale_to_y))
                 for refiner_image in refiner_images:
                     results.append(refiner_image)
 
@@ -313,12 +305,14 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             if not hasattr(output, 'images') and hasattr(output, 'frames'):
                 shared.log.debug(f'Generated: frames={len(output.frames[0])}')
                 output.images = output.frames[0]
-            if hasattr(shared.sd_model, "_unpack_latents") and hasattr(shared.sd_model, "vae_scale_factor"): # FLUX
-                output.images = shared.sd_model._unpack_latents(output.images, p.height, p.width, shared.sd_model.vae_scale_factor) # pylint: disable=protected-access
-            if torch.is_tensor(output.images) and len(output.images) > 0 and any(s >= 512 for s in output.images.shape):
-                results = output.images.float().cpu().numpy()
-            elif hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
-                results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality)
+            if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
+                if p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
+                    width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
+                    height = max(getattr(p, 'height', 0), getattr(p, 'hr_upscale_to_y', 0))
+                else:
+                    width = getattr(p, 'width', 0)
+                    height = getattr(p, 'height', 0)
+                results = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, width=width, height=height)
             elif hasattr(output, 'images'):
                 results = output.images
             else:

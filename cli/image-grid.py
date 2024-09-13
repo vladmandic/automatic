@@ -52,7 +52,8 @@ def grid(images, labels = None, width = 0, height = 0, border = 0, square = Fals
         h = round(height / rows)
     size = tuple(size)
     image = Image.new('RGB', size = size, color = 'black') # pylint: disable=redefined-outer-name
-    font = ImageFont.truetype('DejaVuSansMono', round(w / 40))
+    font_size = round(w / 40) if params.font == 0 else params.font
+    font = ImageFont.truetype('DejaVuSansMono', font_size)
     for i, img in enumerate(images): # pylint: disable=redefined-outer-name
         x = (i % cols * w) + (i % cols * border)
         y = (i // cols * h) + (i // cols * border)
@@ -76,6 +77,7 @@ if __name__ == '__main__':
     parser.add_argument("--width", type = int, default = 0, required = False, help = "fixed grid width")
     parser.add_argument("--height", type = int, default = 0, required = False, help = "fixed grid height")
     parser.add_argument("--border", type = int, default = 0, required = False, help = "image border")
+    parser.add_argument("--font", type = int, default = 0, required = False, help = "font text size")
     parser.add_argument('--nolabels', default = False, action='store_true', help = "do not print image labels")
     parser.add_argument('--debug', default = False, action='store_true', help = "print extra debug information")
     parser.add_argument('output', type = str)

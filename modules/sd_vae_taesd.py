@@ -55,6 +55,8 @@ def Decoder(latent_channels=4):
         return nn.Sequential(
             Clamp(), conv(latent_channels, 64), nn.ReLU(),
             Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Identity(), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Identity(), conv(64, 64, bias=False),
             Block(64, 64), conv(64, 3),
         )
     elif shared.opts.live_preview_taesd_layers == 2:
@@ -62,6 +64,7 @@ def Decoder(latent_channels=4):
             Clamp(), conv(latent_channels, 64), nn.ReLU(),
             Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
             Block(64, 64), Block(64, 64), Block(64, 64), nn.Upsample(scale_factor=2), conv(64, 64, bias=False),
+            Block(64, 64), Block(64, 64), Block(64, 64), nn.Identity(), conv(64, 64, bias=False),
             Block(64, 64), conv(64, 3),
         )
     else:
@@ -86,9 +89,9 @@ class TAESD(nn.Module): # pylint: disable=abstract-method
         self.encoder = Encoder(latent_channels)
         self.decoder = Decoder(latent_channels)
         if encoder_path is not None:
-            self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"))
+            self.encoder.load_state_dict(torch.load(encoder_path, map_location="cpu"), strict=False)
         if decoder_path is not None:
-            self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"))
+            self.decoder.load_state_dict(torch.load(decoder_path, map_location="cpu"), strict=False)
 
     def guess_latent_channels(self, decoder_path, encoder_path):
         """guess latent channel count based on encoder filename"""

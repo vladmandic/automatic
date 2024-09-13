@@ -27,6 +27,10 @@ logging.getLogger("pytorch_lightning").disabled = True
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 warnings.filterwarnings(action="ignore", category=FutureWarning)
 warnings.filterwarnings(action="ignore", category=UserWarning, module="torchvision")
+try:
+    torch._logging.set_logs(all=logging.ERROR, bytecode=False, aot_graphs=False, aot_joint_graph=False, ddp_graphs=False, graph=False, graph_code=False, graph_breaks=False, graph_sizes=False, guards=False, recompiles=False, recompiles_verbose=False, trace_source=False, trace_call=False, trace_bytecode=False, output_code=False, kernel_code=False, schedule=False, perf_hints=False, post_grad_graphs=False, onnx_diagnostics=False, fusion=False, overlap=False, export=None, modules=None, cudagraphs=False, sym_node=False, compiled_autograd_verbose=False) # pylint: disable=protected-access
+except Exception:
+    pass
 if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__long_version__ = torch.__version__
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
@@ -49,10 +53,33 @@ timer.startup.record("pydantic")
 
 import diffusers # pylint: disable=W0611,C0411
 import diffusers.loaders.single_file # pylint: disable=W0611,C0411
+import huggingface_hub # pylint: disable=W0611,C0411
 logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
+timer.startup.record("diffusers")
+
+
+# patch different progress bars
+import tqdm as tqdm_lib # pylint: disable=C0411
 from tqdm.rich import tqdm # pylint: disable=W0611,C0411
 diffusers.loaders.single_file.logging.tqdm = partial(tqdm, unit='C')
-timer.startup.record("diffusers")
+
+class _tqdm_cls():
+    def __call__(self, *args, **kwargs):
+        bar_format = 'Diffusers {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
+        return tqdm_lib.tqdm(*args, bar_format=bar_format, ncols=80, colour='#327fba', **kwargs)
+
+class _tqdm_old(tqdm_lib.tqdm):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("name", None)
+        kwargs['bar_format'] = 'Diffusers {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + '{desc}' + '\x1b[0m'
+        kwargs['ncols'] = 80
+        super().__init__(*args, **kwargs)
+
+
+transformers.utils.logging.tqdm = _tqdm_cls()
+diffusers.pipelines.pipeline_utils.logging.tqdm = _tqdm_cls()
+huggingface_hub._snapshot_download.hf_tqdm = _tqdm_old # pylint: disable=protected-access
+
 
 def get_packages():
     return {

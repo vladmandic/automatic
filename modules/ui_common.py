@@ -42,7 +42,7 @@ def infotext_to_html(text):
     negative = res.get('Negative prompt', '')
     res.pop('Prompt', None)
     res.pop('Negative prompt', None)
-    params = [f'{k}: {v}' for k, v in res.items() if v is not None]
+    params = [f'{k}: {v}' for k, v in res.items() if v is not None and 'size-' not in k.lower()]
     params = '| '.join(params) if len(params) > 0 else ''
     code = ''
     if len(prompt) > 0:
@@ -146,9 +146,13 @@ def save_files(js_data, files, html_info, index):
             destination = os.path.join(destination, dirname)
             destination = namegen.sanitize(destination)
             os.makedirs(destination, exist_ok = True)
-            shutil.copy(fullfn, destination)
-            shared.log.info(f'Copying image: file="{fullfn}" folder="{destination}"')
             tgt_filename = os.path.join(destination, os.path.basename(fullfn))
+            if not os.path.exists(tgt_filename):
+                try:
+                    shutil.copy(fullfn, destination)
+                    shared.log.info(f'Copying image: file="{fullfn}" folder="{destination}"')
+                except Exception as e:
+                    shared.log.error(f'Copying image: {fullfn} {e}')
             if shared.opts.save_txt:
                 try:
                     from PIL import Image
@@ -171,7 +175,7 @@ def save_files(js_data, files, html_info, index):
                 geninfo, _ = images.read_info_from_image(image)
                 items = infotext.parse(geninfo)
                 p = PObject(items)
-            fullfn, txt_fullfn = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
+            fullfn, txt_fullfn, _exif = images.save_image(image, shared.opts.outdir_save, "", seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, extension=shared.opts.samples_format, grid=is_grid, p=p)
             if fullfn is None:
                 continue
             filename = os.path.relpath(fullfn, shared.opts.outdir_save)

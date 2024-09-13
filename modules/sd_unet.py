@@ -1,8 +1,9 @@
 import os
-from modules import shared, devices, files_cache
+from modules import shared, devices, files_cache, sd_models
 
 
 unet_dict = {}
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
 
 
 def load_unet(model):
@@ -28,15 +29,13 @@ def load_unet(model):
                 model.prior_pipe.text_encoder = None # Prevent OOM
                 model.prior_pipe.text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
         if "Flux" in model.__class__.__name__:
-            shared.log.info(f'Loading UNet: name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" offload={shared.opts.diffusers_offload_mode}')
             from modules.model_flux import load_transformer
             transformer = load_transformer(unet_dict[shared.opts.sd_unet])
             if transformer is not None:
                 model.transformer = None
                 if shared.opts.diffusers_offload_mode == 'none':
-                    model.transformer = transformer.to(devices.device, devices.dtype)
-                else:
-                    model.transformer = transformer
+                    sd_models.move_model(transformer, devices.device)
+                model.transformer = transformer
                 from modules.sd_models import set_diffuser_offload
                 set_diffuser_offload(model, 'model')
         else:
@@ -52,6 +51,9 @@ def load_unet(model):
             model.unet = unet.to(devices.device, devices.dtype_unet)
     except Exception as e:
         shared.log.error(f'Failed to load UNet model: {e}')
+        if debug:
+            from modules import errors
+            errors.display(e, 'UNet load:')
         return
     devices.torch_gc()
 

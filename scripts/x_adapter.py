@@ -25,8 +25,8 @@ class Script(scripts.Script):
             model = gr.Dropdown(label='Adapter model', choices=['None'] + sd_models.checkpoint_tiles(), value='None')
             sampler = gr.Dropdown(label='Adapter sampler', choices=[s.name for s in sd_samplers.samplers], value='Default')
         with gr.Row():
-            width = gr.Slider(label='Adapter width', minimum=64, maximum=2048, step=8, value=512)
-            height = gr.Slider(label='Adapter height', minimum=64, maximum=2048, step=8, value=512)
+            width = gr.Slider(label='Adapter width', minimum=64, maximum=2048, step=8, value=1024)
+            height = gr.Slider(label='Adapter height', minimum=64, maximum=2048, step=8, value=1024)
         with gr.Row():
             start = gr.Slider(label='Adapter start', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
             scale = gr.Slider(label='Adapter scale', minimum=0.0, maximum=1.0, step=0.01, value=1.0)

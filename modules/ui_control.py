@@ -97,11 +97,11 @@ def create_ui(_blocks: gr.Blocks=None):
                 with gr.Accordion(open=False, label="Size", elem_id="control_size", elem_classes=["small-accordion"]):
                     with gr.Tabs():
                         with gr.Tab('Before'):
-                            resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control_before', [], accordion=False, latent=True)
+                            resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before = ui_sections.create_resize_inputs('control_before', [], accordion=False, latent=True, prefix='before')
                         with gr.Tab('After'):
-                            resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control_after', [], accordion=False, latent=False)
+                            resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after = ui_sections.create_resize_inputs('control_after', [], accordion=False, latent=False, prefix='after')
                         with gr.Tab('Mask'):
-                            resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False)
+                            resize_mode_mask, resize_name_mask, resize_context_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask = ui_sections.create_resize_inputs('control_mask', [], accordion=False, latent=False, prefix='mask')
 
                 with gr.Accordion(open=False, label="Sampler", elem_id="control_sampler", elem_classes=["small-accordion"]):
                     steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "control")
@@ -128,7 +128,7 @@ def create_ui(_blocks: gr.Blocks=None):
                         video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id="control_video_interpolate")
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
-                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
@@ -136,7 +136,7 @@ def create_ui(_blocks: gr.Blocks=None):
             with gr.Row(variant='compact', elem_id="control_extra_networks", visible=False) as extra_networks_ui:
                 from modules import timer, ui_extra_networks
                 extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, btn_extra, 'control', skip_indexing=shared.opts.extra_network_skip_indexing)
-                timer.startup.record('ui-en')
+                timer.startup.record('ui-networks')
 
             with gr.Row(elem_id='control-inputs'):
                 with gr.Column(scale=9, elem_id='control-input-column', visible=True) as _column_input:
@@ -201,9 +201,10 @@ def create_ui(_blocks: gr.Blocks=None):
                                     process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
                                     model_id = gr.Dropdown(label="ControlNet", choices=controlnet.list_models(), value='None')
                                     ui_common.create_refresh_button(model_id, controlnet.list_models, lambda: {"choices": controlnet.list_models(refresh=True)}, f'refresh_controlnet_models_{i}')
-                                    model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0-i/10)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0)
                                     control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0)
                                     control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
+                                    control_mode = gr.Dropdown(label="CN Mode", choices=['', 'Canny', 'Tile', 'Depth', 'Blur', 'Pose', 'Gray', 'LQ'], value=0, type='index', visible=False)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -226,6 +227,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 image_preview = image_preview,
                                 control_start = control_start,
                                 control_end = control_end,
+                                control_mode = control_mode,
                                 extra_controls = extra_controls,
                                 )
                             )
@@ -249,7 +251,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                     process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
                                     model_id = gr.Dropdown(label="Adapter", choices=t2iadapter.list_models(), value='None')
                                     ui_common.create_refresh_button(model_id, t2iadapter.list_models, lambda: {"choices": t2iadapter.list_models(refresh=True)}, f'refresh_adapter_models_{i}')
-                                    model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0-i/10)
+                                    model_strength = gr.Slider(label="T2I Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -293,7 +295,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                     process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
                                     model_id = gr.Dropdown(label="ControlNet-XS", choices=xs.list_models(), value='None')
                                     ui_common.create_refresh_button(model_id, xs.list_models, lambda: {"choices": xs.list_models(refresh=True)}, f'refresh_xs_models_{i}')
-                                    model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0-i/10)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
                                     control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0)
                                     control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
@@ -340,7 +342,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                     process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
                                     model_id = gr.Dropdown(label="Model", choices=lite.list_models(), value='None')
                                     ui_common.create_refresh_button(model_id, lite.list_models, lambda: {"choices": lite.list_models(refresh=True)}, f'refresh_lite_models_{i}')
-                                    model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0-i/10)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -383,7 +385,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 with gr.Row():
                                     enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
                                     model_id = gr.Dropdown(label="Reference", choices=reference.list_models(), value='Reference', visible=False)
-                                    model_strength = gr.Slider(label="Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, visible=False)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, visible=False)
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -432,21 +434,21 @@ def create_ui(_blocks: gr.Blocks=None):
                         with gr.Accordion('Leres Depth', open=True, elem_classes=['processor-settings']):
                             settings.append(gr.Checkbox(label="Boost", value=False))
                             settings.append(gr.Slider(label="Near threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
-                            settings.append(gr.Slider(label="Background threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
+                            settings.append(gr.Slider(label="Depth threshold", minimum=0.0, maximum=1.0, step=0.01, value=0.0))
                         with gr.Accordion('MediaPipe Face', open=True, elem_classes=['processor-settings']):
                             settings.append(gr.Slider(label="Max faces", minimum=1, maximum=10, step=1, value=1))
-                            settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                            settings.append(gr.Slider(label="Face confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.5))
                         with gr.Accordion('Canny', open=True, elem_classes=['processor-settings']):
                             settings.append(gr.Slider(label="Low threshold", minimum=0, maximum=1000, step=1, value=100))
                             settings.append(gr.Slider(label="High threshold", minimum=0, maximum=1000, step=1, value=200))
                         with gr.Accordion('DWPose', open=True, elem_classes=['processor-settings']):
-                            settings.append(gr.Radio(label="Model", choices=['Tiny', 'Medium', 'Large'], value='Tiny'))
-                            settings.append(gr.Slider(label="Min confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.3))
+                            settings.append(gr.Radio(label="Pose Model", choices=['Tiny', 'Medium', 'Large'], value='Tiny'))
+                            settings.append(gr.Slider(label="Pose confidence", minimum=0.0, maximum=1.0, step=0.01, value=0.3))
                         with gr.Accordion('SegmentAnything', open=True, elem_classes=['processor-settings']):
-                            settings.append(gr.Radio(label="Model", choices=['Base', 'Large'], value='Base'))
+                            settings.append(gr.Radio(label="Segment Model", choices=['Base', 'Large'], value='Base'))
                         with gr.Accordion('Edge', open=True, elem_classes=['processor-settings']):
                             settings.append(gr.Checkbox(label="Parameter free", value=True))
-                            settings.append(gr.Radio(label="Mode", choices=['edge', 'gradient'], value='edge'))
+                            settings.append(gr.Radio(label="Edge mode", choices=['edge', 'gradient'], value='edge'))
                         with gr.Accordion('Zoe Depth', open=True, elem_classes=['processor-settings']):
                             settings.append(gr.Checkbox(label="Gamma corrected", value=False))
                         with gr.Accordion('Marigold Depth', open=True, elem_classes=['processor-settings']):
@@ -454,7 +456,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             settings.append(gr.Slider(label="Denoising steps", minimum=1, maximum=99, step=1, value=10))
                             settings.append(gr.Slider(label="Ensemble size", minimum=1, maximum=99, step=1, value=10))
                         with gr.Accordion('Depth Anything', open=True, elem_classes=['processor-settings']):
-                            settings.append(gr.Dropdown(label="Color map", choices=['none'] + masking.COLORMAP, value='inferno'))
+                            settings.append(gr.Dropdown(label="Depth map", choices=['none'] + masking.COLORMAP, value='inferno'))
                         for setting in settings:
                             setting.change(fn=processors.update_settings, inputs=settings, outputs=[])
 
@@ -502,11 +504,11 @@ def create_ui(_blocks: gr.Blocks=None):
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
                 cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, restore_faces, tiling, hidiffusion,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
-                resize_mode_before, resize_name_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
-                resize_mode_after, resize_name_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
-                resize_mode_mask, resize_name_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
+                resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
+                resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
+                resize_mode_mask, resize_name_mask, resize_context_mask, width_mask, height_mask, scale_by_mask, selected_scale_tab_mask,
                 denoising_strength, batch_count, batch_size,
-                enable_hr, hr_sampler_index, hr_denoising_strength, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps,
+                enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps,
                 refiner_start, refiner_prompt, refiner_negative,
                 video_skip_frames, video_type, video_duration, video_loop, video_pad, video_interpolate,
             ]

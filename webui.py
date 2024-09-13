@@ -24,6 +24,7 @@ import modules.scripts
 import modules.sd_models
 import modules.sd_vae
 import modules.sd_unet
+import modules.model_t5
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -33,7 +34,7 @@ import modules.textual_inversion.textual_inversion
 import modules.hypernetworks.hypernetwork
 import modules.script_callbacks
 from modules.api.middleware import setup_middleware
-from modules.shared import cmd_opts, opts
+from modules.shared import cmd_opts, opts # pylint: disable=unused-import
 
 
 sys.excepthook = custom_excepthook
@@ -63,6 +64,7 @@ import modules.sd_hijack
 timer.startup.record("ldm")
 modules.loader.initialized = True
 
+
 def check_rollback_vae():
     if shared.cmd_opts.rollback_vae:
         if not torch.cuda.is_available():
@@ -74,7 +76,6 @@ def check_rollback_vae():
         elif 0 < torch.cuda.get_device_capability()[0] < 8:
             log.error('Rollback VAE functionality device capabilities not met')
             shared.cmd_opts.rollback_vae = False
-
 
 
 def initialize():
@@ -90,6 +91,9 @@ def initialize():
     modules.sd_unet.refresh_unet_list()
     timer.startup.record("unet")
 
+    modules.model_t5.refresh_t5_list()
+    timer.startup.record("unet")
+
     extensions.list_extensions()
     timer.startup.record("extensions")
 
@@ -98,10 +102,10 @@ def initialize():
     timer.startup.record("models")
 
     import modules.postprocess.codeformer_model as codeformer
-    codeformer.setup_model(opts.codeformer_models_path)
+    codeformer.setup_model(shared.opts.codeformer_models_path)
     sys.modules["modules.codeformer_model"] = codeformer
     import modules.postprocess.gfpgan_model as gfpgan
-    gfpgan.setup_model(opts.gfpgan_models_path)
+    gfpgan.setup_model(shared.opts.gfpgan_models_path)
     timer.startup.record("face-restore")
 
     log.debug('Load extensions')
@@ -155,7 +159,7 @@ def initialize():
 
 def load_model():
     modules.devices.set_cuda_params()
-    if not opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
+    if not shared.opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
         log.debug('Model auto load disabled')
     else:
         shared.state.begin('Load')
@@ -213,9 +217,15 @@ def start_common():
         log.info(f'Using data path: {shared.cmd_opts.data_dir}')
     if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0 and shared.cmd_opts.models_dir != 'models':
         log.info(f'Using models path: {shared.cmd_opts.models_dir}')
-    create_paths(opts)
+    create_paths(shared.opts)
     async_policy()
     initialize()
+    try:
+        from installer import diffusers_commit
+        if diffusers_commit != 'unknown':
+            shared.opts.diffusers_version = diffusers_commit # update installed diffusers version
+    except Exception:
+        pass
     if shared.opts.clean_temp_dir_at_start:
         gr_tempdir.cleanup_tmpdr()
         timer.startup.record("cleanup")

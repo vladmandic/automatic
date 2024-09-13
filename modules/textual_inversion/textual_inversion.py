@@ -23,12 +23,12 @@ def open_embeddings(filename):
     """
     Load Embedding files from drive. Image embeddings not currently supported.
     """
-    if filename is None:
-        return
-    filenames = list(filename)
-    exts = [".SAFETENSORS", '.BIN', '.PT']
     embeddings = []
     skipped = []
+    if filename is None:
+        return embeddings, skipped
+    filenames = list(filename)
+    exts = [".SAFETENSORS", '.BIN', '.PT']
     for _filename in filenames:
         # debug(f'Embedding check: {filename}')
         fullname = _filename
@@ -274,15 +274,15 @@ class EmbeddingDatabase:
         """
         overwrite = bool(data)
         if not shared.sd_loaded:
-            return 0
+            return
         embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
         for skip in skipped:
             self.skipped_embeddings[skip.name] = skipped
         if not embeddings:
-            return 0
+            return
         text_encoders, tokenizers, hiddensizes = get_text_encoders()
         if not all([text_encoders, tokenizers, hiddensizes]):
-            return 0
+            return
         for embedding in embeddings:
             try:
                 embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
@@ -320,20 +320,20 @@ class EmbeddingDatabase:
 
         if ext in ['.PNG', '.WEBP', '.JXL', '.AVIF']:
             if '.preview' in filename.lower():
-                return None
+                return
             embed_image = Image.open(path)
             if hasattr(embed_image, 'text') and 'sd-ti-embedding' in embed_image.text:
                 data = embedding_from_b64(embed_image.text['sd-ti-embedding'])
             else:
                 data = extract_image_data_embed(embed_image)
                 if not data: # if data is None, means this is not an embeding, just a preview image
-                    return None
+                    return
         elif ext in ['.BIN', '.PT']:
             data = torch.load(path, map_location="cpu")
         elif ext in ['.SAFETENSORS']:
             data = safetensors.torch.load_file(path, device="cpu")
         else:
-            return None
+            return
 
         # textual inversion embeddings
         if 'string_to_param' in data:
@@ -345,7 +345,7 @@ class EmbeddingDatabase:
         elif type(data) == dict and type(next(iter(data.values()))) == torch.Tensor:
             if len(data.keys()) != 1:
                 self.skipped_embeddings[name] = Embedding(None, name=name, filename=path)
-                return None
+                return
             emb = next(iter(data.values()))
             if len(emb.shape) == 1:
                 emb = emb.unsqueeze(0)
@@ -353,7 +353,7 @@ class EmbeddingDatabase:
             raise RuntimeError(f"Couldn't identify {filename} as textual inversion embedding")
 
         if shared.native:
-            return emb
+            return
 
         vec = emb.detach().to(devices.device, dtype=torch.float32)
         # name = data.get('name', name)

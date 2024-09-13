@@ -27,8 +27,7 @@ fasteners
 orjson
 invisible-watermark
 pi-heif
-diffusers==0.30.2
-safetensors==0.4.4
+safetensors==0.4.5
 tensordict==0.1.2
 peft==0.11.1
 httpx==0.24.1
@@ -39,7 +38,7 @@ clip-interrogator==0.6.0
 antlr4-python3-runtime==4.9.3
 requests==2.31.0
 tqdm==4.66.4
-accelerate==0.33.0
+accelerate==0.34.2
 opencv-contrib-python-headless==4.9.0.80
 einops==0.4.1
 gradio==3.43.2
@@ -63,3 +62,4 @@ typing-extensions==4.11.0
 torchdiffeq
 dctorch
 scikit-image
+seam-carving

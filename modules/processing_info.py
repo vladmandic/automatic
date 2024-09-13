@@ -71,13 +71,16 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args["Variation seed"] = all_subseeds[index] if p.subseed_strength > 0 else None
         args["Variation strength"] = p.subseed_strength if p.subseed_strength > 0 else None
     if 'hires' in p.ops or 'upscale' in p.ops:
+        is_resize = p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5)
         args["Second pass"] = p.enable_hr
         args["Hires force"] = p.hr_force
         args["Hires steps"] = p.hr_second_pass_steps
-        args["Hires upscaler"] = p.hr_upscaler if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
-        args["Hires upscale"] = p.hr_scale if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
-        args["Hires resize"] = f"{p.hr_resize_x}x{p.hr_resize_y}" if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
-        args["Hires size"] = f"{p.hr_upscale_to_x}x{p.hr_upscale_to_y}" if p.hr_upscaler is not None and p.hr_upscaler != 'None' else None
+        args["HiRes resize mode"] = p.hr_resize_mode if is_resize else None
+        args["HiRes resize context"] = p.hr_resize_context if p.hr_resize_mode == 5 else None
+        args["Hires upscaler"] = p.hr_upscaler if is_resize else None
+        args["Hires scale"] = p.hr_scale if is_resize else None
+        args["Hires resize"] = f"{p.hr_resize_x}x{p.hr_resize_y}" if is_resize else None
+        args["Hires size"] = f"{p.hr_upscale_to_x}x{p.hr_upscale_to_y}" if is_resize else None
         args["Denoising strength"] = p.denoising_strength
         args["Hires sampler"] = p.hr_sampler_name
         args["Image CFG scale"] = p.image_cfg_scale

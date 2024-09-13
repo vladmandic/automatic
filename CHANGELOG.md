@@ -1,5 +1,150 @@
 # Change Log for SD.Next
 
+## Update for 2024-09-13
+
+### Highlights for 2024-09-13
+
+Major refactor of [FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) support:  
+- Full **ControlNet** support, better **LoRA** support, full **prompt attention** implementation  
+- Faster execution, more flexible loading, additional quantization options, and more...  
+- Added **image-to-image**, **inpaint**, **outpaint**, **hires** modes  
+- Added workflow where FLUX can be used as **refiner** for other models  
+- Since both *Optimum-Quanto* and *BitsAndBytes* libraries are limited in their platform support matrix,  
+  try enabling **NNCF** for quantization/compression on-the-fly!  
+
+Few image related goodies...  
+- **Context-aware** resize that allows for *img2img/inpaint* even at massively different aspect ratios without distortions!
+- **LUT Color grading** apply professional color grading to your images using industry-standard *.cube* LUTs!
+- Auto **HDR** image create for SD and SDXL with both 16ch true-HDR and 8-ch HDR-effect images ;)  
+
+And few video related goodies...  
+- [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b) **2b** and **5b** variants  
+  with support for *text-to-video* and *video-to-video*!  
+- [AnimateDiff](https://github.com/guoyww/animatediff/) **prompt travel** and **long context windows**!  
+  create video which travels between different prompts and at long video lengths!  
+
+Plus tons of other items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
+Examples:
+- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, global XYZ grid management, etc.  
+- Updates to ZLUDA, IPEX, OpenVINO...
+
+### Details for 2024-09-13
+
+**Major refactor of FLUX.1 support:**
+- allow configuration of individual FLUX.1 model components: *transformer, text-encoder, vae*  
+  model load will load selected components first and then initialize model using pre-loaded components  
+  components that were not pre-loaded will be downloaded and initialized as needed  
+  as usual, components can also be loaded after initial model load  
+  *note*: use of transformer/unet is recommended as those are flux.1 finetunes  
+  *note*: manually selecting vae and text-encoder is not recommended  
+  *note*: mix-and-match of different quantizations for different components can lead to unexpected errors  
+  - transformer/unet is list of manually downloaded safetensors  
+  - vae is list of manually downloaded safetensors  
+  - text-encoder is list of predefined and manually downloaded text-encoders  
+- **controlnet** support:
+  support for **InstantX/Shakker-Labs** models including [Union-Pro](InstantX/FLUX.1-dev-Controlnet-Union)  
+  note that flux controlnet models are large, up to 6.6GB on top of already large base model!  
+  as such, you may need to use offloading:sequential which is not as fast, but uses far less memory  
+  when using union model, you must also select control mode in the control unit  
+  flux does not yet support *img2img* so to use controlnet, you need to set contronet input via control unit override  
+- model support loading **all-in-one** safetensors  
+  not recommended due to massive duplication of components, but added due to popular demand  
+  each such model is 20-32GB in size vs ~11GB for typical unet fine-tune  
+- improve logging, warn when attempting to load unet as base model  
+- **refiner** support  
+  FLUX.1 can be used as refiner for other models such as sd/sdxl  
+  simply load sd/sdxl model as base and flux model as refiner and use as usual refiner workflow  
+- **img2img**, **inpaint** and **outpaint** support  
+  *note* flux may require higher denoising strength than typical sd/sdxl models  
+  *note*: img2img is not yet supported with controlnet  
+- transformer/unet support *fp8/fp4* quantization  
+  this brings supported quants to: *nf4/fp8/fp4/qint8/qint4*
+- vae support *fp16*  
+- **lora** support additional training tools  
+- **face-hires** support  
+- support **fuse-qkv** projections  
+  can speed up generate  
+  enable via *settings -> compute -> fused projections*  
+
+**Other improvements & Fixes:**
+- [CogVideoX](https://huggingface.co/THUDM/CogVideoX-5b)  
+  - support for both **2B** and **5B** variations  
+  - support for both **text2video** and **video2video** modes
+  - simply select in *scripts -> cogvideox*  
+  - as with any video modules, includes additional frame interpolation using RIFE  
+  - if init video is used, it will be automatically resized and interpolated to desired number of frames  
+- **AnimateDiff**:  
+  - **prompt travel**  
+     create video which travels between different prompts at different steps!  
+     example prompt:
+      > 0: dog  
+      > 5: cat  
+      > 10: bird  
+  - support for **v3** model (finally)  
+  - support for **LCM** model  
+  - support for **free-noise** rolling context window  
+    allow for creation of much longer videos, automatically enabled if frames > 16  
+- **Context-aware** image resize, thanks @AI-Casanova!  
+  based on [seam-carving](https://github.com/li-plus/seam-carving)  
+  allows for *img2img/inpaint* even at massively different aspect ratios without distortions!  
+  simply select as resize method when using *img2img* or *control* tabs  
+- **HDR** high-dynamic-range image create for SD and SDXL  
+  create hdr images from in multiple exposures by latent-space modifications during generation  
+  use via *scripts -> hdr*  
+  option *save hdr images* creates images in standard 8bit/channel (hdr-effect) *and* 16bit/channel (full-hdr) PNG format  
+  ui result is always 8bit/channel hdr-effect image plus grid of original images used to create hdr  
+  grid image can be disabled via settings -> user interface -> show grid  
+  actual full-hdr image is not displayed in ui, only optionally saved to disk  
+- new scheduler: [DC Solver](https://github.com/wl-zhao/DC-Solver)  
+- **color grading** apply professional color grading to your images  
+  using industry-standard *.cube* LUTs!
+  enable via *scripts -> color-grading*  
+- **hires** workflow now allows for full resize options  
+  not just limited width/height/scale  
+- **xyz grid** is now availabe as both local and global script!
+- **prompt enhance**: improve quality and/or verbosity of your prompts  
+  simply select in *scripts -> prompt enhance*
+  uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
+- **taesd** configurable number of layers  
+  can be used to speed-up taesd decoding by reducing number of ops  
+  e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
+  set via *settings -> live preview -> taesd decode layers*  
+- **xhinker** prompt parser handle offloaded models  
+- **control** better handle offloading  
+- **upscale** will use resize-to if set to non-zero values over resize-by  
+  applies to any upscale options, including refine workflow  
+- **networks** add option to choose if mouse-over on network should attempt to fetch additional info  
+  option:`extra_networks_fetch` enable/disable in *settings -> networks*  
+- speed up some garbage collection ops  
+- sampler settings add **dynamic shift**  
+  used by flow-matching samplers to adjust between structure and details  
+- sampler settings force base shift  
+  improves quality of the flow-matching samplers  
+- **t5** support manually downloaded models  
+  applies to all models that use t5 transformer  
+- **modern-ui** add override field  
+- full **lint** updates  
+- use `diffusers` from main branch, no longer tied to release  
+- improve diffusers/transformers/huggingface_hub progress reporting  
+- use unique identifiers for all ui components  
+- **visual query** (a.ka vqa or vlm) added support for several models
+  - [MiaoshouAI PromptGen 1.5 Base](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v1.5)
+  - [MiaoshouAI PromptGen 1.5 Large](https://huggingface.co/MiaoshouAI/Florence-2-large-PromptGen-v1.5)
+  - [CogFlorence 2.2 Large](https://huggingface.co/thwri/CogFlorence-2.2-Large)
+- **modernui** update  
+- **zluda** update to 3.8.4, thanks @lshqqytiger!
+- **ipex** update to 2.3.110+xpu on linux, thanks @Disty0!
+- **openvino** update to 2024.3.0, thanks @Disty0!
+- update `requirements`
+- fix **AuraFlow**  
+- fix handling of model configs if offline config is not available  
+- fix vae decode in backend original  
+- fix model path typos  
+- fix guidance end handler  
+- fix script sorting  
+- fix vae dtype during load  
+- fix all ui labels are unique
+
 ## Update for 2024-08-31
 
 ### Highlights for 2024-08-31

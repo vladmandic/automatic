@@ -74,7 +74,6 @@ def progressapi(req: ProgressRequest):
     predicted = elapsed / progress if progress > 0 else None
     eta = predicted - elapsed if predicted is not None else None
     # shared.log.debug(f'Progress: step={step_x}:{step_y} batch={batch_x}:{batch_y} current={current} total={total} progress={progress} elapsed={elapsed} eta={eta}')
-
     id_live_preview = req.id_live_preview
     live_preview = None
     shared.state.set_current_image()

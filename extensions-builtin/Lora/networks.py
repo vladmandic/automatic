@@ -97,10 +97,17 @@ def load_diffusers(name, network_on_disk, lora_scale=1.0) -> network.Network:
     try:
         shared.sd_model.load_lora_weights(network_on_disk.filename, adapter_name=name)
     except Exception as e:
-        errors.display(e, "LoRA")
-        return None
-    diffuser_loaded.append(name)
-    diffuser_scales.append(lora_scale)
+        if 'already in use' in str(e):
+            # shared.log.warning(f"LoRA load failed: file={network_on_disk.filename} {e}")
+            pass
+        else:
+            shared.log.error(f"LoRA load failed: file={network_on_disk.filename} {e}")
+            if debug:
+                errors.display(e, "LoRA")
+            return None
+    if name not in diffuser_loaded:
+        diffuser_loaded.append(name)
+        diffuser_scales.append(lora_scale)
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
     # lora_cache[name] = net
@@ -199,7 +206,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if recompile_model:
         backup_cuda_compile = shared.opts.cuda_compile
         sd_models.unload_model_weights(op='model')
-        shared.opts.cuda_compile = False
+        shared.opts.cuda_compile = []
         sd_models.reload_model_weights(op='model')
         shared.opts.cuda_compile = backup_cuda_compile
 
@@ -254,7 +261,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if recompile_model:
         shared.log.info("LoRA recompiling model")
         backup_lora_model = shared.compiled_model_state.lora_model
-        if shared.opts.cuda_compile:
+        if 'Model' in shared.opts.cuda_compile:
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model

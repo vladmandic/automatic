@@ -25,6 +25,7 @@ class Dot(dict): # dot notation access to dictionary attributes
 version = None
 current_branch = None
 log = logging.getLogger("sd")
+console = None
 debug = log.debug if os.environ.get('SD_INSTALL_DEBUG', None) is not None else lambda *args, **kwargs: None
 pip_log = '--log pip.log ' if os.environ.get('SD_PIP_DEBUG', None) is not None else ''
 log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
@@ -55,6 +56,7 @@ args = Dot({
     'uv': False,
 })
 git_commit = "unknown"
+diffusers_commit = "unknown"
 submodules_commit = {
     'sd-webui-controlnet': 'ecd33eb',
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
@@ -109,6 +111,7 @@ def setup_logging():
 
     level = logging.DEBUG if args.debug else logging.INFO
     log.setLevel(logging.DEBUG) # log to file is always at level debug for facility `sd`
+    global console # pylint: disable=global-statement
     console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",
@@ -435,19 +438,24 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    pass # noop for now, can be used to force specific version based on conditions
+    sha = '5e1427a7da6e878b958fd5a2422c7763a94ff02b'
+    pkg = pkg_resources.working_set.by_key.get('diffusers', None)
+    minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
+    cur = opts.get('diffusers_version', '') if minor > 0 else ''
+    if (minor == 0) or (cur != sha):
+        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}: current={pkg}@{cur} target={sha}')
+        if minor > 0:
+            pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
+        pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
+        global diffusers_commit # pylint: disable=global-statement
+        diffusers_commit = sha
 
 
 # check onnx version
 def check_onnx():
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
-    if not installed('onnxruntime', quiet=True) and not (
-        installed('onnxruntime-gpu', quiet=True) or
-        installed('onnxruntime-openvino', quiet=True) or
-        installed('onnxruntime-training', quiet=True)
-        ): # allow either
-
+    if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
         install('onnxruntime', 'onnxruntime', ignore=True)
 
 
@@ -492,7 +500,7 @@ def install_rocm_zluda():
             break
 
     log.info(f'ROCm version detected: {rocm.version}')
-
+    torch_command = ''
     if sys.platform == "win32":
         #if args.use_zluda:
         log.warning("ZLUDA support: experimental")
@@ -510,6 +518,7 @@ def install_rocm_zluda():
         if error is None:
             if args.device_id is not None:
                 os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
+                del args.device_id
             try:
                 zluda_installer.load(zluda_path)
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
@@ -521,7 +530,7 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
         #else:
-        # TODO TBD after ROCm for Windows is released
+        # TODO after ROCm for Windows is released
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
@@ -532,9 +541,13 @@ def install_rocm_zluda():
         else:
             torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
-        ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
-        ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
-        install(ort_package, 'onnxruntime-training')
+        if sys.version_info < (3, 11):
+            ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
+            if rocm.version is None or float(rocm.version) > 6.0:
+                ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/60 --extra-index-url https://pypi.org/simple")
+            else:
+                ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
+            install(ort_package, 'onnxruntime-training')
 
         if hip_default_device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
             log.debug(f'hipBLASLt arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
@@ -551,13 +564,8 @@ def install_ipex(torch_command):
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if "linux" in sys.platform:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post3 torchvision==0.16.0.post3 intel-extension-for-pytorch==2.1.40+xpu oneccl_bind_pt==2.1.400+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.0 intel-extension-for-tensorflow[xpu]==2.15.0.0')
-        if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-            install(os.environ.get('MKL_PACKAGE', 'mkl==2024.2.0'), 'mkl')
-            install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.2.0'), 'mkl-dpcpp')
-            install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.13.0'), 'oneccl-devel')
-            install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.13.0'), 'impi-devel')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
         if sys.version_info.minor == 11:
             pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
@@ -570,26 +578,26 @@ def install_ipex(torch_command):
             ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp310-cp310-win_amd64.whl'
             torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
         else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post0 torchvision==0.16.0.post0 intel-extension-for-pytorch==2.1.20+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post3 torchvision==0.16.0.post3 intel-extension-for-pytorch==2.1.40+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
             if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.1.0'), 'mkl')
-                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.1.0'), 'mkl-dpcpp')
-                install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.12.0'), 'oneccl-devel')
-                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.12.0'), 'impi-devel')
+                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.2.0'), 'mkl')
+                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.2.0'), 'mkl-dpcpp')
+                install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.13.0'), 'oneccl-devel')
+                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.13.0'), 'impi-devel')
         torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino', ignore=True)
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', 'nncf', ignore=True)
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     return torch_command
 
 
 def install_openvino(torch_command):
-    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
+    check_python(supported_minors=[8, 9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('Using OpenVINO')
-    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2023.3.0'), 'openvino')
+    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu')
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino')
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
-    install('nncf==2.8.1', 'nncf')
+    install('nncf==2.12.0', 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')

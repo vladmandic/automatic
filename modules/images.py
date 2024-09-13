@@ -5,6 +5,7 @@ import sys
 import math
 import json
 import uuid
+import time
 import queue
 import string
 import random
@@ -214,15 +215,13 @@ def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
     return draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin)
 
 
-def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image'):
-    if im.width == width and im.height == height:
-        shared.log.debug(f'Image resize: input={im} target={width}x{height} mode={shared.resize_modes[resize_mode]} upscaler="{upscaler_name}" fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image', context=None):
     upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
 
     def latent(im, w, h, upscaler):
         from modules.processing_vae import vae_encode, vae_decode
         import torch
-        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode
+        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode for resize-latent
         latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
         im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
         return im
@@ -288,9 +287,40 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
         return res
 
+    def context_aware(im, width, height, context):
+        import seam_carving # https://github.com/li-plus/seam-carving
+        if 'forward' in context:
+            energy_mode = "forward"
+        elif 'backward' in context:
+            energy_mode = "backward"
+        else:
+            return im
+        if 'Add' in context:
+            src_ratio = min(width / im.width, height / im.height)
+            src_w = int(im.width * src_ratio)
+            src_h = int(im.height * src_ratio)
+            src_image = resize(im, src_w, src_h)
+        elif 'Remove' in context:
+            ratio = width / height
+            src_ratio = im.width / im.height
+            src_w = width if ratio > src_ratio else im.width * height // im.height
+            src_h = height if ratio <= src_ratio else im.height * width // im.width
+            src_image = resize(im, src_w, src_h)
+        else:
+            return im
+        res = Image.fromarray(seam_carving.resize(
+            src_image, # source image (rgb or gray)
+            size=(width, height),  # target size
+            energy_mode=energy_mode,  # choose from {backward, forward}
+            order="width-first",  # choose from {width-first, height-first}
+            keep_mask=None,  # object mask to protect from removal
+        ))
+        return res
+
+    t0 = time.time()
     if resize_mode is None:
         resize_mode = 0
-    if resize_mode == 0 or (im.width == width and im.height == height): # none
+    if resize_mode == 0 or (im.width == width and im.height == height) or (width == 0 and height == 0): # none
         res = im.copy()
     elif resize_mode == 1: # fixed
         res = resize(im, width, height)
@@ -302,12 +332,14 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         from modules import masking
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
+    elif resize_mode == 5:  # context-aware
+        res = context_aware(im, width, height, context)
     else:
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
-    if output_type == 'np':
-        return np.array(res)
-    return res
+    t1 = time.time()
+    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_filename}:{sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    return np.array(res) if output_type == 'np' else res
 
 
 re_nonletters = re.compile(r'[\s' + string.punctuation + ']+')
@@ -596,7 +628,7 @@ def atomically_save_image():
             shared.log.error(f'Save failed: file="{fn}" format={image_format} args={save_args} {e}')
             errors.display(e, 'Image save')
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
-        shared.log.info(f'Save: image="{fn}" type={image_format} resolution={image.width}x{image.height} size={size}')
+        shared.log.info(f'Save: image="{fn}" type={image_format} width={image.width} height={image.height} size={size}')
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):
@@ -621,9 +653,9 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
     debug(f'Save: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
     if image is None:
         shared.log.warning('Image is none')
-        return None, None
+        return None, None, None
     if not check_grid_size([image]):
-        return None, None
+        return None, None, None
     if path is None or path == '': # set default path to avoid errors when functions are triggered manually or via api and param is not set
         path = shared.opts.outdir_save
     namegen = FilenameGenerator(p, seed, prompt, image, grid=grid)
@@ -668,7 +700,7 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
         debug(f'Image marked: "{params.filename}"')
         params.image.already_saved_as = params.filename
     script_callbacks.image_saved_callback(params)
-    return params.filename, filename_txt
+    return params.filename, filename_txt, exifinfo
 
 
 def save_video_atomic(images, filename, video_type: str = 'none', duration: float = 2.0, loop: bool = False, interpolate: int = 0, scale: float = 1.0, pad: int = 1, change: float = 0.3):
@@ -719,7 +751,9 @@ def save_video(p, images, filename = None, video_type: str = 'none', duration: f
         return None
     image = images[0]
     if p is not None:
-        namegen = FilenameGenerator(p, seed=p.all_seeds[0], prompt=p.all_prompts[0], image=image)
+        seed = p.all_seeds[0] if getattr(p, 'all_seeds', None) is not None else p.seed
+        prompt = p.all_prompts[0] if getattr(p, 'all_prompts', None) is not None else p.prompt
+        namegen = FilenameGenerator(p, seed=seed, prompt=prompt, image=image)
     else:
         namegen = FilenameGenerator(None, seed=0, prompt='', image=image)
     if filename is None and p is not None:

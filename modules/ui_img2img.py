@@ -44,7 +44,7 @@ def create_ui():
         with gr.Row(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks_ui:
             from modules import ui_extra_networks
             extra_networks_ui_img2img = ui_extra_networks.create_ui(extra_networks_ui, img2img_extra_networks_button, 'img2img', skip_indexing=shared.opts.extra_network_skip_indexing)
-            timer.startup.record('ui-en')
+            timer.startup.record('ui-networks')
 
         with gr.Row(elem_id="img2img_interface", equal_height=False):
             with gr.Column(variant='compact', elem_id="img2img_settings"):
@@ -119,7 +119,7 @@ def create_ui():
                     with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
                         steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
                         ui_sections.create_sampler_options('img2img')
-                    resize_mode, resize_name, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True)
+                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True, non_zero=False)
                     batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 
@@ -139,7 +139,7 @@ def create_ui():
                             inpaint_full_res_padding = gr.Slider(label='Padding', minimum=0, maximum=256, step=4, value=32, elem_id="img2img_inpaint_full_res_padding")
                             mask_alpha = gr.Slider(label="Alpha", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id="img2img_mask_alpha")
                         with gr.Row():
-                            inpainting_mask_invert = gr.Radio(label='Mode', choices=['masked', 'invert'], value='masked', type="index", elem_id="img2img_mask_mode")
+                            inpainting_mask_invert = gr.Radio(label='Inpaint Mode', choices=['masked', 'invert'], value='masked', type="index", elem_id="img2img_mask_mode")
                             inpaint_full_res = gr.Radio(label="Inpaint area", choices=["full", "masked"], type="index", value="full", elem_id="img2img_inpaint_full_res")
                             inpainting_fill = gr.Radio(label='Masked content', choices=['fill', 'original', 'noise', 'nothing'], value='original', type="index", elem_id="img2img_inpainting_fill", visible=not shared.native)
 
@@ -187,7 +187,7 @@ def create_ui():
                 selected_scale_tab,
                 height, width,
                 scale_by,
-                resize_mode, resize_name,
+                resize_mode, resize_name, resize_context,
                 inpaint_full_res, inpaint_full_res_padding, inpainting_mask_invert,
                 img2img_batch_files, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
@@ -241,6 +241,7 @@ def create_ui():
                 (steps, "Steps"),
                 # resize
                 (resize_mode, "Resize mode"),
+                (resize_name, "Resize name"),
                 (width, "Size-1"),
                 (height, "Size-2"),
                 (scale_by, "Resize scale"),

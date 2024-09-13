@@ -12,7 +12,10 @@ loaded: str = None
 MODELS = {
     "MS Florence 2 Base": "microsoft/Florence-2-base", # 0.5GB
     "MS Florence 2 Large": "microsoft/Florence-2-large", # 1.5GB
-    "CogFlorence 2 Large": "thwri/CogFlorence-2-Large-Freeze", # 1.6GB
+    "MiaoshouAI PromptGen 1.5 Base": "MiaoshouAI/Florence-2-base-PromptGen-v1.5", # 1.1GB
+    "MiaoshouAI PromptGen 1.5 Large": "MiaoshouAI/Florence-2-large-PromptGen-v1.5", # 3.3GB
+    "CogFlorence 2.0 Large": "thwri/CogFlorence-2-Large-Freeze", # 1.6GB
+    "CogFlorence 2.2 Large": "thwri/CogFlorence-2.2-Large", # 1.6GB
     "Moondream 2": "vikhyatk/moondream2", # 3.7GB
     "GIT TextCaps Base": "microsoft/git-base-textcaps", # 0.7GB
     "GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB

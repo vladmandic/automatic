@@ -256,6 +256,7 @@ def load_scripts():
     postprocessing_scripts_data.clear()
     script_callbacks.clear_callbacks()
     scripts_list = list_scripts('scripts', '.py') + list_scripts(os.path.join('modules', 'face'), '.py')
+    scripts_list = sorted(scripts_list, key=lambda item: item.priority + item.path.lower(), reverse=False)
     syspath = sys.path
 
     def register_scripts_from_module(module, scriptfile):
@@ -488,7 +489,27 @@ class ScriptRunner:
             if not hasattr(p, 'init_images') and p.task_args.get('image', None) is not None:
                 p.init_images = p.task_args['image']
         parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
-        processed = script.run(p, *parsed)
+        if hasattr(script, 'run'):
+            processed = script.run(p, *parsed)
+        else:
+            processed = None
+            errors.log.error(f'Script: file="{script.filename}" no run function defined')
+        s.record(script.title())
+        s.report()
+        return processed
+
+    def after(self, p, processed, *args):
+        s = ScriptSummary('after')
+        script_index = args[0] if len(args) > 0 else 0
+        if script_index == 0:
+            return processed
+        script = self.selectable_scripts[script_index-1]
+        if script is None or not hasattr(script, 'after'):
+            return processed
+        parsed = p.per_script_args.get(script.title(), args[script.args_from:script.args_to])
+        after_processed = script.after(p, processed, *parsed)
+        if after_processed is not None:
+            processed = after_processed
         s.record(script.title())
         s.report()
         return processed
@@ -524,7 +545,9 @@ class ScriptRunner:
             try:
                 if (script.args_to > 0) and (script.args_to >= script.args_from):
                     args = p.per_script_args.get(script.title(), p.script_args[script.args_from:script.args_to])
-                    processed = script.process_images(p, *args, **kwargs)
+                    _processed = script.process_images(p, *args, **kwargs)
+                    if _processed is not None:
+                        processed = _processed
             except Exception as e:
                 errors.display(e, f'Running script process images: {script.filename}')
             s.record(script.title())

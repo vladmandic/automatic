@@ -23,6 +23,17 @@ def refresh_unet_list():
     modules.sd_unet.refresh_unet_list()
 
 
+def sd_t5_items():
+    import modules.model_t5
+    predefined = ['None', 'T5 FP4', 'T5 FP8', 'T5 INT8', 'T5 QINT8', 'T5 FP16']
+    return predefined + list(modules.model_t5.t5_dict)
+
+
+def refresh_t5_list():
+    import modules.model_t5
+    modules.model_t5.refresh_t5_list()
+
+
 def list_crossattention(diffusers=False):
     if diffusers:
         return [
