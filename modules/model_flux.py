@@ -107,17 +107,27 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
     install('bitsandbytes', quiet=True)
     from diffusers import FluxTransformer2DModel
     quant = get_quant(repo_path)
-    if quant == 'fp8':
-        quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
-        if transformer is None:
+    try:
+        if quant == 'fp8':
+            quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True, bnb_4bit_compute_dtype=devices.dtype)
+            debug(f'Quantization: {quantization_config}')
             transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
-    elif quant == 'fp4':
-        quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
-        if transformer is None:
+        elif quant == 'fp4':
+            quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=devices.dtype, bnb_4bit_quant_type= 'fp4')
+            debug(f'Quantization: {quantization_config}')
             transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
-    else:
-        if transformer is None:
+        elif quant == 'nf4':
+            quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=devices.dtype, bnb_4bit_quant_type= 'nf4')
+            debug(f'Quantization: {quantization_config}')
+            transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
+        else:
             transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config)
+    except Exception as e:
+        shared.log.error(f"Loading FLUX: Failed to load BnB transformer: {e}")
+        transformer, text_encoder_2 = None, None
+        if debug:
+            from modules import errors
+            errors.display(e, 'FLUX:')
     return transformer, text_encoder_2
 
 
@@ -130,17 +140,17 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         "cache_dir": shared.opts.hfcache_dir,
     }
     shared.log.info(f'Loading UNet: type=FLUX file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
-    if 'nf4' in quant:
-        from modules.model_flux_nf4 import load_flux_nf4
-        _transformer, _text_encoder_2 = load_flux_nf4(file_path)
-        if _transformer is not None:
-            transformer = _transformer
-    elif quant == 'qint8' or quant == 'qint4':
+    if quant == 'qint8' or quant == 'qint4':
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
-    elif quant == 'fp8' or quant == 'fp4':
+    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4':
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
+        if _transformer is not None:
+            transformer = _transformer
+    elif 'nf4' in quant: # TODO right now this is not working for civitai published nf4 models
+        from modules.model_flux_nf4 import load_flux_nf4
+        _transformer, _text_encoder_2 = load_flux_nf4(file_path)
         if _transformer is not None:
             transformer = _transformer
     else:
@@ -169,7 +179,10 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             from modules import sd_unet
             _transformer = load_transformer(sd_unet.unet_dict[shared.opts.sd_unet])
             if _transformer is not None:
+                sd_unet.loaded_unet = shared.opts.sd_unet
                 transformer = _transformer
+            else:
+                sd_unet.failed_unet.append(shared.opts.sd_unet)
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load UNet: {e}")
             if debug:

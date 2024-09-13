@@ -198,16 +198,23 @@ def load_flux_nf4(checkpoint_info):
 
     _replace_with_bnb_linear(transformer, "nf4")
 
-    for param_name, param in converted_state_dict.items():
-        if param_name not in expected_state_dict_keys:
-            continue
-        is_param_float8_e4m3fn = hasattr(torch, "float8_e4m3fn") and param.dtype == torch.float8_e4m3fn
-        if torch.is_floating_point(param) and not is_param_float8_e4m3fn:
-            param = param.to(devices.dtype)
-        if not check_quantized_param(transformer, param_name):
-            set_module_tensor_to_device(transformer, param_name, device=0, value=param)
-        else:
-            create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
+    try:
+        for param_name, param in converted_state_dict.items():
+            if param_name not in expected_state_dict_keys:
+                continue
+            is_param_float8_e4m3fn = hasattr(torch, "float8_e4m3fn") and param.dtype == torch.float8_e4m3fn
+            if torch.is_floating_point(param) and not is_param_float8_e4m3fn:
+                param = param.to(devices.dtype)
+            if not check_quantized_param(transformer, param_name):
+                set_module_tensor_to_device(transformer, param_name, device=0, value=param)
+            else:
+                create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
+    except Exception as e:
+        transformer, text_encoder_2 = None, None
+        shared.log.error(f"Loading FLUX: Failed to load UNET: {e}")
+        if debug:
+            from modules import errors
+            errors.display(e, 'FLUX:')
 
     del original_state_dict
     devices.torch_gc(force=True)

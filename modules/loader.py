@@ -39,6 +39,9 @@ timer.startup.record("torch")
 import transformers # pylint: disable=W0611,C0411
 timer.startup.record("transformers")
 
+import accelerate # pylint: disable=W0611,C0411
+timer.startup.record("accelerate")
+
 import onnxruntime # pylint: disable=W0611,C0411
 onnxruntime.set_default_logger_severity(3)
 timer.startup.record("onnx")
@@ -86,6 +89,8 @@ def get_packages():
         "torch": getattr(torch, "__long_version__", torch.__version__),
         "diffusers": diffusers.__version__,
         "gradio": gradio.__version__,
+        "transformers": transformers.__version__,
+        "accelerate": accelerate.__version__,
     }
 
 errors.log.info(f'Load packages: {get_packages()}')

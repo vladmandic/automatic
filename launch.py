@@ -169,6 +169,12 @@ def start_server(immediate=True, server=None):
     uvicorn = None
     if args.test:
         installer.log.info("Test only")
+        installer.log.critical('Logging: level=critical')
+        installer.log.error('Logging: level=error')
+        installer.log.warning('Logging: level=warning')
+        installer.log.info('Logging: level=info')
+        installer.log.debug('Logging: level=debug')
+        installer.log.trace('Logging: level=trace')
         server.wants_restart = False
     else:
         if args.api_only:

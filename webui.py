@@ -117,11 +117,6 @@ def initialize():
     modelloader.load_upscalers()
     timer.startup.record("upscalers")
 
-    shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
-    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
-    shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
-    timer.startup.record("onchange")
-
     shared.reload_hypernetworks()
     shared.prompt_styles.reload()
 
@@ -170,13 +165,16 @@ def load_model():
         shared.state.end()
         thread_model.join()
         thread_refiner.join()
+    timer.startup.record("checkpoint")
     shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='model')), call=False)
     shared.opts.onchange("sd_model_refiner", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='refiner')), call=False)
     shared.opts.onchange("sd_text_encoder", wrap_queued_call(lambda: modules.sd_models.reload_text_encoder()), call=False)
     shared.opts.onchange("sd_model_dict", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='dict')), call=False)
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
+    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
     shared.opts.onchange("sd_backend", wrap_queued_call(lambda: modules.sd_models.change_backend()), call=False)
-    timer.startup.record("checkpoint")
+    shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
+    timer.startup.record("onchange")
 
 
 def create_api(app):

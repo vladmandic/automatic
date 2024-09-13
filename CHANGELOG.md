@@ -1,5 +1,20 @@
 # Change Log for SD.Next
 
+## Update for 2024-09-14
+
+- flux avoid unet load if unchanged
+- flux mark specific unet as unavailable if load failed
+- xyz grid full refactor
+- xyz grid multi-mode: *selectable-script* and *alwayson-script*
+- xyz grid allow usage combined with other scripts
+- xyz grid allow **unet** selection
+- xyz grid allow passing **model args** directly:  
+  allowed params will be checked against models call signature  
+  example: `width=768; height=512, width=512; height=768`
+- xyz grid allow passing **processing args** directly:  
+  params are set directly on main processing object and can be known or new params
+  example: `steps=10, steps=20; test=unknown`
+
 ## Update for 2024-09-13
 
 ### Highlights for 2024-09-13

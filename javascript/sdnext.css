@@ -45,7 +45,7 @@ input[type='color'] { width: 64px; height: 32px; }
 .gradio-dropdown ul.options { z-index: 1000; min-width: fit-content; max-height: 50vh !important; white-space: nowrap; }
 .gradio-dropdown ul.options li.item { padding: var(--spacing-xs); }
 .gradio-dropdown ul.options li.item:not(:has(.hide)) { background-color: var(--primary-500); }
-.gradio-dropdown .token { padding: var(--spacing-xs) !important; }
+.gradio-dropdown .token { padding: var(--spacing-xs) !important; overflow-x: hidden; }
 .gradio-html { color: var(--body-text-color); }
 .gradio-html .min { min-height: 0; }
 .gradio-html div.wrap { height: 100%; }
