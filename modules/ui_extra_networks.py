@@ -590,9 +590,9 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                     ui.details_components.append(meta)
         with gr.Group(elem_id=f"{tabname}_extra_details_text", elem_classes=["extra-details-text"], visible=False) as ui.details_text:
             description = gr.Textbox(label='Description', lines=1, placeholder="Style description...")
-            prompt = gr.Textbox(label='Prompt', lines=2, placeholder="Prompt...")
-            negative = gr.Textbox(label='Negative prompt', lines=2, placeholder="Negative prompt...")
-            extra = gr.Textbox(label='Parameters', lines=2, placeholder="Generation parameters overrides...")
+            prompt = gr.Textbox(label='Network prompt', lines=2, placeholder="Prompt...")
+            negative = gr.Textbox(label='Network negative prompt', lines=2, placeholder="Negative prompt...")
+            extra = gr.Textbox(label='Network parameters', lines=2, placeholder="Generation parameters overrides...")
             wildcards = gr.Textbox(label='Wildcards', lines=2, placeholder="Wildcard prompt replacements...")
             ui.details_components += [description, prompt, negative, extra, wildcards]
             with gr.Row():

@@ -45,7 +45,7 @@ def create_ui():
                         trending = gr.Label(elem_id="interrogate_label_trending", label="Trending", num_top_classes=5)
                         flavor = gr.Label(elem_id="interrogate_label_flavor", label="Flavor", num_top_classes=5)
                     with gr.Row():
-                        clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
+                        clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLiP Model')
                         ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
                         mode = gr.Radio(['best', 'fast', 'classic', 'caption', 'negative'], label='Mode', value='best')
                     with gr.Row(elem_id='interrogate_buttons_image'):
@@ -67,7 +67,7 @@ def create_ui():
                     with gr.Row():
                         batch = gr.Text(label="Prompts", lines=10)
                     with gr.Row():
-                        clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLIP Model')
+                        clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLiP Batch Model')
                         ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
                     with gr.Row(elem_id='interrogate_buttons_batch'):
                         btn_interrogate_batch = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')

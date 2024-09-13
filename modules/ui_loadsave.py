@@ -4,6 +4,9 @@ from modules import errors
 from modules.ui_components import ToolButton
 
 
+debug = os.environ.get('SD_UI_DEBUG', None)
+
+
 class UiLoadsave:
     """allows saving and restorig default values for gradio components"""
 
@@ -43,6 +46,8 @@ class UiLoadsave:
                 setattr(obj, field, saved_value)
                 if init_field is not None:
                     init_field(saved_value)
+            if debug and key in self.component_mapping and not key.startswith('customscript'):
+                errors.log.warning(f'UI duplicate: key="{key}" id={getattr(obj, "elem_id", None)} class={getattr(obj, "elem_classes", None)}')
             if field == 'value' and key not in self.component_mapping:
                 self.component_mapping[key] = x
             if field == 'open' and key not in self.component_mapping:
@@ -194,12 +199,11 @@ class UiLoadsave:
         return text
 
     def ui_apply(self, *values):
-        from modules.shared import log
         num_changed = 0
         current_ui_settings = self.read_from_file()
         for name, old_value, new_value, default_value in self.iter_changes(values):
             component = self.component_mapping[name]
-            log.debug(f'Settings: name={name} component={component} old={old_value} default={default_value} new={new_value}')
+            errors.log.debug(f'Settings: name={name} component={component} old={old_value} default={default_value} new={new_value}')
             num_changed += 1
             current_ui_settings[name] = new_value
         if num_changed == 0:
@@ -228,11 +232,10 @@ class UiLoadsave:
             text += f"<tr><td>{k}</td><td>{'open' if opened else 'closed'}</td></tr>"
         text += "</tbody></table>"
 
-        from modules.shared import log
         num_changed = 0
         current_ui_settings = self.read_from_file()
         for name, _old_value, new_value, default_value in self.iter_menus():
-            log.debug(f'Settings: name={name} default={default_value} new={new_value}')
+            errors.log.debug(f'Settings: name={name} default={default_value} new={new_value}')
             num_changed += 1
             current_ui_settings[name] = new_value
         if num_changed == 0:
