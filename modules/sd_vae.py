@@ -192,7 +192,6 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
     if not os.path.exists(vae_file):
         shared.log.error(f'VAE not found: model{vae_file}')
         return None
-    shared.log.info(f"Loading VAE: model={vae_file} source={vae_source}")
     diffusers_load_config = {
         "low_cpu_mem_usage": False,
         "torch_dtype": devices.dtype_vae,
@@ -207,16 +206,14 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
         diffusers_load_config['variant'] = shared.opts.diffusers_vae_load_variant
     if shared.opts.diffusers_vae_upcast != 'default':
         diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
-    shared.log.debug(f'Diffusers VAE load config: {diffusers_load_config}')
+    _pipeline, model_type = sd_models.detect_pipeline(model_file, 'vae')
+    vae_config = sd_models.get_load_config(model_file, model_type, config_type='json')
+    if vae_config is not None:
+        diffusers_load_config['config'] = os.path.join(vae_config, 'vae')
+    shared.log.info(f'Load VAE: model="{vae_file}" source={vae_source} config={diffusers_load_config}')
     try:
         import diffusers
         if os.path.isfile(vae_file):
-            _pipeline, model_type = sd_models.detect_pipeline(model_file, 'vae')
-            vae_config = sd_models.get_load_config(model_file, model_type, config_type='json')
-            if vae_config is not None:
-                diffusers_load_config = {
-                    "config": os.path.join(vae_config, 'vae'),
-                }
             if os.path.getsize(vae_file) > 1310944880: # 1.3GB
                 vae = diffusers.ConsistencyDecoderVAE.from_pretrained('openai/consistency-decoder', **diffusers_load_config) # consistency decoder does not have from single file, so we'll just download it once more
             elif os.path.getsize(vae_file) < 10000000: # 10MB

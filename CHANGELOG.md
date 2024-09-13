@@ -25,7 +25,8 @@ And few video related goodies...
 
 Plus tons of other items and fixes - see [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 Examples:
-- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, global XYZ grid management, etc.
+- Built-in prompt-enhancer, TAESD optimizations, new DC-Solver scheduler, global XYZ grid management, etc.  
+- Updates to ZLUDA, IPEX, OpenVINO...
 
 ### Details for 2024-09-13
 
@@ -131,7 +132,7 @@ Examples:
   - [MiaoshouAI PromptGen 1.5 Large](https://huggingface.co/MiaoshouAI/Florence-2-large-PromptGen-v1.5)
   - [CogFlorence 2.2 Large](https://huggingface.co/thwri/CogFlorence-2.2-Large)
 - **modernui** update  
-- **zluda** update to 3.8.4, thanks @lshqqytiger
+- **zluda** update to 3.8.4, thanks @lshqqytiger!
 - **ipex** update to 2.3.110+xpu on linux, thanks @Disty0!
 - **openvino** update to 2024.3.0, thanks @Disty0!
 - update `requirements`
@@ -141,6 +142,7 @@ Examples:
 - fix model path typos  
 - fix guidance end handler  
 - fix script sorting  
+- fix vae dtype during load  
 - fix all ui labels are unique
 
 ## Update for 2024-08-31
