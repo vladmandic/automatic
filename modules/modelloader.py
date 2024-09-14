@@ -9,28 +9,38 @@ from typing import Dict
 from urllib.parse import urlparse
 from PIL import Image
 import rich.progress as p
+import huggingface_hub as hf
 from modules import shared, errors, files_cache
 from modules.upscaler import Upscaler, UpscalerLanczos, UpscalerNearest, UpscalerNone
 from modules.paths import script_path, models_path
 
 
-loggedin = False
+loggedin = None
 diffuser_repos = []
 debug = shared.log.trace if os.environ.get('SD_DOWNLOAD_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 def hf_login(token=None):
     global loggedin # pylint: disable=global-statement
-    import huggingface_hub as hf
     token = token or shared.opts.huggingface_token
-    if token is not None and len(token) > 2 and not loggedin:
+    if token is None or len(token) <= 2:
+        shared.log.debug('HF login: no token provided')
+        return
+    if os.environ.get('HUGGING_FACE_HUB_TOKEN', None) is not None:
+        shared.log.warning('HF login: removing existing env variable: HUGGING_FACE_HUB_TOKEN')
+        del os.environ['HUGGING_FACE_HUB_TOKEN']
+    if os.environ.get('HF_TOKEN', None) is not None:
+        shared.log.warning('HF login: removing existing env variable: HF_TOKEN')
+        del os.environ['HF_TOKEN']
+    if loggedin != token:
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
-            hf.login(shared.opts.huggingface_token)
+            hf.logout()
+            hf.login(token=shared.opts.huggingface_token, add_to_git_credential=False, write_permission=False)
         text = stdout.getvalue() or ''
         line = [l for l in text.split('\n') if 'Token' in l]
-        shared.log.info(f'HF login: {line[0] if len(line) > 0 else text}')
-        loggedin = True
+        shared.log.info(f'HF login: token="{hf.constants.HF_TOKEN_PATH}" {line[0] if len(line) > 0 else text}')
+        loggedin = token
 
 
 def download_civit_meta(model_path: str, model_id):
@@ -185,7 +195,6 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     if hub_id is None or len(hub_id) == 0:
         return None
     from diffusers import DiffusionPipeline
-    import huggingface_hub as hf
     shared.state.begin('HuggingFace')
     if download_config is None:
         download_config = {
@@ -298,7 +307,6 @@ def find_diffuser(name: str):
     repo = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(repo) > 0:
         return repo['name']
-    import huggingface_hub as hf
     hf_api = hf.HfApi()
     hf_filter = hf.ModelFilter(
         model_name=name,

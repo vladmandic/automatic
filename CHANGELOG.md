@@ -2,6 +2,7 @@
 
 ## Update for 2024-09-14
 
+- hf force logout/login on token change
 - flux avoid unet load if unchanged
 - flux mark specific unet as unavailable if load failed
 - xyz grid full refactor
@@ -14,6 +15,7 @@
 - xyz grid allow passing **processing args** directly:  
   params are set directly on main processing object and can be known or new params
   example: `steps=10, steps=20; test=unknown`
+- minor ui fixes
 
 ## Update for 2024-09-13
 
