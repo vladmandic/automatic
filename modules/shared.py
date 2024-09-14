@@ -1060,6 +1060,10 @@ if cmd_opts.use_xformers:
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility
 opts.data['uni_pc_order'] = opts.schedulers_solver_order # compatibility
 log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.get_optimal_device_name()} attention="{opts.cross_attention_optimization}" mode={devices.inference_context.__name__}')
+if not native:
+    log.warning('Backend=original is in maintainance-only mode')
+    opts.diffusers_offload_mode = 'none'
+
 try:
     log.info(f'Device: {print_dict(devices.get_gpu_info())}')
 except Exception as ex:
