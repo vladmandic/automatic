@@ -1939,9 +1939,7 @@ def remove_token_merging(sd_model):
 
 
 def path_to_repo(fn: str = ''):
-    print('HERE1', fn)
     repo_id = fn.replace('\\', '/').split('/')
     repo_id = '/'.join(repo_id[-2:] if len(repo_id) > 1 else repo_id)
     repo_id = repo_id.replace('models--', '').replace('--', '/')
-    print('HERE1', repo_id)
     return repo_id
