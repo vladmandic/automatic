@@ -1247,7 +1247,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     if shared.opts.disable_accelerate:
                         from diffusers.utils import import_utils
                         import_utils._accelerate_available = False # pylint: disable=protected-access
-                    if shared.opts.diffusers_to_gpu:
+                    if shared.opts.diffusers_to_gpu and model_type.startswith('Stable Diffusion'):
+                        shared.log.debug(f'Diffusers accelerate: hijack={shared.opts.diffusers_to_gpu}')
                         sd_hijack_accelerate.hijack_accelerate()
                     else:
                         sd_hijack_accelerate.restore_accelerate()
