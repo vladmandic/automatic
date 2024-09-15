@@ -23,7 +23,9 @@
   - update logging  
 - **lora** auto-apply tags to prompt  
   - controlled via *settings -> networks -> lora_apply_tags*  
-    0:disable, -1:all, n:n-tags  
+    0:disable, -1:all-tags, n:top-n-tags  
+  - uses tags from both model embedded data and civitai downloaded data  
+  - if lora contains no tags, lora name itself will be used as a tag  
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
 - **hf** force logout/login on token change  
