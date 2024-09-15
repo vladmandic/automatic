@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-14
+## Update for 2024-09-15
 
 - hf force logout/login on token change  
 - flux avoid unet load if unchanged  
@@ -16,7 +16,8 @@
   params are set directly on main processing object and can be known or new params  
   example: `steps=10, steps=20; test=unknown`  
 - backend=original is now marked as in maintenance-only mode  
-- minor ui fixes  
+- fix: minor ui optimizations  
+- fix: diffusers local model name parsing  
 
 ## Update for 2024-09-13
 
