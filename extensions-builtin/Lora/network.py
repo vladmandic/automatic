@@ -72,6 +72,7 @@ class Network:  # LoraModule
         self.bundle_embeddings = {}
         self.mtime = None
         self.mentioned_name = None
+        self.tags = None
         """the text that was used to add the network to prompt - can be either name or an alias"""
 
 

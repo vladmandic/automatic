@@ -18,7 +18,14 @@
     example: `steps=10, steps=20; test=unknown`  
 - **interrogate**  
   - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
-  - add advanced params  
+  - change default params for better memory utilization
+  - add optional advanced params  
+  - update logging  
+- **lora** auto-apply tags to prompt  
+  - controlled via *settings -> networks -> lora_apply_tags*  
+    0:disable, -1:all, n:n-tags  
+  - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
+  - used tags are also logged and registered in image metadata  
 - **hf** force logout/login on token change  
 - **backend=original** is now marked as in maintenance-only mode  
 - minor ui optimizations  

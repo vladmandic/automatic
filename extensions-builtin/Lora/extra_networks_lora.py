@@ -5,6 +5,7 @@ import networks
 import lora_patches
 from modules import extra_networks, shared
 
+
 # from https://github.com/cheald/sd-webui-loractl/blob/master/loractl/lib/utils.py
 def get_stepwise(param, step, steps):
     def sorted_positions(raw_steps):
@@ -45,16 +46,44 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         self.errors = {}
         networks.originals = lora_patches.LoraPatches()
 
-        """mapping of network names to the number of errors the network had during operation"""
+    def prompt(self, p):
+        if shared.opts.lora_apply_tags == 0:
+            return
+        all_tags = []
+        for loaded in networks.loaded_networks:
+            page = [en for en in shared.extra_networks if en.name == 'lora'][0]
+            item = page.create_item(loaded.name)
+            tags = (item or {}).get("tags", {})
+            loaded.tags = list(tags)
+            if len(loaded.tags) == 0:
+                loaded.tags.append(loaded.name)
+            if shared.opts.lora_apply_tags > 0:
+                loaded.tags = loaded.tags[:shared.opts.lora_apply_tags]
+            all_tags.extend(loaded.tags)
+        if len(all_tags) > 0:
+            shared.log.debug(f"LoRA apply: max={shared.opts.lora_apply_tags} tags{all_tags}")
+            all_tags = ', '.join(all_tags)
+            p.extra_generation_params["LoRA tags"] = all_tags
+            for i in range(len(p.all_prompts)):
+                if '_tags_' in p.all_prompts[i]:
+                    p.all_prompts[i] = p.all_prompts[i].replace('_tags_', all_tags)
+                else:
+                    p.all_prompts[i] = f"{p.all_prompts[i]}, {all_tags}"
 
-    def activate(self, p, params_list, step=0):
-        t0 = time.time()
-        self.errors.clear()
-        if len(params_list) > 0:
-            self.active = True
-            networks.originals.apply() # apply patches
-            if networks.debug:
-                shared.log.debug("LoRA activate")
+    def infotext(self, p):
+        names = [i.name for i in networks.loaded_networks]
+        if len(names) > 0:
+            p.extra_generation_params["LoRA networks"] = ", ".join(names)
+        if shared.opts.lora_add_hashes_to_infotext:
+            network_hashes = []
+            for item in networks.loaded_networks:
+                if not item.network_on_disk.shorthash:
+                    continue
+                network_hashes.append(item.network_on_disk.shorthash)
+            if len(network_hashes) > 0:
+                p.extra_generation_params["LoRA hashes"] = ", ".join(network_hashes)
+
+    def parse(self, p, params_list, step=0):
         names = []
         te_multipliers = []
         unet_multipliers = []
@@ -82,22 +111,22 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             te_multipliers.append(te_multiplier)
             unet_multipliers.append(unet_multiplier)
             dyn_dims.append(dyn_dim)
+        return names, te_multipliers, unet_multipliers, dyn_dims
+
+    def activate(self, p, params_list, step=0):
+        t0 = time.time()
+        self.errors.clear()
+        if len(params_list) > 0:
+            self.active = True
+            networks.originals.apply() # apply patches
+            if networks.debug:
+                shared.log.debug("LoRA activate")
         t1 = time.time()
+        names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
         t2 = time.time()
-        if shared.opts.lora_add_hashes_to_infotext:
-            network_hashes = []
-            for item in networks.loaded_networks:
-                shorthash = item.network_on_disk.shorthash
-                if not shorthash:
-                    continue
-                alias = item.mentioned_name
-                if not alias:
-                    continue
-                alias = alias.replace(":", "").replace(",", "")
-                network_hashes.append(f"{alias}: {shorthash}")
-            if network_hashes:
-                p.extra_generation_params["Lora hashes"] = ", ".join(network_hashes)
+        self.infotext(p)
+        self.prompt(p)
         if len(names) > 0 and step == 0:
             shared.log.info(f'LoRA apply: {names} patch={t1-t0:.2f} load={t2-t1:.2f}')
         elif self.active:

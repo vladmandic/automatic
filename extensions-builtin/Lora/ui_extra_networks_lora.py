@@ -56,7 +56,6 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                 tag = ' '.join(words[1:]).lower()
                 tags[tag] = words[0]
 
-
             def find_version():
                 found_versions = []
                 current_hash = l.hash[:8].upper()
