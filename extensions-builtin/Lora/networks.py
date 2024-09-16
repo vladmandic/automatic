@@ -512,6 +512,8 @@ def list_available_networks():
         try:
             entry = network.NetworkOnDisk(name, filename)
             available_networks[entry.name] = entry
+            if '.' in entry.name:
+                available_networks[entry.name.replace('.', '_')] = entry
             if entry.alias in available_network_aliases:
                 forbidden_network_aliases[entry.alias.lower()] = 1
             if shared.opts.lora_preferred_name == 'filename':

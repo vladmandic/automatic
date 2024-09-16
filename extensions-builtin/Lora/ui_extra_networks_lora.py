@@ -6,6 +6,9 @@ import networks
 from modules import shared, ui_extra_networks
 
 
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
+
+
 class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def __init__(self):
         super().__init__('Lora')
@@ -16,6 +19,10 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
     def create_item(self, name):
         l = networks.available_networks.get(name)
+        if l is None:
+            shared.log.warning(f'Networks: type=lora registered={len(list(networks.available_networks))} file="{name}" not registered')
+            print(networks.available_networks)
+            return None
         try:
             # path, _ext = os.path.splitext(l.filename)
             name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
@@ -103,9 +110,10 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
             return item
         except Exception as e:
-            shared.log.debug(f"Networks error: type=lora file={name} {e}")
-            from modules import errors
-            errors.display('e', 'Lora')
+            shared.log.error(f"Networks: type=lora file={name} {e}")
+            if debug:
+                from modules import errors
+                errors.display('e', 'Lora')
             return None
 
     def list_items(self):
