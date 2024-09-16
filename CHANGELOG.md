@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-15
+## Update for 2024-09-16
 
 - **flux**
   - avoid unet load if unchanged  
@@ -23,11 +23,12 @@
   - update logging  
 - **lora** auto-apply tags to prompt  
   - controlled via *settings -> networks -> lora_apply_tags*  
-    0:disable, -1:all-tags, n:top-n-tags  
+    *0:disable, -1:all-tags, n:top-n-tags*  
   - uses tags from both model embedded data and civitai downloaded data  
   - if lora contains no tags, lora name itself will be used as a tag  
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
+  - correct using of `extra_networks_default_multiplier` if not scale is specified
 - **hf** force logout/login on token change  
 - **backend=original** is now marked as in maintenance-only mode  
 - minor ui optimizations  

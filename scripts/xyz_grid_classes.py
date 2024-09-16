@@ -35,6 +35,7 @@ class SharedSettingsStackHelper(object):
     sd_vae = None
     sd_unet = None
     sd_text_encoder = None
+    extra_networks_default_multiplier = None
 
     def __enter__(self):
         #Save overridden settings so they can be restored later.
@@ -48,6 +49,7 @@ class SharedSettingsStackHelper(object):
         self.sd_vae = shared.opts.sd_vae
         self.sd_unet = shared.opts.sd_unet
         self.sd_text_encoder = shared.opts.sd_text_encoder
+        self.extra_networks_default_multiplier = shared.opts.extra_networks_default_multiplier
 
     def __exit__(self, exc_type, exc_value, tb):
         #Restore overriden settings after plot generation.
@@ -55,6 +57,7 @@ class SharedSettingsStackHelper(object):
         shared.opts.data["schedulers_solver_order"] = self.schedulers_solver_order
         shared.opts.data["tome_ratio"] = self.tome_ratio
         shared.opts.data["todo_ratio"] = self.todo_ratio
+        shared.opts.data["extra_networks_default_multiplier"] = self.extra_networks_default_multiplier
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:
             shared.opts.data["sd_model_checkpoint"] = self.sd_model_checkpoint
             sd_models.reload_model_weights(op='model')

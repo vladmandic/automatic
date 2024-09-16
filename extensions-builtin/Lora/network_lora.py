@@ -71,5 +71,4 @@ class NetworkModuleLora(network.NetworkModule):
         self.down_model.to(device=devices.device)
         if hasattr(y, "scale"):
             return y(scale=1) + self.up_model(self.down_model(x)) * self.multiplier() * self.calc_scale()
-
         return y + self.up_model(self.down_model(x)) * self.multiplier() * self.calc_scale()

@@ -91,7 +91,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         for params in params_list:
             assert params.items
             names.append(params.positional[0])
-            te_multiplier = params.named.get("te", params.positional[1] if len(params.positional) > 1 else 1.0)
+            te_multiplier = params.named.get("te", params.positional[1] if len(params.positional) > 1 else shared.opts.extra_networks_default_multiplier)
             if isinstance(te_multiplier, str) and "@" in te_multiplier:
                 te_multiplier = get_stepwise(te_multiplier, step, p.steps)
             else:
@@ -125,10 +125,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
         t2 = time.time()
-        self.infotext(p)
-        self.prompt(p)
         if len(names) > 0 and step == 0:
-            shared.log.info(f'LoRA apply: {names} patch={t1-t0:.2f} load={t2-t1:.2f}')
+            self.infotext(p)
+            self.prompt(p)
+            shared.log.info(f'LoRA apply: {names} patch={t1-t0:.2f} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t2-t1:.2f}')
         elif self.active:
             self.active = False
 
