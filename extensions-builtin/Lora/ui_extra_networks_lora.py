@@ -45,7 +45,9 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
             info = self.find_info(l.filename)
 
             tags = {}
+            modelspec_tags = l.metadata.get('modelspec.tags', {}) if l.metadata is not None else {}
             possible_tags = l.metadata.get('ss_tag_frequency', {}) if l.metadata is not None else {} # tags from model metedata
+            possible_tags.update(modelspec_tags)
             if isinstance(possible_tags, str):
                 possible_tags = {}
             for k, v in possible_tags.items():
