@@ -50,11 +50,13 @@ def apply_prompt(p, x, xs):
         shared.log.warning(f"XYZ grid: prompt S/R did not find {xs[0]} in prompt or negative prompt.")
     else:
         p.prompt = p.prompt.replace(xs[0], x)
-        for i in range(len(p.all_prompts)):
-            p.all_prompts[i] = p.all_prompts[i].replace(xs[0], x)
+        if p.all_prompts is not None:
+            for i in range(len(p.all_prompts)):
+                p.all_prompts[i] = p.all_prompts[i].replace(xs[0], x)
         p.negative_prompt = p.negative_prompt.replace(xs[0], x)
-        for i in range(len(p.all_negative_prompts)):
-            p.all_negative_prompts[i] = p.all_negative_prompts[i].replace(xs[0], x)
+        if p.all_negative_prompts is not None:
+            for i in range(len(p.all_negative_prompts)):
+                p.all_negative_prompts[i] = p.all_negative_prompts[i].replace(xs[0], x)
         shared.log.debug(f'XYZ grid apply prompt: "{xs[0]}"="{x}"')
 
 

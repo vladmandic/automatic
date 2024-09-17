@@ -64,11 +64,12 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             shared.log.debug(f"LoRA apply: max={shared.opts.lora_apply_tags} tags{all_tags}")
             all_tags = ', '.join(all_tags)
             p.extra_generation_params["LoRA tags"] = all_tags
-            for i in range(len(p.all_prompts)):
-                if '_tags_' in p.all_prompts[i]:
-                    p.all_prompts[i] = p.all_prompts[i].replace('_tags_', all_tags)
-                else:
-                    p.all_prompts[i] = f"{p.all_prompts[i]}, {all_tags}"
+            if p.all_prompts is not None:
+                for i in range(len(p.all_prompts)):
+                    if '_tags_' in p.all_prompts[i]:
+                        p.all_prompts[i] = p.all_prompts[i].replace('_tags_', all_tags)
+                    else:
+                        p.all_prompts[i] = f"{p.all_prompts[i]}, {all_tags}"
 
     def infotext(self, p):
         names = [i.name for i in networks.loaded_networks]
