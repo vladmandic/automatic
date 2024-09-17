@@ -81,6 +81,14 @@ else
     exit 1
 fi
 
+# Update setuptools first to make sure launch.py uses the right
+# version of it.
+setuptools=$(grep setuptools requirements.txt)
+if test ! -z "${setuptools}"; then
+    echo "Update ${setuptools} first"
+    pip install -qqq --upgrade "${setuptools}"
+fi
+
 # Add venv lib folder to PATH
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
