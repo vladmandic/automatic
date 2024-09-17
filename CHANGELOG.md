@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-16
+## Update for 2024-09-17
 
 - **flux**
   - avoid unet load if unchanged  
@@ -31,6 +31,7 @@
   - correct using of `extra_networks_default_multiplier` if not scale is specified
 - **hf** force logout/login on token change  
 - **backend=original** is now marked as in maintenance-only mode  
+- **python 3.12** improved compatibility, automatically handle `setuptools`  
 - minor ui optimizations  
 
 ## Update for 2024-09-13

@@ -9,12 +9,6 @@ import platform
 import subprocess
 import cProfile
 
-try:
-    import pkg_resources # python 3.12 no longer has it built-in
-except ImportError:
-    stdout = subprocess.run(f'"{sys.executable}" -m pip install setuptools', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    import pkg_resources
-
 
 class Dot(dict): # dot notation access to dictionary attributes
     __getattr__ = dict.get
@@ -22,6 +16,7 @@ class Dot(dict): # dot notation access to dictionary attributes
     __delattr__ = dict.__delitem__
 
 
+pkg_resources, setuptools, distutils = None, None, None # defined via ensure_base_requirements
 version = None
 current_branch = None
 log = logging.getLogger("sd")
@@ -88,10 +83,6 @@ def setup_logging():
         def get(self):
             return self.buffer
 
-    install('rich', 'rich', quiet=True)
-    install('setuptools==69.5.1', 'setuptools', quiet=True)
-    install('psutil', 'psutil', quiet=True)
-    install('requests', 'requests', quiet=True)
     from functools import partial, partialmethod
     from logging.handlers import RotatingFileHandler
     from rich.theme import Theme
@@ -187,8 +178,8 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
     try:
         if reload:
             try:
-                import imp # pylint: disable=deprecated-module
-                imp.reload(pkg_resources)
+                import importlib # pylint: disable=deprecated-module
+                importlib.reload(pkg_resources)
             except Exception:
                 pass
         if friendly:
@@ -278,8 +269,8 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         deps = '' if not no_deps else '--no-deps '
         res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv")
         try:
-            import imp # pylint: disable=deprecated-module
-            imp.reload(pkg_resources)
+            import importlib # pylint: disable=deprecated-module
+            importlib.reload(pkg_resources)
         except Exception:
             pass
     return res
@@ -902,22 +893,38 @@ def install_submodules(force=True):
 
 
 def ensure_base_requirements():
+    setuptools_version = '69.5.1'
+
+    def update_setuptools():
+        # print('Install base requirements')
+        global pkg_resources, setuptools, distutils # pylint: disable=global-statement
+        # python may ship with incompatible setuptools
+        subprocess.run(f'"{sys.executable}" -m pip install setuptools=={setuptools_version}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        import importlib
+        # need to delete all references to modules to be able to reload them otherwise python will use cached version
+        modules = [m for m in sys.modules if m.startswith('setuptools') or m.startswith('pkg_resources') or m.startswith('distutils')]
+        for m in modules:
+            del sys.modules[m]
+        setuptools = importlib.import_module('setuptools')
+        sys.modules['setuptools'] = setuptools
+        distutils = importlib.import_module('distutils')
+        sys.modules['distutils'] = distutils
+        pkg_resources = importlib.import_module('pkg_resources')
+        sys.modules['pkg_resources'] = pkg_resources
+
     try:
-        import setuptools # pylint: disable=unused-import
+        global pkg_resources, setuptools # pylint: disable=global-statement
+        import pkg_resources # pylint: disable=redefined-outer-name
+        import setuptools # pylint: disable=redefined-outer-name
+        if setuptools.__version__ != setuptools_version:
+            update_setuptools()
     except ImportError:
-        install('setuptools==69.5.1', 'setuptools')
-    try:
-        import setuptools # pylint: disable=unused-import
-    except ImportError:
-        pass
-    try:
-        import rich # pylint: disable=unused-import
-    except ImportError:
-        install('rich', 'rich')
-    try:
-        import rich # pylint: disable=unused-import
-    except ImportError:
-        pass
+        update_setuptools()
+
+    # used by installler itself so must be installed before requirements
+    install('rich', 'rich', quiet=True)
+    install('psutil', 'psutil', quiet=True)
+    install('requests', 'requests', quiet=True)
 
 
 def install_requirements():

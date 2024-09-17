@@ -89,7 +89,7 @@ def get_provider() -> Tuple:
 
 
 def install_execution_provider(ep: ExecutionProvider):
-    import imp  # pylint: disable=deprecated-module
+    import importlib  # pylint: disable=deprecated-module
     from installer import installed, install, uninstall
     res = "<br><pre>"
     res += uninstall(["onnxruntime", "onnxruntime-directml", "onnxruntime-gpu", "onnxruntime-training", "onnxruntime-openvino"], quiet=True)
@@ -112,5 +112,5 @@ def install_execution_provider(ep: ExecutionProvider):
     res += '</pre><br>'
     res += 'Server restart required'
     log.info("Server restart required")
-    imp.reload(ort)
+    importlib.reload(ort)
     return res
