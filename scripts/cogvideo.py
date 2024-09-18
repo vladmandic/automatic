@@ -40,7 +40,7 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML("<span>&nbsp CogVideoX</span><br>")
         with gr.Row():
-            model = gr.Dropdown(label='Model', choices=['None', 'THUDM/CogVideoX-2b', 'THUDM/CogVideoX-5b'], value='THUDM/CogVideoX-2b')
+            model = gr.Dropdown(label='Model', choices=['None', 'THUDM/CogVideoX-2b', 'THUDM/CogVideoX-5b', 'THUDM/CogVideoX-5b-I2V'], value='THUDM/CogVideoX-2b')
             sampler = gr.Dropdown(label='Sampler', choices=['DDIM', 'DPM'], value='DDIM')
         with gr.Row():
             frames = gr.Slider(label='Frames', minimum=1, maximum=100, step=1, value=49)
@@ -53,8 +53,8 @@ class Script(scripts.Script):
             duration = gr.Slider(label='Duration', minimum=0.25, maximum=30, step=0.25, value=8, visible=False)
         with gr.Accordion('Optional init video', open=False):
             with gr.Row():
-                image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256, visible=False)
-                video = gr.Video(value=None, label='Video', source='upload', width=256, height=256, visible=True)
+                image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256)
+                video = gr.Video(value=None, label='Video', source='upload', width=256, height=256)
         with gr.Row():
             loop = gr.Checkbox(label='Loop', value=True, visible=False)
             pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
@@ -62,13 +62,14 @@ class Script(scripts.Script):
         video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, loop, pad, interpolate])
         return [model, sampler, frames, guidance, offload, override, video_type, duration, loop, pad, interpolate, image, video]
 
-    def load(self, model, txt):
+    def load(self, model):
         if (shared.sd_model_type != 'cogvideox' or shared.sd_model.sd_model_checkpoint != model) and model != 'None':
             sd_models.unload_model_weights('model')
             shared.log.info(f'CogVideoX load: model="{model}"')
             try:
                 shared.sd_model = None
-                shared.sd_model = diffusers.CogVideoXPipeline.from_pretrained(model, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
+                cls = diffusers.CogVideoXImageToVideoPipeline if 'I2V' in model else diffusers.CogVideoXPipeline
+                shared.sd_model = cls.from_pretrained(model, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir)
                 shared.sd_model.sd_checkpoint_info = sd_models.CheckpointInfo(model)
                 shared.sd_model.sd_model_hash = ''
                 shared.sd_model.sd_model_checkpoint = model
@@ -77,7 +78,6 @@ class Script(scripts.Script):
                 if debug:
                     errors.display(e, 'CogVideoX')
         if shared.sd_model_type == 'cogvideox' and model != 'None':
-            shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXPipeline if txt else diffusers.CogVideoXVideoToVideoPipeline, shared.sd_model)
             shared.sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m', ncols=80, colour='#327fba')
             shared.log.debug(f'CogVideoX load: class="{shared.sd_model.__class__.__name__}"')
         if shared.sd_model is not None and model == 'None':
@@ -136,16 +136,14 @@ class Script(scripts.Script):
                 errors.display(e, 'CogVideoX')
         return frames
 
-    """
     def image(self, p, img):
-        shared.log.debug(f'CogVideoX input: image={img}')
         img = img.resize((p.width, p.height))
-        frames = [np.array(img)]
-        frames = [transforms.ToTensor()(frame) for frame in frames]
-        return frames
-    """
+        shared.log.debug(f'CogVideoX input: image={img}')
+        # frames = [np.array(img)]
+        # frames = [transforms.ToTensor()(frame) for frame in frames]
+        return img
 
-    def generate(self, p: processing.StableDiffusionProcessing):
+    def generate(self, p: processing.StableDiffusionProcessing, model: str):
         if shared.sd_model_type != 'cogvideox':
             return []
         shared.log.info(f'CogVideoX: sampler={p.sampler} steps={p.steps} frames={p.frames} width={p.width} height={p.height} seed={p.seed} guidance={p.guidance}')
@@ -172,12 +170,24 @@ class Script(scripts.Script):
                 callback_on_step_end_tensor_inputs=['latents'],
             )
             if getattr(p, 'image', False):
-                raise ValueError('CogVideoX: image not supported') # TODO image2video
-                # args['latents'] = self.image(p, p.image)
-            elif getattr(p, 'video', False):
-                args['video'] = self.video(p, p.video)
-            else:
+                if 'I2V' not in model:
+                    shared.log.error(f'CogVideoX: model={model} image input not supported')
+                    return []
+                args['image'] = self.image(p, p.image)
                 args['num_frames'] = p.frames # only txt2vid has num_frames
+                shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXImageToVideoPipeline, shared.sd_model)
+            elif getattr(p, 'video', False):
+                if 'I2V' in model:
+                    shared.log.error(f'CogVideoX: model={model} image input not supported')
+                    return []
+                args['video'] = self.video(p, p.video)
+                shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXVideoToVideoPipeline, shared.sd_model)
+            else:
+                if 'I2V' in model:
+                    shared.log.error(f'CogVideoX: model={model} image input not supported')
+                    return []
+                args['num_frames'] = p.frames # only txt2vid has num_frames
+                shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXPipeline, shared.sd_model)
             if debug:
                 shared.log.debug(f'CogVideoX args: {args}')
             frames = shared.sd_model(**args).frames[0]
@@ -211,10 +221,9 @@ class Script(scripts.Script):
         p.negative_prompt = shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)
         p.image = image
         p.video = video
-        txt = image is None and video is None
-        self.load(model, txt)
+        self.load(model)
         self.offload(offload)
-        frames = self.generate(p)
+        frames = self.generate(p, model)
         devices.torch_gc()
         processed = processing.Processed(p, images_list=frames)
         shared.state.end()

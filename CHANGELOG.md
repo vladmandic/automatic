@@ -43,6 +43,9 @@
 - **huggingface**:
   - force logout/login on token change  
   - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths
+- **cogvideox**:
+  - add support for *image2video* (in addition to previous *text2video* and *video2video*)  
+  - *note*: *image2video* requires separate 5b model variant  
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - massive log cleanup
