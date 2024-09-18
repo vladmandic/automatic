@@ -2,15 +2,14 @@ import os
 import copy
 import re
 import inspect
-from modules import shared
+from modules import shared, errors
 from modules import sd_samplers_common
 from modules.tcd import TCDScheduler
 from modules.dcsolver import DCSolverMultistepScheduler #https://github.com/wl-zhao/DC-Solver
-
+from modules.vdm import VDMScheduler
 
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: SAMPLER')
-
 
 try:
     from diffusers import (
@@ -40,7 +39,8 @@ try:
 except Exception as e:
     import diffusers
     shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
-
+    if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
+        errors.display(e, 'Samplers')
 
 config = {
     # beta_start, beta_end are typically per-scheduler, but we don't want them as they should be taken from the model itself as those are values model was trained on
@@ -68,6 +68,7 @@ config = {
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
     'Euler SGM': { 'timestep_spacing': "trailing", 'prediction_type': "sample" },
     'Euler EDM': { },
+    'Variational VDM': { 'clip_sample_range': 2.0, },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
     'Euler FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, 'use_dynamic_shifting': False },
@@ -104,6 +105,7 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Variational VDM', lambda model: DiffusionSampler('Variational VDM', VDMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
 
@@ -178,7 +180,7 @@ class DiffusionSampler:
             del self.config['beta_start']
             del self.config['beta_end']
             del self.config['beta_schedule']
-        if name in {'IPNDM', 'CMSI'}:
+        if name in {'IPNDM', 'CMSI', 'Variational VDM'}:
             del self.config['beta_start']
             del self.config['beta_end']
             del self.config['beta_schedule']

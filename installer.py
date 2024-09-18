@@ -975,7 +975,7 @@ def set_environment():
     os.environ.setdefault('KINETO_LOG_LEVEL', '3')
     os.environ.setdefault('DO_NOT_TRACK', '1')
     os.environ.setdefault('HF_HUB_CACHE', opts.get('hfcache_dir', os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')))
-    log.info(f'HF cache folder: {os.environ.get("HF_HUB_CACHE")}')
+    log.debug(f'Huggingface folders: home="{os.environ.get("HF_HUB")}" cache="{os.environ.get("HF_HUB_CACHE")}"')
     allocator = f'garbage_collection_threshold:{opts.get("torch_gc_threshold", 80)/100:0.2f},max_split_size_mb:512'
     if opts.get("torch_malloc", "native") == 'cudaMallocAsync':
         allocator += ',backend:cudaMallocAsync'
