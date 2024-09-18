@@ -76,7 +76,14 @@ def create_path(folder):
 
 def create_paths(opts):
     def fix_path(folder):
-        tgt = opts.data.get(folder, None) or opts.data_labels[folder].default
+        print('HERE', folder, folder in opts.data, folder in opts.data_labels)
+        tgt = None
+        if folder in opts.data:
+            tgt = opts.data[folder]
+        elif folder in opts.data_labels:
+            tgt = opts.data_labels[folder].default
+        else:
+            log.warning(f'Path: folder="{folder}" unknown')
         if tgt is None or tgt == '':
             return tgt
         fix = tgt
@@ -87,6 +94,7 @@ def create_paths(opts):
         fix = fix if os.path.isabs(fix) else os.path.relpath(fix, script_path)
         opts.data[folder] = fix
         debug(f'Paths: folder="{folder}" original="{tgt}" target="{fix}"')
+        print('HERE', opts.data[folder])
         return opts.data[folder]
 
     create_path(data_path)

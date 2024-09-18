@@ -197,9 +197,10 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                 else:
                     prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
                 prompt_embeds.append(prompt_embed)
-                positive_pooleds.append(positive_pooled)
                 negative_embeds.append(negative_embed)
-                negative_pooleds.append(negative_pooled)
+                if positive_pooled and negative_pooled:
+                    positive_pooleds.append(positive_pooled)
+                    negative_pooleds.append(negative_pooled)
             last_prompt, last_negative = prompt, negative
 
         def fix_length(embeds):
@@ -213,8 +214,9 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
 
         p.prompt_embeds.append(fix_length(prompt_embeds))
         p.negative_embeds.append(fix_length(negative_embeds))
-        p.positive_pooleds.append(fix_length(positive_pooleds))
-        p.negative_pooleds.append(fix_length(negative_pooleds))
+        if len(positive_pooleds) > 0 and len(negative_pooleds) > 0: # sd15 does not have pooled embeds
+            p.positive_pooleds.append(fix_length(positive_pooleds))
+            p.negative_pooleds.append(fix_length(negative_pooleds))
 
         if shared.opts.sd_textencoder_cache and p.batch_size == 1:
             cache.update({
