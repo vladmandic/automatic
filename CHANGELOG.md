@@ -35,7 +35,8 @@
     will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
     download text encoders into folder set in settings -> system paths -> text encoders  
     default `models/Text-encoder` folder is used if no custom path is set  
-    example *clip-vit-l* models: [Detailed, Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)
+    example *clip-vit-l* models: [Detailed, Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)  
+    example *clip-vit-g* models: [OpenCLIP-Laion2b](https://huggingface.co/collections/laion/openclip-laion-2b-64fcade42d20ced4e9389b30)  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
 - **huggingface**:
