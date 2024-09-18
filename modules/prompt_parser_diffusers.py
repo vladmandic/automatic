@@ -198,7 +198,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                     prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
                 prompt_embeds.append(prompt_embed)
                 negative_embeds.append(negative_embed)
-                if positive_pooled and negative_pooled:
+                if positive_pooled is not None and negative_pooled is not None:
                     positive_pooleds.append(positive_pooled)
                     negative_pooleds.append(negative_pooled)
             last_prompt, last_negative = prompt, negative
@@ -290,9 +290,11 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
         no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(no_mask_provider)
     elif getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
+        sd_models.move_model(pipe.text_encoder, device)
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
+        sd_models.move_model(pipe.text_encoder, device)
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     return embeddings_providers
@@ -392,9 +394,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
             pos = text.index('BREAK')
             debug(f'Prompt: section="{text[:pos]}" len={len(text[:pos])} weights={weights[:pos]}')
             if len(text[:pos]) > 0:
-                embed, ptokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(
-                    text_batch=[text[:pos]], fragment_weights_batch=[weights[:pos]], device=device,
-                    should_return_tokens=True)
+                embed, ptokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[text[:pos]], fragment_weights_batch=[weights[:pos]], device=device, should_return_tokens=True)
                 provider_embed.append(embed)
             text = text[pos + 1:]
             weights = weights[pos + 1:]
