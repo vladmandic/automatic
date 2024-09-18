@@ -1,5 +1,5 @@
 from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_face_restore, apply_override, apply_processing, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
-from modules import shared, sd_samplers, ipadapter, sd_models, sd_vae, sd_unet
+from modules import shared, shared_items, sd_samplers, ipadapter, sd_models, sd_vae, sd_unet
 
 
 class AxisOption:
@@ -86,7 +86,7 @@ axis_options = [
     AxisOption("VAE", str, apply_vae, cost=0.7, choices=lambda: ['None'] + list(sd_vae.vae_dict)),
     AxisOption("LoRA", str, apply_lora, cost=0.5, choices=list_lora),
     AxisOption("LoRA strength", float, apply_setting('extra_networks_default_multiplier')),
-    AxisOption("Text encoder", str, apply_te, cost=0.7, choices=lambda: ['None', 'T5 FP4', 'T5 FP8', 'T5 FP16']),
+    AxisOption("Text encoder", str, apply_te, cost=0.7, choices=shared_items.sd_te_items),
     AxisOption("Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("Seed", int, apply_field("seed")),
     AxisOption("Steps", int, apply_field("steps")),

@@ -287,9 +287,7 @@ class EmbeddingDatabase:
             try:
                 embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
                 if shared.opts.diffusers_convert_embed and 768 in hiddensizes and 1280 in hiddensizes and 1280 not in embedding.vector_sizes and 768 in embedding.vector_sizes:
-                    embedding.vec.append(
-                        convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
-                                        text_encoders[hiddensizes.index(1280)]))
+                    embedding.vec.append(convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)], text_encoders[hiddensizes.index(1280)]))
                     embedding.vector_sizes.append(1280)
                 if (not all(vs in hiddensizes for vs in embedding.vector_sizes) or  # Skip SD2.1 in SD1.5/SDXL/SD3 vis versa
                         len(embedding.vector_sizes) > len(hiddensizes) or  # Skip SDXL/SD3 in SD1.5
@@ -311,7 +309,7 @@ class EmbeddingDatabase:
                     insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception as e:
-                    shared.log.error(f'Embedding load: name={embedding.name} fn={embedding.filename} {e}')
+                    shared.log.error(f'Embedding load: name="{embedding.name}" file="{embedding.filename}" {e}')
         return
 
     def load_from_file(self, path, filename):
@@ -418,7 +416,7 @@ class EmbeddingDatabase:
         if self.previously_displayed_embeddings != displayed_embeddings:
             self.previously_displayed_embeddings = displayed_embeddings
             t1 = time.time()
-            shared.log.info(f"Load embeddings: loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)} time={t1-t0:.2f}")
+            shared.log.info(f"Load network: type=embeddings loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)} time={t1-t0:.2f}")
 
 
     def find_embedding_at_position(self, tokens, offset):

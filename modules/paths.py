@@ -101,7 +101,7 @@ def create_paths(opts):
     create_path(fix_path('diffusers_dir'))
     create_path(fix_path('vae_dir'))
     create_path(fix_path('unet_dir'))
-    create_path(fix_path('t5_dir'))
+    create_path(fix_path('te_dir'))
     create_path(fix_path('lora_dir'))
     create_path(fix_path('embeddings_dir'))
     create_path(fix_path('hypernetwork_dir'))

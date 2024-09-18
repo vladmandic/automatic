@@ -139,7 +139,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         "torch_dtype": devices.dtype,
         "cache_dir": shared.opts.hfcache_dir,
     }
-    shared.log.info(f'Loading UNet: type=FLUX file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
+    shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
     if quant == 'qint8' or quant == 'qint4':
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
@@ -191,7 +191,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if shared.opts.sd_text_encoder != 'None':
         try:
             debug(f'Loading FLUX: t5="{shared.opts.sd_text_encoder}"')
-            from modules.model_t5 import load_t5
+            from modules.model_te import load_t5
             _text_encoder_2 = load_t5(t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
             if _text_encoder_2 is not None:
                 text_encoder_2 = _text_encoder_2

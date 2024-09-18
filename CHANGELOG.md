@@ -1,11 +1,12 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-17
+## Update for 2024-09-18
 
 - **flux**
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
+  - full prompt parser will auto-select `xhinker` for flux models
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
@@ -29,9 +30,20 @@
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
   - correct using of `extra_networks_default_multiplier` if not scale is specified
-- **hf** force logout/login on token change  
+- **text encoder**:
+  - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
+    will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
+    download text encoders into folder set in settings -> system paths -> text encoders  
+    default `models/Text-encoder` folder is used if no custom path is set  
+    example *clip-vit-l* models: [Detailed & Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)
+  - xyz grid support for text encoder  
+  - full prompt parser now correctly works with different prompts in batch  
+- **huggingface**:
+  - force logout/login on token change  
+  - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
+- massive log cleanup
 - minor ui optimizations  
 
 ## Update for 2024-09-13

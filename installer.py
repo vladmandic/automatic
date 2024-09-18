@@ -88,6 +88,7 @@ def setup_logging():
     from rich.theme import Theme
     from rich.logging import RichHandler
     from rich.console import Console
+    from rich import print as rprint
     from rich.pretty import install as pretty_install
     from rich.traceback import install as traceback_install
 
@@ -102,6 +103,7 @@ def setup_logging():
 
     level = logging.DEBUG if args.debug else logging.INFO
     log.setLevel(logging.DEBUG) # log to file is always at level debug for facility `sd`
+    log.print = rprint
     global console # pylint: disable=global-statement
     console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
         "traceback.border": "black",
@@ -789,7 +791,7 @@ def run_extension_installer(folder):
         env['PYTHONPATH'] = os.path.abspath(".")
         result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
         txt = result.stdout.decode(encoding="utf8", errors="ignore")
-        debug(f'Extension installer: file={path_installer} {txt}')
+        debug(f'Extension installer: file="{path_installer}" {txt}')
         if result.returncode != 0:
             global errors # pylint: disable=global-statement
             errors += 1
@@ -975,7 +977,6 @@ def set_environment():
     os.environ.setdefault('KINETO_LOG_LEVEL', '3')
     os.environ.setdefault('DO_NOT_TRACK', '1')
     os.environ.setdefault('HF_HUB_CACHE', opts.get('hfcache_dir', os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')))
-    log.debug(f'Huggingface folders: home="{os.environ.get("HF_HUB")}" cache="{os.environ.get("HF_HUB_CACHE")}"')
     allocator = f'garbage_collection_threshold:{opts.get("torch_gc_threshold", 80)/100:0.2f},max_split_size_mb:512'
     if opts.get("torch_malloc", "native") == 'cudaMallocAsync':
         allocator += ',backend:cudaMallocAsync'

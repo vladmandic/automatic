@@ -203,10 +203,10 @@ def open_folder(result_gallery, gallery_index = 0):
     except Exception:
         folder = shared.opts.outdir_samples
     if not os.path.exists(folder):
-        shared.log.warning(f'Folder open: folder={folder} does not exist')
+        shared.log.warning(f'Folder open: folder="{folder}" does not exist')
         return
     elif not os.path.isdir(folder):
-        shared.log.warning(f"Folder open: folder={folder} not a folder")
+        shared.log.warning(f'Folder open: folder="{folder}" not a folder')
         return
 
     if not shared.cmd_opts.hide_ui_dir_config:

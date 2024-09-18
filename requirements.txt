@@ -25,6 +25,8 @@ voluptuous
 yapf
 fasteners
 orjson
+ruff
+pylint
 invisible-watermark
 pi-heif
 safetensors==0.4.5

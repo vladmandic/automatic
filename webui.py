@@ -24,7 +24,7 @@ import modules.scripts
 import modules.sd_models
 import modules.sd_vae
 import modules.sd_unet
-import modules.model_t5
+import modules.model_te
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -91,7 +91,7 @@ def initialize():
     modules.sd_unet.refresh_unet_list()
     timer.startup.record("unet")
 
-    modules.model_t5.refresh_t5_list()
+    modules.model_te.refresh_te_list()
     timer.startup.record("unet")
 
     extensions.list_extensions()

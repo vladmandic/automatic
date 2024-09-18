@@ -52,7 +52,7 @@ def load_unet(model):
             if not hasattr(model, 'unet') or model.unet is None:
                 shared.log.error('UNet not found in current model')
                 return
-            shared.log.info(f'Loading UNet: name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" config="{config_file}"')
+            shared.log.info(f'Load module: type=UNet name="{shared.opts.sd_unet}" file="{unet_dict[shared.opts.sd_unet]}" config="{config_file}"')
             from diffusers import UNet2DConditionModel
             from safetensors.torch import load_file
             unet = UNet2DConditionModel.from_config(model.unet.config if config is None else config).to(devices.device, devices.dtype)
@@ -73,4 +73,4 @@ def refresh_unet_list():
     for file in files_cache.list_files(shared.opts.unet_dir, ext_filter=[".safetensors"]):
         name = os.path.splitext(os.path.basename(file))[0]
         unet_dict[name] = file
-    shared.log.debug(f'Available UNets: path="{shared.opts.unet_dir}" items={len(unet_dict)}')
+    shared.log.info(f'Available UNets: path="{shared.opts.unet_dir}" items={len(unet_dict)}')

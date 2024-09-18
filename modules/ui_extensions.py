@@ -37,7 +37,7 @@ def list_extensions():
     fn = os.path.join(paths.script_path, "html", "extensions.json")
     extensions_list = shared.readfile(fn, silent=True) or []
     if type(extensions_list) != list:
-        shared.log.warning(f'Invalid extensions list: file={fn}')
+        shared.log.warning(f'Invalid extensions list: file="{fn}"')
         extensions_list = []
     if len(extensions_list) == 0:
         shared.log.info('Extension list is empty: refresh required')

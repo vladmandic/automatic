@@ -50,11 +50,11 @@ def download_civit_meta(model_path: str, model_id):
     if r.status_code == 200:
         try:
             shared.writefile(r.json(), filename=fn, mode='w', silent=True)
-            msg = f'CivitAI download: id={model_id} url={url} file={fn}'
+            msg = f'CivitAI download: id={model_id} url={url} file="{fn}"'
             shared.log.info(msg)
             return msg
         except Exception as e:
-            msg = f'CivitAI download error: id={model_id} url={url} file={fn} {e}'
+            msg = f'CivitAI download error: id={model_id} url={url} file="{fn}" {e}'
             errors.display(e, 'CivitAI download error')
             shared.log.error(msg)
             return msg
@@ -66,7 +66,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     preview_file = os.path.splitext(model_path)[0] + ext
     if os.path.exists(preview_file):
         return ''
-    res = f'CivitAI download: url={preview_url} file={preview_file}'
+    res = f'CivitAI download: url={preview_url} file="{preview_file}"'
     r = shared.req(preview_url, stream=True)
     total_size = int(r.headers.get('content-length', 0))
     block_size = 16384 # 16KB blocks
@@ -88,7 +88,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     except Exception as e:
         os.remove(preview_file)
         res += f' error={e}'
-        shared.log.error(f'CivitAI download error: url={preview_url} file={preview_file} written={written} {e}')
+        shared.log.error(f'CivitAI download error: url={preview_url} file="{preview_file}" written={written} {e}')
     shared.state.end()
     if img is None:
         return res
@@ -281,7 +281,7 @@ def load_diffusers_models(clear=True):
                 friendly = os.path.join(place, name)
                 snapshots = os.listdir(os.path.join(folder, "snapshots"))
                 if len(snapshots) == 0:
-                    shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
+                    shared.log.warning(f'Diffusers folder has no snapshots: location="{place}" folder="{folder}" name="{name}"')
                     continue
                 for snapshot in snapshots:
                     commit = os.path.join(folder, 'snapshots', snapshot)
@@ -296,10 +296,10 @@ def load_diffusers_models(clear=True):
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue
             except Exception as e:
-                debug(f"Error analyzing diffusers model: {folder} {e}")
+                debug(f'Error analyzing diffusers model: "{folder}" {e}')
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
+    shared.log.debug(f'Scanning diffusers cache: folder="{place}" items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
     return diffuser_repos
 
 
@@ -444,7 +444,7 @@ def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_
         file_name = os.path.basename(parts.path)
     cached_file = os.path.abspath(os.path.join(model_dir, file_name))
     if not os.path.exists(cached_file):
-        shared.log.info(f'Downloading: url="{url}" file={cached_file}')
+        shared.log.info(f'Downloading: url="{url}" file="{cached_file}"')
         download_url_to_file(url, cached_file)
     if os.path.exists(cached_file):
         return cached_file
@@ -577,5 +577,5 @@ def load_upscalers():
         names.append(name[8:])
     shared.sd_upscalers = sorted(datas, key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else "") # Special case for UpscalerNone keeps it at the beginning of the list.
     t1 = time.time()
-    shared.log.debug(f"Load upscalers: total={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} {names}")
+    shared.log.info(f"Available Upscalers: items={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} types={names}")
     return [x.name for x in shared.sd_upscalers]

@@ -161,15 +161,15 @@ def list_models():
     if shared.cmd_opts.ckpt is not None:
         if not os.path.exists(shared.cmd_opts.ckpt) and not shared.native:
             if shared.cmd_opts.ckpt.lower() != "none":
-                shared.log.warning(f"Requested checkpoint not found: {shared.cmd_opts.ckpt}")
+                shared.log.warning(f"Requested model not found: {shared.cmd_opts.ckpt}")
         else:
             checkpoint_info = CheckpointInfo(shared.cmd_opts.ckpt)
             if checkpoint_info.name is not None:
                 checkpoint_info.register()
                 shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
     elif shared.cmd_opts.ckpt != shared.default_sd_model_file and shared.cmd_opts.ckpt is not None:
-        shared.log.warning(f"Checkpoint not found: {shared.cmd_opts.ckpt}")
-    shared.log.info(f'Available models: path="{shared.opts.ckpt_dir}" items={len(checkpoints_list)} time={time.time()-t0:.2f}')
+        shared.log.warning(f"Model not found: {shared.cmd_opts.ckpt}")
+    shared.log.info(f'Available Models: path="{shared.opts.ckpt_dir}" items={len(checkpoints_list)} time={time.time()-t0:.2f}')
     checkpoints_list = dict(sorted(checkpoints_list.items(), key=lambda cp: cp[1].filename))
 
 
@@ -342,7 +342,7 @@ def read_metadata_from_safetensors(filename):
             metadata_len = int.from_bytes(metadata_len, "little")
             json_start = file.read(2)
             if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-                shared.log.error(f"Model metadata invalid: fn={filename}")
+                shared.log.error(f'Model metadata invalid: file="{filename}"')
             json_data = json_start + file.read(metadata_len-2)
             json_obj = json.loads(json_data)
             for k, v in json_obj.get("__metadata__", {}).items():
@@ -370,7 +370,7 @@ def read_metadata_from_safetensors(filename):
                         pass
                 res[k] = v
         except Exception as e:
-            shared.log.error(f"Model metadata: fn={filename} {e}")
+            shared.log.error(f'Model metadata: file="{filename}" {e}')
     sd_metadata[filename] = res
     global sd_metadata_pending # pylint: disable=global-statement
     sd_metadata_pending += 1
@@ -682,28 +682,28 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
-            shared.log.debug(f'Setting {op} VAE: name="{sd_vae.loaded_vae_file}"')
+            shared.log.debug(f'Setting {op}: component=VAE name="{sd_vae.loaded_vae_file}"')
         if shared.opts.diffusers_vae_upcast != 'default':
             sd_model.vae.config.force_upcast = True if shared.opts.diffusers_vae_upcast == 'true' else False
-            shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.force_upcast}')
+            shared.log.debug(f'Setting {op}: component=VAE upcast={sd_model.vae.config.force_upcast}')
         if shared.opts.no_half_vae:
             devices.dtype_vae = torch.float32
             sd_model.vae.to(devices.dtype_vae)
-            shared.log.debug(f'Setting {op} VAE: no-half=True')
+            shared.log.debug(f'Setting {op}: component=VAE no-half=True')
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
-            shared.log.debug(f'Setting {op}: slicing=True')
+            shared.log.debug(f'Setting {op}: component=VAE slicing=True')
             sd_model.enable_vae_slicing()
         else:
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
         if shared.opts.diffusers_vae_tiling:
-            shared.log.debug(f'Setting {op}: tiling=True')
+            shared.log.debug(f'Setting {op}: component=VAE tiling=True')
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
     if hasattr(sd_model, "vqvae"):
-        shared.log.debug(f'Setting {op} VQVAE: upcast=True')
+        shared.log.debug(f'Setting {op}: component=VQVAE upcast=True')
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
     set_diffusers_attention(sd_model)
@@ -1262,8 +1262,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
                 if shared.opts.diffusers_vae_upcast != 'default' and model_type in ['Stable Diffusion', 'Stable Diffusion XL']:
                     diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
-                if debug_load:
-                    shared.log.debug(f'Model args: {diffusers_load_config}')
+                # if debug_load:
+                #    shared.log.debug(f'Model args: {diffusers_load_config}')
                 if sd_model is not None:
                     diffusers_load_config.pop('vae', None)
                     diffusers_load_config.pop('safety_checker', None)
@@ -1311,6 +1311,12 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         else:
             model_data.sd_model = sd_model
 
+        reload_text_encoder(initial=True) # must be before embeddings
+        timer.record("te")
+
+        if debug_load:
+            shared.log.trace(f'Model components: {list(get_signature(sd_model).values())}')
+
         from modules.textual_inversion import textual_inversion
         sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
         sd_model.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
@@ -1337,8 +1343,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             move_model(sd_model, devices.device)
         timer.record("move")
 
-        reload_text_encoder(initial=True)
-
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
 
@@ -1347,14 +1351,14 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         timer.record("compile")
 
     except Exception as e:
-        shared.log.error("Failed to load diffusers model")
-        errors.display(e, "loading Diffusers model")
+        shared.log.error("Failed to load model")
+        errors.display(e, "Model")
 
     devices.torch_gc(force=True)
     if shared.cmd_opts.profile:
         errors.profile(pr, 'Load')
     script_callbacks.model_loaded_callback(sd_model)
-    shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} {memory_stats()}")
+    shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} memory={memory_stats()}")
 
 
 class DiffusersTaskType(Enum):
@@ -1377,6 +1381,11 @@ def get_diffusers_task(pipe: diffusers.DiffusionPipeline) -> DiffusersTaskType:
         return DiffusersTaskType.TEXT_2_IMAGE
 
 
+def get_signature(cls):
+    signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
+    return signature.parameters
+
+
 def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, args = {}):
     """
     args:
@@ -1393,8 +1402,8 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
         if pipeline is None:
             pipeline = shared.sd_model
         new_pipe = None
-        signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
-        possible = signature.parameters.keys()
+        signature = get_signature(cls)
+        possible = signature.keys()
         if isinstance(pipeline, cls) and args == {}:
             return pipeline
         pipe_dict = {}
@@ -1412,10 +1421,10 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
             for item in possible:
                 if item in ['self', 'args', 'kwargs']: # skip
                     continue
-                if signature.parameters[item].default != inspect._empty: # has default value so we dont have to worry about it # pylint: disable=protected-access
+                if signature[item].default != inspect._empty: # has default value so we dont have to worry about it # pylint: disable=protected-access
                     continue
                 if item not in components_used:
-                    shared.log.warning(f'Pipeling switch: missing component={item} type={signature.parameters[item].annotation}')
+                    shared.log.warning(f'Pipeling switch: missing component={item} type={signature[item].annotation}')
                     pipe_dict[item] = None # try but not likely to work
                     components_missing.append(item)
             new_pipe = cls(**pipe_dict)
@@ -1576,7 +1585,7 @@ def set_diffusers_attention(pipe):
 
     if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
         return
-    shared.log.debug(f"Setting model: attention={shared.opts.cross_attention_optimization}")
+    shared.log.debug(f'Setting model: attention="{shared.opts.cross_attention_optimization}"')
     if shared.opts.cross_attention_optimization == "Disabled":
         pass # do nothing
     elif shared.opts.cross_attention_optimization == "Scaled-Dot-Product": # The default set by Diffusers
@@ -1716,16 +1725,19 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
 def reload_text_encoder(initial=False):
     if initial and (shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None'):
         return # dont unload
-    signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
+    signature = get_signature(shared.sd_model)
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
     if len(t5) > 0:
-        from modules.model_t5 import set_t5
+        from modules.model_te import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
         set_t5(pipe=shared.sd_model, module=t5[0], t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     elif hasattr(shared.sd_model, 'text_encoder_3'):
-        from modules.model_t5 import set_t5
+        from modules.model_te import set_t5
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+    elif hasattr(shared.sd_model, 'text_encoder') and 'vit' in shared.opts.sd_text_encoder.lower():
+        from modules.model_te import set_te
+        set_te(pipe=shared.sd_model)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):

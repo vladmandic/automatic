@@ -3,19 +3,21 @@ import json
 import torch
 import transformers
 from safetensors.torch import load_file
-from modules import shared, devices, files_cache
+from modules import shared, devices, files_cache, errors
 from installer import install
 
 
-t5_dict = {}
+te_dict = {}
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
+loaded_te = None
 
 
 def load_t5(t5=None, cache_dir=None):
     from modules import modelloader
     modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    fn = t5_dict.get(t5) if t5 in t5_dict else None
-    if fn is not None:
+    fn = te_dict.get(t5) if t5 in te_dict else None
+    if fn is not None and 'fp8' in t5.lower():
         from accelerate.utils import set_module_tensor_to_device
         with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
             t5_config = transformers.T5Config(**json.load(f))
@@ -35,6 +37,11 @@ def load_t5(t5=None, cache_dir=None):
             except Exception:
                 shared.log.error(f"FLUX: Failed to cast text encoder to {devices.dtype}, set dtype to {t5.dtype}")
                 raise
+    elif fn is not None:
+        with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
+            t5_config = transformers.T5Config(**json.load(f))
+        state_dict = load_file(fn)
+        t5 = transformers.T5EncoderModel.from_pretrained(None, state_dict=state_dict, config=t5_config)
     elif 'fp16' in t5.lower():
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'fp4' in t5.lower():
@@ -67,11 +74,22 @@ def load_t5(t5=None, cache_dir=None):
 
 
 def set_t5(pipe, module, t5=None, cache_dir=None):
+    global loaded_te # pylint: disable=global-statement
+    if loaded_te == shared.opts.sd_text_encoder:
+        return
     if pipe is None or not hasattr(pipe, module):
         return pipe
-    t5 = load_t5(t5=t5, cache_dir=cache_dir)
-    if module == "text_encoder_2" and t5 is None: # do not unload te2
+    t5 = None
+    try:
+        t5 = load_t5(t5=t5, cache_dir=cache_dir)
+    except Exception as e:
+        shared.log.error(f'Load module: type={module} class="T5" file="{shared.opts.sd_text_encoder}" {e}')
+        if debug:
+            errors.display(e, 'TE:')
+        t5 = None
+    if t5 is None:
         return None
+    loaded_te = shared.opts.sd_text_encoder
     setattr(pipe, module, t5)
     if shared.opts.diffusers_offload_mode == "sequential":
         from accelerate import cpu_offload
@@ -86,9 +104,48 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
     return pipe
 
 
-def refresh_t5_list():
-    t5_dict.clear()
-    for file in files_cache.list_files(shared.opts.t5_dir, ext_filter=[".safetensors"]):
+def set_te(pipe):
+    global loaded_te # pylint: disable=global-statement
+    if loaded_te == shared.opts.sd_text_encoder:
+        return
+    from modules.sd_models import move_model
+    if 'vit-l' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder') and shared.sd_model.text_encoder.__class__.__name__ == 'CLIPTextModel':
+        try:
+            config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder/config.json')
+            state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
+            te = transformers.CLIPTextModel.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+        except Exception as e:
+            shared.log.error(f'Load module: type="text_encoder" class="ViT-L" file="{shared.opts.sd_text_encoder}" {e}')
+            if debug:
+                errors.display(e, 'TE:')
+            state_dict = None
+            te = None
+        if te is not None:
+            loaded_te = shared.opts.sd_text_encoder
+            pipe.text_encoder = te.to(dtype=devices.dtype)
+            shared.log.info(f'Load module: type="text_encoder" class="ViT-L" file="{shared.opts.sd_text_encoder}"')
+            move_model(pipe.text_encoder, devices.device)
+    if 'vit-g' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder_2') and shared.sd_model.text_encoder_2.__class__.__name__ == 'CLIPTextModelWithProjection':
+        try:
+            config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder_2/config.json')
+            state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
+            te = transformers.CLIPTextModelWithProjection.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+        except Exception as e:
+            shared.log.error(f'Load module: type module="text_encoder_2" class="ViT-G" file="{shared.opts.sd_text_encoder}" {e}')
+            if debug:
+                errors.display(e, 'TE:')
+            state_dict = None
+            te = None
+        if te is not None:
+            loaded_te = shared.opts.sd_text_encoder
+            pipe.text_encoder_2 = te.to(dtype=devices.dtype)
+            shared.log.info(f'Load module: type="text_encoder_2" class="ViT-G" file="{shared.opts.sd_text_encoder}"')
+            move_model(pipe.text_encoder_2, devices.device)
+
+
+def refresh_te_list():
+    te_dict.clear()
+    for file in files_cache.list_files(shared.opts.te_dir, ext_filter=[".safetensors"]):
         name = os.path.splitext(os.path.basename(file))[0]
-        t5_dict[name] = file
-    shared.log.debug(f'Available T5s: path="{shared.opts.t5_dir}" items={len(t5_dict)}')
+        te_dict[name] = file
+    shared.log.info(f'Available TEs: path="{shared.opts.te_dir}" items={len(te_dict)}')

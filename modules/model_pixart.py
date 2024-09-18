@@ -2,13 +2,13 @@ import diffusers
 
 
 def load_pixart(checkpoint_info, diffusers_load_config={}):
-    from modules import shared, devices, modelloader, model_t5
+    from modules import shared, devices, modelloader, model_te
     modelloader.hf_login()
     # shared.opts.data['cuda_dtype'] = 'FP32' # override
     # shared.opts.data['diffusers_offload_mode}'] = "model" # override
     # devices.set_cuda_params()
     fn = checkpoint_info.path.replace('huggingface/', '')
-    t5 = model_t5.load_t5(shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+    t5 = model_te.load_t5(shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     transformer = diffusers.PixArtTransformer2DModel.from_pretrained(
         fn,
         subfolder = 'transformer',

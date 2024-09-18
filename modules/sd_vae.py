@@ -210,7 +210,7 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
     vae_config = sd_models.get_load_config(model_file, model_type, config_type='json')
     if vae_config is not None:
         diffusers_load_config['config'] = os.path.join(vae_config, 'vae')
-    shared.log.info(f'Load VAE: model="{vae_file}" source={vae_source} config={diffusers_load_config}')
+    shared.log.info(f'Load module: type=VAE model="{vae_file}" source={vae_source} config={diffusers_load_config}')
     try:
         import diffusers
         if os.path.isfile(vae_file):
