@@ -176,10 +176,10 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         for prompt, negative in zip(prompts, negative_prompts):
             prompt_embed, positive_pooled, negative_embed, negative_pooled = None, None, None, None
             if last_prompt == prompt and last_negative == negative or False:
-                prompt_embeds.append(prompt_embed)
-                positive_pooleds.append(positive_pooled)
-                negative_embeds.append(negative_embed)
-                negative_pooleds.append(negative_pooled)
+                prompt_embeds.append(prompt_embeds[-1])
+                positive_pooleds.append(positive_pooleds[-1])
+                negative_embeds.append(negative_embeds[-1])
+                negative_pooleds.append(negative_pooleds[-1])
                 continue
             positive_schedule, scheduled = get_prompt_schedule(prompt, steps)
             negative_schedule, neg_scheduled = get_prompt_schedule(negative, steps)
@@ -196,26 +196,32 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                     prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
                 else:
                     prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
-                prompt_embeds.append(prompt_embed)
-                negative_embeds.append(negative_embed)
-                if positive_pooled is not None and negative_pooled is not None:
+                if prompt_embed is not None:
+                    prompt_embeds.append(prompt_embed)
+                if negative_embed is not None:
+                    negative_embeds.append(negative_embed)
+                if positive_pooled is not None:
                     positive_pooleds.append(positive_pooled)
+                if negative_pooled is not None:
                     negative_pooleds.append(negative_pooled)
             last_prompt, last_negative = prompt, negative
 
         def fix_length(embeds):
-            max_len = max([p.shape[1] for p in embeds])
-            for i, p in enumerate(embeds):
-                if p.shape[1] < max_len:
-                    expanded = torch.zeros((p.shape[0], max_len, p.shape[2]), device=p.device, dtype=p.dtype)
-                    expanded[:, :p.shape[1], :] = p
+            max_len = max([e.shape[1] for e in embeds if e is not None])
+            for i, e in enumerate(embeds):
+                if e is not None and e.shape[1] < max_len:
+                    expanded = torch.zeros((e.shape[0], max_len, e.shape[2]), device=e.device, dtype=e.dtype)
+                    expanded[:, :e.shape[1], :] = e
                     embeds[i] = expanded
-            return torch.cat(embeds, dim=0)
+            return torch.cat(embeds, dim=0).to(devices.device, dtype=devices.dtype)
 
-        p.prompt_embeds.append(fix_length(prompt_embeds))
-        p.negative_embeds.append(fix_length(negative_embeds))
-        if len(positive_pooleds) > 0 and len(negative_pooleds) > 0: # sd15 does not have pooled embeds
+        if len(prompt_embeds) > 0:
+            p.prompt_embeds.append(fix_length(prompt_embeds))
+        if len(negative_embeds) > 0:
+            p.negative_embeds.append(fix_length(negative_embeds))
+        if len(positive_pooleds) > 0:
             p.positive_pooleds.append(fix_length(positive_pooleds))
+        if len(negative_pooleds) > 0:
             p.negative_pooleds.append(fix_length(negative_pooleds))
 
         if shared.opts.sd_textencoder_cache and p.batch_size == 1:
