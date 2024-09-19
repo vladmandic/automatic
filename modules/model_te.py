@@ -79,7 +79,6 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
         return
     if pipe is None or not hasattr(pipe, module):
         return pipe
-    t5 = None
     try:
         t5 = load_t5(t5=t5, cache_dir=cache_dir)
     except Exception as e:
