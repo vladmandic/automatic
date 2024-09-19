@@ -124,6 +124,8 @@ def set_te(pipe):
             loaded_te = shared.opts.sd_text_encoder
             pipe.text_encoder = te.to(dtype=devices.dtype)
             shared.log.info(f'Load module: type="text_encoder" class="ViT-L" file="{shared.opts.sd_text_encoder}"')
+            import modules.prompt_parser_diffusers
+            modules.prompt_parser_diffusers.cache.clear()
             move_model(pipe.text_encoder, devices.device)
     if 'vit-g' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder_2') and shared.sd_model.text_encoder_2.__class__.__name__ == 'CLIPTextModelWithProjection':
         try:
@@ -140,6 +142,8 @@ def set_te(pipe):
             loaded_te = shared.opts.sd_text_encoder
             pipe.text_encoder_2 = te.to(dtype=devices.dtype)
             shared.log.info(f'Load module: type="text_encoder_2" class="ViT-G" file="{shared.opts.sd_text_encoder}"')
+            import modules.prompt_parser_diffusers
+            modules.prompt_parser_diffusers.cache.clear()
             move_model(pipe.text_encoder_2, devices.device)
 
 
