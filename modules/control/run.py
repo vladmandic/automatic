@@ -548,7 +548,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             return [], '', '', 'Reference mode without image'
                     elif unit_type == 'controlnet' and has_models:
                         if input_type == 0: # Control only
-                            if shared.sd_model_type == 'f1':
+                            if shared.sd_model_type == 'f1' and 'control_image' not in p.task_args:
                                 p.task_args['control_image'] = p.init_images # flux controlnet mandates this
                                 p.task_args['strength'] = p.denoising_strength
                         elif input_type == 1: # Init image same as control

@@ -276,7 +276,7 @@ class ControlNetPipeline():
         elif detect.is_f1(pipeline):
             from diffusers import FluxControlNetPipeline
             self.pipeline = FluxControlNetPipeline(
-                vae=pipeline.vae,
+                vae=pipeline.vae.to(devices.device),
                 text_encoder=pipeline.text_encoder,
                 text_encoder_2=pipeline.text_encoder_2,
                 tokenizer=pipeline.tokenizer,

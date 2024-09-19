@@ -1,12 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-18
+## Update for 2024-09-19
 
 - **flux**
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
   - full prompt parser will auto-select `xhinker` for flux models
+  - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
