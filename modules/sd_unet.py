@@ -70,7 +70,8 @@ def load_unet(model):
 
 def refresh_unet_list():
     unet_dict.clear()
-    for file in files_cache.list_files(shared.opts.unet_dir, ext_filter=[".safetensors"]):
-        name = os.path.splitext(os.path.basename(file))[0]
+    for file in files_cache.list_files(shared.opts.unet_dir, ext_filter=[".safetensors", ".gguf"]):
+        basename = os.path.basename(file)
+        name = os.path.splitext(basename)[0] if ".safetensors" in basename else basename
         unet_dict[name] = file
     shared.log.info(f'Available UNets: path="{shared.opts.unet_dir}" items={len(unet_dict)}')

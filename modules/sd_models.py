@@ -1736,8 +1736,8 @@ def reload_text_encoder(initial=False):
         shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     elif hasattr(shared.sd_model, 'text_encoder') and 'vit' in shared.opts.sd_text_encoder.lower():
-        from modules.model_te import set_te
-        set_te(pipe=shared.sd_model)
+        from modules.model_te import set_clip
+        set_clip(pipe=shared.sd_model)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):

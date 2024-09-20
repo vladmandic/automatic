@@ -12,12 +12,34 @@ debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
 loaded_te = None
 
 
-def load_t5(t5=None, cache_dir=None):
+def install_gguf():
+    # pip install git+https://github.com/junejae/transformers@feature/t5-gguf
+    install('gguf', quiet=True)
+    # https://github.com/ggerganov/llama.cpp/issues/9566
+    import gguf
+    scripts_dir = os.path.join(os.path.dirname(gguf.__file__), '..', 'scripts')
+    if os.path.exists(scripts_dir):
+        os.rename(scripts_dir, scripts_dir + '_gguf')
+    # monkey patch transformers so they detect gguf pacakge correctly
+    import importlib
+    transformers.utils.import_utils._is_gguf_available = True # pylint: disable=protected-access
+    transformers.utils.import_utils._gguf_version = importlib.metadata.version('gguf') # pylint: disable=protected-access
+
+
+def load_t5(name=None, cache_dir=None):
+    global loaded_te # pylint: disable=global-statement
+    if name is None:
+        return
     from modules import modelloader
     modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    fn = te_dict.get(t5) if t5 in te_dict else None
-    if fn is not None and 'fp8' in t5.lower():
+    fn = te_dict.get(name) if name in te_dict else None
+    if fn is not None and 'gguf' in name.lower():
+        install_gguf()
+        with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
+            t5_config = transformers.T5Config(**json.load(f))
+        t5 = transformers.T5EncoderModel.from_pretrained(None, gguf_file=fn, config=t5_config, device_map="auto", cache_dir=cache_dir, torch_dtype=devices.dtype)
+    elif fn is not None and 'fp8' in name.lower():
         from accelerate.utils import set_module_tensor_to_device
         with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
             t5_config = transformers.T5Config(**json.load(f))
@@ -42,22 +64,22 @@ def load_t5(t5=None, cache_dir=None):
             t5_config = transformers.T5Config(**json.load(f))
         state_dict = load_file(fn)
         t5 = transformers.T5EncoderModel.from_pretrained(None, state_dict=state_dict, config=t5_config)
-    elif 'fp16' in t5.lower():
+    elif 'fp16' in name.lower():
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
-    elif 'fp4' in t5.lower():
+    elif 'fp4' in name.lower():
         install('bitsandbytes', quiet=True)
         quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
-    elif 'fp8' in t5.lower():
+    elif 'fp8' in name.lower():
         install('bitsandbytes', quiet=True)
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
-    elif 'qint8' in t5.lower():
+    elif 'qint8' in name.lower():
         install('optimum-quanto', quiet=True)
         from modules.sd_models_compile import optimum_quanto_model
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
         t5 = optimum_quanto_model(t5, weights="qint8", activations="none")
-    elif 'int8' in t5.lower():
+    elif 'int8' in name.lower():
         install('nncf==2.7.0', quiet=True)
         from modules.sd_models_compile import nncf_compress_model
         from modules.sd_hijack import NNCF_T5DenseGatedActDense
@@ -70,6 +92,8 @@ def load_t5(t5=None, cache_dir=None):
         t5 = nncf_compress_model(t5)
     else:
         t5 = None
+    if t5 is not None:
+        loaded_te = name
     return t5
 
 
@@ -80,7 +104,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
     if pipe is None or not hasattr(pipe, module):
         return pipe
     try:
-        t5 = load_t5(t5=t5, cache_dir=cache_dir)
+        t5 = load_t5(name=t5, cache_dir=cache_dir)
     except Exception as e:
         shared.log.error(f'Load module: type={module} class="T5" file="{shared.opts.sd_text_encoder}" {e}')
         if debug:
@@ -103,7 +127,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
     return pipe
 
 
-def set_te(pipe):
+def set_clip(pipe):
     global loaded_te # pylint: disable=global-statement
     if loaded_te == shared.opts.sd_text_encoder:
         return
@@ -126,6 +150,7 @@ def set_te(pipe):
             import modules.prompt_parser_diffusers
             modules.prompt_parser_diffusers.cache.clear()
             move_model(pipe.text_encoder, devices.device)
+            devices.torch_gc()
     if 'vit-g' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder_2') and shared.sd_model.text_encoder_2.__class__.__name__ == 'CLIPTextModelWithProjection':
         try:
             config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder_2/config.json')
@@ -144,11 +169,13 @@ def set_te(pipe):
             import modules.prompt_parser_diffusers
             modules.prompt_parser_diffusers.cache.clear()
             move_model(pipe.text_encoder_2, devices.device)
+            devices.torch_gc()
 
 
 def refresh_te_list():
     te_dict.clear()
-    for file in files_cache.list_files(shared.opts.te_dir, ext_filter=[".safetensors"]):
-        name = os.path.splitext(os.path.basename(file))[0]
+    for file in files_cache.list_files(shared.opts.te_dir, ext_filter=['.safetensors', '.gguf']):
+        basename = os.path.basename(file)
+        name = os.path.splitext(basename)[0] if '.safetensors' in basename else basename
         te_dict[name] = file
     shared.log.info(f'Available TEs: path="{shared.opts.te_dir}" items={len(te_dict)}')

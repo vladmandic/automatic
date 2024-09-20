@@ -231,7 +231,7 @@ def list_scripts(scriptdirname, extension):
             else:
                 priority = priority + script.priority
             priority_list.append(ScriptFile(script.basedir, script.filename, script.path, priority))
-            debug(f'Adding script: {script.basedir} {script.filename} {script.path} {priority}')
+            debug(f'Adding script: folder="{script.basedir}" file="{script.filename}" full="{script.path}" priority={priority}')
     priority_sort = sorted(priority_list, key=lambda item: item.priority + item.path.lower(), reverse=False)
     return priority_sort
 
@@ -263,7 +263,7 @@ def load_scripts():
         for script_class in module.__dict__.values():
             if type(script_class) != type:
                 continue
-            debug(f'Registering script: {scriptfile.path}')
+            debug(f'Registering script: path="{scriptfile.path}"')
             if issubclass(script_class, Script):
                 scripts_data.append(ScriptClassData(script_class, scriptfile.path, scriptfile.basedir, module))
             elif issubclass(script_class, scripts_postprocessing.ScriptPostprocessing):

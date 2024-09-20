@@ -105,23 +105,22 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
         repo_path = checkpoint_info.path
     from installer import install
     install('bitsandbytes', quiet=True)
-    from diffusers import FluxTransformer2DModel
     quant = get_quant(repo_path)
     try:
         if quant == 'fp8':
             quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True, bnb_4bit_compute_dtype=devices.dtype)
             debug(f'Quantization: {quantization_config}')
-            transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
+            transformer = diffusers.FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
         elif quant == 'fp4':
             quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=devices.dtype, bnb_4bit_quant_type= 'fp4')
             debug(f'Quantization: {quantization_config}')
-            transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
+            transformer = diffusers.FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
         elif quant == 'nf4':
             quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=devices.dtype, bnb_4bit_quant_type= 'nf4')
             debug(f'Quantization: {quantization_config}')
-            transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
+            transformer = diffusers.FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config, quantization_config=quantization_config)
         else:
-            transformer = FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config)
+            transformer = diffusers.FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config)
     except Exception as e:
         shared.log.error(f"Loading FLUX: Failed to load BnB transformer: {e}")
         transformer, text_encoder_2 = None, None
@@ -131,7 +130,24 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
     return transformer, text_encoder_2
 
 
+def load_flux_gguf(file_path): # TODO add support for GGUF flux models
+    shared.log.error(f"Loading FLUX: GGUF UNET is not supported: {file_path}")
+    """
+    with torch.device("meta"):
+        transformer = diffusers.FluxTransformer2DModel.from_config(os.path.join("configs", "flux", "transformer", "config.json")).to(dtype=devices.dtype)
+    # from .modeling_gguf_pytorch_utils import load_gguf_checkpoint
+    from modules.model_te import install_gguf
+    install_gguf()
+    from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
+    state_dict = load_gguf_checkpoint(file_path, return_tensors=True)["tensors"]
+    return transformer, None
+    """
+    return None, None
+
+
 def load_transformer(file_path): # triggered by opts.sd_unet change
+    if file_path is None or not os.path.exists(file_path):
+        return
     transformer = None
     quant = get_quant(file_path)
     diffusers_load_config = {
@@ -140,7 +156,9 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         "cache_dir": shared.opts.hfcache_dir,
     }
     shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
-    if quant == 'qint8' or quant == 'qint4':
+    if 'gguf' in file_path.lower():
+        _transformer, _text_encoder_2 = load_flux_gguf(file_path)
+    elif quant == 'qint8' or quant == 'qint4':
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
@@ -154,8 +172,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         if _transformer is not None:
             transformer = _transformer
     else:
-        from diffusers import FluxTransformer2DModel
-        transformer = FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
+        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
     return transformer
@@ -185,6 +202,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 sd_unet.failed_unet.append(shared.opts.sd_unet)
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load UNet: {e}")
+            shared.opts.sd_unet = 'None'
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX UNet:')
@@ -192,11 +210,12 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
         try:
             debug(f'Loading FLUX: t5="{shared.opts.sd_text_encoder}"')
             from modules.model_te import load_t5
-            _text_encoder_2 = load_t5(t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
+            _text_encoder_2 = load_t5(name=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
             if _text_encoder_2 is not None:
                 text_encoder_2 = _text_encoder_2
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load T5: {e}")
+            shared.opts.sd_text_encoder = 'None'
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX T5:')
@@ -211,6 +230,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 vae = diffusers.AutoencoderKL.from_single_file(vae_file, config=vae_config, **diffusers_load_config)
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load VAE: {e}")
+            shared.opts.sd_vae = 'None'
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX VAE:')

@@ -38,6 +38,7 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 timer.startup.record("torch")
 
+
 import transformers # pylint: disable=W0611,C0411
 timer.startup.record("transformers")
 

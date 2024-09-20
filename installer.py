@@ -431,12 +431,12 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '5d476f57c58c3cf7f39e764236c93c267fe83ca1'
+    sha = '14a1b86fc7de53ff1dbf803f616cbb16ad530e45'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
     if (minor == 0) or (cur != sha):
-        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}: current={pkg}@{cur} target={sha}')
+        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}: package={pkg} current={cur} target={sha}')
         if minor > 0:
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
         pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
