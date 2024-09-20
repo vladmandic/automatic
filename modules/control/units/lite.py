@@ -78,7 +78,7 @@ class ControlLLLite():
         self.model = None
         self.model_id = None
 
-    def load(self, model_id: str = None) -> str:
+    def load(self, model_id: str = None, force: bool = True) -> str:
         try:
             t0 = time.time()
             model_id = model_id or self.model_id
@@ -93,6 +93,9 @@ class ControlLLLite():
                 return
             if model_path is None:
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
+                return
+            if model_id == self.model_id and not force:
+                log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
                 return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}" {self.load_config}')
             if model_path.endswith('.safetensors'):

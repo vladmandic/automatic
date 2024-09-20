@@ -71,6 +71,20 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
                 *input_script_args
         ):
+    # handle optional initialization via ui
+    for u in units:
+        if not u.enabled:
+            continue
+        if u.process_name is not None and u.process_name != '' and u.process_name != 'None':
+            u.process.load(u.process_name, force=False)
+        if u.model_name is not None and u.model_name != '' and u.model_name != 'None':
+            if u.type == 't2i adapter':
+                u.adapter.load(u.model_name, force=False)
+            else:
+                u.controlnet.load(u.model_name, force=False)
+        if u.process is not None and u.process.override is None and u.override is not None:
+            u.process.override = u.override
+
     global instance, pipe, original_pipeline # pylint: disable=global-statement
     t_start = time.time()
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')

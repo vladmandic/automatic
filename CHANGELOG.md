@@ -49,6 +49,7 @@
   - *note*: *image2video* requires separate 5b model variant  
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
+- **control** persist/reapply units current state on server restart  
 - massive log cleanup
 - minor ui optimizations  
 

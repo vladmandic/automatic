@@ -16,6 +16,7 @@ from modules import ui_control_helpers as helpers
 gr_height = None
 max_units = shared.opts.control_max_units
 units: list[unit.Unit] = [] # main state variable
+controls: list[gr.component] = [] # list of gr controls
 debug = shared.log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: CONTROL')
 
@@ -39,6 +40,22 @@ def return_controls(res):
         return [preview_image, output_image, output_video, output_gallery, result_txt]
     else: # unexpected
         return [None, None, None, None, f'Control: Unexpected response: {type(res)}']
+
+
+def get_units(*values):
+    update = []
+    for c, v in zip(controls, values):
+        if isinstance(c, gr.Label): # unit type indicator
+            what = c.value['label']
+        c.value = v
+        if c.elem_id is not None and c.elem_id.startswith('control_unit'):
+            _prefix, i, name = c.elem_id.split('-')
+            update.append({ 'type': what, 'index': int(i), 'name': name, 'value': v })
+    for u in update:
+        for i in range(len(units)):
+            if units[i].type == u['type'] and units[i].index == u['index']:
+                setattr(units[i], u['name'], u['value'])
+                break
 
 
 def generate_click(job_id: str, active_tab: str, *args):
@@ -197,22 +214,23 @@ def create_ui(_blocks: gr.Blocks=None):
                             enabled = True if i==0 else False
                             with gr.Accordion(f'ControlNet unit {i+1}', visible= i < num_controlnet_units.value, elem_classes='control-unit') as unit_ui:
                                 with gr.Row():
-                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
-                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
-                                    model_id = gr.Dropdown(label="ControlNet", choices=controlnet.list_models(), value='None')
+                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False, elem_id=f'control_unit-{i}-enabled')
+                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None', elem_id=f'control_unit-{i}-process_name')
+                                    model_id = gr.Dropdown(label="ControlNet", choices=controlnet.list_models(), value='None', elem_id=f'control_unit-{i}-model_name')
                                     ui_common.create_refresh_button(model_id, controlnet.list_models, lambda: {"choices": controlnet.list_models(refresh=True)}, f'refresh_controlnet_models_{i}')
-                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0)
-                                    control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0)
-                                    control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
-                                    control_mode = gr.Dropdown(label="CN Mode", choices=['', 'Canny', 'Tile', 'Depth', 'Blur', 'Pose', 'Gray', 'LQ'], value=0, type='index', visible=False)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0, elem_id=f'control_unit-{i}-strength')
+                                    control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0, elem_id=f'control_unit-{i}-start')
+                                    control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id=f'control_unit-{i}-end')
+                                    control_mode = gr.Dropdown(label="CN Mode", choices=['', 'Canny', 'Tile', 'Depth', 'Blur', 'Pose', 'Gray', 'LQ'], value=0, type='index', visible=False, elem_id=f'control_unit-{i}-mode')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                     process_btn= ui_components.ToolButton(value=ui_symbols.preview)
-                                    image_preview = gr.Image(label="Input", type="pil", source="upload", height=128, width=128, visible=False, interactive=True, show_label=False, show_download_button=False, container=False)
+                                    image_preview = gr.Image(label="Input", type="pil", source="upload", height=128, width=128, visible=False, interactive=True, show_label=False, show_download_button=False, container=False, elem_id=f'control_unit-{i}-override')
                             controlnet_ui_units.append(unit_ui)
                             units.append(unit.Unit(
                                 unit_type = 'controlnet',
+                                index = i,
                                 enabled = enabled,
                                 result_txt = result_txt,
                                 enabled_cb = enabled_cb,
@@ -247,19 +265,20 @@ def create_ui(_blocks: gr.Blocks=None):
                             enabled = True if i==0 else False
                             with gr.Accordion(f'T2I-Adapter unit {i+1}', visible= i < num_adapter_units.value, elem_classes='control-unit') as unit_ui:
                                 with gr.Row():
-                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
-                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
-                                    model_id = gr.Dropdown(label="Adapter", choices=t2iadapter.list_models(), value='None')
+                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False, elem_id=f'control_unit-{i}-enabled')
+                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None', elem_id=f'control_unit-{i}-process_name')
+                                    model_id = gr.Dropdown(label="Adapter", choices=t2iadapter.list_models(), value='None', elem_id=f'control_unit-{i}-model_name')
                                     ui_common.create_refresh_button(model_id, t2iadapter.list_models, lambda: {"choices": t2iadapter.list_models(refresh=True)}, f'refresh_adapter_models_{i}')
-                                    model_strength = gr.Slider(label="T2I Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
+                                    model_strength = gr.Slider(label="T2I Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, elem_id=f'control_unit-{i}-strength')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                     process_btn= ui_components.ToolButton(value=ui_symbols.preview)
-                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
+                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False, elem_id=f'control_unit-{i}-override')
                             adapter_ui_units.append(unit_ui)
                             units.append(unit.Unit(
                                 unit_type = 't2i adapter',
+                                index = i,
                                 enabled = enabled,
                                 result_txt = result_txt,
                                 enabled_cb = enabled_cb,
@@ -291,21 +310,22 @@ def create_ui(_blocks: gr.Blocks=None):
                             enabled = True if i==0 else False
                             with gr.Accordion(f'ControlNet-XS unit {i+1}', visible= i < num_controlnet_units.value, elem_classes='control-unit') as unit_ui:
                                 with gr.Row():
-                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
-                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
-                                    model_id = gr.Dropdown(label="ControlNet-XS", choices=xs.list_models(), value='None')
+                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False, elem_id=f'control_unit-{i}-enabled')
+                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None', elem_id=f'control_unit-{i}-process_name')
+                                    model_id = gr.Dropdown(label="ControlNet-XS", choices=xs.list_models(), value='None', elem_id=f'control_unit-{i}-model_name')
                                     ui_common.create_refresh_button(model_id, xs.list_models, lambda: {"choices": xs.list_models(refresh=True)}, f'refresh_xs_models_{i}')
-                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
-                                    control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0)
-                                    control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, elem_id=f'control_unit-{i}-strength')
+                                    control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0, elem_id=f'control_unit-{i}-start')
+                                    control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id=f'control_unit-{i}-end')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
                                     process_btn= ui_components.ToolButton(value=ui_symbols.preview)
-                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
+                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False, elem_id=f'control_unit-{i}-override')
                             controlnetxs_ui_units.append(unit_ui)
                             units.append(unit.Unit(
                                 unit_type = 'xs',
+                                index = 1,
                                 enabled = enabled,
                                 result_txt = result_txt,
                                 enabled_cb = enabled_cb,
@@ -338,19 +358,20 @@ def create_ui(_blocks: gr.Blocks=None):
                             enabled = True if i==0 else False
                             with gr.Accordion(f'Control-LLLite unit {i+1}', visible= i < num_lite_units.value, elem_classes='control-unit') as unit_ui:
                                 with gr.Row():
-                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
-                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None')
-                                    model_id = gr.Dropdown(label="Model", choices=lite.list_models(), value='None')
+                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False, elem_id=f'control_unit-{i}-enabled')
+                                    process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None', elem_id=f'control_unit-{i}-process_name')
+                                    model_id = gr.Dropdown(label="Model", choices=lite.list_models(), value='None', elem_id=f'control_unit-{i}-model_name')
                                     ui_common.create_refresh_button(model_id, lite.list_models, lambda: {"choices": lite.list_models(refresh=True)}, f'refresh_lite_models_{i}')
-                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0)
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, elem_id=f'control_unit-{i}-strength')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
-                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
+                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False, elem_id=f'control_unit-{i}-override')
                                     process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                             lite_ui_units.append(unit_ui)
                             units.append(unit.Unit(
                                 unit_type = 'lite',
+                                index = i,
                                 enabled = enabled,
                                 result_txt = result_txt,
                                 enabled_cb = enabled_cb,
@@ -383,16 +404,17 @@ def create_ui(_blocks: gr.Blocks=None):
                             enabled = True if i==0 else False
                             with gr.Accordion(f'Reference unit {i+1}', visible=True, elem_classes='control-unit') as unit_ui:
                                 with gr.Row():
-                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False)
-                                    model_id = gr.Dropdown(label="Reference", choices=reference.list_models(), value='Reference', visible=False)
-                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, visible=False)
+                                    enabled_cb = gr.Checkbox(enabled, label='', container=False, show_label=False, elem_id=f'control_unit-{i}-enabled')
+                                    model_id = gr.Dropdown(label="Reference", choices=reference.list_models(), value='Reference', visible=False, elem_id=f'control_unit-{i}-model_name')
+                                    model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=1.0, step=0.01, value=1.0, visible=False, elem_id=f'control_unit-{i}-strength')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
-                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False)
+                                    image_preview = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=False, height=128, width=128, visible=False, elem_id=f'control_unit-{i}-override')
                                     process_btn= ui_components.ToolButton(value=ui_symbols.preview)
                             units.append(unit.Unit(
                                 unit_type = 'reference',
+                                index = i,
                                 enabled = enabled,
                                 result_txt = result_txt,
                                 enabled_cb = enabled_cb,
@@ -468,6 +490,12 @@ def create_ui(_blocks: gr.Blocks=None):
                 btn.click(fn=helpers.copy_input, inputs=[input_mode, btn, input_image, input_resize, input_inpaint], outputs=[input_image, input_resize, input_inpaint], _js='controlInputMode')
                 btn.click(fn=helpers.transfer_input, inputs=[btn], outputs=[input_image, input_resize, input_inpaint] + input_buttons)
 
+            # hidden button to update gradio control values
+            for u in units:
+                controls.extend(u.controls)
+            btn_update = gr.Button('Update', interactive=True, visible=False, elem_id='control_update')
+            btn_update.click(fn=get_units, inputs=controls, outputs=[], show_progress=True, queue=False)
+
             show_preview.change(fn=lambda x: gr.update(visible=x), inputs=[show_preview], outputs=[column_preview])
             input_type.change(fn=lambda x: gr.update(visible=x == 2), inputs=[input_type], outputs=[column_init])
             btn_prompt_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[prompt, steps], outputs=[prompt_counter])
@@ -485,6 +513,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 show_progress=True,
                 queue=False,
             )
+
             prompt.submit(**select_dict)
             btn_generate.click(**select_dict)
             for ctrl in [input_image, input_resize, input_video, input_batch, input_folder, init_image, init_video, init_batch, init_folder, tab_image, tab_video, tab_batch, tab_folder, tab_image_init, tab_video_init, tab_batch_init, tab_folder_init]:

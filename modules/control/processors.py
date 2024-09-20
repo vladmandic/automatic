@@ -155,7 +155,7 @@ class Processor():
             for k, v in from_config.items():
                 self.load_config[k] = v
 
-    def load(self, processor_id: str = None) -> str:
+    def load(self, processor_id: str = None, force: bool = True) -> str:
         try:
             t0 = time.time()
             processor_id = processor_id or self.processor_id
@@ -165,6 +165,10 @@ class Processor():
             if self.processor_id != processor_id:
                 self.reset()
                 self.config(processor_id)
+            else:
+                if not force and self.model is not None:
+                    log.debug(f'Control Processor: id={processor_id} already loaded')
+                    return ''
             if processor_id not in config:
                 log.error(f'Control Processor unknown: id="{processor_id}" available={list(config)}')
                 return f'Processor failed to load: {processor_id}'
