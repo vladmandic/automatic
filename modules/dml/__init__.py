@@ -72,8 +72,8 @@ def directml_do_hijack():
     from modules.devices import device
 
     CondFunc('torch.Generator',
-        lambda orig_func, device: orig_func("cpu"),
-        lambda orig_func, device: True)
+        lambda orig_func, device = None: orig_func("cpu"),
+        lambda orig_func, device = None: True)
 
     if not torch.dml.has_float64_support(device):
         torch.Tensor.__str__ = do_nothing_with_self
