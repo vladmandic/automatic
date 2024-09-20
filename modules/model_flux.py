@@ -175,6 +175,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
+        shared.opts.sd_unet = 'None'
     return transformer
 
 
@@ -196,9 +197,9 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             from modules import sd_unet
             _transformer = load_transformer(sd_unet.unet_dict[shared.opts.sd_unet])
             if _transformer is not None:
-                sd_unet.loaded_unet = shared.opts.sd_unet
                 transformer = _transformer
             else:
+                shared.opts.sd_unet = 'None'
                 sd_unet.failed_unet.append(shared.opts.sd_unet)
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load UNet: {e}")
@@ -213,6 +214,8 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             _text_encoder_2 = load_t5(name=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
             if _text_encoder_2 is not None:
                 text_encoder_2 = _text_encoder_2
+            else:
+                shared.opts.sd_text_encoder = 'None'
         except Exception as e:
             shared.log.error(f"Loading FLUX: Failed to load T5: {e}")
             shared.opts.sd_text_encoder = 'None'
