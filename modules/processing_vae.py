@@ -133,16 +133,13 @@ def taesd_vae_encode(image):
 
 def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
     global last_latent # pylint: disable=global-statement
-    if latents is None:
-        latents = last_latent
-    else:
-        last_latent = latents.clone().detach()
     t0 = time.time()
+    if latents is None or not torch.is_tensor(latents): # already decoded
+        last_latent = None
+        return latents
     prev_job = shared.state.job
     shared.state.job = 'VAE'
-    decoded = None
-    if not torch.is_tensor(latents): # already decoded
-        return latents
+    last_latent = latents.clone().detach()
     if latents.shape[0] == 0:
         shared.log.error(f'VAE nothing to decode: {latents.shape}')
         return []
