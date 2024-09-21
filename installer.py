@@ -514,7 +514,7 @@ def install_rocm_zluda():
                 del args.device_id
             try:
                 zluda_installer.load(zluda_path)
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch=={zluda_installer.get_default_torch_version(hip_default_device)} torchvision --index-url https://download.pytorch.org/whl/cu118')
                 log.info(f'Using ZLUDA in {zluda_path}')
             except Exception as e:
                 error = e
