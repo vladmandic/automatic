@@ -29,7 +29,7 @@ def install_gguf():
 def load_t5(name=None, cache_dir=None):
     global loaded_te # pylint: disable=global-statement
     if name is None:
-        return
+        return None
     from modules import modelloader
     modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
@@ -100,7 +100,7 @@ def load_t5(name=None, cache_dir=None):
 def set_t5(pipe, module, t5=None, cache_dir=None):
     global loaded_te # pylint: disable=global-statement
     if loaded_te == shared.opts.sd_text_encoder:
-        return
+        return pipe
     if pipe is None or not hasattr(pipe, module):
         return pipe
     try:
@@ -111,7 +111,7 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
             errors.display(e, 'TE:')
         t5 = None
     if t5 is None:
-        return None
+        return pipe
     loaded_te = shared.opts.sd_text_encoder
     setattr(pipe, module, t5)
     if shared.opts.diffusers_offload_mode == "sequential":

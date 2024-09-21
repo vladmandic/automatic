@@ -61,6 +61,7 @@
   - hide token counter until tokens are known  
   - minor ui optimizations  
 - massive log cleanup
+- full lint pass
 - **experimental**
   - flux t5 load from gguf: requires transformers pr
 

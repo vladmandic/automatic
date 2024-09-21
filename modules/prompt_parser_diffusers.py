@@ -175,7 +175,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         last_prompt, last_negative = None, None
         for prompt, negative in zip(prompts, negative_prompts):
             prompt_embed, positive_pooled, negative_embed, negative_pooled = None, None, None, None
-            if last_prompt == prompt and last_negative == negative or False:
+            if last_prompt == prompt and last_negative == negative:
                 prompt_embeds.append(prompt_embeds[-1])
                 positive_pooleds.append(positive_pooleds[-1])
                 negative_embeds.append(negative_embeds[-1])

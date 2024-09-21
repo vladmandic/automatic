@@ -147,7 +147,7 @@ def load_flux_gguf(file_path): # TODO add support for GGUF flux models
 
 def load_transformer(file_path): # triggered by opts.sd_unet change
     if file_path is None or not os.path.exists(file_path):
-        return
+        return None
     transformer = None
     quant = get_quant(file_path)
     diffusers_load_config = {

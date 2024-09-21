@@ -44,6 +44,7 @@ def return_controls(res):
 
 def get_units(*values):
     update = []
+    what = None
     for c, v in zip(controls, values):
         if isinstance(c, gr.Label): # unit type indicator
             what = c.value['label']

@@ -12,7 +12,7 @@ import piexif
 import piexif.helper
 from PIL import Image, PngImagePlugin, ExifTags
 from modules import sd_samplers, shared, script_callbacks, errors, paths
-from modules.images_grid import image_grid, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation # pylint: disable=unused-import
+from modules.images_grid import image_grid, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation, Grid # pylint: disable=unused-import
 from modules.images_resize import resize_image # pylint: disable=unused-import
 from modules.images_namegen import FilenameGenerator
 
