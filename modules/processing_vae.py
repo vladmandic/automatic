@@ -139,7 +139,6 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         return latents
     prev_job = shared.state.job
     shared.state.job = 'VAE'
-    last_latent = latents.clone().detach()
     if latents.shape[0] == 0:
         shared.log.error(f'VAE nothing to decode: {latents.shape}')
         return []
@@ -155,8 +154,9 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         latents = latents.unsqueeze(0)
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
+    last_latent = latents.clone().detach()
 
-    if any(s >= 512 for s in latents.shape): # not a latent, likely an image
+    if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
     elif full_quality and hasattr(shared.sd_model, "vae"):
         decoded = full_vae_decode(latents=latents, model=shared.sd_model)
@@ -206,6 +206,8 @@ def reprocess(gallery):
     reprocessed = vae_decode(last_latent, shared.sd_model, output_type='pil', full_quality=True)
     outputs = []
     for i0, i1 in zip(gallery, reprocessed):
+        if isinstance(i1, np.ndarray):
+            i1 = Image.fromarray(i1)
         fn = i0['name']
         i0 = Image.open(fn)
         fn = os.path.splitext(os.path.basename(fn))[0] + '-re'

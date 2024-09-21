@@ -171,6 +171,7 @@ disable=bad-inline-option,
         unnecessary-lambda,
         use-dict-literal,
         use-symbolic-message-instead,
+        unknown-option-value,
         useless-suppression,
         wrong-import-position,
 enable=c-extension-no-member
