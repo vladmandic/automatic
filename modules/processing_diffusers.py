@@ -156,7 +156,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         if hasattr(p, 'height') and hasattr(p, 'width') and p.hr_resize_mode >0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
             shared.log.info(f'Upscale: mode={p.hr_resize_mode} upscaler="{p.hr_upscaler}" context="{p.hr_resize_context}" resize={p.hr_resize_x}x{p.hr_resize_y} upscale={p.hr_upscale_to_x}x{p.hr_upscale_to_y}')
             p.ops.append('upscale')
-            if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
+            if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
             shared.state.job = 'Upscale'
             output.images = resize_hires(p, latents=output.images)
@@ -227,7 +227,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         prev_job = shared.state.job
         shared.state.job = 'Refine'
         shared.state.job_count +=1
-        if shared.opts.save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):
+        if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):
             save_intermediate(p, latents=output.images, suffix="-before-refiner")
         if shared.opts.diffusers_move_base:
             shared.log.debug('Moving to CPU: model=base')

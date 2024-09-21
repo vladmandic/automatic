@@ -3,7 +3,7 @@ from PIL import Image
 import gradio as gr
 import numpy as np
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 
 
 def process_interrogate(interrogation_function, mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
@@ -38,7 +38,7 @@ def create_ui():
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True, is_control=False)
     with gr.Blocks(analytics_enabled=False) as _img2img_interface:
-        img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, img2img_submit, img2img_paste, img2img_extra_networks_button, img2img_token_counter, img2img_token_button, img2img_negative_token_counter, img2img_negative_token_button = ui_sections.create_toprow(is_img2img=True, id_part="img2img")
+        img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, img2img_submit, img2img_reprocess, img2img_paste, img2img_extra_networks_button, img2img_token_counter, img2img_token_button, img2img_negative_token_counter, img2img_negative_token_button = ui_sections.create_toprow(is_img2img=True, id_part="img2img")
         img2img_prompt_img = gr.File(label="", elem_id="img2img_prompt_image", file_count="single", type="binary", visible=False)
 
         with gr.Row(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks_ui:
@@ -158,6 +158,8 @@ def create_ui():
 
             ui_common.connect_reuse_seed(seed, reuse_seed, img2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, img2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
+
+            img2img_reprocess.click(fn=processing_vae.reprocess, inputs=[img2img_gallery], outputs=[img2img_gallery])
 
             img2img_prompt_img.change(fn=modules.images.image_data, inputs=[img2img_prompt_img], outputs=[img2img_prompt, img2img_prompt_img])
             dummy_component1 = gr.Textbox(visible=False, value='dummy')

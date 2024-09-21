@@ -23,6 +23,8 @@
   - change default params for better memory utilization
   - add optional advanced params  
   - update logging  
+- **reprocess** generate images using taesd (full quality off) and reprocess selected ones using full vae
+  - right click on *generate* button -> *reprocess*
 - **lora** auto-apply tags to prompt  
   - controlled via *settings -> networks -> lora_apply_tags*  
     *0:disable, -1:all-tags, n:top-n-tags*  

@@ -84,7 +84,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
         target_width = p.hr_upscale_to_x
         target_height = p.hr_upscale_to_y
         decoded_samples = None
-        if shared.opts.save and shared.opts.save_images_before_highres_fix and not p.do_not_save_samples:
+        if shared.opts.samples_save and shared.opts.save_images_before_highres_fix and not p.do_not_save_samples:
             decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
             decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
             for i, x_sample in enumerate(decoded_samples):

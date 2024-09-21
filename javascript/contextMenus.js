@@ -102,6 +102,11 @@ const generateForever = (genbuttonid) => {
   }
 };
 
+const reprocessLatent = (btnId) => {
+  const btn = document.getElementById(btnId);
+  if (btn) btn.click();
+};
+
 async function initContextMenu() {
   for (const tab of ['txt2img', 'img2img', 'control']) {
     for (const el of ['generate', 'interrupt', 'skip', 'pause', 'paste', 'clear_prompt', 'extra_networks_btn']) {
@@ -111,6 +116,7 @@ async function initContextMenu() {
       appendContextMenuOption(id, 'Apply selected style', quickApplyStyle);
       appendContextMenuOption(id, 'Quick save style', quickSaveStyle);
       appendContextMenuOption(id, 'nVidia overlay', initNVML);
+      appendContextMenuOption(id, 'Reprocess last image', () => reprocessLatent(`${tab}_reprocess`));
     }
   }
   addContextMenuEventListener();

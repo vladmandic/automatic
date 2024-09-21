@@ -8,6 +8,7 @@ from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd
 debug = os.environ.get('SD_VAE_DEBUG', None) is not None
 log_debug = shared.log.trace if debug else lambda *args, **kwargs: None
 log_debug('Trace: VAE')
+last_latent = None
 
 
 def create_latents(image, p, dtype=None, device=None):
@@ -122,6 +123,11 @@ def taesd_vae_encode(image):
 
 
 def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
+    global last_latent # pylint: disable=global-statement
+    if latents is None:
+        latents = last_latent
+    else:
+        last_latent = latents.clone().detach()
     t0 = time.time()
     prev_job = shared.state.job
     shared.state.job = 'VAE'
@@ -180,3 +186,26 @@ def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variab
         latents = taesd_vae_encode(image=tensor)
     devices.torch_gc()
     return latents
+
+
+def reprocess(gallery):
+    from PIL import Image
+    from modules import images
+    if last_latent is None or gallery is None:
+        return None
+    shared.log.info(f'Reprocessing: latent={last_latent.shape}')
+    reprocessed = vae_decode(last_latent, shared.sd_model, output_type='pil', full_quality=True)
+    outputs = []
+    for i0, i1 in zip(gallery, reprocessed):
+        fn = i0['name']
+        i0 = Image.open(fn)
+        fn = os.path.splitext(os.path.basename(fn))[0] + '-re'
+        i0.load() # wait for info to be populated
+        i1.info = i0.info
+        info, _params = images.read_info_from_image(i0)
+        if shared.opts.samples_save:
+            images.save_image(i1, info=info, forced_filename=fn)
+            i1.already_saved_as = fn
+        outputs.append(i0)
+        outputs.append(i1)
+    return outputs

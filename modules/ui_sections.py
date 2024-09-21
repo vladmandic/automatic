@@ -28,6 +28,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
         with gr.Column(scale=1, elem_id=f"{id_part}_actions_column"):
             with gr.Row(elem_id=f"{id_part}_generate_box"):
                 submit = gr.Button('Generate', elem_id=f"{id_part}_generate", variant='primary')
+                reprocess = gr.Button('Reprocess', elem_id=f"{id_part}_reprocess", variant='secondary', visible=False)
             with gr.Row(elem_id=f"{id_part}_generate_line2"):
                 interrupt = gr.Button('Stop', elem_id=f"{id_part}_interrupt")
                 interrupt.click(fn=lambda: shared.state.interrupt(), _js="requestInterrupt", inputs=[], outputs=[])
@@ -54,7 +55,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                 styles_btn_select.click(_js="applyStyles", fn=parse_style, inputs=[styles], outputs=[styles])
                 styles_btn_apply.click(fn=apply_styles, inputs=[prompt, negative_prompt, styles], outputs=[prompt, negative_prompt, styles])
                 styles_btn_save.click(fn=lambda: None, _js='() => quickSaveStyle()', inputs=[], outputs=[])
-    return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
+    return prompt, styles, negative_prompt, submit, reprocess, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 
 def ar_change(ar, width, height):

@@ -9,7 +9,7 @@ from modules.control.units import xs # vislearn ControlNet-XS
 from modules.control.units import lite # vislearn ControlNet-XS
 from modules.control.units import t2iadapter # TencentARC T2I-Adapter
 from modules.control.units import reference # reference pipeline
-from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images # pylint: disable=ungrouped-imports
+from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images, processing_vae # pylint: disable=ungrouped-imports
 from modules import ui_control_helpers as helpers
 
 
@@ -90,7 +90,7 @@ def create_ui(_blocks: gr.Blocks=None):
         return [(control_ui, 'Control', 'control')]
 
     with gr.Blocks(analytics_enabled = False) as control_ui:
-        prompt, styles, negative, btn_generate, btn_paste, btn_extra, prompt_counter, btn_prompt_counter, negative_counter, btn_negative_counter  = ui_sections.create_toprow(is_img2img=False, id_part='control')
+        prompt, styles, negative, btn_generate, btn_reprocess, btn_paste, btn_extra, prompt_counter, btn_prompt_counter, negative_counter, btn_negative_counter  = ui_sections.create_toprow(is_img2img=False, id_part='control')
         txt_prompt_img = gr.File(label="", elem_id="control_prompt_image", file_count="single", type="binary", visible=False)
         txt_prompt_img.change(fn=images.image_data, inputs=[txt_prompt_img], outputs=[prompt, txt_prompt_img])
 
@@ -502,6 +502,7 @@ def create_ui(_blocks: gr.Blocks=None):
             btn_negative_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[negative, steps], outputs=[negative_counter])
             btn_interrogate_clip.click(fn=helpers.interrogate_clip, inputs=[], outputs=[prompt])
             btn_interrogate_booru.click(fn=helpers.interrogate_booru, inputs=[], outputs=[prompt])
+            btn_reprocess.click(fn=processing_vae.reprocess, inputs=[output_gallery], outputs=[output_gallery])
 
             select_fields = [input_mode, input_image, init_image, input_type, input_resize, input_inpaint, input_video, input_batch, input_folder]
             select_output = [output_tabs, preview_process, result_txt]

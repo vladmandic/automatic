@@ -1,6 +1,6 @@
 import gradio as gr
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 from modules.ui_components import ToolButton # pylint: disable=unused-import
 
 
@@ -21,7 +21,7 @@ def create_ui():
     modules.scripts.scripts_current = modules.scripts.scripts_txt2img
     modules.scripts.scripts_txt2img.initialize_scripts(is_img2img=False, is_control=False)
     with gr.Blocks(analytics_enabled=False) as _txt2img_interface:
-        txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, txt2img_submit, txt2img_paste, txt2img_extra_networks_button, txt2img_token_counter, txt2img_token_button, txt2img_negative_token_counter, txt2img_negative_token_button = ui_sections.create_toprow(is_img2img=False, id_part="txt2img")
+        txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, txt2img_submit, txt2img_reprocess, txt2img_paste, txt2img_extra_networks_button, txt2img_token_counter, txt2img_token_button, txt2img_negative_token_counter, txt2img_negative_token_button = ui_sections.create_toprow(is_img2img=False, id_part="txt2img")
 
         txt_prompt_img = gr.File(label="", elem_id="txt2img_prompt_image", file_count="single", type="binary", visible=False)
         txt_prompt_img.change(fn=modules.images.image_data, inputs=[txt_prompt_img], outputs=[txt2img_prompt, txt_prompt_img])
@@ -57,6 +57,8 @@ def create_ui():
             txt2img_gallery, txt2img_generation_info, txt2img_html_info, _txt2img_html_info_formatted, txt2img_html_log = ui_common.create_output_panel("txt2img", preview=True, prompt=txt2img_prompt)
             ui_common.connect_reuse_seed(seed, reuse_seed, txt2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, txt2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
+
+            txt2img_reprocess.click(fn=processing_vae.reprocess, inputs=[txt2img_gallery], outputs=[txt2img_gallery])
 
             dummy_component = gr.Textbox(visible=False, value='dummy')
             txt2img_args = [
