@@ -413,4 +413,4 @@ def update_token_counter(text, steps):
             max_length = shared.sd_model.tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
             if max_length is None or max_length < 0 or max_length > 10000:
                 max_length = 0
-    return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+    return gr.update(value=f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>", visible=token_count > 0)

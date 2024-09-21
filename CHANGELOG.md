@@ -53,8 +53,10 @@
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - **control** persist/reapply units current state on server restart  
 - **video** add option `gradio_skip_video` to avoid gradio issues with displaying generated videos  
+- **ui**  
+  - hide token counter until tokens are known  
+  - minor ui optimizations  
 - massive log cleanup
-- minor ui optimizations  
 
 ## Update for 2024-09-13
 
