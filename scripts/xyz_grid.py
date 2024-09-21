@@ -228,7 +228,7 @@ class Script(scripts.Script):
                 total_steps *= 2
         total_steps *= p.n_iter
         image_cell_count = p.n_iter * p.batch_size
-        shared.log.info(f"XYZ grid: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} {len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
+        shared.log.info(f"XYZ grid: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} shape={len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
         AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
         shared.state.xyz_plot_x = AxisInfo(x_opt, xs)
         shared.state.xyz_plot_y = AxisInfo(y_opt, ys)

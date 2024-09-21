@@ -146,7 +146,7 @@ class Script(scripts.Script):
         if not enabled or active:
             return
         active = True
-        shared.log.debug(f'xyzgrid: x_type={x_type}|x_values={x_values}|x_values_dropdown={x_values_dropdown}|y_type={y_type}|{y_values}={y_values}|{y_values_dropdown}={y_values_dropdown}|z_type={z_type}|z_values={z_values}|z_values_dropdown={z_values_dropdown}|draw_legend={draw_legend}|include_lone_images={include_lone_images}|include_sub_grids={include_sub_grids}|no_grid={no_grid}|margin_size={margin_size}')
+        shared.log.debug(f'XYZ grid: x_type={x_type}|x_values={x_values}|x_values_dropdown={x_values_dropdown}|y_type={y_type}|{y_values}={y_values}|{y_values_dropdown}={y_values_dropdown}|z_type={z_type}|z_values={z_values}|z_values_dropdown={z_values_dropdown}|draw_legend={draw_legend}|include_lone_images={include_lone_images}|include_sub_grids={include_sub_grids}|no_grid={no_grid}|margin_size={margin_size}')
         if not no_fixed_seeds:
             processing.fix_seed(p)
         if not shared.opts.return_grid:
@@ -241,7 +241,7 @@ class Script(scripts.Script):
                 total_steps *= 2
         total_steps *= p.n_iter
         image_cell_count = p.n_iter * p.batch_size
-        shared.log.info(f"XYZ grid: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} {len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
+        shared.log.info(f"XYZ grid start: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} shape={len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
         AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
         shared.state.xyz_plot_x = AxisInfo(x_opt, xs)
         shared.state.xyz_plot_y = AxisInfo(y_opt, ys)

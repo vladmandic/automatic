@@ -1,3 +1,4 @@
+import time
 from copy import copy
 from PIL import Image
 from modules import shared, images, processing
@@ -10,6 +11,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
     list_size = (len(xs) * len(ys) * len(zs))
     processed_result = None
     shared.state.job_count = list_size * p.n_iter
+    t0 = time.time()
 
     def process_cell(x, y, z, ix, iy, iz):
         nonlocal processed_result
@@ -81,20 +83,24 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         shared.log.error("XYZ grid: Failed to return processed image")
         return processing.Processed(p, [])
 
+    t1 = time.time()
     z_count = len(zs)
+    grid = None
     for i in range(z_count):
         start_index = (i * len(xs) * len(ys)) + i
         end_index = start_index + len(xs) * len(ys)
-        w, h = max(i.width for i in processed_result.images[start_index:end_index]), max(i.height for i in processed_result.images[start_index:end_index])
-        print('HERE', w, h, z_count)
-        if (not no_grid or include_sub_grids) and images.check_grid_size(processed_result.images[start_index:end_index]):
-            grid = images.image_grid(processed_result.images[start_index:end_index], rows=len(ys))
+        to_process = processed_result.images[start_index:end_index]
+        w, h = max(i.width for i in to_process), max(i.height for i in to_process)
+        if (not no_grid or include_sub_grids) and images.check_grid_size(to_process):
+            grid = images.image_grid(to_process, rows=len(ys))
             if draw_legend:
                 grid = images.draw_grid_annotations(grid, w, h, hor_texts, ver_texts, margin_size, title=title_texts[i])
             processed_result.images.insert(i, grid)
-        processed_result.all_prompts.insert(i, processed_result.all_prompts[start_index])
-        processed_result.all_seeds.insert(i, processed_result.all_seeds[start_index])
-        processed_result.infotexts.insert(i, processed_result.infotexts[start_index])
+            processed_result.all_prompts.insert(i, processed_result.all_prompts[start_index])
+            processed_result.all_seeds.insert(i, processed_result.all_seeds[start_index])
+            processed_result.infotexts.insert(i, processed_result.infotexts[start_index])
+    t2 = time.time()
+    shared.log.info(f'XYZ grid complete: images={list_size} size={grid.size if grid is not None else None} time={t1-t0:.2f} save={t2-t1:.2f}')
     """
     if not no_grid and images.check_grid_size(processed_result.images[:z_count]):
         z_grid = images.image_grid(processed_result.images[:z_count], rows=1)
