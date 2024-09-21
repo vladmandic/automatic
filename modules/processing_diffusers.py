@@ -86,7 +86,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         denoising_start=0 if use_refiner_start else p.refiner_start if use_denoise_start else None,
         denoising_end=p.refiner_start if use_refiner_start else 1 if use_denoise_start else None,
         output_type='latent' if hasattr(shared.sd_model, 'vae') else 'np',
-        # output_type='pil',
         clip_skip=p.clip_skip,
         desc='Base',
     )

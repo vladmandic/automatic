@@ -1,5 +1,6 @@
 import os
 import time
+import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd
@@ -157,12 +158,15 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     else:
         decoded = taesd_vae_decode(latents=latents)
 
-    if hasattr(model, 'image_processor'):
-        imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+    if torch.is_tensor(decoded):
+        if hasattr(model, 'image_processor'):
+            imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+        else:
+            import diffusers
+            model.image_processor = diffusers.image_processor.VaeImageProcessor()
+            imgs = model.image_processor.postprocess(decoded, output_type=output_type)
     else:
-        import diffusers
-        model.image_processor = diffusers.image_processor.VaeImageProcessor()
-        imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+        imgs = decoded if isinstance(decoded, list) or isinstance(decoded, np.ndarray) else [decoded]
 
     shared.state.job = prev_job
     if shared.cmd_opts.profile or debug:

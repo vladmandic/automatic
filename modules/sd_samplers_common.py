@@ -41,10 +41,11 @@ def single_sample_to_image(sample, approximation=None):
                 approximation = 0
         # normal sample is [4,64,64]
         try:
-            if sample.dtype == torch.bfloat16:
+            if sample.dtype == torch.bfloat16 and (approximation == 0 or approximation == 1):
                 sample = sample.to(torch.float16)
         except Exception as e:
             warn_once(f'live preview: {e}')
+
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
         if len(sample) == 16: # sd_cascade
@@ -58,6 +59,7 @@ def single_sample_to_image(sample, approximation=None):
             sample_min = torch.min(sample)
             if sample_min < -5:
                 sample = sample * (5 / abs(sample_min))
+
         if approximation == 2: # TAESD
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range

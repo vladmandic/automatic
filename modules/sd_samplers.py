@@ -74,6 +74,9 @@ def create_sampler(name, model):
                 shared.log.warning(f'FLUX: sampler="{name}" unsupported')
                 # sampler.sampler.register_to_config(base_image_seq_len=256, max_image_seq_len=4096, base_shift=0.5, max_shift=1.15)
                 return None
+        if 'Lumina' in model.__class__.__name__:
+            shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
+            return
         if not hasattr(model, 'scheduler_config'):
             model.scheduler_config = sampler.sampler.config.copy()
         model.scheduler = sampler.sampler
