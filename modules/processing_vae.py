@@ -36,21 +36,28 @@ def create_latents(image, p, dtype=None, device=None):
 
 def full_vae_decode(latents, model):
     t0 = time.time()
+    if not hasattr(model, 'vae'):
+        shared.log.error('VAE not found in model')
+        return []
     if debug:
         devices.torch_gc(force=True)
         shared.mem_mon.reset()
+
     base_device = None
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
+
     if shared.opts.diffusers_offload_mode == "balanced":
         shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
-    elif not shared.opts.diffusers_offload_mode == "sequential" and hasattr(model, 'vae'):
+    elif shared.opts.diffusers_offload_mode != "sequential":
         sd_models.move_model(model.vae, devices.device)
-    latents.to(model.vae.device)
 
-    upcast = (model.vae.dtype == torch.float16) and getattr(model.vae.config, 'force_upcast', False) and hasattr(model, 'upcast_vae')
-    if upcast: # this is done by diffusers automatically if output_type != 'latent'
-        model.upcast_vae()
+    upcast = (model.vae.dtype == torch.float16) and getattr(model.vae.config, 'force_upcast', False)
+    if upcast:
+        if hasattr(model, 'upcast_vae'): # this is done by diffusers automatically if output_type != 'latent'
+            model.upcast_vae()
+        model.vae = model.vae.to(dtype=torch.float32)
+        latents = latents.to(torch.float32)
 
     if getattr(model.vae, "post_quant_conv", None) is not None:
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
@@ -70,6 +77,7 @@ def full_vae_decode(latents, model):
         latents = latents / scaling_factor
     if shift_factor:
         latents = latents + shift_factor
+    latents = latents.to(model.vae.device)
     decoded = model.vae.decode(latents, return_dict=False)[0]
 
     # delete vae after OpenVINO compile

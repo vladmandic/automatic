@@ -8,6 +8,7 @@
   - fix diffusers local model name parsing  
   - full prompt parser will auto-select `xhinker` for flux models  
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
+  - allow separate vae load  
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
@@ -57,6 +58,8 @@
   - hide token counter until tokens are known  
   - minor ui optimizations  
 - massive log cleanup
+- **experimental**
+  - flux t5 load from gguf: requires transformers pr
 
 ## Update for 2024-09-13
 
@@ -163,6 +166,7 @@ Examples:
 - **prompt enhance**: improve quality and/or verbosity of your prompts  
   simply select in *scripts -> prompt enhance*
   uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
+- **decode** auto-set upcast if first decode fails  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  

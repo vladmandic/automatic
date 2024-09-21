@@ -26,7 +26,7 @@ def load_bnb():
         global bnb # pylint: disable=global-statement
         bnb = bitsandbytes
     except Exception as e:
-        shared.log.error(f"Loading FLUX: Failed to import bitsandbytes: {e}")
+        shared.log.error(f"Load model: type=FLUX Failed to import bitsandbytes: {e}")
         raise
 
 
@@ -184,7 +184,7 @@ def load_flux_nf4(checkpoint_info):
         try:
             converted_state_dict = convert_flux_transformer_checkpoint_to_diffusers(original_state_dict)
         except Exception as e:
-            shared.log.error(f"Loading FLUX: Failed to convert UNET: {e}")
+            shared.log.error(f"Load model: type=FLUX Failed to convert UNET: {e}")
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX convert:')
@@ -211,7 +211,7 @@ def load_flux_nf4(checkpoint_info):
                 create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
     except Exception as e:
         transformer, text_encoder_2 = None, None
-        shared.log.error(f"Loading FLUX: Failed to load UNET: {e}")
+        shared.log.error(f"Load model: type=FLUX Failed to load UNET: {e}")
         if debug:
             from modules import errors
             errors.display(e, 'FLUX:')

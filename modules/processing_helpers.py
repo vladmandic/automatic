@@ -339,6 +339,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 def validate_sample(tensor):
     if not isinstance(tensor, np.ndarray) and not isinstance(tensor, torch.Tensor):
         return tensor
+    dtype = tensor.dtype
     if tensor.dtype == torch.bfloat16: # numpy does not support bf16
         tensor = tensor.to(torch.float16)
     if isinstance(tensor, torch.Tensor) and hasattr(tensor, 'detach'):
@@ -346,16 +347,21 @@ def validate_sample(tensor):
     elif isinstance(tensor, np.ndarray):
         sample = tensor
     else:
-        shared.log.warning(f'Unknown sample type: {type(tensor)}')
+        shared.log.warning(f'Decode: type={type(tensor)} unknown sample')
     sample = 255.0 * np.moveaxis(sample, 0, 2) if not shared.native else 255.0 * sample
     with warnings.catch_warnings(record=True) as w:
         cast = sample.astype(np.uint8)
-    if len(w) > 0:
+    minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
+    if len(w) > 0 or minimum == maximum:
         nans = np.isnan(sample).sum()
         cast = np.nan_to_num(sample)
-        minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
         cast = cast.astype(np.uint8)
-        shared.log.error(f'Failed to validate samples: sample={sample.shape} min={minimum:.2f} max={maximum:.2f} mean={mean:.2f} invalid={nans}')
+        vae = shared.sd_model.vae.dtype if hasattr(shared.sd_model, 'vae') else None
+        upcast = getattr(shared.sd_model.vae.config, 'force_upcast', None) if hasattr(shared.sd_model, 'vae') and hasattr(shared.sd_model.vae, 'config') else None
+        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} mean={mean} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
+        if upcast is not None and not upcast:
+            setattr(shared.sd_model.vae.config, 'force_upcast', True) # noqa: B010
+            shared.log.warning('Decode: upcast=True set, retry operation')
     return cast
 
 
