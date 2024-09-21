@@ -1,13 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-19
+## Update for 2024-09-21
 
 - **flux**
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
-  - full prompt parser will auto-select `xhinker` for flux models
-  - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)
+  - full prompt parser will auto-select `xhinker` for flux models  
+  - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
@@ -50,6 +50,7 @@
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - **control** persist/reapply units current state on server restart  
+- **video** add option `gradio_skip_video` to avoid gradio issues with displaying generated videos  
 - massive log cleanup
 - minor ui optimizations  
 

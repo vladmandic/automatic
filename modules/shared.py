@@ -649,6 +649,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_images_before_color_correction": OptionInfo(False, "Save image before color correction"),
     "save_mask": OptionInfo(False, "Save inpainting mask"),
     "save_mask_composite": OptionInfo(False, "Save inpainting masked composite"),
+    "gradio_skip_video": OptionInfo(False, "Do not display video output in UI"),
 
     "image_sep_watermark": OptionInfo("<h2>Watermarking</h2>", "", gr.HTML),
     "image_watermark_enabled": OptionInfo(False, "Include invisible watermark"),

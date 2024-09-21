@@ -728,6 +728,8 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     if video_type != 'None' and isinstance(output_images, list):
         p.do_not_save_grid = True # pylint: disable=attribute-defined-outside-init
         output_filename = images.save_video(p, filename=None, images=output_images, video_type=video_type, duration=video_duration, loop=video_loop, pad=video_pad, interpolate=video_interpolate, sync=True)
+        if shared.opts.gradio_skip_video:
+            output_filename = ''
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
     restore_pipeline()
@@ -736,7 +738,6 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     html_txt = f'<p>Ready {image_txt}</p>'
     if len(info_txt) > 0:
         html_txt = html_txt + infotext_to_html(info_txt[0])
-
     if is_generator:
         yield (output_images, blended_image, html_txt, output_filename)
     else:
