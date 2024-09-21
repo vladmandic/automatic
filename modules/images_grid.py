@@ -5,6 +5,9 @@ from PIL import Image, ImageFont, ImageDraw
 from modules import shared, script_callbacks
 
 
+Grid = namedtuple("Grid", ["tiles", "tile_w", "tile_h", "image_w", "image_h", "overlap"])
+
+
 def check_grid_size(imgs):
     mp = 0
     for img in imgs:
@@ -34,14 +37,11 @@ def image_grid(imgs, batch_size=1, rows=None):
     imgs = [i for i in imgs if i is not None] if imgs is not None else []
     if len(imgs) == 0:
         return None
-    w, h = imgs[0].size
+    w, h = max(i.width for i in imgs), max(i.height for i in imgs)
     grid = Image.new('RGB', size=(params.cols * w, params.rows * h), color=shared.opts.grid_background)
     for i, img in enumerate(params.imgs):
         grid.paste(img, box=(i % params.cols * w, i // params.cols * h))
     return grid
-
-
-Grid = namedtuple("Grid", ["tiles", "tile_w", "tile_h", "image_w", "image_h", "overlap"])
 
 
 def split_grid(image, tile_w=512, tile_h=512, overlap=64):
@@ -136,10 +136,10 @@ def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, tit
     font = get_font(fontsize)
     color_inactive = (127, 127, 127)
     pad_left = 0 if sum([sum([len(line.text) for line in lines]) for lines in ver_texts]) == 0 else width * 3 // 4
-    cols = im.width // width
-    rows = im.height // height
-    assert cols == len(hor_texts), f'bad number of horizontal texts: {len(hor_texts)}; must be {cols}'
-    assert rows == len(ver_texts), f'bad number of vertical texts: {len(ver_texts)}; must be {rows}'
+    cols = len(hor_texts)
+    rows = len(ver_texts)
+    # assert cols == len(hor_texts), f'bad number of horizontal texts: {len(hor_texts)}; must be {cols}'
+    # assert rows == len(hor_texts), f'bad number of vertical texts: {len(ver_texts)}; must be {rows}'
     calc_img = Image.new("RGB", (1, 1), shared.opts.grid_background)
     calc_d = ImageDraw.Draw(calc_img)
     title_texts = [title] if title else [[GridAnnotation()]]

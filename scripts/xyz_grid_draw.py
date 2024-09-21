@@ -85,21 +85,24 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
     for i in range(z_count):
         start_index = (i * len(xs) * len(ys)) + i
         end_index = start_index + len(xs) * len(ys)
+        w, h = max(i.width for i in processed_result.images[start_index:end_index]), max(i.height for i in processed_result.images[start_index:end_index])
+        print('HERE', w, h, z_count)
         if (not no_grid or include_sub_grids) and images.check_grid_size(processed_result.images[start_index:end_index]):
             grid = images.image_grid(processed_result.images[start_index:end_index], rows=len(ys))
             if draw_legend:
-                grid = images.draw_grid_annotations(grid, processed_result.images[start_index].size[0], processed_result.images[start_index].size[1], hor_texts, ver_texts, margin_size, title=title_texts[i])
+                grid = images.draw_grid_annotations(grid, w, h, hor_texts, ver_texts, margin_size, title=title_texts[i])
             processed_result.images.insert(i, grid)
         processed_result.all_prompts.insert(i, processed_result.all_prompts[start_index])
         processed_result.all_seeds.insert(i, processed_result.all_seeds[start_index])
         processed_result.infotexts.insert(i, processed_result.infotexts[start_index])
-    sub_grid_size = processed_result.images[0].size
+    """
     if not no_grid and images.check_grid_size(processed_result.images[:z_count]):
         z_grid = images.image_grid(processed_result.images[:z_count], rows=1)
         if draw_legend:
-            z_grid = images.draw_grid_annotations(z_grid, sub_grid_size[0], sub_grid_size[1], [[images.GridAnnotation()] for _ in z_labels], [[images.GridAnnotation()]])
+            z_grid = images.draw_grid_annotations(z_grid, w, h, [[images.GridAnnotation()] for _ in z_labels], [[images.GridAnnotation()]])
         processed_result.images.insert(0, z_grid)
-    #processed_result.all_prompts.insert(0, processed_result.all_prompts[0])
-    #processed_result.all_seeds.insert(0, processed_result.all_seeds[0])
-    processed_result.infotexts.insert(0, processed_result.infotexts[0])
+        processed_result.all_prompts.insert(0, processed_result.all_prompts[0])
+        processed_result.all_seeds.insert(0, processed_result.all_seeds[0])
+        processed_result.infotexts.insert(0, processed_result.infotexts[0])
+    """
     return processed_result

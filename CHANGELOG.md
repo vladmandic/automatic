@@ -19,6 +19,9 @@
   - allow passing **processing args** directly:  
     params are set directly on main processing object and can be known or new params  
     example: `steps=10, steps=20; test=unknown`  
+  - enable working with different resolutions  
+    now you can adjust width/height in the grid just as any other param  
+  - renamed options to include section name and adjusted cost of each option  
 - **interrogate**  
   - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
   - change default params for better memory utilization
