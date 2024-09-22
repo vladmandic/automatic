@@ -36,6 +36,8 @@
   - if lora contains no tags, lora name itself will be used as a tag  
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
+  - loras are no longer filtered per detected type vs loaded model type as its unreliable
+  - loras display in networks now shows possible version in top-left corner
   - correct using of `extra_networks_default_multiplier` if not scale is specified  
   - always keep lora on gpu  
 - **text encoder**:

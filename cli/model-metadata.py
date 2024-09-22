@@ -7,22 +7,27 @@ from rich import print # pylint: disable=redefined-builtin
 
 def read_metadata(fn):
     res = {}
+    if not fn.lower().endswith(".safetensors"):
+        return
     with open(fn, mode="rb") as f:
-        metadata_len = f.read(8)
-        metadata_len = int.from_bytes(metadata_len, "little")
-        json_start = f.read(2)
-        if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-            print(f"Not a valid safetensors file: {fn}")
-        json_data = json_start + f.read(metadata_len-2)
-        json_obj = json.loads(json_data)
-        for k, v in json_obj.get("__metadata__", {}).items():
-            res[k] = v
-            if isinstance(v, str) and v[0:1] == '{':
-                try:
-                    res[k] = json.loads(v)
-                except Exception:
-                    pass
-    print(f"{fn}: {json.dumps(res, indent=4)}")
+        try:
+            metadata_len = f.read(8)
+            metadata_len = int.from_bytes(metadata_len, "little")
+            json_start = f.read(2)
+            if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
+                print(f"Not a valid safetensors file: {fn}")
+            json_data = json_start + f.read(metadata_len-2)
+            json_obj = json.loads(json_data)
+            for k, v in json_obj.get("__metadata__", {}).items():
+                res[k] = v
+                if isinstance(v, str) and v[0:1] == '{':
+                    try:
+                        res[k] = json.loads(v)
+                    except Exception:
+                        pass
+            print(f"{fn}: {json.dumps(res, indent=4)}")
+        except Exception:
+            print(f"{fn}: cannot read metadata")
 
 
 def main():

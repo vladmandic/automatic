@@ -32,6 +32,7 @@ card_full = '''
             <div class='tags'></div>
             <div class='name'>{title}</div>
         </div>
+        <div class='version'>{version}</div>
         <div class='actions'>
             <span class='details' title="Get details" onclick="showCardDetails(event)">&#x1f6c8;</span>
             <div class='additional'><ul></ul></div>
@@ -40,7 +41,7 @@ card_full = '''
     </div>
 '''
 card_list = '''
-    <div class='card card-list' onclick={card_click} title='{name}' data-tab='{tabname}' data-page='{page}' data-name='{name}' data-filename='{filename}' data-tags='{tags}' data-mtime='{mtime}' data-size='{size}' data-search='{search}'>
+    <div class='card card-list' onclick={card_click} title='{name}' data-tab='{tabname}' data-page='{page}' data-name='{name}' data-filename='{filename}' data-tags='{tags}' data-mtime='{mtime}' data-version='{version}' data-size='{size}' data-search='{search}'>
         <div style='display: flex'>
             <span class='details' title="Get details" onclick="showCardDetails(event)">&#x1f6c8;</span>&nbsp;
             <div class='name' style='flex-flow: column'>{title}&nbsp;
@@ -308,6 +309,7 @@ class ExtraNetworksPage:
                 "card_click": item.get("onclick", '"' + html.escape(f'return cardClicked({item.get("prompt", None)}, {"true" if self.allow_negative_prompt else "false"})') + '"'),
                 "mtime": item.get("mtime", 0),
                 "size": item.get("size", 0),
+                "version": item.get("version", ''),
                 "color": random_bright_color(),
             }
             alias = item.get("alias", None)
