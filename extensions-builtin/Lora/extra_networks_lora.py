@@ -121,7 +121,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.active = True
             networks.originals.apply() # apply patches
             if networks.debug:
-                shared.log.debug("LoRA activate")
+                shared.log.debug(f"LoRA activate: networks={len(params_list)}")
         t1 = time.time()
         names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)

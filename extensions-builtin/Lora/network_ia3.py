@@ -5,7 +5,6 @@ class ModuleTypeIa3(network.ModuleType):
     def create_module(self, net: network.Network, weights: network.NetworkWeights):
         if all(x in weights.w for x in ["weight"]):
             return NetworkModuleIa3(net, weights)
-
         return None
 
 

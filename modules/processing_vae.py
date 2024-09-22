@@ -3,7 +3,7 @@ import time
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd
+from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd, errors
 
 
 debug = os.environ.get('SD_VAE_DEBUG', None) is not None
@@ -63,6 +63,8 @@ def full_vae_decode(latents, model):
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
     elif shared.opts.no_half_vae:
         latents = latents.to(torch.float32)
+    else:
+        latents = latents.to(model.vae.device)
 
     # normalize latents
     latents_mean = model.vae.config.get("latents_mean", None)
@@ -77,8 +79,18 @@ def full_vae_decode(latents, model):
         latents = latents / scaling_factor
     if shift_factor:
         latents = latents + shift_factor
-    latents = latents.to(model.vae.device)
-    decoded = model.vae.decode(latents, return_dict=False)[0]
+
+    vae_name = os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0] if sd_vae.loaded_vae_file is not None else "default"
+    vae_stats = f'name="{vae_name}" dtype={model.vae.dtype} device={model.vae.device} upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)}'
+    latents_stats = f'shape={latents.shape} dtype={latents.dtype} device={latents.device}'
+    stats = f'vae {vae_stats} latents {latents_stats}'
+
+    try:
+        decoded = model.vae.decode(latents, return_dict=False)[0]
+    except Exception as e:
+        shared.log.error(f'VAE decode: {stats} {e}')
+        errors.display(e, 'VAE decode')
+        decoded = []
 
     # delete vae after OpenVINO compile
     if 'VAE' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
@@ -94,7 +106,7 @@ def full_vae_decode(latents, model):
     t1 = time.time()
     if debug:
         log_debug(f'VAE memory: {shared.mem_mon.read()}')
-    log_debug(f'VAE decode: name={sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "baked"} dtype={model.vae.dtype} upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)} images={latents.shape[0]} latents={latents.shape} time={round(t1-t0, 3)}')
+    shared.log.debug(f'VAE decode: {stats} time={round(t1-t0, 3)}')
     return decoded
 
 

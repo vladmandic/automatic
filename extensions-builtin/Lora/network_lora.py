@@ -47,7 +47,7 @@ class NetworkModuleLora(network.NetworkModule):
             if weight.shape != module.weight.shape:
                 weight = weight.reshape(module.weight.shape)
             module.weight.copy_(weight)
-        module.to(device=devices.cpu, dtype=devices.dtype)
+        module = module.to(device=devices.device, dtype=devices.dtype)
         module.weight.requires_grad_(False)
         return module
 

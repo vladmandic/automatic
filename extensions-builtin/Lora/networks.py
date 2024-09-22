@@ -421,15 +421,11 @@ def network_reset_cached_weight(self: Union[torch.nn.Conv2d, torch.nn.Linear]):
 
 
 def network_Linear_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #    return network_forward(self, input, originals.Linear_forward)
     network_apply_weights(self)
     return originals.Linear_forward(self, input)
 
 
 def network_QLinear_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #    return network_forward(self, input, originals.Linear_forward)
     network_apply_weights(self)
     return torch.nn.functional.linear(input, self.qweight, bias=self.bias)
 
@@ -440,15 +436,11 @@ def network_Linear_load_state_dict(self, *args, **kwargs):
 
 
 def network_Conv2d_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #     return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return originals.Conv2d_forward(self, input)
 
 
 def network_QConv2d_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #     return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return self._conv_forward(input, self.qweight, self.bias) # pylint: disable=protected-access
 
@@ -459,8 +451,6 @@ def network_Conv2d_load_state_dict(self, *args, **kwargs):
 
 
 def network_GroupNorm_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #    return network_forward(self, input, originals.GroupNorm_forward)
     network_apply_weights(self)
     return originals.GroupNorm_forward(self, input)
 
@@ -471,8 +461,6 @@ def network_GroupNorm_load_state_dict(self, *args, **kwargs):
 
 
 def network_LayerNorm_forward(self, input): # pylint: disable=W0622
-    # if shared.opts.lora_functional:
-    #    return network_forward(self, input, originals.LayerNorm_forward)
     network_apply_weights(self)
     return originals.LayerNorm_forward(self, input)
 

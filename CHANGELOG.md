@@ -36,7 +36,8 @@
   - if lora contains no tags, lora name itself will be used as a tag  
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
-  - correct using of `extra_networks_default_multiplier` if not scale is specified
+  - correct using of `extra_networks_default_multiplier` if not scale is specified  
+  - always keep lora on gpu  
 - **text encoder**:
   - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
     will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  

@@ -5,7 +5,6 @@ class ModuleTypeFull(network.ModuleType):
     def create_module(self, net: network.Network, weights: network.NetworkWeights):
         if all(x in weights.w for x in ["diff"]):
             return NetworkModuleFull(net, weights)
-
         return None
 
 
