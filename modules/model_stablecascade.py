@@ -44,7 +44,7 @@ def load_text_encoder(path):
             vocab_size=49408
         )
 
-        shared.log.info(f'Loading Text Encoder: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}"')
+        shared.log.info(f'Load Text Encoder: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}"')
 
         with init_empty_weights():
             text_encoder = CLIPTextModelWithProjection(config)
@@ -74,7 +74,7 @@ def load_prior(path, config_file="default"):
         else:
             config_file = "configs/stable-cascade/prior/config.json"
 
-    shared.log.info(f'Loading UNet: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}" config="{config_file}"')
+    shared.log.info(f'Load UNet: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}" config="{config_file}"')
     prior_unet = StableCascadeUNet.from_single_file(path, config=config_file, torch_dtype=devices.dtype_unet, cache_dir=shared.opts.diffusers_dir)
 
     if os.path.isfile(os.path.splitext(path)[0] + "_text_encoder.safetensors"): # OneTrainer

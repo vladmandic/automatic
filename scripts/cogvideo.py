@@ -74,7 +74,7 @@ class Script(scripts.Script):
                 shared.sd_model.sd_model_hash = ''
                 shared.sd_model.sd_model_checkpoint = model
             except Exception as e:
-                shared.log.error(f'Loading CogVideoX: {e}')
+                shared.log.error(f'Load CogVideoX: {e}')
                 if debug:
                     errors.display(e, 'CogVideoX')
         if shared.sd_model_type == 'cogvideox' and model != 'None':

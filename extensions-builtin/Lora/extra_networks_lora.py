@@ -134,6 +134,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.active = False
 
     def deactivate(self, p):
+        t0 = time.time()
         if shared.native and hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
             if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
                 try:
@@ -148,6 +149,8 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             networks.originals.undo() # remove patches
             if networks.debug:
                 shared.log.debug("LoRA deactivate")
+        t1 = time.time()
+        networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
             shared.log.debug(f"LoRA end: load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
         if self.errors:

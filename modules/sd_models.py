@@ -382,13 +382,13 @@ def read_metadata_from_safetensors(filename):
     return res
 
 
-def read_state_dict(checkpoint_file, map_location=None): # pylint: disable=unused-argument
+def read_state_dict(checkpoint_file, map_location=None, what:str='model'): # pylint: disable=unused-argument
     if not os.path.isfile(checkpoint_file):
         shared.log.error(f'Load dict: path="{checkpoint_file}" not a file')
         return None
     try:
         pl_sd = None
-        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Loading model: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
+        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Load {what}: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
             _, extension = os.path.splitext(checkpoint_file)
             if extension.lower() == ".ckpt" and shared.opts.sd_disable_ckpt:
                 shared.log.warning(f"Checkpoint loading disabled: {checkpoint_file}")
@@ -424,7 +424,7 @@ def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
         shared.log.info("Load model: cache")
         checkpoints_loaded.move_to_end(checkpoint_info, last=True)  # FIFO -> LRU cache
         return checkpoints_loaded[checkpoint_info]
-    res = read_state_dict(checkpoint_info.filename)
+    res = read_state_dict(checkpoint_info.filename, what='model')
     if shared.opts.sd_checkpoint_cache > 0 and not shared.native:
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = res
@@ -1803,7 +1803,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             return model_data.sd_refiner
 
     # fallback
-    shared.log.info(f"Loading using fallback: {op} model={checkpoint_info.title}")
+    shared.log.info(f"Load {op} using fallback: model={checkpoint_info.title}")
     try:
         load_model_weights(sd_model, checkpoint_info, state_dict, timer)
     except Exception:
@@ -1819,7 +1819,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             timer.record("device")
     shared.state.end()
     shared.state = orig_state
-    shared.log.info(f"Load: {op} time={timer.summary()}")
+    shared.log.info(f"Load {op}: time={timer.summary()}")
     return sd_model
 
 

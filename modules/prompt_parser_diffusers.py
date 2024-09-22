@@ -52,10 +52,10 @@ def sd3_compel_hijack(self, token_ids: torch.Tensor,
 def insert_parser_highjack(pipename):
     if "StableDiffusion3" in pipename:
         EmbeddingsProvider._encode_token_ids_to_embeddings = sd3_compel_hijack # pylint: disable=protected-access
-        debug("Loading SD3 Parser hijack")
+        debug("Load SD3 Parser hijack")
     else:
         EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
-        debug("Loading Standard Parser hijack")
+        debug("Load Standard Parser hijack")
 
 
 

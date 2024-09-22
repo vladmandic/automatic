@@ -202,21 +202,20 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
             ok = ok and spec is not None
             if ok:
                 package_version = pkg_resources.get_distribution(p[0]).version
-                # log.debug(f"Package version found: {p[0]} {package_version}")
                 if len(p) > 1:
                     exact = package_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package allowing experimental: {p[0]} {package_version} required {p[1]}")
+                            log.warning(f"Package: {p[0]} {package_version} required {p[1]} allowing experimental")
                         else:
-                            log.warning(f"Package version mismatch: {p[0]} {package_version} required {p[1]}")
+                            log.warning(f"Package: {p[0]} {package_version} required {p[1]} version mismatch")
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:
-                    log.debug(f"Package not found: {p[0]}")
+                    log.debug(f"Package: {p[0]} not found")
         return ok
     except Exception as e:
-        log.debug(f"Package error: {pkgs} {e}")
+        log.error(f"Package: {pkgs} {e}")
         return False
 
 
@@ -226,7 +225,7 @@ def uninstall(package, quiet = False):
     for p in packages:
         if installed(p, p, quiet=True):
             if not quiet:
-                log.warning(f'Uninstalling: {p}')
+                log.warning(f'Package: {p} uninstall')
             res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True)
     return res
 
@@ -246,7 +245,7 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         if uv and result.returncode != 0:
-            log.warning('Cannot install with uv, fallback to pip')
+            log.warning('Install: cannot use uv, fallback to pip')
             return pip(originalArg, ignore, quiet, uv=False)
         else:
             txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
@@ -255,8 +254,8 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     if result.returncode != 0 and not ignore:
         global errors # pylint: disable=global-statement
         errors += 1
-        log.error(f'Error running {pipCmd}: {arg}')
-        log.debug(f'Pip output: {txt}')
+        log.error(f'Install: {pipCmd}: {arg}')
+        log.debug(f'Install: pip output {txt}')
     return txt
 
 
@@ -299,9 +298,9 @@ def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = Fal
             return txt
         global errors # pylint: disable=global-statement
         errors += 1
-        log.error(f'Error running git: {folder} / {arg}')
+        log.error(f'Git: {folder} / {arg}')
         if 'or stash them' in txt:
-            log.error(f'Local changes detected: check log for details: {log_file}')
+            log.error(f'Git local changes detected: check details log="{log_file}"')
         log.debug(f'Git output: {txt}')
     return txt
 
@@ -330,7 +329,7 @@ def branch(folder=None):
         b = 'master'
     else:
         b = b.split('\n')[0].replace('*', '').strip()
-    log.debug(f'Submodule: {folder} / {b}')
+    log.debug(f'Git submodule: {folder} / {b}')
     git(f'checkout {b}', folder, ignore=True, optional=True)
     return b
 
@@ -403,15 +402,15 @@ def get_platform():
 def check_python(supported_minors=[9, 10, 11, 12], reason=None):
     if args.quick:
         return
-    log.info(f'Python version={platform.python_version()} platform={platform.system()} bin="{sys.executable}" venv="{sys.prefix}"')
+    log.info(f'Python: version={platform.python_version()} platform={platform.system()} bin="{sys.executable}" venv="{sys.prefix}"')
     if int(sys.version_info.major) == 3 and int(sys.version_info.minor) == 12 and int(sys.version_info.micro) > 3: # TODO python 3.12.4 or higher cause a mess with pydantic
-        log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.12.3 or lower")
+        log.error(f"Python version incompatible: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.12.3 or lower")
         if reason is not None:
             log.error(reason)
         if not args.ignore:
             sys.exit(1)
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
-        log.error(f"Incompatible Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
+        log.error(f"Python version incompatible: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
         if reason is not None:
             log.error(reason)
         if not args.ignore:
@@ -426,7 +425,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
                 sys.exit(1)
     else:
         git_version = git('--version', folder=None, ignore=False)
-        log.debug(f'Git {git_version.replace("git version", "").strip()}')
+        log.debug(f'Git: version={git_version.replace("git version", "").strip()}')
 
 
 # check diffusers version
@@ -453,7 +452,7 @@ def check_onnx():
 
 
 def install_cuda():
-    log.info('nVidia CUDA toolkit detected: nvidia-smi present')
+    log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
 
@@ -462,18 +461,18 @@ def install_rocm_zluda():
     from modules import rocm
 
     if not rocm.is_installed:
-        log.warning('Could not find ROCm toolkit installed.')
+        log.warning('ROCm: could not find ROCm toolkit installed')
         log.info('Using CPU-only torch')
         return os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
     check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
-    log.info('AMD ROCm toolkit detected')
+    log.info('ROCm: AMD toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
     # if not is_windows:
     #    os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
     try:
         amd_gpus = rocm.get_agents()
-        log.info(f'ROCm agents detected: {[gpu.name for gpu in amd_gpus]}')
+        log.info(f'ROCm: agents={[gpu.name for gpu in amd_gpus]}')
     except Exception as e:
         log.warning(f'ROCm agent enumerator failed: {e}')
         amd_gpus = []
@@ -482,17 +481,17 @@ def install_rocm_zluda():
     for idx, gpu in enumerate(amd_gpus):
         gfx_version = gpu.get_gfx_version()
         if gfx_version is None:
-            log.debug(f'HSA_OVERRIDE_GFX_VERSION auto config is skipped for {gpu.name}')
+            log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
         else:
             hip_default_device = gpu
-            log.debug(f'ROCm agent used by default: idx={idx} gpu={gpu.name}')
+            log.debug(f'ROCm default agent: idx={idx} gpu={gpu.name}')
             os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
             # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
             #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
             os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_version)
             break
 
-    log.info(f'ROCm version detected: {rocm.version}')
+    log.info(f'ROCm: version={rocm.version}')
     torch_command = ''
     if sys.platform == "win32":
         #if args.use_zluda:
@@ -528,8 +527,8 @@ def install_rocm_zluda():
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
         elif float(rocm.version) < 5.5: # oldest supported version is 5.5
-            log.warning(f"Unsupported ROCm version detected: {rocm.version}")
-            log.warning("Minimum supported ROCm version is 5.5")
+            log.warning(f"ROCm: unsupported version={rocm.version}")
+            log.warning("ROCm: minimum supported version=5.5")
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
         else:
             torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
@@ -543,7 +542,7 @@ def install_rocm_zluda():
             install(ort_package, 'onnxruntime-training')
 
         if hip_default_device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
-            log.debug(f'hipBLASLt arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
+            log.debug(f'ROCm hipBLASLt: arch={hip_default_device.name} available={hip_default_device.blaslt_supported}')
             rocm.set_blaslt_enabled(hip_default_device.blaslt_supported)
     return torch_command
 
@@ -551,7 +550,7 @@ def install_rocm_zluda():
 def install_ipex(torch_command):
     check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
-    log.info('Intel OneAPI Toolkit detected')
+    log.info('IPEX: Intel OneAPI toolkit detected')
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
@@ -586,7 +585,7 @@ def install_ipex(torch_command):
 
 def install_openvino(torch_command):
     check_python(supported_minors=[8, 9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
-    log.info('Using OpenVINO')
+    log.info('OpenVINO: selected')
     torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu')
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino')
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
@@ -608,7 +607,7 @@ def install_torch_addons():
             import torch # pylint: disable=unused-import
             import xformers # pylint: disable=unused-import
         except Exception as e:
-            log.debug(f'Cannot install xformers package: {e}')
+            log.debug(f'xFormers cannot install: {e}')
     elif not args.experimental and not args.use_xformers and opts.get('cross_attention_optimization', '') != 'xFormers':
         uninstall('xformers')
     if opts.get('cuda_compile_backend', '') == 'hidet':
@@ -628,7 +627,7 @@ def install_torch_addons():
 # check torch version
 def check_torch():
     if args.skip_torch:
-        log.info('Skipping Torch tests')
+        log.info('Torch: skip tests')
         return
     if args.profile:
         pr = cProfile.Profile()
@@ -673,7 +672,7 @@ def check_torch():
             if sys.platform == 'darwin':
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
             elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
-                log.info('Using DirectML Backend')
+                log.info('DirectML: selected')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
                 if 'torch' in torch_command and not args.version:
                     install(torch_command, 'torch torchvision')
@@ -694,7 +693,7 @@ def check_torch():
                     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
                     log.info(f'Torch backend: Intel IPEX {ipex.__version__}')
                 except Exception:
-                    log.warning('IPEX not found')
+                    log.warning('IPEX: not found')
                 if shutil.which('icpx') is not None:
                     log.info(f'{os.popen("icpx --version").read().rstrip()}')
                 for device in range(torch.xpu.device_count()):
@@ -720,7 +719,7 @@ def check_torch():
                 except Exception:
                     log.warning("Torch reports CUDA not available")
         except Exception as e:
-            log.error(f'Could not load torch: {e}')
+            log.error(f'Torch cannot load: {e}')
             if not args.ignore:
                 sys.exit(1)
     if rocm.is_installed:
@@ -730,7 +729,7 @@ def check_torch():
             try:
                 rocm.load_hsa_runtime()
             except OSError:
-                log.error("Failed to preload HSA Runtime library.")
+                log.error("ROCm: failed to preload HSA runtime")
     if args.version:
         return
     if not args.skip_all:
@@ -786,7 +785,7 @@ def run_extension_installer(folder):
     if not os.path.isfile(path_installer):
         return
     try:
-        log.debug(f"Running extension installer: {path_installer}")
+        log.debug(f"Extension installer: {path_installer}")
         env = os.environ.copy()
         env['PYTHONPATH'] = os.path.abspath(".")
         result = subprocess.run(f'"{sys.executable}" "{path_installer}"', shell=True, env=env, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=folder)
@@ -797,10 +796,10 @@ def run_extension_installer(folder):
             errors += 1
             if len(result.stderr) > 0:
                 txt = txt + '\n' + result.stderr.decode(encoding="utf8", errors="ignore")
-            log.error(f'Error running extension installer: {path_installer}')
+            log.error(f'Extension installer error: {path_installer}')
             log.debug(txt)
     except Exception as e:
-        log.error(f'Exception running extension installer: {e}')
+        log.error(f'Extension installer exception: {e}')
 
 # get list of all enabled extensions
 def list_extensions_folder(folder, quiet=False):
@@ -842,8 +841,8 @@ def install_extensions(force=False):
                 try:
                     res.append(update(os.path.join(folder, ext)))
                 except Exception:
-                    res.append(f'Error updating extension: {os.path.join(folder, ext)}')
-                    log.error(f'Error updating extension: {os.path.join(folder, ext)}')
+                    res.append(f'Extension update error: {os.path.join(folder, ext)}')
+                    log.error(f'Extension update error: {os.path.join(folder, ext)}')
             if not args.skip_extensions:
                 run_extension_installer(os.path.join(folder, ext))
             pkg_resources._initialize_master_working_set() # pylint: disable=protected-access
@@ -887,7 +886,7 @@ def install_submodules(force=True):
             else:
                 branch(name)
         except Exception:
-            log.error(f'Error updating submodule: {submodule}')
+            log.error(f'Submodule update error: {submodule}')
     setup_logging()
     if args.profile:
         print_profile(pr, 'Submodule')
@@ -1112,18 +1111,18 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
                     update('.', keep_branch=True)
                     # git('git stash pop')
                     ver = git('log -1 --pretty=format:"%h %ad"')
-                    log.info(f'Upgraded to version: {ver}')
+                    log.info(f'Repository upgraded: {ver}')
                 except Exception:
                     if not reset:
-                        log.error('Error during repository upgrade')
+                        log.error('Repository error upgrading')
                     else:
-                        log.warning('Retrying repository upgrade...')
+                        log.warning('Repository: retrying upgrade...')
                         git_reset()
                         check_version(offline=offline, reset=False)
             else:
-                log.info(f'Latest published version: {commits["commit"]["sha"]} {commits["commit"]["commit"]["author"]["date"]}')
+                log.info(f'Repository latest available {commits["commit"]["sha"]} {commits["commit"]["commit"]["author"]["date"]}')
     except Exception as e:
-        log.error(f'Failed to check version: {e} {commits}')
+        log.error(f'Repository failed to check version: {e} {commits}')
 
 
 def update_wiki():
@@ -1132,7 +1131,7 @@ def update_wiki():
         try:
             update(os.path.join(os.path.dirname(__file__), "wiki"))
         except Exception:
-            log.error('Error updating wiki')
+            log.error('Wiki update error')
 
 
 # check if we can run setup in quick mode
@@ -1154,18 +1153,18 @@ def check_timestamp():
     try:
         version_time = int(git('log -1 --pretty=format:"%at"'))
     except Exception as e:
-        log.error(f'Error getting local repository version: {e}')
-    log.debug(f'Repository update time: {time.ctime(int(version_time))}')
+        log.error(f'Timestamp local repository version: {e}')
+    log.debug(f'Timestamp repository update time: {time.ctime(int(version_time))}')
     if setup_time == -1:
         return False
-    log.debug(f'Previous setup time: {time.ctime(setup_time)}')
+    log.debug(f'Timestamp previous setup time: {time.ctime(setup_time)}')
     if setup_time < version_time:
         ok = False
     extension_time = check_extensions()
-    log.debug(f'Latest extensions time: {time.ctime(extension_time)}')
+    log.debug(f'Timestamp latest extensions time: {time.ctime(extension_time)}')
     if setup_time < extension_time:
         ok = False
-    log.debug(f'Timestamps: version:{version_time} setup:{setup_time} extension:{extension_time}')
+    log.debug(f'Timestamp: version:{version_time} setup:{setup_time} extension:{extension_time}')
     if args.reinstall:
         ok = False
     return ok

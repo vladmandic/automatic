@@ -295,10 +295,10 @@ class EmbeddingDatabase:
                     embedding.tokens = []
                     self.skipped_embeddings[embedding.name] = embedding
             except Exception as e:
-                shared.log.error(f'Embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
+                shared.log.error(f'Load embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
                 self.skipped_embeddings[embedding.name] = embedding
         if overwrite:
-            shared.log.info(f"Loading Bundled embeddings: {list(data.keys())}")
+            shared.log.info(f"Load bundled embeddings: {list(data.keys())}")
             for embedding in embeddings:
                 if embedding.name not in self.skipped_embeddings:
                     deref_tokenizers(embedding.tokens, tokenizers)
@@ -309,7 +309,7 @@ class EmbeddingDatabase:
                     insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception as e:
-                    shared.log.error(f'Embedding load: name="{embedding.name}" file="{embedding.filename}" {e}')
+                    shared.log.error(f'Load embedding: name="{embedding.name}" file="{embedding.filename}" {e}')
         return
 
     def load_from_file(self, path, filename):

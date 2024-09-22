@@ -93,7 +93,7 @@ class FaceRestorerYolo(FaceRestoration):
         if self.model is None:
             model_file = modelloader.load_file_from_url(url=self.model_url, model_dir=self.model_dir, file_name=self.model_name)
             if model_file is not None:
-                shared.log.info(f'Loading: type=FaceHires model={model_file}')
+                shared.log.info(f'Load: type=FaceHires model={model_file}')
                 from ultralytics import YOLO # pylint: disable=import-outside-toplevel
                 self.model = YOLO(model_file)
 

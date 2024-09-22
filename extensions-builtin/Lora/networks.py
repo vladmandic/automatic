@@ -26,7 +26,7 @@ extra_network_lora = None
 available_networks = {}
 available_network_aliases = {}
 loaded_networks: List[network.Network] = []
-timer = { 'load': 0, 'apply': 0, 'restore': 0 }
+timer = { 'load': 0, 'apply': 0, 'restore': 0, 'deactivate': 0 }
 # networks_in_memory = {}
 lora_cache = {}
 diffuser_loaded = []
@@ -127,7 +127,7 @@ def load_network(name, network_on_disk) -> network.Network:
         return cached
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
-    sd = sd_models.read_state_dict(network_on_disk.filename)
+    sd = sd_models.read_state_dict(network_on_disk.filename, what='network')
     assign_network_names_to_compvis_modules(shared.sd_model) # this should not be needed but is here as an emergency fix for an unknown error people are experiencing in 1.2.0
     keys_failed_to_match = {}
     matched_networks = {}
@@ -421,15 +421,15 @@ def network_reset_cached_weight(self: Union[torch.nn.Conv2d, torch.nn.Linear]):
 
 
 def network_Linear_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.Linear_forward)
+    # if shared.opts.lora_functional:
+    #    return network_forward(self, input, originals.Linear_forward)
     network_apply_weights(self)
     return originals.Linear_forward(self, input)
 
 
 def network_QLinear_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.Linear_forward)
+    # if shared.opts.lora_functional:
+    #    return network_forward(self, input, originals.Linear_forward)
     network_apply_weights(self)
     return torch.nn.functional.linear(input, self.qweight, bias=self.bias)
 
@@ -440,15 +440,15 @@ def network_Linear_load_state_dict(self, *args, **kwargs):
 
 
 def network_Conv2d_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.Conv2d_forward)
+    # if shared.opts.lora_functional:
+    #     return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return originals.Conv2d_forward(self, input)
 
 
 def network_QConv2d_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.Conv2d_forward)
+    # if shared.opts.lora_functional:
+    #     return network_forward(self, input, originals.Conv2d_forward)
     network_apply_weights(self)
     return self._conv_forward(input, self.qweight, self.bias) # pylint: disable=protected-access
 
@@ -459,8 +459,8 @@ def network_Conv2d_load_state_dict(self, *args, **kwargs):
 
 
 def network_GroupNorm_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.GroupNorm_forward)
+    # if shared.opts.lora_functional:
+    #    return network_forward(self, input, originals.GroupNorm_forward)
     network_apply_weights(self)
     return originals.GroupNorm_forward(self, input)
 
@@ -471,8 +471,8 @@ def network_GroupNorm_load_state_dict(self, *args, **kwargs):
 
 
 def network_LayerNorm_forward(self, input): # pylint: disable=W0622
-    if shared.opts.lora_functional:
-        return network_forward(self, input, originals.LayerNorm_forward)
+    # if shared.opts.lora_functional:
+    #    return network_forward(self, input, originals.LayerNorm_forward)
     network_apply_weights(self)
     return originals.LayerNorm_forward(self, input)
 

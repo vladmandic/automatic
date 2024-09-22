@@ -286,7 +286,7 @@ def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_nam
     }
     shared.state.begin('Convert')
     model_info = sd_models.checkpoints_list[model]
-    shared.state.textinfo = f"Loading {model_info.filename}..."
+    shared.state.textinfo = f"Load {model_info.filename}..."
     shared.log.info(f"Model convert loading: {model_info.filename}")
     state_dict = load_model(model_info.filename)
 

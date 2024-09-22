@@ -138,7 +138,7 @@ def resolve_vae(checkpoint_file):
 
 
 def load_vae_dict(filename):
-    vae_ckpt = sd_models.read_state_dict(filename)
+    vae_ckpt = sd_models.read_state_dict(filename, what='vae')
     vae_dict_1 = {k: v for k, v in vae_ckpt.items() if k[0:4] != "loss" and k not in vae_ignore_keys}
     return vae_dict_1
 
@@ -154,7 +154,7 @@ def load_vae(model, vae_file=None, vae_source="unknown-source"):
             vae_dict_1 = load_vae_dict(vae_file)
             _load_vae_dict(model, vae_dict_1)
         except Exception as e:
-            shared.log.error(f"Loading VAE failed: model={vae_file} source={vae_source} {e}")
+            shared.log.error(f"Load VAE failed: model={vae_file} source={vae_source} {e}")
             if debug:
                 errors.display(e, 'VAE')
             restore_base_vae(model)
@@ -236,7 +236,7 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
             sd_models.move_model(vae, devices.device)
         return vae
     except Exception as e:
-        shared.log.error(f"Loading VAE failed: model={vae_file} {e}")
+        shared.log.error(f"Load VAE failed: model={vae_file} {e}")
         if debug:
             errors.display(e, 'VAE')
     return None
