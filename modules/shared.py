@@ -216,6 +216,10 @@ if cmd_opts.use_openvino: # override for openvino
     backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
 native = backend == Backend.DIFFUSERS
+cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
+mem_stat = memory_stats()
+gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
+
 
 class OptionInfo:
     def __init__(self, default=None, label="", component=None, component_args=None, onchange=None, section=None, refresh=None, folder=None, submit=None, comment_before='', comment_after=''):
@@ -361,52 +365,48 @@ def temp_disable_extensions():
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
 
-gpu_memory = 0
-offload_mode_default = "none"
-cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 
-mem_stat = memory_stats()
-if "gpu" in mem_stat:
-    gpu_memory = mem_stat['gpu']['total']
+def get_default_modes():
+    default_offload_mode = "none"
+    if not (cmd_opts.lowvram or cmd_opts.medvram):
+        if "gpu" in mem_stat:
+            if gpu_memory <= 4:
+                cmd_opts.lowvram = True
+                default_offload_mode = "sequential"
+                log.info(f"GPU detect: memory={gpu_memory} optimization=lowvram")
+            elif gpu_memory <= 8:
+                cmd_opts.medvram = True
+                default_offload_mode = "model"
+                log.info(f"GPU detect: memory={gpu_memory} ptimization=medvram")
+            else:
+                default_offload_mode = "none"
+                log.info(f"GPU detect: memory={gpu_memory} optimization=none")
+    elif cmd_opts.medvram:
+        default_offload_mode = "model"
+    elif cmd_opts.lowvram:
+        default_offload_mode = "sequential"
 
-if not (cmd_opts.lowvram or cmd_opts.medvram):
-    if "gpu" in mem_stat:
-        if gpu_memory <= 4:
-            cmd_opts.lowvram = True
-            offload_mode_default = "sequential"
-            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=lowvram")
-        elif gpu_memory <= 8:
-            cmd_opts.medvram = True
-            offload_mode_default = "model"
-            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=medvram")
-        else:
-            offload_mode_default = "none"
-            log.info(f"VRAM: Detected={gpu_memory} GB Optimization=none")
-elif cmd_opts.medvram:
-    offload_mode_default = "model"
-elif cmd_opts.lowvram:
-    offload_mode_default = "sequential"
+    if devices.backend == "directml": # Force BMM for DirectML instead of SDP
+        default_cross_attention = "Dynamic Attention BMM" if native else "Sub-quadratic"
+    elif devices.backend == "cpu":
+        default_cross_attention = "Scaled-Dot-Product" if native else "Doggettx's"
+    elif devices.backend == "mps":
+        default_cross_attention = "Scaled-Dot-Product" if native else "Doggettx's"
+    else: # cuda, rocm, ipex, openvino
+        default_cross_attention ="Scaled-Dot-Product"
 
+    if devices.backend == "rocm":
+        default_sdp_options =  ['Memory attention', 'Math attention']
+    #elif devices.backend == "zluda":
+    #    sdp_options_default =  ['Math attention']
+    else:
+        default_sdp_options = ['Flash attention', 'Memory attention', 'Math attention']
+    if (cmd_opts.lowvram or cmd_opts.medvram) and 'Flash attention' not in default_sdp_options:
+        default_sdp_options.append('Dynamic attention')
 
-if devices.backend == "directml": # Force BMM for DirectML instead of SDP
-    cross_attention_optimization_default = "Dynamic Attention BMM" if native else "Sub-quadratic"
-elif devices.backend == "cpu":
-    cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
-elif devices.backend == "mps":
-    cross_attention_optimization_default = "Scaled-Dot-Product" if native else "Doggettx's"
-else: # cuda, rocm, ipex, openvino
-    cross_attention_optimization_default ="Scaled-Dot-Product"
+    return default_offload_mode, default_cross_attention, default_sdp_options
 
-
-if devices.backend == "rocm":
-    sdp_options_default =  ['Memory attention', 'Math attention']
-#elif devices.backend == "zluda":
-#    sdp_options_default =  ['Math attention']
-else:
-    sdp_options_default = ['Flash attention', 'Memory attention', 'Math attention']
-
-if (cmd_opts.lowvram or cmd_opts.medvram) and 'Flash attention' not in sdp_options_default:
-    sdp_options_default.append('Dynamic attention')
+startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
@@ -446,8 +446,8 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
 
     "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
-    "cross_attention_optimization": OptionInfo(cross_attention_optimization_default, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
-    "sdp_options": OptionInfo(sdp_options_default, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention'] }),
+    "cross_attention_optimization": OptionInfo(startup_cross_attention, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
+    "sdp_options": OptionInfo(startup_sdp_options, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention'] }),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
     "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
@@ -552,9 +552,9 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_offload_mode": OptionInfo(offload_mode_default, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 2), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
-    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 2), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
+    "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
+    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 1), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
+    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 1), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
@@ -866,7 +866,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_maybe_diffusers": OptionInfo(False, "LoRA force loading of specific models using Diffusers"),
     "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use merge when using alternative method"),
     "lora_apply_tags": OptionInfo(0, "LoRA auto-apply tags", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
-    "lora_in_memory_limit": OptionInfo(1 if not cmd_opts.use_openvino else 0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
+    "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple LoRA", gr.Checkbox, { "visible": False }),
     "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support"),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, { "choices": ["None"], "visible": False }),

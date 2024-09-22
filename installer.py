@@ -240,7 +240,8 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
         log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     all_args = f'{pip_log}{arg} {env_args}'.strip()
-    log.debug(f'Running: {pipCmd}="{all_args}"')
+    if not quiet:
+        log.debug(f'Running: {pipCmd}="{all_args}"')
     result = subprocess.run(f'"{sys.executable}" -m {pipCmd} {all_args}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
@@ -430,7 +431,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '14a1b86fc7de53ff1dbf803f616cbb16ad530e45'
+    sha = 'aa73072f1f7014635e3de916cbcf47858f4c37a0'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''

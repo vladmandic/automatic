@@ -65,8 +65,14 @@ class NetworkOnDisk:
         if arch.startswith("flux"):
             return 'f1'
 
+        if "v1-5" in str(self.metadata.get('ss_sd_model_name', "")):
+            return 'sd1'
         if str(self.metadata.get('ss_v2', "")) == "True":
             return 'sd2'
+        if 'flux' in self.name.lower():
+            return 'f1'
+        if 'xl' in self.name.lower():
+            return 'xl'
 
         return ''
 
