@@ -145,14 +145,14 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                 except Exception:
                     # shared.log.warning(f"LoRA unload: {e}")
                     pass
-        if not self.active and getattr(networks, "originals", None ) is not None:
-            networks.originals.undo() # remove patches
-            if networks.debug:
-                shared.log.debug("LoRA deactivate")
         t1 = time.time()
         networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
             shared.log.debug(f"LoRA end: load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
+        if self.active and getattr(networks, "originals", None ) is not None:
+            networks.originals.undo() # remove patches
+            if networks.debug:
+                shared.log.debug("LoRA deactivate")
         if self.errors:
             p.comment("Networks with errors: " + ", ".join(f"{k} ({v})" for k, v in self.errors.items()))
             for k, v in self.errors.items():
