@@ -26,7 +26,7 @@ def open_embeddings(filename):
     embeddings = []
     skipped = []
     if filename is None:
-        return embeddings, skipped
+        return None
     filenames = list(filename)
     exts = [".SAFETENSORS", '.BIN', '.PT']
     for _filename in filenames:
