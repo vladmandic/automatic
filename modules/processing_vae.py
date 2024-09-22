@@ -52,19 +52,16 @@ def full_vae_decode(latents, model):
     elif shared.opts.diffusers_offload_mode != "sequential":
         sd_models.move_model(model.vae, devices.device)
 
-    upcast = (model.vae.dtype == torch.float16) and getattr(model.vae.config, 'force_upcast', False)
+    upcast = ((model.vae.dtype == torch.float16) and getattr(model.vae.config, 'force_upcast', False)) or shared.opts.no_half_vae
     if upcast:
         if hasattr(model, 'upcast_vae'): # this is done by diffusers automatically if output_type != 'latent'
             model.upcast_vae()
         model.vae = model.vae.to(dtype=torch.float32)
         latents = latents.to(torch.float32)
-
-    if getattr(model.vae, "post_quant_conv", None) is not None:
-        latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
-    elif shared.opts.no_half_vae:
-        latents = latents.to(torch.float32)
     else:
         latents = latents.to(model.vae.device)
+    if getattr(model.vae, "post_quant_conv", None) is not None:
+        latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
 
     # normalize latents
     latents_mean = model.vae.config.get("latents_mean", None)
