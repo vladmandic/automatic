@@ -16,8 +16,6 @@ def ipex_init(): # pylint: disable=too-many-statements
         if hasattr(torch, "cuda") and hasattr(torch.cuda, "is_xpu_hijacked") and torch.cuda.is_xpu_hijacked:
             return True, "Skipping IPEX hijack"
         else:
-            device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
-
             # Replace cuda with xpu:
             torch.cuda.current_device = torch.xpu.current_device
             torch.cuda.current_stream = torch.xpu.current_stream
@@ -201,12 +199,11 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.utilization = lambda *args, **kwargs: 0
 
             ipex_hijacks()
-            if not device_supports_fp64 or os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is not None:
-                try:
-                    from .diffusers import ipex_diffusers
-                    ipex_diffusers()
-                except Exception: # pylint: disable=broad-exception-caught
-                    pass
+            try:
+                from .diffusers import ipex_diffusers
+                ipex_diffusers()
+            except Exception: # pylint: disable=broad-exception-caught
+                pass
             torch.cuda.is_xpu_hijacked = True
     except Exception as e:
         return False, e

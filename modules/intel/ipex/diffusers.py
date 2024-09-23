@@ -1,4 +1,5 @@
 import os
+from functools import wraps
 import torch
 import diffusers #0.29.1 # pylint: disable=import-error
 from diffusers.models.attention_processor import Attention
@@ -10,6 +11,16 @@ from functools import cache
 
 device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
+
+
+# Force FP32 upcast
+# diffusers is imported before ipex hijacks and doesn't apply so hijack this separately
+original_fourier_filter = diffusers.utils.torch_utils.fourier_filter
+@wraps(diffusers.utils.torch_utils.fourier_filter)
+def fourier_filter(x_in, threshold, scale):
+    return_dtype = x_in.dtype
+    return original_fourier_filter(x_in.to(dtype=torch.float32), threshold, scale).to(dtype=return_dtype)
+
 
 # fp64 error
 def rope(pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
@@ -26,6 +37,7 @@ def rope(pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
     stacked_out = torch.stack([cos_out, -sin_out, sin_out, cos_out], dim=-1)
     out = stacked_out.view(batch_size, -1, dim // 2, 2, 2)
     return out.float()
+
 
 @cache
 def find_slice_size(slice_size, slice_block_size):
@@ -73,6 +85,7 @@ def find_attention_slice_sizes(query_shape, query_element_size, query_device_typ
                 split_3_slice_size = find_slice_size(split_3_slice_size, slice_3_block_size)
 
     return do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size
+
 
 class SlicedAttnProcessor: # pylint: disable=too-few-public-methods
     r"""
@@ -320,9 +333,11 @@ class AttnProcessor:
 
         return hidden_states
 
+
 def ipex_diffusers():
+    diffusers.utils.torch_utils.fourier_filter = fourier_filter
     #ARC GPUs can't allocate more than 4GB to a single block:
-    diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
-    diffusers.models.attention_processor.AttnProcessor = AttnProcessor
-    if not device_supports_fp64 and hasattr(transformers, "transformer_flux"):
+    if not device_supports_fp64 or os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is not None:
+        diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
+        diffusers.models.attention_processor.AttnProcessor = AttnProcessor
         diffusers.models.transformers.transformer_flux.rope = rope

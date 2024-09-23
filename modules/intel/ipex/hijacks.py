@@ -105,6 +105,20 @@ def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.
         attn_mask = attn_mask.to(dtype=query.dtype)
     return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
 
+# Diffusers FreeU
+original_fft_fftn = torch.fft.fftn
+@wraps(torch.fft.fftn)
+def fft_fftn(input, s=None, dim=None, norm=None, *, out=None):
+    return_dtype = input.dtype
+    return original_fft_fftn(input.to(dtype=torch.float32), s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
+# Diffusers FreeU
+original_fft_ifftn = torch.fft.ifftn
+@wraps(torch.fft.ifftn)
+def fft_ifftn(input, s=None, dim=None, norm=None, *, out=None):
+    return_dtype = input.dtype
+    return original_fft_ifftn(input.to(dtype=torch.float32), s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
 # A1111 FP16
 original_functional_group_norm = torch.nn.functional.group_norm
 @wraps(torch.nn.functional.group_norm)
@@ -309,6 +323,8 @@ def ipex_hijacks():
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm
+    torch.fft.fftn = fft_fftn
+    torch.fft.ifftn = fft_ifftn
     if not device_supports_fp64:
         torch.from_numpy = from_numpy
         torch.as_tensor = as_tensor
