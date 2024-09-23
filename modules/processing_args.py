@@ -6,7 +6,7 @@ import time
 import inspect
 import torch
 import numpy as np
-from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers
+from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
 
@@ -96,24 +96,9 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     debug(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     parser = 'Fixed attention'
+    steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
-    steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
-    if 'timesteps' in possible:
-        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
-        timesteps = [int(x) for x in timesteps if x.isdigit()]
-        if len(timesteps) > 0:
-            if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
-                try:
-                    args['timesteps'] = timesteps
-                    p.steps = len(timesteps)
-                    p.timesteps = timesteps
-                    steps = p.steps
-                    shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
-                except Exception as e:
-                    shared.log.error(f'Sampler timesteps: {e}')
-            else:
-                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
     if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
@@ -126,11 +111,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             shared.log.error(f'Prompt parser encode: {e}')
             if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                 errors.display(e, 'Prompt parser encode')
-    if 'clip_skip' in possible and parser == 'Fixed attention':
-        if clip_skip == 1:
-            pass # clip_skip = None
-        else:
-            args['clip_skip'] = clip_skip - 1
+        timer.process.record('encode', reset=False)
+
     if 'prompt' in possible:
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
@@ -158,6 +140,29 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
+
+    if 'clip_skip' in possible and parser == 'Fixed attention':
+        if clip_skip == 1:
+            pass # clip_skip = None
+        else:
+            args['clip_skip'] = clip_skip - 1
+
+    if 'timesteps' in possible:
+        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+        timesteps = [int(x) for x in timesteps if x.isdigit()]
+        if len(timesteps) > 0:
+            if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
+                try:
+                    args['timesteps'] = timesteps
+                    p.steps = len(timesteps)
+                    p.timesteps = timesteps
+                    steps = p.steps
+                    shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
+                except Exception as e:
+                    shared.log.error(f'Sampler timesteps: {e}')
+            else:
+                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
+
     if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
         model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
         model.scheduler.noise_sampler_seed = p.seeds # some schedulers have internal noise generator and do not use pipeline generator

@@ -6,7 +6,7 @@ import contextlib
 from functools import wraps
 import torch
 from modules.errors import log
-from modules import cmd_args, shared, memstats, errors
+from modules import cmd_args, shared, memstats, errors, timer
 
 if sys.platform == "darwin":
     from modules import mac_specific # pylint: disable=ungrouped-imports
@@ -147,19 +147,22 @@ def torch_gc(force=False, fast=False):
         previous_oom = oom
         log.warning(f'GPU out-of-memory error: {mem}')
         force = True
+    if force:
+        # actual gc
+        collected = gc.collect() if not fast else 0 # python gc
+        if cuda_ok:
+            try:
+                with torch.cuda.device(get_cuda_device_string()):
+                    torch.cuda.empty_cache() # cuda gc
+                    torch.cuda.ipc_collect()
+            except Exception:
+                pass
+    t1 = time.time()
+    if 'gc' not in timer.process.records:
+        timer.process.records['gc'] = 0
+    timer.process.records['gc'] += t1 - t0
     if not force:
         return
-
-    # actual gc
-    collected = gc.collect() if not fast else 0 # python gc
-    if cuda_ok:
-        try:
-            with torch.cuda.device(get_cuda_device_string()):
-                torch.cuda.empty_cache() # cuda gc
-                torch.cuda.ipc_collect()
-        except Exception:
-            pass
-    t1 = time.time()
     mem = memstats.memory_stats()
     saved = round(gpu.get('used', 0) - mem.get('gpu', {}).get('used', 0), 2)
     before = { 'gpu': gpu.get('used', 0), 'ram': ram.get('used', 0) }

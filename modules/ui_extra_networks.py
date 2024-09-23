@@ -518,10 +518,6 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     ui.tabs = gr.Tabs(elem_id=f"{tabname}_extra_tabs")
     ui.button_details = gr.Button('Details', elem_id=f"{tabname}_extra_details_btn", visible=False)
     state = {}
-    if shared.cmd_opts.profile:
-        import cProfile
-        pr = cProfile.Profile()
-        pr.enable()
 
     def get_item(state, params = None):
         if params is not None and type(params) == dict:
@@ -635,10 +631,6 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
                 page_html = gr.HTML(page.patch(page.html, tabname), elem_id=f'{tabname}{page.name}_extra_page', elem_classes="extra-networks-page")
                 ui.pages.append(page_html)
                 tab.select(ui_tab_change, _js="getENActivePage", inputs=[ui.button_details], outputs=[ui.button_scan, ui.button_save, ui.button_model])
-    if shared.cmd_opts.profile:
-        errors.profile(pr, 'ExtraNetworks')
-        pr.disable()
-        # ui.tabs.change(fn=ui_tab_change, inputs=[], outputs=[ui.button_scan, ui.button_save])
 
     def fn_save_img(image):
         if ui.last_item is None or ui.last_item.local_preview is None:

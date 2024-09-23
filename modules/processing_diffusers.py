@@ -4,7 +4,7 @@ import time
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion
+from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
@@ -72,6 +72,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     shared.sd_model = update_pipeline(shared.sd_model, p)
     shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
     update_sampler(p, shared.sd_model)
+    timer.process.record('prepare')
     base_args = set_pipeline_args(
         p=p,
         model=shared.sd_model,
@@ -89,6 +90,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
+    timer.process.record('args')
     shared.state.sampling_steps = base_args.get('prior_num_inference_steps', None) or p.steps or base_args.get('num_inference_steps', None)
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
@@ -100,6 +102,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
+        timer.process.record('move')
         if hasattr(shared.sd_model, 'tgate') and getattr(p, 'gate_step', -1) > 0:
             base_args['gate_step'] = p.gate_step
             output = shared.sd_model.tgate(**base_args) # pylint: disable=not-callable
@@ -107,6 +110,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             output = shared.sd_model(**base_args)
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
+        timer.process.record('pipeline')
         hidiffusion.unapply()
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models
         sd_models_compile.check_deepcache(enable=False)
@@ -220,6 +224,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_hr_pass = False
+        timer.process.record('hires')
 
     # optional refiner pass or decode
     if is_refiner_enabled():
@@ -297,6 +302,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.state.job = prev_job
         shared.state.nextjob()
         p.is_refiner_pass = False
+        timer.process.record('refine')
 
     # final decode since there is no refiner
     if not is_refiner_enabled():
@@ -321,5 +327,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.log.warning('Processing returned no results')
             results = []
 
+    timer.process.record('decode')
     shared.sd_model = orig_pipeline
     return results

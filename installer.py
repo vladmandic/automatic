@@ -169,6 +169,7 @@ def print_dict(d):
 
 
 def print_profile(profiler: cProfile.Profile, msg: str):
+    profiler.disable()
     from modules.errors import profile
     profile(profiler, msg)
 
@@ -736,6 +737,7 @@ def check_torch():
     if not args.skip_all:
         install_torch_addons()
     if args.profile:
+        pr.disable()
         print_profile(pr, 'Torch')
 
 
@@ -777,6 +779,7 @@ def install_packages():
     # elif not args.experimental:
     #    uninstall('bitsandbytes')
     if args.profile:
+        pr.disable( )
         print_profile(pr, 'Packages')
 
 
@@ -859,6 +862,7 @@ def install_extensions(force=False):
     if len(extensions_duplicates) > 0:
         log.warning(f'Extensions duplicates: {extensions_duplicates}')
     if args.profile:
+        pr.disable()
         print_profile(pr, 'Extensions')
     return '\n'.join(res)
 
@@ -890,6 +894,7 @@ def install_submodules(force=True):
             log.error(f'Submodule update error: {submodule}')
     setup_logging()
     if args.profile:
+        pr.disable()
         print_profile(pr, 'Submodule')
     return '\n'.join(res)
 
@@ -948,6 +953,7 @@ def install_requirements():
             if not installed(line, quiet=True):
                 _res = install(line)
     if args.profile:
+        pr.disable()
         print_profile(pr, 'Requirements')
 
 
@@ -1234,6 +1240,7 @@ def extensions_preload(parser):
     except Exception:
         log.error('Error running extension preloading')
     if args.profile:
+        pr.disable()
         print_profile(pr, 'Preload')
 
 

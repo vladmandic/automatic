@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -116,6 +116,7 @@ class Processed:
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
+    timer.process.reset()
     debug(f'Process images: {vars(p)}')
     if not hasattr(p.sd_model, 'sd_checkpoint_info'):
         return None
@@ -168,11 +169,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             p.height = 8 * int(p.height / 8)
 
         script_callbacks.before_process_callback(p)
+        timer.process.record('pre')
 
         if shared.cmd_opts.profile:
-            import cProfile
-            profile_python = cProfile.Profile()
-            profile_python.enable()
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 import torch.profiler # pylint: disable=redefined-outer-name
                 activities=[torch.profiler.ProfilerActivity.CPU]
@@ -180,12 +179,23 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     activities.append(torch.profiler.ProfilerActivity.CUDA)
                 shared.log.debug(f'Torch profile: activities={activities}')
                 if shared.profiler is None:
-                    shared.profiler = torch.profiler.profile(activities=activities, profile_memory=True, with_modules=True)
+                    profile_args = {
+                        'activities': activities,
+                        'profile_memory': True,
+                        'with_modules': True,
+                        'with_stack': os.environ.get('SD_PROFILE_STACK', None) is not None,
+                        'experimental_config': torch._C._profiler._ExperimentalConfig(verbose=True) if os.environ.get('SD_PROFILE_STACK', None) is not None else None, # pylint: disable=protected-access
+                        'with_flops': os.environ.get('SD_PROFILE_FLOPS', None) is not None,
+                        'record_shapes': os.environ.get('SD_PROFILE_SHAPES', None) is not None,
+                        'on_trace_ready': torch.profiler.tensorboard_trace_handler(os.environ.get('SD_PROFILE_FOLDER', None)) if os.environ.get('SD_PROFILE_FOLDER', None) is not None else None,
+                    }
+                    shared.log.debug(f'Torch profile: {profile_args}')
+                    shared.profiler = torch.profiler.profile(**profile_args)
                 shared.profiler.start()
-                shared.profiler.step()
+                if not shared.native:
+                    shared.profiler.step()
                 processed = process_images_inner(p)
                 errors.profile_torch(shared.profiler, 'Process')
-            errors.profile(profile_python, 'Process')
         else:
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 processed = process_images_inner(p)
@@ -206,6 +216,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     sd_models.reload_model_weights()
                 if k == 'sd_vae':
                     sd_vae.reload_vae_weights()
+        timer.process.record('post')
     return processed
 
 
@@ -302,6 +313,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
             x_samples_ddim = None
+            timer.process.record('init')
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 x_samples_ddim = p.scripts.process_images(p)
             if x_samples_ddim is None:
@@ -313,6 +325,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     x_samples_ddim = process_diffusers(p)
                 else:
                     raise ValueError(f"Unknown backend {shared.backend}")
+            timer.process.record('process')
 
             if not shared.opts.keep_incomplete and shared.state.interrupted:
                 x_samples_ddim = []
@@ -385,6 +398,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         output_images.append(image_mask)
                     if shared.opts.return_mask_composite:
                         output_images.append(image_mask_composite)
+            timer.process.record('post')
             del x_samples_ddim
             devices.torch_gc()
 
@@ -394,8 +408,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
 
         t1 = time.time()
-        shared.log.info(f'Processed: images={len(output_images)} time={t1 - t0:.2f} its={(p.steps * len(output_images)) / (t1 - t0):.2f} memory={memstats.memory_stats()}')
-        from modules import timer
 
         p.color_corrections = None
         index_of_first_image = 0
@@ -441,4 +453,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     )
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner) and not (shared.state.interrupted or shared.state.skipped):
         p.scripts.postprocess(p, processed)
+    timer.process.record('post')
+    shared.log.info(f'Processed: images={len(output_images)} its={(p.steps * len(output_images)) / (t1 - t0):.2f} time={t1-t0:.2f} timers={timer.process.dct(min_time=0.02)} memory={memstats.memory_stats()}')
     return processed

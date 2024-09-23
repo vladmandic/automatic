@@ -177,9 +177,11 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
             prompt_embed, positive_pooled, negative_embed, negative_pooled = None, None, None, None
             if last_prompt == prompt and last_negative == negative:
                 prompt_embeds.append(prompt_embeds[-1])
-                positive_pooleds.append(positive_pooleds[-1])
                 negative_embeds.append(negative_embeds[-1])
-                negative_pooleds.append(negative_pooleds[-1])
+                if len(positive_pooleds) > 0:
+                    positive_pooleds.append(positive_pooleds[-1])
+                if len(negative_pooleds) > 0:
+                    negative_pooleds.append(negative_pooleds[-1])
                 continue
             positive_schedule, scheduled = get_prompt_schedule(prompt, steps)
             negative_schedule, neg_scheduled = get_prompt_schedule(negative, steps)

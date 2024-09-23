@@ -75,6 +75,24 @@ def free_u_cat_hijack(hs, *args, original_function, **kwargs):
     return original_function([h, h_skip], *args, **kwargs)
 
 
+torch_fft_device = None
+def get_fft_device():
+    global torch_fft_device # pylint: disable=global-statement
+    if torch_fft_device is None:
+        from modulkes import devices
+        try:
+            tensor = torch.randn(4, 4)
+            tensor = tensor.to(devices.device)
+            _fft_result = torch.fft.fftn(tensor)
+            _ifft_result = torch.fft.ifftn(_fft_result)
+            _shifted_tensor = torch.fft.fftshift(tensor)
+            _ishifted_tensor = torch.fft.ifftshift(_shifted_tensor)
+            torch_fft_device = devices.device
+        except Exception:
+            torch_fft_device = devices.cpu
+    return torch_fft_device
+
+
 def no_gpu_complex_support():
     mps_available = hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
     try:
@@ -89,9 +107,9 @@ def no_gpu_complex_support():
 def filter_skip(x, threshold, scale, scale_high):
     if scale == 1 and scale_high == 1:
         return x
-    fft_device = x.device
-    if no_gpu_complex_support():
-        fft_device = "cpu"
+    fft_device = get_fft_device()
+    # if no_gpu_complex_support():
+    #    fft_device = "cpu"
     # FFT
     x_freq = torch.fft.fftn(x.to(fft_device).float(), dim=(-2, -1)) # pylint: disable=E1102
     x_freq = torch.fft.fftshift(x_freq, dim=(-2, -1)) # pylint: disable=E1102

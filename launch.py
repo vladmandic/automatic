@@ -182,6 +182,7 @@ def start_server(immediate=True, server=None):
         else:
             uvicorn = server.webui(restart=not immediate)
     if args.profile:
+        pr.disable()
         installer.print_profile(pr, 'WebUI')
     return uvicorn, server
 
