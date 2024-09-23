@@ -13,8 +13,8 @@ device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp6
 attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
 
 
-# Force FP32 upcast
-# diffusers is imported before ipex hijacks and doesn't apply so hijack this separately
+# Diffusers FreeU
+# Diffusers is imported before ipex hijacks so fourier_filter needs hijacking too
 original_fourier_filter = diffusers.utils.torch_utils.fourier_filter
 @wraps(diffusers.utils.torch_utils.fourier_filter)
 def fourier_filter(x_in, threshold, scale):
