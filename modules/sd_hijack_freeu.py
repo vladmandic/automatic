@@ -1,7 +1,7 @@
 import math
 import functools
 import torch
-from modules import shared
+from modules import shared, devices
 
 # based on <https://github.com/ljleb/sd-webui-freeu/blob/main/lib_free_u/unet.py>
 # official params are b1,b2,s1,s2
@@ -79,10 +79,9 @@ torch_fft_device = None
 def get_fft_device():
     global torch_fft_device # pylint: disable=global-statement
     if torch_fft_device is None:
-        from modulkes import devices
         try:
             tensor = torch.randn(4, 4)
-            tensor = tensor.to(devices.device)
+            tensor = tensor.to(device=devices.device, dtype=devices.dtype)
             _fft_result = torch.fft.fftn(tensor)
             _ifft_result = torch.fft.ifftn(_fft_result)
             _shifted_tensor = torch.fft.fftshift(tensor)
@@ -90,6 +89,7 @@ def get_fft_device():
             torch_fft_device = devices.device
         except Exception:
             torch_fft_device = devices.cpu
+            shared.log.warning(f'FreeU: device={devices.device} dtype={devices.dtype} does not support FFT')
     return torch_fft_device
 
 
@@ -162,11 +162,13 @@ def apply_freeu(p, backend_original):
                 state_enabled = False
     elif hasattr(p.sd_model, 'enable_freeu'):
         if shared.opts.freeu_enabled:
-            p.extra_generation_params['FreeU'] = f'b1={shared.opts.freeu_b1} b2={shared.opts.freeu_b2} s1={shared.opts.freeu_s1} s2={shared.opts.freeu_s2}'
-            p.sd_model.enable_freeu(s1=shared.opts.freeu_s1, s2=shared.opts.freeu_s2, b1=shared.opts.freeu_b1, b2=shared.opts.freeu_b2)
-            state_enabled = True
+            freeu_device = get_fft_device()
+            if freeu_device != devices.cpu:
+                p.extra_generation_params['FreeU'] = f'b1={shared.opts.freeu_b1} b2={shared.opts.freeu_b2} s1={shared.opts.freeu_s1} s2={shared.opts.freeu_s2}'
+                p.sd_model.enable_freeu(s1=shared.opts.freeu_s1, s2=shared.opts.freeu_s2, b1=shared.opts.freeu_b1, b2=shared.opts.freeu_b2)
+                state_enabled = True
         elif state_enabled:
             p.sd_model.disable_freeu()
             state_enabled = False
-    if shared.opts.freeu_enabled:
+    if shared.opts.freeu_enabled and state_enabled:
         shared.log.info(f'Applying free-u: b1={shared.opts.freeu_b1} b2={shared.opts.freeu_b2} s1={shared.opts.freeu_s1} s2={shared.opts.freeu_s2}')

@@ -63,6 +63,7 @@
 - **ui**  
   - hide token counter until tokens are known  
   - minor ui optimizations  
+- **free-u** check if device/dtype are fft compatible  
 - massive log cleanup
 - full lint pass
 - **experimental**
