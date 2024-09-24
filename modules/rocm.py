@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import importlib.metadata
 from typing import Union, List
+from enum import Enum
 
 
 HIPBLASLT_TENSILE_LIBPATH = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", None if sys.platform == "win32" # not available
@@ -43,42 +44,35 @@ def conceal():
     os.environ["PATH"] = ";".join(paths_no_rocm)
 
 
+class MicroArchitecture(Enum):
+    GCN = "gcn"
+    RDNA = "rdna"
+    CDNA = "cdna"
+
+
 class Agent:
     name: str
-    is_navi4x: bool = False
-    is_navi3a: bool = False # 3.5
-    is_navi3x: bool = False
-    is_navi2x: bool = False
-    is_navi1x: bool = False
-    is_gcn: bool = False
+    arch: MicroArchitecture
     if sys.platform != "win32":
         blaslt_supported: bool
 
     def __init__(self, name: str):
         self.name = name
-        gfx_version = name[3:6]
-        if gfx_version == "120":
-            self.is_navi4x = True
-        elif gfx_version == "115":
-            self.is_navi3a = True
-        elif gfx_version == "110":
-            self.is_navi3x = True
-        elif gfx_version == "103":
-            self.is_navi2x = True
-        elif gfx_version == "101":
-            self.is_navi1x = True
+        gfx_version = name[3:7]
+        if len(gfx_version) == 4:
+            self.arch = MicroArchitecture.RDNA
+        elif gfx_version in ("908", "90a", "942",):
+            self.arch = MicroArchitecture.CDNA
         else:
-            self.is_gcn = True
+            self.arch = MicroArchitecture.GCN
         if sys.platform != "win32":
             self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
 
     def get_gfx_version(self) -> Union[str, None]:
-        if self.is_navi3x:
+        if self.name.startswith("gfx11"):
             return "11.0.0"
-        elif self.is_navi2x:
+        elif self.name.startswith("gfx103"): # or self.name.startswith("gfx101")
             return "10.3.0"
-        #elif self.is_navi1x:
-        #    return "10.3.0" # maybe?
         return None
 
 
@@ -189,6 +183,12 @@ else:
 
     def get_blaslt_enabled() -> bool:
         return bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1")))
+
+    def get_flash_attention_command(agent: Agent):
+        default = "git+https://github.com/ROCm/flash-attention"
+        if agent.arch == MicroArchitecture.RDNA:
+            default = "git+https://github.com/ROCm/flash-attention@howiejay/navi_support"
+        return os.environ.get("FLASH_ATTENTION_PACKAGE", default)
 
     is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', 'unknown' if spawn('wslpath -w /') else None) is not None
 path = find()

@@ -76,8 +76,8 @@ def load(zluda_path: os.PathLike) -> None:
 
 def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
     if agent is not None:
-        if agent.is_navi3x or agent.is_navi2x or agent.is_navi1x:
+        if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
             return "2.3.1"
-        elif agent.is_gcn:
+        elif agent.arch == rocm.MicroArchitecture.GCN:
             return "2.2.1"
     return "2.3.1"
