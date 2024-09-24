@@ -185,6 +185,8 @@ else:
         return bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1")))
 
     def get_flash_attention_command(agent: Agent):
+        if os.environ.get("FLASH_ATTENTION_USE_TRITON_ROCM", "FALSE") == "TRUE":
+            return "pytest git+https://github.com/ROCm/flash-attention@micmelesse/upstream_pr"
         default = "git+https://github.com/ROCm/flash-attention"
         if agent.arch == MicroArchitecture.RDNA:
             default = "git+https://github.com/ROCm/flash-attention@howiejay/navi_support"
