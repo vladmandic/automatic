@@ -159,6 +159,16 @@ function modalResetInstance(event) {
   previewInstance = panzoom(modalImage, { zoomSpeed: 0.05, minZoom: 0.1, maxZoom: 5.0, filterKey: (/* e, dx, dy, dz */) => true });
 }
 
+function modalToggleParams(event) {
+  const modalExif = gradioApp().getElementById('modalExif');
+  if (modalExif.style.display === 'none' || modalExif.style.display === '') {
+    modalExif.style.display = 'block';
+  } else {
+    modalExif.style.display = 'none';
+  }
+  event.stopPropagation();
+}
+
 function galleryClickEventHandler(event) {
   if (event.button !== 0) return;
   if (event.target.nodeName === 'IMG' && !event.target.parentNode.classList.contains('thumbnail-item')) {
@@ -235,10 +245,17 @@ async function initImageViewer() {
   modalClose.title = 'Close';
   modalClose.addEventListener('click', (evt) => closeModal(evt, true), true);
 
-  // exif
-  const modalExif = document.createElement('div');
-  modalExif.id = 'modalExif';
-  modalExif.style = 'position: absolute; bottom: 0px; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em; z-index: 1';
+  const modalToggleParamsBtn = document.createElement('span');
+  modalToggleParamsBtn.id = 'modal_toggle_params';
+  modalToggleParamsBtn.className = 'cursor';
+  modalToggleParamsBtn.innerHTML = '\uf05a';
+  modalToggleParamsBtn.title = 'Toggle Parameters';
+  modalToggleParamsBtn.addEventListener('click', modalToggleParams, true);
+
+// exif
+const modalExif = document.createElement('div');
+modalExif.id = 'modalExif';
+modalExif.style = 'position: absolute; bottom: 0px; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: var(--neutral-300); padding: 1em; font-size: small; line-height: 1.2em; z-index: 1; display: none;';
 
   // handlers
   modalPreviewZone.addEventListener('mousedown', () => { previewDrag = false; });
@@ -269,13 +286,14 @@ async function initImageViewer() {
   modal.appendChild(modalPreviewZone);
   modal.appendChild(modalNext);
   modal.append(modalControls);
-  modal.append(modalExif);
   modalControls.appendChild(modalZoom);
   modalControls.appendChild(modalReset);
   modalControls.appendChild(modalTile);
   modalControls.appendChild(modalSave);
   modalControls.appendChild(modalDownload);
+  modalControls.appendChild(modalToggleParamsBtn);
   modalControls.appendChild(modalClose);
+  modal.append(modalExif);
 
   gradioApp().appendChild(modal);
   log('initImageViewer');
