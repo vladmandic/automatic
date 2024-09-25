@@ -335,15 +335,20 @@ class Script(scripts.Script):
         z_count = len(zs)
         processed.infotexts[:1+z_count] = grid_infotext[:1+z_count] # Set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
         if not include_lone_images:
+            # TODO broken logic to delete sub-images
             if no_grid and include_sub_grids:
                 processed.images = processed.images[:z_count] # we don't have the main grid image, and need zero additional sub-images
             else:
                 processed.images = processed.images[:z_count+1] # we either have the main grid image, or need one sub-images
         if shared.opts.grid_save: # Auto-save main and sub-grids:
-            grid_count = z_count + ( 1 if not no_grid and z_count > 1 else 0 )
+            grid_count = z_count + (1 if not no_grid and z_count > 1 else 0)
             for g in range(grid_count):
                 adj_g = g-1 if g > 0 else g
-                images.save_image(processed.images[g], p.outpath_grids, "xyz_grid", info=processed.infotexts[g], extension=shared.opts.grid_format, prompt=processed.all_prompts[adj_g], seed=processed.all_seeds[adj_g], grid=True, p=processed)
+                info = processed.infotexts[g]
+                prompt = processed.all_prompts[adj_g]
+                seed = processed.all_seeds[adj_g]
+                _fn, _txt, _exif = images.save_image(processed.images[g], p.outpath_grids, "grid", info=info, extension=shared.opts.grid_format, prompt=prompt, seed=seed, grid=True, p=processed)
+        # TODO broken logic to delete sub-grids
         if not include_sub_grids: # Done with sub-grids, drop all related information:
             for _sg in range(z_count):
                 del processed.images[1]
@@ -354,6 +359,7 @@ class Script(scripts.Script):
             del processed.infotexts[0]
         active = False
         cache = processed
+        # TODO main processing loop auto-creates grid out of all returned images so we end up with grid of grids + images which we don't need, need to skip that
         return processed
 
     def process_images(self, p, enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, no_grid, include_lone_images, include_sub_grids, margin_size): # pylint: disable=W0221, W0613

@@ -128,7 +128,7 @@ def save_image(image,
         path = shared.opts.outdir_save
     namegen = FilenameGenerator(p, seed, prompt, image, grid=grid)
     suffix = suffix if suffix is not None else ''
-    basename = basename if basename is not None else ''
+    basename = '' if basename is None else basename
     if shared.opts.save_to_dirs:
         dirname = namegen.apply(shared.opts.directories_filename_pattern or "[prompt_words]")
         path = os.path.join(path, dirname)
@@ -139,9 +139,13 @@ def save_image(image,
             file_decoration = "[seq]-[prompt_words]"
         file_decoration = namegen.apply(file_decoration)
         file_decoration += suffix if suffix is not None else ''
+        if file_decoration.startswith(basename):
+            basename = ''
         filename = os.path.join(path, f"{file_decoration}.{extension}") if basename == '' else os.path.join(path, f"{basename}-{file_decoration}.{extension}")
     else:
         forced_filename += suffix if suffix is not None else ''
+        if forced_filename.startswith(basename):
+            basename = ''
         filename = os.path.join(path, f"{forced_filename}.{extension}") if basename == '' else os.path.join(path, f"{basename}-{forced_filename}.{extension}")
     pnginfo = existing_info or {}
     if info is None:

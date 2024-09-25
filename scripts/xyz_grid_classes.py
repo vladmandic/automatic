@@ -1,4 +1,4 @@
-from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_face_restore, apply_override, apply_processing, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
+from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_face_restore, apply_override, apply_processing, apply_seed, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
 from modules import shared, shared_items, sd_samplers, ipadapter, sd_models, sd_vae, sd_unet
 
 
@@ -93,7 +93,7 @@ axis_options = [
     AxisOption("[Network] Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("[Param] Width", int, apply_field("width")),
     AxisOption("[Param] Height", int, apply_field("height")),
-    AxisOption("[Param] Seed", int, apply_field("seed")),
+    AxisOption("[Param] Seed", int, apply_seed),
     AxisOption("[Param] Steps", int, apply_field("steps")),
     AxisOption("[Param] CFG scale", float, apply_field("cfg_scale")),
     AxisOption("[Param] Guidance end", float, apply_field("cfg_end")),

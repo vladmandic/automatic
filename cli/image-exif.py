@@ -100,6 +100,7 @@ def read_exif(filename: str):
         from pi_heif import register_heif_opener
         register_heif_opener()
     try:
+        print('HERE', filename)
         image = Image.open(filename)
         exif = Exif(image)
         print('image:', filename, 'format:', image)
@@ -120,3 +121,5 @@ if __name__ == '__main__':
             for root, _dirs, files in os.walk(fn):
                 for file in files:
                     read_exif(os.path.join(root, file))
+        else:
+            print('file not found: ', fn)

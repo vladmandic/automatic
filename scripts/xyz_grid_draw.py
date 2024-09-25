@@ -84,9 +84,8 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         return processing.Processed(p, [])
 
     t1 = time.time()
-    z_count = len(zs)
     grid = None
-    for i in range(z_count):
+    for i in range(len(zs)):
         start_index = (i * len(xs) * len(ys)) + i
         end_index = start_index + len(xs) * len(ys)
         to_process = processed_result.images[start_index:end_index]

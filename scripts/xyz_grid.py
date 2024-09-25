@@ -328,7 +328,10 @@ class Script(scripts.Script):
             grid_count = z_count + ( 1 if not no_grid and z_count > 1 else 0 )
             for g in range(grid_count):
                 adj_g = g-1 if g > 0 else g
-                images.save_image(processed.images[g], p.outpath_grids, "xyz_grid", info=processed.infotexts[g], extension=shared.opts.grid_format, prompt=processed.all_prompts[adj_g], seed=processed.all_seeds[adj_g], grid=True, p=processed)
+                info = processed.infotexts[g]
+                prompt = processed.all_prompts[adj_g]
+                seed = processed.all_seeds[adj_g]
+                images.save_image(processed.images[g], p.outpath_grids, "grid", info=info, extension=shared.opts.grid_format, prompt=prompt, seed=seed, grid=True, p=processed)
         if not include_sub_grids: # Done with sub-grids, drop all related information:
             for _sg in range(z_count):
                 del processed.images[1]

@@ -45,6 +45,12 @@ def apply_setting(field):
     return fun
 
 
+def apply_seed(p, x, xs):
+    p.seed = x
+    p.all_seeds = None
+    shared.log.debug(f'XYZ grid apply seed: {x}')
+
+
 def apply_prompt(p, x, xs):
     if xs[0] not in p.prompt and xs[0] not in p.negative_prompt:
         shared.log.warning(f"XYZ grid: prompt S/R did not find {xs[0]} in prompt or negative prompt.")
