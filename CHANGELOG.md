@@ -3,7 +3,7 @@
 ## Update for 2024-09-24
 
 - **reprocess**
-  - new top-leve button: reprocess your last generated image  
+  - new top-level button: reprocess your last generated image(s)  
   - generate using full-quality:off and then reprocess using *full quality decode*  
   - generate without hires/refine and then *reprocess with hires/refine*  
     *note*: you can change hires/refine settings and run-reprocess again!  
