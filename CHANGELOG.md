@@ -1,8 +1,24 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-21
+## Update for 2024-09-24
 
-- **flux**
+- **reprocess**
+  - new top-leve button: reprocess your last generated image  
+  - generate using full-quality:off and then reprocess using *full quality decode*  
+  - generate without hires/refine and then *reprocess with hires/refine*  
+    *note*: you can change hires/refine settings and run-reprocess again!  
+  - reprocess using *face-restore*  
+- **text encoder**:  
+  - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
+    will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
+    download text encoders into folder set in settings -> system paths -> text encoders  
+    default `models/Text-encoder` folder is used if no custom path is set  
+    finetuned *clip-vit-l* models: [Detailed, Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)  
+    reference *clip-vit-l* and *clip-vit-g* models: [OpenCLIP-Laion2b](https://huggingface.co/collections/laion/openclip-laion-2b-64fcade42d20ced4e9389b30)  
+    *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
+  - xyz grid support for text encoder  
+  - full prompt parser now correctly works with different prompts in batch  
+- **flux**  
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
@@ -22,13 +38,12 @@
   - enable working with different resolutions  
     now you can adjust width/height in the grid just as any other param  
   - renamed options to include section name and adjusted cost of each option  
+  - added additional metadata  
 - **interrogate**  
   - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
-  - change default params for better memory utilization
+  - change default params for better memory utilization  
   - add optional advanced params  
   - update logging  
-- **reprocess** generate images using taesd (full quality off) and reprocess selected ones using full vae
-  - right click on *generate* button -> *reprocess*
 - **lora** auto-apply tags to prompt  
   - controlled via *settings -> networks -> lora_apply_tags*  
     *0:disable, -1:all-tags, n:top-n-tags*  
@@ -36,24 +51,14 @@
   - if lora contains no tags, lora name itself will be used as a tag  
   - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
   - used tags are also logged and registered in image metadata  
-  - loras are no longer filtered per detected type vs loaded model type as its unreliable
-  - loras display in networks now shows possible version in top-left corner
+  - loras are no longer filtered per detected type vs loaded model type as its unreliable  
+  - loras display in networks now shows possible version in top-left corner  
   - correct using of `extra_networks_default_multiplier` if not scale is specified  
   - always keep lora on gpu  
-- **text encoder**:
-  - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
-    will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
-    download text encoders into folder set in settings -> system paths -> text encoders  
-    default `models/Text-encoder` folder is used if no custom path is set  
-    finetuned *clip-vit-l* models: [Detailed, Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)  
-    reference *clip-vit-l* and *clip-vit-g* models: [OpenCLIP-Laion2b](https://huggingface.co/collections/laion/openclip-laion-2b-64fcade42d20ced4e9389b30)  
-    *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
-  - xyz grid support for text encoder  
-  - full prompt parser now correctly works with different prompts in batch  
-- **huggingface**:
+- **huggingface**:  
   - force logout/login on token change  
-  - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths
-- **cogvideox**:
+  - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths  
+- **cogvideox**:  
   - add support for *image2video* (in addition to previous *text2video* and *video2video*)  
   - *note*: *image2video* requires separate 5b model variant  
 - **backend=original** is now marked as in maintenance-only mode  
@@ -63,11 +68,17 @@
 - **ui**  
   - hide token counter until tokens are known  
   - minor ui optimizations  
-- **free-u** check if device/dtype are fft compatible  
-- massive log cleanup
-- full lint pass
-- **experimental**
-  - flux t5 load from gguf: requires transformers pr
+  - fix update infotext on image select  
+  - fix imageviewer exif parser  
+- **free-u** check if device/dtype are fft compatible and cast as necessary  
+- **experimental**  
+  - flux t5 load from gguf: requires transformers pr  
+  - rocm triton backend for flash attention  
+- **refactor**  
+  - modularize main process loop  
+  - massive log cleanup  
+  - full lint pass  
+
 
 ## Update for 2024-09-13
 

@@ -3,7 +3,11 @@ import re
 import json
 
 
-debug = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
+if os.environ.get('SD_PASTE_DEBUG', None) is not None:
+    from modules.errors import log
+    debug = log.trace
+else:
+    debug = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
 re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
 re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
 

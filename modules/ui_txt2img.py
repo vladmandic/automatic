@@ -1,11 +1,10 @@
 import gradio as gr
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing, processing_vae, devices
 from modules.ui_components import ToolButton # pylint: disable=unused-import
 
 
 def calc_resolution_hires(width, height, hr_scale, hr_resize_x, hr_resize_y, hr_upscaler):
-    from modules import processing, devices
     if hr_upscaler == "None":
         return "Hires resize: None"
     p = processing.StableDiffusionProcessingTxt2Img(width=width, height=height, enable_hr=True, hr_scale=hr_scale, hr_resize_x=hr_resize_x, hr_resize_y=hr_resize_y)
@@ -50,6 +49,7 @@ def create_ui():
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('txt2img')
                     enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
                     override_settings = ui_common.create_override_inputs('txt2img')
+                    state = gr.Textbox(value='', visible=False)
 
                 with gr.Group(elem_id="txt2img_script_container"):
                     txt2img_script_inputs = modules.scripts.scripts_txt2img.setup_ui(parent='txt2img', accordion=True)
@@ -58,11 +58,10 @@ def create_ui():
             ui_common.connect_reuse_seed(seed, reuse_seed, txt2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, txt2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
 
-            txt2img_reprocess.click(fn=processing_vae.reprocess, inputs=[txt2img_gallery], outputs=[txt2img_gallery])
-
             dummy_component = gr.Textbox(visible=False, value='dummy')
+
             txt2img_args = [
-                dummy_component,
+                dummy_component, state,
                 txt2img_prompt, txt2img_negative_prompt, txt2img_prompt_styles,
                 steps, sampler_index, hr_sampler_index,
                 full_quality, restore_faces, tiling, hidiffusion,
@@ -89,9 +88,15 @@ def create_ui():
                 ],
                 show_progress=False,
             )
+
             txt2img_prompt.submit(**txt2img_dict)
             txt2img_negative_prompt.submit(**txt2img_dict)
             txt2img_submit.click(**txt2img_dict)
+
+            txt2img_reprocess[1].click(fn=processing_vae.reprocess, inputs=[txt2img_gallery], outputs=[txt2img_gallery]) # full-decode
+            txt2img_reprocess[2].click(**txt2img_dict) # hires-refine
+            txt2img_reprocess[3].click(**txt2img_dict) # face-restore
+
             txt2img_paste_fields = [
                 # prompt
                 (txt2img_prompt, "Prompt"),

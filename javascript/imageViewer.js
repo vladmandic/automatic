@@ -65,8 +65,8 @@ async function getExif(el) {
   // let html = `<b>Image</b> <a href="${el.src}" target="_blank">${el.src}</a> <b>Size</b> ${el.naturalWidth}x${el.naturalHeight}<br>`;
   let html = '';
   let params;
-  if (exif.paramters) {
-    params = exif.paramters;
+  if (exif.parameters) {
+    params = exif.parameters;
   } else if (exif.userComment) {
     params = Array.from(exif.userComment)
       .map((c) => String.fromCharCode(c))

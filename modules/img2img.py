@@ -107,7 +107,7 @@ def process_batch(p, input_files, input_dir, output_dir, inpaint_mask_dir, args)
         shared.log.debug(f'Processed: images={len(batch_image_files)} memory={memory_stats()} batch')
 
 
-def img2img(id_task: str, mode: int,
+def img2img(id_task: str, state: str, mode: int,
             prompt, negative_prompt, prompt_styles,
             init_img,
             sketch,
@@ -251,6 +251,7 @@ def img2img(id_task: str, mode: int,
     )
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
+    p.state = state
     if mask:
         p.extra_generation_params["Mask blur"] = mask_blur
         p.extra_generation_params["Mask alpha"] = mask_alpha

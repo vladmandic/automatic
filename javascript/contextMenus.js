@@ -31,7 +31,7 @@ const contextMenuInit = () => {
     if ((windowHeight - posy) < menuHeight) contextMenu.style.top = `${windowHeight - menuHeight}px`;
   }
 
-  function appendContextMenuOption(targetElementSelector, entryName, entryFunction) {
+  function appendContextMenuOption(targetElementSelector, entryName, entryFunction, primary = false) {
     let currentItems = menuSpecs.get(targetElementSelector);
     if (!currentItems) {
       currentItems = [];
@@ -41,7 +41,8 @@ const contextMenuInit = () => {
       id: `${targetElementSelector}_${uid()}`,
       name: entryName,
       func: entryFunction,
-      isNew: true,
+      primary,
+      // isNew: true,
     };
     currentItems.push(newItem);
     return newItem.id;
@@ -64,13 +65,21 @@ const contextMenuInit = () => {
       if (!e.isTrusted) return;
       const oldMenu = gradioApp().querySelector('#context-menu');
       if (oldMenu) oldMenu.remove();
+      menuSpecs.forEach((v, k) => {
+        const items = v.filter((item) => item.primary);
+        if (items.length > 0 && e.composedPath()[0].matches(k)) {
+          showContextMenu(e, e.composedPath()[0], items);
+          e.preventDefault();
+        }
+      });
     });
     gradioApp().addEventListener('contextmenu', (e) => {
       const oldMenu = gradioApp().querySelector('#context-menu');
       if (oldMenu) oldMenu.remove();
       menuSpecs.forEach((v, k) => {
-        if (e.composedPath()[0].matches(k)) {
-          showContextMenu(e, e.composedPath()[0], v);
+        const items = v.filter((item) => !item.primary);
+        if (items.length > 0 && e.composedPath()[0].matches(k)) {
+          showContextMenu(e, e.composedPath()[0], items);
           e.preventDefault();
         }
       });
@@ -80,10 +89,10 @@ const contextMenuInit = () => {
   return [appendContextMenuOption, removeContextMenuOption, addContextMenuEventListener];
 };
 
-const initResponse = contextMenuInit();
-const appendContextMenuOption = initResponse[0];
-const removeContextMenuOption = initResponse[1];
-const addContextMenuEventListener = initResponse[2];
+const initContextResponse = contextMenuInit();
+const appendContextMenuOption = initContextResponse[0];
+const removeContextMenuOption = initContextResponse[1];
+const addContextMenuEventListener = initContextResponse[2];
 
 const generateForever = (genbuttonid) => {
   if (window.generateOnRepeatInterval) {
@@ -102,22 +111,25 @@ const generateForever = (genbuttonid) => {
   }
 };
 
-const reprocessLatent = (btnId) => {
-  const btn = document.getElementById(btnId);
+const reprocessClick = (tabId, state) => {
+  const btn = document.getElementById(`${tabId}_${state}`);
+  window.submit_state = state;
   if (btn) btn.click();
 };
 
 async function initContextMenu() {
+  let id = '';
   for (const tab of ['txt2img', 'img2img', 'control']) {
-    for (const el of ['generate', 'interrupt', 'skip', 'pause', 'paste', 'clear_prompt', 'extra_networks_btn']) {
-      const id = `#${tab}_${el}`;
-      appendContextMenuOption(id, 'Copy to clipboard', () => navigator.clipboard.writeText(document.querySelector(`#${tab}_prompt > label > textarea`).value));
-      appendContextMenuOption(id, 'Generate forever', () => generateForever(`#${tab}_generate`));
-      appendContextMenuOption(id, 'Apply selected style', quickApplyStyle);
-      appendContextMenuOption(id, 'Quick save style', quickSaveStyle);
-      appendContextMenuOption(id, 'nVidia overlay', initNVML);
-      appendContextMenuOption(id, 'Reprocess last image', () => reprocessLatent(`${tab}_reprocess`));
-    }
+    id = `#${tab}_generate`;
+    appendContextMenuOption(id, 'Copy to clipboard', () => navigator.clipboard.writeText(document.querySelector(`#${tab}_prompt > label > textarea`).value));
+    appendContextMenuOption(id, 'Generate forever', () => generateForever(`#${tab}_generate`));
+    appendContextMenuOption(id, 'Apply selected style', quickApplyStyle);
+    appendContextMenuOption(id, 'Quick save style', quickSaveStyle);
+    appendContextMenuOption(id, 'nVidia overlay', initNVML);
+    id = `#${tab}_reprocess`;
+    appendContextMenuOption(id, 'Decode full quality', () => reprocessClick(`${tab}`, 'reprocess_decode'), true);
+    appendContextMenuOption(id, 'Refine & HiRes pass', () => reprocessClick(`${tab}`, 'reprocess_refine'), true);
+    appendContextMenuOption(id, 'Face restore', () => reprocessClick(`${tab}`, 'reprocess_face'), true);
   }
   addContextMenuEventListener();
 }

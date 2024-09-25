@@ -53,7 +53,8 @@ def control_set(kwargs):
         p_extra_args[k] = v
 
 
-def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
+def control_run(state: str = '',
+                units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
                 input_type: int = 0,
                 prompt: str = '', negative_prompt: str = '', styles: List[str] = [],
                 steps: int = 20, sampler_index: int = None,
@@ -148,6 +149,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_control_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
+    p.state = state
     # processing.process_init(p)
     resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
 
@@ -732,6 +734,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
             output_filename = ''
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
+    p.close()
     restore_pipeline()
     debug(f'Ready: {image_txt}')
 

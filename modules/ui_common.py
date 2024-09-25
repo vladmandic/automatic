@@ -42,7 +42,7 @@ def infotext_to_html(text):
     negative = res.get('Negative prompt', '')
     res.pop('Prompt', None)
     res.pop('Negative prompt', None)
-    params = [f'{k}: {v}' for k, v in res.items() if v is not None and 'size-' not in k.lower()]
+    params = [f'{k}: {v}' for k, v in res.items() if v is not None and not k.endswith('-1') and not k.endswith('-2')]
     params = '| '.join(params) if len(params) > 0 else ''
     code = ''
     if len(prompt) > 0:

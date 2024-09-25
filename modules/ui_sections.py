@@ -16,7 +16,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     if id_part is None:
         id_part = "img2img" if is_img2img else "txt2img"
     with gr.Row(elem_id=f"{id_part}_toprow", variant="compact"):
-        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=5):
+        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=4):
             with gr.Row():
                 with gr.Column(scale=80):
                     with gr.Row():
@@ -27,8 +27,12 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                         negative_prompt = gr.Textbox(elem_id=f"{id_part}_neg_prompt", label="Negative prompt", show_label=False, lines=3, placeholder="Negative prompt", elem_classes=["prompt"])
         with gr.Column(scale=1, elem_id=f"{id_part}_actions_column"):
             with gr.Row(elem_id=f"{id_part}_generate_box"):
+                reprocess = []
                 submit = gr.Button('Generate', elem_id=f"{id_part}_generate", variant='primary')
-                reprocess = gr.Button('Reprocess', elem_id=f"{id_part}_reprocess", variant='secondary', visible=False)
+                reprocess.append(gr.Button('Reprocess', elem_id=f"{id_part}_reprocess", variant='primary', visible=True))
+                reprocess.append(gr.Button('Reprocess decode', elem_id=f"{id_part}_reprocess_decode", variant='primary', visible=False))
+                reprocess.append(gr.Button('Reprocess refine', elem_id=f"{id_part}_reprocess_refine", variant='primary', visible=False))
+                reprocess.append(gr.Button('Reprocess face', elem_id=f"{id_part}_reprocess_face", variant='primary', visible=False))
             with gr.Row(elem_id=f"{id_part}_generate_line2"):
                 interrupt = gr.Button('Stop', elem_id=f"{id_part}_interrupt")
                 interrupt.click(fn=lambda: shared.state.interrupt(), _js="requestInterrupt", inputs=[], outputs=[])

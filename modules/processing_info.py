@@ -10,7 +10,7 @@ else:
     sd_hijack = None
 
 
-def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=None, all_subseeds=None, comments=None, iteration=0, position_in_batch=0, index=None, all_negative_prompts=None):
+def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=None, all_subseeds=None, comments=None, iteration=0, position_in_batch=0, index=None, all_negative_prompts=None, grid=None):
     if p is None:
         shared.log.warning('Processing info: no data')
         return ''
@@ -45,7 +45,6 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "CFG scale": p.cfg_scale,
         "Size": f"{p.width}x{p.height}" if hasattr(p, 'width') and hasattr(p, 'height') else None,
         "Batch": f'{p.n_iter}x{p.batch_size}' if p.n_iter > 1 or p.batch_size > 1 else None,
-        "Index": f'{p.iteration + 1}x{index + 1}' if (p.n_iter > 1 or p.batch_size > 1) and index >= 0 else None,
         "Parser": shared.opts.prompt_attention,
         "Model": None if (not shared.opts.add_model_name_to_info) or (not shared.sd_model.sd_checkpoint_info.model_name) else shared.sd_model.sd_checkpoint_info.model_name.replace(',', '').replace(':', ''),
         "Model hash": getattr(p, 'sd_model_hash', None if (not shared.opts.add_model_hash_to_info) or (not shared.sd_model.sd_model_hash) else shared.sd_model.sd_model_hash),
@@ -64,6 +63,10 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }
     # native
+    if grid is None and (p.n_iter > 1 or p.batch_size > 1) and index >= 0:
+        args['Index'] = f'{p.iteration + 1}x{index + 1}'
+    if grid is not None:
+        args['Grid'] = grid
     if shared.native:
         args['Pipeline'] = shared.sd_model.__class__.__name__
         args['T5'] = None if (not shared.opts.add_model_name_to_info or shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None') else shared.opts.sd_text_encoder

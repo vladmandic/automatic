@@ -66,6 +66,7 @@ def create_ui():
 
                 with gr.Tabs(elem_id="mode_img2img"):
                     img2img_selected_tab = gr.State(0) # pylint: disable=abstract-class-instantiated
+                    state = gr.Textbox(value='', visible=False)
                     with gr.TabItem('Image', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
                         init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=512)
                         interrogate_clip, interrogate_booru = ui_sections.create_interrogate_buttons('img2img')
@@ -159,13 +160,11 @@ def create_ui():
             ui_common.connect_reuse_seed(seed, reuse_seed, img2img_generation_info, is_subseed=False)
             ui_common.connect_reuse_seed(subseed, reuse_subseed, img2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
 
-            img2img_reprocess.click(fn=processing_vae.reprocess, inputs=[img2img_gallery], outputs=[img2img_gallery])
-
             img2img_prompt_img.change(fn=modules.images.image_data, inputs=[img2img_prompt_img], outputs=[img2img_prompt, img2img_prompt_img])
             dummy_component1 = gr.Textbox(visible=False, value='dummy')
             dummy_component2 = gr.Number(visible=False, value=0)
             img2img_args = [
-                dummy_component1, dummy_component2,
+                dummy_component1, state, dummy_component2,
                 img2img_prompt, img2img_negative_prompt, img2img_prompt_styles,
                 init_img,
                 sketch,
@@ -210,7 +209,12 @@ def create_ui():
             img2img_prompt.submit(**img2img_dict)
             img2img_negative_prompt.submit(**img2img_dict)
             img2img_submit.click(**img2img_dict)
+
             dummy_component = gr.Textbox(visible=False, value='dummy')
+
+            img2img_reprocess[1].click(fn=processing_vae.reprocess, inputs=[img2img_gallery], outputs=[img2img_gallery]) # full-decode
+            img2img_reprocess[2].click(**img2img_dict) # hires-refine
+            img2img_reprocess[3].click(**img2img_dict) # face-restore
 
             interrogate_args = dict(
                 _js="get_img2img_tab_index",

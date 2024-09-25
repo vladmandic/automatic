@@ -272,9 +272,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
 
-    def infotext(_inxex=0): # dummy function overriden if there are iterations
-        return ''
-
     ema_scope_context = p.sd_model.ema_scope if not shared.native else nullcontext
     shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
@@ -312,55 +309,53 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
-            x_samples_ddim = None
+            samples = None
             timer.process.record('init')
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                x_samples_ddim = p.scripts.process_images(p)
-            if x_samples_ddim is None:
+                samples = p.scripts.process_images(p)
+            if samples is None:
                 if not shared.native:
                     from modules.processing_original import process_original
-                    x_samples_ddim = process_original(p)
+                    samples = process_original(p)
                 elif shared.native:
                     from modules.processing_diffusers import process_diffusers
-                    x_samples_ddim = process_diffusers(p)
+                    samples = process_diffusers(p)
                 else:
                     raise ValueError(f"Unknown backend {shared.backend}")
             timer.process.record('process')
 
             if not shared.opts.keep_incomplete and shared.state.interrupted:
-                x_samples_ddim = []
+                samples = []
 
             if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
                 devices.torch_gc()
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                p.scripts.postprocess_batch(p, x_samples_ddim, batch_number=n)
+                p.scripts.postprocess_batch(p, samples, batch_number=n)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
                 p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
-                batch_params = scripts.PostprocessBatchListArgs(list(x_samples_ddim))
+                batch_params = scripts.PostprocessBatchListArgs(list(samples))
                 p.scripts.postprocess_batch_list(p, batch_params, batch_number=n)
-                x_samples_ddim = batch_params.images
+                samples = batch_params.images
 
-            def infotext(index): # pylint: disable=function-redefined
-                return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
-
-            for i, x_sample in enumerate(x_samples_ddim):
-                debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
+            for i, sample in enumerate(samples):
+                debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
-                if type(x_sample) == Image.Image:
-                    image = x_sample
-                    x_sample = np.array(x_sample)
+                info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
+                if type(sample) == Image.Image:
+                    image = sample
+                    sample = np.array(sample)
                 else:
-                    x_sample = validate_sample(x_sample)
-                    image = Image.fromarray(x_sample)
+                    sample = validate_sample(sample)
+                    image = Image.fromarray(sample)
                 if p.restore_faces:
                     if not p.do_not_save_samples and shared.opts.save_images_before_face_restoration:
-                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
+                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
                     p.ops.append('face')
-                    x_sample = face_restoration.restore_faces(x_sample, p)
-                    if x_sample is not None:
-                        image = Image.fromarray(x_sample)
+                    sample = face_restoration.restore_faces(sample, p)
+                    if sample is not None:
+                        image = Image.fromarray(sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
                     p.scripts.postprocess_image(p, pp)
@@ -370,7 +365,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
                         orig = p.color_corrections
                         p.color_corrections = None
-                        info = infotext(i)
                         p.color_corrections = orig
                         image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
                         images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
@@ -378,12 +372,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image = apply_color_correction(p.color_corrections[i], image)
                 if shared.opts.mask_apply_overlay:
                     image = apply_overlay(image, p.paste_to, i, p.overlay_images)
-                text = infotext(i)
-                infotexts.append(text)
-                image.info["parameters"] = text
+                infotexts.append(info)
+                image.info["parameters"] = info
                 output_images.append(image)
                 if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
-                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
+                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
                     image1 = image.convert('RGBA').convert('RGBa')
@@ -391,15 +384,15 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
                     image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
                     if shared.opts.save_mask:
-                        images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
+                        images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:
-                        images.save_image(image_mask_composite, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask-composite")
+                        images.save_image(image_mask_composite, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask-composite")
                     if shared.opts.return_mask:
                         output_images.append(image_mask)
                     if shared.opts.return_mask_composite:
                         output_images.append(image_mask_composite)
             timer.process.record('post')
-            del x_samples_ddim
+            del samples
             devices.torch_gc()
 
         if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
@@ -413,15 +406,16 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         index_of_first_image = 0
         if (shared.opts.return_grid or shared.opts.grid_save) and not p.do_not_save_grid and len(output_images) > 1:
             if images.check_grid_size(output_images):
+                r, c = images.get_grid_size(output_images, p.batch_size)
                 grid = images.image_grid(output_images, p.batch_size)
+                grid_text = f'{r}x{c}'
+                grid_info = create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, index=0, grid=grid_text)
                 if shared.opts.return_grid:
-                    text = infotext(-1)
-                    infotexts.insert(0, text)
-                    grid.info["parameters"] = text
+                    infotexts.insert(0, grid_info)
                     output_images.insert(0, grid)
                     index_of_first_image = 1
                 if shared.opts.grid_save:
-                    images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=infotext(-1), p=p, grid=True, suffix="-grid") # main save grid
+                    images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=grid_info, p=p, grid=True, suffix="-grid") # main save grid
 
     if shared.native:
         from modules import ipadapter
@@ -445,7 +439,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         p,
         images_list=output_images,
         seed=p.all_seeds[0],
-        info=infotext(0),
+        info=infotexts[0] if len(infotexts) > 0 else '',
         comments="\n".join(comments),
         subseed=p.all_subseeds[0],
         index_of_first_image=index_of_first_image,

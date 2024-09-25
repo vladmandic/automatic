@@ -164,6 +164,7 @@ class FaceRestorerYolo(FaceRestoration):
         shared.log.debug(f'Face HiRes: faces={report} args={faces[0].args} denoise={p.denoising_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
 
         mask_all = []
+        p.state = ''
         for face in faces:
             if face.mask is None:
                 continue
@@ -187,6 +188,7 @@ class FaceRestorerYolo(FaceRestoration):
         p = processing_class.switch_class(p, orig_cls, orig_p)
         p.init_images = getattr(orig_p, 'init_images', None)
         p.image_mask = getattr(orig_p, 'image_mask', None)
+        p.state = getattr(orig_p, 'state', None)
         shared.opts.data['mask_apply_overlay'] = orig_apply_overlay
         np_image = np.array(image)
 

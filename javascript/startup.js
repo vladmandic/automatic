@@ -7,7 +7,6 @@ async function initStartup() {
   // all items here are non-blocking async calls
   initModels();
   getUIDefaults();
-  initiGenerationParams();
   initPromptChecker();
   initLogMonitor();
   initContextMenu();
@@ -16,6 +15,7 @@ async function initStartup() {
   initSettings();
   initImageViewer();
   initGallery();
+  initiGenerationParams();
   setupControlUI();
 
   // reconnect server session

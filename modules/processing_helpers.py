@@ -17,6 +17,14 @@ debug_steps = shared.log.trace if os.environ.get('SD_STEPS_DEBUG', None) is not 
 debug_steps('Trace: STEPS')
 
 
+def is_txt2img():
+    return sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
+
+
+def is_refiner_enabled(p):
+    return p.enable_hr and p.refiner_steps > 0 and p.refiner_start > 0 and p.refiner_start < 1 and shared.sd_refiner is not None
+
+
 def setup_color_correction(image):
     debug("Calibrating color correction")
     correction_target = cv2.cvtColor(np.asarray(image.copy()), cv2.COLOR_RGB2LAB)
@@ -435,8 +443,7 @@ def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
 def calculate_base_steps(p, use_denoise_start, use_refiner_start):
     if len(getattr(p, 'timesteps', [])) > 0:
         return None
-    is_txt2img = sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
-    if not is_txt2img:
+    if not is_txt2img():
         if use_denoise_start and shared.sd_model_type == 'sdxl':
             steps = p.steps // (1 - p.refiner_start)
         elif p.denoising_strength > 0:

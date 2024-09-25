@@ -21,6 +21,8 @@ class StableDiffusionProcessing:
     The first set of paramaters: sd_models -> do_not_reload_embeddings represent the minimum required to create a StableDiffusionProcessing
     """
     def __init__(self, sd_model=None, outpath_samples=None, outpath_grids=None, prompt: str = "", styles: List[str] = None, seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1, seed_enable_extras: bool = True, sampler_name: str = None, hr_sampler_name: str = None, batch_size: int = 1, n_iter: int = 1, steps: int = 50, cfg_scale: float = 7.0, image_cfg_scale: float = None, clip_skip: int = 1, width: int = 512, height: int = 512, full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, hidiffusion: bool = False, do_not_save_samples: bool = False, do_not_save_grid: bool = False, extra_generation_params: Dict[Any, Any] = None, overlay_images: Any = None, negative_prompt: str = None, eta: float = None, do_not_reload_embeddings: bool = False, denoising_strength: float = 0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1, resize_mode: int = 0, resize_name: str = 'None', resize_context: str = 'None', scale_by: float = 0, selected_scale_tab: int = 0, hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95, hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0, override_settings: Dict[str, Any] = None, override_settings_restore_afterwards: bool = True, sampler_index: int = None, script_args: list = None): # pylint: disable=unused-argument
+        self.state: str = ''
+        self.skip = []
         self.outpath_samples: str = outpath_samples
         self.outpath_grids: str = outpath_grids
         self.prompt: str = prompt
@@ -192,6 +194,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     def __init__(self, enable_hr: bool = False, denoising_strength: float = 0.75, firstphase_width: int = 0, firstphase_height: int = 0, hr_scale: float = 2.0, hr_force: bool = False, hr_resize_mode: int = 0, hr_resize_context: str = 'None', hr_upscaler: str = None, hr_second_pass_steps: int = 0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0, refiner_prompt: str = '', refiner_negative: str = '', **kwargs):
 
         super().__init__(**kwargs)
+        self.reprocess = {}
         self.enable_hr = enable_hr
         self.denoising_strength = denoising_strength
         self.hr_scale = hr_scale
@@ -219,6 +222,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         self.sampler = None
         self.scripts = None
         self.script_args = []
+
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.native:

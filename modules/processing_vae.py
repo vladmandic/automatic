@@ -140,7 +140,7 @@ def taesd_vae_encode(image):
     return encoded
 
 
-def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
+def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None, save=True):
     global last_latent # pylint: disable=global-statement
     t0 = time.time()
     if latents is None or not torch.is_tensor(latents): # already decoded
@@ -163,7 +163,8 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         latents = latents.unsqueeze(0)
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
-    last_latent = latents.clone().detach()
+    if save:
+        last_latent = latents.clone().detach()
 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()

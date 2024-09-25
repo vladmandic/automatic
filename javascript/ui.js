@@ -204,6 +204,8 @@ function submit_txt2img(...args) {
   requestProgress(id, null, gradioApp().getElementById('txt2img_gallery'));
   const res = create_submit_args(args);
   res[0] = id;
+  res[1] = window.submit_state;
+  window.submit_state = '';
   return res;
 }
 
@@ -214,7 +216,9 @@ function submit_img2img(...args) {
   requestProgress(id, null, gradioApp().getElementById('img2img_gallery'));
   const res = create_submit_args(args);
   res[0] = id;
-  res[1] = get_tab_index('mode_img2img');
+  res[1] = window.submit_state;
+  res[2] = get_tab_index('mode_img2img');
+  window.submit_state = '';
   return res;
 }
 
@@ -225,7 +229,9 @@ function submit_control(...args) {
   requestProgress(id, null, gradioApp().getElementById('control_gallery'));
   const res = create_submit_args(args);
   res[0] = id;
-  res[1] = gradioApp().querySelector('#control-tabs > .tab-nav > .selected')?.innerText.toLowerCase() || ''; // selected tab name
+  res[1] = window.submit_state;
+  res[2] = gradioApp().querySelector('#control-tabs > .tab-nav > .selected')?.innerText.toLowerCase() || ''; // selected tab name
+  window.submit_state = '';
   return res;
 }
 
@@ -236,6 +242,7 @@ function submit_postprocessing(...args) {
 }
 
 window.submit = submit_txt2img;
+window.submit_state = '';
 
 function modelmerger(...args) {
   const id = randomId();

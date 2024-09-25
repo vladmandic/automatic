@@ -8,7 +8,7 @@ debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None
 debug('Trace: PROCESS')
 
 
-def txt2img(id_task,
+def txt2img(id_task, state,
             prompt, negative_prompt, prompt_styles,
             steps, sampler_index, hr_sampler_index,
             full_quality, restore_faces, tiling, hidiffusion,
@@ -88,6 +88,7 @@ def txt2img(id_task,
     )
     p.scripts = scripts.scripts_txt2img
     p.script_args = args
+    p.state = state
     processed = scripts.scripts_txt2img.run(p, *args)
     if processed is None:
         processed = processing.process_images(p)

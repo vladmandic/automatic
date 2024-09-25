@@ -59,7 +59,7 @@ def get_units(*values):
                 break
 
 
-def generate_click(job_id: str, active_tab: str, *args):
+def generate_click(job_id: str, state: str, active_tab: str, *args):
     while helpers.busy:
         time.sleep(0.01)
     from modules.control.run import control_run
@@ -71,7 +71,7 @@ def generate_click(job_id: str, active_tab: str, *args):
         shared.mem_mon.reset()
         progress.start_task(job_id)
         try:
-            for results in control_run(units, helpers.input_source, helpers.input_init, helpers.input_mask, active_tab, True, *args):
+            for results in control_run(state, units, helpers.input_source, helpers.input_init, helpers.input_mask, active_tab, True, *args):
                 progress.record_results(job_id, results)
                 yield return_controls(results)
         except Exception as e:
@@ -103,6 +103,7 @@ def create_ui(_blocks: gr.Blocks=None):
             with gr.Row(elem_id='control_settings'):
 
                 full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('control')
+                state = gr.Textbox(value='', visible=False)
 
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
                     with gr.Row():
@@ -503,7 +504,6 @@ def create_ui(_blocks: gr.Blocks=None):
             btn_negative_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[negative, steps], outputs=[negative_counter])
             btn_interrogate_clip.click(fn=helpers.interrogate_clip, inputs=[], outputs=[prompt])
             btn_interrogate_booru.click(fn=helpers.interrogate_booru, inputs=[], outputs=[prompt])
-            btn_reprocess.click(fn=processing_vae.reprocess, inputs=[output_gallery], outputs=[output_gallery])
 
             select_fields = [input_mode, input_image, init_image, input_type, input_resize, input_inpaint, input_video, input_batch, input_folder]
             select_output = [output_tabs, preview_process, result_txt]
@@ -517,6 +517,7 @@ def create_ui(_blocks: gr.Blocks=None):
             )
 
             prompt.submit(**select_dict)
+            negative.submit(**select_dict)
             btn_generate.click(**select_dict)
             for ctrl in [input_image, input_resize, input_video, input_batch, input_folder, init_image, init_video, init_batch, init_folder, tab_image, tab_video, tab_batch, tab_folder, tab_image_init, tab_video_init, tab_batch_init, tab_folder_init]:
                 if hasattr(ctrl, 'change'):
@@ -527,7 +528,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 if hasattr(ctrl, 'upload'):
                     ctrl.upload(**select_dict)
 
-            tabs_state = gr.Text(value='none', visible=False)
+            tabs_state = gr.Textbox(value='none', visible=False)
             input_fields = [
                 input_type,
                 prompt, negative, styles,
@@ -553,12 +554,17 @@ def create_ui(_blocks: gr.Blocks=None):
             control_dict = dict(
                 fn=generate_click,
                 _js="submit_control",
-                inputs=[tabs_state, tabs_state] + input_fields + input_script_args,
+                inputs=[tabs_state, state, tabs_state] + input_fields + input_script_args,
                 outputs=output_fields,
                 show_progress=True,
             )
             prompt.submit(**control_dict)
+            negative.submit(**control_dict)
             btn_generate.click(**control_dict)
+
+            btn_reprocess[1].click(fn=processing_vae.reprocess, inputs=[output_gallery], outputs=[output_gallery]) # full-decode
+            btn_reprocess[2].click(**control_dict) # hires-refine
+            btn_reprocess[3].click(**control_dict) # face-restore
 
             paste_fields = [
                 # prompt
