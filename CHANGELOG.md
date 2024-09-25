@@ -54,7 +54,8 @@
   - loras are no longer filtered per detected type vs loaded model type as its unreliable  
   - loras display in networks now shows possible version in top-left corner  
   - correct using of `extra_networks_default_multiplier` if not scale is specified  
-  - always keep lora on gpu  
+  - setting `lora_load_gpu` to load LoRA directly to GPU  
+    *default*: true unless lovwram  
 - **huggingface**:  
   - force logout/login on token change  
   - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths  
@@ -78,6 +79,7 @@
   - modularize main process loop  
   - massive log cleanup  
   - full lint pass  
+  - improve inference mode handling  
 
 
 ## Update for 2024-09-13

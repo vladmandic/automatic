@@ -134,18 +134,18 @@ def insert_vectors(embedding, tokenizers, text_encoders, hiddensizes):
     Future warning, if another text encoder becomes available with embedding dimensions in [768,1280,4096]
     this may cause collisions.
     """
-    for vector, size in zip(embedding.vec, embedding.vector_sizes):
-        if size not in hiddensizes:
-            continue
-        idx = hiddensizes.index(size)
-        unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
-        if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
-            text_encoders[idx].resize_token_embeddings(len(tokenizers[idx]))
-        for token, v in zip(embedding.tokens, vector.unbind()):
-            token_id = tokenizers[idx].convert_tokens_to_ids(token)
-            if token_id > unk_token_id:
-                text_encoders[idx].get_input_embeddings().weight.data[token_id] = v
-
+    with devices.inference_context():
+        for vector, size in zip(embedding.vec, embedding.vector_sizes):
+            if size not in hiddensizes:
+                continue
+            idx = hiddensizes.index(size)
+            unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
+            if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
+                text_encoders[idx].resize_token_embeddings(len(tokenizers[idx]))
+            for token, v in zip(embedding.tokens, vector.unbind()):
+                token_id = tokenizers[idx].convert_tokens_to_ids(token)
+                if token_id > unk_token_id:
+                    text_encoders[idx].get_input_embeddings().weight.data[token_id] = v
 
 
 class Embedding:
@@ -310,6 +310,7 @@ class EmbeddingDatabase:
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception as e:
                     shared.log.error(f'Load embedding: name="{embedding.name}" file="{embedding.filename}" {e}')
+                    errors.display(e, f'Load embedding: name="{embedding.name}" file="{embedding.filename}"')
         return
 
     def load_from_file(self, path, filename):
