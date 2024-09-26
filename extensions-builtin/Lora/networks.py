@@ -86,7 +86,7 @@ def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_
     t0 = time.time()
     name = name.replace(".", "_")
     #cached = lora_cache.get(name, None)
-    shared.log.debug(f'Load network: type=LoRA name="{name}" file="{network_on_disk.filename}" type=diffusers scale={lora_scale} fuse={shared.opts.lora_fuse_diffusers}')
+    shared.log.debug(f'Load network: type=LoRA name="{name}" file="{network_on_disk.filename}" detected={network_on_disk.sd_version} method=diffusers scale={lora_scale} fuse={shared.opts.lora_fuse_diffusers}')
     # if cached is not None:
     #    return cached
     if not shared.native:
@@ -101,9 +101,9 @@ def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_
             pass
         else:
             if 'The following keys have not been correctly renamed' in str(e):
-                shared.log.error(f'Load network: type=LoRA file="{network_on_disk.filename}" diffusers unsupported format')
+                shared.log.error(f'Load network: type=LoRA name="{name}" diffusers unsupported format')
             else:
-                shared.log.error(f'Load network: type=LoRA file="{network_on_disk.filename}" {e}')
+                shared.log.error(f'Load network: type=LoRA name="{name}" {e}')
             if debug:
                 errors.display(e, "LoRA")
             return None
@@ -169,10 +169,13 @@ def load_network(name, network_on_disk) -> network.Network:
         else:
             net.modules[key] = net_module
     if len(keys_failed_to_match) > 0:
-        shared.log.warning(f'LoRA file="{network_on_disk.filename}" unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
+        shared.log.warning(f'LoRA name="{name}" type={set(network_types)} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
         if debug:
-            shared.log.debug(f'LoRA file="{network_on_disk.filename}" unmatched={keys_failed_to_match}')
-    shared.log.debug(f'LoRA file="{network_on_disk.filename}" type={set(network_types)} keys={len(matched_networks)}')
+            shared.log.debug(f'LoRA name="{name}" unmatched={keys_failed_to_match}')
+    else:
+        shared.log.debug(f'LoRA name="{name}" type={set(network_types)} keys={len(matched_networks)}')
+    if len(matched_networks) == 0:
+        return None
     lora_cache[name] = net
     t1 = time.time()
     net.bundle_embeddings = bundle_embeddings
@@ -184,10 +187,10 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if shared.opts.diffusers_offload_mode == "balanced":
         sd_models.disable_offload(shared.sd_model)
         sd_models.move_model(shared.sd_model, devices.cpu)
-    networks_on_disk = [available_network_aliases.get(name, None) for name in names]
+    networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
-        networks_on_disk = [available_network_aliases.get(name, None) for name in names]
+        networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
     failed_to_load_networks = []
     recompile_model = False
     if shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled:
@@ -237,7 +240,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
                 continue
         if net is None:
             failed_to_load_networks.append(name)
-            shared.log.error(f'Load network: type=LoRA network="{name}" unknown type')
+            shared.log.error(f'Load network: type=LoRA name="{name}" detected={network_on_disk.sd_version} failed')
             continue
         if shared.native:
             shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)

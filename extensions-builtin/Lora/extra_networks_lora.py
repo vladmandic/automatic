@@ -126,10 +126,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
         t2 = time.time()
-        if len(names) > 0 and step == 0:
+        if len(networks.loaded_networks) > 0 and step == 0:
             self.infotext(p)
             self.prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={names} patch={t1-t0:.2f} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t2-t1:.2f}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} patch={t1-t0:.2f} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t2-t1:.2f}')
         elif self.active:
             self.active = False
 
@@ -156,5 +156,5 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         if self.errors:
             p.comment("Networks with errors: " + ", ".join(f"{k} ({v})" for k, v in self.errors.items()))
             for k, v in self.errors.items():
-                shared.log.error(f'LoRA errors: file="{k}" errors={v}')
+                shared.log.error(f'LoRA: name="{k}" errors={v}')
             self.errors.clear()

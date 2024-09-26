@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-24
+## Update for 2024-09-26
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -54,6 +54,8 @@
   - loras are no longer filtered per detected type vs loaded model type as its unreliable  
   - loras display in networks now shows possible version in top-left corner  
   - correct using of `extra_networks_default_multiplier` if not scale is specified  
+  - improve lora base model detection  
+  - improve lora error handling and logging  
   - setting `lora_load_gpu` to load LoRA directly to GPU  
     *default*: true unless lovwram  
 - **huggingface**:  
