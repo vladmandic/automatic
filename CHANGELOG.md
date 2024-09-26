@@ -25,6 +25,7 @@
   - full prompt parser will auto-select `xhinker` for flux models  
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
   - allow separate vae load  
+  - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
