@@ -210,7 +210,7 @@ class Script(scripts.Script):
         Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
 
         def fix_axis_seeds(axis_opt, axis_list):
-            if axis_opt.label in ['Seed', 'Var. seed']:
+            if axis_opt.label in ['[Param] Seed', '[Param] Variation seed']:
                 return [int(random.randrange(4294967294)) if val is None or val == '' or val == -1 else val for val in axis_list]
             else:
                 return axis_list
@@ -291,12 +291,12 @@ class Script(scripts.Script):
                 if x_opt.label != 'Nothing':
                     pc.extra_generation_params["X Type"] = x_opt.label
                     pc.extra_generation_params["X Values"] = x_values
-                    if x_opt.label in ["Seed", "Var. seed"] and not no_fixed_seeds:
+                    if x_opt.label in ["[Param] Seed", "[Param] Variation seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed X Values"] = ", ".join([str(x) for x in xs])
                 if y_opt.label != 'Nothing':
                     pc.extra_generation_params["Y Type"] = y_opt.label
                     pc.extra_generation_params["Y Values"] = y_values
-                    if y_opt.label in ["Seed", "Var. seed"] and not no_fixed_seeds:
+                    if y_opt.label in ["[Param] Seed", "[Param] Variation seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed Y Values"] = ", ".join([str(y) for y in ys])
                 grid_infotext[subgrid_index] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=f'{len(x_values)}x{len(y_values)}')
             if grid_infotext[0] is None and ix == 0 and iy == 0 and iz == 0: # Sets main grid infotext
@@ -304,7 +304,7 @@ class Script(scripts.Script):
                 if z_opt.label != 'Nothing':
                     pc.extra_generation_params["Z Type"] = z_opt.label
                     pc.extra_generation_params["Z Values"] = z_values
-                    if z_opt.label in ["Seed", "Var. seed"] and not no_fixed_seeds:
+                    if z_opt.label in ["[Param] Seed", "[Param] Variation seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed Z Values"] = ", ".join([str(z) for z in zs])
                 grid_text = f'{len(z_values)}x{len(x_values)}x{len(y_values)}' if len(z_values) > 0 else f'{len(x_values)}x{len(y_values)}'
                 grid_infotext[0] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=grid_text)
