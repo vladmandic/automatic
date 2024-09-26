@@ -53,18 +53,20 @@ class MicroArchitecture(Enum):
 class Agent:
     name: str
     arch: MicroArchitecture
+    is_apu: bool
     if sys.platform != "win32":
         blaslt_supported: bool
 
     def __init__(self, name: str):
         self.name = name
-        gfx_version = name[3:7]
-        if len(gfx_version) == 4:
+        gfx = name[3:7]
+        if len(gfx) == 4:
             self.arch = MicroArchitecture.RDNA
-        elif gfx_version in ("908", "90a", "942",):
+        elif gfx in ("908", "90a", "942",):
             self.arch = MicroArchitecture.CDNA
         else:
             self.arch = MicroArchitecture.GCN
+        self.is_apu = gfx in ("801", "902", "90c", "1013", "1033", "1035", "1036", "1103",)
         if sys.platform != "win32":
             self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
 

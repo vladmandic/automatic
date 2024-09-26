@@ -493,8 +493,12 @@ def install_rocm_zluda():
                         os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
                         # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
                         #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-                        break
-                    log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
+                        if not device.is_apu:
+                            # although apu was found, there can be a dedicated card. do not break loop.
+                            # if no dedicated card was found, apu will be used.
+                            break
+                    else:
+                        log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
             else:
                 device_id = int(args.device_id)
                 if device_id < len(amd_gpus):
