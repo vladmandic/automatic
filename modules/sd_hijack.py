@@ -338,7 +338,7 @@ ldm.modules.distributions.distributions.DiagonalGaussianDistribution.sample = la
 # Upcast BF16 to FP32
 original_fft_fftn = torch.fft.fftn
 @wraps(torch.fft.fftn)
-def fft_fftn(input, s=None, dim=None, norm=None, *, out=None):
+def fft_fftn(input, s=None, dim=None, norm=None, *, out=None): # pylint: disable=redefined-builtin
     return_dtype = input.dtype
     if input.dtype == torch.bfloat16:
         input = input.to(dtype=torch.float32)
@@ -348,7 +348,7 @@ def fft_fftn(input, s=None, dim=None, norm=None, *, out=None):
 # Upcast BF16 to FP32
 original_fft_ifftn = torch.fft.ifftn
 @wraps(torch.fft.ifftn)
-def fft_ifftn(input, s=None, dim=None, norm=None, *, out=None):
+def fft_ifftn(input, s=None, dim=None, norm=None, *, out=None): # pylint: disable=redefined-builtin
     return_dtype = input.dtype
     if input.dtype == torch.bfloat16:
         input = input.to(dtype=torch.float32)

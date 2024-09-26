@@ -100,7 +100,6 @@ def read_exif(filename: str):
         from pi_heif import register_heif_opener
         register_heif_opener()
     try:
-        print('HERE', filename)
         image = Image.open(filename)
         exif = Exif(image)
         print('image:', filename, 'format:', image)

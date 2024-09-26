@@ -265,11 +265,11 @@ class Script(scripts.Script):
             y_opt.apply(pc, y, ys)
             z_opt.apply(pc, z, zs)
             try:
-                res = processing.process_images(pc)
+                processed = processing.process_images(pc)
             except Exception as e:
                 shared.log.error(f"XYZ grid: Failed to process image: {e}")
                 errors.display(e, 'XYZ grid')
-                res = None
+                processed = None
             subgrid_index = 1 + iz # Sets subgrid infotexts
             if grid_infotext[subgrid_index] is None and ix == 0 and iy == 0:
                 pc.extra_generation_params = copy(pc.extra_generation_params)
@@ -284,7 +284,7 @@ class Script(scripts.Script):
                     pc.extra_generation_params["Y Values"] = y_values
                     if y_opt.label in ["[Param] Seed", "[Param] Variation seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed Y Values"] = ", ".join([str(y) for y in ys])
-                grid_infotext[subgrid_index] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=f'{len(x_values)}x{len(y_values)}')
+                grid_infotext[subgrid_index] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=f'{len(xs)}x{len(ys)}')
             if grid_infotext[0] is None and ix == 0 and iy == 0 and iz == 0: # Sets main grid infotext
                 pc.extra_generation_params = copy(pc.extra_generation_params)
                 if z_opt.label != 'Nothing':
@@ -292,8 +292,9 @@ class Script(scripts.Script):
                     pc.extra_generation_params["Z Values"] = z_values
                     if z_opt.label in ["[Param] Seed", "[Param] Variation seed"] and not no_fixed_seeds:
                         pc.extra_generation_params["Fixed Z Values"] = ", ".join([str(z) for z in zs])
-                grid_infotext[0] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=f'{len(z_values)}x{len(x_values)}x{len(y_values)}')
-            return res
+                grid_text = f'{len(zs)}x{len(xs)}x{len(ys)}' if len(zs) > 0 else f'{len(xs)}x{len(ys)}'
+                grid_infotext[0] = processing.create_infotext(pc, pc.all_prompts, pc.all_seeds, pc.all_subseeds, grid=grid_text)
+            return processed
 
         with SharedSettingsStackHelper():
             processed = draw_xyz_grid(
