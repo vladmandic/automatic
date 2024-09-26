@@ -479,18 +479,24 @@ def install_rocm_zluda():
         amd_gpus = rocm.get_agents()
         if len(amd_gpus) == 0:
             (log.info if sys.platform == "win32" else log.warning)('ROCm: no agent was found')
-        elif args.device_id is None:
+        else:
             log.info(f'ROCm: agents={[gpu.name for gpu in amd_gpus]}')
-            hip_default_device = amd_gpus[0]
-            for idx, gpu in enumerate(amd_gpus):
-                if gpu.arch == rocm.MicroArchitecture.RDNA:
-                    hip_default_device = gpu
-                    log.debug(f'ROCm default agent: idx={idx} gpu={gpu.name}')
-                    os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
-                    # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
-                    #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-                    break
-                log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
+            if args.device_id is None:
+                hip_default_device = amd_gpus[0]
+                for idx, gpu in enumerate(amd_gpus):
+                    if gpu.arch == rocm.MicroArchitecture.RDNA:
+                        hip_default_device = gpu
+                        log.debug(f'ROCm default agent: idx={idx} gpu={gpu.name}')
+                        os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
+                        # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
+                        #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
+                        break
+                    log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
+            else:
+                device_id = int(args.device_id)
+                if device_id < len(amd_gpus):
+                    hip_default_device = amd_gpus[device_id]
+                    log.debug(f'ROCm agent: id={device_id} gpu={hip_default_device.name}')
     except Exception as e:
         log.warning(f'ROCm agent enumerator failed: {e}')
 
@@ -502,9 +508,6 @@ def install_rocm_zluda():
         if args.device_id is not None:
             if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:
                 log.warning('Setting HIP_VISIBLE_DEVICES and --device-id at the same time may be mistake.')
-            device_id = int(args.device_id)
-            if device_id < len(amd_gpus):
-                hip_default_device = amd_gpus[device_id]
             os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
             del args.device_id
 
