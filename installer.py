@@ -563,7 +563,8 @@ def install_rocm_zluda():
 
         if device is not None:
             if 'Flash attention' in opts.get('sdp_options'):
-                install(rocm.get_flash_attention_command(device))
+                if not installed('flash-attn'):
+                    install(rocm.get_flash_attention_command(device), reinstall=True)
             elif not args.experimental:
                 uninstall('flash-attn')
 
