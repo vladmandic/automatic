@@ -69,12 +69,15 @@ predefined_sdxl = {
 predefined_f1 = {
     "InstantX Union": 'InstantX/FLUX.1-dev-Controlnet-Union',
     "InstantX Canny": 'InstantX/FLUX.1-dev-Controlnet-Canny',
+    "JasperAI Depth": 'jasperai/Flux.1-dev-Controlnet-Depth',
+    "JasperAI Surface Normals": 'jasperai/Flux.1-dev-Controlnet-Surface-Normals',
+    "JasperAI Upscaler": 'jasperai/Flux.1-dev-Controlnet-Upscaler',
     "Shakker-Labs Union": 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
     "Shakker-Labs Pose": 'Shakker-Labs/FLUX.1-dev-ControlNet-Pose',
     "Shakker-Labs Depth": 'Shakker-Labs/FLUX.1-dev-ControlNet-Depth',
     "XLabs-AI Canny": 'XLabs-AI/flux-controlnet-canny-v3',
     "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-v3',
-    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-v3',
+    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-v3'
 }
 models = {}
 all_models = {}
