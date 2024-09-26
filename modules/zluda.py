@@ -33,6 +33,7 @@ def test(device: DeviceLikeType) -> Union[Exception, None]:
 
 
 def initialize_zluda():
+    shared.cmd_opts.device_id = None
     device = devices.get_optimal_device()
     if not devices.cuda_ok or not is_zluda(device):
         return

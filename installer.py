@@ -480,23 +480,32 @@ def install_rocm_zluda():
         amd_gpus = []
 
     hip_default_device = None
-    for idx, gpu in enumerate(amd_gpus):
-        gfx_version = gpu.get_gfx_version()
-        if gfx_version is None:
-            log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
-        else:
-            hip_default_device = gpu
-            log.debug(f'ROCm default agent: idx={idx} gpu={gpu.name}')
-            os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
-            # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
-            #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_version)
-            break
+    if args.device_id is None:
+        for idx, gpu in enumerate(amd_gpus):
+            gfx_version = gpu.get_gfx_version()
+            if gfx_version is None:
+                log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
+            else:
+                hip_default_device = gpu
+                log.debug(f'ROCm default agent: idx={idx} gpu={gpu.name}')
+                os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
+                # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
+                #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
+                os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_version)
+                break
+    else:
+        if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:
+            log.warning('Setting HIP_VISIBLE_DEVICES and --device-id at the same time may be mistake.')
+        device_id = int(args.device_id)
+        if device_id < len(amd_gpus):
+            hip_default_device = amd_gpus[device_id]
+        os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
+        del args.device_id
 
     log.info(f'ROCm: version={rocm.version}')
     torch_command = ''
     if sys.platform == "win32":
-        #if args.use_zluda:
+        # TODO after ROCm for Windows is released
         log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
@@ -510,9 +519,6 @@ def install_rocm_zluda():
             error = e
             log.warning(f'Failed to install ZLUDA: {e}')
         if error is None:
-            if args.device_id is not None:
-                os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
-                del args.device_id
             try:
                 zluda_installer.load(zluda_path)
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch=={zluda_installer.get_default_torch_version(hip_default_device)} torchvision --index-url https://download.pytorch.org/whl/cu118')
@@ -523,8 +529,6 @@ def install_rocm_zluda():
         if error is not None:
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
-        #else:
-        # TODO after ROCm for Windows is released
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
