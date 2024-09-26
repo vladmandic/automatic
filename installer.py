@@ -473,7 +473,6 @@ def install_rocm_zluda():
     # if not is_windows:
     #    os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow-rocm')
 
-    amd_gpus = []
     device = None
     try:
         amd_gpus = rocm.get_agents()
