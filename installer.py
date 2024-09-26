@@ -557,10 +557,11 @@ def install_rocm_zluda():
                 ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
 
-        if 'Flash attention' in opts.get('sdp_options'):
-            install(rocm.get_flash_attention_command(device))
-        elif not args.experimental:
-            uninstall('flash-attn')
+        if device is not None:
+            if 'Flash attention' in opts.get('sdp_options'):
+                install(rocm.get_flash_attention_command(device))
+            elif not args.experimental:
+                uninstall('flash-attn')
 
         if device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
