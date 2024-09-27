@@ -134,6 +134,8 @@ def load_network(name, network_on_disk) -> network.Network:
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
     sd = sd_models.read_state_dict(network_on_disk.filename, what='network')
+    if shared.sd_model_type == 'f1':
+        sd = lora_convert._convert_kohya_flux_lora_to_diffusers(sd) or sd  # if kohya flux lora, convert state_dict
     assign_network_names_to_compvis_modules(shared.sd_model) # this should not be needed but is here as an emergency fix for an unknown error people are experiencing in 1.2.0
     keys_failed_to_match = {}
     matched_networks = {}
