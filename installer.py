@@ -485,19 +485,17 @@ def install_rocm_zluda():
         else:
             log.info(f'ROCm: agents={[gpu.name for gpu in amd_gpus]}')
             if args.device_id is None:
-                device = amd_gpus[0]
+                index = 0
                 for idx, gpu in enumerate(amd_gpus):
-                    if gpu.arch == rocm.MicroArchitecture.RDNA:
-                        device = gpu
-                        os.environ.setdefault('HIP_VISIBLE_DEVICES', str(idx))
-                        # if os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
-                        #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
-                        if not device.is_apu:
-                            # although apu was found, there can be a dedicated card. do not break loop.
-                            # if no dedicated card was found, apu will be used.
-                            break
-                    else:
-                        log.debug(f'ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped for {gpu.name}')
+                    index = idx
+                    # if gpu.name.startswith('gfx11') and os.environ.get('TENSORFLOW_PACKAGE') == 'tensorflow-rocm': # do not use tensorflow-rocm for navi 3x
+                    #    os.environ['TENSORFLOW_PACKAGE'] = 'tensorflow==2.13.0'
+                    if not gpu.is_apu:
+                        # although apu was found, there can be a dedicated card. do not break loop.
+                        # if no dedicated card was found, apu will be used.
+                        break
+                os.environ.setdefault('HIP_VISIBLE_DEVICES', str(index))
+                device = amd_gpus[index]
             else:
                 device_id = int(args.device_id)
                 if device_id < len(amd_gpus):
@@ -571,7 +569,9 @@ def install_rocm_zluda():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
             rocm.set_blaslt_enabled(device.blaslt_supported)
 
-    if device is not None:
+    if device is None:
+        log.debug('ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped')
+    else:
         os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', device.get_gfx_version())
 
     return torch_command
