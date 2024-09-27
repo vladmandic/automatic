@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-26
+## Update for 2024-09-27
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -76,14 +76,16 @@
   - fix imageviewer exif parser  
   - selectable info view in image viewer, thanks @ZeldaMaster501  
 - **free-u** check if device/dtype are fft compatible and cast as necessary  
-- **experimental**  
-  - flux t5 load from gguf: requires transformers pr  
-  - rocm triton backend for flash attention, thanks @lshqqytiger  
+- **rocm**
+  - additional gpu detection and auto-config code, thanks @lshqqytiger
+  - experimental triton backend for flash attention, thanks @lshqqytiger  
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
   - full lint pass  
   - improve inference mode handling  
+- **experimental**  
+  - flux t5 load from gguf: requires transformers pr  
 
 
 ## Update for 2024-09-13
