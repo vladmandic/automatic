@@ -56,7 +56,8 @@ def full_vae_decode(latents, model):
     if upcast:
         if hasattr(model, 'upcast_vae'): # this is done by diffusers automatically if output_type != 'latent'
             model.upcast_vae()
-        # model.vae = model.vae.to(dtype=torch.float32)
+        else:
+            model.vae = model.vae.to(dtype=torch.float32)
         latents = latents.to(torch.float32)
     else:
         latents = latents.to(devices.device)
