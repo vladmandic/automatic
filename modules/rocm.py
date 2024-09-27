@@ -24,8 +24,8 @@ def dirname(path_: str, r: int = 1) -> str:
     return path_
 
 
-def spawn(command: str) -> str:
-    process = subprocess.run(command, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def spawn(command: str, cwd: os.PathLike = '.') -> str:
+    process = subprocess.run(command, cwd=cwd, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process.stdout.decode(encoding="utf8", errors="ignore")
 
 
@@ -142,7 +142,7 @@ if sys.platform == "win32":
         return os.path.basename(path) or os.path.basename(os.path.dirname(path))
 
     def get_agents() -> List[Agent]:
-        return [Agent(x.split(' ')[-1].strip()) for x in spawn("hipinfo").split("\n") if x.startswith('gcnArchName:')]
+        return [Agent(x.split(' ')[-1].strip()) for x in spawn("hipinfo", cwd=os.path.join(path, 'bin')).split("\n") if x.startswith('gcnArchName:')]
 
     is_wsl: bool = False
 else:
@@ -155,7 +155,7 @@ else:
         return resolve_link("/opt/rocm")
 
     def get_version() -> str:
-        arr = spawn(f"{os.path.join(path, 'bin', 'hipconfig')} --version").split(".")
+        arr = spawn("hipconfig --version", cwd=os.path.join(path, 'bin')).split(".")
         return f'{arr[0]}.{arr[1]}' if len(arr) >= 2 else None
 
     def get_agents() -> List[Agent]:

@@ -477,11 +477,7 @@ def install_rocm_zluda():
     try:
         amd_gpus = rocm.get_agents()
         if len(amd_gpus) == 0:
-            if sys.platform == "win32":
-                log.warning('You do not have perl or any AMDGPUs. The installer may select a wrong device as compute device.')
-                log.info('ROCm: no agent was found')
-            else:
-                log.warning('ROCm: no agent was found')
+            log.warning('ROCm: no agent was found')
         else:
             log.info(f'ROCm: agents={[gpu.name for gpu in amd_gpus]}')
             if args.device_id is None:
