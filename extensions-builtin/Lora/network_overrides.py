@@ -30,7 +30,6 @@ force_models = [ # forced always
     'kandinsky',
     'hunyuandit',
     'auraflow',
-    'f1',
 ]
 
 force_classes = [ # forced always
