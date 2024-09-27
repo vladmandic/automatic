@@ -66,12 +66,14 @@ class Agent:
             self.arch = MicroArchitecture.CDNA
         else:
             self.arch = MicroArchitecture.GCN
-        self.is_apu = gfx in ("801", "902", "90c", "1013", "1033", "1035", "1036", "1103",)
+        self.is_apu = gfx.startswith("115") or gfx in ("801", "902", "90c", "1013", "1033", "1035", "1036", "1103",)
         if sys.platform != "win32":
             self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
 
     def get_gfx_version(self) -> Union[str, None]:
-        if self.name.startswith("gfx11"):
+        if self.name.startswith("gfx12"):
+            return "12.0.0"
+        elif self.name.startswith("gfx11"):
             return "11.0.0"
         elif self.name.startswith("gfx103"): # or self.name.startswith("gfx101")
             return "10.3.0"
