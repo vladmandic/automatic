@@ -406,8 +406,8 @@ class VDMScheduler(SchedulerMixin, ConfigMixin):
         sqrt_alpha_prod = torch.sqrt(torch.sigmoid(gamma))
         sqrt_one_minus_alpha_prod = torch.sqrt(torch.sigmoid(-gamma))  # sqrt(sigma)
 
-        noisy_samples = sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
-        return noisy_samples
+        noisy_samples = original_samples * sqrt_alpha_prod + noise * sqrt_one_minus_alpha_prod
+        return noisy_samples.to(original_samples.dtype)
 
     def get_velocity(self, sample: torch.Tensor, noise: torch.Tensor, timesteps: torch.Tensor) -> torch.Tensor:
         gamma = self.log_snr(timesteps).to(sample.device)

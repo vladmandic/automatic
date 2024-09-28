@@ -78,7 +78,7 @@ def create_sampler(name, model):
             shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
             return None
         if not hasattr(model, 'scheduler_config'):
-            model.scheduler_config = sampler.sampler.config.copy()
+            model.scheduler_config = sampler.sampler.config.copy() if hasattr(sampler.sampler, 'config') else {}
         model.scheduler = sampler.sampler
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
