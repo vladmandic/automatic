@@ -329,16 +329,16 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if current_names != ():
             raise RuntimeError("no backup weights found and current weights are not unchanged")
         if isinstance(self, torch.nn.MultiheadAttention):
-            weights_backup = (self.in_proj_weight.to(devices.cpu, copy=True), self.out_proj.weight.to(devices.cpu, copy=True))
+            weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
         else:
-            weights_backup = self.weight.to(devices.cpu, copy=True)
+            weights_backup = self.weight.clone().to(devices.cpu)
         self.network_weights_backup = weights_backup
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
         if isinstance(self, torch.nn.MultiheadAttention) and self.out_proj.bias is not None:
-            bias_backup = self.out_proj.bias.to(devices.cpu, copy=True)
+            bias_backup = self.out_proj.bias.clone().to(devices.cpu)
         elif getattr(self, 'bias', None) is not None:
-            bias_backup = self.bias.to(devices.cpu, copy=True)
+            bias_backup = self.bias.clone().to(devices.cpu)
         else:
             bias_backup = None
         self.network_bias_backup = bias_backup
@@ -356,7 +356,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        self.weight = torch.nn.Parameter(weight + updown)
+                        if getattr(self.weight, "quant_type", None) == "nf4":
+                            import bitsandbytes
+                            device = self.weight.device
+                            weight = bitsandbytes.functional.dequantize_4bit(self.weight, quant_state=self.weight.quant_state, quant_type=self.weight.quant_type, blocksize=self.weight.blocksize)
+                            self.weight = bitsandbytes.nn.Params4bit(weight + updown)
+                            self.weight.to(device)
+                        else:
+                            self.weight = torch.nn.Parameter(weight + updown)
                         if hasattr(self, "qweight") and hasattr(self, "freeze"):
                             self.freeze()
                         if ex_bias is not None and hasattr(self, 'bias'):
@@ -445,6 +452,14 @@ def network_Linear_load_state_dict(self, *args, **kwargs):
     network_reset_cached_weight(self)
     return originals.Linear_load_state_dict(self, *args, **kwargs)
 
+
+def network_Linear4bit_forward(self, input): # pylint: disable=W0622
+    network_apply_weights(self)
+    return originals.Linear4bit_forward(self, input)
+#
+# def network_Linear4bit_load_state_dict(self, *args, **kwargs):
+#     network_reset_cached_weight(self)
+#     return originals.Linear4bit_load_state_dict(self, *args, **kwargs)
 
 def network_Conv2d_forward(self, input): # pylint: disable=W0622
     network_apply_weights(self)
