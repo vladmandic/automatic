@@ -177,6 +177,7 @@ class FilenameGenerator:
         return fn
 
     def sequence(self, fn, dirname, basename):
+        x = fn
         if shared.opts.save_images_add_number or '[seq]' in fn:
             if '[seq]' not in fn:
                 fn = os.path.join(os.path.dirname(fn), f"[seq]-{os.path.basename(fn)}")

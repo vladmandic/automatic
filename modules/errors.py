@@ -17,7 +17,7 @@ console = Console(log_time=True, tab_size=4, log_time_format='%H:%M:%S-%f', soft
 }))
 
 pretty_install(console=console)
-traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False)
+traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, max_frames=16)
 already_displayed = {}
 
 
@@ -38,7 +38,7 @@ def print_error_explanation(message):
 
 def display(e: Exception, task, suppress=[]):
     log.error(f"{task or 'error'}: {type(e).__name__}")
-    console.print_exception(show_locals=False, max_frames=10, extra_lines=1, suppress=suppress, theme="ansi_dark", word_wrap=False, width=console.width)
+    console.print_exception(show_locals=False, max_frames=16, extra_lines=1, suppress=suppress, theme="ansi_dark", word_wrap=False, width=console.width)
 
 
 def display_once(e: Exception, task):
@@ -56,7 +56,7 @@ def run(code, task):
 
 
 def exception(suppress=[]):
-    console.print_exception(show_locals=False, max_frames=10, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
+    console.print_exception(show_locals=False, max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
 
 
 def profile(profiler, msg: str):

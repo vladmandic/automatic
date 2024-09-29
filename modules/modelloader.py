@@ -36,7 +36,7 @@ def hf_login(token=None):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
             hf.logout()
-            hf.login(token=shared.opts.huggingface_token, add_to_git_credential=False, write_permission=False)
+            hf.login(token=token, add_to_git_credential=False, write_permission=False)
         text = stdout.getvalue() or ''
         line = [l for l in text.split('\n') if 'Token' in l]
         shared.log.info(f'HF login: token="{hf.constants.HF_TOKEN_PATH}" {line[0] if len(line) > 0 else text}')

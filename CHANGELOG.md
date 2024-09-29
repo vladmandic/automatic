@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-26
+## Update for 2024-09-29
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -18,6 +18,14 @@
     *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
+- [Ctrl+X](https://github.com/genforce/ctrl-x):
+  - control **structure** (*similar to controlnet*) and **appearance** (*similar to ipadapter*)  
+    without the need for extra models, all via code feed-forwards!
+  - can run in structure-only or appearance-only or both modes
+  - when providing structure and appearance input images, its best to provide a short prompts describing them  
+  - structure image can be *almost anything*: *actual photo, openpose-style stick man, 3d render, sketch, depth-map, etc.*  
+    just describe what it is in a structure prompt so it can be de-structured and correctly applied  
+  - supports sdxl in both txt2img and img2img, simply select from scripts
 - **flux**  
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
@@ -76,14 +84,16 @@
   - fix imageviewer exif parser  
   - selectable info view in image viewer, thanks @ZeldaMaster501  
 - **free-u** check if device/dtype are fft compatible and cast as necessary  
-- **experimental**  
-  - flux t5 load from gguf: requires transformers pr  
-  - rocm triton backend for flash attention, thanks @lshqqytiger  
+- **rocm**
+  - additional gpu detection and auto-config code, thanks @lshqqytiger
+  - experimental triton backend for flash attention, thanks @lshqqytiger  
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
   - full lint pass  
   - improve inference mode handling  
+- **experimental**  
+  - flux t5 load from gguf: requires transformers pr  
 
 
 ## Update for 2024-09-13
@@ -191,7 +201,9 @@ Examples:
 - **prompt enhance**: improve quality and/or verbosity of your prompts  
   simply select in *scripts -> prompt enhance*
   uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
-- **decode** auto-set upcast if first decode fails  
+- **decode**
+  - auto-set upcast if first decode fails  
+  - restore dtype on upcast  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  
