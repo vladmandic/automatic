@@ -201,7 +201,9 @@ Examples:
 - **prompt enhance**: improve quality and/or verbosity of your prompts  
   simply select in *scripts -> prompt enhance*
   uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
-- **decode** auto-set upcast if first decode fails  
+- **decode**
+  - auto-set upcast if first decode fails  
+  - restore dtype on upcast  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  

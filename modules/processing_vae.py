@@ -56,7 +56,8 @@ def full_vae_decode(latents, model):
     if upcast:
         if hasattr(model, 'upcast_vae'): # this is done by diffusers automatically if output_type != 'latent'
             model.upcast_vae()
-        else:
+        else: # manual upcast and we restore it later
+            model.vae.orig_dtype = model.vae.dtype
             model.vae = model.vae.to(dtype=torch.float32)
         latents = latents.to(torch.float32)
     else:
@@ -89,6 +90,10 @@ def full_vae_decode(latents, model):
         shared.log.error(f'VAE decode: {stats} {e}')
         errors.display(e, 'VAE decode')
         decoded = []
+
+    if hasattr(model.vae, "orig_dtype"):
+        model.vae = model.vae.to(dtype=model.vae.orig_dtype)
+        del model.vae.orig_dtype
 
     # delete vae after OpenVINO compile
     if 'VAE' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:

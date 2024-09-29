@@ -391,7 +391,7 @@ def create_ui():
                                 hf_selected = gr.Textbox('', label='Select model', placeholder='select model from search results or enter model name manually')
                         with gr.Column(scale=1):
                             with gr.Row():
-                                hf_variant = gr.Textbox(opts.cuda_dtype.lower(), label='Specify model variant', placeholder='')
+                                hf_variant = gr.Textbox('', label='Specify model variant', placeholder='')
                                 hf_revision = gr.Textbox('', label='Specify model revision', placeholder='')
                     with gr.Row():
                         hf_token = gr.Textbox('', label='Huggingface token', placeholder='optional access token for private or gated models')

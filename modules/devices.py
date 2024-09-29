@@ -228,14 +228,7 @@ def test_bf16():
         return False
 
 
-def set_cuda_params():
-    if debug:
-        log.debug(f'Verifying Torch settings: cuda={cuda_ok}')
-    if backend == "ipex":
-        try:
-            torch.xpu.set_fp32_math_mode(mode=torch.xpu.FP32MathMode.TF32)
-        except Exception:
-            pass
+def set_cudnn_params():
     if cuda_ok:
         try:
             torch.backends.cuda.matmul.allow_tf32 = True
@@ -257,6 +250,17 @@ def set_cuda_params():
                 torch.backends.cudnn.allow_tf32 = True
             except Exception:
                 pass
+
+
+def override_ipex_math():
+    if backend == "ipex":
+        try:
+            torch.xpu.set_fp32_math_mode(mode=torch.xpu.FP32MathMode.TF32)
+        except Exception:
+            pass
+
+
+def set_sdpa_params():
     try:
         if shared.opts.cross_attention_optimization == "Scaled-Dot-Product":
             torch.backends.cuda.enable_flash_sdp('Flash attention' in shared.opts.sdp_options)
@@ -283,8 +287,9 @@ def set_cuda_params():
                 torch.nn.functional.scaled_dot_product_attention = sliced_scaled_dot_product_attention
     except Exception:
         pass
-    if shared.cmd_opts.profile:
-        shared.log.debug(f'Torch info: {torch.__config__.show()}')
+
+
+def set_dtype():
     global dtype, dtype_vae, dtype_unet, unet_needs_upcast, inference_context, fp16_ok, bf16_ok # pylint: disable=global-statement
     if shared.opts.cuda_dtype == 'FP32':
         dtype = torch.float32
@@ -319,9 +324,20 @@ def set_cuda_params():
         inference_context = contextlib.nullcontext
     else:
         inference_context = torch.no_grad
-    log_device_name = get_raw_openvino_device() if shared.cmd_opts.use_openvino else torch.device(get_optimal_device_name()) # pylint: disable=used-before-assignment
+
+
+def set_cuda_params():
+    if debug:
+        log.debug(f'Verifying Torch settings: cuda={cuda_ok}')
+    override_ipex_math()
+    set_cudnn_params()
+    set_sdpa_params()
+    set_dtype()
+    if shared.cmd_opts.profile:
+        shared.log.debug(f'Torch info: {torch.__config__.show()}')
+    device_name = get_raw_openvino_device() if shared.cmd_opts.use_openvino else torch.device(get_optimal_device_name()) # pylint: disable=used-before-assignment
     log.debug(f'Desired Torch parameters: dtype={shared.opts.cuda_dtype} no-half={shared.opts.no_half} no-half-vae={shared.opts.no_half_vae} upscast={shared.opts.upcast_sampling}')
-    log.info(f'Setting Torch parameters: device={log_device_name} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} fp16={fp16_ok} bf16={bf16_ok} optimization={shared.opts.cross_attention_optimization}')
+    log.info(f'Setting Torch parameters: device={device_name} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} fp16={fp16_ok} bf16={bf16_ok} optimization={shared.opts.cross_attention_optimization}')
 
 
 args = cmd_args.parser.parse_args()
