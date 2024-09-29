@@ -134,8 +134,8 @@ def load_network(name, network_on_disk) -> network.Network:
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
     sd = sd_models.read_state_dict(network_on_disk.filename, what='network')
-    if shared.sd_model_type == 'f1':
-        sd = lora_convert._convert_kohya_flux_lora_to_diffusers(sd) or sd  # if kohya flux lora, convert state_dict
+    if shared.sd_model_type == 'f1':  # if kohya flux lora, convert state_dict
+        sd = lora_convert._convert_kohya_flux_lora_to_diffusers(sd) or sd  # pylint: disable=protected-access
     assign_network_names_to_compvis_modules(shared.sd_model) # this should not be needed but is here as an emergency fix for an unknown error people are experiencing in 1.2.0
     keys_failed_to_match = {}
     matched_networks = {}
@@ -296,11 +296,11 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         elif hasattr(self, "qweight") and hasattr(self, "freeze"):
             self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
             self.freeze()
-        elif getattr(self.weight, "quant_type", None) is not None:
+        elif getattr(self, "quant_type", None) is not None:
             import bitsandbytes
             device = self.weight.device
-            self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.weight.quant_state,
-                                                     quant_type=self.weight.quant_type, blocksize=self.weight.blocksize)
+            self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.quant_state,
+                                                     quant_type=self.quant_type, blocksize=self.blocksize)
             self.weight.to(device)
         else:
             self.weight.copy_(weights_backup)
@@ -337,7 +337,6 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
         elif getattr(self.weight, "quant_type", None) == "nf4" or getattr(self.weight, "quant_type", None) == "nf4":
-            # weights_backup = self.weight.__deepcopy__("")
             import bitsandbytes
             with devices.inference_context():
                 weights_backup = bitsandbytes.functional.dequantize_4bit(self.weight,
@@ -345,6 +344,9 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                                                                          quant_type=self.weight.quant_type,
                                                                          blocksize=self.weight.blocksize,
                                                                          ).to(devices.cpu)
+                self.quant_state = self.weight.quant_state
+                self.quant_type = self.weight.quant_type
+                self.blocksize = self.weight.blocksize
         else:
             weights_backup = self.weight.clone().to(devices.cpu)
         self.network_weights_backup = weights_backup
@@ -378,10 +380,9 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                                                                              quant_state=self.weight.quant_state,
                                                                              quant_type=self.weight.quant_type,
                                                                              blocksize=self.weight.blocksize)
-                            self.weight = bitsandbytes.nn.Params4bit(weight + updown,
-                                                                     quant_state=self.weight.quant_state,
-                                                                     quant_type=self.weight.quant_type,
-                                                                     blocksize=self.weight.blocksize)
+                            self.weight = bitsandbytes.nn.Params4bit(weight + updown, quant_state=self.quant_state,
+                                                                     quant_type=shared.opts.lora_quant.lower(),
+                                                                     blocksize=self.blocksize)
                             self.weight.to(device)
                         else:
                             self.weight = torch.nn.Parameter(weight + updown)

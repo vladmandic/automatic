@@ -175,6 +175,8 @@ class KeyConvert:
             if search_key.startswith(map_key):
                 key = key.replace(map_key, self.UNET_CONVERSION_MAP[map_key]).replace("oft", "lora") # pylint: disable=unsubscriptable-object
         sd_module = shared.sd_model.network_layer_mapping.get(key, None)
+        if sd_module is None:
+            sd_module = shared.sd_model.network_layer_mapping.get(key.replace("guidance", "timestep"), None)  # FLUX1 fix
         # SegMoE begin
         expert_key = key + "_experts_0"
         expert_module = shared.sd_model.network_layer_mapping.get(expert_key, None)

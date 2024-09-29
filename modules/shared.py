@@ -862,6 +862,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info"),
+    "lora_quant": OptionInfo("FP4","LoRA precision for merged layers in quantized models", gr.Radio, {"choices": ["FP4", "NF4"]}),
     "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
     "lora_maybe_diffusers": OptionInfo(False, "LoRA force loading of specific models using Diffusers"),
     "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use merge when using alternative method"),
