@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-27
+## Update for 2024-09-29
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -18,6 +18,14 @@
     *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
+- [Ctrl+X](https://github.com/genforce/ctrl-x):
+  - control **structure** (*similar to controlnet*) and **appearance** (*similar to ipadapter*)  
+    without the need for extra models, all via code feed-forwards!
+  - can run in structure-only or appearance-only or both modes
+  - when providing structure and appearance input images, its best to provide a short prompts describing them  
+  - structure image can be *almost anything*: *actual photo, openpose-style stick man, 3d render, sketch, depth-map, etc.*  
+    just describe what it is in a structure prompt so it can be de-structured and correctly applied  
+  - supports sdxl in both txt2img and img2img, simply select from scripts
 - **flux**  
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  

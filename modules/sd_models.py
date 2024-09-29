@@ -1382,7 +1382,7 @@ def get_signature(cls):
     return signature.parameters
 
 
-def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, args = {}):
+def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, force = False, args = {}):
     """
     args:
     - cls: can be pipeline class or a string from custom pipelines
@@ -1400,7 +1400,7 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
         new_pipe = None
         signature = get_signature(cls)
         possible = signature.keys()
-        if isinstance(pipeline, cls) and args == {}:
+        if not force and isinstance(pipeline, cls) and args == {}:
             return pipeline
         pipe_dict = {}
         components_used = []
