@@ -34,6 +34,11 @@
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
   - allow separate vae load  
   - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope
+- **dtype**
+  - previously `cuda_dtype` in settings defaulted to `fp16` if available  
+  - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  
+    if you have specific requirements, you can still set to fp32/fp16/bf16 as desired  
+    if you have gpu that incorrectly identifies bf16 or fp16 availablity, let us know so we can improve the auto-detection  
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  

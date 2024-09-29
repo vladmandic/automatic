@@ -192,39 +192,44 @@ def set_cuda_sync_mode(mode):
 
 
 def test_fp16():
-    if shared.cmd_opts.experimental:
-        if debug:
-            log.debug('Torch FP16 test skip')
-        return True
     try:
         x = torch.tensor([[1.5,.0,.0,.0]]).to(device=device, dtype=torch.float16)
         layerNorm = torch.nn.LayerNorm(4, eps=0.00001, elementwise_affine=True, dtype=torch.float16, device=device)
-        _y = layerNorm(x)
+        out = layerNorm(x)
+        if out.dtype != torch.float16:
+            raise RuntimeError('Torch FP16 test: dtype mismatch')
+        if torch.all(torch.isnan(out)).item():
+            raise RuntimeError('Torch FP16 test: NaN')
         if debug:
-            log.debug('Torch FP16 test pass')
+            log.debug('Torch FP16 test: pass')
         return True
     except Exception as ex:
-        log.warning(f'Torch FP16 test failed: Forcing FP32 operations: {ex}')
-        shared.opts.cuda_dtype = 'FP32'
-        shared.opts.no_half = True
-        shared.opts.no_half_vae = True
+        log.warning(f'Torch FP16 test fail: {ex}')
+        if shared.cmd_opts.experimental:
+            log.debug('Torch FP16 test fail: override experimental')
+            return True
         return False
 
 
 def test_bf16():
-    if shared.cmd_opts.experimental:
-        if debug:
-            log.debug('Torch BF16 test skip')
-        return True
     try:
         import torch.nn.functional as F
         image = torch.randn(1, 4, 32, 32).to(device=device, dtype=torch.bfloat16)
-        _out = F.interpolate(image, size=(64, 64), mode="nearest")
+        out = F.interpolate(image, size=(64, 64), mode="nearest")
+        if out.dtype != torch.bfloat16:
+            raise RuntimeError('Torch BF16 test: dtype mismatch')
+        if torch.all(torch.isnan(out)).item():
+            raise RuntimeError('Torch BF16 test: NaN')
         if debug:
-            log.debug('Torch BF16 test pass')
+            log.debug('Torch BF16 test: pass')
+        # if torch.cuda.is_available() and not torch.cuda.is_bf16_supported():
+        #    log.warning('Torch BF16 test: partial pass')
         return True
-    except Exception:
-        log.warning('Torch BF16 test failed: Fallback to FP16 operations')
+    except Exception as ex:
+        log.warning(f'Torch BF16 test fail: {ex}')
+        if shared.cmd_opts.experimental:
+            log.debug('Torch FP16 test fail: override experimental')
+            return True
         return False
 
 
@@ -240,7 +245,6 @@ def set_cudnn_params():
             try:
                 torch.backends.cudnn.deterministic = shared.opts.cudnn_deterministic
                 torch.use_deterministic_algorithms(shared.opts.cudnn_deterministic)
-                log.debug(f'Torch mode: deterministic={shared.opts.cudnn_deterministic}')
                 if shared.opts.cudnn_deterministic:
                     os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':4096:8')
                 torch.backends.cudnn.benchmark = True
@@ -291,30 +295,51 @@ def set_sdpa_params():
 
 def set_dtype():
     global dtype, dtype_vae, dtype_unet, unet_needs_upcast, inference_context, fp16_ok, bf16_ok # pylint: disable=global-statement
-    if shared.opts.cuda_dtype == 'FP32':
+    if shared.opts.cuda_dtype == 'Auto': # detect
+        if sys.platform == "darwin" or shared.cmd_opts.use_openvino: # override
+            fp16_ok = False
+            bf16_ok = False
+        else:
+            fp16_ok = test_fp16() if fp16_ok is None else fp16_ok
+            bf16_ok = test_bf16() if bf16_ok is None else bf16_ok
+
+        if bf16_ok:
+            dtype = torch.bfloat16
+            dtype_vae = torch.bfloat16
+            dtype_unet = torch.bfloat16
+        elif fp16_ok:
+            dtype = torch.float16
+            dtype_vae = torch.float16
+            dtype_unet = torch.float16
+        else:
+            dtype = torch.float32
+            dtype_vae = torch.float32
+            dtype_unet = torch.float32
+    elif shared.opts.cuda_dtype == 'FP32':
         dtype = torch.float32
         dtype_vae = torch.float32
         dtype_unet = torch.float32
         fp16_ok = None
         bf16_ok = None
-    elif shared.opts.cuda_dtype == 'BF16' or dtype == torch.bfloat16:
+    elif shared.opts.cuda_dtype == 'BF16':
         fp16_ok = test_fp16() if fp16_ok is None else fp16_ok
         bf16_ok = test_bf16() if bf16_ok is None else bf16_ok
         dtype = torch.bfloat16 if bf16_ok else torch.float16
         dtype_vae = torch.bfloat16 if bf16_ok else torch.float16
         dtype_unet = torch.bfloat16 if bf16_ok else torch.float16
-    elif shared.opts.cuda_dtype == 'FP16' or dtype == torch.float16:
+    elif shared.opts.cuda_dtype == 'FP16':
         fp16_ok = test_fp16() if fp16_ok is None else fp16_ok
         bf16_ok = None
         dtype = torch.float16 if fp16_ok else torch.float32
         dtype_vae = torch.float16 if fp16_ok else torch.float32
         dtype_unet = torch.float16 if fp16_ok else torch.float32
+
     if shared.opts.no_half:
         log.info('Torch override dtype: no-half set')
         dtype = torch.float32
         dtype_vae = torch.float32
         dtype_unet = torch.float32
-    if shared.opts.no_half_vae: # set dtype again as no-half-vae options take priority
+    if shared.opts.no_half_vae:
         log.info('Torch override VAE dtype: no-half set')
         dtype_vae = torch.float32
     unet_needs_upcast = shared.opts.upcast_sampling
@@ -336,8 +361,7 @@ def set_cuda_params():
     if shared.cmd_opts.profile:
         shared.log.debug(f'Torch info: {torch.__config__.show()}')
     device_name = get_raw_openvino_device() if shared.cmd_opts.use_openvino else torch.device(get_optimal_device_name()) # pylint: disable=used-before-assignment
-    log.debug(f'Desired Torch parameters: dtype={shared.opts.cuda_dtype} no-half={shared.opts.no_half} no-half-vae={shared.opts.no_half_vae} upscast={shared.opts.upcast_sampling}')
-    log.info(f'Setting Torch parameters: device={device_name} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} fp16={fp16_ok} bf16={bf16_ok} optimization={shared.opts.cross_attention_optimization}')
+    log.info(f'Torch parameters: device={device_name} config={shared.opts.cuda_dtype} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} nohalf={shared.opts.no_half} nohalfvae={shared.opts.no_half_vae} upscast={shared.opts.upcast_sampling} deterministic={shared.opts.cudnn_deterministic} test-fp16={fp16_ok} test-bf16={bf16_ok} optimization="{shared.opts.cross_attention_optimization}"')
 
 
 args = cmd_args.parser.parse_args()
@@ -377,9 +401,9 @@ inference_context = torch.no_grad
 cuda_ok = torch.cuda.is_available()
 cpu = torch.device("cpu")
 device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer = None
-dtype = torch.float16
-dtype_vae = torch.float16
-dtype_unet = torch.float16
+dtype = None
+dtype_vae = None
+dtype_unet = None
 fp16_ok = None
 bf16_ok = None
 unet_needs_upcast = False
