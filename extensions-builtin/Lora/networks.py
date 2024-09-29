@@ -296,6 +296,12 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         elif hasattr(self, "qweight") and hasattr(self, "freeze"):
             self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
             self.freeze()
+        elif getattr(self.weight, "quant_type", None) is not None:
+            import bitsandbytes
+            device = self.weight.device
+            self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.weight.quant_state,
+                                                     quant_type=self.weight.quant_type, blocksize=self.weight.blocksize)
+            self.weight.to(device)
         else:
             self.weight.copy_(weights_backup)
     if bias_backup is not None:
@@ -330,6 +336,15 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             raise RuntimeError("no backup weights found and current weights are not unchanged")
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
+        elif getattr(self.weight, "quant_type", None) == "nf4" or getattr(self.weight, "quant_type", None) == "nf4":
+            # weights_backup = self.weight.__deepcopy__("")
+            import bitsandbytes
+            with devices.inference_context():
+                weights_backup = bitsandbytes.functional.dequantize_4bit(self.weight,
+                                                                         quant_state=self.weight.quant_state,
+                                                                         quant_type=self.weight.quant_type,
+                                                                         blocksize=self.weight.blocksize,
+                                                                         ).to(devices.cpu)
         else:
             weights_backup = self.weight.clone().to(devices.cpu)
         self.network_weights_backup = weights_backup
@@ -356,11 +371,17 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        if getattr(self.weight, "quant_type", None) == "nf4":
+                        if getattr(self.weight, "quant_type", None) == "nf4" or self.weight.numel() != updown.numel():
                             import bitsandbytes
                             device = self.weight.device
-                            weight = bitsandbytes.functional.dequantize_4bit(self.weight, quant_state=self.weight.quant_state, quant_type=self.weight.quant_type, blocksize=self.weight.blocksize)
-                            self.weight = bitsandbytes.nn.Params4bit(weight + updown)
+                            weight = bitsandbytes.functional.dequantize_4bit(self.weight,
+                                                                             quant_state=self.weight.quant_state,
+                                                                             quant_type=self.weight.quant_type,
+                                                                             blocksize=self.weight.blocksize)
+                            self.weight = bitsandbytes.nn.Params4bit(weight + updown,
+                                                                     quant_state=self.weight.quant_state,
+                                                                     quant_type=self.weight.quant_type,
+                                                                     blocksize=self.weight.blocksize)
                             self.weight.to(device)
                         else:
                             self.weight = torch.nn.Parameter(weight + updown)
