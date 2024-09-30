@@ -272,7 +272,7 @@ def test_bf16():
     global bf16_ok # pylint: disable=global-statement
     if bf16_ok is not None:
         return bf16_ok
-    if sys.platform == "darwin" or backend == 'openvino': # override
+    if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
         bf16_ok = False
         return bf16_ok
     try:
