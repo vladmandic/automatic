@@ -622,7 +622,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             refresh_time = time.time()
         if not skip_indexing:
             import concurrent
-            with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=shared.max_workers) as executor:
                 for page in get_pages():
                     executor.submit(page.create_items, ui.tabname)
         for page in get_pages():

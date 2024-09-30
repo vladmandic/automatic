@@ -1737,6 +1737,7 @@ def reload_text_encoder(initial=False):
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
+    devices.set_cuda_params()
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary

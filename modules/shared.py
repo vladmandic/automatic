@@ -15,7 +15,7 @@ import fasteners
 import orjson
 import diffusers
 from rich.console import Console
-from modules import errors, shared_items, shared_state, cmd_args, theme
+from modules import errors, devices, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
@@ -24,7 +24,6 @@ from modules.memstats import memory_stats
 import modules.interrogate
 import modules.memmon
 import modules.styles
-import modules.devices as devices # pylint: disable=R0402
 import modules.paths as paths
 from installer import print_dict
 from installer import log as central_logger # pylint: disable=E0611
@@ -1074,15 +1073,12 @@ if not native:
     log.warning('Backend=original is in maintainance-only mode')
     opts.data['diffusers_offload_mode'] = 'none'
 
-try:
-    log.info(f'Device: {print_dict(devices.get_gpu_info())}')
-except Exception as ex:
-    log.error(f'Device: {ex}')
-
 prompt_styles = modules.styles.StyleDatabase(opts)
 reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
-devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
+
+devices.backend = devices.get_backend(cmd_opts, opts)
+devices.device = devices.get_optimal_device()
 devices.onnx = [opts.onnx_execution_provider]
 if opts.onnx_cpu_fallback and 'CPUExecutionProvider' not in devices.onnx:
     devices.onnx.append('CPUExecutionProvider')
@@ -1096,6 +1092,10 @@ if devices.backend == "directml":
 elif devices.backend == "cuda":
     initialize_zluda()
 initialize_onnx()
+try:
+    log.info(f'Device: {print_dict(devices.get_gpu_info())}')
+except Exception as ex:
+    log.error(f'Device: {ex}')
 
 
 class TotalTQDM: # compatibility with previous global-tqdm
