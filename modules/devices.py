@@ -386,13 +386,13 @@ def set_dtype():
         dtype_unet = torch.float16
 
     if opts.no_half:
-        log.info('Torch override dtype: no-half set')
         dtype = torch.float32
         dtype_vae = torch.float32
         dtype_unet = torch.float32
+        log.info(f'Torch override: no-half dtype={dtype}')
     if opts.no_half_vae:
-        log.info('Torch override VAE dtype: no-half set')
         dtype_vae = torch.float32
+        log.info(f'Torch override: no-half-vae dtype={dtype_vae}')
     unet_needs_upcast = opts.upcast_sampling
     if opts.inference_mode == 'inference-mode':
         inference_context = torch.inference_mode
