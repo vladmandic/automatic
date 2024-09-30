@@ -372,14 +372,14 @@ def get_default_modes():
             if gpu_memory <= 4:
                 cmd_opts.lowvram = True
                 default_offload_mode = "sequential"
-                log.info(f"GPU detect: memory={gpu_memory} optimization=lowvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=lowvram")
             elif gpu_memory <= 8:
                 cmd_opts.medvram = True
                 default_offload_mode = "model"
-                log.info(f"GPU detect: memory={gpu_memory} ptimization=medvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} ptimization=medvram")
             else:
                 default_offload_mode = "none"
-                log.info(f"GPU detect: memory={gpu_memory} optimization=none")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=none")
     elif cmd_opts.medvram:
         default_offload_mode = "model"
     elif cmd_opts.lowvram:
