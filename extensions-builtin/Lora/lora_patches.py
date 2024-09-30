@@ -20,6 +20,11 @@ class LoraPatches:
     def apply(self):
         if self.active or shared.opts.lora_force_diffusers:
             return
+        try:
+            import bitsandbytes
+            self.Linear4bit_forward = patches.patch(__name__, bitsandbytes.nn.Linear4bit, 'forward', networks.network_Linear4bit_forward)
+        except:
+            pass
         if "Model" in shared.opts.optimum_quanto_weights or "Text Encoder" in shared.opts.optimum_quanto_weights:
             from optimum import quanto # pylint: disable=no-name-in-module
             self.QLinear_forward = patches.patch(__name__, quanto.nn.QLinear, 'forward', networks.network_QLinear_forward) # pylint: disable=attribute-defined-outside-init
@@ -42,6 +47,11 @@ class LoraPatches:
     def undo(self):
         if not self.active or shared.opts.lora_force_diffusers:
             return
+        try:
+            import bitsandbytes
+            self.Linear4bit_forward = patches.undo(__name__, bitsandbytes.nn.Linear4bit, 'forward')
+        except:
+            pass
         if "Model" in shared.opts.optimum_quanto_weights or "Text Encoder" in shared.opts.optimum_quanto_weights:
             from optimum import quanto # pylint: disable=no-name-in-module
             self.QLinear_forward = patches.undo(__name__, quanto.nn.QLinear, 'forward') # pylint: disable=E1128, attribute-defined-outside-init

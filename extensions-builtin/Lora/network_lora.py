@@ -27,7 +27,7 @@ class NetworkModuleLora(network.NetworkModule):
         if weight is None and none_ok:
             return None
         linear_modules = [torch.nn.Linear, torch.nn.modules.linear.NonDynamicallyQuantizableLinear, torch.nn.MultiheadAttention, diffusers_lora.LoRACompatibleLinear]
-        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ in {"NNCFLinear", "QLinear"}
+        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ in {"NNCFLinear", "QLinear", "Linear4bit"}
         is_conv = type(self.sd_module) in [torch.nn.Conv2d, diffusers_lora.LoRACompatibleConv] or self.sd_module.__class__.__name__ in {"NNCFConv2d", "QConv2d"}
         if is_linear:
             weight = weight.reshape(weight.shape[0], -1)
@@ -55,12 +55,13 @@ class NetworkModuleLora(network.NetworkModule):
         return module
 
     def calc_updown(self, target): # pylint: disable=W0237
-        up = self.up_model.weight.to(target.device, dtype=target.dtype)
-        down = self.down_model.weight.to(target.device, dtype=target.dtype)
+        target_dtype = target.dtype if target.dtype != torch.uint8 else self.up_model.weight.dtype
+        up = self.up_model.weight.to(target.device, dtype=target_dtype)
+        down = self.down_model.weight.to(target.device, dtype=target_dtype)
         output_shape = [up.size(0), down.size(1)]
         if self.mid_model is not None:
             # cp-decomposition
-            mid = self.mid_model.weight.to(target.device, dtype=target.dtype)
+            mid = self.mid_model.weight.to(target.device, dtype=target_dtype)
             updown = lyco_helpers.rebuild_cp_decomposition(up, down, mid)
             output_shape += mid.shape[2:]
         else:

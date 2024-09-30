@@ -50,23 +50,29 @@ convert_diffusers_name_to_compvis = lora_convert.convert_diffusers_name_to_compv
 def assign_network_names_to_compvis_modules(sd_model):
     network_layer_mapping = {}
     if shared.native:
-        if not hasattr(shared.sd_model, 'text_encoder') or not hasattr(shared.sd_model, 'unet'):
-            sd_model.network_layer_mapping = {}
-            return
-        for name, module in shared.sd_model.text_encoder.named_modules():
-            prefix = "lora_te1_" if shared.sd_model_type == "sdxl" else "lora_te_"
-            network_name = prefix + name.replace(".", "_")
-            network_layer_mapping[network_name] = module
-            module.network_layer_name = network_name
-        if shared.sd_model_type == "sdxl":
+        if hasattr(shared.sd_model, 'text_encoder'):
+            for name, module in shared.sd_model.text_encoder.named_modules():
+                prefix = "lora_te1_" if hasattr(shared.sd_model, 'text_encoder_2') else "lora_te_"
+                network_name = prefix + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'text_encoder_2'):
             for name, module in shared.sd_model.text_encoder_2.named_modules():
                 network_name = "lora_te2_" + name.replace(".", "_")
                 network_layer_mapping[network_name] = module
                 module.network_layer_name = network_name
-        for name, module in shared.sd_model.unet.named_modules():
-            network_name = "lora_unet_" + name.replace(".", "_")
-            network_layer_mapping[network_name] = module
-            module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'unet'):
+            for name, module in shared.sd_model.unet.named_modules():
+                network_name = "lora_unet_" + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                module.network_layer_name = network_name
+        if hasattr(shared.sd_model, 'transformer'):
+            for name, module in shared.sd_model.transformer.named_modules():
+                network_name = "lora_transformer_" + name.replace(".", "_")
+                network_layer_mapping[network_name] = module
+                if "norm" in network_name and "linear" not in network_name:
+                    continue
+                module.network_layer_name = network_name
     else:
         if not hasattr(shared.sd_model, 'cond_stage_model'):
             sd_model.network_layer_mapping = {}
@@ -128,6 +134,8 @@ def load_network(name, network_on_disk) -> network.Network:
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
     sd = sd_models.read_state_dict(network_on_disk.filename, what='network')
+    if shared.sd_model_type == 'f1':  # if kohya flux lora, convert state_dict
+        sd = lora_convert._convert_kohya_flux_lora_to_diffusers(sd) or sd  # pylint: disable=protected-access
     assign_network_names_to_compvis_modules(shared.sd_model) # this should not be needed but is here as an emergency fix for an unknown error people are experiencing in 1.2.0
     keys_failed_to_match = {}
     matched_networks = {}
@@ -288,6 +296,12 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         elif hasattr(self, "qweight") and hasattr(self, "freeze"):
             self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
             self.freeze()
+        elif getattr(self, "quant_type", None) is not None:
+            import bitsandbytes
+            device = self.weight.device
+            self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.quant_state,
+                                                     quant_type=self.quant_type, blocksize=self.blocksize)
+            self.weight.to(device)
         else:
             self.weight.copy_(weights_backup)
     if bias_backup is not None:
@@ -321,16 +335,27 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if current_names != ():
             raise RuntimeError("no backup weights found and current weights are not unchanged")
         if isinstance(self, torch.nn.MultiheadAttention):
-            weights_backup = (self.in_proj_weight.to(devices.cpu, copy=True), self.out_proj.weight.to(devices.cpu, copy=True))
+            weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
+        elif getattr(self.weight, "quant_type", None) == "nf4" or getattr(self.weight, "quant_type", None) == "nf4":
+            import bitsandbytes
+            with devices.inference_context():
+                weights_backup = bitsandbytes.functional.dequantize_4bit(self.weight,
+                                                                         quant_state=self.weight.quant_state,
+                                                                         quant_type=self.weight.quant_type,
+                                                                         blocksize=self.weight.blocksize,
+                                                                         ).to(devices.cpu)
+                self.quant_state = self.weight.quant_state
+                self.quant_type = self.weight.quant_type
+                self.blocksize = self.weight.blocksize
         else:
-            weights_backup = self.weight.to(devices.cpu, copy=True)
+            weights_backup = self.weight.clone().to(devices.cpu)
         self.network_weights_backup = weights_backup
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
         if isinstance(self, torch.nn.MultiheadAttention) and self.out_proj.bias is not None:
-            bias_backup = self.out_proj.bias.to(devices.cpu, copy=True)
+            bias_backup = self.out_proj.bias.clone().to(devices.cpu)
         elif getattr(self, 'bias', None) is not None:
-            bias_backup = self.bias.to(devices.cpu, copy=True)
+            bias_backup = self.bias.clone().to(devices.cpu)
         else:
             bias_backup = None
         self.network_bias_backup = bias_backup
@@ -348,7 +373,19 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        self.weight = torch.nn.Parameter(weight + updown)
+                        if getattr(self.weight, "quant_type", None) == "nf4" or self.weight.numel() != updown.numel():
+                            import bitsandbytes
+                            device = self.weight.device
+                            weight = bitsandbytes.functional.dequantize_4bit(self.weight,
+                                                                             quant_state=self.weight.quant_state,
+                                                                             quant_type=self.weight.quant_type,
+                                                                             blocksize=self.weight.blocksize)
+                            self.weight = bitsandbytes.nn.Params4bit(weight + updown, quant_state=self.quant_state,
+                                                                     quant_type=shared.opts.lora_quant.lower(),
+                                                                     blocksize=self.blocksize)
+                            self.weight.to(device)
+                        else:
+                            self.weight = torch.nn.Parameter(weight + updown)
                         if hasattr(self, "qweight") and hasattr(self, "freeze"):
                             self.freeze()
                         if ex_bias is not None and hasattr(self, 'bias'):
@@ -437,6 +474,14 @@ def network_Linear_load_state_dict(self, *args, **kwargs):
     network_reset_cached_weight(self)
     return originals.Linear_load_state_dict(self, *args, **kwargs)
 
+
+def network_Linear4bit_forward(self, input): # pylint: disable=W0622
+    network_apply_weights(self)
+    return originals.Linear4bit_forward(self, input)
+#
+# def network_Linear4bit_load_state_dict(self, *args, **kwargs):
+#     network_reset_cached_weight(self)
+#     return originals.Linear4bit_load_state_dict(self, *args, **kwargs)
 
 def network_Conv2d_forward(self, input): # pylint: disable=W0622
     network_apply_weights(self)
