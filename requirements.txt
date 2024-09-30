@@ -33,7 +33,7 @@ safetensors==0.4.5
 tensordict==0.1.2
 peft==0.11.1
 httpx==0.24.1
-compel==2.0.2
+compel==2.0.3
 torchsde==0.2.6
 open-clip-torch
 clip-interrogator==0.6.0
@@ -54,7 +54,7 @@ pandas
 protobuf==4.25.3
 pytorch_lightning==1.9.4
 tokenizers==0.19.1
-transformers==4.44.2
+transformers==4.45.1
 urllib3==1.26.19
 Pillow==10.4.0
 timm==0.9.16
