@@ -16,7 +16,7 @@ def gfpgann():
     import gfpgan # pylint: disable=unused-import
     global loaded_gfpgan_model # pylint: disable=global-statement
     if loaded_gfpgan_model is not None:
-        loaded_gfpgan_model.gfpgan.to(devices.device_gfpgan)
+        loaded_gfpgan_model.gfpgan.to(devices.device)
         return loaded_gfpgan_model
     if gfpgan_constructor is None:
         return None
@@ -30,8 +30,8 @@ def gfpgann():
         shared.log.error(f"Model failed loading: type=GFPGAN model={model_file}")
         return None
     if hasattr(facexlib.detection.retinaface, 'device'):
-        facexlib.detection.retinaface.device = devices.device_gfpgan
-    model = gfpgan_constructor(model_path=model_file, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None, device=devices.device_gfpgan)
+        facexlib.detection.retinaface.device = devices.device
+    model = gfpgan_constructor(model_path=model_file, upscale=1, arch='clean', channel_multiplier=2, bg_upsampler=None, device=devices.device)
     loaded_gfpgan_model = model
     shared.log.info(f"Model loaded: type=GFPGAN model={model_file}")
     return model
@@ -48,7 +48,7 @@ def gfpgan_fix_faces(np_image):
     if model is None:
         return np_image
 
-    send_model_to(model, devices.device_gfpgan)
+    send_model_to(model, devices.device)
 
     np_image_bgr = np_image[:, :, ::-1]
     _cropped_faces, _restored_faces, gfpgan_output_bgr = model.enhance(np_image_bgr, has_aligned=False, only_center_face=False, paste_back=True)

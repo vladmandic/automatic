@@ -153,7 +153,6 @@ def initialize():
 
 
 def load_model():
-    modules.devices.set_cuda_params()
     if not shared.opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
         log.debug('Model auto load disabled')
     else:

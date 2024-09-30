@@ -664,8 +664,8 @@ def check_torch():
     allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml or args.use_openvino)
     allow_directml = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_openvino)
     allow_openvino = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_directml)
-    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino}')
-    log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
+    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino} zluda={args.use_zluda}')
+    # log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
 
     if torch_command != '':
@@ -699,7 +699,7 @@ def check_torch():
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
             elif allow_directml and args.use_directml and ('arm' not in machine and 'aarch' not in machine):
                 log.info('DirectML: selected')
-                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision torch-directml')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1 torchvision torch-directml')
                 if 'torch' in torch_command and not args.version:
                     install(torch_command, 'torch torchvision')
                 install('onnxruntime-directml', 'onnxruntime-directml', ignore=True)

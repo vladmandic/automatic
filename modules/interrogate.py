@@ -67,7 +67,7 @@ class InterrogateModels:
         self.loaded_categories = None
         self.skip_categories = []
         self.content_dir = content_dir
-        self.running_on_cpu = devices.device_interrogate == torch.device("cpu")
+        self.running_on_cpu = False
 
     def categories(self):
         if not os.path.exists(self.content_dir):
@@ -123,7 +123,7 @@ class InterrogateModels:
         else:
             model, preprocess = clip.load(clip_model_name, download_root=shared.opts.clip_models_path)
         model.eval()
-        model = model.to(devices.device_interrogate)
+        model = model.to(devices.device)
         return model, preprocess
 
     def load(self):
@@ -131,12 +131,12 @@ class InterrogateModels:
             self.blip_model = self.load_blip_model()
             if not shared.opts.no_half and not self.running_on_cpu:
                 self.blip_model = self.blip_model.half()
-        self.blip_model = self.blip_model.to(devices.device_interrogate)
+        self.blip_model = self.blip_model.to(devices.device)
         if self.clip_model is None:
             self.clip_model, self.clip_preprocess = self.load_clip_model()
             if not shared.opts.no_half and not self.running_on_cpu:
                 self.clip_model = self.clip_model.half()
-        self.clip_model = self.clip_model.to(devices.device_interrogate)
+        self.clip_model = self.clip_model.to(devices.device)
         self.dtype = next(self.clip_model.parameters()).dtype
 
     def send_clip_to_ram(self):
@@ -160,10 +160,10 @@ class InterrogateModels:
         if shared.opts.interrogate_clip_dict_limit != 0:
             text_array = text_array[0:int(shared.opts.interrogate_clip_dict_limit)]
         top_count = min(top_count, len(text_array))
-        text_tokens = clip.tokenize(list(text_array), truncate=True).to(devices.device_interrogate)
+        text_tokens = clip.tokenize(list(text_array), truncate=True).to(devices.device)
         text_features = self.clip_model.encode_text(text_tokens).type(self.dtype)
         text_features /= text_features.norm(dim=-1, keepdim=True)
-        similarity = torch.zeros((1, len(text_array))).to(devices.device_interrogate)
+        similarity = torch.zeros((1, len(text_array))).to(devices.device)
         for i in range(image_features.shape[0]):
             similarity += (100.0 * image_features[i].unsqueeze(0) @ text_features.T).softmax(dim=-1)
         similarity /= image_features.shape[0]
@@ -175,7 +175,7 @@ class InterrogateModels:
             transforms.Resize((blip_image_eval_size, blip_image_eval_size), interpolation=InterpolationMode.BICUBIC),
             transforms.ToTensor(),
             transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
-        ])(pil_image).unsqueeze(0).type(self.dtype).to(devices.device_interrogate)
+        ])(pil_image).unsqueeze(0).type(self.dtype).to(devices.device)
         with devices.inference_context():
             caption = self.blip_model.generate(gpu_image, sample=False, num_beams=shared.opts.interrogate_clip_num_beams, min_length=shared.opts.interrogate_clip_min_length, max_length=shared.opts.interrogate_clip_max_length)
         return caption[0]
@@ -199,7 +199,7 @@ class InterrogateModels:
             self.send_blip_to_ram()
             devices.torch_gc()
             res = caption
-            clip_image = self.clip_preprocess(pil_image).unsqueeze(0).type(self.dtype).to(devices.device_interrogate)
+            clip_image = self.clip_preprocess(pil_image).unsqueeze(0).type(self.dtype).to(devices.device)
             with devices.inference_context(), devices.autocast():
                 image_features = self.clip_model.encode_image(clip_image).type(self.dtype)
                 image_features /= image_features.norm(dim=-1, keepdim=True)

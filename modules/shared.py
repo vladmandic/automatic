@@ -15,7 +15,7 @@ import fasteners
 import orjson
 import diffusers
 from rich.console import Console
-from modules import errors, shared_items, shared_state, cmd_args, theme
+from modules import errors, devices, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
@@ -24,7 +24,6 @@ from modules.memstats import memory_stats
 import modules.interrogate
 import modules.memmon
 import modules.styles
-import modules.devices as devices # pylint: disable=R0402
 import modules.paths as paths
 from installer import print_dict
 from installer import log as central_logger # pylint: disable=E0611
@@ -373,14 +372,14 @@ def get_default_modes():
             if gpu_memory <= 4:
                 cmd_opts.lowvram = True
                 default_offload_mode = "sequential"
-                log.info(f"GPU detect: memory={gpu_memory} optimization=lowvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=lowvram")
             elif gpu_memory <= 8:
                 cmd_opts.medvram = True
                 default_offload_mode = "model"
-                log.info(f"GPU detect: memory={gpu_memory} ptimization=medvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} ptimization=medvram")
             else:
                 default_offload_mode = "none"
-                log.info(f"GPU detect: memory={gpu_memory} optimization=none")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=none")
     elif cmd_opts.medvram:
         default_offload_mode = "model"
     elif cmd_opts.lowvram:
@@ -432,7 +431,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
 options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
-    "cuda_dtype": OptionInfo("FP32" if sys.platform == "darwin" or cmd_opts.use_openvino else "BF16" if devices.backend == "ipex" else "FP16", "Device precision type", gr.Radio, {"choices": ["FP32", "FP16", "BF16"]}),
+    "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
     "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
 
     "model_sep": OptionInfo("<h2>Model options</h2>", "", gr.HTML),
@@ -1075,15 +1074,12 @@ if not native:
     log.warning('Backend=original is in maintainance-only mode')
     opts.data['diffusers_offload_mode'] = 'none'
 
-try:
-    log.info(f'Device: {print_dict(devices.get_gpu_info())}')
-except Exception as ex:
-    log.error(f'Device: {ex}')
-
 prompt_styles = modules.styles.StyleDatabase(opts)
 reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
-devices.device, devices.device_interrogate, devices.device_gfpgan, devices.device_esrgan, devices.device_codeformer = (devices.cpu if any(y in cmd_opts.use_cpu for y in [x, 'all']) else devices.get_optimal_device() for x in ['sd', 'interrogate', 'gfpgan', 'esrgan', 'codeformer'])
+
+devices.backend = devices.get_backend(cmd_opts, opts)
+devices.device = devices.get_optimal_device()
 devices.onnx = [opts.onnx_execution_provider]
 if opts.onnx_cpu_fallback and 'CPUExecutionProvider' not in devices.onnx:
     devices.onnx.append('CPUExecutionProvider')
@@ -1097,6 +1093,10 @@ if devices.backend == "directml":
 elif devices.backend == "cuda":
     initialize_zluda()
 initialize_onnx()
+try:
+    log.info(f'Device: {print_dict(devices.get_gpu_info())}')
+except Exception as ex:
+    log.error(f'Device: {ex}')
 
 
 class TotalTQDM: # compatibility with previous global-tqdm

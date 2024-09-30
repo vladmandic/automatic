@@ -128,7 +128,7 @@ class UpscalerESRGAN(Upscaler):
         model = self.load_model(selected_model)
         if model is None:
             return img
-        model.to(devices.device_esrgan)
+        model.to(devices.device)
         img = esrgan_upscale(model, img)
         if opts.upscaler_unload and selected_model in self.models:
             del self.models[selected_model]
@@ -143,7 +143,7 @@ class UpscalerESRGAN(Upscaler):
         if self.models.get(info.local_data_path, None) is not None:
             log.debug(f"Upscaler cached: type={self.name} model={info.local_data_path}")
             return self.models[info.local_data_path]
-        state_dict = torch.load(info.local_data_path, map_location='cpu' if devices.device_esrgan.type == 'mps' else None)
+        state_dict = torch.load(info.local_data_path, map_location='cpu' if devices.device.type == 'mps' else None)
         log.info(f"Upscaler loaded: type={self.name} model={info.local_data_path}")
 
         if "params_ema" in state_dict:
@@ -179,7 +179,7 @@ def upscale_without_tiling(model, img):
     img = img[:, :, ::-1]
     img = np.ascontiguousarray(np.transpose(img, (2, 0, 1))) / 255
     img = torch.from_numpy(img).float()
-    img = img.unsqueeze(0).to(devices.device_esrgan)
+    img = img.unsqueeze(0).to(devices.device)
     with devices.inference_context():
         output = model(img)
     output = output.squeeze().float().cpu().clamp_(0, 1).detach().numpy()

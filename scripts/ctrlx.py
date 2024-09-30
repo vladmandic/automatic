@@ -1,6 +1,7 @@
 # https://github.com/genforce/ctrl-x
 
 import gradio as gr
+from diffusers import StableDiffusionXLPipeline
 from modules import shared, scripts, processing, processing_helpers, sd_models, devices
 
 
@@ -32,6 +33,10 @@ class Script(scripts.Script):
                 appear_image = gr.Image(label='Image', source='upload', type='pil')
         return struct_prompt, struct_strength, struct_guidance, struct_image, appear_prompt, appear_strength, appear_guidance, appear_image
 
+    def restore(self):
+        del shared.sd_model.restore_pipeline
+        shared.sd_model = sd_models.switch_pipe(StableDiffusionXLPipeline, shared.sd_model, force=True)
+
     def run(self, p: processing.StableDiffusionProcessing, struct_prompt, struct_strength, struct_guidance, struct_image, appear_prompt, appear_strength, appear_guidance, appear_image): # pylint: disable=arguments-differ
         c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
         if shared.sd_model_type != 'sdxl':
@@ -39,7 +44,6 @@ class Script(scripts.Script):
             return None
 
         import yaml
-        from diffusers import StableDiffusionXLPipeline
         from modules.ctrlx import CtrlXStableDiffusionXLPipeline
         from modules.ctrlx.sdxl import get_control_config, register_control
         from modules.ctrlx.utils import get_self_recurrence_schedule
@@ -47,6 +51,7 @@ class Script(scripts.Script):
         orig_prompt_attention = shared.opts.prompt_attention
         shared.opts.data['prompt_attention'] = 'Fixed attention'
         shared.sd_model = sd_models.switch_pipe(CtrlXStableDiffusionXLPipeline, shared.sd_model)
+        shared.sd_model.restore_pipeline = self.restore
 
         # calculate ctrx+x schedule
         if p.sampler_name not in ['DDIM', 'Euler', 'Euler a', 'DPM++ 1S', 'DDPM', 'Euler SGM', 'LCM', 'TCD']:

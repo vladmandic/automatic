@@ -3,7 +3,7 @@ import torch
 import transformers
 import transformers.dynamic_module_utils
 from PIL import Image
-from modules import shared, devices
+from modules import shared, devices, errors
 
 
 processor = None
@@ -181,31 +181,35 @@ def florence(question: str, image: Image.Image, repo: str = None):
 
 
 def interrogate(vqa_question, vqa_image, vqa_model_req):
-    vqa_model = MODELS.get(vqa_model_req, None)
-    shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
-    if vqa_image is None:
-        answer = 'no image provided'
-        return answer
-    if vqa_model_req is None:
-        answer = 'no model selected'
-        return answer
-    if vqa_model is None:
-        answer = f'unknown: model={vqa_model_req} available={MODELS.keys()}'
-        return answer
-    if 'git' in vqa_model.lower():
-        answer = git(vqa_question, vqa_image, vqa_model)
-    elif 'vilt' in vqa_model.lower():
-        answer = vilt(vqa_question, vqa_image, vqa_model)
-    elif 'blip' in vqa_model.lower():
-        answer = blip(vqa_question, vqa_image, vqa_model)
-    elif 'pix' in vqa_model.lower():
-        answer = pix(vqa_question, vqa_image, vqa_model)
-    elif 'moondream2' in vqa_model.lower():
-        answer = moondream(vqa_question, vqa_image, vqa_model)
-    elif 'florence' in vqa_model.lower():
-        answer = florence(vqa_question, vqa_image, vqa_model)
-    else:
-        answer = 'unknown model'
+    try:
+        vqa_model = MODELS.get(vqa_model_req, None)
+        shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
+        if vqa_image is None:
+            answer = 'no image provided'
+            return answer
+        if vqa_model_req is None:
+            answer = 'no model selected'
+            return answer
+        if vqa_model is None:
+            answer = f'unknown: model={vqa_model_req} available={MODELS.keys()}'
+            return answer
+        if 'git' in vqa_model.lower():
+            answer = git(vqa_question, vqa_image, vqa_model)
+        elif 'vilt' in vqa_model.lower():
+            answer = vilt(vqa_question, vqa_image, vqa_model)
+        elif 'blip' in vqa_model.lower():
+            answer = blip(vqa_question, vqa_image, vqa_model)
+        elif 'pix' in vqa_model.lower():
+            answer = pix(vqa_question, vqa_image, vqa_model)
+        elif 'moondream2' in vqa_model.lower():
+            answer = moondream(vqa_question, vqa_image, vqa_model)
+        elif 'florence' in vqa_model.lower():
+            answer = florence(vqa_question, vqa_image, vqa_model)
+        else:
+            answer = 'unknown model'
+    except Exception as e:
+        errors.display(e, 'VQA')
+        answer = 'error'
     if model is not None:
         model.to(devices.cpu)
     devices.torch_gc()

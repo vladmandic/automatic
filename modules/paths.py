@@ -28,7 +28,6 @@ models_config = cli.models_dir or config.get('models_dir') or 'models'
 models_path = models_config if os.path.isabs(models_config) else os.path.join(data_path, models_config)
 extensions_dir = os.path.join(data_path, "extensions")
 extensions_builtin_dir = "extensions-builtin"
-onnx_dir = os.path.join(models_path, "ONNX")
 sd_configs_path = os.path.join(script_path, "configs")
 sd_default_config = os.path.join(sd_configs_path, "v1-inference.yaml")
 sd_model_file = cli.ckpt or os.path.join(script_path, 'model.ckpt') # not used
@@ -101,7 +100,6 @@ def create_paths(opts):
     create_path(sd_configs_path)
     create_path(extensions_dir)
     create_path(extensions_builtin_dir)
-    create_path(onnx_dir)
     create_path(fix_path('temp_dir'))
     create_path(fix_path('ckpt_dir'))
     create_path(fix_path('diffusers_dir'))
@@ -111,6 +109,7 @@ def create_paths(opts):
     create_path(fix_path('lora_dir'))
     create_path(fix_path('embeddings_dir'))
     create_path(fix_path('hypernetwork_dir'))
+    create_path(fix_path('onnx_temp_dir'))
     create_path(fix_path('outdir_samples'))
     create_path(fix_path('outdir_txt2img_samples'))
     create_path(fix_path('outdir_img2img_samples'))

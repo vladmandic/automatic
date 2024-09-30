@@ -1,6 +1,17 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-29
+## Update for 2024-09-30
+
+### Highlights for 2024-09-30
+
+- **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
+- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage text-encoders used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
+- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of structure and appearance without the need for extra models  
+- Auto-detection of best available device/dtype settings for your platform and GPU reduces neeed for manual configuration  
+
+And other goodies like XYZ grid improvements, additional Flux controlnets, additional interrogate models, improved LoRA detection and handling and more...
+
+### Details for 2024-09-30
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -34,6 +45,11 @@
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
   - allow separate vae load  
   - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope
+- **dtype**
+  - previously `cuda_dtype` in settings defaulted to `fp16` if available  
+  - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  
+    if you have specific requirements, you can still set to fp32/fp16/bf16 as desired  
+    if you have gpu that incorrectly identifies bf16 or fp16 availablity, let us know so we can improve the auto-detection  
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
@@ -85,8 +101,10 @@
   - selectable info view in image viewer, thanks @ZeldaMaster501  
 - **free-u** check if device/dtype are fft compatible and cast as necessary  
 - **rocm**
-  - additional gpu detection and auto-config code, thanks @lshqqytiger
+  - additional gpu detection and auto-config code, thanks @lshqqytiger  
   - experimental triton backend for flash attention, thanks @lshqqytiger  
+- **directml**
+  - update `torch` to 2.4.1, thanks @lshqqytiger  
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
