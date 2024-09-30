@@ -296,7 +296,7 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
         elif hasattr(self, "qweight") and hasattr(self, "freeze"):
             self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
             self.freeze()
-        elif getattr(self, "quant_type", None) is not None:
+        elif getattr(self, "quant_type", None) in ['nf4', 'fp4']:
             import bitsandbytes
             device = self.weight.device
             self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.quant_state,
@@ -336,7 +336,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             raise RuntimeError("no backup weights found and current weights are not unchanged")
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
-        elif getattr(self.weight, "quant_type", None) == "nf4" or getattr(self.weight, "quant_type", None) == "nf4":
+        elif getattr(self.weight, "quant_type", None) in ['nf4', 'fp4']:
             import bitsandbytes
             with devices.inference_context():
                 weights_backup = bitsandbytes.functional.dequantize_4bit(self.weight,
@@ -373,7 +373,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                         if len(weight.shape) == 4 and weight.shape[1] == 9:
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
-                        if getattr(self.weight, "quant_type", None) == "nf4" or self.weight.numel() != updown.numel():
+                        if getattr(self.weight, "quant_type", None) in ['nf4', 'fp4'] or self.weight.numel() != updown.numel():
                             import bitsandbytes
                             device = self.weight.device
                             weight = bitsandbytes.functional.dequantize_4bit(self.weight,

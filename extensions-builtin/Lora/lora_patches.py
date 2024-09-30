@@ -16,6 +16,7 @@ class LoraPatches:
         self.LayerNorm_load_state_dict = None
         self.MultiheadAttention_forward = None
         self.MultiheadAttention_load_state_dict = None
+        self.Linear4bit_forward = None
 
     def apply(self):
         if self.active or shared.opts.lora_force_diffusers:
@@ -23,12 +24,14 @@ class LoraPatches:
         try:
             import bitsandbytes
             self.Linear4bit_forward = patches.patch(__name__, bitsandbytes.nn.Linear4bit, 'forward', networks.network_Linear4bit_forward)
-        except:
+        except Exception:
             pass
-        if "Model" in shared.opts.optimum_quanto_weights or "Text Encoder" in shared.opts.optimum_quanto_weights:
+        try:
             from optimum import quanto # pylint: disable=no-name-in-module
             self.QLinear_forward = patches.patch(__name__, quanto.nn.QLinear, 'forward', networks.network_QLinear_forward) # pylint: disable=attribute-defined-outside-init
             self.QConv2d_forward = patches.patch(__name__, quanto.nn.QConv2d, 'forward', networks.network_QConv2d_forward) # pylint: disable=attribute-defined-outside-init
+        except Exception:
+            pass
         self.Linear_forward = patches.patch(__name__, torch.nn.Linear, 'forward', networks.network_Linear_forward)
         self.Linear_load_state_dict = patches.patch(__name__, torch.nn.Linear, '_load_from_state_dict', networks.network_Linear_load_state_dict)
         self.Conv2d_forward = patches.patch(__name__, torch.nn.Conv2d, 'forward', networks.network_Conv2d_forward)
@@ -49,13 +52,15 @@ class LoraPatches:
             return
         try:
             import bitsandbytes
-            self.Linear4bit_forward = patches.undo(__name__, bitsandbytes.nn.Linear4bit, 'forward')
-        except:
+            self.Linear4bit_forward = patches.undo(__name__, bitsandbytes.nn.Linear4bit, 'forward') # pylint: disable=E1128
+        except Exception:
             pass
-        if "Model" in shared.opts.optimum_quanto_weights or "Text Encoder" in shared.opts.optimum_quanto_weights:
+        try:
             from optimum import quanto # pylint: disable=no-name-in-module
             self.QLinear_forward = patches.undo(__name__, quanto.nn.QLinear, 'forward') # pylint: disable=E1128, attribute-defined-outside-init
             self.QConv2d_forward = patches.undo(__name__, quanto.nn.QConv2d, 'forward') # pylint: disable=E1128, attribute-defined-outside-init
+        except Exception:
+            pass
         self.Linear_forward = patches.undo(__name__, torch.nn.Linear, 'forward') # pylint: disable=E1128
         self.Linear_load_state_dict = patches.undo(__name__, torch.nn.Linear, '_load_from_state_dict') # pylint: disable=E1128
         self.Conv2d_forward = patches.undo(__name__, torch.nn.Conv2d, 'forward') # pylint: disable=E1128

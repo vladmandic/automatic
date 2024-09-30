@@ -44,7 +44,9 @@ And other goodies like XYZ grid improvements, additional Flux controlnets, addit
   - full prompt parser will auto-select `xhinker` for flux models  
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
   - allow separate vae load  
-  - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope
+  - support for both kohya and onetrainer loras in native load mode for fp16/nf4/fp4, thanks @AI-Casanova  
+  - added native load mode for qint8/qint4 models
+  - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
 - **dtype**
   - previously `cuda_dtype` in settings defaulted to `fp16` if available  
   - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  

@@ -1,8 +1,8 @@
 import os
 import re
 import bisect
-import torch
 from typing import Dict
+import torch
 from modules import shared
 
 
