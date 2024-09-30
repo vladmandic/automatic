@@ -1,6 +1,17 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-29
+## Update for 2024-09-30
+
+### Highlights for 2024-09-30
+
+
+- New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
+- New fine-tuned CLiP-ViT-L 1st stage text-encoder used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
+- Auto-detection of best available device/dtype settings for your platform and GPU reduces neeed for manual configuration  
+
+And other goodies like XYZ grid improvements, additional Flux controlnets, additional interrogate models, improved LoRA detection and handling and more...
+
+### Details for 2024-09-30
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -90,8 +101,10 @@
   - selectable info view in image viewer, thanks @ZeldaMaster501  
 - **free-u** check if device/dtype are fft compatible and cast as necessary  
 - **rocm**
-  - additional gpu detection and auto-config code, thanks @lshqqytiger
+  - additional gpu detection and auto-config code, thanks @lshqqytiger  
   - experimental triton backend for flash attention, thanks @lshqqytiger  
+- **directml**
+  - update `torch` to 2.4.1, thanks @lshqqytiger  
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
