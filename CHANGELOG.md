@@ -5,11 +5,12 @@
 ### Highlights for 2024-09-30
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
-- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage text-encoders used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
-- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of structure and appearance without the need for extra models  
-- Auto-detection of best available device/dtype settings for your platform and GPU reduces neeed for manual configuration  
+- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
+- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models  
+- Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
+- Improved **LoRA** detection and handling for all supported models  
 
-And other goodies like XYZ grid improvements, additional Flux controlnets, additional interrogate models, improved LoRA detection and handling and more...
+And other goodies like multiple XYZ grid improvements, additional Flux controlnets, additional interrogate models, better LoRA tags support, and more...
 
 ### Details for 2024-09-30
 
