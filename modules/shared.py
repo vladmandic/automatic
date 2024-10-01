@@ -1087,7 +1087,7 @@ device = devices.device
 batch_cond_uncond = opts.always_batch_cond_uncond or not (cmd_opts.lowvram or cmd_opts.medvram)
 parallel_processing_allowed = not cmd_opts.lowvram
 mem_mon = modules.memmon.MemUsageMonitor("MemMon", devices.device)
-max_workers = 4
+max_workers = 8
 if devices.backend == "directml":
     directml_do_hijack()
 elif devices.backend == "cuda":

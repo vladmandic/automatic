@@ -5,7 +5,7 @@ import typing
 import torch
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
-from modules import shared, prompt_parser, devices, sd_models
+from modules import shared, prompt_parser, devices, sd_models, errors
 from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
 
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
@@ -17,10 +17,28 @@ token_type = None # used by helper get_tokens
 cache = {}
 
 
+def fix_position_ids(pipe):
+    # position_ids are created on te creation and are simple index cache
+    # but somehow can be corrupt in CLIPTextEmbeddings forward call
+    # see transformers/models/clip/modeling_clip.py:CLIPTextEmbeddings
+    # reproduction: load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate
+    if hasattr(pipe, 'text_encoder') and pipe.text_encoder.text_model.embeddings.position_ids[0][0] > 0:
+        shared.log.warning(f'TE1 fix: ids={pipe.text_encoder.text_model.embeddings.position_ids}')
+        pipe.text_encoder.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder.device)
+    if hasattr(pipe, 'text_encoder_2') and pipe.text_encoder_2.text_model.embeddings.position_ids[0][0] > 0:
+        shared.log.warning(f'TE2 fix: ids={pipe.text_encoder_2.text_model.embeddings.position_ids}')
+        pipe.text_encoder_2.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder_2.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder_2.device)
+
+
 def compel_hijack(self, token_ids: torch.Tensor,
                   attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
     needs_hidden_states = self.returned_embeddings_type != 1
-    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
+    try: # can crash in ATen/native/cuda/Indexing since position_ids are corrupt so index lookup fails, but its not compel specific, happens with fixed attention as well
+        text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
+    except Exception as e: # its a non-recoverable error as cuda state is corrupt
+        shared.log.error(f'TE: class={self.text_encoder.__class__} device={self.text_encoder.device} dtype={self.text_encoder.dtype} {e}')
+        errors.display(e, 'TE:')
+
     if not needs_hidden_states:
         return text_encoder_output.last_hidden_state
     try:
@@ -147,6 +165,7 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
+    params_match = prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and steps == cache.get('steps', None)
     if (
         'StableDiffusion' not in pipe.__class__.__name__ and
         'DemoFusion' not in pipe.__class__.__name__ and
@@ -155,7 +174,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
     ):
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
-    elif shared.opts.sd_textencoder_cache and prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
+    elif shared.opts.sd_textencoder_cache and cache.get('model_type', None) == shared.sd_model_type and params_match and False:
         p.prompt_embeds = cache.get('prompt_embeds', None)
         p.positive_pooleds = cache.get('positive_pooleds', None)
         p.negative_embeds = cache.get('negative_embeds', None)
@@ -171,6 +190,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
             pipe.maybe_free_model_hooks()
             devices.torch_gc()
 
+        fix_position_ids(pipe)
         prompt_embeds, positive_pooleds, negative_embeds, negative_pooleds = [], [], [], []
         last_prompt, last_negative = None, None
         for prompt, negative in zip(prompts, negative_prompts):

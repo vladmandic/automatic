@@ -96,8 +96,6 @@ def get_packages():
         "accelerate": accelerate.__version__,
     }
 
-errors.log.info(f'Load packages: {get_packages()}')
-
 try:
     import os
     import math
@@ -107,7 +105,7 @@ try:
     if threads < (affinity / 2):
         torch.set_num_threads(math.floor(affinity / 2))
         threads = torch.get_num_threads()
-        errors.log.debug(f'Detected: cores={cores} affinity={affinity} set threads={threads}')
+    errors.log.debug(f'System: cores={cores} affinity={affinity} threads={threads}')
 except Exception:
     pass
 
@@ -119,3 +117,5 @@ except ImportError:
         sys.modules["torchvision.transforms.functional_tensor"] = functional
     except ImportError:
         pass  # shrug...
+
+errors.log.info(f'System packages: {get_packages()}')
