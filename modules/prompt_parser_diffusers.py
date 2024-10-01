@@ -23,10 +23,10 @@ def fix_position_ids(pipe):
     # see transformers/models/clip/modeling_clip.py:CLIPTextEmbeddings
     # reproduction: load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate
     if hasattr(pipe, 'text_encoder') and pipe.text_encoder.text_model.embeddings.position_ids[0][0] > 0:
-        shared.log.warning(f'TE1 fix: ids={pipe.text_encoder.text_model.embeddings.position_ids}')
+        debug(f'TE1 fix: ids={pipe.text_encoder.text_model.embeddings.position_ids}')
         pipe.text_encoder.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder.device)
     if hasattr(pipe, 'text_encoder_2') and pipe.text_encoder_2.text_model.embeddings.position_ids[0][0] > 0:
-        shared.log.warning(f'TE2 fix: ids={pipe.text_encoder_2.text_model.embeddings.position_ids}')
+        debug(f'TE2 fix: ids={pipe.text_encoder_2.text_model.embeddings.position_ids}')
         pipe.text_encoder_2.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder_2.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder_2.device)
 
 
