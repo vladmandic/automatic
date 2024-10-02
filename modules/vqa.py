@@ -12,8 +12,8 @@ loaded: str = None
 MODELS = {
     "MS Florence 2 Base": "microsoft/Florence-2-base", # 0.5GB
     "MS Florence 2 Large": "microsoft/Florence-2-large", # 1.5GB
-    "MiaoshouAI PromptGen 1.5 Base": "MiaoshouAI/Florence-2-base-PromptGen-v1.5", # 1.1GB
-    "MiaoshouAI PromptGen 1.5 Large": "MiaoshouAI/Florence-2-large-PromptGen-v1.5", # 3.3GB
+    "MiaoshouAI PromptGen 1.5 Base": "MiaoshouAI/Florence-2-base-PromptGen-v1.5@c06a5f02cc6071a5d65ee5d294cf3732d3097540", # 1.1GB
+    "MiaoshouAI PromptGen 1.5 Large": "MiaoshouAI/Florence-2-large-PromptGen-v1.5@c06a5f02cc6071a5d65ee5d294cf3732d3097540", # 3.3GB
     "CogFlorence 2.0 Large": "thwri/CogFlorence-2-Large-Freeze", # 1.6GB
     "CogFlorence 2.2 Large": "thwri/CogFlorence-2.2-Large", # 1.6GB
     "Moondream 2": "vikhyatk/moondream2", # 3.7GB
@@ -132,7 +132,7 @@ def moondream(question: str, image: Image.Image, repo: str = None):
     return response
 
 
-def florence(question: str, image: Image.Image, repo: str = None):
+def florence(question: str, image: Image.Image, repo: str = None, revision: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     _get_imports = transformers.dynamic_module_utils.get_imports
     def get_imports(f):
@@ -142,8 +142,8 @@ def florence(question: str, image: Image.Image, repo: str = None):
         return R
     if model is None or loaded != repo:
         transformers.dynamic_module_utils.get_imports = get_imports
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True)
-        processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True)
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, revision=revision)
+        processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True, revision=revision)
         transformers.dynamic_module_utils.get_imports = _get_imports
         loaded = repo
         model.eval()
@@ -183,6 +183,9 @@ def florence(question: str, image: Image.Image, repo: str = None):
 def interrogate(vqa_question, vqa_image, vqa_model_req):
     try:
         vqa_model = MODELS.get(vqa_model_req, None)
+        revision = None
+        if '@' in vqa_model:
+            vqa_model, revision = vqa_model.split('@')
         shared.log.debug(f'VQA: model="{vqa_model}" question="{vqa_question}" image={vqa_image}')
         if vqa_image is None:
             answer = 'no image provided'
@@ -204,7 +207,7 @@ def interrogate(vqa_question, vqa_image, vqa_model_req):
         elif 'moondream2' in vqa_model.lower():
             answer = moondream(vqa_question, vqa_image, vqa_model)
         elif 'florence' in vqa_model.lower():
-            answer = florence(vqa_question, vqa_image, vqa_model)
+            answer = florence(vqa_question, vqa_image, vqa_model, revision)
         else:
             answer = 'unknown model'
     except Exception as e:
