@@ -60,8 +60,7 @@ def full_vae_decode(latents, model):
             model.vae.orig_dtype = model.vae.dtype
             model.vae = model.vae.to(dtype=torch.float32)
         latents = latents.to(torch.float32)
-    else:
-        latents = latents.to(devices.device)
+    latents = latents.to(devices.device)
     if getattr(model.vae, "post_quant_conv", None) is not None:
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
 
@@ -84,6 +83,7 @@ def full_vae_decode(latents, model):
     latents_stats = f'shape={latents.shape} dtype={latents.dtype} device={latents.device}'
     stats = f'vae {vae_stats} latents {latents_stats}'
 
+    log_debug(f'VAE config: {model.vae.config}')
     try:
         decoded = model.vae.decode(latents, return_dict=False)[0]
     except Exception as e:

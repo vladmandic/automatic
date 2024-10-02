@@ -1081,9 +1081,11 @@ cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_o
 devices.backend = devices.get_backend(cmd_opts, opts)
 devices.device = devices.get_optimal_device()
 devices.onnx = [opts.onnx_execution_provider]
+devices.set_cuda_params()
 if opts.onnx_cpu_fallback and 'CPUExecutionProvider' not in devices.onnx:
     devices.onnx.append('CPUExecutionProvider')
 device = devices.device
+
 batch_cond_uncond = opts.always_batch_cond_uncond or not (cmd_opts.lowvram or cmd_opts.medvram)
 parallel_processing_allowed = not cmd_opts.lowvram
 mem_mon = modules.memmon.MemUsageMonitor("MemMon", devices.device)

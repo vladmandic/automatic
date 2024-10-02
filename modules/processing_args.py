@@ -99,6 +99,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
+    prompt_parser_diffusers.fix_position_ids(model)
     if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or

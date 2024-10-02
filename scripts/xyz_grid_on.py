@@ -143,9 +143,9 @@ class Script(scripts.Script):
 
     def process(self, p, enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, margin_size): # pylint: disable=W0221
         global active, cache # pylint: disable=W0603
+        cache = None
         if not enabled or active:
             return
-        cache = None
         active = True
         if not no_fixed_seeds:
             processing.fix_seed(p)

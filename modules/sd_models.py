@@ -1035,8 +1035,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
         shared.log.debug(f'Model pipeline: pipeline="{shared.opts.custom_diffusers_pipeline}"')
         diffusers_load_config['custom_pipeline'] = shared.opts.custom_diffusers_pipeline
-    # if 'LCM' in checkpoint_info.path:
-        #    diffusers_load_config['custom_pipeline'] = 'latent_consistency_txt2img'
     if shared.opts.data.get('sd_model_checkpoint', '') == 'model.ckpt' or shared.opts.data.get('sd_model_checkpoint', '') == '':
         shared.opts.data['sd_model_checkpoint'] = "stabilityai/stable-diffusion-xl-base-1.0"
 
@@ -1737,7 +1735,6 @@ def reload_text_encoder(initial=False):
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
-    devices.set_cuda_params()
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary
@@ -1749,10 +1746,10 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
     shared.state = shared_state.State()
     shared.state.begin('Load')
     if load_dict:
-        shared.log.debug(f'Model dict: existing={sd_model is not None} target={checkpoint_info.filename} info={info}')
+        shared.log.debug(f'Load {op} dict: target="{checkpoint_info.filename}" existing={sd_model is not None} info={info}')
     else:
         model_data.sd_dict = 'None'
-        shared.log.debug(f'Load model: existing={sd_model is not None} target={checkpoint_info.filename} info={info}')
+        shared.log.debug(f'Load {op}: target="{checkpoint_info.filename}" existing={sd_model is not None} info={info}')
     if sd_model is None:
         sd_model = model_data.sd_model if op == 'model' or op == 'dict' else model_data.sd_refiner
     if sd_model is None:  # previous model load failed
@@ -1766,7 +1763,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
         else:
             move_model(sd_model, devices.cpu)
         if (reuse_dict or shared.opts.model_reuse_dict) and not getattr(sd_model, 'has_accelerate', False):
-            shared.log.info('Reusing previous model dictionary')
+            shared.log.info(f'Load {op}: reusing dictionary')
             sd_hijack.model_hijack.undo_hijack(sd_model)
         else:
             unload_model_weights(op=op)
