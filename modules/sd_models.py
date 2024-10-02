@@ -1724,7 +1724,10 @@ def reload_text_encoder(initial=False):
         return # dont unload
     signature = get_signature(shared.sd_model)
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
-    if len(t5) > 0:
+    if hasattr(shared.sd_model, 'text_encoder') and 'vit' in shared.opts.sd_text_encoder.lower():
+        from modules.model_te import set_clip
+        set_clip(pipe=shared.sd_model)
+    elif len(t5) > 0:
         from modules.model_te import set_t5
         shared.log.debug(f'Load module: type=t5 path="{shared.opts.sd_text_encoder}" module="{t5[0]}"')
         set_t5(pipe=shared.sd_model, module=t5[0], t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
@@ -1732,9 +1735,6 @@ def reload_text_encoder(initial=False):
         from modules.model_te import set_t5
         shared.log.debug(f'Load module: type=t5 path="{shared.opts.sd_text_encoder}" module="text_encoder_3"')
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
-    elif hasattr(shared.sd_model, 'text_encoder') and 'vit' in shared.opts.sd_text_encoder.lower():
-        from modules.model_te import set_clip
-        set_clip(pipe=shared.sd_model)
 
 
 def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
