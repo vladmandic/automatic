@@ -182,6 +182,16 @@ def package_version(package):
         return None
 
 
+@lru_cache()
+def package_spec(package):
+    spec = pkg_resources.working_set.by_key.get(package, None) # more reliable than importlib
+    if spec is None:
+        spec = pkg_resources.working_set.by_key.get(package.lower(), None) # check name variations
+    if spec is None:
+        spec = pkg_resources.working_set.by_key.get(package.replace('_', '-'), None) # check name variations
+    return spec
+
+
 # check if package is installed
 @lru_cache()
 def installed(package, friendly: str = None, reload = False, quiet = False):
@@ -203,21 +213,17 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                 p = pkg.split('>=')
             else:
                 p = pkg.split('==')
-            spec = pkg_resources.working_set.by_key.get(p[0], None) # more reliable than importlib
-            if spec is None:
-                spec = pkg_resources.working_set.by_key.get(p[0].lower(), None) # check name variations
-            if spec is None:
-                spec = pkg_resources.working_set.by_key.get(p[0].replace('_', '-'), None) # check name variations
+            spec = package_spec(p[0])
             ok = ok and spec is not None
             if ok:
-                package_version = pkg_resources.get_distribution(p[0]).version
+                pkg_version = package_version(p[0])
                 if len(p) > 1:
-                    exact = package_version == p[1]
+                    exact = pkg_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package: {p[0]} {package_version} required {p[1]} allowing experimental")
+                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} allowing experimental")
                         else:
-                            log.warning(f"Package: {p[0]} {package_version} required {p[1]} version mismatch")
+                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} version mismatch")
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:

@@ -5,7 +5,7 @@ import typing
 import torch
 from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsProvider
 from transformers import PreTrainedTokenizer
-from modules import shared, prompt_parser, devices, sd_models, errors
+from modules import shared, prompt_parser, devices, sd_models
 from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
 
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
@@ -17,29 +17,9 @@ token_type = None # used by helper get_tokens
 cache = {}
 
 
-def fix_position_ids(pipe):
-    # position_ids are created on te creation and are simple index cache
-    # but somehow can be corrupt in CLIPTextEmbeddings forward call
-    # see transformers/models/clip/modeling_clip.py:CLIPTextEmbeddings
-    # reproduction: load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate -> load sdxl model -> generate -> generate
-    if hasattr(pipe, 'text_encoder') and pipe.text_encoder.text_model.embeddings.position_ids[0][0] > 0:
-        debug(f'TE1 fix: ids={pipe.text_encoder.text_model.embeddings.position_ids}')
-        pipe.text_encoder.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder.device)
-    if hasattr(pipe, 'text_encoder_2') and pipe.text_encoder_2.text_model.embeddings.position_ids[0][0] > 0:
-        debug(f'TE2 fix: ids={pipe.text_encoder_2.text_model.embeddings.position_ids}')
-        pipe.text_encoder_2.text_model.embeddings.position_ids = torch.arange(pipe.text_encoder_2.config.max_position_embeddings).expand((1, -1)).to(pipe.text_encoder_2.device)
-
-
-def compel_hijack(self, token_ids: torch.Tensor,
-                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+def compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
     needs_hidden_states = self.returned_embeddings_type != 1
-    try: # can crash in ATen/native/cuda/Indexing since position_ids are corrupt so index lookup fails, but its not compel specific, happens with fixed attention as well
-        sd_models.move_model(self.text_encoder, devices.device)
-        text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
-    except Exception as e: # its a non-recoverable error as cuda state is corrupt
-        shared.log.error(f'TE: class={self.text_encoder.__class__} device={self.text_encoder.device} dtype={self.text_encoder.dtype} {e}')
-        errors.display(e, 'TE:')
-        return None
+    text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
 
     if not needs_hidden_states:
         return text_encoder_output.last_hidden_state
@@ -60,14 +40,13 @@ def compel_hijack(self, token_ids: torch.Tensor,
     return hidden_state
 
 
-def sd3_compel_hijack(self, token_ids: torch.Tensor,
-                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+def sd3_compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
     needs_hidden_states = True
     text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
     clip_skip = int(self.returned_embeddings_type)
     hidden_state = text_encoder_output.hidden_states[-(clip_skip+1)]
-
     return hidden_state
+
 
 def insert_parser_highjack(pipename):
     if "StableDiffusion3" in pipename:
@@ -192,14 +171,9 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
             pipe.maybe_free_model_hooks()
             devices.torch_gc()
 
-        p.prompt_embeds = []
-        p.positive_pooleds = []
-        p.negative_embeds = []
-        p.negative_pooleds = []
-        p.scheduled_prompt = False
+        prompt_embeds, positive_pooleds, negative_embeds, negative_pooleds = [], [], [], []
         last_prompt, last_negative = None, None
         for prompt, negative in zip(prompts, negative_prompts):
-            prompt_embeds, positive_pooleds, negative_embeds, negative_pooleds = [], [], [], []
             prompt_embed, positive_pooled, negative_embed, negative_pooled = None, None, None, None
             if last_prompt == prompt and last_negative == negative:
                 prompt_embeds.append(prompt_embeds[-1])
@@ -211,7 +185,11 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                 continue
             positive_schedule, scheduled = get_prompt_schedule(prompt, steps)
             negative_schedule, neg_scheduled = get_prompt_schedule(negative, steps)
-            p.scheduled_prompt = p.scheduled_prompt or scheduled or neg_scheduled
+            p.scheduled_prompt = scheduled or neg_scheduled
+            p.prompt_embeds = []
+            p.positive_pooleds = []
+            p.negative_embeds = []
+            p.negative_pooleds = []
 
             for i in range(max(len(positive_schedule), len(negative_schedule))):
                 positive_prompt = positive_schedule[i % len(positive_schedule)]
@@ -230,25 +208,25 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                     negative_pooleds.append(negative_pooled)
             last_prompt, last_negative = prompt, negative
 
-            def fix_length(embeds):
-                max_len = max([e.shape[1] for e in embeds if e is not None])
-                for i, e in enumerate(embeds):
-                    if e is not None and e.shape[1] < max_len:
-                        expanded = torch.zeros((e.shape[0], max_len, e.shape[2]), device=e.device, dtype=e.dtype)
-                        expanded[:, :e.shape[1], :] = e
-                        embeds[i] = expanded
-                return torch.cat(embeds, dim=0).to(devices.device, dtype=devices.dtype)
+        def fix_length(embeds):
+            max_len = max([e.shape[1] for e in embeds if e is not None])
+            for i, e in enumerate(embeds):
+                if e is not None and e.shape[1] < max_len:
+                    expanded = torch.zeros((e.shape[0], max_len, e.shape[2]), device=e.device, dtype=e.dtype)
+                    expanded[:, :e.shape[1], :] = e
+                    embeds[i] = expanded
+            return torch.cat(embeds, dim=0).to(devices.device, dtype=devices.dtype)
 
-            if len(prompt_embeds) > 0:
-                p.prompt_embeds.append(fix_length(prompt_embeds))
-            if len(negative_embeds) > 0:
-                p.negative_embeds.append(fix_length(negative_embeds))
-            if len(positive_pooleds) > 0:
-                p.positive_pooleds.append(fix_length(positive_pooleds))
-            if len(negative_pooleds) > 0:
-                p.negative_pooleds.append(fix_length(negative_pooleds))
+        if len(prompt_embeds) > 0:
+            p.prompt_embeds.append(fix_length(prompt_embeds))
+        if len(negative_embeds) > 0:
+            p.negative_embeds.append(fix_length(negative_embeds))
+        if len(positive_pooleds) > 0:
+            p.positive_pooleds.append(fix_length(positive_pooleds))
+        if len(negative_pooleds) > 0:
+            p.negative_pooleds.append(fix_length(negative_pooleds))
 
-        if p.batch_size == 1:
+        if shared.opts.sd_textencoder_cache and p.batch_size == 1:
             cache.update({
                 'prompt_embeds': p.prompt_embeds,
                 'negative_embeds': p.negative_embeds,

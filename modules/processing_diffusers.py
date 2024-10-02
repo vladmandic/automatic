@@ -13,6 +13,7 @@ from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, c
 debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: DIFFUSERS')
 last_p = None
+orig_pipeline = shared.sd_model
 
 
 def restore_state(p: processing.StableDiffusionProcessing):
@@ -334,7 +335,6 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
     return results
 
 
-orig_pipeline = shared.sd_model
 def update_pipeline(sd_model, p: processing.StableDiffusionProcessing):
     if sd_models.get_diffusers_task(sd_model) == sd_models.DiffusersTaskType.INPAINTING and getattr(p, 'image_mask', None) is None and p.task_args.get('image_mask', None) is None and getattr(p, 'mask', None) is None:
         shared.log.warning('Processing: mode=inpaint mask=None')
@@ -355,6 +355,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     debug(f'Process diffusers args: {vars(p)}')
     results = []
     p = restore_state(p)
+    global orig_pipeline # pylint: disable=global-statement
+    orig_pipeline = shared.sd_model
 
     if shared.state.interrupted or shared.state.skipped:
         shared.sd_model = orig_pipeline

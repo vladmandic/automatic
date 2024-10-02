@@ -56,7 +56,6 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
         dtype, device, generator=None, noise=None,
     ):
         batch_size = batch_size * num_images_per_prompt
-
         if noise is None:
             shape = (
                 batch_size,
