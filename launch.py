@@ -215,6 +215,7 @@ def main():
         installer.install("uv", "uv")
     installer.check_torch()
     installer.check_onnx()
+    installer.check_torchao()
     installer.check_diffusers()
     installer.check_modified_files()
     if args.reinstall:

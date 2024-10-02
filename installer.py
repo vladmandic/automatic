@@ -174,6 +174,14 @@ def print_profile(profiler: cProfile.Profile, msg: str):
     profile(profiler, msg)
 
 
+@lru_cache()
+def package_version(package):
+    try:
+        return pkg_resources.get_distribution(package).version
+    except Exception:
+        return None
+
+
 # check if package is installed
 @lru_cache()
 def installed(package, friendly: str = None, reload = False, quiet = False):
@@ -432,7 +440,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '8e7d6c03a366fdb0f551ce7b92f0871c863d4e08'
+    sha = '33fafe3d143ca8380a9e405e7acfa69091d863fb'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -451,6 +459,12 @@ def check_onnx():
         install('onnx', 'onnx', ignore=True)
     if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
         install('onnxruntime', 'onnxruntime', ignore=True)
+
+
+def check_torchao():
+    if installed('torchao', quiet=True):
+        if not installed('torchao==0.5.0', quiet=True):
+            install('torchao==0.5.0', ignore=True, reinstall=True)
 
 
 def install_cuda():
