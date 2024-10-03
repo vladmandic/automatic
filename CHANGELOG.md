@@ -11,7 +11,7 @@
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 
-And other goodies like multiple XYZ grid improvements, additional Flux controlnets, additional interrogate models, better LoRA tags support, and more...
+And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
 ### Details for 2024-10-03
 
@@ -45,7 +45,7 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - quite a few well-known schedulers are just variations of settings, for example:  
     - euler sgm is euler with trailing spacing and sample prediction type  
     - dpm 2m or 3m are dpm 1s with orders of 2 or 3  
-    - dpm 2m sde is dpm++ 2m with sde as solver  
+    - dpm 2m sde is dpm 2m with sde as solver  
   - xyz grid support for sampler options  
   - metadata updates for sampler options  
   - modernui updates for sampler options  
