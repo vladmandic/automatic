@@ -1,18 +1,19 @@
 # Change Log for SD.Next
 
-## Update for 2024-09-30
+## Update for 2024-10-03
 
-### Highlights for 2024-09-30
+### Highlights for 2024-10-03
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
+- Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 
 And other goodies like multiple XYZ grid improvements, additional Flux controlnets, additional interrogate models, better LoRA tags support, and more...
 
-### Details for 2024-09-30
+### Details for 2024-10-03
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -30,6 +31,28 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
     *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
+- **sampler options**: full rewrite  
+  *notes*:  
+  - pick a sampler and then pick values, all values have "default" as a choice to make it simpler  
+  - a lot of options are new, some are old but moved around  
+    e.g. karras checkbox is replaced with a choice of different sigma methods  
+  - not every combination of settings is valid  
+  - some settings are specific to model types  
+    e.g. sd15/sdxl typically use epsilon prediction  
+  - quite a few well-known schedulers are just variations of settings, for example:  
+    - euler sgm is euler with trailing spacing and sample prediction type  
+    - dpm 2m or 3m are dpm 1s with orders of 2 or 3  
+    - dpm 2m sde is dpm++ 2m with sde as solver  
+
+  *options*:  
+  - sigma method: *default, karas, beta, exponential*  
+  - timesteps spacing: *default, linspace, leading, trailing*  
+  - beta schedule: *linear, scaled, cosine*  
+  - prediction type: *epsilon, sample, v-prediction*  
+  - timesteps presents: *none, ays-sd15, ays-sdxl*  
+  - timesteps override: <custom>  
+  - sampler order: *0=default, 1-5*  
+  - options: *dynamic, low order, rescale*  
 - [Ctrl+X](https://github.com/genforce/ctrl-x):
   - control **structure** (*similar to controlnet*) and **appearance** (*similar to ipadapter*)  
     without the need for extra models, all via code feed-forwards!

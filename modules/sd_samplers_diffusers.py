@@ -173,7 +173,6 @@ class DiffusionSampler:
                 self.config['beta_schedule'] = 'scaled_linear'
             elif shared.opts.schedulers_beta_schedule == 'cosine':
                 self.config['beta_schedule'] = 'squaredcos_cap_v2'
-        print('HERE', shared.opts.schedulers_beta_schedule, self.config['beta_schedule'])
 
         timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
         timesteps = [int(x) for x in timesteps if x.isdigit()]
