@@ -21,6 +21,7 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - generate without hires/refine and then *reprocess with hires/refine*  
     *note*: you can change hires/refine settings and run-reprocess again!  
   - reprocess using *face-restore*  
+
 - **text encoder**:  
   - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
     will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
@@ -31,8 +32,10 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
     *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
+
 - **sampler options**: full rewrite  
-  *notes*:  
+
+  *sampler notes*:  
   - pick a sampler and then pick values, all values have "default" as a choice to make it simpler  
   - a lot of options are new, some are old but moved around  
     e.g. karras checkbox is replaced with a choice of different sigma methods  
@@ -47,7 +50,7 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - metadata updates for sampler options  
   - modernui updates for sampler options  
 
-  *options*:  
+  *sampler options*:  
   - sigma method: *default, karas, beta, exponential*  
   - timesteps spacing: *default, linspace, leading, trailing*  
   - beta schedule: *linear, scaled, cosine*  
@@ -64,6 +67,7 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - structure image can be *almost anything*: *actual photo, openpose-style stick man, 3d render, sketch, depth-map, etc.*  
     just describe what it is in a structure prompt so it can be de-structured and correctly applied  
   - supports sdxl in both txt2img and img2img, simply select from scripts
+
 - **flux**  
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
@@ -74,11 +78,13 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - support for both kohya and onetrainer loras in native load mode for fp16/nf4/fp4, thanks @AI-Casanova  
   - added native load mode for qint8/qint4 models
   - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
+
 - **dtype**
   - previously `cuda_dtype` in settings defaulted to `fp16` if available  
   - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  
     if you have specific requirements, you can still set to fp32/fp16/bf16 as desired  
     if you have gpu that incorrectly identifies bf16 or fp16 availablity, let us know so we can improve the auto-detection  
+
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  
   - allow usage combined with other scripts  
@@ -93,11 +99,13 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
     now you can adjust width/height in the grid just as any other param  
   - renamed options to include section name and adjusted cost of each option  
   - added additional metadata  
+
 - **interrogate**  
   - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
   - change default params for better memory utilization  
   - add optional advanced params  
   - update logging  
+
 - **lora** auto-apply tags to prompt  
   - controlled via *settings -> networks -> lora_apply_tags*  
     *0:disable, -1:all-tags, n:top-n-tags*  
@@ -112,12 +120,15 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
   - improve lora error handling and logging  
   - setting `lora_load_gpu` to load LoRA directly to GPU  
     *default*: true unless lovwram  
+
 - **huggingface**:  
   - force logout/login on token change  
   - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths  
+
 - **cogvideox**:  
   - add support for *image2video* (in addition to previous *text2video* and *video2video*)  
   - *note*: *image2video* requires separate 5b model variant  
+
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - **control** persist/reapply units current state on server restart  
