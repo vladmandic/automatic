@@ -51,8 +51,8 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - modernui updates for sampler options  
 
   *sampler options*:  
-  - sigma method: *default, karas, beta, exponential*  
-  - timesteps spacing: *default, linspace, leading, trailing*  
+  - sigma method: *karas, beta, exponential*  
+  - timesteps spacing: *linspace, leading, trailing*  
   - beta schedule: *linear, scaled, cosine*  
   - prediction type: *epsilon, sample, v-prediction*  
   - timesteps presents: *none, ays-sd15, ays-sdxl*  
