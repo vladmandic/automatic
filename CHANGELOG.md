@@ -103,6 +103,7 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 - **interrogate**  
   - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
   - change default params for better memory utilization  
+  - lock commits for miaoshouAI-promptgen  
   - add optional advanced params  
   - update logging  
 
