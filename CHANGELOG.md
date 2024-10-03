@@ -43,6 +43,9 @@ And other goodies like multiple XYZ grid improvements, additional Flux controlne
     - euler sgm is euler with trailing spacing and sample prediction type  
     - dpm 2m or 3m are dpm 1s with orders of 2 or 3  
     - dpm 2m sde is dpm++ 2m with sde as solver  
+  - xyz grid support for sampler options  
+  - metadata updates for sampler options  
+  - modernui updates for sampler options  
 
   *options*:  
   - sigma method: *default, karas, beta, exponential*  
