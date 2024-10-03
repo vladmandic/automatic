@@ -61,7 +61,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                 loaded.tags = loaded.tags[:shared.opts.lora_apply_tags]
             all_tags.extend(loaded.tags)
         if len(all_tags) > 0:
-            shared.log.debug(f"Load network: type=LoRA max={shared.opts.lora_apply_tags} tags={all_tags} apply")
+            shared.log.debug(f"Load network: type=LoRA tags={all_tags} max={shared.opts.lora_apply_tags} apply")
             all_tags = ', '.join(all_tags)
             p.extra_generation_params["LoRA tags"] = all_tags
             if p.all_prompts is not None:

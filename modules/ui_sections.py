@@ -221,26 +221,44 @@ def create_sampler_options(tabname):
         shared.opts.data['schedulers_sigma'] = sampler_algo
         shared.opts.save(shared.config_filename, silent=True)
 
-    def set_sampler_diffuser_options(sampler_options):
-        shared.opts.data['schedulers_use_karras'] = 'karras' in sampler_options
-        shared.opts.data['schedulers_use_thresholding'] = 'dynamic thresholding' in sampler_options
+    def set_sampler_options(sampler_options):
+        shared.opts.data['schedulers_use_thresholding'] = 'dynamic' in sampler_options
         shared.opts.data['schedulers_use_loworder'] = 'low order' in sampler_options
-        shared.opts.data['schedulers_rescale_betas'] = 'rescale beta' in sampler_options
+        shared.opts.data['schedulers_rescale_betas'] = 'rescale' in sampler_options
         shared.log.debug(f'Sampler set options: {sampler_options}')
         shared.opts.save(shared.config_filename, silent=True)
 
-    def set_sampler_timesteps(spacing, timesteps):
-        shared.log.debug(f'Sampler set options: spacing={spacing} timesteps={timesteps}')
-        if 'schedulers_timestep_spacing' in shared.opts.data:
-            shared.opts.data['schedulers_timestep_spacing'] = spacing
-        else:
-            shared.opts.schedulers_timestep_spacing = spacing
-        if 'schedulers_timesteps' in shared.opts.data:
-            shared.opts.data['schedulers_timesteps'] = timesteps
-        else:
-            shared.opts.schedulers_timesteps = timesteps
+    def set_sampler_timesteps(timesteps):
+        shared.log.debug(f'Sampler set options: timesteps={timesteps}')
+        shared.opts.schedulers_timesteps = timesteps
         shared.opts.save(shared.config_filename, silent=True)
 
+    def set_sampler_spacing(spacing):
+        shared.log.debug(f'Sampler set options: spacing={spacing}')
+        shared.opts.schedulers_timestep_spacing = spacing
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_sigma(sampler_sigma):
+        shared.log.debug(f'Sampler set options: sigma={sampler_sigma}')
+        shared.opts.schedulers_sigma = sampler_sigma
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_order(sampler_order):
+        shared.log.debug(f'Sampler set options: order={sampler_order}')
+        shared.opts.schedulers_solver_order = sampler_order
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_prediction(sampler_prediction):
+        shared.log.debug(f'Sampler set options: prediction={sampler_prediction}')
+        shared.opts.schedulers_prediction_type = sampler_prediction
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_beta(sampler_beta):
+        shared.log.debug(f'Sampler set options: beta={sampler_beta}')
+        shared.opts.schedulers_beta_schedule = sampler_beta
+        shared.opts.save(shared.config_filename, silent=True)
+
+    # 'linear', 'scaled_linear', 'squaredcos_cap_v2'
     def set_sampler_preset(preset):
         if preset == 'AYS SD15':
             return '999,850,736,645,545,455,343,233,124,24'
@@ -260,24 +278,34 @@ def create_sampler_options(tabname):
             sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
         sampler_options.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
         sampler_algo.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
-    else:
+
+    else: # shared.native
         with gr.Row(elem_classes=['flex-break']):
-            options = ['karras', 'dynamic threshold', 'low order', 'rescale beta']
-            values = []
-            values += ['karras'] if shared.opts.data.get('schedulers_use_karras', True) else []
-            values += ['dynamic threshold'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
-            values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
-            values += ['rescale beta'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
-        with gr.Row(elem_classes=['flex-break']):
+            sampler_sigma = gr.Dropdown(label='Sigma method', elem_id=f"{tabname}_sampler_sigma", choices=['default', 'karras', 'beta', 'exponential'], value=shared.opts.schedulers_sigma, type='value')
             sampler_spacing = gr.Dropdown(label='Timestep spacing', elem_id=f"{tabname}_sampler_spacing", choices=['default', 'linspace', 'leading', 'trailing'], value=shared.opts.schedulers_timestep_spacing, type='value')
-            sampler_presets = gr.Dropdown(label='Presets', elem_id=f"{tabname}_sampler_presets", choices=['None', 'AYS SD15', 'AYS SDXL'], value='None', type='value')
         with gr.Row(elem_classes=['flex-break']):
+            sampler_beta = gr.Dropdown(label='Beta schedule', elem_id=f"{tabname}_sampler_beta", choices=['default', 'linear', 'scaled', 'cosine'], value=shared.opts.schedulers_beta_schedule, type='value')
+            sampler_prediction = gr.Dropdown(label='Prediction method', elem_id=f"{tabname}_sampler_prediction", choices=['default', 'epsilon', 'sample', 'v_prediction'], value=shared.opts.schedulers_prediction_type, type='value')
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_presets = gr.Dropdown(label='Timesteps presets', elem_id=f"{tabname}_sampler_presets", choices=['None', 'AYS SD15', 'AYS SDXL'], value='None', type='value')
             sampler_timesteps = gr.Textbox(label='Timesteps override', elem_id=f"{tabname}_sampler_timesteps", value=shared.opts.schedulers_timesteps)
-        sampler_options.change(fn=set_sampler_diffuser_options, inputs=[sampler_options], outputs=[])
-        sampler_spacing.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
-        sampler_timesteps.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_order = gr.Slider(minimum=0, maximum=5, step=1, label="Sampler order", value=shared.opts.schedulers_solver_order, elem_id=f"{tabname}_sampler_order")
+            options = ['low order', 'dynamic', 'rescale']
+            values = []
+            values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
+            values += ['dynamic'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
+            values += ['rescale'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
+            sampler_options = gr.CheckboxGroup(label='Options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
+
+        sampler_sigma.change(fn=set_sampler_sigma, inputs=[sampler_sigma], outputs=[])
+        sampler_spacing.change(fn=set_sampler_spacing, inputs=[sampler_spacing], outputs=[])
         sampler_presets.change(fn=set_sampler_preset, inputs=[sampler_presets], outputs=[sampler_timesteps])
+        sampler_timesteps.change(fn=set_sampler_timesteps, inputs=[sampler_timesteps], outputs=[])
+        sampler_beta.change(fn=set_sampler_beta, inputs=[sampler_beta], outputs=[])
+        sampler_prediction.change(fn=set_sampler_prediction, inputs=[sampler_prediction], outputs=[])
+        sampler_order.change(fn=set_sampler_order, inputs=[sampler_order], outputs=[])
+        sampler_options.change(fn=set_sampler_options, inputs=[sampler_options], outputs=[])
 
 
 def create_hires_inputs(tab):

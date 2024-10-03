@@ -5,7 +5,7 @@ import inspect
 from modules import shared, errors
 from modules import sd_samplers_common
 from modules.tcd import TCDScheduler
-from modules.dcsolver import DCSolverMultistepScheduler #https://github.com/wl-zhao/DC-Solver
+from modules.dcsolver import DCSolverMultistepScheduler
 from modules.vdm import VDMScheduler
 
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -14,27 +14,34 @@ debug('Trace: SAMPLER')
 try:
     from diffusers import (
         CMStochasticIterativeScheduler,
-        DDIMScheduler,
-        DDPMScheduler,
         UniPCMultistepScheduler,
-        DEISMultistepScheduler,
-        DPMSolverMultistepScheduler,
-        DPMSolverSinglestepScheduler,
-        DPMSolverSDEScheduler,
-        EDMDPMSolverMultistepScheduler,
-        EDMEulerScheduler,
-        EulerAncestralDiscreteScheduler,
+        DDIMScheduler,
+
         EulerDiscreteScheduler,
+        EulerAncestralDiscreteScheduler,
+        EDMEulerScheduler,
+        FlowMatchEulerDiscreteScheduler,
+
+        DEISMultistepScheduler,
+        SASolverScheduler,
+
+        DPMSolverSinglestepScheduler,
+        DPMSolverMultistepScheduler,
+        EDMDPMSolverMultistepScheduler,
+        CosineDPMSolverMultistepScheduler,
+        DPMSolverSDEScheduler,
+
         HeunDiscreteScheduler,
+        FlowMatchHeunDiscreteScheduler,
+
+        LCMScheduler,
+
+        PNDMScheduler,
         IPNDMScheduler,
+        DDPMScheduler,
+        LMSDiscreteScheduler,
         KDPM2DiscreteScheduler,
         KDPM2AncestralDiscreteScheduler,
-        LCMScheduler,
-        LMSDiscreteScheduler,
-        PNDMScheduler,
-        SASolverScheduler,
-        FlowMatchEulerDiscreteScheduler,
-        FlowMatchHeunDiscreteScheduler,
     )
 except Exception as e:
     import diffusers
@@ -46,53 +53,72 @@ config = {
     # beta_start, beta_end are typically per-scheduler, but we don't want them as they should be taken from the model itself as those are values model was trained on
     # prediction_type is ideally set in model as well, but it maybe needed that we do auto-detect of model type in the future
     'All': { 'num_train_timesteps': 1000, 'beta_start': 0.0001, 'beta_end': 0.02, 'beta_schedule': 'linear', 'prediction_type': 'epsilon' },
-    'DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
-    'UniPC': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'predict_x0': 'bh2', 'lower_order_final': True, 'timestep_spacing': 'linspace' },
-    'DEIS': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "deis", 'solver_type': "logrho", 'lower_order_final': True, 'timestep_spacing': 'linspace' },
+
+    'UniPC': { 'predict_x0': True, 'sample_max_value': 1.0, 'solver_order': 2, 'solver_type': 'bh2', 'thresholding': False, 'use_beta_sigmas': False, 'use_exponential_sigmas': False, 'use_karras_sigmas': False, 'lower_order_final': True, 'timestep_spacing': 'linspace', 'final_sigmas_type': 'zero', 'rescale_betas_zero_snr': False },
+    'DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'leading', 'rescale_betas_zero_snr': False, 'thresholding': False },
+
+    'Euler': { 'steps_offset': 0, 'interpolation_type': "linear", 'rescale_betas_zero_snr': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'use_beta_sigmas': False, 'use_exponential_sigmas': False, 'use_karras_sigmas': False },
+    'Euler a': { 'steps_offset': 0, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
+    'Euler SGM': { 'steps_offset': 0, 'interpolation_type': "linear", 'rescale_betas_zero_snr': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'trailing', 'use_beta_sigmas': False, 'use_exponential_sigmas': False, 'use_karras_sigmas': False, 'prediction_type': "sample" },
+    'Euler EDM': { 'sigma_schedule': "karras" },
+    'Euler FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, 'use_dynamic_shifting': False },
+
     'DPM++': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'sigma_min' },
     'DPM++ 1S': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 1 },
     'DPM++ 2M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
     'DPM++ 3M': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 3 },
+    'DPM++ 2M SDE': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "sde-dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
+    'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
+    'DPM++ Cosine': { 'solver_order': 2, 'sigma_schedule': "exponential", 'prediction_type': "v-prediction" },
     'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
-    'Euler': { 'steps_offset': 0, 'interpolation_type': "linear", 'use_karras_sigmas': False, 'rescale_betas_zero_snr': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace' },
-    'Euler a': { 'steps_offset': 0, 'rescale_betas_zero_snr': False, 'timestep_spacing': 'linspace' },
-    'Euler SGM': { 'timestep_spacing': "trailing", 'prediction_type': "sample" },
-    'Heun': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace' },
-    'DDPM': { 'variance_type': "fixed_small", 'clip_sample': False, 'thresholding': False, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
-    'KDPM2': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
-    'KDPM2 a': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
-    'LMSD': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
-    'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
+
+    'Heun': { 'use_beta_sigmas': False, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace' },
+    'Heun FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1 },
+
+    'DEIS': { 'solver_order': 2, 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "deis", 'solver_type': "logrho", 'lower_order_final': True, 'timestep_spacing': 'linspace' },
     'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace'},
     'DC Solver': { 'beta_start': 0.0001, 'beta_end': 0.02, 'solver_order': 2, 'prediction_type': "epsilon", 'thresholding': False, 'solver_type': 'bh2', 'lower_order_final': True, 'dc_order': 2, 'disable_corrector': [0] },
+    'VDM Solver': { 'clip_sample_range': 2.0, },
+
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False, 'timestep_spacing': 'linspace' },
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
-    'Euler EDM': { },
-    'Variational VDM': { 'clip_sample_range': 2.0, },
-    'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
-    'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
-    'Euler FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1, 'use_dynamic_shifting': False },
-    'Heun FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1 },
+
+    'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
     'IPNDM': { },
+    'DDPM': { 'variance_type': "fixed_small", 'clip_sample': False, 'thresholding': False, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'linspace', 'rescale_betas_zero_snr': False },
+    'LMSD': { 'use_karras_sigmas': False, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
+    'KDPM2': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
+    'KDPM2 a': { 'steps_offset': 0, 'timestep_spacing': 'linspace' },
+    'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
 }
 
 samplers_data_diffusers = [
     sd_samplers_common.SamplerData('Default', None, [], {}),
 
     sd_samplers_common.SamplerData('UniPC', lambda model: DiffusionSampler('UniPC', UniPCMultistepScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('DEIS', lambda model: DiffusionSampler('DEIS', DEISMultistepScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('DC Solver', lambda model: DiffusionSampler('DC Solver', DCSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DDIM', lambda model: DiffusionSampler('DDIM', DDIMScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler', lambda model: DiffusionSampler('Euler', EulerDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler a', lambda model: DiffusionSampler('Euler a', EulerAncestralDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Euler SGM', lambda model: DiffusionSampler('Euler SGM', EulerDiscreteScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
+
     sd_samplers_common.SamplerData('DPM++', lambda model: DiffusionSampler('DPM++', DPMSolverSinglestepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ 1S', lambda model: DiffusionSampler('DPM++ 1S', DPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ 2M', lambda model: DiffusionSampler('DPM++ 2M', DPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ 3M', lambda model: DiffusionSampler('DPM++ 3M', DPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ 2M SDE', lambda model: DiffusionSampler('DPM++ 2M SDE', DPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM++ Cosine', lambda model: DiffusionSampler('DPM++ 2M EDM', CosineDPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM SDE', lambda model: DiffusionSampler('DPM SDE', DPMSolverSDEScheduler, model), [], {}),
+
+    sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
+
+    sd_samplers_common.SamplerData('DEIS', lambda model: DiffusionSampler('DEIS', DEISMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('SA Solver', lambda model: DiffusionSampler('SA Solver', SASolverScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DC Solver', lambda model: DiffusionSampler('DC Solver', DCSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('VDM Solver', lambda model: DiffusionSampler('VDM Solver', VDMScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('PNDM', lambda model: DiffusionSampler('PNDM', PNDMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('IPNDM', lambda model: DiffusionSampler('IPNDM', IPNDMScheduler, model), [], {}),
@@ -100,14 +126,10 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('LMSD', lambda model: DiffusionSampler('LMSD', LMSDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('KDPM2', lambda model: DiffusionSampler('KDPM2', KDPM2DiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('KDPM2 a', lambda model: DiffusionSampler('KDPM2 a', KDPM2AncestralDiscreteScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('Euler EDM', lambda model: DiffusionSampler('Euler EDM', EDMEulerScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
+
     sd_samplers_common.SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     sd_samplers_common.SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('CMSI', lambda model: DiffusionSampler('CMSI', CMStochasticIterativeScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('Variational VDM', lambda model: DiffusionSampler('Variational VDM', VDMScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('Euler FlowMatch', lambda model: DiffusionSampler('Euler FlowMatch', FlowMatchEulerDiscreteScheduler, model), [], {}),
-    sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Same as primary', None, [], {}),
 ]
@@ -145,19 +167,34 @@ class DiffusionSampler:
         if shared.opts.schedulers_prediction_type != 'default':
             self.config['prediction_type'] = shared.opts.schedulers_prediction_type
         if shared.opts.schedulers_beta_schedule != 'default':
-            self.config['beta_schedule'] = shared.opts.schedulers_beta_schedule
-        if 'use_karras_sigmas' in self.config:
-            timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
-            timesteps = [int(x) for x in timesteps if x.isdigit()]
-            self.config['use_karras_sigmas'] = shared.opts.schedulers_use_karras if len(timesteps) == 0 else False
+            if shared.opts.schedulers_beta_schedule == 'linear':
+                self.config['beta_schedule'] = 'linear'
+            elif shared.opts.schedulers_beta_schedule == 'scaled':
+                self.config['beta_schedule'] = 'scaled_linear'
+            elif shared.opts.schedulers_beta_schedule == 'cosine':
+                self.config['beta_schedule'] = 'squaredcos_cap_v2'
+        print('HERE', shared.opts.schedulers_beta_schedule, self.config['beta_schedule'])
+
+        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+        timesteps = [int(x) for x in timesteps if x.isdigit()]
+        if len(timesteps) == 0:
+            if 'use_beta_sigmas' in self.config:
+                self.config['use_beta_sigmas'] = shared.opts.schedulers_sigma == 'beta'
+            if 'use_karras_sigmas' in self.config:
+                self.config['use_karras_sigmas'] = shared.opts.schedulers_sigma == 'karras'
+            if 'use_exponential_sigmas' in self.config:
+                self.config['use_exponential_sigmas'] = shared.opts.schedulers_sigma == 'exponential'
+        else:
+            pass # timesteps are set using set_timesteps in set_pipeline_args
+
         if 'thresholding' in self.config:
             self.config['thresholding'] = shared.opts.schedulers_use_thresholding
         if 'lower_order_final' in self.config:
             self.config['lower_order_final'] = shared.opts.schedulers_use_loworder
-        if 'solver_order' in self.config and 'DPM' not in name:
+        if 'solver_order' in self.config and shared.opts.schedulers_solver_order > 0:
             self.config['solver_order'] = shared.opts.schedulers_solver_order
         if 'predict_x0' in self.config:
-            self.config['predict_x0'] = shared.opts.uni_pc_variant
+            self.config['solver_type'] = shared.opts.uni_pc_variant
         if 'beta_start' in self.config and shared.opts.schedulers_beta_start > 0:
             self.config['beta_start'] = shared.opts.schedulers_beta_start
         if 'beta_end' in self.config and shared.opts.schedulers_beta_end > 0:
@@ -172,15 +209,11 @@ class DiffusionSampler:
             self.config['timestep_spacing'] = shared.opts.schedulers_timestep_spacing
         if 'num_train_timesteps' in self.config:
             self.config['num_train_timesteps'] = shared.opts.schedulers_timesteps_range
-        if name in {'DPM++ 2M', 'DPM++ 2M EDM'}:
-            self.config['algorithm_type'] = shared.opts.schedulers_dpm_solver
-        if name == 'DEIS':
-            self.config['algorithm_type'] = 'deis'
         if 'EDM' in name:
             del self.config['beta_start']
             del self.config['beta_end']
             del self.config['beta_schedule']
-        if name in {'IPNDM', 'CMSI', 'Variational VDM'}:
+        if name in {'IPNDM', 'CMSI', 'VDM Solver'}:
             del self.config['beta_start']
             del self.config['beta_end']
             del self.config['beta_schedule']

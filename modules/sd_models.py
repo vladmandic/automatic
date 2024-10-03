@@ -850,9 +850,6 @@ def apply_balanced_offload(sd_model):
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
     sd_model.has_accelerate = True
-    if not shared.opts.lora_force_diffusers:
-        shared.log.warning('Balanced offload: Forcing Diffusers Lora loading method')
-        shared.opts.lora_force_diffusers = True
     return sd_model
 
 

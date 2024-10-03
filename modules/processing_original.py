@@ -64,7 +64,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
         p.hr_force = False # no need to force anything
     if p.enable_hr and (latent_scale_mode is None or p.hr_force):
         if len([x for x in shared.sd_upscalers if x.name == p.hr_upscaler]) == 0:
-            shared.log.warning(f"Cannot find upscaler for hires: {p.hr_upscaler}")
+            shared.log.warning(f"HiRes: upscaler={p.hr_upscaler} unknown")
             p.enable_hr = False
 
     p.ops.append('txt2img')

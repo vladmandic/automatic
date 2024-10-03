@@ -38,6 +38,17 @@ def apply_processing(p, x, xs):
         shared.log.debug(f'XYZ grid apply processing-arg: type={found} {k}={type(v)}:{v} ')
 
 
+def apply_options(p, x, xs):
+    for section in x.split(';'):
+        k, v = section.split('=')
+        k, v = k.strip(), v.strip()
+        if v.replace('.','',1).isdigit():
+            v = float(v) if '.' in v else int(v)
+        found = 'existing' if v in shared.opts.data else 'new'
+        shared.opts.data[k] = v
+        shared.log.debug(f'XYZ grid apply options: type={found} {k}={type(v)}:{v} ')
+
+
 def apply_setting(field):
     def fun(p, x, xs):
         shared.log.debug(f'XYZ grid apply setting: {field}={x}')
