@@ -18,9 +18,9 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML('<a href="https://arxiv.org/abs/2410.02416">&nbsp APG: Adaptive projected guidance</a><br>')
         with gr.Row():
-            eta = gr.Slider(label="ETA", value=1.0, minimum=0, maximum=2.0, step=0.01)
-            momentum = gr.Slider(label="Momentum", value=0.0, minimum=-1.0, maximum=1.0, step=0.01)
-            threshold = gr.Slider(label="Threshold", value=0.0, minimum=0.0, maximum=5.0, step=0.01)
+            eta = gr.Slider(label="ETA", value=1.0, minimum=0, maximum=2.0, step=0.05)
+            momentum = gr.Slider(label="Momentum", value=-0.50, minimum=-1.0, maximum=1.0, step=0.05)
+            threshold = gr.Slider(label="Threshold", value=0.0, minimum=0.0, maximum=10.0, step=0.05)
         return [eta, momentum, threshold]
 
     def register(self): # register xyz grid elements
@@ -37,9 +37,9 @@ class Script(scripts.Script):
         xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")))
 
     def run(self, p: processing.StableDiffusionProcessing, eta = 0.0, momentum = 0.0, threshold = 0.0): # pylint: disable=arguments-differ
-        supported_model_list = ['sdxl', 'sc']
+        supported_model_list = ['sd', 'sdxl', 'sc']
         if shared.sd_model_type not in supported_model_list:
-            shared.log.warning(f'APG: pipeline={shared.sd_model_type} required={supported_model_list}')
+            shared.log.warning(f'APG: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={supported_model_list}')
             return None
         from modules import apg
         apg.eta = getattr(p, 'apg_eta', eta) # use values set by xyz grid or via ui
@@ -47,6 +47,9 @@ class Script(scripts.Script):
         apg.threshold = getattr(p, 'apg_threshold', threshold)
         apg.buffer = apg.MomentumBuffer(apg.momentum) # recreate buffer
         # pipelines with call to apg.normalized_guidance instead of default
+        if shared.sd_model_type == "sd":
+            self.orig_pipe = shared.sd_model
+            shared.sd_model = sd_models.switch_pipe(apg.StableDiffusionPipelineAPG, shared.sd_model)
         if shared.sd_model_type == "sdxl":
             self.orig_pipe = shared.sd_model
             shared.sd_model = sd_models.switch_pipe(apg.StableDiffusionXLPipelineAPG, shared.sd_model)

@@ -70,8 +70,10 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - supports sdxl in both txt2img and img2img, simply select from scripts
 
 - [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416)
-  - latest algo to provide guidance for image generation, can be used instead of existing guidance rescale and/or PAG  
-  - in addtion to stronger guidance it can also increase image details using negative momentum  
+  - latest algo to provide better guidance for image generation, can be used instead of existing guidance rescale and/or PAG  
+  - in addtion to stronger guidance and reduction of burn at high guidance values, it can also increase image details  
+  - compatible with *sd15/sdxl/sc*  
+  - select in scripts -> apg  
 
 - **flux**  
   - avoid unet load if unchanged  

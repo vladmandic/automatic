@@ -4,6 +4,7 @@ import torch
 import diffusers
 from .pipeline_stable_diffision_xl_apg import StableDiffusionXLPipelineAPG
 from .pipeline_stable_cascade_prior_apg import StableCascadePriorPipelineAPG
+from .pipeline_stable_diffusion_apg import StableDiffusionPipelineAPG
 
 
 class MomentumBuffer:

@@ -1179,6 +1179,7 @@ class StableDiffusionXLPipelineAPG(
                     return_dict=False,
                 )[0]
 
+                # perform guidance
                 if self.do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_cond = noise_pred.chunk(2)
                     noise_pred = apg.normalized_guidance(noise_pred_cond, noise_pred_uncond, guidance_scale=self.guidance_scale)
