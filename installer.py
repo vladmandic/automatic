@@ -261,7 +261,9 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     txt = result.stdout.decode(encoding="utf8", errors="ignore")
     if len(result.stderr) > 0:
         if uv and result.returncode != 0:
+            err = result.stderr.decode(encoding="utf8", errors="ignore")
             log.warning('Install: cannot use uv, fallback to pip')
+            print('HERE', err)
             return pip(originalArg, ignore, quiet, uv=False)
         else:
             txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
@@ -469,8 +471,12 @@ def check_onnx():
 
 def check_torchao():
     if installed('torchao', quiet=True):
-        if not installed('torchao==0.5.0', quiet=True):
-            install('torchao==0.5.0', ignore=True, reinstall=True)
+        ver = package_version('torchao')
+        if ver != '0.5.0':
+            log.debug(f'Uninstall: torchao=={ver}')
+            pip('uninstall --yes torchao', ignore=True, quiet=True, uv=False)
+            for m in [m for m in sys.modules if m.startswith('torchao')]:
+                del sys.modules[m]
 
 
 def install_cuda():
