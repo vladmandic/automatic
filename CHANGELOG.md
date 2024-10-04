@@ -6,7 +6,7 @@
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
-- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models  
+- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models and [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
@@ -74,6 +74,9 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - in addtion to stronger guidance and reduction of burn at high guidance values, it can also increase image details  
   - compatible with *sd15/sdxl/sc*  
   - select in scripts -> apg  
+  - for low    cfg scale, use positive momentum: e.g. cfg=2 => momentum=0.6
+  - for normal cfg scale, use negative momentum: e.g. cfg=6 => momentum=-0.3
+  - for high   cfg scale, use neutral  momentum: e.g. cfg=10 => momentum=0.0
 
 - **flux**  
   - avoid unet load if unchanged  
