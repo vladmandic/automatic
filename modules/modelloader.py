@@ -258,7 +258,6 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 
 def load_diffusers_models(clear=True):
-    # excluded_models = ['PhotoMaker', 'inswapper_128', 'IP-Adapter']
     excluded_models = []
     t0 = time.time()
     place = shared.opts.diffusers_dir
@@ -279,11 +278,15 @@ def load_diffusers_models(clear=True):
                 name = name.replace("--", "/")
                 folder = os.path.join(place, folder)
                 friendly = os.path.join(place, name)
+                if os.path.exists(os.path.join(folder, 'model_index.json')): # direct download of diffusers model
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': folder, 'hash': '', 'mtime': os.path.getmtime(folder), 'model_info': os.path.join(folder, 'model_info.json'), 'model_index': os.path.join(folder, 'model_index.json') }
+                    diffuser_repos.append(repo)
+                    continue
                 snapshots = os.listdir(os.path.join(folder, "snapshots"))
                 if len(snapshots) == 0:
                     shared.log.warning(f'Diffusers folder has no snapshots: location="{place}" folder="{folder}" name="{name}"')
                     continue
-                for snapshot in snapshots:
+                for snapshot in snapshots: # download using from_pretrained which uses huggingface_hub or huggingface_hub directly and creates snapshot-like structure
                     commit = os.path.join(folder, 'snapshots', snapshot)
                     mtime = os.path.getmtime(commit)
                     info = os.path.join(commit, "model_info.json")

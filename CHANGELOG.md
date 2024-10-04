@@ -134,6 +134,7 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - **control** persist/reapply units current state on server restart  
 - **video** add option `gradio_skip_video` to avoid gradio issues with displaying generated videos  
+- add support for manually downloaded diffusers models from huggingface  
 - **ui**  
   - hide token counter until tokens are known  
   - minor ui optimizations  

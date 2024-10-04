@@ -362,6 +362,8 @@ class ExtraNetworksPage:
                 item['local_preview'] = f'{base}.{shared.opts.samples_format}'
             if shared.opts.diffusers_dir in base:
                 match = re.search(r"models--([^/^\\]+)[/\\]", base)
+                if match is None:
+                    match = re.search(r"models--(.*)", base)
                 base = os.path.join(reference_path, match[1])
                 model_path = os.path.join(shared.opts.diffusers_dir, match[0])
                 item['local_preview'] = f'{os.path.join(model_path, match[1])}.{shared.opts.samples_format}'
