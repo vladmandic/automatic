@@ -1,3 +1,5 @@
+# copied from paper: <https://arxiv.org/pdf/2410.02416>
+
 import torch
 import diffusers
 from .pipeline_stable_diffision_xl_apg import StableDiffusionXLPipelineAPG
