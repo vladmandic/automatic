@@ -18,6 +18,7 @@ exclude = [
     "modules/intel/openvino",
     "modules/intel/ipex",
     "modules/segmoe",
+    "modules/apg",
     "modules/control/proc",
     "modules/control/units",
     "modules/prompt_parser_xhinker.py",
