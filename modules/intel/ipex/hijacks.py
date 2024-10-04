@@ -234,7 +234,7 @@ def torch_empty(*args, device=None, **kwargs):
 original_torch_randn = torch.randn
 @wraps(torch.randn)
 def torch_randn(*args, device=None, dtype=None, **kwargs):
-    if dtype == bytes:
+    if dtype is bytes:
         dtype = None
     if check_device(device):
         return original_torch_randn(*args, device=return_xpu(device), **kwargs)

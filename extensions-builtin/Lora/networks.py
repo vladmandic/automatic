@@ -50,7 +50,7 @@ convert_diffusers_name_to_compvis = lora_convert.convert_diffusers_name_to_compv
 def assign_network_names_to_compvis_modules(sd_model):
     network_layer_mapping = {}
     if shared.native:
-        if hasattr(shared.sd_model, 'text_encoder'):
+        if hasattr(shared.sd_model, 'text_encoder') and shared.sd_model.text_encoder is not None:
             for name, module in shared.sd_model.text_encoder.named_modules():
                 prefix = "lora_te1_" if hasattr(shared.sd_model, 'text_encoder_2') else "lora_te_"
                 network_name = prefix + name.replace(".", "_")

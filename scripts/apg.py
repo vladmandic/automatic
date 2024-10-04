@@ -37,22 +37,32 @@ class Script(scripts.Script):
         xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")))
 
     def run(self, p: processing.StableDiffusionProcessing, eta = 0.0, momentum = 0.0, threshold = 0.0): # pylint: disable=arguments-differ
-        if shared.sd_model_type != 'sdxl':
-            shared.log.warning(f'APG: pipeline={shared.sd_model_type} required=sdxl')
+        supported_model_list = ['sdxl', 'sc']
+        if shared.sd_model_type not in supported_model_list:
+            shared.log.warning(f'APG: pipeline={shared.sd_model_type} required={supported_model_list}')
             return None
         from modules import apg
         apg.eta = getattr(p, 'apg_eta', eta) # use values set by xyz grid or via ui
         apg.momentum = getattr(p, 'apg_momentum', momentum)
         apg.threshold = getattr(p, 'apg_threshold', threshold)
         apg.buffer = apg.MomentumBuffer(apg.momentum) # recreate buffer
-        self.orig_pipe = shared.sd_model
-        shared.sd_model = sd_models.switch_pipe(apg.StableDiffusionXLPipelineAPG, shared.sd_model) # sdxl pipeline with call to apg.normalized_guidance instead of default
+        # pipelines with call to apg.normalized_guidance instead of default
+        if shared.sd_model_type == "sdxl":
+            self.orig_pipe = shared.sd_model
+            shared.sd_model = sd_models.switch_pipe(apg.StableDiffusionXLPipelineAPG, shared.sd_model)
+        elif shared.sd_model_type == "sc":
+            self.orig_pipe = shared.sd_model.prior_pipe
+            shared.sd_model.prior_pipe = sd_models.switch_pipe(apg.StableCascadePriorPipelineAPG, shared.sd_model.prior_pipe)
         shared.log.info(f'APG apply: guidance={p.cfg_scale} momentum={apg.momentum} eta={apg.eta} threshold={apg.threshold} class={shared.sd_model.__class__.__name__}')
         p.extra_generation_params["APG"] = f'ETA={apg.eta} Momentum={apg.momentum} Threshold={apg.threshold}'
         # processed = processing.process_images(p)
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, eta, momentum, threshold): # pylint: disable=arguments-differ, unused-argument
         from modules import apg
-        shared.sd_model = self.orig_pipe # restore pipeline
+        # restore pipeline
+        if shared.sd_model_type == "sdxl":
+            shared.sd_model = self.orig_pipe
+        elif shared.sd_model_type == "sc":
+            shared.sd_model.prior_pipe = self.orig_pipe
         apg.buffer = None
         return processed
