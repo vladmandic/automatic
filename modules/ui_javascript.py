@@ -57,6 +57,8 @@ def html_css(css: str):
 
     usercss = os.path.join(data_path, "user.css") if os.path.exists(os.path.join(data_path, "user.css")) else None
     if modules.shared.opts.theme_type == 'Standard':
+        if shared.opts.extra_networks_height == 0:
+            shared.opts.extra_networks_height = 55
         themecss = os.path.join(script_path, "javascript", f"{modules.shared.opts.gradio_theme}.css")
         if os.path.exists(themecss):
             head += stylesheet(themecss)
@@ -64,6 +66,8 @@ def html_css(css: str):
         else:
             modules.shared.log.error(f'UI theme: css="{themecss}" not found')
     elif modules.shared.opts.theme_type == 'Modern':
+        if shared.opts.extra_networks_height == 0:
+            shared.opts.extra_networks_height = 87
         theme_folder = next((e.path for e in modules.extensions.extensions if e.name == 'sdnext-modernui'), None)
         themecss = os.path.join(theme_folder or '', 'themes', f'{modules.shared.opts.gradio_theme}.css')
         if os.path.exists(themecss):
