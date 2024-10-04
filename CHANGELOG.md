@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-03
+## Update for 2024-10-04
 
-### Highlights for 2024-10-03
+### Highlights for 2024-10-04
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
@@ -59,6 +59,7 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - timesteps override: <custom>  
   - sampler order: *0=default, 1-5*  
   - options: *dynamic, low order, rescale*  
+
 - [Ctrl+X](https://github.com/genforce/ctrl-x):
   - control **structure** (*similar to controlnet*) and **appearance** (*similar to ipadapter*)  
     without the need for extra models, all via code feed-forwards!
@@ -67,6 +68,10 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - structure image can be *almost anything*: *actual photo, openpose-style stick man, 3d render, sketch, depth-map, etc.*  
     just describe what it is in a structure prompt so it can be de-structured and correctly applied  
   - supports sdxl in both txt2img and img2img, simply select from scripts
+
+- [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416)
+  - latest algo to provide guidance for image generation, can be used instead of existing guidance rescale and/or PAG  
+  - in addtion to stronger guidance it can also increase image details using negative momentum  
 
 - **flux**  
   - avoid unet load if unchanged  

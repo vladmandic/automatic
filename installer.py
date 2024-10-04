@@ -263,7 +263,7 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
         if uv and result.returncode != 0:
             err = result.stderr.decode(encoding="utf8", errors="ignore")
             log.warning('Install: cannot use uv, fallback to pip')
-            print('HERE', err)
+            debug(f'Install: uv pip error: {err}')
             return pip(originalArg, ignore, quiet, uv=False)
         else:
             txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
