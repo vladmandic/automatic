@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-04
+## Update for 2024-10-05
 
-### Highlights for 2024-10-04
+### Highlights for 2024-10-05
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
@@ -13,7 +13,7 @@
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-03
+### Details for 2024-10-05
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -155,8 +155,11 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 - **rocm**
   - additional gpu detection and auto-config code, thanks @lshqqytiger  
   - experimental triton backend for flash attention, thanks @lshqqytiger  
-- **directml**
+- **directml**  
   - update `torch` to 2.4.1, thanks @lshqqytiger  
+- **extensions**  
+  - add mechanism to lock-down extension to specific working commit  
+  - added `sd-webui-controlnet` and `adetailer` last-known working commits  
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
