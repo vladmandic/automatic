@@ -52,8 +52,9 @@ args = Dot({
 })
 git_commit = "unknown"
 diffusers_commit = "unknown"
-submodules_commit = {
+extensions_commit = {
     'sd-webui-controlnet': 'ecd33eb',
+    'adetailer': 'a89c01d'
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
 
@@ -370,7 +371,7 @@ def update(folder, keep_branch = False, rebase = True):
     else:
         res = git(f'pull origin {b} {arg}', folder)
         debug(f'Install update: folder={folder} branch={b} args={arg} {res}')
-    commit = submodules_commit.get(os.path.basename(folder), None)
+    commit = extensions_commit.get(os.path.basename(folder), None)
     if commit is not None:
         res = git(f'checkout {commit}', folder)
         debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
@@ -898,6 +899,10 @@ def install_extensions(force=False):
                     res.append(f'Extension update error: {os.path.join(folder, ext)}')
                     log.error(f'Extension update error: {os.path.join(folder, ext)}')
             if not args.skip_extensions:
+                commit = extensions_commit.get(os.path.basename(ext), None)
+                if commit is not None:
+                    log.debug(f'Extension force: name={ext} commit={commit}')
+                    res = git(f'checkout {commit}', os.path.join(folder, ext))
                 run_extension_installer(os.path.join(folder, ext))
             pkg_resources._initialize_master_working_set() # pylint: disable=protected-access
             try:
