@@ -124,7 +124,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args['Size scale mask'] = p.scale_by_mask
         args['Size name mask'] = p.resize_name_mask
     if 'face' in p.ops:
-        args["Face restoration"] = shared.opts.face_restoration_model
+        args["Face restoration"] = shared.opts.detailer_model
     if 'color' in p.ops:
         args["Color correction"] = True
     # embeddings

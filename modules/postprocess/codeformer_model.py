@@ -1,7 +1,7 @@
 import os
 import cv2
 import torch
-import modules.face_restoration
+import modules.detailer
 from modules import shared, devices, modelloader, errors
 from modules.paths import models_path
 
@@ -27,7 +27,7 @@ def setup_model(dirname):
         return
 
     try:
-        class FaceRestorerCodeFormer(modules.face_restoration.FaceRestoration):
+        class FaceRestorerCodeFormer(modules.detailer.Detailer):
             def name(self):
                 return "CodeFormer"
 
@@ -38,7 +38,7 @@ def setup_model(dirname):
 
             def create_models(self):
                 from modules.postprocess.codeformer_arch import CodeFormer
-                from facelib.utils.face_restoration_helper import FaceRestoreHelper
+                from facelib.utils.detailer_helper import FaceRestoreHelper
                 from facelib.detection.retinaface import retinaface
                 if self.net is not None and self.face_helper is not None:
                     self.net.to(devices.device)
@@ -100,7 +100,7 @@ def setup_model(dirname):
                 if original_resolution != restored_img.shape[0:2]:
                     restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LINEAR)
                 self.face_helper.clean_all()
-                if shared.opts.face_restoration_unload:
+                if shared.opts.detailer_unload:
                     self.send_model_to(devices.cpu)
                 return restored_img
 
@@ -108,7 +108,7 @@ def setup_model(dirname):
         have_codeformer = True
         global codeformer # pylint: disable=global-statement
         codeformer = FaceRestorerCodeFormer(dirname)
-        shared.face_restorers.append(codeformer)
+        shared.detailers.append(codeformer)
 
     except Exception as e:
         errors.display(e, 'codeformer')

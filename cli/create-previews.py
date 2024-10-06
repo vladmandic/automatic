@@ -46,7 +46,7 @@ options = Map({
     },
     # generate params
     'generate': {
-        'restore_faces': True,
+        'detailer': True,
         'prompt': '',
         'negative_prompt': 'foggy, blurry, blurred, duplicate, ugly, mutilated, mutation, mutated, out of frame, bad anatomy, disfigured, deformed, censored, low res, low resolution, watermark, text, poorly drawn face, poorly drawn hands, signature',
         'steps': 20,

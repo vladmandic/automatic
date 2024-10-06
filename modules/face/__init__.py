@@ -134,7 +134,7 @@ class Script(scripts.Script):
             from modules.face.insightface import get_app
             app=get_app('buffalo_l')
             from modules.face.faceswap import face_swap
-            if shared.opts.save_images_before_face_restoration and not p.do_not_save_samples:
+            if shared.opts.save_images_before_detailer and not p.do_not_save_samples:
                 for i, image in enumerate(processed.images):
                     info = processing.create_infotext(p, index=i)
                     images.save_image(image, path=p.outpath_samples, seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, p=p, suffix="-before-faceswap")

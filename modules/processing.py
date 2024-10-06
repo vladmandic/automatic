@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -50,8 +50,8 @@ class Processed:
         self.image_cfg_scale = p.image_cfg_scale or 0
         self.steps = p.steps or 0
         self.batch_size = max(1, p.batch_size)
-        self.restore_faces = p.restore_faces or False
-        self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
+        self.detailer = p.detailer or False
+        self.detailer_model = shared.opts.detailer_model if p.detailer else None
         self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
@@ -96,8 +96,8 @@ class Processed:
             "cfg_scale": self.cfg_scale,
             "steps": self.steps,
             "batch_size": self.batch_size,
-            "restore_faces": self.restore_faces,
-            "face_restoration_model": self.face_restoration_model,
+            "detailer": self.detailer,
+            "detailer_model": self.detailer_model,
             "sd_model_hash": self.sd_model_hash,
             "seed_resize_from_w": self.seed_resize_from_w,
             "seed_resize_from_h": self.seed_resize_from_h,
@@ -359,11 +359,11 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 else:
                     sample = validate_sample(sample)
                     image = Image.fromarray(sample)
-                if p.restore_faces:
-                    if not p.do_not_save_samples and shared.opts.save_images_before_face_restoration:
+                if p.detailer:
+                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
                         images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
                     p.ops.append('face')
-                    sample = face_restoration.restore_faces(sample, p)
+                    sample = detailer.detail(sample, p)
                     if sample is not None:
                         image = Image.fromarray(sample)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
@@ -439,8 +439,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             p.image_mask = ImageOps.invert(p.image_mask)
             output_images.append(p.image_mask)
         elif getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
-            if getattr(p, 'mask_for_facehires', None) is not None:
-                output_images.append(p.mask_for_facehires)
+            if getattr(p, 'mask_for_detailer', None) is not None:
+                output_images.append(p.mask_for_detailer)
             else:
                 output_images.append(p.image_mask)
 

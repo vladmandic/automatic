@@ -17,7 +17,7 @@ orig_pipeline = shared.sd_model
 
 
 def restore_state(p: processing.StableDiffusionProcessing):
-    if p.state in ['reprocess_refine', 'reprocess_face']:
+    if p.state in ['reprocess_refine', 'reprocess_detail']:
         # validate
         if last_p is None:
             shared.log.warning(f'Restore state: op={p.state} last state missing')
@@ -43,9 +43,9 @@ def restore_state(p: processing.StableDiffusionProcessing):
             p.hr_scale, p.hr_upscaler, p.hr_resize_mode, p.hr_resize_context, p.hr_resize_x, p.hr_resize_y, p.hr_upscale_to_x, p.hr_upscale_to_y = hr_scale, hr_upscaler, hr_resize_mode, hr_resize_context, hr_resize_x, hr_resize_y, hr_upscale_to_x, hr_upscale_to_y
             p.height, p.width, p.scale_by, p.resize_mode, p.resize_name, p.resize_context = height, width, scale_by, resize_mode, resize_name, resize_context
             p.init_images = None
-        if state == 'reprocess_face':
+        if state == 'reprocess_detail':
             p.skip = ['encode', 'base', 'hires']
-            p.restore_faces = True
+            p.detailer = True
         shared.log.info(f'Restore state: op={p.state} skip={p.skip}')
     return p
 

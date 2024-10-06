@@ -1,4 +1,4 @@
-from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_face_restore, apply_override, apply_processing, apply_options, apply_seed, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
+from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_detailer, apply_override, apply_processing, apply_options, apply_seed, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
 from modules import shared, shared_items, sd_samplers, ipadapter, sd_models, sd_vae, sd_unet
 
 
@@ -127,7 +127,7 @@ axis_options = [
     AxisOption("[Refine] Refiner steps", float, apply_field("refiner_steps")),
     AxisOption("[Postprocess] Upscaler", str, apply_upscaler, cost=0.4, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
     AxisOption("[Postprocess] Context", str, apply_context, choices=lambda: ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]),
-    AxisOption("[Postprocess] Face restore", str, apply_face_restore, fmt=format_value),
+    AxisOption("[Postprocess] Detailer", str, apply_detailer, fmt=format_value),
     AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
     AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),
     AxisOption("[HDR] Color", float, apply_field("hdr_color")),

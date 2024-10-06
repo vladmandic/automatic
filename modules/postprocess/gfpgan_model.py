@@ -56,7 +56,7 @@ def gfpgan_fix_faces(np_image):
 
     model.face_helper.clean_all()
 
-    if shared.opts.face_restoration_unload:
+    if shared.opts.detailer_unload:
         send_model_to(model, devices.cpu)
 
     return np_image
@@ -76,7 +76,7 @@ def setup_model(dirname):
         install('gfpgan', quiet=True)
         import gfpgan
         import facexlib
-        import modules.face_restoration
+        import modules.detailer
 
         global user_path # pylint: disable=global-statement
         global have_gfpgan # pylint: disable=global-statement
@@ -101,13 +101,13 @@ def setup_model(dirname):
         have_gfpgan = True
         gfpgan_constructor = gfpgan.GFPGANer
 
-        class FaceRestorerGFPGAN(modules.face_restoration.FaceRestoration):
+        class FaceRestorerGFPGAN(modules.detailer.Detailer):
             def name(self):
                 return "GFPGAN"
 
             def restore(self, np_image, p=None): # pylint: disable=unused-argument
                 return gfpgan_fix_faces(np_image)
 
-        shared.face_restorers.append(FaceRestorerGFPGAN())
+        shared.detailers.append(FaceRestorerGFPGAN())
     except Exception as e:
         errors.log.error(f'GFPGan failed to initialize: {e}')

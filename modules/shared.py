@@ -43,7 +43,8 @@ locking_available = True
 clip_model = None
 interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
-face_restorers = []
+detailers = []
+yolo = None
 tab_names = []
 extra_networks = []
 options_templates = {}
@@ -592,6 +593,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "embeddings_dir": OptionInfo(os.path.join(paths.models_path, 'embeddings'), "Folder with textual inversion embeddings", folder=True),
     "hypernetwork_dir": OptionInfo(os.path.join(paths.models_path, 'hypernetworks'), "Folder with Hypernetwork models", folder=True),
     "control_dir": OptionInfo(os.path.join(paths.models_path, 'control'), "Folder with Control models", folder=True),
+    "yolo_dir": OptionInfo(os.path.join(paths.models_path, 'yolo'), "Folder with Yolo models", folder=True),
     "codeformer_models_path": OptionInfo(os.path.join(paths.models_path, 'Codeformer'), "Folder with codeformer models", folder=True),
     "gfpgan_models_path": OptionInfo(os.path.join(paths.models_path, 'GFPGAN'), "Folder with GFPGAN models", folder=True),
     "esrgan_models_path": OptionInfo(os.path.join(paths.models_path, 'ESRGAN'), "Folder with ESRGAN models", folder=True),
@@ -644,7 +646,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_init_img": OptionInfo(False, "Save init images"),
     "save_images_before_highres_fix": OptionInfo(False, "Save image before hires"),
     "save_images_before_refiner": OptionInfo(False, "Save image before refiner"),
-    "save_images_before_face_restoration": OptionInfo(False, "Save image before face restoration"),
+    "save_images_before_detailer": OptionInfo(False, "Save image before detailer"),
     "save_images_before_color_correction": OptionInfo(False, "Save image before color correction"),
     "save_mask": OptionInfo(False, "Save inpainting mask"),
     "save_mask_composite": OptionInfo(False, "Save inpainting masked composite"),
@@ -782,18 +784,19 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "img2img_extra_noise": OptionInfo(0.0, "Extra noise multiplier for img2img", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "CLIP_stop_at_last_layers": OptionInfo(1, "Clip skip", gr.Slider, {"minimum": 1, "maximum": 8, "step": 1, "visible": False}),
 
-    "postprocessing_sep_face_restoration": OptionInfo("<h2>Face Restoration</h2>", "", gr.HTML),
-    "face_restoration_model": OptionInfo("Face HiRes", "Face restoration model", gr.Radio, lambda: {"choices": [x.name() for x in face_restorers]}),
-    "facehires_sep": OptionInfo("<h2>Face restore</h2>", "", gr.HTML),
-    "facehires_conf": OptionInfo(0.6, "Min confidence", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
-    "facehires_max": OptionInfo(5, "Max faces", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
-    "facehires_iou": OptionInfo(0.5, "Max face overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05}),
-    "facehires_min_size": OptionInfo(0, "Min face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
-    "facehires_max_size": OptionInfo(0, "Max face size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
-    "facehires_padding": OptionInfo(20, "Face padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
-    "facehires_strength": OptionInfo(0.0, "Face restore strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "postprocessing_sep_detailer": OptionInfo("<h2>Detailer</h2>", "", gr.HTML),
+    "detailer_model": OptionInfo("Detailer", "Detailer model", gr.Radio, lambda: {"choices": [x.name() for x in detailers]}),
+    "detailer_sep": OptionInfo("<h2>Detailer</h2>", "", gr.HTML),
+    "detailer_conf": OptionInfo(0.6, "Min confidence", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
+    "detailer_max": OptionInfo(5, "Max detected", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "detailer_iou": OptionInfo(0.5, "Max overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05}),
+    "detailer_min_size": OptionInfo(0, "Min object size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
+    "detailer_max_size": OptionInfo(0, "Max object size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1}),
+    "detailer_padding": OptionInfo(20, "Object padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
+    "detailer_strength": OptionInfo(0.0, "Detailer strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "detailer_models": OptionInfo(['Face yolo-8n'], "Detailer models", gr.Dropdown, lambda: {"multiselect":True, "choices": list(yolo.list)}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
-    "face_restoration_unload": OptionInfo(False, "Move model to CPU when complete"),
+    "detailer_unload": OptionInfo(False, "Move detailer model to CPU when complete"),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),

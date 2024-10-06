@@ -32,7 +32,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                 reprocess.append(gr.Button('Reprocess', elem_id=f"{id_part}_reprocess", variant='primary', visible=True))
                 reprocess.append(gr.Button('Reprocess decode', elem_id=f"{id_part}_reprocess_decode", variant='primary', visible=False))
                 reprocess.append(gr.Button('Reprocess refine', elem_id=f"{id_part}_reprocess_refine", variant='primary', visible=False))
-                reprocess.append(gr.Button('Reprocess face', elem_id=f"{id_part}_reprocess_face", variant='primary', visible=False))
+                reprocess.append(gr.Button('Reprocess face', elem_id=f"{id_part}_reprocess_detail", variant='primary', visible=False))
             with gr.Row(elem_id=f"{id_part}_generate_line2"):
                 interrupt = gr.Button('Stop', elem_id=f"{id_part}_interrupt")
                 interrupt.click(fn=lambda: shared.state.interrupt(), _js="requestInterrupt", inputs=[], outputs=[])
@@ -149,10 +149,10 @@ def create_seed_inputs(tab, reuse_visible=True):
 def create_options(tab):
     with gr.Row(elem_id=f"{tab}_advanced_options"):
         full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-        restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
+        detailer = gr.Checkbox(label='Detailer', value=False, elem_id=f"{tab}_detailer")
         tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
         hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
-    return full_quality, restore_faces, tiling, hidiffusion
+    return full_quality, detailer, tiling, hidiffusion
 
 
 def create_cfg_inputs(tab):

@@ -129,7 +129,7 @@ async function initContextMenu() {
     id = `#${tab}_reprocess`;
     appendContextMenuOption(id, 'Decode full quality', () => reprocessClick(`${tab}`, 'reprocess_decode'), true);
     appendContextMenuOption(id, 'Refine & HiRes pass', () => reprocessClick(`${tab}`, 'reprocess_refine'), true);
-    appendContextMenuOption(id, 'Face restore', () => reprocessClick(`${tab}`, 'reprocess_face'), true);
+    appendContextMenuOption(id, 'Detailer pass', () => reprocessClick(`${tab}`, 'reprocess_detail'), true);
   }
   addContextMenuEventListener();
 }

@@ -237,17 +237,17 @@ def apply_context(p: processing.StableDiffusionProcessingTxt2Img, opt, x):
     shared.log.debug(f'XYZ grid apply resize-context: "{x}"')
 
 
-def apply_face_restore(p, opt, x):
+def apply_detailer(p, opt, x):
     opt = opt.lower()
     if opt == 'codeformer':
         is_active = True
-        p.face_restoration_model = 'CodeFormer'
+        p.detailer_model = 'CodeFormer'
     elif opt == 'gfpgan':
         is_active = True
-        p.face_restoration_model = 'GFPGAN'
+        p.detailer_model = 'GFPGAN'
     else:
         is_active = opt in ('true', 'yes', 'y', '1')
-    p.restore_faces = is_active
+    p.detailer = is_active
     shared.log.debug(f'XYZ grid apply face-restore: "{x}"')
 
 

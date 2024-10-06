@@ -54,7 +54,7 @@ def create_sampler(name, model):
                 model.prior_pipe.scheduler = copy.deepcopy(model.default_scheduler)
                 model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
-        shared.log.debug(f'Sampler default {type(model.scheduler).__name__}: {config}')
+        shared.log.debug(f'Sampler: sampler=default class={model.scheduler.__class__.__name__}: {config}')
         return model.scheduler
     config = find_sampler_config(name)
     if config is None or config.constructor is None:

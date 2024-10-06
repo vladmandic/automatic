@@ -39,7 +39,7 @@ def create_ui():
                 batch_count, batch_size = ui_sections.create_batch_inputs('txt2img', accordion=False)
                 cfg_scale, cfg_end = ui_sections.create_cfg_inputs('txt2img')
                 steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "txt2img")
-                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('txt2img')
+                full_quality, detailer, tiling, hidiffusion = ui_sections.create_options('txt2img')
 
                 with gr.Group(elem_classes="settings-accordion"):
                     with gr.Accordion(open=False, label="Samplers", elem_classes=["small-accordion"], elem_id="txt2img_sampler_group"):
@@ -64,7 +64,7 @@ def create_ui():
                 dummy_component, state,
                 txt2img_prompt, txt2img_negative_prompt, txt2img_prompt_styles,
                 steps, sampler_index, hr_sampler_index,
-                full_quality, restore_faces, tiling, hidiffusion,
+                full_quality, detailer, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
                 clip_skip,
@@ -120,7 +120,7 @@ def create_ui():
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (restore_faces, "Face restoration"),
+                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # second pass

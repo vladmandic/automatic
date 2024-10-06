@@ -102,7 +102,7 @@ def create_ui(_blocks: gr.Blocks=None):
 
             with gr.Row(elem_id='control_settings'):
 
-                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('control')
+                full_quality, detailer, tiling, hidiffusion = ui_sections.create_options('control')
                 state = gr.Textbox(value='', visible=False)
 
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
@@ -534,7 +534,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 prompt, negative, styles,
                 steps, sampler_index,
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, restore_faces, tiling, hidiffusion,
+                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, detailer, tiling, hidiffusion,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
                 resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
@@ -616,7 +616,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (restore_faces, "Face restoration"),
+                (detailer, "Face restoration"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # second pass

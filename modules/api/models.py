@@ -110,7 +110,7 @@ class ItemHypernetwork(BaseModel):
     name: str = Field(title="Name")
     path: Optional[str] = Field(title="Path")
 
-class ItemFaceRestorer(BaseModel):
+class ItemDetailer(BaseModel):
     name: str = Field(title="Name")
     cmd_dir: Optional[str] = Field(title="Path")
 

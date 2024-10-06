@@ -45,7 +45,7 @@ prompt_tags = {
     "cfg_scale": process_float_tag,
     "width": process_int_tag,
     "height": process_int_tag,
-    "restore_faces": process_boolean_tag,
+    "detailer": process_boolean_tag,
     "tiling": process_boolean_tag,
     "do_not_save_samples": process_boolean_tag,
     "do_not_save_grid": process_boolean_tag

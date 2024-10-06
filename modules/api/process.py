@@ -107,7 +107,7 @@ class APIProcess():
         return ResMask(mask=image)
 
     def post_face(self, req: ReqFace):
-        from scripts.face_details import yolo # pylint: disable=no-name-in-module
+        from scripts.detailer import yolo # pylint: disable=no-name-in-module
         image = decode_base64_to_image(req.image)
         shared.state.begin('API-FACE', api=True)
         images = []
