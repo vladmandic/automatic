@@ -64,6 +64,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             shared.log.debug(f"Load network: type=LoRA tags={all_tags} max={shared.opts.lora_apply_tags} apply")
             all_tags = ', '.join(all_tags)
             p.extra_generation_params["LoRA tags"] = all_tags
+            if '_tags_' in p.prompt:
+                p.prompt = p.prompt.replace('_tags_', all_tags)
+            else:
+                p.prompt = f"{p.prompt}, {all_tags}"
             if p.all_prompts is not None:
                 for i in range(len(p.all_prompts)):
                     if '_tags_' in p.all_prompts[i]:
