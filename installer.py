@@ -595,7 +595,11 @@ def install_rocm_zluda():
     if device is None:
         log.debug('ROCm: HSA_OVERRIDE_GFX_VERSION auto config skipped')
     else:
-        os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', device.get_gfx_version())
+        gfx_ver = device.get_gfx_version()
+        if gfx_ver is not None:
+            os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_ver)
+        else:
+            log.warning('ROCm: hsa version detect failed')
 
     return torch_command
 
@@ -902,7 +906,7 @@ def install_extensions(force=False):
                 commit = extensions_commit.get(os.path.basename(ext), None)
                 if commit is not None:
                     log.debug(f'Extension force: name={ext} commit={commit}')
-                    res = git(f'checkout {commit}', os.path.join(folder, ext))
+                    res.append(git(f'checkout {commit}', os.path.join(folder, ext)))
                 run_extension_installer(os.path.join(folder, ext))
             pkg_resources._initialize_master_working_set() # pylint: disable=protected-access
             try:
