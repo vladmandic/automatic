@@ -277,9 +277,9 @@ class YoloRestorer(Detailer):
             shared.opts.detailer_iou = iou
             shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding}')
 
-        with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer", elem_classes=["small-accordion"], visible=shared.native):
+        with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer_accordion", elem_classes=["small-accordion"], visible=shared.native):
             with gr.Row():
-                enabled = gr.Checkbox(label="Enable detailer pass", elem_id=f"{tab}_detailer", value=False)
+                enabled = gr.Checkbox(label="Enable detailer pass", elem_id=f"{tab}_detailer_enabled", value=False)
             with gr.Row():
                 detailers = gr.Dropdown(label="Detailers", elem_id=f"{tab}_detailers", choices=self.list, value=shared.opts.detailer_models, multiselect=True)
                 ui_common.create_refresh_button(detailers, self.enumerate, {}, elem_id=f"{tab}_detailers_refresh")

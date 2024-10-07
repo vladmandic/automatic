@@ -159,6 +159,7 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 - **video** add option `gradio_skip_video` to avoid gradio issues with displaying generated videos  
 - add support for manually downloaded diffusers models from huggingface  
 - **ui**  
+  - move checkboxes `full quality, tiling, hidiffusion` to advanced section  
   - hide token counter until tokens are known  
   - minor ui optimizations  
   - fix update infotext on image select  
