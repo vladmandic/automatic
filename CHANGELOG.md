@@ -1,10 +1,11 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-05
+## Update for 2024-10-07
 
-### Highlights for 2024-10-05
+### Highlights for 2024-10-07
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
+- **Detailer** Fully built-in detailer workflow without with support for all standard models  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models and [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
@@ -13,7 +14,7 @@
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-05
+### Details for 2024-10-07
 
 - **reprocess**
   - new top-level button: reprocess your last generated image(s)  
@@ -32,6 +33,18 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
     *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
   - xyz grid support for text encoder  
   - full prompt parser now correctly works with different prompts in batch  
+
+- **detailer**:  
+  - replaced *face-hires* with *detailer* which can run any number of standard detailing models  
+  - includes *face/hand/person/eyes* predefined detailer models plus support for manually downloaded models  
+    set path in *settings -> system paths -> yolo*  
+  - select one or more models in detailer menu and thats it!  
+  - to avoid duplication of ui elements, detailer will use following values from **refiner**:  
+    *sampler, steps, prompts*  
+  - when using multiple detailers and prompt is *multi-line*, each line is applied to corresponding detailer  
+  - adjustable settings:  
+    *strength, max detected objects, edge padding, edge blur, min detection confidence, max detection overlap, min and max size of detected object*  
+  - image metadata includes info on used detailer models  
 
 - **sampler options**: full rewrite  
 
