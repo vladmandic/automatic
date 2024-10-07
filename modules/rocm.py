@@ -75,8 +75,14 @@ class Agent:
             return "12.0.0"
         elif self.name.startswith("gfx11"):
             return "11.0.0"
-        elif self.name.startswith("gfx103"): # or self.name.startswith("gfx101")
+        elif self.name.startswith("gfx103"):
             return "10.3.0"
+        elif self.name.startswith("gfx102"):
+            return "10.2.0"
+        elif self.name.startswith("gfx101"):
+            return "10.1.0"
+        elif self.name.startswith("gfx100"):
+            return "10.0.0"
         return None
 
 
