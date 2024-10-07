@@ -275,6 +275,7 @@ class YoloRestorer(Detailer):
             shared.opts.detailer_min_size = min_size
             shared.opts.detailer_max_size = max_size
             shared.opts.detailer_iou = iou
+            shared.opts.save(shared.config_filename, silent=True)
             shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding}')
 
         with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer_accordion", elem_classes=["small-accordion"], visible=shared.native):
