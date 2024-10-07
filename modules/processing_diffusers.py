@@ -25,7 +25,7 @@ def restore_state(p: processing.StableDiffusionProcessing):
         if p.__class__ != last_p.__class__:
             shared.log.warning(f'Restore state: op={p.state} last state is different type')
             return p
-        if processing_vae.last_latent is None:
+        if shared.history.count == 0:
             shared.log.warning(f'Restore state: op={p.state} last latents missing')
             return p
         state = p.state
@@ -388,7 +388,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     if 'base' not in p.skip:
         output = process_base(p)
     else:
-        output = SimpleNamespace(images=processing_vae.last_latent)
+        output = SimpleNamespace(images=shared.history.latest)
 
     if shared.state.interrupted or shared.state.skipped:
         shared.sd_model = orig_pipeline

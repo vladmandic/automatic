@@ -15,7 +15,7 @@ import fasteners
 import orjson
 import diffusers
 from rich.console import Console
-from modules import errors, devices, shared_items, shared_state, cmd_args, theme
+from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
@@ -425,6 +425,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "xhinker parser", "A1111 parser", "Fixed attention"] }),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
+    "latent_history": OptionInfo(1, "Latent history size", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "sd_disable_ckpt": OptionInfo(False, "Disallow models in ckpt format", gr.Checkbox, {"visible": False}),
     "diffusers_version": OptionInfo("", "Diffusers version", gr.Textbox, {"visible": False}),
 }))
@@ -1091,6 +1092,7 @@ batch_cond_uncond = opts.always_batch_cond_uncond or not (cmd_opts.lowvram or cm
 parallel_processing_allowed = not cmd_opts.lowvram
 mem_mon = modules.memmon.MemUsageMonitor("MemMon", devices.device)
 max_workers = 8
+history = history.History()
 if devices.backend == "directml":
     directml_do_hijack()
 elif devices.backend == "cuda":

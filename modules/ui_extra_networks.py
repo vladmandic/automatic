@@ -447,11 +447,13 @@ def register_pages():
     from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
     from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
     from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
+    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
     debug('EN register-pages')
     register_page(ExtraNetworksPageCheckpoints())
     register_page(ExtraNetworksPageStyles())
     register_page(ExtraNetworksPageTextualInversion())
     register_page(ExtraNetworksPageVAEs())
+    register_page(ExtraNetworksPageHistory())
     if shared.opts.hypernetwork_enabled:
         from modules.ui_extra_networks_hypernets import ExtraNetworksPageHypernetworks
         register_page(ExtraNetworksPageHypernetworks())
@@ -461,7 +463,7 @@ def get_pages(title=None):
     visible = shared.opts.extra_networks
     pages = []
     if 'All' in visible or visible == []: # default en sort order
-        visible = ['Model', 'Lora', 'Style', 'Embedding', 'VAE', 'Hypernetwork']
+        visible = ['Model', 'Lora', 'Style', 'Embedding', 'VAE', 'History', 'Hypernetwork']
 
     titles = [page.title for page in shared.extra_networks]
     if title is None:

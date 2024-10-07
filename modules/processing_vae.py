@@ -9,7 +9,6 @@ from modules import shared, devices, sd_models, sd_vae, sd_vae_taesd, errors
 debug = os.environ.get('SD_VAE_DEBUG', None) is not None
 log_debug = shared.log.trace if debug else lambda *args, **kwargs: None
 log_debug('Trace: VAE')
-last_latent = None
 
 
 def create_latents(image, p, dtype=None, device=None):
@@ -147,10 +146,8 @@ def taesd_vae_encode(image):
 
 
 def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None, save=True):
-    global last_latent # pylint: disable=global-statement
     t0 = time.time()
     if latents is None or not torch.is_tensor(latents): # already decoded
-        last_latent = None
         return latents
     prev_job = shared.state.job
     shared.state.job = 'VAE'
@@ -170,7 +167,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
     if save:
-        last_latent = latents.clone().detach()
+        shared.history.add(latents)
 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
@@ -216,10 +213,11 @@ def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variab
 def reprocess(gallery):
     from PIL import Image
     from modules import images
-    if last_latent is None or gallery is None:
+    latent = shared.history.latest
+    if latent is None or gallery is None:
         return None
-    shared.log.info(f'Reprocessing: latent={last_latent.shape}')
-    reprocessed = vae_decode(last_latent, shared.sd_model, output_type='pil', full_quality=True)
+    shared.log.info(f'Reprocessing: latent={latent.shape}')
+    reprocessed = vae_decode(latent, shared.sd_model, output_type='pil', full_quality=True)
     outputs = []
     for i0, i1 in zip(gallery, reprocessed):
         if isinstance(i1, np.ndarray):
