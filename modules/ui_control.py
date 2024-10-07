@@ -102,7 +102,6 @@ def create_ui(_blocks: gr.Blocks=None):
 
             with gr.Row(elem_id='control_settings'):
 
-                full_quality, detailer, tiling, hidiffusion = ui_sections.create_options('control')
                 state = gr.Textbox(value='', visible=False)
 
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
@@ -132,7 +131,7 @@ def create_ui(_blocks: gr.Blocks=None):
 
                 mask_controls = masking.create_segment_ui()
 
-                cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
+                full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('control')
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('control')
 
                 with gr.Accordion(open=False, label="Video", elem_id="control_video", elem_classes=["small-accordion"]):
@@ -148,6 +147,7 @@ def create_ui(_blocks: gr.Blocks=None):
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
                 enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
+                detailer = shared.yolo.ui('control')
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')

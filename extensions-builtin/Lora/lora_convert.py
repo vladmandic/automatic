@@ -338,10 +338,10 @@ def _convert_kohya_flux_lora_to_diffusers(state_dict):
             ait_sd.update({k: down_weight for k in ait_down_keys})
 
             # up_weight is split to each split
-            ait_sd.update({k: v for k, v in zip(ait_up_keys, torch.split(up_weight, dims, dim=0))})  # noqa: C416
+            ait_sd.update({k: v for k, v in zip(ait_up_keys, torch.split(up_weight, dims, dim=0))})  # noqa: C416 # pylint: disable=unnecessary-comprehension
         else:
             # down_weight is chunked to each split
-            ait_sd.update({k: v for k, v in zip(ait_down_keys, torch.chunk(down_weight, num_splits, dim=0))})  # noqa: C416
+            ait_sd.update({k: v for k, v in zip(ait_down_keys, torch.chunk(down_weight, num_splits, dim=0))})  # noqa: C416 # pylint: disable=unnecessary-comprehension
 
             # up_weight is sparse: only non-zero values are copied to each split
             i = 0

@@ -182,7 +182,7 @@ if __name__ == '__main__':
     new_image = Image.new('RGBA', (512, 512), (255, 255, 200, 255))
     cap_image = caption_image_overlay(new_image, 'title', 'footerLeft', 'footerMid', 'footerRight')
 
-    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}} # noqa: NPY002
+    test_embed = {'string_to_param': {'*': torch.from_numpy(np.random.random((2, 4096)))}}
 
     embedded_image = insert_image_data_embed(cap_image, test_embed)
 

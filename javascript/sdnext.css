@@ -1,6 +1,6 @@
 @font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
 :root {
-  --left-column: 520px;
+  --left-column: 530px;
   --color-trace: #666666;
   --color-debug: #7F7F7F;
   --color-info: #D4D4D4;
@@ -83,6 +83,7 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 .performance .time { margin-right: 0; }
 .thumbnails { background: var(--body-background-fill); }
 .control-image { height: calc(100vw/3) !important; }
+.prompt textarea { resize: vertical; }
 #control_results { margin: 0; padding: 0; }
 #control_gallery { height: calc(100vw/3 + 60px); }
 #txt2img_gallery, #img2img_gallery { height: 50vh; }

@@ -83,7 +83,7 @@ def crop_images(images, crops):
     try:
         for i in range(len(images)):
             if crops[i]:
-                from scripts.detailer import yolo # pylint: disable=no-name-in-module
+                from shared import yolo # pylint: disable=no-name-in-module
                 yolo.load()
                 cropped = []
                 for image in images[i]:

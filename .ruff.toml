@@ -67,6 +67,7 @@ ignore = [
   "E731",   # Do not assign a `lambda` expression, use a `def`
   "E741",   # Ambiguous variable name
   "F401",   # Imported by unused
+  "NPY002", # replace legacy random
   "RUF005", # Consider iterable unpacking
   "RUF010", # Use explicit conversion flag
   "RUF012", # Mutable class attributes

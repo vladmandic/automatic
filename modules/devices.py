@@ -196,6 +196,7 @@ def torch_gc(force=False, fast=False):
     used_ram = round(100 * ram.get('used', 0) / ram.get('total', 1)) if ram.get('total', 1) > 1 else 0
     global previous_oom # pylint: disable=global-statement
     threshold = 0 if (cmd_opts.lowvram and not cmd_opts.use_zluda) else opts.torch_gc_threshold
+    collected = 0
     if force or threshold == 0 or used_gpu >= threshold or used_ram >= threshold:
         force = True
     if oom > previous_oom:

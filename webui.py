@@ -106,7 +106,9 @@ def initialize():
     sys.modules["modules.codeformer_model"] = codeformer
     import modules.postprocess.gfpgan_model as gfpgan
     gfpgan.setup_model(shared.opts.gfpgan_models_path)
-    timer.startup.record("face-restore")
+    import modules.postprocess.yolo as yolo
+    yolo.initialize()
+    timer.startup.record("detailer")
 
     log.debug('Load extensions')
     t_timer, t_total = modules.scripts.load_scripts()

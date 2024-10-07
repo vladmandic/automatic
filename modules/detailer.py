@@ -1,7 +1,7 @@
 from modules import shared
 
 
-class Detailer:
+class Detailer: # abstract class used for postprocessing
     def name(self):
         return "None"
 
@@ -9,7 +9,7 @@ class Detailer:
         return np_image
 
 
-def detail(np_image, p=None):
+def detail(np_image, p=None): # postprocesses the image
     detailers = [x for x in shared.detailers if x.name() == shared.opts.detailer_model or shared.opts.detailer_model is None]
     if len(detailers) == 0:
         return np_image

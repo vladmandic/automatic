@@ -91,13 +91,13 @@ def post_interrogate(req: models.ReqInterrogate):
         if req.model not in get_clip_models():
             raise HTTPException(status_code=404, detail="Model not found")
         try:
-            caption = interrogate_image(image, model=req.model, mode=req.mode)
+            caption = interrogate_image(image, clip_model=req.clip_model, blip_model=req.blip_model, mode=req.mode)
         except Exception as e:
             caption = str(e)
         if not req.analyze:
             return models.ResInterrogate(caption=caption)
         else:
-            medium, artist, movement, trending, flavor = analyze_image(image, model=req.model)
+            medium, artist, movement, trending, flavor = analyze_image(image, clip_model=req.clip_model, blip_model=req.blip_model)
             return models.ResInterrogate(caption=caption, medium=medium, artist=artist, movement=movement, trending=trending, flavor=flavor)
 
 def post_vqa(req: models.ReqVQA):

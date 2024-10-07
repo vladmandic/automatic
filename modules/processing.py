@@ -348,11 +348,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             for i, sample in enumerate(samples):
                 debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
-                if len(infotexts) > i:
-                    info = infotexts[i]
-                else:
-                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
-                    infotexts.append(info)
                 if type(sample) == Image.Image:
                     image = sample
                     sample = np.array(sample)
@@ -361,8 +356,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     image = Image.fromarray(sample)
                 if p.detailer:
                     if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
-                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-face-restore")
-                    p.ops.append('face')
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-detailer")
+                    p.ops.append('detailer')
                     sample = detailer.detail(sample, p)
                     if sample is not None:
                         image = Image.fromarray(sample)
@@ -377,14 +373,22 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         p.color_corrections = None
                         p.color_corrections = orig
                         image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
                         images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
                     p.ops.append('color')
                     image = apply_color_correction(p.color_corrections[i], image)
                 if shared.opts.mask_apply_overlay:
                     image = apply_overlay(image, p.paste_to, i, p.overlay_images)
+
+                if len(infotexts) > i:
+                    info = infotexts[i]
+                else:
+                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
+                    infotexts.append(info)
                 image.info["parameters"] = info
                 output_images.append(image)
                 if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
+                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
                     images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
@@ -400,6 +404,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         output_images.append(image_mask)
                     if shared.opts.return_mask_composite:
                         output_images.append(image_mask_composite)
+
             timer.process.record('post')
             del samples
             devices.torch_gc()

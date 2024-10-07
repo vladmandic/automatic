@@ -569,4 +569,5 @@ def update_sampler(p, sd_model, second_pass=False):
             sampler_options.append('dynamic')
         if 'lower_order_final' in sampler.config and shared.opts.schedulers_use_loworder != shared.opts.data_labels.get('schedulers_use_loworder').default:
             sampler_options.append('low order')
-        p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)
+        if len(sampler_options) > 0:
+            p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)

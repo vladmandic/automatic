@@ -38,8 +38,8 @@ def convolution_forward(  # From <class 'diffusers.models.resnet.ResnetBlock2D'>
     self,
     input_tensor: torch.Tensor,
     temb: torch.Tensor,
-    *args,
-    **kwargs,
+    *args, # pylint: disable=unused-argument
+    **kwargs, # pylint: disable=unused-argument
 ) -> torch.Tensor:
     do_structure_control = self.do_control and self.t in self.structure_schedule
 
@@ -108,7 +108,7 @@ class AttnProcessor2_0:  # From <class 'diffusers.models.attention_processor.Att
         if not hasattr(F, "scaled_dot_product_attention"):
             raise ImportError("AttnProcessor2_0 requires PyTorch 2.0, to use it, please upgrade PyTorch to 2.0.")
 
-    def __call__(
+    def __call__( # pylint: disable=keyword-arg-before-vararg
         self,
         attn: Attention,
         hidden_states: torch.FloatTensor,
@@ -207,7 +207,6 @@ class AttnProcessor2_0:  # From <class 'diffusers.models.attention_processor.Att
             value = appearance_transfer(value, query_normed, key_normed, batch_order=attn.batch_order)
 
         # The output of sdp = (batch, num_heads, seq_len, head_dim)
-        # TODO: add support for attn.scale when we move to Torch 2.1
         hidden_states = F.scaled_dot_product_attention(
             query, key, value, attn_mask=attention_mask, dropout_p=0.0, is_causal=False
         )

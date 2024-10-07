@@ -146,15 +146,6 @@ def create_seed_inputs(tab, reuse_visible=True):
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
 
 
-def create_options(tab):
-    with gr.Row(elem_id=f"{tab}_advanced_options"):
-        full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-        detailer = gr.Checkbox(label='Detailer', value=False, elem_id=f"{tab}_detailer")
-        tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
-        hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
-    return full_quality, detailer, tiling, hidiffusion
-
-
 def create_cfg_inputs(tab):
     with gr.Row():
         cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='CFG scale', value=6.0, elem_id=f"{tab}_cfg_scale")
@@ -165,19 +156,23 @@ def create_cfg_inputs(tab):
 def create_advanced_inputs(tab, base=True):
     with gr.Accordion(open=False, label="Advanced", elem_id=f"{tab}_advanced", elem_classes=["small-accordion"]):
         with gr.Group():
+            with gr.Row(elem_id=f"{tab}_advanced_options"):
+                full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
+                tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
+                hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
             if base:
                 cfg_scale, cfg_end = create_cfg_inputs(tab)
             else:
                 cfg_scale, cfg_end = None, None
             with gr.Row():
-                image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Secondary guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
+                image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Refine guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
                 diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.native)
             with gr.Row():
                 diffusers_pag_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_pag_scale", visible=shared.native)
                 diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_pag_adaptive", visible=shared.native)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
-    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
+    return full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
 
 
 def create_correction_inputs(tab):
@@ -312,7 +307,7 @@ def create_hires_inputs(tab):
     with gr.Accordion(open=False, label="Refine", elem_id=f"{tab}_second_pass", elem_classes=["small-accordion"]):
         with gr.Group():
             with gr.Row(elem_id=f"{tab}_hires_row1"):
-                enable_hr = gr.Checkbox(label='Enable second pass', value=False, elem_id=f"{tab}_enable_hr")
+                enable_hr = gr.Checkbox(label='Enable refine pass', value=False, elem_id=f"{tab}_enable_hr")
             """
             with gr.Row(elem_id=f"{tab}_hires_fix_row1", variant="compact"):
                 hr_upscaler = gr.Dropdown(label="Upscaler", elem_id=f"{tab}_hr_upscaler", choices=[*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]], value=shared.latent_upscale_default_mode)
@@ -324,18 +319,18 @@ def create_hires_inputs(tab):
             hr_resize_mode, hr_upscaler, hr_resize_context, hr_resize_x, hr_resize_y, hr_scale, _selected_scale_tab = create_resize_inputs(tab, None, accordion=False, latent=True, non_zero=False)
             with gr.Row(elem_id=f"{tab}_hires_fix_row2", variant="compact"):
                 hr_force = gr.Checkbox(label='Force HiRes', value=False, elem_id=f"{tab}_hr_force")
-                hr_sampler_index = gr.Dropdown(label='Secondary sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Same as primary', type="index")
+                hr_sampler_index = gr.Dropdown(label='Refine sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Same as primary', type="index")
             with gr.Row(elem_id=f"{tab}_hires_row2"):
                 hr_second_pass_steps = gr.Slider(minimum=0, maximum=99, step=1, label='HiRes steps', elem_id=f"{tab}_steps_alt", value=20)
                 denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.3, elem_id=f"{tab}_denoising_strength")
         with gr.Group(visible=shared.native):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
                 refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.0, elem_id=f"{tab}_refiner_start")
-                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=10)
+                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=20)
             with gr.Row(elem_id=f"{tab}_refiner_row3", variant="compact"):
-                refiner_prompt = gr.Textbox(value='', label='Secondary prompt', elem_id=f"{tab}_refiner_prompt")
+                refiner_prompt = gr.Textbox(value='', lines=2, label='Refine prompt', elem_id=f"{tab}_refiner_prompt", elem_classes=["prompt"])
             with gr.Row(elem_id="txt2img_refiner_row4", variant="compact"):
-                refiner_negative = gr.Textbox(value='', label='Secondary negative prompt', elem_id=f"{tab}_refiner_neg_prompt")
+                refiner_negative = gr.Textbox(value='', lines=2, label='Refine negative prompt', elem_id=f"{tab}_refiner_neg_prompt", elem_classes=["prompt"])
     return enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative
 
 

@@ -412,10 +412,7 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
             and denoising_value_valid(self.denoising_start)
             and self.denoising_start >= self.denoising_end
         ):
-            raise ValueError(
-                f"`denoising_start`: {self.denoising_start} cannot be larger than or equal to `denoising_end`: "
-                + f" {self.denoising_end} when using type float."
-            )
+            raise ValueError(f"`denoising_start`: {self.denoising_start} cannot be larger than or equal to `denoising_end`: {self.denoising_end} when using type float.")
         elif self.denoising_end is not None and denoising_value_valid(self.denoising_end):
             discrete_timestep_cutoff = int(
                 round(
