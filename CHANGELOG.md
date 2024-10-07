@@ -45,6 +45,8 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - adjustable settings:  
     *strength, max detected objects, edge padding, edge blur, min detection confidence, max detection overlap, min and max size of detected object*  
   - image metadata includes info on used detailer models  
+  - *note* detailer defaults are not save in ui settings, they are saved in server settings  
+    to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
 
 - **sampler options**: full rewrite  
 
@@ -62,6 +64,8 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - xyz grid support for sampler options  
   - metadata updates for sampler options  
   - modernui updates for sampler options  
+  - *note* sampler options defaults are not save in ui settings, they are saved in server settings  
+    to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
 
   *sampler options*:  
   - sigma method: *karas, beta, exponential*  
