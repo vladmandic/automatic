@@ -360,8 +360,9 @@ def create_resize_inputs(tab, images, accordion=True, latent=False, non_zero=Tru
                         with gr.Row():
                             with gr.Column(elem_id=f"{tab}_column_size_fixed"):
                                 with gr.Row():
-                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Width {prefix}" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_width")
-                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Height {prefix}" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_height")
+                                    suffix = '_resize' if tab != 'img2img' else ''
+                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Width {prefix}" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}{suffix}_width")
+                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Height {prefix}" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}{suffix}_height")
                                     ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
                                     ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_resize_ar", elem_classes=["ar-dropdown"])
                                     for c in [ar_dropdown, width, height]:
