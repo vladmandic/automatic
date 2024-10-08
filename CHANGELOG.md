@@ -1,13 +1,16 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-07
+## Update for 2024-10-08
 
-### Highlights for 2024-10-07
+### Highlights for 2024-10-08
 
-- **Reprocess**: New workflow options that allow you to generate at lower quality and then reprocess at higher quality for select images only, or generate without hires/refine and then reprocess with hires/refine  
+- **Reprocess**: New workflow options that allow you to generate at lower quality and then  
+  reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
+  and you can pick any previous latent from auto-captured history!  
 - **Detailer** Fully built-in detailer workflow without with support for all standard models  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
-- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models and [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control  
+- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models and  
+  [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
@@ -17,11 +20,21 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 ### Details for 2024-10-07
 
 - **reprocess**
-  - new top-level button: reprocess your last generated image(s)  
+  - new top-level button: reprocess latent from your history of generated image(s)  
   - generate using full-quality:off and then reprocess using *full quality decode*  
   - generate without hires/refine and then *reprocess with hires/refine*  
     *note*: you can change hires/refine settings and run-reprocess again!  
-  - reprocess using *face-restore*  
+  - reprocess using *detailer*  
+
+- **history**
+  - by default, **reprocess** will pick last latent, but you can select any latent from history!  
+  - history is under *networks -> history*  
+    each history item includes info on operations that were used, timestamp and metadata  
+  - any latent operation during workflow automatically adds one or more items to history  
+    e.g. generate base + upscale + hires + detailer  
+  - history size: *settings -> execution -> latent history size*  
+    memory usage is ~130kb of ram for 1mp image  
+  - *note* list of latents in history is not auto-refreshed, use refresh button  
 
 - **text encoder**:  
   - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  

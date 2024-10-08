@@ -318,6 +318,9 @@ class ReqVQA(BaseModel):
     model: str = Field(default="MS Florence 2 Base", title="Model", description="The interrogate model used.")
     question: str = Field(default="describe the image", title="Question", description="Question to ask the model.")
 
+class ReqHistory(BaseModel):
+    name: str = Field(title="Name", description="Name of the history item to select")
+
 class ResVQA(BaseModel):
     answer: Optional[str] = Field(default=None, title="Answer", description="The generated answer for the image.")
 

@@ -1,11 +1,13 @@
 import time
+import json
+import html
 from modules import shared, ui_extra_networks
 
 
 class ExtraNetworksPageHistory(ui_extra_networks.ExtraNetworksPage):
     def __init__(self):
-        super().__init__('History')
         # shared.log.trace('History init')
+        super().__init__('History')
         self.last_refresh = 0
 
     def refresh(self):
@@ -17,13 +19,21 @@ class ExtraNetworksPageHistory(ui_extra_networks.ExtraNetworksPage):
 
     def list_items(self):
         # shared.log.trace('History list')
-        return shared.history.list
+        for item in shared.history.latents:
+            title = ', '.join(list(set(item.ops))) + '<br>' + item.name
+            yield {
+                "type": 'History',
+                "name": title,
+                "preview": item.preview,
+                "mtime": item.ts,
+                "size": item.size,
+                # "info": item.info,
+                # "description": item.info,
+                "onclick": '"' + html.escape(f"""return selectHistory({json.dumps(item.name)})""") + '"',
+            }
 
-    def create_page(self, tabname, skip = False):
-        # shared.log.trace(f'History page: tab={tabname} skip={skip}')
-        self.page_time = time.time()
-        if tabname == 'txt2img':
-            self.last_refresh = time.time()
-        if self.page_time <= self.last_refresh: # cached page
-            self.refresh()
-        return self.patch(self.html, tabname)
+    def find_description(self, path, info=None):
+        name = path.split('<br>')[-1]
+        items = [l for l in shared.history.latents if l.name == name]
+        if len(items) > 0:
+            return items[0].info

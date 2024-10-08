@@ -84,6 +84,8 @@ class Api:
         self.add_api_route("/sdapi/v1/unload-checkpoint", endpoints.post_unload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", endpoints.post_reload_checkpoint, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-vae", endpoints.post_refresh_vae, methods=["POST"])
+        self.add_api_route("/sdapi/v1/history", endpoints.get_history, methods=["GET"], response_model=List[str])
+        self.add_api_route("/sdapi/v1/history", endpoints.post_history, methods=["POST"], response_model=int)
 
         # gallery api
         gallery.register_api(app)

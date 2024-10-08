@@ -82,7 +82,7 @@ def init_api(app):
         item = next(iter([x for x in page.items if x['name'] == item]), None)
         if item is None:
             return JSONResponse({ 'info': 'none' })
-        info = page.find_info(item['filename'])
+        info = page.find_info(item.get('filename', None) or item.get('name', None))
         if info is None:
             info = {}
         # shared.log.debug(f"Networks info: page='{page.name}' item={item['name']} len={len(info)}")
@@ -95,7 +95,7 @@ def init_api(app):
         item = next(iter([x for x in page.items if x['name'] == item]), None)
         if item is None:
             return JSONResponse({ 'description': 'none' })
-        desc = page.find_description(item['filename'])
+        desc = page.find_description(item.get('filename', None) or item.get('name', None))
         if desc is None:
             desc = ''
         # shared.log.debug(f"Networks desc: page='{page.name}' item={item['name']} len={len(desc)}")
@@ -295,11 +295,11 @@ class ExtraNetworksPage:
             args = {
                 "tabname": tabname,
                 "page": self.name,
-                "name": item["name"],
+                "name": item.get('name', ''),
                 "title": os.path.basename(item["name"].replace('_', ' ')),
-                "filename": item["filename"],
-                "tags": '|'.join([item.get("tags")] if isinstance(item.get("tags", {}), str) else list(item.get("tags", {}).keys())),
-                "preview": html.escape(item.get("preview", self.link_preview('html/card-no-preview.png'))),
+                "filename": item.get('filename', ''),
+                "tags": '|'.join([item.get('tags')] if isinstance(item.get('tags', {}), str) else list(item.get('tags', {}).keys())),
+                "preview": html.escape(item.get('preview', None) or self.link_preview('html/card-no-preview.png')),
                 "width": shared.opts.extra_networks_card_size,
                 "height": shared.opts.extra_networks_card_size if shared.opts.extra_networks_card_square else 'auto',
                 "fit": shared.opts.extra_networks_card_fit,
@@ -318,6 +318,8 @@ class ExtraNetworksPage:
             return self.card.format(**args)
         except Exception as e:
             shared.log.error(f'Extra networks item error: page={tabname} item={item["name"]} {e}')
+            if os.environ.get('SD_EN_DEBUG', None) is not None:
+                errors.display(e, 'Extra networks')
             return ""
 
     def find_preview_file(self, path):
@@ -391,17 +393,18 @@ class ExtraNetworksPage:
                 if tag == 'p':
                     self.text += '\n'
 
-        fn = os.path.splitext(path)[0] + '.txt'
-        if os.path.exists(fn):
-            try:
-                with open(fn, "r", encoding="utf-8", errors="replace") as f:
-                    txt = f.read()
-                    txt = re.sub('[<>]', '', txt)
-                    return txt
-            except OSError:
-                pass
-        if info is None:
-            info = self.find_info(path)
+        if path is not None:
+            fn = os.path.splitext(path)[0] + '.txt'
+            if os.path.exists(fn):
+                try:
+                    with open(fn, "r", encoding="utf-8", errors="replace") as f:
+                        txt = f.read()
+                        txt = re.sub('[<>]', '', txt)
+                        return txt
+                except OSError:
+                    pass
+            if info is None:
+                info = self.find_info(path)
         desc = info.get('description', '') or ''
         f = HTMLFilter()
         f.feed(desc)
@@ -413,14 +416,15 @@ class ExtraNetworksPage:
         data = {}
         if shared.cmd_opts.no_metadata:
             return data
-        fn = os.path.splitext(path)[0] + '.json'
-        if os.path.exists(fn):
-            t0 = time.time()
-            data = shared.readfile(fn, silent=True)
-            if type(data) is list:
-                data = data[0]
-            t1 = time.time()
-            self.info_time += t1-t0
+        if path is not None:
+            fn = os.path.splitext(path)[0] + '.json'
+            if os.path.exists(fn):
+                t0 = time.time()
+                data = shared.readfile(fn, silent=True)
+                if type(data) is list:
+                    data = data[0]
+                t1 = time.time()
+                self.info_time += t1-t0
         return data
 
 
@@ -743,7 +747,8 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
 
     def show_details(text, img, desc, info, meta, description, prompt, negative, parameters, wildcards, params, _dummy1=None, _dummy2=None):
         page, item = get_item(state, params)
-        if item is not None and hasattr(item, 'name'):
+        valid = item is not None and hasattr(item, 'name') and hasattr(item, 'filename')
+        if valid:
             stat = os.stat(item.filename) if os.path.exists(item.filename) else None
             desc = item.description
             fullinfo = shared.readfile(os.path.splitext(item.filename)[0] + '.json', silent=True)
@@ -844,7 +849,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             negative, # gr.textbox
             parameters, # gr.textbox
             wildcards, # gr.textbox
-            gr.update(visible=item is not None), # details ui visible
+            gr.update(visible=valid), # details ui visible
             gr.update(visible=page is not None and page.title != 'Style'), # details ui tabs visible
             gr.update(visible=page is not None and page.title == 'Style'), # details ui text visible
         ]
@@ -852,6 +857,9 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
     def ui_refresh_click(title):
         pages = []
         for page in get_pages():
+            if page.title != title:
+                pages.append(page.html)
+                continue
             page.page_time = 0
             page.refresh_time = 0
             page.refresh()

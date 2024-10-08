@@ -145,7 +145,7 @@ def taesd_vae_encode(image):
     return encoded
 
 
-def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None, save=True):
+def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
     t0 = time.time()
     if latents is None or not torch.is_tensor(latents): # already decoded
         return latents
@@ -166,8 +166,6 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         latents = latents.unsqueeze(0)
     if latents.shape[0] == 4 and latents.shape[1] != 4: # likely animatediff latent
         latents = latents.permute(1, 0, 2, 3)
-    if save:
-        shared.history.add(latents)
 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
@@ -213,7 +211,7 @@ def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variab
 def reprocess(gallery):
     from PIL import Image
     from modules import images
-    latent = shared.history.latest
+    latent, index = shared.history.selected
     if latent is None or gallery is None:
         return None
     shared.log.info(f'Reprocessing: latent={latent.shape}')
@@ -231,6 +229,7 @@ def reprocess(gallery):
         if shared.opts.samples_save:
             images.save_image(i1, info=info, forced_filename=fn)
             i1.already_saved_as = fn
-        outputs.append(i0)
+        if index == -1:
+            outputs.append(i0)
         outputs.append(i1)
     return outputs

@@ -158,3 +158,10 @@ def post_pnginfo(req: models.ReqImageInfo):
     params = infotext.parse(geninfo)
     script_callbacks.infotext_pasted_callback(geninfo, params)
     return models.ResImageInfo(info=geninfo, items=items, parameters=params)
+
+def get_history():
+    return shared.history.list
+
+def post_history(req: models.ReqHistory):
+    shared.history.index = shared.history.find(req.name)
+    return shared.history.index
