@@ -457,6 +457,9 @@ class ScriptRunner:
         def init_field(title):
             if title == 'None': # called when an initial value is set from ui-config.json to show script's UI components
                 return
+            if title not in self.titles:
+                errors.log.error(f'Script not found: {title}')
+                return
             script_index = self.titles.index(title)
             self.selectable_scripts[script_index].group.visible = True
 

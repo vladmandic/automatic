@@ -20,12 +20,12 @@ class Script(scripts.Script):
     current_axis_options = []
 
     def title(self):
-        return "X/Y/Z Grid"
+        return "XYZ Grid"
 
     def ui(self, is_img2img):
         self.current_axis_options = [x for x in axis_options if type(x) == AxisOption or x.is_img2img == is_img2img]
         with gr.Row():
-            gr.HTML('<span">&nbsp X/Y/Z Grid</span><br>')
+            gr.HTML('<span">&nbsp XYZ Grid</span><br>')
         with gr.Row():
             with gr.Column():
                 with gr.Row(variant='compact'):
