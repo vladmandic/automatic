@@ -44,6 +44,7 @@ clip_model = None
 interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
+face_restorers = []
 yolo = None
 tab_names = []
 extra_networks = []
@@ -798,6 +799,9 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "detailer_models": OptionInfo(['face-yolo8n'], "Detailer models", gr.Dropdown, lambda: {"multiselect":True, "choices": list(yolo.list), "visible": False}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False}),
     "detailer_unload": OptionInfo(False, "Move detailer model to CPU when complete"),
+
+    "postprocessing_sep_face_restore": OptionInfo("<h2>Face restore</h2>", "", gr.HTML),
+    "face_restoration_model": OptionInfo("Face restorer", "Face restoration", gr.Radio, lambda: {"choices": ['None'] + [x.name() for x in face_restorers]}),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),

@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer, face_restoration
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -354,6 +354,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 else:
                     sample = validate_sample(sample)
                     image = Image.fromarray(sample)
+                sample = face_restoration.restore_faces(sample, p)
                 if p.detailer:
                     if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)

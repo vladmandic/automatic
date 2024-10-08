@@ -4,6 +4,7 @@ import torch
 import modules.detailer
 from modules import shared, devices, modelloader, errors
 from modules.paths import models_path
+from installer import install
 
 # codeformer people made a choice to include modified basicsr library to their project which makes
 # it utterly impossible to use it alongside with other libraries that also use basicsr, like GFPGAN.
@@ -37,9 +38,13 @@ def setup_model(dirname):
                 self.cmd_dir = dirname
 
             def create_models(self):
-                from modules.postprocess.codeformer_arch import CodeFormer
-                from facelib.utils.detailer_helper import FaceRestoreHelper
-                from facelib.detection.retinaface import retinaface
+                try:
+                    from modules.postprocess.codeformer_arch import CodeFormer
+                    from facelib.utils.detailer_helper import FaceRestoreHelper
+                    from facelib.detection.retinaface import retinaface
+                except Exception as e:
+                    shared.log.error(f"CodeFormer error: {e}")
+                    return None, None
                 if self.net is not None and self.face_helper is not None:
                     self.net.to(devices.device)
                     return self.net, self.face_helper
@@ -108,7 +113,7 @@ def setup_model(dirname):
         have_codeformer = True
         global codeformer # pylint: disable=global-statement
         codeformer = FaceRestorerCodeFormer(dirname)
-        shared.detailers.append(codeformer)
+        shared.face_restorers.append(codeformer)
 
     except Exception as e:
         errors.display(e, 'codeformer')

@@ -108,6 +108,6 @@ def setup_model(dirname):
             def restore(self, np_image, p=None): # pylint: disable=unused-argument
                 return gfpgan_fix_faces(np_image)
 
-        shared.detailers.append(FaceRestorerGFPGAN())
+        shared.face_restorers.append(FaceRestorerGFPGAN())
     except Exception as e:
         errors.log.error(f'GFPGan failed to initialize: {e}')
