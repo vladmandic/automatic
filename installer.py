@@ -599,7 +599,7 @@ def install_rocm_zluda():
         if gfx_ver is not None:
             os.environ.setdefault('HSA_OVERRIDE_GFX_VERSION', gfx_ver)
         else:
-            log.warning('ROCm: hsa version detect failed')
+            log.warning(f'ROCm: gfx={device.name} could not auto-detect HSA version')
 
     return torch_command
 
