@@ -71,9 +71,10 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - some settings are specific to model types  
     e.g. sd15/sdxl typically use epsilon prediction  
   - quite a few well-known schedulers are just variations of settings, for example:  
-    - euler sgm is euler with trailing spacing and sample prediction type  
-    - dpm 2m or 3m are dpm 1s with orders of 2 or 3  
-    - dpm 2m sde is dpm 2m with sde as solver  
+    - *sampler sgm* is sampler with trailing spacing and sample prediction type  
+    - *dpm 2m* or *3m* are *dpm 1s* with orders of 2 or 3  
+    - *dpm 2m sde* is *dpm 2m* with *sde* as solver  
+    - *sampler simple* is sampler with trailing spacing and linear beta schedule
   - xyz grid support for sampler options  
   - metadata updates for sampler options  
   - modernui updates for sampler options  

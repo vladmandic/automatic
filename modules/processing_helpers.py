@@ -563,7 +563,7 @@ def update_sampler(p, sd_model, second_pass=False):
         if sampler is None or sampler_selection == 'Default':
             return
         sampler_options = []
-        if sampler.config.get('rescale_betas_zero_snr', False) and shared.opts.schedulers_rescale_beta != shared.opts.data_labels.get('schedulers_rescale_beta').default:
+        if sampler.config.get('rescale_betas_zero_snr', False) and shared.opts.schedulers_rescale_betas != shared.opts.data_labels.get('schedulers_rescale_betas').default:
             sampler_options.append('rescale')
         if sampler.config.get('thresholding', False) and shared.opts.schedulers_use_thresholding != shared.opts.data_labels.get('schedulers_use_thresholding').default:
             sampler_options.append('dynamic')
