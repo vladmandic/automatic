@@ -108,15 +108,17 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         # lookup by index
         if getattr(p, 'resize_mode', None) is not None:
             args['Resize mode'] = shared.resize_modes[p.resize_mode] if shared.resize_modes[p.resize_mode] != 'None' else None
-    if getattr(p, 'resize_mode_before', None) is not None:
-        args['Size before'] = f"{p.width_before}x{p.height_before}" if hasattr(p, 'width_before') and hasattr(p, 'height_before') else None
-        args['Size mode before'] = p.resize_mode_before
-        args['Size scale before'] = p.scale_by_before
-        args['Size name before'] = p.resize_name_before
+    if hasattr(p, 'width_before') and hasattr(p, 'height_before'):
+        args['Size'] = f"{p.width_before}x{p.height_before}" # override size
+        if getattr(p, 'resize_mode_before', None) is not None:
+            args['Size before'] = f"{p.width_before}x{p.height_before}"
+            args['Size mode before'] = p.resize_mode_before
+            args['Size scale before'] = p.scale_by_before if p.scale_by_before != 1.0 else None
+            args['Size name before'] = p.resize_name_before
     if getattr(p, 'resize_mode_after', None) is not None:
         args['Size after'] = f"{p.width_after}x{p.height_after}" if hasattr(p, 'width_after') and hasattr(p, 'height_after') else None
         args['Size mode after'] = p.resize_mode_after
-        args['Size scale after'] = p.scale_by_after
+        args['Size scale after'] = p.scale_by_after if p.scale_by_after != 1.0 else None
         args['Size name after'] = p.resize_name_after
     if getattr(p, 'resize_mode_mask', None) is not None:
         args['Size mask'] = f"{p.width_mask}x{p.height_mask}" if hasattr(p, 'width_mask') and hasattr(p, 'height_mask') else None
