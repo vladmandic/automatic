@@ -44,17 +44,15 @@ class History():
         return [item.name for item in self.latents]
 
     @property
-    def latest(self):
-        return self.get(0)
-
-    @property
     def selected(self):
         if self.index >= 0 and self.index < self.count:
             index = self.index
-            latent = self.get(self.index)
             self.index = -1
-            return latent, index
-        return self.latest, -1
+        else:
+            index = 0
+        item = self.latents[index]
+        shared.log.debug(f'History get: index={index} time={item.ts} shape={item.latent.shape} dtype={item.latent.dtype} count={self.count}')
+        return item.latent.to(devices.device), index
 
     def find(self, name):
         for i, item in enumerate(self.latents):
@@ -68,11 +66,6 @@ class History():
         # shared.log.debug(f'History add: shape={latent.shape} dtype={latent.dtype} count={self.count}')
         if self.count >= shared.opts.latent_history:
             self.latents.pop()
-
-    def get(self, index: int = 0):
-        item = self.latents[index]
-        # shared.log.debug(f'History get: index={index} time={item.ts} shape={item.latent.shape} dtype={item.latent.dtype} count={self.count}')
-        return item.latent.to(devices.device)
 
     def clear(self):
         self.latents.clear()
