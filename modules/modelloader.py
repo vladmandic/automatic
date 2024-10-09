@@ -311,12 +311,7 @@ def find_diffuser(name: str):
     if len(repo) > 0:
         return repo['name']
     hf_api = hf.HfApi()
-    hf_filter = hf.ModelFilter(
-        model_name=name,
-        # task='text-to-image',
-        library=['diffusers'],
-    )
-    models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
+    models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
         return models[0].id

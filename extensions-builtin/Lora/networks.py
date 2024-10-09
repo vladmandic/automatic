@@ -48,6 +48,8 @@ convert_diffusers_name_to_compvis = lora_convert.convert_diffusers_name_to_compv
 
 
 def assign_network_names_to_compvis_modules(sd_model):
+    if sd_model is None:
+        return
     network_layer_mapping = {}
     if shared.native:
         if hasattr(shared.sd_model, 'text_encoder') and shared.sd_model.text_encoder is not None:

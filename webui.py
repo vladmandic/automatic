@@ -155,7 +155,7 @@ def initialize():
 
 
 def load_model():
-    if not shared.opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
+    if not shared.opts.sd_checkpoint_autoload and shared.cmd_opts.ckpt is not None:
         log.debug('Model auto load disabled')
     else:
         shared.state.begin('Load')

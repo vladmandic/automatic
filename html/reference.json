@@ -1,4 +1,11 @@
 {
+  "Tempest SD-XL v0.1": {
+    "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
+    "preview": "TempestV0.1-Artistic.jpg",
+    "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
+    "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
+  },
+
   "Juggernaut SD-XL XI": {
     "path": "juggernautXL_juggXIByRundiffusion.safetensors@https://civitai.com/api/download/models/782002",
     "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
@@ -44,13 +51,6 @@
     "desc": "Showcase finetuned model based on Stable diffusion XL",
     "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 8, cfg_scale: 2.0"
   }, 
-
-  "Tempest SD-XL v0.1": {
-    "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
-    "preview": "TempestV0.1-Artistic.jpg",
-    "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
-    "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
-  },
 
   "SDXS DreamShaper 512": {
     "path": "IDKiro/sdxs-512-dreamshaper",

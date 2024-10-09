@@ -270,7 +270,7 @@ def list_checkpoint_tiles():
     import modules.sd_models # pylint: disable=W0621
     return modules.sd_models.checkpoint_tiles()
 
-default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.ckpt"
+default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.safetensors"
 
 
 def is_url(string):

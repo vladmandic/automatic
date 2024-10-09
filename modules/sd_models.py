@@ -261,7 +261,7 @@ def select_checkpoint(op='model'):
         return None
     # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
-        if model_checkpoint != 'model.ckpt' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
+        if model_checkpoint != 'model.safetensors' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
             shared.log.warning(f'Load {op}: select="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
@@ -1035,7 +1035,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
         shared.log.debug(f'Model pipeline: pipeline="{shared.opts.custom_diffusers_pipeline}"')
         diffusers_load_config['custom_pipeline'] = shared.opts.custom_diffusers_pipeline
-    if shared.opts.data.get('sd_model_checkpoint', '') == 'model.ckpt' or shared.opts.data.get('sd_model_checkpoint', '') == '':
+    if shared.opts.data.get('sd_model_checkpoint', '') == 'model.safetensors' or shared.opts.data.get('sd_model_checkpoint', '') == '':
         shared.opts.data['sd_model_checkpoint'] = "stabilityai/stable-diffusion-xl-base-1.0"
 
     if op == 'model' or op == 'dict':
@@ -1351,7 +1351,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         errors.display(e, "Model")
 
     devices.torch_gc(force=True)
-    script_callbacks.model_loaded_callback(sd_model)
+    if sd_model is not None:
+        script_callbacks.model_loaded_callback(sd_model)
     shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} memory={memory_stats()}")
 
 
