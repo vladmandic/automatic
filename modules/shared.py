@@ -570,6 +570,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
     "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
     "huggingface_token": OptionInfo('', 'HuggingFace token'),
+    "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
 
     "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
     "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),

@@ -1,23 +1,24 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-08
+## Update for 2024-10-09
 
-### Highlights for 2024-10-08
+### Highlights for 2024-10-09
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
   and you can pick any previous latent from auto-captured history!  
 - **Detailer** Fully built-in detailer workflow without with support for all standard models  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
-- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models and  
-  [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control  
+- Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
+  [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
+  [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-07
+### Details for 2024-10-09
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -108,6 +109,11 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - for low    cfg scale, use positive momentum: e.g. cfg=2 => momentum=0.6
   - for normal cfg scale, use negative momentum: e.g. cfg=6 => momentum=-0.3
   - for high   cfg scale, use neutral  momentum: e.g. cfg=10 => momentum=0.0
+
+- [LinFusion](https://github.com/Huage001/LinFusion)  
+  - apply liner distillation to during load to any sd15/sdxl model  
+  - can reduce vram use for high resolutions and increase performance
+  - *note*: use lower cfg scales as typical for distilled models  
 
 - **flux**  
   - avoid unet load if unchanged  
