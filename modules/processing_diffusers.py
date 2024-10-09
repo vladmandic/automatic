@@ -390,7 +390,8 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     if 'base' not in p.skip:
         output = process_base(p)
     else:
-        output, _index = SimpleNamespace(images=shared.history.selected)
+        images, _index=shared.history.selected
+        output = SimpleNamespace(images=images)
 
     if shared.state.interrupted or shared.state.skipped:
         shared.sd_model = orig_pipeline
