@@ -354,21 +354,24 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 else:
                     sample = validate_sample(sample)
                     image = Image.fromarray(sample)
-                sample = face_restoration.restore_faces(sample, p)
+                if p.restore_faces:
+                    p.ops.append('restore')
+                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-restore")
+                    sample = face_restoration.restore_faces(sample, p)
+                    if sample is not None:
+                        image = Image.fromarray(sample)
                 if p.detailer:
+                    p.ops.append('detailer')
                     if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
                         images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-detailer")
-                    p.ops.append('detailer')
                     sample = detailer.detail(sample, p)
                     if sample is not None:
                         image = Image.fromarray(sample)
-                if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                    pp = scripts.PostprocessImageArgs(image)
-                    p.scripts.postprocess_image(p, pp)
-                    if pp.image is not None:
-                        image = pp.image
                 if p.color_corrections is not None and i < len(p.color_corrections):
+                    p.ops.append('color')
                     if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
                         orig = p.color_corrections
                         p.color_corrections = None
@@ -376,8 +379,12 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                         image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
                         images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
-                    p.ops.append('color')
                     image = apply_color_correction(p.color_corrections[i], image)
+                if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
+                    pp = scripts.PostprocessImageArgs(image)
+                    p.scripts.postprocess_image(p, pp)
+                    if pp.image is not None:
+                        image = pp.image
                 if shared.opts.mask_apply_overlay:
                     image = apply_overlay(image, p.paste_to, i, p.overlay_images)
 

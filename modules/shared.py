@@ -474,9 +474,9 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
     "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
-    "quant_sep": OptionInfo("<h2>Model Quantization</h2>", "", gr.HTML),
-    "quant_shuffle_weights": OptionInfo(False, "Shuffle the weights between GPU and CPU when quantizing"),
-    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO"),
+    "quant_sep": OptionInfo("<h2>Model Quantization</h2>", "", gr.HTML, {"visible": native}),
+    "quant_shuffle_weights": OptionInfo(False, "Shuffle the weights between GPU and CPU when quantizing", gr.Checkbox, {"visible": native}),
+    "diffusers_quantization": OptionInfo(False, "Dynamic quantization with TorchAO", gr.Checkbox, {"visible": native}),
     "nncf_compress_weights": OptionInfo([], "Compress Model weights with NNCF INT8", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights": OptionInfo([], "Quantize Model weights with Optimum Quanto", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights_type": OptionInfo("qint8", "Weights type for Optimum Quanto", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
@@ -543,7 +543,7 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "batch_frame_mode": OptionInfo(False, "Parallel process images in batch"),
     "inference_other_sep": OptionInfo("<h2>Other</h2>", "", gr.HTML),
     "inference_mode": OptionInfo("no-grad", "Torch inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
-    "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode"),
+    "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
 }))
 
 options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
