@@ -50,6 +50,8 @@ class Processed:
         self.image_cfg_scale = p.image_cfg_scale or 0
         self.steps = p.steps or 0
         self.batch_size = max(1, p.batch_size)
+        self.restore_faces = p.restore_faces or False
+        self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
         self.detailer = p.detailer or False
         self.detailer_model = shared.opts.detailer_model if p.detailer else None
         self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
