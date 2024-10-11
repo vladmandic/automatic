@@ -40,7 +40,7 @@ def setup_model(dirname):
             def create_models(self):
                 try:
                     from modules.postprocess.codeformer_arch import CodeFormer
-                    from facelib.utils.detailer_helper import FaceRestoreHelper
+                    from facelib.utils.face_restoration_helper import FaceRestoreHelper
                     from facelib.detection.retinaface import retinaface
                 except Exception as e:
                     shared.log.error(f"CodeFormer error: {e}")

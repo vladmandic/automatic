@@ -56,7 +56,7 @@ class Shared(sys.modules[__name__].__class__):
     def sd_model(self):
         import modules.sd_models # pylint: disable=W0621
         if modules.sd_models.model_data.sd_model is None:
-            shared.log.debug(f'Model requested: fn={sys._getframe().f_back.f_code.co_name}') # pylint: disable=protected-access
+            shared.log.debug(f'Model requested: fn={sys._getframe(1).f_code.co_filename}:{sys._getframe(1).f_code.co_name}/{sys._getframe(2).f_code.co_filename}:{sys._getframe(2).f_code.co_name}') # pylint: disable=protected-access
         return modules.sd_models.model_data.get_sd_model()
 
     @sd_model.setter

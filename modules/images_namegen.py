@@ -34,10 +34,10 @@ class FilenameGenerator:
         'timestamp': lambda self: getattr(self.p, "job_timestamp", shared.state.job_timestamp),
         'job_timestamp': lambda self: getattr(self.p, "job_timestamp", shared.state.job_timestamp),
 
-        'model': lambda self: shared.sd_model.sd_checkpoint_info.title,
-        'model_shortname': lambda self: shared.sd_model.sd_checkpoint_info.model_name,
-        'model_name': lambda self: shared.sd_model.sd_checkpoint_info.model_name,
-        'model_hash': lambda self: shared.sd_model.sd_checkpoint_info.shorthash,
+        'model': lambda self: shared.sd_model.sd_checkpoint_info.title if shared.sd_loaded else '',
+        'model_shortname': lambda self: shared.sd_model.sd_checkpoint_info.model_name if shared.sd_loaded else '',
+        'model_name': lambda self: shared.sd_model.sd_checkpoint_info.model_name if shared.sd_loaded else '',
+        'model_hash': lambda self: shared.sd_model.sd_checkpoint_info.shorthash if shared.sd_loaded else '',
 
         'prompt': lambda self: self.prompt_full(),
         'prompt_no_styles': lambda self: self.prompt_no_style(),
