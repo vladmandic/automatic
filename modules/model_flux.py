@@ -22,6 +22,8 @@ def get_quant(file_path):
         return 'fp4'
     if "nf4" in file_path.lower():
         return 'nf4'
+    if file_path.endswith('.gguf'):
+        return 'gguf'
     return 'none'
 
 
@@ -130,19 +132,29 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
     return transformer, text_encoder_2
 
 
-def load_flux_gguf(file_path): # TODO add support for GGUF flux models
-    shared.log.error(f"Load model: type=FLUX GGUF UNET is not supported: {file_path}")
-    """
-    with torch.device("meta"):
-        transformer = diffusers.FluxTransformer2DModel.from_config(os.path.join("configs", "flux", "transformer", "config.json")).to(dtype=devices.dtype)
-    # from .modeling_gguf_pytorch_utils import load_gguf_checkpoint
-    from modules.model_te import install_gguf
-    install_gguf()
-    from transformers.modeling_gguf_pytorch_utils import load_gguf_checkpoint
-    state_dict = load_gguf_checkpoint(file_path, return_tensors=True)["tensors"]
+def load_flux_gguf(file_path):
+    transformer = None
+    from accelerate import init_empty_weights
+    from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
+    from modules import ggml, sd_hijack_accelerate
+    model_te.install_gguf()
+    with init_empty_weights():
+        from diffusers import FluxTransformer2DModel
+        config = FluxTransformer2DModel.load_config(os.path.join('configs', 'flux'), subfolder="transformer")
+        transformer = FluxTransformer2DModel.from_config(config).to(devices.dtype)
+        expected_state_dict_keys = list(transformer.state_dict().keys())
+    state_dict, stats = ggml.load_gguf_state_dict(file_path, devices.dtype)
+    state_dict = convert_flux_transformer_checkpoint_to_diffusers(state_dict)
+    applied, skipped = 0, 0
+    for param_name, param in state_dict.items():
+        if param_name not in expected_state_dict_keys:
+            # shared.log.warning(f'Load model: type=Unet/Transformer param={param_name} unexpected')
+            skipped += 1
+            continue
+        applied += 1
+        sd_hijack_accelerate.hijack_set_module_tensor_simple(transformer, param_name, device=0, value=param)
+    shared.log.debug(f'Load model: type=Unet/Transformer applied={applied} skipped={skipped} stats={stats}')
     return transformer, None
-    """
-    return None, None
 
 
 def load_transformer(file_path): # triggered by opts.sd_unet change
@@ -158,6 +170,8 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
     shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
     if 'gguf' in file_path.lower():
         _transformer, _text_encoder_2 = load_flux_gguf(file_path)
+        if _transformer is not None:
+            transformer = _transformer
     elif quant == 'qint8' or quant == 'qint4':
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:

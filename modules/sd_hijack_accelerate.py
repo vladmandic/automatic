@@ -53,6 +53,34 @@ def hijack_set_module_tensor(
     tensor_to_timer += (t1 - t0)
 
 
+def hijack_set_module_tensor_simple(
+    module: nn.Module,
+    tensor_name: str,
+    device: Union[int, str, torch.device],
+    value: Optional[torch.Tensor] = None,
+    dtype: Optional[Union[str, torch.dtype]] = None, # pylint: disable=unused-argument
+    fp16_statistics: Optional[torch.HalfTensor] = None, # pylint: disable=unused-argument
+):
+    global tensor_to_timer # pylint: disable=global-statement
+    if device == 'cpu': # override to load directly to gpu
+        device = devices.device
+    t0 = time.time()
+    if "." in tensor_name:
+        splits = tensor_name.split(".")
+        for split in splits[:-1]:
+            module = getattr(module, split)
+        tensor_name = splits[-1]
+    old_value = getattr(module, tensor_name)
+    with devices.inference_context():
+        if tensor_name in module._buffers: # pylint: disable=protected-access
+            module._buffers[tensor_name] = value.to(device, non_blocking=True)  # pylint: disable=protected-access
+        elif value is not None or not check_device_same(torch.device(device), module._parameters[tensor_name].device):  # pylint: disable=protected-access
+            param_cls = type(module._parameters[tensor_name]) # pylint: disable=protected-access
+            module._parameters[tensor_name] = param_cls(value, requires_grad=old_value.requires_grad).to(device, non_blocking=True) # pylint: disable=protected-access
+    t1 = time.time()
+    tensor_to_timer += (t1 - t0)
+
+
 def hijack_accelerate():
     accelerate.utils.set_module_tensor_to_device = hijack_set_module_tensor
     global tensor_to_timer # pylint: disable=global-statement

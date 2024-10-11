@@ -3,7 +3,7 @@
 from typing import overload
 import torch
 import gguf
-from gguf_utils import DEQUANTIZE_FUNCTIONS, TORCH_COMPATIBLE_QTYPES, dequantize
+from .gguf_utils import DEQUANTIZE_FUNCTIONS, TORCH_COMPATIBLE_QTYPES, dequantize
 
 
 def dequantize_and_run(func, args, kwargs):
@@ -48,6 +48,7 @@ GGML_TENSOR_OP_TABLE = {
     torch.ops.aten.t.default: dequantize_and_run,  # pyright: ignore
     torch.ops.aten.addmm.default: dequantize_and_run,  # pyright: ignore
     torch.ops.aten.mul.Tensor: dequantize_and_run,  # pyright: ignore
+    torch.ops.aten.split.Tensor: dequantize_and_run,  # pyright: ignore
 }
 
 
@@ -145,4 +146,6 @@ class GGMLTensor(torch.Tensor):
         # The new op simply needs to be added to the GGML_TENSOR_OP_TABLE.
         if func in GGML_TENSOR_OP_TABLE:
             return GGML_TENSOR_OP_TABLE[func](func, args, kwargs)
+        else:
+            return dequantize_and_run(func, args, kwargs)
         return NotImplemented
