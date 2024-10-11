@@ -37,3 +37,4 @@ class ExtraNetworksPageHistory(ui_extra_networks.ExtraNetworksPage):
         items = [l for l in shared.history.latents if l.name == name]
         if len(items) > 0:
             return items[0].info
+        return ''

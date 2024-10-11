@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-09
+## Update for 2024-10-11
 
-### Highlights for 2024-10-09
+### Highlights for 2024-10-11
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -12,13 +12,14 @@
 - Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
+- Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-09
+### Details for 2024-10-11
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -115,7 +116,10 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - can reduce vram use for high resolutions and increase performance
   - *note*: use lower cfg scales as typical for distilled models  
 
-- **flux**  
+- [Flux](https://huggingface.co/black-forest-labs/FLUX.1-dev)  
+  - see [wiki](https://github.com/vladmandic/automatic/wiki/FLUX#quantization) for details on `gguf`  
+  - support for `gguf` binary format for loading unet/transformer component  
+  - support for `gguf` binary format for loading t5/text-encoder component: requires transformers pr  
   - avoid unet load if unchanged  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
@@ -205,8 +209,6 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - massive log cleanup  
   - full lint pass  
   - improve inference mode handling  
-- **experimental**  
-  - flux t5 load from gguf: requires transformers pr  
 
 
 ## Update for 2024-09-13

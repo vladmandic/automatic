@@ -152,7 +152,8 @@ def load_flux_gguf(file_path):
             skipped += 1
             continue
         applied += 1
-        sd_hijack_accelerate.hijack_set_module_tensor_simple(transformer, param_name, device=0, value=param)
+        sd_hijack_accelerate.hijack_set_module_tensor_simple(transformer, tensor_name=param_name, value=param, device=0)
+        state_dict[param_name] = None
     shared.log.debug(f'Load model: type=Unet/Transformer applied={applied} skipped={skipped} stats={stats}')
     return transformer, None
 
