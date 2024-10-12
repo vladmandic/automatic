@@ -47,9 +47,9 @@ def find_slice_sizes(query_shape, query_element_size, slice_rate=4):
 
     return do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size
 
-
-backup_sdpa = torch.nn.functional.scaled_dot_product_attention
-@wraps(torch.nn.functional.scaled_dot_product_attention)
+if devices.sdpa_pre_dyanmic_atten is None:
+    devices.sdpa_pre_dyanmic_atten = torch.nn.functional.scaled_dot_product_attention
+@wraps(devices.sdpa_pre_dyanmic_atten)
 def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
     do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate)
 
@@ -68,7 +68,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                         for i3 in range(shape_three // split_3_slice_size): # pylint: disable=invalid-name
                             start_idx_3 = i3 * split_3_slice_size
                             end_idx_3 = (i3 + 1) * split_3_slice_size
-                            hidden_states[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3] = backup_sdpa(
+                            hidden_states[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3] = devices.sdpa_pre_dyanmic_atten(
                                 query[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 key[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
                                 value[start_idx:end_idx, start_idx_2:end_idx_2, start_idx_3:end_idx_3],
@@ -76,7 +76,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                                 dropout_p=dropout_p, is_causal=is_causal, **kwargs
                             )
                     else:
-                        hidden_states[start_idx:end_idx, start_idx_2:end_idx_2] = backup_sdpa(
+                        hidden_states[start_idx:end_idx, start_idx_2:end_idx_2] = devices.sdpa_pre_dyanmic_atten(
                             query[start_idx:end_idx, start_idx_2:end_idx_2],
                             key[start_idx:end_idx, start_idx_2:end_idx_2],
                             value[start_idx:end_idx, start_idx_2:end_idx_2],
@@ -84,7 +84,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
                             dropout_p=dropout_p, is_causal=is_causal, **kwargs
                         )
             else:
-                hidden_states[start_idx:end_idx] = backup_sdpa(
+                hidden_states[start_idx:end_idx] = devices.sdpa_pre_dyanmic_atten(
                     query[start_idx:end_idx],
                     key[start_idx:end_idx],
                     value[start_idx:end_idx],
@@ -94,7 +94,7 @@ def sliced_scaled_dot_product_attention(query, key, value, attn_mask=None, dropo
         if devices.backend != "directml":
             getattr(torch, query.device.type).synchronize()
     else:
-        return backup_sdpa(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
+        return devices.sdpa_pre_dyanmic_atten(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
     return hidden_states
 
 
