@@ -204,11 +204,14 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
 - **extensions**  
   - add mechanism to lock-down extension to specific working commit  
   - added `sd-webui-controlnet` and `adetailer` last-known working commits  
+- **upscaling**  
+  - interruptible operations
 - **refactor**  
   - modularize main process loop  
   - massive log cleanup  
   - full lint pass  
   - improve inference mode handling  
+  - unify quant lib loading  
 
 
 ## Update for 2024-09-13

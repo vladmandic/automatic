@@ -125,6 +125,8 @@ def inference(img, model, tile, tile_overlap, window_size, scale):
     with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=shared.console) as progress:
         task = progress.add_task(description="Upscaling Initializing", total=len(h_idx_list) * len(w_idx_list))
         for h_idx in h_idx_list:
+            if shared.state.interrupted:
+                break
             for w_idx in w_idx_list:
                 if shared.state.interrupted or shared.state.skipped:
                     break
