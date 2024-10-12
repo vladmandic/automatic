@@ -174,6 +174,8 @@ class KeyConvert:
             map_key = map_keys[position - 1]
             if search_key.startswith(map_key):
                 key = key.replace(map_key, self.UNET_CONVERSION_MAP[map_key]).replace("oft", "lora") # pylint: disable=unsubscriptable-object
+        if "lycoris" in key and "transformer" in key:
+            key = key.replace("lycoris", "lora_transformer")
         sd_module = shared.sd_model.network_layer_mapping.get(key, None)
         if sd_module is None:
             sd_module = shared.sd_model.network_layer_mapping.get(key.replace("guidance", "timestep"), None)  # FLUX1 fix
