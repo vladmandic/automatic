@@ -11,23 +11,10 @@ from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
 from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
 import safetensors.torch
-from modules import shared, devices
+from modules import shared, devices, model_quant
 
 
-bnb = None
 debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
-
-
-def load_bnb():
-    from installer import install
-    install('bitsandbytes', quiet=True)
-    try:
-        import bitsandbytes
-        global bnb # pylint: disable=global-statement
-        bnb = bitsandbytes
-    except Exception as e:
-        shared.log.error(f"Load model: type=FLUX Failed to import bitsandbytes: {e}")
-        raise
 
 
 def _replace_with_bnb_linear(
@@ -40,6 +27,7 @@ def _replace_with_bnb_linear(
 
     Returns the converted model and a boolean that indicates if the conversion has been successfull or not.
     """
+    bnb = model_quant.load_bnb('Load model: type=FLUX')
     for name, module in model.named_children():
         if isinstance(module, nn.Linear):
             with init_empty_weights():
@@ -83,6 +71,7 @@ def check_quantized_param(
     model,
     param_name: str,
 ) -> bool:
+    bnb = model_quant.load_bnb('Load model: type=FLUX')
     module, tensor_name = get_module_from_name(model, param_name)
     if isinstance(module._parameters.get(tensor_name, None), bnb.nn.Params4bit): # pylint: disable=protected-access
         # Add here check for loaded components' dtypes once serialization is implemented
@@ -104,6 +93,7 @@ def create_quantized_param(
     unexpected_keys=None,
     pre_quantized=False
 ):
+    bnb = model_quant.load_bnb('Load model: type=FLUX')
     module, tensor_name = get_module_from_name(model, param_name)
 
     if tensor_name not in module._parameters: # pylint: disable=protected-access
@@ -163,7 +153,6 @@ def create_quantized_param(
 
 
 def load_flux_nf4(checkpoint_info):
-    load_bnb()
     transformer = None
     text_encoder_2 = None
     if isinstance(checkpoint_info, str):

@@ -2,7 +2,7 @@ import copy
 import time
 import logging
 import torch
-from modules import shared, devices, sd_models
+from modules import shared, devices, sd_models, model_quant
 from installer import install, setup_logging
 
 
@@ -141,12 +141,14 @@ def ipex_optimize(sd_model):
         shared.log.warning(f"IPEX Optimize: error: {e}")
     return sd_model
 
+
 def nncf_send_to_device(model):
     for child in model.children():
         if child.__class__.__name__ == "WeightsDecompressor":
             child.scale = child.scale.to(devices.device)
             child.zero_point = child.zero_point.to(devices.device)
         nncf_send_to_device(child)
+
 
 def nncf_compress_model(model, op=None, sd_model=None):
     import nncf
@@ -177,6 +179,7 @@ def nncf_compress_model(model, op=None, sd_model=None):
     devices.torch_gc(force=True)
     return model
 
+
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
@@ -201,8 +204,9 @@ def nncf_compress_weights(sd_model):
         shared.log.warning(f"NNCF Compress Weights: error: {e}")
     return sd_model
 
+
 def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activations=None):
-    from optimum import quanto # pylint: disable=no-name-in-module
+    quanto = model_quant.load_quanto('Compile model: type=Optimum Quanto')
     global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
     if sd_model is not None and "Flux" in sd_model.__class__.__name__: # LayerNorm is not supported
         exclude_list = ["transformer_blocks.*.norm1.norm", "transformer_blocks.*.norm2", "transformer_blocks.*.norm1_context.norm", "transformer_blocks.*.norm2_context", "single_transformer_blocks.*.norm.norm", "norm_out.norm"]
@@ -241,6 +245,7 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
     devices.torch_gc(force=True)
     return model
 
+
 def optimum_quanto_weights(sd_model):
     try:
         if shared.opts.diffusers_offload_mode in {"balanced", "sequential"}:
@@ -249,8 +254,7 @@ def optimum_quanto_weights(sd_model):
         t0 = time.time()
         shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
-        install('optimum-quanto', quiet=True)
-        from optimum import quanto # pylint: disable=no-name-in-module
+        quanto = model_quant.load_quanto()
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
 
         sd_model = apply_compile_to_model(sd_model, optimum_quanto_model, shared.opts.optimum_quanto_weights, op="optimum-quanto")
@@ -299,6 +303,7 @@ def optimum_quanto_weights(sd_model):
     except Exception as e:
         shared.log.warning(f"Optimum Quanto Weights: error: {e}")
     return sd_model
+
 
 def optimize_openvino(sd_model):
     try:

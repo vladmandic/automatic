@@ -1,6 +1,6 @@
 import torch
 import networks
-from modules import patches, shared
+from modules import patches, shared, model_quant
 
 
 class LoraPatches:
@@ -24,17 +24,13 @@ class LoraPatches:
     def apply(self):
         if self.active or shared.opts.lora_force_diffusers:
             return
-        try:
-            import bitsandbytes
-            self.Linear4bit_forward = patches.patch(__name__, bitsandbytes.nn.Linear4bit, 'forward', networks.network_Linear4bit_forward)
-        except Exception:
-            pass
-        try:
-            from optimum import quanto # pylint: disable=no-name-in-module
+        bnb = model_quant.load_bnb(silent=True)
+        if bnb is not None:
+            self.Linear4bit_forward = patches.patch(__name__, bnb.nn.Linear4bit, 'forward', networks.network_Linear4bit_forward)
+        quanto = model_quant.load_quanto(silent=True)
+        if quanto is not None:
             self.QLinear_forward = patches.patch(__name__, quanto.nn.QLinear, 'forward', networks.network_QLinear_forward)
             self.QConv2d_forward = patches.patch(__name__, quanto.nn.QConv2d, 'forward', networks.network_QConv2d_forward)
-        except Exception:
-            pass
         self.Linear_forward = patches.patch(__name__, torch.nn.Linear, 'forward', networks.network_Linear_forward)
         self.Linear_load_state_dict = patches.patch(__name__, torch.nn.Linear, '_load_from_state_dict', networks.network_Linear_load_state_dict)
         self.Conv2d_forward = patches.patch(__name__, torch.nn.Conv2d, 'forward', networks.network_Conv2d_forward)
@@ -53,17 +49,13 @@ class LoraPatches:
     def undo(self):
         if not self.active or shared.opts.lora_force_diffusers:
             return
-        try:
-            import bitsandbytes
-            self.Linear4bit_forward = patches.undo(__name__, bitsandbytes.nn.Linear4bit, 'forward') # pylint: disable=E1128
-        except Exception:
-            pass
-        try:
-            from optimum import quanto # pylint: disable=no-name-in-module
+        bnb = model_quant.load_bnb(silent=True)
+        if bnb is not None:
+            self.Linear4bit_forward = patches.undo(__name__, bnb.nn.Linear4bit, 'forward') # pylint: disable=E1128
+        quanto = model_quant.load_quanto(silent=True)
+        if quanto is not None:
             self.QLinear_forward = patches.undo(__name__, quanto.nn.QLinear, 'forward') # pylint: disable=E1128
             self.QConv2d_forward = patches.undo(__name__, quanto.nn.QConv2d, 'forward') # pylint: disable=E1128
-        except Exception:
-            pass
         self.Linear_forward = patches.undo(__name__, torch.nn.Linear, 'forward') # pylint: disable=E1128
         self.Linear_load_state_dict = patches.undo(__name__, torch.nn.Linear, '_load_from_state_dict') # pylint: disable=E1128
         self.Conv2d_forward = patches.undo(__name__, torch.nn.Conv2d, 'forward') # pylint: disable=E1128

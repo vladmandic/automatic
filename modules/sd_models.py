@@ -877,13 +877,14 @@ def move_model(model, device=None, force=False):
         devices.torch_gc()
         return
 
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
         if device == devices.device and model.vae.device.type != "meta": # force vae back to gpu if not in txt2img mode
             model.vae.to(device)
             if hasattr(model.vae, '_hf_hook'):
-                debug_move(f'Model move: to={device} class={model.vae.__class__} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                debug_move(f'Model move: to={device} class={model.vae.__class__} fn={fn}') # pylint: disable=protected-access
                 model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={fn}') # pylint: disable=protected-access
     if hasattr(model, "components"): # accelerate patch
         for name, m in model.components.items():
             if not hasattr(m, "_hf_hook"): # not accelerate hook
@@ -1553,7 +1554,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
     if hasattr(new_pipe, "watermark"):
         new_pipe.watermark = NoWatermark()
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 

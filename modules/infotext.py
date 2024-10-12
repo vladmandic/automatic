@@ -79,10 +79,15 @@ def parse(infotext):
 
 
 mapping = [
+    # Backend
     ('Backend', 'sd_backend'),
+    # Models
     ('Model hash', 'sd_model_checkpoint'),
     ('Refiner', 'sd_model_refiner'),
     ('VAE', 'sd_vae'),
+    ('TE', 'sd_text_encoder'),
+    ('Unet', 'sd_unet'),
+    # Other
     ('Parser', 'prompt_attention'),
     ('Color correction', 'img2img_color_correction'),
     # Samplers

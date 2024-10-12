@@ -238,9 +238,10 @@ def connect_paste(button, local_paste_fields, input_comp, override_settings_comp
                 v = params.get(param_name, None)
                 if v is None:
                     continue
-                if shared.opts.disable_weights_auto_swap:
-                    if setting_name == "sd_model_checkpoint" or setting_name == 'sd_model_refiner' or setting_name == 'sd_backend' or setting_name == 'sd_vae':
-                        continue
+                if setting_name == 'sd_backend':
+                    continue
+                if shared.opts.disable_weights_auto_swap and setting_name in ['sd_model_checkpoint', 'sd_model_refiner', 'sd_model_dict', 'sd_vae', 'sd_unet', 'sd_text_encoder']:
+                    continue
                 v = shared.opts.cast_value(setting_name, v)
                 current_value = getattr(shared.opts, setting_name, None)
                 if v == current_value:

@@ -828,11 +828,6 @@ def install_packages():
     # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', None)
     # if tensorflow_package is not None:
     #    install(tensorflow_package, 'tensorflow-rocm' if 'rocm' in tensorflow_package else 'tensorflow', ignore=True, quiet=True)
-    # bitsandbytes_package = os.environ.get('BITSANDBYTES_PACKAGE', None)
-    # if bitsandbytes_package is not None:
-    #    install(bitsandbytes_package, 'bitsandbytes', ignore=True, quiet=True)
-    # elif not args.experimental:
-    #    uninstall('bitsandbytes')
     if args.profile:
         pr.disable( )
         print_profile(pr, 'Packages')

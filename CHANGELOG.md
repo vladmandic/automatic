@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-11
+## Update for 2024-10-12
 
-### Highlights for 2024-10-11
+### Highlights for 2024-10-12
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -19,7 +19,7 @@
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-11
+### Details for 2024-10-12
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  

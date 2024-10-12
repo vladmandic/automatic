@@ -3,7 +3,7 @@ import json
 import torch
 import transformers
 from safetensors.torch import load_file
-from modules import shared, devices, files_cache, errors
+from modules import shared, devices, files_cache, errors, model_quant
 from installer import install
 
 
@@ -67,15 +67,15 @@ def load_t5(name=None, cache_dir=None):
     elif 'fp16' in name.lower():
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'fp4' in name.lower():
-        install('bitsandbytes', quiet=True)
+        model_quant.load_bnb('Load model: type=T5')
         quantization_config = transformers.BitsAndBytesConfig(load_in_4bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'fp8' in name.lower():
-        install('bitsandbytes', quiet=True)
+        model_quant.load_bnb('Load model: type=T5')
         quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True)
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', quantization_config=quantization_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
     elif 'qint8' in name.lower():
-        install('optimum-quanto', quiet=True)
+        model_quant.load_quanto('Load model: type=T5')
         from modules.sd_models_compile import optimum_quanto_model
         t5 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder='text_encoder_3', cache_dir=cache_dir, torch_dtype=devices.dtype)
         t5 = optimum_quanto_model(t5, weights="qint8", activations="none")

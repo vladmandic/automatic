@@ -17,7 +17,7 @@ import network_overrides
 import lora_convert
 import torch
 import diffusers.models.lora
-from modules import shared, devices, sd_models, sd_models_compile, errors, scripts, files_cache
+from modules import shared, devices, sd_models, sd_models_compile, errors, scripts, files_cache, model_quant
 
 
 debug = os.environ.get('SD_LORA_DEBUG', None) is not None
@@ -299,11 +299,13 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
             self.weight = torch.nn.Parameter(weights_backup.to(self.weight.device, copy=True))
             self.freeze()
         elif getattr(self, "quant_type", None) in ['nf4', 'fp4']:
-            import bitsandbytes
-            device = self.weight.device
-            self.weight = bitsandbytes.nn.Params4bit(weights_backup, quant_state=self.quant_state,
-                                                     quant_type=self.quant_type, blocksize=self.blocksize)
-            self.weight.to(device)
+            bnb = model_quant.load_bnb('Load network: type=LoRA', silent=True)
+            if bnb is not None:
+                device = self.weight.device
+                self.weight = bnb.nn.Params4bit(weights_backup, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
+                self.weight.to(device)
+            else:
+                self.weight.copy_(weights_backup)
         else:
             self.weight.copy_(weights_backup)
     if bias_backup is not None:
@@ -339,16 +341,15 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
         elif getattr(self.weight, "quant_type", None) in ['nf4', 'fp4']:
-            import bitsandbytes
-            with devices.inference_context():
-                weights_backup = bitsandbytes.functional.dequantize_4bit(self.weight,
-                                                                         quant_state=self.weight.quant_state,
-                                                                         quant_type=self.weight.quant_type,
-                                                                         blocksize=self.weight.blocksize,
-                                                                         ).to(devices.cpu)
-                self.quant_state = self.weight.quant_state
-                self.quant_type = self.weight.quant_type
-                self.blocksize = self.weight.blocksize
+            bnb = model_quant.load_bnb('Load network: type=LoRA', silent=True)
+            if bnb is not None:
+                with devices.inference_context():
+                    weights_backup = bnb.functional.dequantize_4bit(self.weight, quant_state=self.weight.quant_state, quant_type=self.weight.quant_type, blocksize=self.weight.blocksize,).to(devices.cpu)
+                    self.quant_state = self.weight.quant_state
+                    self.quant_type = self.weight.quant_type
+                    self.blocksize = self.weight.blocksize
+            else:
+                weights_backup = self.weight.clone().to(devices.cpu)
         else:
             weights_backup = self.weight.clone().to(devices.cpu)
         self.network_weights_backup = weights_backup
@@ -376,16 +377,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                             # inpainting model. zero pad updown to make channel[1]  4 to 9
                             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5)) # pylint: disable=not-callable
                         if getattr(self.weight, "quant_type", None) in ['nf4', 'fp4'] or self.weight.numel() != updown.numel():
-                            import bitsandbytes
-                            device = self.weight.device
-                            weight = bitsandbytes.functional.dequantize_4bit(self.weight,
-                                                                             quant_state=self.weight.quant_state,
-                                                                             quant_type=self.weight.quant_type,
-                                                                             blocksize=self.weight.blocksize)
-                            self.weight = bitsandbytes.nn.Params4bit(weight + updown, quant_state=self.quant_state,
-                                                                     quant_type=shared.opts.lora_quant.lower(),
-                                                                     blocksize=self.blocksize)
-                            self.weight.to(device)
+                            bnb = model_quant.load_bnb('Load network: type=LoRA', silent=True)
+                            if bnb is not None:
+                                device = self.weight.device
+                                weight = bnb.functional.dequantize_4bit(self.weight, quant_state=self.weight.quant_state, quant_type=self.weight.quant_type, blocksize=self.weight.blocksize)
+                                self.weight = bnb.nn.Params4bit(weight + updown, quant_state=self.quant_state, quant_type=shared.opts.lora_quant.lower(), blocksize=self.blocksize)
+                                self.weight.to(device)
+                            else:
+                                self.weight = torch.nn.Parameter(weight + updown)
                         else:
                             self.weight = torch.nn.Parameter(weight + updown)
                         if hasattr(self, "qweight") and hasattr(self, "freeze"):

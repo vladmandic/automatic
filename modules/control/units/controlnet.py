@@ -4,7 +4,7 @@ from typing import Union
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, ControlNetModel
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
-from modules import errors, sd_models, devices
+from modules import errors, sd_models, devices, model_quant
 
 
 what = 'ControlNet'
@@ -229,8 +229,7 @@ class ControlNet():
             elif "ControlNet" in opts.optimum_quanto_weights:
                 try:
                     log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
-                    from installer import install
-                    install('optimum-quanto', quiet=True)
+                    model_quant.load_quanto('Load model: type=ControlNet')
                     from modules.sd_models_compile import optimum_quanto_model
                     self.model = optimum_quanto_model(self.model)
                 except Exception as e:

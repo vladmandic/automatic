@@ -128,5 +128,6 @@ def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type
         res = im.copy()
         shared.log.error(f'Invalid resize mode: {resize_mode}')
     t1 = time.time()
-    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_filename}:{sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={fn}') # pylint: disable=protected-access
     return np.array(res) if output_type == 'np' else res

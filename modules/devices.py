@@ -225,7 +225,8 @@ def torch_gc(force=False, fast=False):
     after = { 'gpu': mem.get('gpu', {}).get('used', 0), 'ram': mem.get('ram', {}).get('used', 0), 'retries': mem.get('retries', 0), 'oom': mem.get('oom', 0) }
     utilization = { 'gpu': used_gpu, 'ram': used_ram, 'threshold': threshold }
     results = { 'collected': collected, 'saved': saved }
-    log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={sys._getframe(1).f_code.co_name} time={round(t1 - t0, 2)}') # pylint: disable=protected-access
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={fn} time={round(t1 - t0, 2)}') # pylint: disable=protected-access
 
 
 def set_cuda_sync_mode(mode):

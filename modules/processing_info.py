@@ -69,13 +69,14 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args['Grid'] = grid
     if shared.native:
         args['Pipeline'] = shared.sd_model.__class__.__name__
-        args['T5'] = None if (not shared.opts.add_model_name_to_info or shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None') else shared.opts.sd_text_encoder
+        args['TE'] = None if (not shared.opts.add_model_name_to_info or shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None') else shared.opts.sd_text_encoder
+        args['UNet'] = None if (not shared.opts.add_model_name_to_info or shared.opts.sd_unet is None or shared.opts.sd_unet == 'None') else shared.opts.sd_unet
     if 'txt2img' in p.ops:
         args["Variation seed"] = all_subseeds[index] if p.subseed_strength > 0 else None
         args["Variation strength"] = p.subseed_strength if p.subseed_strength > 0 else None
     if 'hires' in p.ops or 'upscale' in p.ops:
         is_resize = p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5)
-        args["Second pass"] = p.enable_hr
+        args["Refine"] = p.enable_hr
         args["Hires force"] = p.hr_force
         args["Hires steps"] = p.hr_second_pass_steps
         args["HiRes resize mode"] = p.hr_resize_mode if is_resize else None
@@ -89,7 +90,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args["Image CFG scale"] = p.image_cfg_scale
         args["CFG rescale"] = p.diffusers_guidance_rescale
     if 'refine' in p.ops:
-        args["Second pass"] = p.enable_hr
+        args["Refine"] = p.enable_hr
         args["Refiner"] = None if (not shared.opts.add_model_name_to_info) or (not shared.sd_refiner) or (not shared.sd_refiner.sd_checkpoint_info.model_name) else shared.sd_refiner.sd_checkpoint_info.model_name.replace(',', '').replace(':', '')
         args['Image CFG scale'] = p.image_cfg_scale
         args['Refiner steps'] = p.refiner_steps

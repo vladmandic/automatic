@@ -5,38 +5,15 @@ import diffusers
 import transformers
 from safetensors.torch import load_file
 from huggingface_hub import hf_hub_download
-from modules import shared, devices, modelloader, sd_models, sd_unet, model_te
+from modules import shared, devices, modelloader, sd_models, sd_unet, model_te, model_quant
 
 
 debug = shared.log.trace if os.environ.get('SD_LOAD_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
-def get_quant(file_path):
-    if "qint8" in file_path.lower():
-        return 'qint8'
-    if "qint4" in file_path.lower():
-        return 'qint4'
-    if "fp8" in file_path.lower():
-        return 'fp8'
-    if "fp4" in file_path.lower():
-        return 'fp4'
-    if "nf4" in file_path.lower():
-        return 'nf4'
-    if file_path.endswith('.gguf'):
-        return 'gguf'
-    return 'none'
-
-
 def load_flux_quanto(checkpoint_info):
     transformer, text_encoder_2 = None, None
-    from installer import install
-    install('optimum-quanto', quiet=True)
-    try:
-        from optimum import quanto # pylint: disable=no-name-in-module
-        from optimum.quanto import requantize # pylint: disable=no-name-in-module
-    except Exception as e:
-        shared.log.error(f"Load model: type=FLUX Failed to import optimum-quanto: {e}")
-        raise
+    quanto = model_quant.load_quanto('Load model: type=FLUX')
     quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
 
     if isinstance(checkpoint_info, str):
@@ -56,7 +33,7 @@ def load_flux_quanto(checkpoint_info):
         dtype = state_dict['context_embedder.bias'].dtype
         with torch.device("meta"):
             transformer = diffusers.FluxTransformer2DModel.from_config(os.path.join(repo_path, "transformer", "config.json")).to(dtype=dtype)
-        requantize(transformer, state_dict, quantization_map, device=torch.device("cpu"))
+        quanto.requantize(transformer, state_dict, quantization_map, device=torch.device("cpu"))
         transformer.eval()
         if transformer.dtype != devices.dtype:
             try:
@@ -83,7 +60,7 @@ def load_flux_quanto(checkpoint_info):
         dtype = state_dict['encoder.block.0.layer.0.SelfAttention.relative_attention_bias.weight'].dtype
         with torch.device("meta"):
             text_encoder_2 = transformers.T5EncoderModel(t5_config).to(dtype=dtype)
-        requantize(text_encoder_2, state_dict, quantization_map, device=torch.device("cpu"))
+        quanto.requantize(text_encoder_2, state_dict, quantization_map, device=torch.device("cpu"))
         text_encoder_2.eval()
         if text_encoder_2.dtype != devices.dtype:
             try:
@@ -105,9 +82,8 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
         repo_path = checkpoint_info
     else:
         repo_path = checkpoint_info.path
-    from installer import install
-    install('bitsandbytes', quiet=True)
-    quant = get_quant(repo_path)
+    model_quant.load_bnb('Load model: type=T5')
+    quant = model_quant.get_quant(repo_path)
     try:
         if quant == 'fp8':
             quantization_config = transformers.BitsAndBytesConfig(load_in_8bit=True, bnb_4bit_compute_dtype=devices.dtype)
@@ -162,7 +138,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
     if file_path is None or not os.path.exists(file_path):
         return None
     transformer = None
-    quant = get_quant(file_path)
+    quant = model_quant.get_quant(file_path)
     diffusers_load_config = {
         "low_cpu_mem_usage": True,
         "torch_dtype": devices.dtype,
@@ -195,7 +171,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
 
 
 def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_checkpoint change
-    quant = get_quant(checkpoint_info.path)
+    quant = model_quant.get_quant(checkpoint_info.path)
     repo_id = sd_models.path_to_repo(checkpoint_info.name)
     shared.log.debug(f'Load model: type=FLUX model="{checkpoint_info.name}" repo="{repo_id}" unet="{shared.opts.sd_unet}" t5="{shared.opts.sd_text_encoder}" vae="{shared.opts.sd_vae}" quant={quant} offload={shared.opts.diffusers_offload_mode} dtype={devices.dtype}')
     debug(f'Load model: type=FLUX config={diffusers_load_config}')

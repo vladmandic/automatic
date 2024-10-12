@@ -621,6 +621,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (hidiffusion, "HiDiffusion"),
                 # second pass
                 (enable_hr, "Second pass"),
+                (enable_hr, "Refine"),
                 (hr_sampler_index, "Hires sampler"),
                 (denoising_strength, "Denoising strength"),
                 (hr_upscaler, "Hires upscaler"),

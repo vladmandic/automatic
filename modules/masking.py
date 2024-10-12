@@ -375,7 +375,8 @@ def outpaint(input_image: Image.Image, outpaint_type: str = 'Edge'):
 
 
 def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_type: str = None, mask_blur: int = None, mask_padding: int = None, segment_enable=True, invert=None):
-    debug(f'Run mask: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    debug(f'Run mask: fn={fn}') # pylint: disable=protected-access
 
     if input_image is None:
         return input_mask

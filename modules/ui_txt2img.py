@@ -125,6 +125,7 @@ def create_ui():
                 (hidiffusion, "HiDiffusion"),
                 # second pass
                 (enable_hr, "Second pass"),
+                (enable_hr, "Refine"),
                 (denoising_strength, "Denoising strength"),
                 (hr_sampler_index, "Hires sampler"),
                 (hr_resize_mode, "Hires resize mode"),
