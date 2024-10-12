@@ -172,7 +172,6 @@ def apply_dict(p, x, xs):
 
 def apply_clip_skip(p, x, xs):
     p.clip_skip = x
-    shared.opts.data["clip_skip"] = x
     shared.log.debug(f'XYZ grid apply clip-skip: "{x}"')
 
 

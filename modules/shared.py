@@ -402,7 +402,7 @@ def get_default_modes():
     #    sdp_options_default =  ['Math attention']
     else:
         default_sdp_options = ['Flash attention', 'Memory attention', 'Math attention']
-    if (cmd_opts.lowvram or cmd_opts.medvram) and 'Flash attention' not in default_sdp_options:
+    if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options):
         default_sdp_options.append('Dynamic attention')
 
     return default_offload_mode, default_cross_attention, default_sdp_options
@@ -980,9 +980,10 @@ class Options:
                     if self.data_labels[k].default != v:
                         diff[k] = v
                 else:
-                    if k not in compatibility_opts and not k.startswith('uiux_'):
-                        unused_settings.append(k)
-                    diff[k] = v
+                    if k not in compatibility_opts:
+                        diff[k] = v
+                        if not k.startswith('uiux_'):
+                            unused_settings.append(k)
             writefile(diff, filename, silent=silent)
             if len(unused_settings) > 0:
                 log.debug(f"Unused settings: {unused_settings}")
