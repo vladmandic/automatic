@@ -130,6 +130,12 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - added native load mode for qint8/qint4 models
   - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
 
+- [SageAttention](https://github.com/thu-ml/SageAttention)  
+  - new 8-bit attention implementation on top of SDP that can provide acceleration for some models, thanks @Disty0  
+  - enable in *settings -> compute settings -> sdp options -> sage attention*
+  - compatible with DiT-based models: e.g. *Flux.1, AuraFlow, CogVideoX*  
+  - not compatible with UNet-based models, e.g. *SD15, SDXL*  
+
 - **dtype**
   - previously `cuda_dtype` in settings defaulted to `fp16` if available  
   - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  

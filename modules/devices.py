@@ -2,12 +2,14 @@ import os
 import sys
 import time
 import contextlib
+from functools import wraps
 import torch
-from modules.errors import log, display, install
+from modules.errors import log, display, install as install_traceback
+from installer import install
 
 
 debug = os.environ.get('SD_DEVICE_DEBUG', None) is not None
-install() # traceback handler
+install_traceback() # traceback handler
 opts = None # initialized in get_backend to avoid circular import
 args = None # initialized in get_backend to avoid circular import
 cuda_ok = torch.cuda.is_available()
@@ -331,7 +333,7 @@ def set_sdpa_params():
             torch.backends.cuda.enable_flash_sdp('Flash attention' in opts.sdp_options)
             torch.backends.cuda.enable_mem_efficient_sdp('Memory attention' in opts.sdp_options)
             torch.backends.cuda.enable_math_sdp('Math attention' in opts.sdp_options)
-            global sdpa_original
+            global sdpa_original # pylint: disable=global-statement
             if sdpa_original is not None:
                 torch.nn.functional.scaled_dot_product_attention = sdpa_original
             else:
@@ -341,7 +343,6 @@ def set_sdpa_params():
                     try:
                         # https://github.com/huggingface/diffusers/discussions/7172
                         from flash_attn import flash_attn_func
-                        from functools import wraps
                         sdpa_pre_flash_atten = torch.nn.functional.scaled_dot_product_attention
                         @wraps(sdpa_pre_flash_atten)
                         def sdpa_flash_atten(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
@@ -355,12 +356,13 @@ def set_sdpa_params():
                         log.error(f'ROCm Flash Attention failed: {err}')
             if 'Sage attention' in opts.sdp_options:
                 try:
+                    install('sageattention')
                     from sageattention import sageattn
                     sdpa_pre_sage_atten = torch.nn.functional.scaled_dot_product_attention
                     @wraps(sdpa_pre_sage_atten)
                     def sdpa_sage_atten(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-                        if query.shape[-1] in {128, 96, 64} and attn_mask is None  and query.dtype != torch.float32:
-                            return sageattn(q=query, k=key, v=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale).transpose(1, 2)
+                        if query.shape[-1] in {128, 96, 64} and attn_mask is None and query.dtype != torch.float32:
+                            return sageattn(q=query, k=key, v=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
                         else:
                             return sdpa_pre_sage_atten(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
                     torch.nn.functional.scaled_dot_product_attention = sdpa_sage_atten
@@ -369,7 +371,7 @@ def set_sdpa_params():
                     log.error(f'SDPA Sage Attention failed: {err}')
             if 'Dynamic attention' in opts.sdp_options:
                 try:
-                    global sdpa_pre_dyanmic_atten
+                    global sdpa_pre_dyanmic_atten # pylint: disable=global-statement
                     sdpa_pre_dyanmic_atten = torch.nn.functional.scaled_dot_product_attention
                     from modules.sd_hijack_dynamic_atten import sliced_scaled_dot_product_attention
                     torch.nn.functional.scaled_dot_product_attention = sliced_scaled_dot_product_attention

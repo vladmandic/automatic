@@ -1,9 +1,8 @@
 import os
-from functools import wraps
+from functools import wraps, cache
 import torch
 import diffusers #0.29.1 # pylint: disable=import-error
 from diffusers.models.attention_processor import Attention
-from functools import cache
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
