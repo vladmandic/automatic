@@ -98,8 +98,10 @@ def reload_javascript():
         for line in lines:
             if 'meta name="twitter:' in line:
                 res.body = res.body.replace(line.encode("utf8"), b'')
-            # if 'iframeResizer.contentWindow.min.js' in line:
-            #    res.body = res.body.replace(line.encode("utf8"), b'<script src="/javascript/iframeResizer.js" async=""></script>')
+            # if 'href="https://fonts.googleapis.com"' in line or 'href="https://fonts.gstatic.com"' in line:
+            #     res.body = res.body.replace(line.encode("utf8"), b'')
+            if 'iframeResizer.contentWindow.min.js' in line:
+                res.body = res.body.replace(line.encode("utf8"), b'src="file=javascript/iframeResizer.min.js"')
         res.init_headers()
         return res
 
