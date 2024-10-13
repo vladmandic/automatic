@@ -36,6 +36,7 @@ class SharedSettingsStackHelper(object):
     sd_unet = None
     sd_text_encoder = None
     extra_networks_default_multiplier = None
+    disable_weights_auto_swap = None
 
     def __enter__(self):
         #Save overridden settings so they can be restored later.
@@ -50,9 +51,12 @@ class SharedSettingsStackHelper(object):
         self.sd_unet = shared.opts.sd_unet
         self.sd_text_encoder = shared.opts.sd_text_encoder
         self.extra_networks_default_multiplier = shared.opts.extra_networks_default_multiplier
+        self.disable_weights_auto_swap = shared.opts.disable_weights_auto_swap
+        shared.opts.data["disable_weights_auto_swap"] = False
 
     def __exit__(self, exc_type, exc_value, tb):
         #Restore overriden settings after plot generation.
+        shared.opts.data["disable_weights_auto_swap"] = self.disable_weights_auto_swap
         shared.opts.data["sd_vae"] = self.vae
         shared.opts.data["schedulers_solver_order"] = self.schedulers_solver_order
         shared.opts.data["tome_ratio"] = self.tome_ratio

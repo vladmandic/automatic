@@ -152,6 +152,7 @@ def apply_unet(p, x, xs):
     if x == 'None':
         return
     p.override_settings['sd_unet'] = x
+    shared.opts.data['sd_unet'] = x
     sd_unet.load_unet(shared.sd_model)
     shared.log.debug(f'XYZ grid apply unet: "{x}"')
 
