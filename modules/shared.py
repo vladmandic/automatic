@@ -112,10 +112,10 @@ def readfile(filename, silent=False, lock=False):
             lock_file = fasteners.InterProcessReaderWriterLock(f"{filename}.lock")
             lock_file.logger.disabled = True
             locked = lock_file.acquire_read_lock(blocking=True, timeout=3)
-        except Exception as e:
+        except Exception as err:
             lock_file = None
             locking_available = False
-            log.error(f'File read lock: file="{filename}" {e}')
+            log.error(f'File read lock: file="{filename}" {err}')
             locked = False
     try:
         # if not os.path.exists(filename):
@@ -129,11 +129,11 @@ def readfile(filename, silent=False, lock=False):
         t1 = time.time()
         if not silent:
             log.debug(f'Read: file="{filename}" json={len(data)} bytes={os.path.getsize(filename)} time={t1-t0:.3f}')
-    except FileNotFoundError as e:
-        log.debug(f'Reading failed: {filename} {e}')
-    except Exception as e:
+    except FileNotFoundError as err:
+        log.debug(f'Reading failed: {filename} {err}')
+    except Exception as err:
         if not silent:
-            log.error(f'Reading failed: {filename} {e}')
+            log.error(f'Reading failed: {filename} {err}')
     try:
         if locking_available and lock_file is not None:
             lock_file.release_read_lock()
@@ -169,18 +169,18 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
             output = json.dumps(simple, indent=2, default=default)
         else:
             raise ValueError('not a valid object')
-    except Exception as e:
-        log.error(f'Save failed: file="{filename}" {e}')
+    except Exception as err:
+        log.error(f'Save failed: file="{filename}" {err}')
         return
     try:
         if locking_available:
             lock_file = fasteners.InterProcessReaderWriterLock(f"{filename}.lock") if locking_available else None
             lock_file.logger.disabled = True
             locked = lock_file.acquire_write_lock(blocking=True, timeout=3) if lock_file is not None else False
-    except Exception as e:
+    except Exception as err:
         locking_available = False
         lock_file = None
-        log.error(f'File write lock: file="{filename}" {e}')
+        log.error(f'File write lock: file="{filename}" {err}')
         locked = False
     try:
         if atomic:
@@ -195,8 +195,8 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
         t1 = time.time()
         if not silent:
             log.debug(f'Save: file="{filename}" json={len(data)} bytes={len(output)} time={t1-t0:.3f}')
-    except Exception as e:
-        log.error(f'Save failed: file="{filename}" {e}')
+    except Exception as err:
+        log.error(f'Save failed: file="{filename}" {err}')
     try:
         if locking_available and lock_file is not None:
             lock_file.release_write_lock()
@@ -282,6 +282,7 @@ def options_section(section_identifier, options_dict):
 def list_checkpoint_tiles():
     import modules.sd_models # pylint: disable=W0621
     return modules.sd_models.checkpoint_tiles()
+
 
 default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.safetensors"
 
@@ -420,6 +421,7 @@ def get_default_modes():
 
     return default_offload_mode, default_cross_attention, default_sdp_options
 
+
 startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
@@ -499,7 +501,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
 
     "openvino_sep": OptionInfo("<h2>OpenVINO</h2>", "", gr.HTML, {"visible": cmd_opts.use_openvino}),
-    "openvino_devices": OptionInfo([], "OpenVINO devices to use", gr.CheckboxGroup, {"choices": get_openvino_device_list() if cmd_opts.use_openvino else [], "visible": cmd_opts.use_openvino}), # pylint disable:E0606
+    "openvino_devices": OptionInfo([], "OpenVINO devices to use", gr.CheckboxGroup, {"choices": get_openvino_device_list() if cmd_opts.use_openvino else [], "visible": cmd_opts.use_openvino}), # pylint: disable=E0606
     "nncf_quantize": OptionInfo([], "OpenVINO Quantize Models with NNCF", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": cmd_opts.use_openvino}),
     "nncf_quant_mode": OptionInfo("INT8", "OpenVINO quantization mode for NNCF", gr.Radio, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
     "nncf_compress_weights_mode": OptionInfo("INT8", "OpenVINO compress mode for NNCF", gr.Radio, {"choices": ['INT8', 'INT8_SYM', 'INT4_ASYM', 'INT4_SYM', 'NF4'], "visible": cmd_opts.use_openvino}),
@@ -955,8 +957,8 @@ class Options:
         if self.data_labels[key].onchange is not None:
             try:
                 self.data_labels[key].onchange()
-            except Exception as e:
-                log.error(f'Error in onchange callback: {key} {value} {e}')
+            except Exception as err:
+                log.error(f'Error in onchange callback: {key} {value} {err}')
                 errors.display(e, 'Error in onchange callback')
                 setattr(self, key, oldval)
                 return False
@@ -1000,8 +1002,8 @@ class Options:
             writefile(diff, filename, silent=silent)
             if len(unused_settings) > 0:
                 log.debug(f"Unused settings: {unused_settings}")
-        except Exception as e:
-            log.error(f'Save settings failed: {filename} {e}')
+        except Exception as err:
+            log.error(f'Save settings failed: {filename} {err}')
 
     def save(self, filename=None, silent=False):
         threading.Thread(target=self.save_atomic, args=(filename, silent)).start()
@@ -1155,8 +1157,8 @@ def restart_server(restart=True):
         time.sleep(1)
         sys.tracebacklimit = 100
         # os._exit(0)
-    except (Exception, BaseException) as e:
-        log.error(f'Server shutdown error: {e}')
+    except (Exception, BaseException) as err:
+        log.error(f'Server shutdown error: {err}')
     if restart:
         log.info('Server will restart')
 
@@ -1234,9 +1236,9 @@ def req(url_addr, headers = None, **kwargs):
         headers = { 'Content-type': 'application/json' }
     try:
         res = requests.get(url_addr, timeout=30, headers=headers, verify=False, allow_redirects=True, **kwargs)
-    except Exception as e:
+    except Exception as err:
         log.error(f'HTTP request error: url={url_addr} {e}')
-        res = { 'status_code': 500, 'text': f'HTTP request error: url={url_addr} {e}' }
+        res = { 'status_code': 500, 'text': f'HTTP request error: url={url_addr} {err}' }
         res = SimpleNamespace(**res)
     return res
 
