@@ -30,7 +30,7 @@ class LoraPatches:
                     self.Linear4bit_forward = patches.patch(__name__, bnb.nn.Linear4bit, 'forward', networks.network_Linear4bit_forward)
                 else:
                     self.Linear4bit_forward = patches.undo(__name__, bnb.nn.Linear4bit, 'forward') # pylint: disable=E1128
-        if 'optimum' in sys.modules:
+        if 'optimum.quanto' in sys.modules:
             quanto = model_quant.load_quanto(silent=True)
             if quanto is not None:
                 if apply:
