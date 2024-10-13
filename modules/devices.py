@@ -42,6 +42,10 @@ def has_mps() -> bool:
         return devices_mac.has_mps # pylint: disable=used-before-assignment
 
 
+def has_xpu() -> bool:
+    return bool(hasattr(torch, 'xpu') and torch.xpu.is_available())
+
+
 def get_backend(shared_cmd_opts):
     global args # pylint: disable=global-statement
     args = shared_cmd_opts
@@ -49,7 +53,7 @@ def get_backend(shared_cmd_opts):
         name = 'openvino'
     elif args.use_directml:
         name = 'directml'
-    elif hasattr(torch, 'xpu') and torch.xpu.is_available():
+    elif has_xpu():
         name = 'ipex'
     elif torch.cuda.is_available() and torch.version.cuda:
         name = 'cuda'

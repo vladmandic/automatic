@@ -216,11 +216,7 @@ if cmd_opts.backend is not None: # override with args
 if cmd_opts.use_openvino: # override for openvino
     backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
-    if hasattr(torch, 'xpu') and torch.xpu.is_available():
-        torch.xpu.is_available = lambda *args, **kwargs: False
-    torch.cuda.is_available = lambda *args, **kwargs: False
-elif cmd_opts.use_ipex or (hasattr(torch, 'xpu') and torch.xpu.is_available()):
-    name = 'ipex'
+elif cmd_opts.use_ipex or devices.has_xpu():
     from modules.intel.ipex import ipex_init
     ok, e = ipex_init()
     if not ok:
@@ -1102,6 +1098,7 @@ if not native:
 prompt_styles = modules.styles.StyleDatabase(opts)
 reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
+devices.args = cmd_opts
 devices.opts = opts
 devices.onnx = [opts.onnx_execution_provider]
 devices.set_cuda_params()
