@@ -216,10 +216,27 @@ if cmd_opts.backend is not None: # override with args
 if cmd_opts.use_openvino: # override for openvino
     backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
-native = backend == Backend.DIFFUSERS
+    if hasattr(torch, 'xpu') and torch.xpu.is_available():
+        torch.xpu.is_available = lambda *args, **kwargs: False
+    torch.cuda.is_available = lambda *args, **kwargs: False
+elif cmd_opts.use_ipex or (hasattr(torch, 'xpu') and torch.xpu.is_available()):
+    name = 'ipex'
+    from modules.intel.ipex import ipex_init
+    ok, e = ipex_init()
+    if not ok:
+        log.error(f'IPEX initialization failed: {e}')
+elif cmd_opts.use_directml:
+    name = 'directml'
+    from modules.dml import directml_init
+    ok, e = directml_init()
+    if not ok:
+        log.error(f'DirectML initialization failed: {e}')
+devices.backend = devices.get_backend(cmd_opts)
+devices.device = devices.get_optimal_device()
 cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 mem_stat = memory_stats()
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
+native = backend == Backend.DIFFUSERS
 
 
 class OptionInfo:
@@ -1085,9 +1102,7 @@ if not native:
 prompt_styles = modules.styles.StyleDatabase(opts)
 reference_models = readfile(os.path.join('html', 'reference.json'))
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
-
-devices.backend = devices.get_backend(cmd_opts, opts)
-devices.device = devices.get_optimal_device()
+devices.opts = opts
 devices.onnx = [opts.onnx_execution_provider]
 devices.set_cuda_params()
 if opts.onnx_cpu_fallback and 'CPUExecutionProvider' not in devices.onnx:

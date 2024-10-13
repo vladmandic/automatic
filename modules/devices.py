@@ -42,30 +42,15 @@ def has_mps() -> bool:
         return devices_mac.has_mps # pylint: disable=used-before-assignment
 
 
-def get_backend(shared_cmd_opts, shared_opts):
-    global opts, args # pylint: disable=global-statement
-    opts = shared_opts
+def get_backend(shared_cmd_opts):
+    global args # pylint: disable=global-statement
     args = shared_cmd_opts
     if args.use_openvino:
-        from modules.intel import openvino # pylint: disable=unused-import
         name = 'openvino'
-        if hasattr(torch, 'xpu') and torch.xpu.is_available():
-            torch.xpu.is_available = lambda *args, **kwargs: False
-        torch.cuda.is_available = lambda *args, **kwargs: False
-    elif args.use_ipex or (hasattr(torch, 'xpu') and torch.xpu.is_available()):
-        name = 'ipex'
-        from modules.intel.ipex import ipex_init
-        ok, e = ipex_init()
-        if not ok:
-            log.error(f'IPEX initialization failed: {e}')
-            name = 'cpu'
     elif args.use_directml:
         name = 'directml'
-        from modules.dml import directml_init
-        ok, e = directml_init()
-        if not ok:
-            log.error(f'DirectML initialization failed: {e}')
-            name = 'cpu'
+    elif hasattr(torch, 'xpu') and torch.xpu.is_available():
+        name = 'ipex'
     elif torch.cuda.is_available() and torch.version.cuda:
         name = 'cuda'
     elif torch.cuda.is_available() and torch.version.hip:
