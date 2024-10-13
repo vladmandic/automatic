@@ -12,7 +12,7 @@ debug = os.environ.get('SD_DEVICE_DEBUG', None) is not None
 install_traceback() # traceback handler
 opts = None # initialized in get_backend to avoid circular import
 args = None # initialized in get_backend to avoid circular import
-cuda_ok = torch.cuda.is_available()
+cuda_ok = torch.cuda.is_available() or (hasattr(torch, 'xpu') and torch.xpu.is_available())
 inference_context = torch.no_grad
 cpu = torch.device("cpu")
 
