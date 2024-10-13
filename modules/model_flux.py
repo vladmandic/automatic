@@ -110,10 +110,10 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
 
 def load_flux_gguf(file_path):
     transformer = None
+    model_te.install_gguf()
     from accelerate import init_empty_weights
     from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
     from modules import ggml, sd_hijack_accelerate
-    model_te.install_gguf()
     with init_empty_weights():
         from diffusers import FluxTransformer2DModel
         config = FluxTransformer2DModel.load_config(os.path.join('configs', 'flux'), subfolder="transformer")
