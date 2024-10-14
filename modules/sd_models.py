@@ -740,12 +740,33 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         set_diffuser_offload(sd_model, op)
 
 
+def set_accelerate_to_module(pipe):
+    module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
+    for module_name in module_names:
+        module = getattr(pipe, module_name)
+        if isinstance(module, torch.nn.Module):
+            module.has_accelerate = True
+
+
 def set_accelerate(sd_model):
     sd_model.has_accelerate = True
-    if hasattr(sd_model, 'unet'):
-        sd_model.unet.has_accelerate = True
-    if hasattr(sd_model, 'transformer'):
-        sd_model.transformer.has_accelerate = True
+    if hasattr(sd_model, "_get_signature_keys"):
+        set_accelerate_to_module(sd_model)
+        if hasattr(sd_model, "prior_pipe"):
+            set_accelerate_to_module(sd_model.prior_pipe)
+        if hasattr(sd_model, "decoder_pipe"):
+            set_accelerate_to_module(sd_model.decoder_pipe)
+    else:
+        if getattr(sd_model, 'vae', None) is not None:
+            sd_model.vae.has_accelerate = True
+        if getattr(sd_model, 'unet', None) is not None:
+            sd_model.unet.has_accelerate = True
+        if getattr(sd_model, 'transformer', None) is not None:
+            sd_model.transformer.has_accelerate = True
+        if getattr(sd_model, 'text_encoder', None) is not None:
+            sd_model.text_encoder.has_accelerate = True
+        if getattr(sd_model, 'text_encoder_2', None) is not None:
+            sd_model.text_encoder_2.has_accelerate = True
 
 
 def set_diffuser_offload(sd_model, op: str = 'model'):
@@ -859,7 +880,7 @@ def apply_balanced_offload(sd_model):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
-    sd_model.has_accelerate = True
+    set_accelerate(sd_model)
     return sd_model
 
 
