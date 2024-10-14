@@ -17,6 +17,7 @@ textarea { overflow-y: auto !important; }
 span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
 input[type='color'] { width: 64px; height: 32px; }
+td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 
 /* gradio elements */
 .block .padded:not(.gradio-accordion) { padding: 4px 0 0 0 !important; margin-right: 0; min-width: 90px !important; }

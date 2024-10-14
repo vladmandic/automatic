@@ -34,6 +34,28 @@ def create_ui():
             def gr_show(visible=True):
                 return {"visible": visible, "__type__": "update"}
 
+            with gr.Tab(label="Current"):
+                def analyze():
+                    from modules import modelstats
+                    model = modelstats.analyze()
+                    desc = f"Model: {model.name}<br>Type: {model.type}<br>Class: {model.cls}<br>Size: {model.size} bytes<br>Modified: {model.mtime}<br>"
+                    meta = model.meta
+                    components = [(m.name, m.cls, m.device, m.dtype, m.params, m.modules, str(m.config)) for m in model.modules]
+                    return [desc, components, meta]
+
+                with gr.Row():
+                    model_analyze = gr.Button(value="Analyze", variant='primary')
+                with gr.Row():
+                    model_desc = gr.HTML(value="", elem_id="model_desc")
+                with gr.Row():
+                    module_headers = ['Module', 'Class', 'Device', 'DType', 'Params', 'Modules', 'Config']
+                    model_types = ['str', 'str', 'str', 'str', 'number', 'number', 'str']
+                    model_modules = gr.DataFrame(value=None, label=None, show_label=False, interactive=False, wrap=True, headers=module_headers, datatype=model_types, type='array')
+                with gr.Row():
+                    model_meta = gr.JSON(label="Metadata", value={}, elem_id="model_meta")
+
+                model_analyze.click(fn=analyze, inputs=[], outputs=[model_desc, model_modules, model_meta])
+
             with gr.Tab(label="Convert"):
                 with gr.Row():
                     model_name = gr.Dropdown(sd_models.checkpoint_tiles(), label="Original model")

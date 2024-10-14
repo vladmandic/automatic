@@ -1351,6 +1351,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     devices.torch_gc(force=True)
     if sd_model is not None:
         script_callbacks.model_loaded_callback(sd_model)
+
+    from modules import modelstats
+    modelstats.analyze()
+
     shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} memory={memory_stats()}")
 
 

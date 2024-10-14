@@ -1,13 +1,15 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-12
+## Update for 2024-10-13
 
-### Highlights for 2024-10-12
+### Highlights for 2024-10-13
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
   and you can pick any previous latent from auto-captured history!  
 - **Detailer** Fully built-in detailer workflow without with support for all standard models  
+- Built-in **model analyzer**  
+  See all details of your currently loaded model, including components, parameter count, layer count, etc.  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - Integration with [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
@@ -19,7 +21,7 @@
 
 And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
-### Details for 2024-10-12
+### Details for 2024-10-13
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -37,6 +39,10 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - history size: *settings -> execution -> latent history size*  
     memory usage is ~130kb of ram for 1mp image  
   - *note* list of latents in history is not auto-refreshed, use refresh button  
+
+- **model analyzer**  
+  - see all details of your currently loaded model, including components, parameter count, layer count, etc.  
+  - in models -> current -> analyze  
 
 - **text encoder**:  
   - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  

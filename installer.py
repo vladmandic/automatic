@@ -166,6 +166,8 @@ def custom_excepthook(exc_type, exc_value, exc_traceback):
 
 
 def print_dict(d):
+    if d is None:
+        return ''
     return ' '.join([f'{k}={v}' for k, v in d.items()])
 
 

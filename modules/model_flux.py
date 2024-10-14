@@ -173,11 +173,12 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
 def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_checkpoint change
     quant = model_quant.get_quant(checkpoint_info.path)
     repo_id = sd_models.path_to_repo(checkpoint_info.name)
-    shared.log.debug(f'Load model: type=FLUX model="{checkpoint_info.name}" repo="{repo_id}" unet="{shared.opts.sd_unet}" t5="{shared.opts.sd_text_encoder}" vae="{shared.opts.sd_vae}" quant={quant} offload={shared.opts.diffusers_offload_mode} dtype={devices.dtype}')
+    shared.log.debug(f'Load model: type=FLUX model="{checkpoint_info.name}" repo="{repo_id}" unet="{shared.opts.sd_unet}" te="{shared.opts.sd_text_encoder}" vae="{shared.opts.sd_vae}" quant={quant} offload={shared.opts.diffusers_offload_mode} dtype={devices.dtype}')
     debug(f'Load model: type=FLUX config={diffusers_load_config}')
     modelloader.hf_login()
 
     transformer = None
+    text_encoder_1 = None
     text_encoder_2 = None
     vae = None
 
@@ -199,13 +200,12 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 errors.display(e, 'FLUX UNet:')
     if shared.opts.sd_text_encoder != 'None':
         try:
-            debug(f'Load model: type=FLUX t5="{shared.opts.sd_text_encoder}"')
-            from modules.model_te import load_t5
-            _text_encoder_2 = load_t5(name=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
-            if _text_encoder_2 is not None:
-                text_encoder_2 = _text_encoder_2
+            debug(f'Load model: type=FLUX te="{shared.opts.sd_text_encoder}"')
+            from modules.model_te import load_t5, load_vit_l
+            if 'vit-l' in shared.opts.sd_text_encoder.lower():
+                text_encoder_1 = load_vit_l()
             else:
-                shared.opts.sd_text_encoder = 'None'
+                text_encoder_2 = load_t5(name=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
         except Exception as e:
             shared.log.error(f"Load model: type=FLUX Failed to load T5: {e}")
             shared.opts.sd_text_encoder = 'None'
@@ -260,6 +260,9 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if transformer is not None:
         components['transformer'] = transformer
         sd_unet.loaded_unet = shared.opts.sd_unet
+    if text_encoder_1 is not None:
+        components['text_encoder'] = text_encoder_1
+        model_te.loaded_te = shared.opts.sd_text_encoder
     if text_encoder_2 is not None:
         components['text_encoder_2'] = text_encoder_2
         model_te.loaded_te = shared.opts.sd_text_encoder
@@ -268,6 +271,10 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     shared.log.debug(f'Load model: type=FLUX preloaded={list(components)}')
     if repo_id == 'sayakpaul/flux.1-dev-nf4':
         repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
+    for c in components:
+        if components[c].dtype == torch.float32 and devices.dtype != torch.float32:
+            shared.log.warning(f'Load model: type=FLUX component={c} dtype={components[c].dtype} cast dtype={devices.dtype}')
+            components[c] = components[c].to(dtype=devices.dtype)
     pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
     try:
         diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxPipeline

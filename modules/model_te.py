@@ -127,25 +127,40 @@ def set_t5(pipe, module, t5=None, cache_dir=None):
     return pipe
 
 
-def set_clip(pipe):
+def load_vit_l():
     global loaded_te # pylint: disable=global-statement
+    config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder/config.json')
+    state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
+    te = transformers.CLIPTextModel.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+    loaded_te = shared.opts.sd_text_encoder
+    te = te.to(dtype=devices.dtype)
+    return te
+
+
+def load_vit_g():
+    global loaded_te # pylint: disable=global-statement
+    config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder_2/config.json')
+    state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
+    te = transformers.CLIPTextModelWithProjection.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+    loaded_te = shared.opts.sd_text_encoder
+    te = te.to(dtype=devices.dtype)
+    return te
+
+
+def set_clip(pipe):
     if loaded_te == shared.opts.sd_text_encoder:
         return
     from modules.sd_models import move_model
     if 'vit-l' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder') and shared.sd_model.text_encoder.__class__.__name__ == 'CLIPTextModel':
         try:
-            config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder/config.json')
-            state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
-            te = transformers.CLIPTextModel.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+            te = load_vit_l()
         except Exception as e:
             shared.log.error(f'Load module: type="text_encoder" class="ViT-L" file="{shared.opts.sd_text_encoder}" {e}')
             if debug:
                 errors.display(e, 'TE:')
-            state_dict = None
             te = None
         if te is not None:
-            loaded_te = shared.opts.sd_text_encoder
-            pipe.text_encoder = te.to(dtype=devices.dtype)
+            pipe.text_encoder = te
             shared.log.info(f'Load module: type="text_encoder" class="ViT-L" file="{shared.opts.sd_text_encoder}"')
             import modules.prompt_parser_diffusers
             modules.prompt_parser_diffusers.cache.clear()
@@ -153,18 +168,14 @@ def set_clip(pipe):
             devices.torch_gc()
     if 'vit-g' in shared.opts.sd_text_encoder.lower() and hasattr(shared.sd_model, 'text_encoder_2') and shared.sd_model.text_encoder_2.__class__.__name__ == 'CLIPTextModelWithProjection':
         try:
-            config = transformers.PretrainedConfig.from_json_file('configs/sdxl/text_encoder_2/config.json')
-            state_dict = load_file(os.path.join(shared.opts.te_dir, f'{shared.opts.sd_text_encoder}.safetensors'))
-            te = transformers.CLIPTextModelWithProjection.from_pretrained(pretrained_model_name_or_path=None, state_dict=state_dict, config=config)
+            te = load_vit_g()
         except Exception as e:
             shared.log.error(f'Load module: type module="text_encoder_2" class="ViT-G" file="{shared.opts.sd_text_encoder}" {e}')
             if debug:
                 errors.display(e, 'TE:')
-            state_dict = None
             te = None
         if te is not None:
-            loaded_te = shared.opts.sd_text_encoder
-            pipe.text_encoder_2 = te.to(dtype=devices.dtype)
+            pipe.text_encoder_2 = te
             shared.log.info(f'Load module: type="text_encoder_2" class="ViT-G" file="{shared.opts.sd_text_encoder}"')
             import modules.prompt_parser_diffusers
             modules.prompt_parser_diffusers.cache.clear()
