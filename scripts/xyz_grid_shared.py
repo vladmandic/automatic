@@ -63,10 +63,17 @@ def apply_seed(p, x, xs):
 
 
 def apply_prompt(p, x, xs):
-    if xs[0] not in p.prompt and xs[0] not in p.negative_prompt:
-        shared.log.warning(f"XYZ grid: prompt S/R did not find {xs[0]} in prompt or negative prompt.")
+    if not hasattr(p, 'orig_prompt'):
+        p.orig_prompt = p.prompt
+        p.orig_negative = p.negative_prompt
+    if xs[0] not in p.orig_prompt and xs[0] not in p.orig_negative:
+        shared.log.warning(f'XYZ grid: prompt S/R string="{xs[0]}" not found')
     else:
-        p.prompt = p.prompt.replace(xs[0], x)
+        p.prompt = p.orig_prompt.replace(xs[0], x)
+        p.negative_prompt = p.orig_negative.replace(xs[0], x)
+        p.all_prompts = None
+        p.all_negative_prompts = None
+        """
         if p.all_prompts is not None:
             for i in range(len(p.all_prompts)):
                 for j in range(len(xs)):
@@ -76,6 +83,7 @@ def apply_prompt(p, x, xs):
             for i in range(len(p.all_negative_prompts)):
                 for j in range(len(xs)):
                     p.all_negative_prompts[i] = p.all_negative_prompts[i].replace(xs[j], x)
+        """
         shared.log.debug(f'XYZ grid apply prompt: "{xs[0]}"="{x}"')
 
 
