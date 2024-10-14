@@ -4,7 +4,7 @@ import time
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer
+from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
@@ -84,6 +84,10 @@ def process_base(p: processing.StableDiffusionProcessing):
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
         sd_models.move_model(shared.sd_model, devices.device)
+        if hasattr(shared.sd_model, 'unet'):
+            sd_models.move_model(shared.sd_model.unet, devices.device)
+        if hasattr(shared.sd_model, 'transformer'):
+            sd_models.move_model(shared.sd_model.transformer, devices.device)
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
@@ -120,8 +124,9 @@ def process_base(p: processing.StableDiffusionProcessing):
             errors.display(e, 'Processing')
     except RuntimeError as e:
         shared.state.interrupted = True
-        shared.log.error(f'Processing: args={base_args} {e}')
+        shared.log.error(f'Processing: step=base args={base_args} {e}')
         errors.display(e, 'Processing')
+        modelstats.analyze()
 
     if hasattr(shared.sd_model, 'embedding_db') and len(shared.sd_model.embedding_db.embeddings_used) > 0: # register used embeddings
         p.extra_generation_params['Embeddings'] = ', '.join(shared.sd_model.embedding_db.embeddings_used)
@@ -183,6 +188,10 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                     output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
                     p.task_args['image'] = output.images # replace so hires uses new output
             sd_models.move_model(shared.sd_model, devices.device)
+            if hasattr(shared.sd_model, 'unet'):
+                sd_models.move_model(shared.sd_model.unet, devices.device)
+            if hasattr(shared.sd_model, 'transformer'):
+                sd_models.move_model(shared.sd_model.transformer, devices.device)
             orig_denoise = p.denoising_strength
             p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
             update_sampler(p, shared.sd_model, second_pass=True)
@@ -215,6 +224,11 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
                 shared.log.info(e)
+            except RuntimeError as e:
+                shared.state.interrupted = True
+                shared.log.error(f'Processing step=hires: args={hires_args} {e}')
+                errors.display(e, 'Processing')
+                modelstats.analyze()
             p.denoising_strength = orig_denoise
         shared.state.job = prev_job
         shared.state.nextjob()
@@ -241,6 +255,10 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
             shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         if shared.opts.diffusers_move_refiner:
             sd_models.move_model(shared.sd_refiner, devices.device)
+            if hasattr(shared.sd_refiner, 'unet'):
+                sd_models.move_model(shared.sd_model.unet, devices.device)
+            if hasattr(shared.sd_refiner, 'transformer'):
+                sd_models.move_model(shared.sd_model.transformer, devices.device)
         p.ops.append('refine')
         p.is_refiner_pass = True
         sd_models_compile.openvino_recompile_model(p, hires=False, refiner=True)
@@ -287,6 +305,11 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 sd_models_compile.openvino_post_compile(op="refiner")
             except AssertionError as e:
                 shared.log.info(e)
+            except RuntimeError as e:
+                shared.state.interrupted = True
+                shared.log.error(f'Processing step=refine: args={refiner_args} {e}')
+                errors.display(e, 'Processing')
+                modelstats.analyze()
 
             """ # TODO decode using refiner
             if not shared.state.interrupted and not shared.state.skipped:
