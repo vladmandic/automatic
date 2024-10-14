@@ -668,6 +668,8 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
+    if new_pipe.has_accelerate:
+        set_accelerate(new_pipe)
 
 
 def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
@@ -738,6 +740,14 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         set_diffuser_offload(sd_model, op)
 
 
+def set_accelerate(sd_model):
+    sd_model.has_accelerate = True
+    if hasattr(sd_model, 'unet'):
+        sd_model.unet.has_accelerate = True
+    if hasattr(sd_model, 'transformer'):
+        sd_model.transformer.has_accelerate = True
+
+
 def set_diffuser_offload(sd_model, op: str = 'model'):
     if not shared.native:
         shared.log.warning('Attempting to use offload with backend=original')
@@ -763,7 +773,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
                 sd_model.enable_model_cpu_offload(device=devices.device)
             else:
                 sd_model.maybe_free_model_hooks()
-            sd_model.has_accelerate = True
+            set_accelerate(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
@@ -783,7 +793,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
                     pass # do nothing if offload is already applied
             else:
                 sd_model.enable_sequential_cpu_offload(device=devices.device)
-            sd_model.has_accelerate = True
+            set_accelerate(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":

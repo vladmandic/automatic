@@ -318,7 +318,7 @@ def optimize_openvino(sd_model):
         shared.compiled_model_state.first_pass = True if not shared.opts.cuda_compile_precompile else False
         shared.compiled_model_state.first_pass_vae = True if not shared.opts.cuda_compile_precompile else False
         shared.compiled_model_state.first_pass_refiner = True if not shared.opts.cuda_compile_precompile else False
-        sd_model.has_accelerate = True
+        sd_models.set_accelerate(sd_model)
     except Exception as e:
         shared.log.warning(f"Model compile: task=OpenVINO: {e}")
     return sd_model
