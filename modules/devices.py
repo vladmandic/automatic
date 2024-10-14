@@ -507,11 +507,15 @@ def test_for_nans(x, where):
     raise NansException(message)
 
 
+def normalize_device(device):
+    if torch.device(device).type in {"cpu", "mps", "meta"}:
+        return torch.device(device)
+    if torch.device(device).index is None:
+        return torch.device(str(device), index=0)
+    return torch.device(device)
+
+
 def same_device(d1, d2):
     if d1.type != d2.type:
         return False
-    if d1.type == "cuda" and d1.index is None:
-        d1 = torch.device("cuda", index=0)
-    if d2.type == "cuda" and d2.index is None:
-        d2 = torch.device("cuda", index=0)
-    return d1 == d2
+    return normalize_device(d1) == normalize_device(d2)

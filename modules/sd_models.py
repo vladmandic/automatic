@@ -803,7 +803,7 @@ def apply_balanced_offload(sd_model):
             return module
 
         def pre_forward(self, module, *args, **kwargs):
-            if normalize_device(module.device) != normalize_device(devices.device):
+            if devices.normalize_device(module.device) != devices.normalize_device(devices.device):
                 device_index = torch.device(devices.device).index
                 if device_index is None:
                     device_index = 0
@@ -853,14 +853,6 @@ def apply_balanced_offload(sd_model):
     return sd_model
 
 
-def normalize_device(device):
-    if torch.device(device).type in {"cpu", "mps", "meta"}:
-        return torch.device(device)
-    if torch.device(device).index is None:
-        return torch.device(str(device) + ":0")
-    return torch.device(device)
-
-
 def move_model(model, device=None, force=False):
     if model is None or device is None:
         return
@@ -900,7 +892,7 @@ def move_model(model, device=None, force=False):
                             shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
-    if hasattr(model, "device") and normalize_device(model.device) == normalize_device(device):
+    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device):
         return
     try:
         try:
