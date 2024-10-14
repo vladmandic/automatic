@@ -505,3 +505,13 @@ def test_for_nans(x, where):
         message = "A tensor with all NaNs was produced."
     message += " Use --disable-nan-check commandline argument to disable this check."
     raise NansException(message)
+
+
+def same_device(d1, d2):
+    if d1.type != d2.type:
+        return False
+    if d1.type == "cuda" and d1.index is None:
+        d1 = torch.device("cuda", index=0)
+    if d2.type == "cuda" and d2.index is None:
+        d2 = torch.device("cuda", index=0)
+    return d1 == d2

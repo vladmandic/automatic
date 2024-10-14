@@ -13,16 +13,6 @@ orig_set_module = accelerate.utils.set_module_tensor_to_device
 orig_torch_conv = torch.nn.modules.conv.Conv2d._conv_forward # pylint: disable=protected-access
 
 
-def check_device_same(d1, d2):
-    if d1.type != d2.type:
-        return False
-    if d1.type == "cuda" and d1.index is None:
-        d1 = torch.device("cuda", index=0)
-    if d2.type == "cuda" and d2.index is None:
-        d2 = torch.device("cuda", index=0)
-    return d1 == d2
-
-
 # called for every item in state_dict by diffusers during model load
 def hijack_set_module_tensor(
     module: nn.Module,
@@ -46,7 +36,7 @@ def hijack_set_module_tensor(
         # note: majority of time is spent on .to(old_value.dtype)
         if tensor_name in module._buffers: # pylint: disable=protected-access
             module._buffers[tensor_name] = value.to(device, old_value.dtype, non_blocking=True)  # pylint: disable=protected-access
-        elif value is not None or not check_device_same(torch.device(device), module._parameters[tensor_name].device):  # pylint: disable=protected-access
+        elif value is not None or not devices.same_device(torch.device(device), module._parameters[tensor_name].device):  # pylint: disable=protected-access
             param_cls = type(module._parameters[tensor_name]) # pylint: disable=protected-access
             module._parameters[tensor_name] = param_cls(value, requires_grad=old_value.requires_grad).to(device, old_value.dtype, non_blocking=True) # pylint: disable=protected-access
     t1 = time.time()
@@ -74,7 +64,7 @@ def hijack_set_module_tensor_simple(
     with devices.inference_context():
         if tensor_name in module._buffers: # pylint: disable=protected-access
             module._buffers[tensor_name] = value.to(device, non_blocking=True)  # pylint: disable=protected-access
-        elif value is not None or not check_device_same(torch.device(device), module._parameters[tensor_name].device):  # pylint: disable=protected-access
+        elif value is not None or not devices.same_device(torch.device(device), module._parameters[tensor_name].device):  # pylint: disable=protected-access
             param_cls = type(module._parameters[tensor_name]) # pylint: disable=protected-access
             module._parameters[tensor_name] = param_cls(value, requires_grad=old_value.requires_grad).to(device, non_blocking=True) # pylint: disable=protected-access
     t1 = time.time()
