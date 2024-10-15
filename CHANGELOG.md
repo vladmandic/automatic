@@ -21,7 +21,9 @@
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 
-And other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
+Oh, and we've compiled a full table with list of popular text-to-image generative models, their respective parameters and architecture overview: <https://github.com/vladmandic/automatic/wiki/Models>
+
+And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
 
 ### Details for 2024-10-15
 
