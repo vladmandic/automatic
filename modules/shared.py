@@ -450,7 +450,6 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
     "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
     "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
-    "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
 
     "model_sep": OptionInfo("<h2>Model options</h2>", "", gr.HTML),
     "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for model (--no-half)", None, None, None),
@@ -474,8 +473,10 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "other_sep": OptionInfo("<h2>Execution options</h2>", "", gr.HTML),
     "opt_channelslast": OptionInfo(False, "Use channels last "),
+    "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
+    "torch_expandable_segments": OptionInfo(False, "Torch expandable segments"),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 

@@ -150,11 +150,15 @@ And other goodies like multiple *XYZ grid* improvements, additional *Flux Contro
   - compatible with DiT-based models: e.g. *Flux.1, AuraFlow, CogVideoX*  
   - not compatible with UNet-based models, e.g. *SD15, SDXL*  
 
-- **dtype**
+- **gpu**
   - previously `cuda_dtype` in settings defaulted to `fp16` if available  
   - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  
     if you have specific requirements, you can still set to fp32/fp16/bf16 as desired  
     if you have gpu that incorrectly identifies bf16 or fp16 availablity, let us know so we can improve the auto-detection  
+  - support for torch **expandable segments**  
+    enable in *settings -> compute -> torch expandable segments*  
+    can provide significant memory savings for some models  
+    not enabled by default as its only supported on latest versions of torch and some gpus  
 
 - **xyz grid** full refactor  
   - multi-mode: *selectable-script* and *alwayson-script*  

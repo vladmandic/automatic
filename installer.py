@@ -1042,6 +1042,8 @@ def set_environment():
     allocator = f'garbage_collection_threshold:{opts.get("torch_gc_threshold", 80)/100:0.2f},max_split_size_mb:512'
     if opts.get("torch_malloc", "native") == 'cudaMallocAsync':
         allocator += ',backend:cudaMallocAsync'
+    if opts.get("torch_expandable_segments", False):
+        allocator += ',expandable_segments:True'
     os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', allocator)
     log.debug(f'Torch allocator: "{allocator}"')
     if sys.platform == 'darwin':
