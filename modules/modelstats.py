@@ -15,8 +15,9 @@ class Module():
 
     def __init__(self, name, module):
         self.name = name
-        # self.type = type(module)
         self.cls = module.__class__.__name__
+        if isinstance(module, tuple):
+            self.cls = module[1]
         if hasattr(module, 'config'):
             self.config = module.config
         if isinstance(module, torch.nn.Module):
@@ -74,6 +75,8 @@ def analyze():
     if not hasattr(shared.sd_model, '_internal_dict'):
         return model
     model.modules.clear()
+    if not hasattr(shared.sd_model, '_internal_dict'):
+        return model
     for k in shared.sd_model._internal_dict.keys(): # pylint: disable=protected-access
         component = getattr(shared.sd_model, k, None)
         module = Module(k, component)

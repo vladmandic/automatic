@@ -8,6 +8,7 @@ TODO:
 import sys
 import datetime
 from collections import deque
+import torch
 from modules import shared, devices
 
 
@@ -61,11 +62,14 @@ class History():
         return -1
 
     def add(self, latent, preview=None, info=None, ops=[]):
-        item = Item(latent, preview, info, ops)
-        self.latents.appendleft(item)
-        # shared.log.debug(f'History add: shape={latent.shape} dtype={latent.dtype} count={self.count}')
-        if self.count >= shared.opts.latent_history:
-            self.latents.pop()
+        if shared.opts.latent_history == 0:
+            return
+        if torch.is_tensor(latent):
+            item = Item(latent, preview, info, ops)
+            self.latents.appendleft(item)
+            # shared.log.debug(f'History add: shape={latent.shape} dtype={latent.dtype} count={self.count}')
+            if self.count >= shared.opts.latent_history:
+                self.latents.pop()
 
     def clear(self):
         self.latents.clear()

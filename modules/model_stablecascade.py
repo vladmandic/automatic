@@ -106,7 +106,7 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
             decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, text_encoder=None, **diffusers_load_config)
         else:
             decoder = StableCascadeDecoderPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, text_encoder=None, **diffusers_load_config)
-        shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
+        # shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
         prior_text_encoder = None
         if shared.opts.sd_unet != "None":
             prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet])
@@ -116,7 +116,7 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
             prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, text_encoder=prior_text_encoder, image_encoder=None, feature_extractor=None, **diffusers_load_config)
         else:
             prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, image_encoder=None, feature_extractor=None, **diffusers_load_config)
-        shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
+        # shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
         sd_model = StableCascadeCombinedPipeline(
             tokenizer=decoder.tokenizer,
             text_encoder=None,

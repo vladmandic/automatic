@@ -85,6 +85,7 @@ def get_pipelines():
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         'Kolors': getattr(diffusers, 'KolorsPipeline', None),
         'AuraFlow': getattr(diffusers, 'AuraFlowPipeline', None),
+        'CogView': getattr(diffusers, 'CogView3PlusPipeline', None),
     }
     if hasattr(diffusers, 'OnnxStableDiffusionPipeline'):
         onnx_pipelines = {

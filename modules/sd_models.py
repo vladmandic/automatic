@@ -622,6 +622,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Kolors'
             if 'auraflow' in f.lower():
                 guess = 'AuraFlow'
+            if 'cogview' in f.lower():
+                guess = 'CogView'
             if 'flux' in f.lower():
                 guess = 'FLUX'
                 if size > 11000 and size < 20000:
@@ -1057,7 +1059,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
     sd_model = None
     try:
-        if shared.cmd_opts.ckpt is not None and os.path.isdir(shared.cmd_opts.ckpt) and model_data.initial: # initial load
+        # initial load only
+        if shared.cmd_opts.ckpt is not None and os.path.isdir(shared.cmd_opts.ckpt) and model_data.initial:
             ckpt_basename = os.path.basename(shared.cmd_opts.ckpt)
             model_name = modelloader.find_diffuser(ckpt_basename)
             if model_name is not None:
@@ -1072,14 +1075,17 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 list_models() # rescan for downloaded model
                 checkpoint_info = CheckpointInfo(model_name)
 
+        # unload current model
         checkpoint_info = checkpoint_info or select_checkpoint(op=op)
         if checkpoint_info is None:
             unload_model_weights(op=op)
             return
 
+        # detect pipeline
         shared.log.debug(f'Load {op}: path="{checkpoint_info.path}"')
         pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
 
+        # preload vae so it can be used as param
         vae = None
         sd_vae.loaded_vae_file = None
         if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
@@ -1088,6 +1094,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             if vae is not None:
                 diffusers_load_config["vae"] = vae
 
+        # load from hf folder-style
         if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface' or checkpoint_info.type == 'transformer':
             files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
             if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
@@ -1168,7 +1175,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             elif model_type in ['Stable Diffusion 3']:
                 try:
                     from modules.model_sd3 import load_sd3
-                    shared.log.debuc(f'Load {op}: model="Stable Diffusion 3" variant=medium')
+                    shared.log.debug(f'Load {op}: model="Stable Diffusion 3" variant=medium')
                     shared.opts.scheduler = 'Default'
                     sd_model = load_sd3(cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
                 except Exception as e:
@@ -1186,7 +1193,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                     return
             else:
                 err1, err2, err3 = None, None, None
-                # diffusers_load_config['use_safetensors'] = True
+                if os.path.exists(checkpoint_info.path) and os.path.isdir(checkpoint_info.path):
+                    if os.path.exists(os.path.join(checkpoint_info.path, 'unet', 'diffusion_pytorch_model.bin')):
+                        shared.log.debug(f'Load {op}: type=pickle')
+                        diffusers_load_config['use_safetensors'] = False
                 if debug_load:
                     shared.log.debug(f'Load {op}: args={diffusers_load_config}')
                 try: # 1 - autopipeline, best choice but not all pipelines are available
@@ -1197,6 +1207,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                         if 'no variant default' in str(e):
                             shared.log.warning(f'Load {op}: variant={diffusers_load_config["variant"]} model="{checkpoint_info.path}" using default variant')
                             diffusers_load_config.pop('variant', None)
+                            sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                            sd_model.model_type = sd_model.__class__.__name__
+                        elif 'safetensors found in directory' in str(err1):
+                            shared.log.warning(f'Load {op}: type=pickle')
+                            diffusers_load_config['use_safetensors'] = False
                             sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
                             sd_model.model_type = sd_model.__class__.__name__
                         else:
@@ -1369,8 +1384,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     if sd_model is not None:
         script_callbacks.model_loaded_callback(sd_model)
 
-    from modules import modelstats
-    modelstats.analyze()
+    if debug_load:
+        from modules import modelstats
+        modelstats.analyze()
 
     shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} memory={memory_stats()}")
 

@@ -77,6 +77,9 @@ def create_sampler(name, model):
         if 'Lumina' in model.__class__.__name__:
             shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
             return None
+        if 'AuraFlow' in model.__class__.__name__:
+            shared.log.warning(f'AuraFlow: sampler="{name}" unsupported')
+            return None
         if not hasattr(model, 'scheduler_config'):
             model.scheduler_config = sampler.sampler.config.copy() if hasattr(sampler.sampler, 'config') else {}
         model.scheduler = sampler.sampler

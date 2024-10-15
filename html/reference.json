@@ -322,6 +322,12 @@
     "extras": "width: 512, height: 512, sampler: Default"
   },
 
+  "CogView 3 Plus": {
+    "path": "THUDM/CogView3-Plus-3B",
+    "desc": "This model is the DiT version of CogView3, a text-to-image generation model, supporting image generation from 512 to 2048px. Resolution: Width and height must meet the range from 512px to 2048px and must be divisible by 32.",
+    "preview": "THUDM--CogView3-Plus-3B.jpg",
+    "skip": true
+  },
   "Warp Wuerstchen": {
     "path": "warp-ai/wuerstchen",
     "desc": "Würstchen is a diffusion model whose text-conditional model works in a highly compressed latent space of images. Why is this important? Compressing data can reduce computational costs for both training and inference by magnitudes. Training on 1024x1024 images, is way more expensive than training at 32x32. Usually, other works make use of a relatively small compression, in the range of 4x - 8x spatial compression. Würstchen takes this to an extreme. Through its novel design, we achieve a 42x spatial compression. Würstchen employs a two-stage compression, what we call Stage A and Stage B. Stage A is a VQGAN, and Stage B is a Diffusion Autoencoder (more details can be found in the paper). A third model, Stage C, is learned in that highly compressed latent space. This training requires fractions of the compute used for current top-performing models, allowing also cheaper and faster inference.",
