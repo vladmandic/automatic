@@ -132,11 +132,6 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
     else:
         sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
 
-    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
-    return sd_model
-
-
-def cascade_post_load(sd_model):
     sd_model.prior_pipe.scheduler.config.clip_sample = False
     sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler)
     sd_model.prior_pipe.get_timestep_ratio_conditioning = get_timestep_ratio_conditioning
@@ -162,10 +157,12 @@ def cascade_post_load(sd_model):
         text_encoder=None,
         latent_dim_scale=sd_model.decoder_pipe.config.latent_dim_scale,
     )
+
+    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
     return sd_model
 
 
-# Custom sampler support. Remove after the changes gets upstreamed: https://github.com/huggingface/diffusers/pull/9132
+# Balanced offload hooks:
 class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
     def guidance_scale(self):
         return self._guidance_scale

@@ -611,7 +611,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'PixArt-Alpha'
             if 'stable-diffusion-3' in f.lower():
                 guess = 'Stable Diffusion 3'
-            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower() or 'sotediffusion' in f.lower():
+            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower() or ('sotediffusion' in f.lower() and "v2" in f.lower()):
                 if devices.dtype == torch.float16:
                     warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
@@ -853,7 +853,7 @@ def apply_balanced_offload(sd_model):
 
     def apply_balanced_offload_to_module(pipe):
         for module_name in pipe._internal_dict.keys(): # pylint: disable=protected-access
-            module = getattr(pipe, module_name)
+            module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):
                 checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
                 if checkpoint_name is None:
@@ -1058,9 +1058,8 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
     sd_model = None
     try:
         if model_type in ['Stable Cascade']: # forced pipeline
-            from modules.model_stablecascade import load_cascade_combined, cascade_post_load
+            from modules.model_stablecascade import load_cascade_combined
             sd_model = load_cascade_combined(checkpoint_info, diffusers_load_config)
-            cascade_post_load(sd_model)
         elif model_type in ['InstaFlow']: # forced pipeline
             pipeline = diffusers.utils.get_class_from_dynamic_module('instaflow_one_step', module_file='pipeline.py')
             sd_model = pipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
@@ -1856,9 +1855,8 @@ def disable_offload(sd_model):
     if not getattr(sd_model, 'has_accelerate', False):
         return
     for _name, model in sd_model.components.items():
-        if not isinstance(model, torch.nn.Module):
-            continue
-        remove_hook_from_module(model, recurse=True)
+        if isinstance(model, torch.nn.Module):
+            remove_hook_from_module(model, recurse=True)
     sd_model.has_accelerate = False
 
 
