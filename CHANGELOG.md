@@ -24,7 +24,9 @@
 Oh, and we've compiled a full table with list of popular text-to-image generative models, their respective parameters and architecture overview: <https://github.com/vladmandic/automatic/wiki/Models>
 
 And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
-See [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
+
+[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
 
 ### Details for 2024-10-16
 
