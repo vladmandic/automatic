@@ -560,10 +560,10 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
     guess = shared.opts.diffusers_pipeline
     warn = shared.log.warning if warning else lambda *args, **kwargs: None
     size = 0
+    pipeline = None
     if guess == 'Autodetect':
         try:
             guess = 'Stable Diffusion XL' if 'XL' in f.upper() else 'Stable Diffusion'
-            pipeline = None
             # guess by size
             if os.path.isfile(f) and f.endswith('.safetensors'):
                 size = round(os.path.getsize(f) / 1024 / 1024)
