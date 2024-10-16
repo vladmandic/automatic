@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-15
+## Update for 2024-10-16
 
-### Highlights for 2024-10-15
+### Highlights for 2024-10-16
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -24,8 +24,9 @@
 Oh, and we've compiled a full table with list of popular text-to-image generative models, their respective parameters and architecture overview: <https://github.com/vladmandic/automatic/wiki/Models>
 
 And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
+See [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) for details!  
 
-### Details for 2024-10-15
+### Details for 2024-10-16
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -130,15 +131,17 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - see [wiki](https://github.com/vladmandic/automatic/wiki/FLUX#quantization) for details on `gguf`  
   - support for `gguf` binary format for loading unet/transformer component  
   - support for `gguf` binary format for loading t5/text-encoder component: requires transformers pr  
-  - avoid unet load if unchanged  
+  - additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
+  - additional controlnets: [XLabs-AI](https://huggingface.co/XLabs-AI/flux-controlnet-hed-diffusers) **Canny**, **Depth**, **HED**  
   - mark specific unet as unavailable if load failed  
   - fix diffusers local model name parsing  
   - full prompt parser will auto-select `xhinker` for flux models  
   - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
   - allow separate vae load  
   - support for both kohya and onetrainer loras in native load mode for fp16/nf4/fp4, thanks @AI-Casanova  
+  - support for differential diffusion  
   - added native load mode for qint8/qint4 models
-  - add additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
+  - avoid unet load if unchanged  
 
 - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)
   - Select from *networks -> models -> reference*  

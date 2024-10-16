@@ -8,6 +8,7 @@ from modules import shared, devices, scripts, processing, sd_models, prompt_pars
 
 def hijack_register_modules(self, **kwargs):
     for name, module in kwargs.items():
+        register_dict = None
         if module is None or isinstance(module, (tuple, list)) and module[0] is None:
             register_dict = {name: (None, None)}
         elif isinstance(module, bool):
@@ -15,7 +16,8 @@ def hijack_register_modules(self, **kwargs):
         else:
             library, class_name = pipeline_utils._fetch_class_library_tuple(module) # pylint: disable=protected-access
             register_dict = {name: (library, class_name)}
-        self.register_to_config(**register_dict)
+        if register_dict is not None:
+            self.register_to_config(**register_dict)
         setattr(self, name, module)
 
 

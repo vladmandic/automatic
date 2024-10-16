@@ -9,32 +9,20 @@ sdnext implementation follows after pipeline-end
 import inspect
 import hashlib
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
-import numpy as np
-import PIL.Image
-import torch
 from packaging import version
-from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTextModelWithProjection, CLIPTokenizer
-import torchvision
 
+import PIL.Image
+import numpy as np
+import torch
+import torchvision
+from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTextModelWithProjection, CLIPTokenizer
 from diffusers.image_processor import VaeImageProcessor
 from diffusers.loaders import FromSingleFileMixin, LoraLoaderMixin, TextualInversionLoaderMixin
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
-from diffusers.models.attention_processor import (
-    AttnProcessor2_0,
-    FusedAttnProcessor2_0,
-    XFormersAttnProcessor,
-)
+from diffusers.models.attention_processor import AttnProcessor2_0, FusedAttnProcessor2_0, XFormersAttnProcessor
 from diffusers.configuration_utils import FrozenDict
 from diffusers.schedulers import KarrasDiffusionSchedulers
-from diffusers.utils import (
-    PIL_INTERPOLATION,
-    logging,
-    deprecate,
-    is_accelerate_available,
-    is_accelerate_version,
-    replace_example_docstring,
-)
+from diffusers.utils import PIL_INTERPOLATION, logging, deprecate, is_accelerate_available, is_accelerate_version, replace_example_docstring
 from diffusers.utils.torch_utils import randn_tensor
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
@@ -1921,7 +1909,7 @@ class Script(scripts.Script):
     def run(self, p: processing.StableDiffusionProcessingImg2Img, enabled, strength, invert, model, image): # pylint: disable=arguments-differ
         if not enabled:
             return
-        if shared.sd_model_type != 'sdxl' and shared.sd_model_type != 'sd':
+        if shared.sd_model_type not in ['sdxl', 'sd', 'f1']:
             shared.log.error(f'Differential-diffusion: incorrect base model: {shared.sd_model.__class__.__name__}')
             return
         if not hasattr(p, 'init_images') or len(p.init_images) == 0:
@@ -1936,6 +1924,8 @@ class Script(scripts.Script):
         orig_pipeline = shared.sd_model
         pipe = None
         try:
+            # shared.sd_model = diffusers.StableDiffusionPipeline.from_pipe(shared.sd_model, **{ 'custom_pipeline': 'kohya_hires_fix', 'high_res_fix': high_res_fix })
+            # from examples.community.pipeline_stable_diffusion_xl_differential_img2img import StableDiffusionXLDifferentialImg2ImgPipeline
             diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["StableDiffusionXLDiffImg2ImgPipeline"] = StableDiffusionXLDiffImg2ImgPipeline
             diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["StableDiffusionDiffImg2ImgPipeline"] = StableDiffusionDiffImg2ImgPipeline
             if shared.sd_model_type == 'sdxl':
@@ -1959,6 +1949,9 @@ class Script(scripts.Script):
                     safety_checker=None,
                     requires_safety_checker=False,
                 )
+            elif shared.sd_model_type == 'f1':
+                pipe = diffusers.StableDiffusionPipeline.from_pipe(shared.sd_model, **{ 'custom_pipeline': 'pipeline_flux_differential_img2img' })
+                diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["FluxDifferentialImg2ImgPipeline"] = pipe.__class__
             sd_models.copy_diffuser_options(pipe, shared.sd_model)
             sd_models.set_diffuser_options(pipe)
             p.task_args['image'] = image_init

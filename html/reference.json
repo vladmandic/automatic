@@ -364,6 +364,12 @@
     "desc": "DeepFloyd-IF is a pixel-based text-to-image triple-cascaded diffusion model, that can generate pictures with new state-of-the-art for photorealism and language understanding. The result is a highly efficient model that outperforms current state-of-the-art models, achieving a zero-shot FID-30K score of 6.66 on the COCO dataset. It is modular and composed of frozen text mode and three pixel cascaded diffusion modules, each designed to generate images of increasing resolution: 64x64, 256x256, and 1024x1024.",
     "preview": "DeepFloyd--IF-I-M-v1.0.jpg",
     "extras": "width: 1024, height: 1024, sampler: Default"
+  },
+  "DeepFloyd IF Large": {
+    "path": "DeepFloyd/IF-I-L-v1.0",
+    "desc": "DeepFloyd-IF is a pixel-based text-to-image triple-cascaded diffusion model, that can generate pictures with new state-of-the-art for photorealism and language understanding. The result is a highly efficient model that outperforms current state-of-the-art models, achieving a zero-shot FID-30K score of 6.66 on the COCO dataset. It is modular and composed of frozen text mode and three pixel cascaded diffusion modules, each designed to generate images of increasing resolution: 64x64, 256x256, and 1024x1024.",
+    "preview": "DeepFloyd--IF-I-M-v1.0.jpg",
+    "extras": "width: 1024, height: 1024, sampler: Default"
   }
 
 }
