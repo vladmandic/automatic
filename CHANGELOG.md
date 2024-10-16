@@ -11,12 +11,14 @@
 - Built-in **model analyzer**  
   See all details of your currently loaded model, including components, parameter count, layer count, etc.  
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
+- New models:
+  - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
+  - [Meissonic](https://github.com/viiika/Meissonic)  
 - Additional integration:  
   [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
 - Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
-- Support for [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
@@ -150,6 +152,11 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - resolution width and height can be from 512px to 2048px and must be divisible by 32  
   - precision: bf16 or fp32  
     fp16 is not supported due to internal model overflows  
+
+- [Meissonic](https://github.com/viiika/Meissonic)  
+  - Select from *networks -> models -> reference*  
+  - Experimental as upstream implemenation code is unstable
+  - Must set scheduler:default, generator:unset
 
 - [SageAttention](https://github.com/thu-ml/SageAttention)  
   - new 8-bit attention implementation on top of SDP that can provide acceleration for some models, thanks @Disty0  

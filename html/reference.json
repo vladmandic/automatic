@@ -314,6 +314,12 @@
     "preview": "THUDM--CogView3-Plus-3B.jpg",
     "skip": true
   },
+  "Meissonic": {
+    "path": "MeissonFlow/Meissonic",
+    "desc": "Meissonic is a non-autoregressive mask image modeling text-to-image synthesis model that can generate high-resolution images. It is designed to run on consumer graphics cards.",
+    "preview": "MeissonFlow--Meissonic.jpg",
+    "skip": true
+  },
 
   "aMUSEd 256": {
     "path": "huggingface/amused/amused-256",
