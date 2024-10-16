@@ -1276,6 +1276,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)
             if vae is not None:
                 diffusers_load_config["vae"] = vae
+                timer.record("vae")
 
         # load with custom loader
         if sd_model is None:
@@ -1290,11 +1291,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if sd_model is None:
             if os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
                 sd_model = load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_config, op)
-
-        if "StableDiffusion" in sd_model.__class__.__name__:
-            pass # scheduler is created on first use
-        elif "Kandinsky" in sd_model.__class__.__name__:
-            sd_model.scheduler.name = 'DDIM'
 
         if sd_model is None:
             shared.log.error('Diffuser model not loaded')
@@ -1312,7 +1308,12 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
-        sd_unet.load_unet(sd_model)
+        if "Kandinsky" in sd_model.__class__.__name__: # need a special case
+            sd_model.scheduler.name = 'DDIM'
+
+        if model_type not in ['Stable Cascade']: # need a special-case
+            sd_unet.load_unet(sd_model)
+
         timer.record("load")
 
         if op == 'refiner':
