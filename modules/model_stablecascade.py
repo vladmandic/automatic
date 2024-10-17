@@ -6,7 +6,7 @@ from modules import shared, devices, sd_models
 
 
 def get_timestep_ratio_conditioning(t, alphas_cumprod):
-    s = torch.tensor([0.008]) # diffusers uses 0.003 while the original is 0.008
+    s = torch.tensor([0.008])
     clamp_range = [0, 1]
     min_var = torch.cos(s / (1 + s) * torch.pi * 0.5) ** 2
     var = alphas_cumprod[t]
@@ -133,8 +133,6 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
         sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
 
     sd_model.prior_pipe.scheduler.config.clip_sample = False
-    sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler)
-    sd_model.prior_pipe.get_timestep_ratio_conditioning = get_timestep_ratio_conditioning
     sd_model.decoder_pipe.text_encoder = sd_model.text_encoder = None  # Nothing uses the decoder's text encoder
     sd_model.prior_pipe.image_encoder = sd_model.prior_image_encoder = None # No img2img is implemented yet
     sd_model.prior_pipe.feature_extractor = sd_model.prior_feature_extractor = None # No img2img is implemented yet
