@@ -194,9 +194,6 @@ def load_network(name, network_on_disk) -> network.Network:
 
 
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
-    if shared.opts.diffusers_offload_mode == "balanced":
-        sd_models.disable_offload(shared.sd_model)
-        sd_models.move_model(shared.sd_model, devices.cpu)
     networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()

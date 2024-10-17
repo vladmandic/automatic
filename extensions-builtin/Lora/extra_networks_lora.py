@@ -43,6 +43,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
     def __init__(self):
         super().__init__('lora')
         self.active = False
+        self.model = None
         self.errors = {}
         networks.originals = lora_patches.LoraPatches()
 
@@ -121,11 +122,14 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
     def activate(self, p, params_list, step=0):
         t0 = time.time()
         self.errors.clear()
-        if len(params_list) > 0:
-            self.active = True
+        if self.active:
+            if self.model != shared.opts.sd_model_checkpoint: # reset if model changed
+                self.active = False
+        if len(params_list) > 0 and not self.active: # activate patches once
+            shared.log.debug(f'Activate network: type=LoRA model="{shared.opts.sd_model_checkpoint}"')
             networks.originals.apply() # apply patches
-            if networks.debug:
-                shared.log.debug(f"LoRA activate: networks={len(params_list)}")
+            self.active = True
+            self.model = shared.opts.sd_model_checkpoint
         t1 = time.time()
         names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
@@ -134,29 +138,26 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.infotext(p)
             self.prompt(p)
             shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} patch={t1-t0:.2f} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t2-t1:.2f}')
-        elif self.active:
-            self.active = False
 
     def deactivate(self, p):
         t0 = time.time()
-        if shared.native and hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
-            if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
-                try:
-                    if shared.opts.lora_fuse_diffusers:
-                        shared.sd_model.unfuse_lora()
-                    shared.sd_model.unload_lora_weights() # fails for non-CLIP models
-                    # shared.log.debug("LoRA unload")
-                except Exception:
-                    # shared.log.warning(f"LoRA unload: {e}")
-                    pass
+        if shared.native and len(networks.diffuser_loaded) > 0:
+            if hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
+                if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
+                    try:
+                        if shared.opts.lora_fuse_diffusers:
+                            shared.sd_model.unfuse_lora()
+                        shared.sd_model.unload_lora_weights() # fails for non-CLIP models
+                    except Exception:
+                        pass
         t1 = time.time()
         networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
             shared.log.debug(f"LoRA end: load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
-        if self.active and getattr(networks, "originals", None ) is not None:
-            networks.originals.undo() # remove patches
-            if networks.debug:
-                shared.log.debug("LoRA deactivate")
+        # if self.active and getattr(networks, "originals", None ) is not None:
+        #    networks.originals.undo() # remove patches
+        #    if networks.debug:
+        #        shared.log.debug("LoRA deactivate")
         if self.errors:
             p.comment("Networks with errors: " + ", ".join(f"{k} ({v})" for k, v in self.errors.items()))
             for k, v in self.errors.items():
