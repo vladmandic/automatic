@@ -11,26 +11,17 @@ def get_stepwise(param, step, steps):
     def sorted_positions(raw_steps):
         steps = [[float(s.strip()) for s in re.split("[@~]", x)]
                  for x in re.split("[,;]", str(raw_steps))]
-        # If we just got a single number, just return it
-        if len(steps[0]) == 1:
+        if len(steps[0]) == 1: # If we just got a single number, just return it
             return steps[0][0]
-
-        # Add implicit 1s to any steps which don't have a weight
-        steps = [[s[0], s[1] if len(s) == 2 else 1] for s in steps]
-
-        # Sort by index
-        steps.sort(key=lambda k: k[1])
-
+        steps = [[s[0], s[1] if len(s) == 2 else 1] for s in steps] # Add implicit 1s to any steps which don't have a weight
+        steps.sort(key=lambda k: k[1]) # Sort by index
         steps = [list(v) for v in zip(*steps)]
         return steps
 
     def calculate_weight(m, step, max_steps, step_offset=2):
         if isinstance(m, list):
             if m[1][-1] <= 1.0:
-                if max_steps > 0:
-                    step = (step) / (max_steps - step_offset)
-                else:
-                    step = 1.0
+                step = (step) / (max_steps - step_offset) if max_steps > 0 else 1.0
             v = np.interp(step, m[1], m[0])
             return v
         else:
@@ -130,14 +121,13 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             networks.originals.apply() # apply patches
             self.active = True
             self.model = shared.opts.sd_model_checkpoint
-        t1 = time.time()
         names, te_multipliers, unet_multipliers, dyn_dims = self.parse(p, params_list, step)
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
-        t2 = time.time()
+        t1 = time.time()
         if len(networks.loaded_networks) > 0 and step == 0:
             self.infotext(p)
             self.prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} patch={t1-t0:.2f} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t2-t1:.2f}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t1-t0:.2f}')
 
     def deactivate(self, p):
         t0 = time.time()
@@ -153,11 +143,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         t1 = time.time()
         networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
-            shared.log.debug(f"LoRA end: load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
-        # if self.active and getattr(networks, "originals", None ) is not None:
-        #    networks.originals.undo() # remove patches
-        #    if networks.debug:
-        #        shared.log.debug("LoRA deactivate")
+            shared.log.debug(f"Network end: type=LoRA load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
         if self.errors:
             p.comment("Networks with errors: " + ", ".join(f"{k} ({v})" for k, v in self.errors.items()))
             for k, v in self.errors.items():

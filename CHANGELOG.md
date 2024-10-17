@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-16
+## Update for 2024-10-17
 
-### Highlights for 2024-10-16
+### Highlights for 2024-10-17
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -30,7 +30,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-16
+### Details for 2024-10-17
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -245,6 +245,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 - **upscaling**  
   - interruptible operations
 - **refactor**  
+  - general lora apply/unapply process  
   - modularize main process loop  
   - massive log cleanup  
   - full lint pass  
