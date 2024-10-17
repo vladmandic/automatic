@@ -199,7 +199,7 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.ipc_collect = lambda *args, **kwargs: None
             torch.cuda.utilization = lambda *args, **kwargs: 0
 
-            ipex_hijacks()
+            ipex_hijacks(legacy=legacy)
             try:
                 from .diffusers import ipex_diffusers
                 ipex_diffusers()
