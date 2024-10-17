@@ -17,6 +17,7 @@ from modules.merging.merge_utils import BETA_METHODS, TRIPLE_METHODS, interpolat
 from modules.merging.merge_presets import BLOCK_WEIGHTS_PRESETS, SDXL_BLOCK_WEIGHTS_PRESETS
 
 search_metadata_civit = None
+extra_ui = []
 
 
 def create_ui():
@@ -792,3 +793,7 @@ def create_ui():
                 civit_update_btn.click(fn=civit_update_metadata, inputs=[], outputs=[civit_results4, models_outcome])
                 civit_results4.select(fn=civit_update_select, inputs=[civit_results4], outputs=[models_outcome, civit_update_download_btn])
                 civit_update_download_btn.click(fn=civit_update_download, inputs=[], outputs=[models_outcome])
+
+            for ui in extra_ui:
+                if callable(ui):
+                    ui()

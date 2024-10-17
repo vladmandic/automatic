@@ -4,7 +4,7 @@ import lora # pylint: disable=unused-import
 from network import NetworkOnDisk
 from ui_extra_networks_lora import ExtraNetworksPageLora
 from extra_networks_lora import ExtraNetworkLora
-from modules import script_callbacks, ui_extra_networks, extra_networks
+from modules import script_callbacks, extra_networks, ui_extra_networks, ui_models # pylint: disable=unused-import
 
 
 re_lora = re.compile("<lora:([^:]+):")
