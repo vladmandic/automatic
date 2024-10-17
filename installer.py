@@ -616,26 +616,10 @@ def install_ipex(torch_command):
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if "linux" in sys.platform:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+        # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
-        if sys.version_info.minor == 11:
-            pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
-            torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
-            ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl'
-            torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-        elif sys.version_info.minor == 10:
-            pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
-            torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
-            ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp310-cp310-win_amd64.whl'
-            torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-        else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post3 torchvision==0.16.0.post3 intel-extension-for-pytorch==2.1.40+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-            if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.2.0'), 'mkl')
-                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.2.0'), 'mkl-dpcpp')
-                install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.13.0'), 'oneccl-devel')
-                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.13.0'), 'impi-devel')
-        torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
+        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu') # torchvision doesn't exist on test/stable branch for windows
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', 'nncf', ignore=True)
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)

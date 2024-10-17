@@ -27,12 +27,12 @@ def memory_stats():
         s = torch.cuda.mem_get_info()
         gpu = { 'used': gb(s[1] - s[0]), 'total': gb(s[1]) }
         s = dict(torch.cuda.memory_stats())
-        if s['num_ooms'] > 0:
+        if s.get('num_ooms', 0) > 0:
             shared.state.oom = True
         mem.update({
             'gpu': gpu,
-            'retries': s['num_alloc_retries'],
-            'oom': s['num_ooms']
+            'retries': s.get('num_alloc_retries', 0),
+            'oom': s.get('num_ooms', 0)
         })
         return mem
     except Exception:

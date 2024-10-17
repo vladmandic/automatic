@@ -115,26 +115,26 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch.cuda.traceback = torch.xpu.traceback
 
             # Memory:
-            if 'linux' in sys.platform and "WSL2" in os.popen("uname -a").read():
+            if legacy and 'linux' in sys.platform and "WSL2" in os.popen("uname -a").read():
                 torch.xpu.empty_cache = lambda: None
             torch.cuda.empty_cache = torch.xpu.empty_cache
 
             if legacy:
-                torch.cuda.memory = torch.xpu.memory
-                torch.cuda.memory_stats = torch.xpu.memory_stats
                 torch.cuda.memory_summary = torch.xpu.memory_summary
                 torch.cuda.memory_snapshot = torch.xpu.memory_snapshot
-                torch.cuda.memory_allocated = torch.xpu.memory_allocated
-                torch.cuda.max_memory_allocated = torch.xpu.max_memory_allocated
-                torch.cuda.memory_reserved = torch.xpu.memory_reserved
-                torch.cuda.memory_cached = torch.xpu.memory_reserved
-                torch.cuda.max_memory_reserved = torch.xpu.max_memory_reserved
-                torch.cuda.max_memory_cached = torch.xpu.max_memory_reserved
-                torch.cuda.reset_peak_memory_stats = torch.xpu.reset_peak_memory_stats
-                torch.cuda.reset_max_memory_cached = torch.xpu.reset_peak_memory_stats
-                torch.cuda.reset_max_memory_allocated = torch.xpu.reset_peak_memory_stats
-                torch.cuda.memory_stats_as_nested_dict = torch.xpu.memory_stats_as_nested_dict
-                torch.cuda.reset_accumulated_memory_stats = torch.xpu.reset_accumulated_memory_stats
+            torch.cuda.memory = torch.xpu.memory
+            torch.cuda.memory_stats = torch.xpu.memory_stats
+            torch.cuda.memory_allocated = torch.xpu.memory_allocated
+            torch.cuda.max_memory_allocated = torch.xpu.max_memory_allocated
+            torch.cuda.memory_reserved = torch.xpu.memory_reserved
+            torch.cuda.memory_cached = torch.xpu.memory_reserved
+            torch.cuda.max_memory_reserved = torch.xpu.max_memory_reserved
+            torch.cuda.max_memory_cached = torch.xpu.max_memory_reserved
+            torch.cuda.reset_peak_memory_stats = torch.xpu.reset_peak_memory_stats
+            torch.cuda.reset_max_memory_cached = torch.xpu.reset_peak_memory_stats
+            torch.cuda.reset_max_memory_allocated = torch.xpu.reset_peak_memory_stats
+            torch.cuda.memory_stats_as_nested_dict = torch.xpu.memory_stats_as_nested_dict
+            torch.cuda.reset_accumulated_memory_stats = torch.xpu.reset_accumulated_memory_stats
 
             # RNG:
             torch.cuda.get_rng_state = torch.xpu.get_rng_state
@@ -183,7 +183,8 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch._C._XpuDeviceProperties.minor = 1
 
             # Fix functions with ipex:
-            torch.cuda.mem_get_info = lambda device=None: [(torch.xpu.get_device_properties(device).total_memory - torch.xpu.memory_reserved(device)), torch.xpu.get_device_properties(device).total_memory]
+            torch.xpu.mem_get_info = lambda device=None: [(torch.xpu.get_device_properties(device).total_memory - torch.xpu.memory_reserved(device)), torch.xpu.get_device_properties(device).total_memory]
+            torch.cuda.mem_get_info = torch.xpu.mem_get_info
             torch._utils._get_available_device_type = lambda: "xpu"
             torch.has_cuda = True
             torch.cuda.has_half = True
