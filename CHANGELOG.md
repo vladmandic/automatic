@@ -237,6 +237,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 - **rocm**
   - additional gpu detection and auto-config code, thanks @lshqqytiger  
   - experimental triton backend for flash attention, thanks @lshqqytiger  
+  - update to rocm 6.2, thanks @Disty0
 - **directml**  
   - update `torch` to 2.4.1, thanks @lshqqytiger  
 - **extensions**  
