@@ -350,7 +350,7 @@ def webui(restart=False):
                 continue
             logger.handlers = log.handlers
         # autolaunch only on initial start
-        if cmd_opts.autolaunch and local_url is not None:
+        if shared.opts.autolaunch or cmd_opts.autolaunch and local_url is not None:
             cmd_opts.autolaunch = False
             shared.log.info('Launching browser')
             import webbrowser
