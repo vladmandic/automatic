@@ -183,7 +183,7 @@ def nncf_compress_model(model, op=None, sd_model=None):
 def nncf_compress_weights(sd_model):
     try:
         t0 = time.time()
-        shared.log.info(f"NNCF Compress Weights: {shared.opts.nncf_compress_weights}")
+        shared.log.info(f"Quantization: type=NNCF modules={shared.opts.nncf_compress_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
         install('nncf==2.7.0', quiet=True)
 
@@ -199,9 +199,9 @@ def nncf_compress_weights(sd_model):
         quant_last_model_device = None
 
         t1 = time.time()
-        shared.log.info(f"NNCF Compress Weights: time={t1-t0:.2f}")
+        shared.log.info(f"Quantization: type=NNCF time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.warning(f"NNCF Compress Weights: error: {e}")
+        shared.log.warning(f"Quantization: type=NNCF {e}")
     return sd_model
 
 
@@ -249,10 +249,10 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
 def optimum_quanto_weights(sd_model):
     try:
         if shared.opts.diffusers_offload_mode in {"balanced", "sequential"}:
-            shared.log.warning(f"Optimum Quanto Weights is incompatible with {shared.opts.diffusers_offload_mode} offload!")
+            shared.log.warning(f"Quantization: type=Optimum.quanto offload={shared.opts.diffusers_offload_mode} not compatible")
             return sd_model
         t0 = time.time()
-        shared.log.info(f"Optimum Quanto Weights: {shared.opts.optimum_quanto_weights}")
+        shared.log.info(f"Quantization: type=Optimum.quanto: modules={shared.opts.optimum_quanto_weights}")
         global quant_last_model_name, quant_last_model_device # pylint: disable=global-statement
         quanto = model_quant.load_quanto()
         quanto.tensor.qbits.QBitsTensor.create = lambda *args, **kwargs: quanto.tensor.qbits.QBitsTensor(*args, **kwargs)
@@ -299,9 +299,9 @@ def optimum_quanto_weights(sd_model):
             devices.torch_gc(force=True)
 
         t1 = time.time()
-        shared.log.info(f"Optimum Quanto Weights: time={t1-t0:.2f}")
+        shared.log.info(f"Quantization: type=Optimum.quanto time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.warning(f"Optimum Quanto Weights: error: {e}")
+        shared.log.warning(f"Quantization: type=Optimum.quanto {e}")
     return sd_model
 
 
@@ -329,7 +329,7 @@ def compile_onediff(sd_model):
         from onediff.infer_compiler import oneflow_compile
 
     except Exception as e:
-        shared.log.warning(f"Model compile using onediff/oneflow: {e}")
+        shared.log.warning(f"Model compile: task=onediff {e}")
         return sd_model
 
     try:
@@ -351,9 +351,9 @@ def compile_onediff(sd_model):
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
         t1 = time.time()
-        shared.log.info(f"Model compile: task=onediff/oneflow time={t1-t0:.2f}")
+        shared.log.info(f"Model compile: task=onediff time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.info(f"Model compile: task=onediff/oneflow error: {e}")
+        shared.log.info(f"Model compile: task=onediff {e}")
     return sd_model
 
 
@@ -361,7 +361,7 @@ def compile_stablefast(sd_model):
     try:
         import sfast.compilers.stable_diffusion_pipeline_compiler as sf
     except Exception as e:
-        shared.log.warning(f'Model compile using stable-fast: {e}')
+        shared.log.warning(f'Model compile: task=stablefast: {e}')
         return sd_model
     config = sf.CompilationConfig.Default()
     try:
@@ -390,9 +390,9 @@ def compile_stablefast(sd_model):
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
         t1 = time.time()
-        shared.log.info(f"Model compile: task='Stable-fast' config={config.__dict__} time={t1-t0:.2f}")
+        shared.log.info(f"Model compile: task=stablefast config={config.__dict__} time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.info(f"Model compile: task=Stable-fast error: {e}")
+        shared.log.info(f"Model compile: task=stablefast {e}")
     return sd_model
 
 
@@ -401,7 +401,7 @@ def compile_torch(sd_model):
         t0 = time.time()
         import torch._dynamo # pylint: disable=unused-import,redefined-outer-name
         torch._dynamo.reset() # pylint: disable=protected-access
-        shared.log.debug(f"Model compile available backends: {torch._dynamo.list_backends()}") # pylint: disable=protected-access
+        shared.log.debug(f"Model compile: task=torch backends={torch._dynamo.list_backends()}") # pylint: disable=protected-access
 
         def torch_compile_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if hasattr(model, "device") and model.device.type != "meta":
@@ -442,7 +442,7 @@ def compile_torch(sd_model):
             torch._inductor.config.use_mixed_mm = True # pylint: disable=protected-access
             # torch._inductor.config.force_fuse_int_mm_with_mul = True # pylint: disable=protected-access
         except Exception as e:
-            shared.log.error(f"Torch inductor config error: {e}")
+            shared.log.error(f"Model compile: torch inductor config error: {e}")
 
         sd_model = apply_compile_to_model(sd_model, function=torch_compile_model, options=shared.opts.cuda_compile, op="compile")
 
@@ -450,9 +450,9 @@ def compile_torch(sd_model):
         if shared.opts.cuda_compile_precompile:
             sd_model("dummy prompt")
         t1 = time.time()
-        shared.log.info(f"Model compile: time={t1-t0:.2f}")
+        shared.log.info(f"Model compile: task=torch time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.warning(f"Model compile error: {e}")
+        shared.log.warning(f"Model compile: task=torch {e}")
     return sd_model
 
 
@@ -467,19 +467,19 @@ def check_deepcache(enable: bool):
 def compile_deepcache(sd_model):
     global deepcache_worker # pylint: disable=global-statement
     if not hasattr(sd_model, 'unet'):
-        shared.log.warning(f'Model compile using deep-cache: {sd_model.__class__} not supported')
+        shared.log.warning(f'Model compile: task=deepcache pipeline={sd_model.__class__} not supported')
         return sd_model
     try:
         from DeepCache import DeepCacheSDHelper
     except Exception as e:
-        shared.log.warning(f'Model compile using deep-cache: {e}')
+        shared.log.warning(f'Model compile: task=deepcache {e}')
         return sd_model
     t0 = time.time()
     check_deepcache(False)
     deepcache_worker = DeepCacheSDHelper(pipe=sd_model)
     deepcache_worker.set_params(cache_interval=shared.opts.deep_cache_interval, cache_branch_id=0)
     t1 = time.time()
-    shared.log.info(f"Model compile: task='DeepCache' config={deepcache_worker.params} time={t1-t0:.2f}")
+    shared.log.info(f"Model compile: task=deepcache config={deepcache_worker.params} time={t1-t0:.2f}")
     # config={'cache_interval': 3, 'cache_layer_id': 0, 'cache_block_id': 0, 'skip_mode': 'uniform'} time=0.00
     return sd_model
 
@@ -503,40 +503,56 @@ def compile_diffusers(sd_model):
     return sd_model
 
 
-def dynamic_quantization(sd_model):
+def torchao_quantization(sd_model):
     try:
         install('torchao', quiet=True)
-        from torchao.quantization import autoquant
+        from torchao import quantization as q
     except Exception as e:
-        shared.log.error(f"Model dynamic quantization not supported: {e}")
+        shared.log.error(f"Quantization: type=TorchAO quantization not supported: {e}")
         return sd_model
-
-    """
-    from torchao.quantization import quant_api
-    def dynamic_quant_filter_fn(mod, *args): # pylint: disable=unused-argument
-        return (isinstance(mod, torch.nn.Linear) and mod.in_features > 16 and (mod.in_features, mod.out_features)
-                not in [(1280, 640), (1920, 1280), (1920, 640), (2048, 1280), (2048, 2560), (2560, 1280), (256, 128), (2816, 1280), (320, 640), (512, 1536), (512, 256), (512, 512), (640, 1280), (640, 1920), (640, 320), (640, 5120), (640, 640), (960, 320), (960, 640)])
-
-    def conv_filter_fn(mod, *args): # pylint: disable=unused-argument
-        return (isinstance(mod, torch.nn.Conv2d) and mod.kernel_size == (1, 1) and 128 in [mod.in_channels, mod.out_channels])
-
-    quant_api.swap_conv2d_1x1_to_linear(sd_model.unet, conv_filter_fn)
-    quant_api.swap_conv2d_1x1_to_linear(sd_model.vae, conv_filter_fn)
-    quant_api.apply_dynamic_quant(sd_model.unet, dynamic_quant_filter_fn)
-    quant_api.apply_dynamic_quant(sd_model.vae, dynamic_quant_filter_fn)
-    """
-
-    shared.log.info(f"Model dynamic quantization: pipeline={sd_model.__class__.__name__}")
+    if shared.opts.torchao_quantization_type == "int8+act":
+        fn = q.int8_dynamic_activation_int8_weight
+    elif shared.opts.torchao_quantization_type == "int8":
+        fn = q.int8_weight_only
+    elif shared.opts.torchao_quantization_type == "int4":
+        fn = q.int4_weight_only
+    elif shared.opts.torchao_quantization_type == "fp8+act":
+        fn = q.float8_dynamic_activation_float8_weight
+    elif shared.opts.torchao_quantization_type == "fp8":
+        fn = q.float8_weight_only
+    elif shared.opts.torchao_quantization_type == "fpx":
+        fn = q.fpx_weight_only
+    else:
+        shared.log.error(f"Quantization: type=TorchAO type={shared.opts.torchao_quantization_type} not supported")
+        return sd_model
+    shared.log.info(f"Quantization: type=TorchAO pipe={sd_model.__class__.__name__} quant={shared.opts.torchao_quantization_type} fn={fn} targets={shared.opts.torchao_quantization}")
     try:
-        if shared.sd_model_type == 'sd' or shared.sd_model_type == 'sdxl':
-            sd_model.unet = sd_model.unet.to(devices.device)
-            sd_model.unet = autoquant(sd_model.unet, error_on_unseen=False)
-        elif shared.sd_model_type == 'f1':
-            sd_model.transformer = autoquant(sd_model.transformer, error_on_unseen=False)
-        else:
-            shared.log.error(f"Model dynamic quantization not supported: {shared.sd_model_type}")
+        t0 = time.time()
+        modules = []
+        if hasattr(sd_model, 'unet') and 'Model' in shared.opts.torchao_quantization:
+            modules.append('unet')
+            q.quantize_(sd_model.unet, fn(), device=devices.device)
+        if hasattr(sd_model, 'transformer') and 'Model' in shared.opts.torchao_quantization:
+            modules.append('transformer')
+            q.quantize_(sd_model.transformer, fn(), device=devices.device)
+            # sd_model.transformer = q.autoquant(sd_model.transformer, error_on_unseen=False)
+        if hasattr(sd_model, 'vae') and 'VAE' in shared.opts.torchao_quantization:
+            modules.append('vae')
+            q.quantize_(sd_model.vae, fn(), device=devices.device)
+        if hasattr(sd_model, 'text_encoder') and 'Text Encoder' in shared.opts.torchao_quantization:
+            modules.append('te1')
+            q.quantize_(sd_model.text_encoder, fn(), device=devices.device)
+        if hasattr(sd_model, 'text_encoder_2') and 'Text Encoder' in shared.opts.torchao_quantization:
+            modules.append('te2')
+            q.quantize_(sd_model.text_encoder_2, fn(), device=devices.device)
+        if hasattr(sd_model, 'text_encoder_3') and 'Text Encoder' in shared.opts.torchao_quantization:
+            modules.append('te3')
+            q.quantize_(sd_model.text_encoder_3, fn(), device=devices.device)
+        t1 = time.time()
+        shared.log.info(f"Quantization: type=TorchAO modules={modules} time={t1-t0:.2f}")
     except Exception as e:
-        shared.log.error(f"Model dynamic quantization: {e}")
+        shared.log.error(f"Quantization: type=TorchAO {e}")
+    setup_logging() # torchao uses dynamo which messes with logging so reset is needed
     return sd_model
 
 

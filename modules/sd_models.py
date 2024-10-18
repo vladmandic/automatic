@@ -737,8 +737,8 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if shared.opts.diffusers_quantization:
-        sd_model = sd_models_compile.dynamic_quantization(sd_model)
+    if len(shared.opts.torchao_quantization) > 0:
+        sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.debug(f'Setting {op}: channels-last=True')
@@ -1193,7 +1193,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
                 from diffusers.utils import import_utils
                 import_utils._accelerate_available = False # pylint: disable=protected-access
             if shared.opts.diffusers_to_gpu and model_type.startswith('Stable Diffusion'):
-                shared.log.debug(f'Diffusers accelerate: hijack={shared.opts.diffusers_to_gpu}')
+                shared.log.debug(f'Diffusers accelerate: direct={shared.opts.diffusers_to_gpu}')
                 sd_hijack_accelerate.hijack_accelerate()
             else:
                 sd_hijack_accelerate.restore_accelerate()

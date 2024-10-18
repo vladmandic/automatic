@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-17
+## Update for 2024-10-18
 
-### Highlights for 2024-10-17
+### Highlights for 2024-10-18
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -22,6 +22,8 @@
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
+- Tons of work on dynamic quantization that can be applied on-the-fly during model load to any model type  
+  Supported quantization engines include TorchAO, Optimum.quanto, NNCF compression, and more...  
 
 Oh, and we've compiled a full table with list of popular text-to-image generative models, their respective parameters and architecture overview: <https://github.com/vladmandic/automatic/wiki/Models>
 
@@ -30,7 +32,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-17
+### Details for 2024-10-18
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -211,6 +213,11 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - setting `lora_load_gpu` to load LoRA directly to GPU  
     *default*: true unless lovwram  
 
+- **torchao**
+  - reimplement torchao quantization
+  - configure in settings -> compute settings -> quantization
+  - can be applied to any model on-the-fly during load  
+
 - **huggingface**:  
   - force logout/login on token change  
   - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths  
@@ -233,6 +240,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - fix update infotext on image select  
   - fix imageviewer exif parser  
   - selectable info view in image viewer, thanks @ZeldaMaster501  
+  - setting to enable browser autolaunch, thanks @brknsoul  
 - **free-u** check if device/dtype are fft compatible and cast as necessary  
 - **rocm**
   - additional gpu detection and auto-config code, thanks @lshqqytiger  

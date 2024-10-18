@@ -1,5 +1,6 @@
 from __future__ import annotations
 from functools import partial
+import os
 import re
 import sys
 import logging
@@ -13,6 +14,7 @@ errors.install()
 logging.getLogger("DeepSpeed").disabled = True
 
 
+os.environ.setdefault('TORCH_LOGS', '-all')
 import torch # pylint: disable=C0411
 try:
     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
@@ -96,7 +98,6 @@ def get_packages():
     }
 
 try:
-    import os
     import math
     cores = os.cpu_count()
     affinity = len(os.sched_getaffinity(0))
