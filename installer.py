@@ -566,8 +566,11 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) > 6.2: # assume the latest if version check fails
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2')
+        if rocm.version is None or float(rocm.version) >= 6.1: # assume the latest if version check fails
+            #torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
         elif float(rocm.version) < 5.5: # oldest supported version is 5.5
             log.warning(f"ROCm: unsupported version={rocm.version}")
             log.warning("ROCm: minimum supported version=5.5")
@@ -583,7 +586,7 @@ def install_rocm_zluda():
                 ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
 
-        if device is not None:
+        if installed("torch") and device is not None:
             if 'Flash attention' in opts.get('sdp_options'):
                 if not installed('flash-attn'):
                     install(rocm.get_flash_attention_command(device), reinstall=True)
