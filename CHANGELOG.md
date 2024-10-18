@@ -234,6 +234,9 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - add support for *image2video* (in addition to previous *text2video* and *video2video*)  
   - *note*: *image2video* requires separate 5b model variant  
 
+- **torch**  
+  - due to numerous issues with torch 2.5.0 which was just released as stable, we are sticking with 2.4.1 for now  
+
 - **backend=original** is now marked as in maintenance-only mode  
 - **python 3.12** improved compatibility, automatically handle `setuptools`  
 - **control**

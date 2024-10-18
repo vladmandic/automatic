@@ -485,7 +485,8 @@ def check_torchao():
 def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
-    return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
+    # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
+    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
@@ -684,7 +685,7 @@ def check_torch():
     allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml or args.use_openvino)
     allow_directml = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_openvino)
     allow_openvino = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_directml)
-    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino} zluda={args.use_zluda}')
+    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} directml={args.use_directml} openvino={args.use_openvino} zluda={args.use_zluda}')
     # log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
 
@@ -1025,6 +1026,8 @@ def set_environment():
     os.environ.setdefault('UVICORN_TIMEOUT_KEEP_ALIVE', '60')
     os.environ.setdefault('KINETO_LOG_LEVEL', '3')
     os.environ.setdefault('DO_NOT_TRACK', '1')
+    os.environ.setdefault('UV_INDEX_STRATEGY', 'unsafe-any-match')
+    os.environ.setdefault('UV_NO_BUILD_ISOLATION', '1')
     os.environ.setdefault('HF_HUB_CACHE', opts.get('hfcache_dir', os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')))
     allocator = f'garbage_collection_threshold:{opts.get("torch_gc_threshold", 80)/100:0.2f},max_split_size_mb:512'
     if opts.get("torch_malloc", "native") == 'cudaMallocAsync':
