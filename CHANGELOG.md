@@ -4,12 +4,17 @@
 
 ### Highlights for 2024-10-18
 
+Workflow highlights:
+
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
   and you can pick any previous latent from auto-captured history!  
 - **Detailer** Fully built-in detailer workflow without with support for all standard models  
 - Built-in **model analyzer**  
   See all details of your currently loaded model, including components, parameter count, layer count, etc.  
+
+Newly supported:
+
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - New models:
   - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
@@ -18,6 +23,9 @@
   [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
+
+Otherwise notable:
+
 - Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
