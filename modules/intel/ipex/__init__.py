@@ -16,6 +16,11 @@ def ipex_init(): # pylint: disable=too-many-statements
         if hasattr(torch, "cuda") and hasattr(torch.cuda, "is_xpu_hijacked") and torch.cuda.is_xpu_hijacked:
             return True, "Skipping IPEX hijack"
         else:
+            try:
+                from triton import backends as triton_backends # pylint: disable=import-error
+                triton_backends.backends["nvidia"].driver.is_active = lambda *args, **kwargs: False
+            except Exception:
+                pass
             # Replace cuda with xpu:
             torch.cuda.current_device = torch.xpu.current_device
             torch.cuda.current_stream = torch.xpu.current_stream
