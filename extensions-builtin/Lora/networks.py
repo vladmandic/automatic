@@ -285,6 +285,8 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
     weights_backup = getattr(self, "network_weights_backup", None)
     bias_backup = getattr(self, "network_bias_backup", None)
     if weights_backup is None and bias_backup is None:
+        t1 = time.time()
+        timer['restore'] += t1 - t0
         return
     # if debug:
     #     shared.log.debug('LoRA restore weights')
@@ -319,18 +321,7 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
     timer['restore'] += t1 - t0
 
 
-def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv]):
-    """
-    Applies the currently selected set of networks to the weights of torch layer self.
-    If weights already have this particular set of networks applied, does nothing.
-    If not, restores orginal weights from backup and alters weights according to networks.
-    """
-    network_layer_name = getattr(self, 'network_layer_name', None)
-    if network_layer_name is None:
-        return
-    t0 = time.time()
-    current_names = getattr(self, "network_current_names", ())
-    wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
+def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], wanted_names, current_names):
     weights_backup = getattr(self, "network_weights_backup", None)
     if weights_backup is None and wanted_names != (): # pylint: disable=C1803
         if current_names != ():
@@ -360,6 +351,21 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             bias_backup = None
         self.network_bias_backup = bias_backup
 
+
+def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv]):
+    """
+    Applies the currently selected set of networks to the weights of torch layer self.
+    If weights already have this particular set of networks applied, does nothing.
+    If not, restores orginal weights from backup and alters weights according to networks.
+    """
+    network_layer_name = getattr(self, 'network_layer_name', None)
+    if network_layer_name is None:
+        return
+    t0 = time.time()
+    current_names = getattr(self, "network_current_names", ())
+    wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
+    if any([net.modules.get(network_layer_name, None) for net in loaded_networks]):
+        maybe_backup_weights(self, wanted_names, current_names)
     if current_names != wanted_names:
         network_restore_weights_from_backup(self)
         for net in loaded_networks:
