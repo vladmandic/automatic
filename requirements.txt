@@ -3,7 +3,6 @@ patch-ng
 anyio
 addict
 astunparse
-clean-fid
 filetype
 future
 GitPython
@@ -12,7 +11,6 @@ inflection
 jsonmerge
 kornia
 lark
-lpips
 omegaconf
 optimum
 piexif
@@ -35,8 +33,6 @@ peft==0.13.1
 httpx==0.24.1
 compel==2.0.3
 torchsde==0.2.6
-open-clip-torch
-clip-interrogator==0.6.0
 antlr4-python3-runtime==4.9.3
 requests==2.32.3
 tqdm==4.66.5
@@ -65,3 +61,7 @@ torchdiffeq
 dctorch
 scikit-image
 seam-carving
+open-clip-torch
+
+# TODO temporary block for torch==2.5.0
+torchvision!=0.20.0

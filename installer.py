@@ -212,7 +212,10 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
             pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=')]
             pkgs = [p.split('/')[-1] for p in pkgs] # get only package name if installing from url
         for pkg in pkgs:
-            if '>=' in pkg:
+            if '!=' in pkg:
+                p = pkg.split('!=')
+                return True # check for not equal always return true
+            elif '>=' in pkg:
                 p = pkg.split('>=')
             else:
                 p = pkg.split('==')
