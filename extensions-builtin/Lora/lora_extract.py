@@ -5,6 +5,7 @@ import datetime
 import torch
 from safetensors.torch import save_file
 import gradio as gr
+from rich import progress as p
 from modules import shared, devices
 from modules.ui_common import create_refresh_button
 from modules.call_queue import wrap_gradio_gpu_call
@@ -133,9 +134,7 @@ def make_lora(fn, maxrank, auto_rank, rank_ratio, modules, overwrite):
     shared.log.debug(f'LoRA extract: modules={modules} maxrank={maxrank} auto={auto_rank} ratio={rank_ratio} fn="{fn}"')
     shared.state.begin('LoRA extract')
 
-    # bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba'
-    from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
-    with Progress(TextColumn('[cyan]LoRA extract'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), TextColumn('[cyan]{task.description}'), console=shared.console) as progress:
+    with p.Progress(p.TextColumn('[cyan]LoRA extract'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TextColumn('[cyan]{task.description}'), console=shared.console) as progress:
 
         if 'te' in modules and getattr(shared.sd_model, 'text_encoder', None) is not None:
             modules = shared.sd_model.text_encoder.named_modules()
