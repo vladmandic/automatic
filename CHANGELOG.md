@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-18
+## Update for 2024-10-20
 
-### Highlights for 2024-10-18
+### Highlights for 2024-10-20
 
 Workflow highlights:
 
@@ -12,6 +12,8 @@ Workflow highlights:
 - **Detailer** Fully built-in detailer workflow without with support for all standard models  
 - Built-in **model analyzer**  
   See all details of your currently loaded model, including components, parameter count, layer count, etc.  
+- **Extract LoRA**: load any LoRA(s) and play with generate as usual  
+  and once you like the results simply extract combined LoRA for future use!  
 
 Newly supported:
 
@@ -40,7 +42,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-18
+### Details for 2024-10-20
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -87,6 +89,10 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - image metadata includes info on used detailer models  
   - *note* detailer defaults are not save in ui settings, they are saved in server settings  
     to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
+
+- **extract lora**: extract combined lora from current memory state, thanks @AI-Casanova  
+  load any LoRA(s) and play with generate as usual and once you like the results simply extract combined LoRA for future use!  
+  in *models -> extract lora*  
 
 - **sampler options**: full rewrite  
 
