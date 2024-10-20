@@ -55,6 +55,8 @@ td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 .gradio-radio { padding: 0 !important; width: max-content !important; }
 .gradio-slider { margin-right: var(--spacing-sm) !important; width: max-content !important }
 .gradio-slider input[type="number"] { width: 5em; font-size: var(--text-xs); height: 16px; text-align: right; padding: 0; }
+.gradio-checkboxgroup { padding: 0 !important; }
+.gradio-checkbox > label { color: var(--block-title-text-color) !important; }
 
 /* custom gradio elements */
 .accordion-compact { padding: 8px 0px 4px 0px !important; }

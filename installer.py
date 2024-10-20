@@ -212,7 +212,10 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
             pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=')]
             pkgs = [p.split('/')[-1] for p in pkgs] # get only package name if installing from url
         for pkg in pkgs:
-            if '>=' in pkg:
+            if '!=' in pkg:
+                p = pkg.split('!=')
+                return True # check for not equal always return true
+            elif '>=' in pkg:
                 p = pkg.split('>=')
             else:
                 p = pkg.split('==')
@@ -485,7 +488,8 @@ def check_torchao():
 def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
-    return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
+    # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
+    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
@@ -566,8 +570,11 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+        if rocm.version is None or float(rocm.version) >= 6.1: # assume the latest if version check fails
+            #torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
         elif float(rocm.version) < 5.5: # oldest supported version is 5.5
             log.warning(f"ROCm: unsupported version={rocm.version}")
             log.warning("ROCm: minimum supported version=5.5")
@@ -583,7 +590,7 @@ def install_rocm_zluda():
                 ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
             install(ort_package, 'onnxruntime-training')
 
-        if device is not None:
+        if installed("torch") and device is not None:
             if 'Flash attention' in opts.get('sdp_options'):
                 if not installed('flash-attn'):
                     install(rocm.get_flash_attention_command(device), reinstall=True)
@@ -616,26 +623,10 @@ def install_ipex(torch_command):
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if "linux" in sys.platform:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+        # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
-        if sys.version_info.minor == 11:
-            pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
-            torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl'
-            ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl'
-            torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-        elif sys.version_info.minor == 10:
-            pytorch_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torch-2.1.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
-            torchvision_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/torchvision-0.16.0a0+cxx11.abi-cp310-cp310-win_amd64.whl'
-            ipex_pip = 'https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.10%2Bxpu/intel_extension_for_pytorch-2.1.10+xpu-cp310-cp310-win_amd64.whl'
-            torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
-        else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.1.0.post3 torchvision==0.16.0.post3 intel-extension-for-pytorch==2.1.40+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-            if os.environ.get('DISABLE_VENV_LIBS', None) is None:
-                install(os.environ.get('MKL_PACKAGE', 'mkl==2024.2.0'), 'mkl')
-                install(os.environ.get('DPCPP_PACKAGE', 'mkl-dpcpp==2024.2.0'), 'mkl-dpcpp')
-                install(os.environ.get('ONECCL_PACKAGE', 'oneccl-devel==2021.13.0'), 'oneccl-devel')
-                install(os.environ.get('MPI_PACKAGE', 'impi-devel==2021.13.0'), 'impi-devel')
-        torch_command = os.environ.get('TORCH_COMMAND', f'{pytorch_pip} {torchvision_pip} {ipex_pip}')
+        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu') # torchvision doesn't exist on test/stable branch for windows
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', 'nncf', ignore=True)
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
@@ -697,7 +688,7 @@ def check_torch():
     allow_ipex = not (args.use_cuda or args.use_rocm or args.use_directml or args.use_openvino)
     allow_directml = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_openvino)
     allow_openvino = not (args.use_cuda or args.use_rocm or args.use_ipex or args.use_directml)
-    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} diml={args.use_directml} openvino={args.use_openvino} zluda={args.use_zluda}')
+    log.debug(f'Torch overrides: cuda={args.use_cuda} rocm={args.use_rocm} ipex={args.use_ipex} directml={args.use_directml} openvino={args.use_openvino} zluda={args.use_zluda}')
     # log.debug(f'Torch allowed: cuda={allow_cuda} rocm={allow_rocm} ipex={allow_ipex} diml={allow_directml} openvino={allow_openvino}')
     torch_command = os.environ.get('TORCH_COMMAND', '')
 
@@ -1038,6 +1029,8 @@ def set_environment():
     os.environ.setdefault('UVICORN_TIMEOUT_KEEP_ALIVE', '60')
     os.environ.setdefault('KINETO_LOG_LEVEL', '3')
     os.environ.setdefault('DO_NOT_TRACK', '1')
+    os.environ.setdefault('UV_INDEX_STRATEGY', 'unsafe-any-match')
+    os.environ.setdefault('UV_NO_BUILD_ISOLATION', '1')
     os.environ.setdefault('HF_HUB_CACHE', opts.get('hfcache_dir', os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')))
     allocator = f'garbage_collection_threshold:{opts.get("torch_gc_threshold", 80)/100:0.2f},max_split_size_mb:512'
     if opts.get("torch_malloc", "native") == 'cudaMallocAsync':

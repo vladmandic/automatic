@@ -254,6 +254,7 @@ def process_init(p: StableDiffusionProcessing):
         p.all_prompts, p.all_negative_prompts = shared.prompt_styles.apply_styles_to_prompts(p.all_prompts, p.all_negative_prompts, p.styles, p.all_seeds)
         p.prompts = p.all_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
         p.negative_prompts = p.all_negative_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
+        p.prompts, _ = extra_networks.parse_prompts(p.prompts)
 
 
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:

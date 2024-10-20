@@ -737,8 +737,8 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if shared.opts.diffusers_quantization:
-        sd_model = sd_models_compile.dynamic_quantization(sd_model)
+    if len(shared.opts.torchao_quantization) > 0:
+        sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.debug(f'Setting {op}: channels-last=True')
@@ -1193,7 +1193,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
                 from diffusers.utils import import_utils
                 import_utils._accelerate_available = False # pylint: disable=protected-access
             if shared.opts.diffusers_to_gpu and model_type.startswith('Stable Diffusion'):
-                shared.log.debug(f'Diffusers accelerate: hijack={shared.opts.diffusers_to_gpu}')
+                shared.log.debug(f'Diffusers accelerate: direct={shared.opts.diffusers_to_gpu}')
                 sd_hijack_accelerate.hijack_accelerate()
             else:
                 sd_hijack_accelerate.restore_accelerate()
@@ -1298,7 +1298,10 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
         sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
         sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
-        sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
+        if hasattr(sd_model, "prior_pipe"):
+            sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
+        else:
+            sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
         sd_model.is_sdxl = False # a1111 compatibility item
         sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
         sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item

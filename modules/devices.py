@@ -291,6 +291,7 @@ def set_cudnn_params():
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True
             torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True
+            torch.backends.cuda.allow_fp16_bf16_reduction_math_sdp(True)
         except Exception:
             pass
         if torch.backends.cudnn.is_available():

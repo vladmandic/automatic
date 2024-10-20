@@ -293,7 +293,9 @@ def torch_load(f, map_location=None, *args, **kwargs):
 
 
 # Hijack Functions:
-def ipex_hijacks():
+def ipex_hijacks(legacy=True):
+    if legacy:
+        torch.nn.functional.interpolate = interpolate
     torch.tensor = torch_tensor
     torch.Tensor.to = Tensor_to
     torch.Tensor.cuda = Tensor_cuda
@@ -319,7 +321,6 @@ def ipex_hijacks():
     torch.nn.functional.layer_norm = functional_layer_norm
     torch.nn.functional.linear = functional_linear
     torch.nn.functional.conv2d = functional_conv2d
-    torch.nn.functional.interpolate = interpolate
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm

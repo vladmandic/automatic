@@ -252,6 +252,8 @@ def get_clip_models():
 
 
 def load_interrogator(clip_model, blip_model):
+    from installer import install
+    install('clip_interrogator==0.6.0')
     import clip_interrogator
     clip_interrogator.CAPTION_MODELS = caption_models
     global ci # pylint: disable=global-statement

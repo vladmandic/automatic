@@ -20,7 +20,6 @@ with contextlib.redirect_stdout(stdout):
 
 import modules.textual_inversion.textual_inversion
 from modules import devices, sd_hijack_optimizations
-from modules import sd_hijack_clip, sd_hijack_open_clip, sd_hijack_unet, sd_hijack_xlmr, xlmr
 from modules.hypernetworks import hypernetwork
 
 attention_CrossAttention_forward = ldm.modules.attention.CrossAttention.forward
@@ -40,6 +39,7 @@ current_optimizer = SimpleNamespace(**{ "name": "none" })
 
 def apply_optimizations():
     undo_optimizations()
+    from modules import sd_hijack_unet
     ldm.modules.diffusionmodules.model.nonlinearity = silu
     ldm.modules.diffusionmodules.openaimodel.th = sd_hijack_unet.th
     optimization_method = None
@@ -159,6 +159,7 @@ class StableDiffusionModelHijack:
         self.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
 
     def hijack(self, m):
+        from modules import sd_hijack_clip, sd_hijack_open_clip, sd_hijack_unet, sd_hijack_xlmr, xlmr
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:
             model_embeddings = m.cond_stage_model.roberta.embeddings
             model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.word_embeddings, self)
@@ -223,6 +224,7 @@ class StableDiffusionModelHijack:
         self.layers = flatten(m)
 
     def undo_hijack(self, m):
+        from modules import sd_hijack_clip, sd_hijack_open_clip, xlmr
         if not hasattr(m, 'cond_stage_model'):
             return # not ldm model
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:

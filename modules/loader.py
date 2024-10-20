@@ -1,5 +1,6 @@
 from __future__ import annotations
 from functools import partial
+import os
 import re
 import sys
 import logging
@@ -13,7 +14,11 @@ errors.install()
 logging.getLogger("DeepSpeed").disabled = True
 
 
+os.environ.setdefault('TORCH_LOGS', '-all')
 import torch # pylint: disable=C0411
+if torch.__version__.startswith('2.5.0'):
+    errors.log.warning(f'Disabling cuDNN for SDP on torch={torch.__version__}')
+    torch.backends.cuda.enable_cudnn_sdp(False)
 try:
     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
     errors.log.debug(f'Load IPEX=={ipex.__version__}')
@@ -96,7 +101,6 @@ def get_packages():
     }
 
 try:
-    import os
     import math
     cores = os.cpu_count()
     affinity = len(os.sched_getaffinity(0))
