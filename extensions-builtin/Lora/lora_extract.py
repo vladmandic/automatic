@@ -78,20 +78,36 @@ def loaded_lora():
     return ", ".join(list(loaded))
 
 
-def make_lora(filename, maxrank, auto_rank, rank_ratio):
+def make_meta():
+    return {
+        'todo': 'extra-lora'
+    }
+
+
+def make_lora(fn, maxrank, auto_rank, rank_ratio, modules, overwrite):
     if not shared.sd_loaded or not shared.native:
+        msg = "LoRA extract: model not loaded"
+        shared.log.warning(msg)
+        yield msg
         return
     if loaded_lora() == "":
-        shared.log.warning("LoRA extract: no LoRA detected")
+        msg = "LoRA extract: no LoRA detected"
+        shared.log.warning(msg)
+        yield msg
         return
-    if not filename:
-        shared.log.warning("LoRA extract: target filename required")
+    if not fn:
+        msg = "LoRA extract: target filename required"
+        shared.log.warning(msg)
+        yield msg
         return
     t0 = time.time()
     maxrank = int(maxrank)
     rank_ratio = 1 if not auto_rank else rank_ratio
+    shared.state.begin('LoRA extract')
 
-    if hasattr(shared.sd_model, 'text_encoder') and shared.sd_model.text_encoder is not None:
+    shared.log.debug(f'LoRA extract: modules={modules} maxrank={maxrank} auto={auto_rank} ratio={rank_ratio} fn="{fn}"')
+    if 'te' in modules and getattr(shared.sd_model, 'text_encoder', None) is not None:
+        yield "LoRA extract: extracting TE-1"
         for name, module in shared.sd_model.text_encoder.named_modules():
             weights_backup = getattr(module, "network_weights_backup", None)
             if weights_backup is None or getattr(module, "network_current_names", None) is None:
@@ -101,8 +117,10 @@ def make_lora(filename, maxrank, auto_rank, rank_ratio):
             module.svdhandler.network_name = prefix + name.replace(".", "_")
             with devices.inference_context():
                 module.svdhandler.decompose(module.weight, weights_backup)
+    t1 = time.time()
 
-    if hasattr(shared.sd_model, 'text_encoder_2'):
+    if 'te' in modules and getattr(shared.sd_model, 'text_encoder_2', None) is not None:
+        yield "LoRA extract: extracting TE-2"
         for name, module in shared.sd_model.text_encoder_2.named_modules():
             weights_backup = getattr(module, "network_weights_backup", None)
             if weights_backup is None or getattr(module, "network_current_names", None) is None:
@@ -111,8 +129,10 @@ def make_lora(filename, maxrank, auto_rank, rank_ratio):
             module.svdhandler.network_name = "lora_te2_" + name.replace(".", "_")
             with devices.inference_context():
                 module.svdhandler.decompose(module.weight, weights_backup)
+    t2 = time.time()
 
-    if hasattr(shared.sd_model, 'unet'):
+    if 'unet' in modules and getattr(shared.sd_model, 'unet', None) is not None:
+        yield "LoRA extract: extracting UNet"
         for name, module in shared.sd_model.unet.named_modules():
             weights_backup = getattr(module, "network_weights_backup", None)
             if weights_backup is None or getattr(module, "network_current_names", None) is None:
@@ -121,9 +141,10 @@ def make_lora(filename, maxrank, auto_rank, rank_ratio):
             module.svdhandler.network_name = "lora_unet_" + name.replace(".", "_")
             with devices.inference_context():
                 module.svdhandler.decompose(module.weight, weights_backup)
+    t3 = time.time()
 
     # TODO: Handle quant for Flux
-    # if hasattr(shared.sd_model, 'transformer'):
+    # if 'te' in modules and getattr(shared.sd_model, 'transformer', None) is not None:
     #     for name, module in shared.sd_model.transformer.named_modules():
     #         if "norm" in name and "linear" not in name:
     #             continue
@@ -135,29 +156,48 @@ def make_lora(filename, maxrank, auto_rank, rank_ratio):
     #         module.svdhandler.decompose(module.weight, weights_backup)
     #         module.svdhandler.findrank(rank, rank_ratio)
 
-    submodelname = ['text_encoder', 'text_encoder_2', 'unet', 'transformer']
-
     lora_state_dict = {}
-    for sub in submodelname:
+    for sub in ['text_encoder', 'text_encoder_2', 'unet', 'transformer']:
         submodel = getattr(shared.sd_model, sub, None)
         if submodel is not None:
+            yield f"LoRA extract: creating {sub}"
             for _name, module in submodel.named_modules():
                 if not hasattr(module, "svdhandler"):
                     continue
                 lora_state_dict.update(module.svdhandler.makeweights())
                 del module.svdhandler
+    shared.log.debug('LoRA extract: create done')
+    t4 = time.time()
 
-    suffix = []
-    if maxrank and auto_rank and rank_ratio != 1:
-        suffix.append(f'maxrank{str(maxrank).replace(".","-")}')
-    else:
-        suffix.append(f'rank{str(maxrank).replace(".","-")}')
-    if auto_rank and rank_ratio != 1:
-        suffix.append(f'autorank{str(rank_ratio).replace(".","-")}')
+    if not os.path.isabs(fn):
+        fn = os.path.join(shared.cmd_opts.lora_dir, fn)
+    if not fn.endswith('.safetensors'):
+        fn += '.safetensors'
+    if os.path.exists(fn):
+        if overwrite:
+            shared.log.warning(f'LoRA extract: fn="{fn}" overwriting existing file')
+            os.remove(fn)
+        else:
+            msg = f'LoRA extract: fn="{fn}" file exists'
+            shared.log.warning(msg)
+            yield msg
+            return
 
-    pathstr = str(os.path.join(shared.cmd_opts.lora_dir, filename+f'_{"_".join(suffix)}.safetensors'))
-    save_file(lora_state_dict, pathstr)
-    shared.log.info(f'LoRA extra: fn={pathstr} in {time.time()-t0} seconds')
+    shared.state.end()
+    meta = make_meta()
+    try:
+        save_file(tensors=lora_state_dict, metadata=meta, filename=fn)
+    except Exception as e:
+        msg = f'LoRA extract error: fn="{fn}" {e}'
+        shared.log.error(msg)
+        yield msg
+        return
+    t5 = time.time()
+    shared.log.debug(f'LoRA extract: te1={t1-t0:.2f} te2={t2-t1:.2f} unet={t3-t2:.2f} save={t5-t4:.2f}')
+    keys = list(lora_state_dict.keys())
+    msg = f'LoRA extract: fn="{fn}" keys={len(keys)} time={t5-t0:.2f}'
+    shared.log.info(msg)
+    yield msg
 
 
 def create_ui():
@@ -168,16 +208,19 @@ def create_ui():
         with gr.Row():
             loaded = gr.Textbox(value="Press refresh to query loaded LoRA", label="Loaded LoRA", interactive=False)
             create_refresh_button(loaded, lambda: None, lambda: {'value': loaded_lora()}, "testid")
-        with gr.Row():
-            rank = gr.Slider(label="Maximum rank", value=32, minimum=1, maximum=256)
-        with gr.Row():
-            auto_rank = gr.Checkbox(value=False, label="Automatically determine rank")
-        with gr.Row(visible=False) as rank_options:
-            rank_ratio = gr.Slider(label="Autorank ratio", value=1, minimum=0, maximum=1, step=0.05, visible=True)
+        with gr.Group():
+            with gr.Row():
+                modules = gr.CheckboxGroup(label="Modules to extract", value=['unet'], choices=['te', 'unet'])
+            with gr.Row():
+                auto_rank = gr.Checkbox(value=False, label="Automatically determine rank")
+                rank_ratio = gr.Slider(label="Autorank ratio", value=1, minimum=0, maximum=1, step=0.05, visible=False)
+                rank = gr.Slider(label="Maximum rank", value=32, minimum=1, maximum=256)
         with gr.Row():
             filename = gr.Textbox(label="LoRA target filename")
+            overwrite = gr.Checkbox(value=False, label="Overwrite existing file")
         with gr.Row():
             extract = gr.Button(value="Extract LoRA", variant='primary')
+            status = gr.HTML(value="", show_label=False)
 
-    auto_rank.change(fn=lambda x: gr_show(x), inputs=[auto_rank], outputs=[rank_options])
-    extract.click(fn=make_lora, inputs=[filename, rank, auto_rank, rank_ratio], outputs=[])
+        auto_rank.change(fn=lambda x: gr_show(x), inputs=[auto_rank], outputs=[rank_ratio])
+        extract.click(fn=make_lora, inputs=[filename, rank, auto_rank, rank_ratio, modules, overwrite], outputs=[status])
