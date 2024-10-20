@@ -1,5 +1,7 @@
 import os
 import time
+import json
+import datetime
 import torch
 from safetensors.torch import save_file
 import gradio as gr
@@ -75,13 +77,36 @@ def loaded_lora():
             if current is not None:
                 current = [item[0] for item in current]
                 loaded.update(current)
-    return ", ".join(list(loaded))
+    return list(loaded)
 
 
-def make_meta():
-    return {
-        'todo': 'extra-lora'
+def loaded_lora_str():
+    return ", ".join(loaded_lora())
+
+
+def make_meta(fn, maxrank, rank_ratio):
+    meta = {
+        "model_spec.sai_model_spec": "1.0.0",
+        "model_spec.title": os.path.splitext(os.path.basename(fn))[0],
+        "model_spec.author": "SD.Next",
+        "model_spec.implementation": "https://github.com/vladmandic/automatic",
+        "model_spec.date": datetime.datetime.now().astimezone().replace(microsecond=0).isoformat(),
+        "model_spec.base_model": shared.opts.sd_model_checkpoint,
+        "model_spec.base_lora": json.dumps(loaded_lora()),
+        "model_spec.config": f"maxrank={maxrank} rank_ratio={rank_ratio}",
     }
+    if shared.sd_model_type == "sdxl":
+        meta["model_spec.architecture"] = "stable-diffusion-xl-v1-base/lora" # sai standard
+        meta["ss_base_model_version"] = "sdxl_base_v1-0" # kohya standard
+    elif shared.sd_model_type == "sd":
+        meta["model_spec.architecture"] = "stable-diffusion-v1/lora"
+        meta["ss_base_model_version"] = "sd_v1"
+    elif shared.sd_model_type == "f1":
+        meta["model_spec.architecture"] = "flux-1-dev/lora"
+        meta["ss_base_model_version"] = "flux1"
+    elif shared.sd_model_type == "sc":
+        meta["model_spec.architecture"] = "stable-cascade-v1-prior/lora"
+    return meta
 
 
 def make_lora(fn, maxrank, auto_rank, rank_ratio, modules, overwrite):
@@ -184,7 +209,8 @@ def make_lora(fn, maxrank, auto_rank, rank_ratio, modules, overwrite):
             return
 
     shared.state.end()
-    meta = make_meta()
+    meta = make_meta(fn, maxrank, rank_ratio)
+    shared.log.debug(f'LoRA metadata: {meta}')
     try:
         save_file(tensors=lora_state_dict, metadata=meta, filename=fn)
     except Exception as e:
@@ -207,7 +233,7 @@ def create_ui():
     with gr.Tab(label="Extract LoRA"):
         with gr.Row():
             loaded = gr.Textbox(value="Press refresh to query loaded LoRA", label="Loaded LoRA", interactive=False)
-            create_refresh_button(loaded, lambda: None, lambda: {'value': loaded_lora()}, "testid")
+            create_refresh_button(loaded, lambda: None, lambda: {'value': loaded_lora_str()}, "testid")
         with gr.Group():
             with gr.Row():
                 modules = gr.CheckboxGroup(label="Modules to extract", value=['unet'], choices=['te', 'unet'])
