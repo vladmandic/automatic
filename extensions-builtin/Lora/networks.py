@@ -324,8 +324,6 @@ def network_restore_weights_from_backup(self: Union[torch.nn.Conv2d, torch.nn.Li
 def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, torch.nn.MultiheadAttention, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], wanted_names, current_names):
     weights_backup = getattr(self, "network_weights_backup", None)
     if weights_backup is None and wanted_names != (): # pylint: disable=C1803
-        if current_names != ():
-            raise RuntimeError("no backup weights found and current weights are not unchanged")
         if isinstance(self, torch.nn.MultiheadAttention):
             weights_backup = (self.in_proj_weight.clone().to(devices.cpu), self.out_proj.weight.clone().to(devices.cpu))
         elif getattr(self.weight, "quant_type", None) in ['nf4', 'fp4']:
