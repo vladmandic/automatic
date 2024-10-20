@@ -270,7 +270,7 @@ def create_sampler_options(tabname):
             sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
         with gr.Row(elem_classes=['flex-break']):
             shared.opts.data['schedulers_sigma'] = shared.opts.data.get('schedulers_sigma', 'default')
-            sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
+            sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data.schedulers_sigma, type='value')
         sampler_options.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
         sampler_algo.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
 
