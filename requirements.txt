@@ -65,3 +65,4 @@ open-clip-torch
 
 # TODO temporary block for torch==2.5.0
 torchvision!=0.20.0
+torch!=2.5.0

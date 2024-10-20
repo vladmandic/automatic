@@ -4,7 +4,7 @@
 
 ### Highlights for 2024-10-20
 
-Workflow highlights:
+#### Workflow highlights
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -15,30 +15,30 @@ Workflow highlights:
 - **Extract LoRA**: load any LoRA(s) and play with generate as usual  
   and once you like the results simply extract combined LoRA for future use!  
 
-Newly supported:
+#### Newly supported
 
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
-- New models:
-  - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
-  - [Meissonic](https://github.com/viiika/Meissonic)  
+- New models:  
+  [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
+  [Meissonic](https://github.com/viiika/Meissonic)  
 - Additional integration:  
   [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
 
-Otherwise notable:
+#### Otherwise notable
 
 - Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
-- Tons of work on dynamic quantization that can be applied on-the-fly during model load to any model type  
-  Supported quantization engines include TorchAO, Optimum.quanto, NNCF compression, and more...  
+- Tons of work on **dynamic quantization** that can be applied on-the-fly during model load to any model type  
+  Supported quantization engines include `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
 
-Oh, and we've compiled a full table with list of popular text-to-image generative models, their respective parameters and architecture overview: <https://github.com/vladmandic/automatic/wiki/Models>
+Oh, and we've compiled a full table with list of top-30 (*how many have you tried?*) popular text-to-image generative models,  
+their respective parameters and architecture overview: [Models Overview](https://github.com/vladmandic/automatic/wiki/Models)  
 
-And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...
-
+And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...  
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
