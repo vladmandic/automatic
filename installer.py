@@ -489,7 +489,7 @@ def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
-    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu124')
+    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
@@ -636,7 +636,7 @@ def install_ipex(torch_command):
 def install_openvino(torch_command):
     check_python(supported_minors=[8, 9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('OpenVINO: selected')
-    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cpu')
+    torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino')
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     install('nncf==2.12.0', 'nncf')
