@@ -9,7 +9,7 @@
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
   and you can pick any previous latent from auto-captured history!  
-- **Detailer** Fully built-in detailer workflow without with support for all standard models  
+- **Detailer** Fully built-in detailer workflow with support for all standard models  
 - Built-in **model analyzer**  
   See all details of your currently loaded model, including components, parameter count, layer count, etc.  
 - **Extract LoRA**: load any LoRA(s) and play with generate as usual  
