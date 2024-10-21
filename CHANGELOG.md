@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-20
+## Update for 2024-10-21
 
-### Highlights for 2024-10-20
+### Highlights for 2024-10-21
 
 #### Workflow highlights
 
@@ -42,7 +42,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-20
+### Details for 2024-10-21
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -89,6 +89,10 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - image metadata includes info on used detailer models  
   - *note* detailer defaults are not save in ui settings, they are saved in server settings  
     to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
+  - if using models trained on multiple classes, you can specify which classes you want to detail  
+    e.g. original yolo detection model is trained on coco dataset with 80 predefined classes  
+    if you leave field blank, it will use any class found in the model  
+    you can see classes defined in the model while model itself is loaded for the first time  
 
 - **extract lora**: extract combined lora from current memory state, thanks @AI-Casanova  
   load any LoRA(s) and play with generate as usual and once you like the results simply extract combined LoRA for future use!  

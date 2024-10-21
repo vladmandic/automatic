@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 import os
 import numpy as np
 import gradio as gr
@@ -7,6 +8,7 @@ from modules.detailer import Detailer
 
 
 PREDEFINED = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
+    'https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/face-yolo8n.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/hand_yolov8n.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/person_yolov8n-seg.pt',
@@ -16,7 +18,9 @@ PREDEFINED = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
 
 
 class YoloResult:
-    def __init__(self, score: float, box: list[int], mask: Image.Image = None, item: Image.Image = None, size: float = 0, width = 0, height = 0, args = {}):
+    def __init__(self, cls: int, label: str, score: float, box: list[int], mask: Image.Image = None, item: Image.Image = None, size: float = 0, width = 0, height = 0, args = {}):
+        self.cls = cls
+        self.label = label
         self.score = score
         self.box = box
         self.mask = mask
@@ -79,10 +83,12 @@ class YoloRestorer(Detailer):
         args = {
             'conf': shared.opts.detailer_conf,
             'iou': shared.opts.detailer_iou,
-            'max_det': shared.opts.detailer_max,
+            # 'max_det': shared.opts.detailer_max,
         }
         try:
-            model.to(device)
+            if TYPE_CHECKING:
+                from ultralytics import YOLO # pylint: disable=import-outside-toplevel, unused-import
+            model: YOLO = model.to(device)
             predictions = model.predict(
                 source=[image],
                 stream=False,
@@ -101,10 +107,19 @@ class YoloRestorer(Detailer):
             shared.log.error(f'Detailer predict: {e}')
             return result
 
+        desired = shared.opts.detailer_classes.split(',')
+        desired = [d.lower().strip() for d in desired]
+        desired = [d for d in desired if len(d) > 0]
+
         for prediction in predictions:
             boxes = prediction.boxes.xyxy.detach().int().cpu().numpy() if prediction.boxes is not None else []
             scores = prediction.boxes.conf.detach().float().cpu().numpy() if prediction.boxes is not None else []
-            for score, box in zip(scores, boxes):
+            classes = prediction.boxes.cls.detach().float().cpu().numpy() if prediction.boxes is not None else []
+            for score, box, cls in zip(scores, boxes, classes):
+                cls = int(cls)
+                label = prediction.names[cls] if cls < len(prediction.names) else f'cls{cls}'
+                if len(desired) > 0 and label.lower() not in desired:
+                    continue
                 box = box.tolist()
                 mask_image = None
                 w, h = box[2] - box[0], box[3] - box[1]
@@ -116,7 +131,9 @@ class YoloRestorer(Detailer):
                         draw = ImageDraw.Draw(mask_image)
                         draw.rectangle(box, fill="white", outline=None, width=0)
                         cropped = image.crop(box)
-                        result.append(YoloResult(score=round(score, 2), box=box, mask=mask_image, item=cropped, size=size, width=w, height=h, args=args))
+                        result.append(YoloResult(cls=cls, label=label, score=round(score, 2), box=box, mask=mask_image, item=cropped, size=size, width=w, height=h, args=args))
+                if len(result) >= shared.opts.detailer_max:
+                    break
         return result
 
     def load(self, model_name: str = None):
@@ -133,9 +150,10 @@ class YoloRestorer(Detailer):
             try:
                 model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
                 if model_file is not None:
-                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}"')
                     from ultralytics import YOLO # pylint: disable=import-outside-toplevel
                     model = YOLO(model_file)
+                    classes = list(model.names.values())
+                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" classes={classes}')
                     self.models[model_name] = model
                     return model_name, model
             except Exception as e:
@@ -218,7 +236,7 @@ class YoloRestorer(Detailer):
             if p.steps < 1:
                 p.steps = orig_p.get('steps', 0)
 
-            report = [{'score': i.score, 'size': f'{i.width}x{i.height}' } for i in items]
+            report = [{'label': i.label, 'score': i.score, 'size': f'{i.width}x{i.height}' } for i in items]
             shared.log.info(f'Detailer: model="{name}" items={report} args={items[0].args} denoise={p.denoising_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
             shared.log.debug(f'Detailer: prompt="{prompt}" negative="{negative}"')
             models_used.append(name)
@@ -265,8 +283,9 @@ class YoloRestorer(Detailer):
         return np_image
 
     def ui(self, tab: str):
-        def ui_settings_change(detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou):
+        def ui_settings_change(detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou):
             shared.opts.detailer_models = detailers
+            shared.opts.detailer_classes = classes
             shared.opts.detailer_strength = strength
             shared.opts.detailer_padding = padding
             shared.opts.detailer_blur = blur
@@ -276,7 +295,7 @@ class YoloRestorer(Detailer):
             shared.opts.detailer_max_size = max_size
             shared.opts.detailer_iou = iou
             shared.opts.save(shared.config_filename, silent=True)
-            shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding}')
+            shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} classes={shared.opts.detailer_classes} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding}')
 
         with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer_accordion", elem_classes=["small-accordion"], visible=shared.native):
             with gr.Row():
@@ -284,6 +303,8 @@ class YoloRestorer(Detailer):
             with gr.Row():
                 detailers = gr.Dropdown(label="Detailers", elem_id=f"{tab}_detailers", choices=self.list, value=shared.opts.detailer_models, multiselect=True)
                 ui_common.create_refresh_button(detailers, self.enumerate, {}, elem_id=f"{tab}_detailers_refresh")
+            with gr.Row():
+                classes = gr.Textbox(label="Classes", placeholder="Classes", elem_id=f"{tab}_detailer_classes")
             with gr.Row():
                 strength = gr.Slider(label="Detailer strength", elem_id=f"{tab}_detailer_strength", value=shared.opts.detailer_strength, minimum=0, maximum=1, step=0.01)
                 max_detected = gr.Slider(label="Max detected", elem_id=f"{tab}_detailer_max", value=shared.opts.detailer_max, min=1, maximum=10, step=1)
@@ -296,15 +317,16 @@ class YoloRestorer(Detailer):
             with gr.Row():
                 min_size = gr.Slider(label="Min size", elem_id=f"{tab}_detailer_min_size", value=shared.opts.detailer_min_size, minimum=0, maximum=1024, step=1)
                 max_size = gr.Slider(label="Max size", elem_id=f"{tab}_detailer_max_size", value=shared.opts.detailer_max_size, minimum=0, maximum=1024, step=1)
-            detailers.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            strength.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            padding.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            blur.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            min_confidence.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            max_detected.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            min_size.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            max_size.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            iou.change(fn=ui_settings_change, inputs=[detailers, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            detailers.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            classes.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            strength.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            padding.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            blur.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            min_confidence.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            max_detected.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            min_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            max_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            iou.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
             return enabled
 
 

@@ -807,6 +807,7 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
 
     # "postprocessing_sep_detailer": OptionInfo("<h2>Detailer</h2>", "", gr.HTML),
     "detailer_model": OptionInfo("Detailer", "Detailer model", gr.Radio, lambda: {"choices": [x.name() for x in detailers], "visible": False}),
+    "detailer_classes": OptionInfo("", "Detailer classes", gr.Textbox, { "visible": False}),
     "detailer_conf": OptionInfo(0.6, "Min confidence", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05, "visible": False}),
     "detailer_max": OptionInfo(2, "Max detected", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1, "visible": False}),
     "detailer_iou": OptionInfo(0.5, "Max overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05, "visible": False}),
