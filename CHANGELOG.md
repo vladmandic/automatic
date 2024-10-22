@@ -17,7 +17,7 @@
 
 #### Newly supported
 
-- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
+- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
 - New models:  
   [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
   [OmniGen](https://arxiv.org/pdf/2409.11340)  
@@ -34,8 +34,8 @@
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
-- Tons of work on **dynamic quantization** that can be applied on-the-fly during model load to any model type  
-  Supported quantization engines include `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
+- Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
+  Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
 
 Oh, and we've compiled a full table with list of top-30 (*how many have you tried?*) popular text-to-image generative models,  
 their respective parameters and architecture overview: [Models Overview](https://github.com/vladmandic/automatic/wiki/Models)  
@@ -249,10 +249,16 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - setting `lora_load_gpu` to load LoRA directly to GPU  
     *default*: true unless lovwram  
 
-- **torchao**
-  - reimplement torchao quantization
-  - configure in settings -> compute settings -> quantization
-  - can be applied to any model on-the-fly during load  
+- **quantization**  
+  - new top level settings group as we have quite a few quantization options now!  
+    configure in *settings -> quantization*  
+  - in addition to existing `optimum.quanto` and `nncf`, we now have `bitsandbytes` and `torchao`  
+  - **bitsandbytes**: fp8, fp4, nf4  
+    - quantization can be applied on-the-fly during model load  
+    - currently supports `transformers` and `t5` in **sd3** and **flux**  
+  - **torchao**: int8, int4, fp8, fp4, fpx  
+    - configure in settings -> quantization  
+    - can be applied to any model on-the-fly during load  
 
 - **huggingface**:  
   - force logout/login on token change  
