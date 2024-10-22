@@ -31,7 +31,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple diffusion models!  
-  ▹ **Stable Diffusion 1.5/2.1/XL/3.0 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | FLUX.1 | AuraFlow | Würstchen | Alpha Lumina | Kwai Kolors | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | CogView | etc.**
+  ▹ **Stable Diffusion 1.5/2.1/XL/3.0/3.5 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | FLUX.1 | AuraFlow | Würstchen | Alpha Lumina | Kwai Kolors | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | CogView | OmniGen | Meissonic | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
@@ -68,6 +68,7 @@ Additional models will be added as they become available and there is public int
 - [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*
 - [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)
+- [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
 - [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
 - [StabilityAI Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) Dev, Schnell  
@@ -75,6 +76,8 @@ Additional models will be added as they become available and there is public int
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
 - [Playground AI](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*
 - [Tencent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
+- [OmniGen](https://arxiv.org/pdf/2409.11340)  
+- [Meissonic](https://github.com/viiika/Meissonic)  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
 - [CogView 3+](https://huggingface.co/THUDM/CogView3-Plus-3B)
 - [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)
