@@ -869,7 +869,8 @@ def apply_balanced_offload(sd_model):
                     module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
                 except Exception as e:
-                    shared.log.error(f'Balanced offload: module={module_name} {e}')
+                    if 'bitsandbytes' not in str(e):
+                        shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc(fast=True)
 
     apply_balanced_offload_to_module(sd_model)

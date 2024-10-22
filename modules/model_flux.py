@@ -108,6 +108,35 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
     return transformer, text_encoder_2
 
 
+def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
+    repo_id = sd_models.path_to_repo(checkpoint_info.name)
+    cache_dir=shared.opts.diffusers_dir
+    if len(shared.opts.bnb_quantization) > 0 and (transformer is None or text_encoder_2 is None):
+        from modules.model_quant import load_bnb
+        load_bnb('Load model: type=FLUX')
+        try:
+            bnb_config = diffusers.BitsAndBytesConfig(
+                load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
+                load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
+                bnb_4bit_quant_storage=shared.opts.bnb_quantization_storage,
+                bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
+                bnb_4bit_compute_dtype=devices.dtype
+            )
+            if 'Model' in shared.opts.bnb_quantization and transformer is None:
+                transformer = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+                shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+            if 'Text Encoder' in shared.opts.bnb_quantization and text_encoder_2 is None:
+                text_encoder_2 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+                shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+        except Exception as e:
+            shared.log.error(f"Load model: type=FLUX failed quantize using BnB: {e}")
+            transformer, text_encoder_2 = None, None
+            if debug:
+                from modules import errors
+                errors.display(e, 'FLUX:')
+    return transformer, text_encoder_2
+
+
 def load_flux_gguf(file_path):
     transformer = None
     model_te.install_gguf()
@@ -257,6 +286,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
 
     # initialize pipeline with pre-loaded components
     components = {}
+    transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
     if transformer is not None:
         components['transformer'] = transformer
         sd_unet.loaded_unet = shared.opts.sd_unet
@@ -276,10 +306,4 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             shared.log.warning(f'Load model: type=FLUX component={c} dtype={components[c].dtype} cast dtype={devices.dtype}')
             components[c] = components[c].to(dtype=devices.dtype)
     pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
-    try:
-        diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxPipeline
-        diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["flux"] = diffusers.FluxImg2ImgPipeline
-        diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING["flux"] = diffusers.FluxInpaintPipeline
-    except Exception:
-        pass
     return pipe

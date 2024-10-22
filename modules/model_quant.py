@@ -11,7 +11,7 @@ def load_bnb(msg='', silent=False):
     if bnb is not None:
         return bnb
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'Quantization: module=bitsandbytes fn={fn}') # pylint: disable=protected-access
+    log.debug(f'Quantization: type=bitsandbytes fn={fn}') # pylint: disable=protected-access
     install('bitsandbytes', quiet=True)
     try:
         import bitsandbytes
@@ -30,10 +30,10 @@ def load_quanto(msg='', silent=False):
     if quanto is not None:
         return quanto
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'Quantization: module=quanto fn={fn}') # pylint: disable=protected-access
+    log.debug(f'Quantization: type=quanto fn={fn}') # pylint: disable=protected-access
     install('optimum-quanto', quiet=True)
     try:
-        from optimum import quanto as optimum_quanto
+        from optimum import quanto as optimum_quanto # pylint: disable=no-name-in-module
         quanto = optimum_quanto
         return quanto
     except Exception as e:
