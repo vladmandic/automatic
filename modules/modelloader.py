@@ -196,6 +196,8 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
         return None
     from diffusers import DiffusionPipeline
     shared.state.begin('HuggingFace')
+    if hub_id.startswith('huggingface/'):
+        hub_id = hub_id.replace('huggingface/', '')
     if download_config is None:
         download_config = {
             "force_download": False,
@@ -335,7 +337,7 @@ def get_reference_opts(name: str, quiet=False):
         # shared.log.error(f'Reference: model="{name}" not found')
         return {}
     if not quiet:
-        shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
+        shared.log.debug(f'Reference: model="{name}" {model_opts}')
     return model_opts
 
 

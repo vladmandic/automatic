@@ -112,21 +112,27 @@
     "extras": "sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
   },
   "StabilityAI Stable Diffusion 3 Medium": {
-    "path": "huggingface/stabilityai/stable-diffusion-3-medium-diffusers",
+    "path": "stabilityai/stable-diffusion-3-medium-diffusers",
     "skip": true,
     "variant": "fp16",
-    "te3": null,
     "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
     "preview": "stabilityai--stable-diffusion-3.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },
-  "StabilityAI Stable Diffusion 3 Large": {
-    "path": "huggingface/stabilityai/stable-diffusion-3.5-large",
+  "StabilityAI Stable Diffusion 3.5 Large": {
+    "path": "stabilityai/stable-diffusion-3.5-large",
     "skip": true,
     "variant": "fp16",
-    "te3": null,
     "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
-    "preview": "stabilityai--stable-diffusion-3.jpg",
+    "preview": "stabilityai--stable-diffusion-3_5.jpg",
+    "extras": "sampler: Default, cfg_scale: 7.0"
+  },
+  "StabilityAI Stable Diffusion 3.5 Turbo": {
+    "path": "stabilityai/stable-diffusion-3.5-large-turbo",
+    "skip": true,
+    "variant": "fp16",
+    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "preview": "stabilityai--stable-diffusion-3_5.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },
 

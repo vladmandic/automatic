@@ -127,7 +127,11 @@ def get_tokens(msg, prompt):
     if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
         if token_dict is None or token_type != shared.sd_model_type:
             token_type = shared.sd_model_type
-            fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'tokenizer', 'vocab.json')
+            fn = shared.sd_model.tokenizer.name_or_path
+            if fn.endswith('tokenizer'):
+                fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'vocab.json')
+            else:
+                fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'tokenizer', 'vocab.json')
             token_dict = shared.readfile(fn, silent=True)
             for k, v in shared.sd_model.tokenizer.added_tokens_decoder.items():
                 token_dict[str(v)] = k

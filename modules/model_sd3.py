@@ -1,5 +1,4 @@
 import os
-import torch
 import diffusers
 import transformers
 
@@ -7,7 +6,6 @@ import transformers
 def load_sd3(checkpoint_info, cache_dir=None, config=None):
     from modules import devices, modelloader, sd_models
     repo_id = sd_models.path_to_repo(checkpoint_info.name)
-    # dtype = torch.float16
     dtype = devices.dtype
     kwargs = {}
     if checkpoint_info.path is not None and checkpoint_info.path.endswith('.safetensors') and os.path.exists(checkpoint_info.path):
@@ -48,6 +46,7 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     else:
         modelloader.hf_login()
         loader = diffusers.StableDiffusion3Pipeline.from_pretrained
+        kwargs['variant'] = 'fp16'
     pipe = loader(
         repo_id,
         torch_dtype=dtype,
@@ -55,6 +54,5 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
         config=config,
         **kwargs,
     )
-    # pipe.transformer = pipe.transformer.to(devices.dtype) # diffusers loader leaves it as-is
     devices.torch_gc()
     return pipe

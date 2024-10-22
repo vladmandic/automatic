@@ -19,6 +19,7 @@
 
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - New models:  
+  [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
   [OmniGen](https://arxiv.org/pdf/2409.11340)  
   [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
   [Meissonic](https://github.com/viiika/Meissonic)  
@@ -177,6 +178,12 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
     examples: `in |image| remove glasses from face`, `using depth map from |image|, create new image of a cute robot`  
   - Params used: prompt, steps, guidance scale for prompt guidance, refine guidance scale for image guidance  
     Recommended: guidance=3.0, refine-guidance=1.6  
+
+- [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
+  - New/improved variant of Stable Diffusion 3  
+  - Select from *networks -> models -> reference*  
+  - Available in standard and turbo variations  
+  - *Note*: Access to to both variations of SD3.5 model is gated, you must accept the conditions and use HF login  
 
 - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)
   - Select from *networks -> models -> reference*  
