@@ -77,6 +77,10 @@ def create_sampler(name, model):
         if 'Lumina' in model.__class__.__name__:
             shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
             return None
+        if 'StableDiffusion3Pipeline' in model.__class__.__name__:
+            if sampler.name != 'Heun FlowMatch':
+                return None
+            return None
         if 'AuraFlow' in model.__class__.__name__:
             shared.log.warning(f'AuraFlow: sampler="{name}" unsupported')
             return None

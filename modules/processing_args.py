@@ -126,6 +126,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         timer.process.record('encode', reset=False)
 
     if 'prompt' in possible:
+        if 'OmniGen' in model.__class__.__name__:
+            p.prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
@@ -136,8 +138,6 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
             elif 'Flux' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
-        if 'OmniGen' in model.__class__.__name__:
-            args['prompt'] = [p.replace('|image|', '<|image_1|>') for p in prompts]
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:

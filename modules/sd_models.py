@@ -1089,7 +1089,7 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
             from modules.model_sd3 import load_sd3
             shared.log.debug(f'Load {op}: model="Stable Diffusion 3" variant=medium')
             shared.opts.scheduler = 'Default'
-            sd_model = load_sd3(cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
+            sd_model = load_sd3(checkpoint_info, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
         elif model_type in ['Meissonic']: # forced pipeline
             from modules.model_meissonic import load_meissonic
             sd_model = load_meissonic(checkpoint_info, diffusers_load_config)
@@ -1190,7 +1190,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
                     diffusers_load_config['config'] = model_config
         if model_type.startswith('Stable Diffusion 3'):
             from modules.model_sd3 import load_sd3
-            sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
+            sd_model = load_sd3(checkpoint_info=checkpoint_info, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
         elif hasattr(pipeline, 'from_single_file'):
             diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
             diffusers_load_config['use_safetensors'] = True
@@ -1977,6 +1977,8 @@ def remove_token_merging(sd_model):
 
 
 def path_to_repo(fn: str = ''):
+    if isinstance(fn, CheckpointInfo):
+        fn = fn.name
     repo_id = fn.replace('\\', '/')
     if 'models--' in repo_id:
         repo_id = repo_id.split('models--')[-1]

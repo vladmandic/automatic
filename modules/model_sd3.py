@@ -4,18 +4,16 @@ import diffusers
 import transformers
 
 
-def load_sd3(fn=None, cache_dir=None, config=None):
-    from modules import devices, modelloader
-    repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    dtype = torch.float16
+def load_sd3(checkpoint_info, cache_dir=None, config=None):
+    from modules import devices, modelloader, sd_models
+    repo_id = sd_models.path_to_repo(checkpoint_info.name)
+    # dtype = torch.float16
+    dtype = devices.dtype
     kwargs = {}
-    if fn is not None and fn.endswith('.safetensors') and os.path.exists(fn):
-        model_id = fn
+    if checkpoint_info.path is not None and checkpoint_info.path.endswith('.safetensors') and os.path.exists(checkpoint_info.path):
         loader = diffusers.StableDiffusion3Pipeline.from_single_file
-        _diffusers_major, diffusers_minor, diffusers_micro = int(diffusers.__version__.split('.')[0]), int(diffusers.__version__.split('.')[1]), int(diffusers.__version__.split('.')[2]) # pylint: disable=use-maxsplit-arg
-        fn_size = os.path.getsize(fn)
-        if (diffusers_minor <= 29 and diffusers_micro < 1) or fn_size < 5e9: # te1/te2 do not get loaded correctly in diffusers 0.29.0 if model is without te1/te2
+        fn_size = os.path.getsize(checkpoint_info.path)
+        if fn_size < 5e9:
             kwargs = {
                 'text_encoder': transformers.CLIPTextModelWithProjection.from_pretrained(
                     repo_id,
@@ -49,16 +47,14 @@ def load_sd3(fn=None, cache_dir=None, config=None):
             kwargs = {}
     else:
         modelloader.hf_login()
-        model_id = repo_id
         loader = diffusers.StableDiffusion3Pipeline.from_pretrained
     pipe = loader(
-        model_id,
+        repo_id,
         torch_dtype=dtype,
         cache_dir=cache_dir,
         config=config,
         **kwargs,
     )
-    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Pipeline
-    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Img2ImgPipeline
+    # pipe.transformer = pipe.transformer.to(devices.dtype) # diffusers loader leaves it as-is
     devices.torch_gc()
     return pipe

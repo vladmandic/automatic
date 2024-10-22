@@ -400,6 +400,8 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     pooled_prompt_embeds = []
     negative_pooled_prompt_embeds = []
     for i in range(len(embedding_providers)):
+        if i >= len(positives): # te may be missing/unloaded
+            break
         t0 = time.time()
         text = list(positives[i])
         weights = list(positive_weights[i])

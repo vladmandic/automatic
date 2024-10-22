@@ -120,6 +120,15 @@
     "preview": "stabilityai--stable-diffusion-3.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },
+  "StabilityAI Stable Diffusion 3 Large": {
+    "path": "huggingface/stabilityai/stable-diffusion-3.5-large",
+    "skip": true,
+    "variant": "fp16",
+    "te3": null,
+    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "preview": "stabilityai--stable-diffusion-3.jpg",
+    "extras": "sampler: Default, cfg_scale: 7.0"
+  },
 
   "Black Forest Labs FLUX.1 Dev": {
     "path": "black-forest-labs/FLUX.1-dev",
