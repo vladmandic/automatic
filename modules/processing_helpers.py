@@ -446,6 +446,8 @@ def calculate_base_steps(p, use_denoise_start, use_refiner_start):
     if not is_txt2img():
         if use_denoise_start and shared.sd_model_type == 'sdxl':
             steps = p.steps // (1 - p.refiner_start)
+        elif shared.sd_model_type == 'omnigen':
+            steps = p.steps
         elif p.denoising_strength > 0:
             steps = (p.steps // p.denoising_strength) + 1
         else:

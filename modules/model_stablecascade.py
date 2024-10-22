@@ -1,5 +1,4 @@
 import os
-import copy
 import torch
 import diffusers
 from modules import shared, devices, sd_models

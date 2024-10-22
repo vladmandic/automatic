@@ -291,10 +291,11 @@ def load_diffusers_models(clear=True):
                     mtime = os.path.getmtime(commit)
                     info = os.path.join(commit, "model_info.json")
                     index = os.path.join(commit, "model_index.json")
-                    if (not os.path.exists(index)) and (not os.path.exists(info)):
+                    config = os.path.join(commit, "config.json")
+                    if (not os.path.exists(index)) and (not os.path.exists(info)) and (not os.path.exists(config)):
                         debug(f'Diffusers skip model no info: {name}')
                         continue
-                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index }
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index, 'model_config': config }
                     diffuser_repos.append(repo)
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue

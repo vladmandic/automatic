@@ -106,6 +106,8 @@ class Shared(sys.modules[__name__].__class__):
                 model_type = 'auraflow'
             elif "Flux" in self.sd_model.__class__.__name__:
                 model_type = 'f1'
+            elif "OmniGen" in self.sd_model.__class__.__name__:
+                model_type = 'omnigen'
             elif "CogVideo" in self.sd_model.__class__.__name__:
                 model_type = 'cogvideox'
             else:

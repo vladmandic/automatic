@@ -21,8 +21,8 @@ class Module():
         if hasattr(module, 'config'):
             self.config = module.config
         if isinstance(module, torch.nn.Module):
-            self.device = module.device
-            self.dtype = module.dtype
+            self.device = getattr(module, 'device', None)
+            self.dtype = getattr(module, 'dtype', None)
             self.params = sum(p.numel() for p in module.parameters(recurse=True))
             self.modules = len(list(module.modules()))
 
@@ -72,12 +72,12 @@ def analyze():
     model = Model(shared.opts.sd_model_checkpoint)
     if model.cls == '':
         return model
-    if not hasattr(shared.sd_model, '_internal_dict'):
-        return model
+    if hasattr(shared.sd_model, '_internal_dict'):
+        keys = shared.sd_model._internal_dict.keys() # pylint: disable=protected-access
+    else:
+        keys = sd_models.get_signature(shared.sd_model).keys()
     model.modules.clear()
-    if not hasattr(shared.sd_model, '_internal_dict'):
-        return model
-    for k in shared.sd_model._internal_dict.keys(): # pylint: disable=protected-access
+    for k in keys: # pylint: disable=protected-access
         component = getattr(shared.sd_model, k, None)
         module = Module(k, component)
         model.modules.append(module)

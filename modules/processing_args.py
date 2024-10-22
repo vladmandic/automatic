@@ -19,7 +19,7 @@ def task_specific_kwargs(p, model):
     is_img2img_model = bool('Zero123' in shared.sd_model.__class__.__name__)
     if len(getattr(p, 'init_images', [])) > 0:
         p.init_images = [p.convert('RGB') for p in p.init_images]
-    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE and not is_img2img_model:
+    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0 and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
             task_args = {
@@ -38,6 +38,14 @@ def task_specific_kwargs(p, model):
             p.width = 8 * math.ceil(p.init_images[0].width / 8)
             p.height = 8 * math.ceil(p.init_images[0].height / 8)
             task_args['width'], task_args['height'] = p.width, p.height
+        if model.__class__.__name__ == 'OmniGenPipeline':
+            p.width = 16 * math.ceil(p.init_images[0].width / 16)
+            p.height = 16 * math.ceil(p.init_images[0].height / 16)
+            task_args = {
+                'width': p.width,
+                'height': p.height,
+                'input_images': [p.init_images], # omnigen expects list-of-lists
+            }
     elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INSTRUCT and len(getattr(p, 'init_images', [])) > 0:
         p.ops.append('instruct')
         task_args = {
@@ -128,6 +136,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
             elif 'Flux' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
                 args['pooled_prompt_embeds'] = p.positive_pooleds[0]
+        if 'OmniGen' in model.__class__.__name__:
+            args['prompt'] = [p.replace('|image|', '<|image_1|>') for p in prompts]
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
@@ -174,6 +184,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         args['noise_sampler_seed'] = p.seeds
     if 'guidance_scale' in possible:
         args['guidance_scale'] = p.cfg_scale
+    if 'img_guidance_scale' in possible and hasattr(p, 'image_cfg_scale'):
+        args['img_guidance_scale'] = p.image_cfg_scale
     if 'generator' in possible:
         args['generator'] = get_generator(p)
     if 'latents' in possible and getattr(p, "init_latent", None) is not None:

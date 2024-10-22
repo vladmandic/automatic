@@ -99,6 +99,8 @@ def process_base(p: processing.StableDiffusionProcessing):
             output = shared.sd_model(**base_args)
         if isinstance(output, dict):
             output = SimpleNamespace(**output)
+        if isinstance(output, list):
+            output = SimpleNamespace(images=output)
         shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
         timer.process.record('pipeline')
         hidiffusion.unapply()

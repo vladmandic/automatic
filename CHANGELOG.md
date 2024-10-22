@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-21
+## Update for 2024-10-22
 
-### Highlights for 2024-10-21
+### Highlights for 2024-10-22
 
 #### Workflow highlights
 
@@ -19,6 +19,7 @@
 
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by SD15, SDXL, Flux.1, etc. brings additional details to your images  
 - New models:  
+  [OmniGen](https://arxiv.org/pdf/2409.11340)  
   [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
   [Meissonic](https://github.com/viiika/Meissonic)  
 - Additional integration:  
@@ -42,7 +43,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-21
+### Details for 2024-10-22
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  
@@ -166,6 +167,16 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - support for differential diffusion  
   - added native load mode for qint8/qint4 models
   - avoid unet load if unchanged  
+
+- [OmniGen](https://arxiv.org/pdf/2409.11340)  
+  - Radical new model with pure LLM architecture based on Phi-3  
+  - Select from *networks -> models -> reference*  
+  - Can be used for text-to-image and image-to-image  
+  - Image-to-image is *very* different, you need to specify in prompt what do you want to do  
+    and add `|image|` placeholder where input image is used!  
+    examples: `in |image| remove glasses from face`, `using depth map from |image|, create new image of a cute robot`  
+  - Params used: prompt, steps, guidance scale for prompt guidance, refine guidance scale for image guidance  
+    Recommended: guidance=3.0, refine-guidance=1.6  
 
 - [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)
   - Select from *networks -> models -> reference*  
