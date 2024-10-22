@@ -511,7 +511,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
 options_templates.update(options_section(('quantization', "Quantization Settings"), {
     "bnb_quantization": OptionInfo([], "BnB quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
-    "bnb_quantization_type": OptionInfo("fp8", "BnB quantization type", gr.Radio, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
+    "bnb_quantization_type": OptionInfo("nf4", "BnB quantization type", gr.Radio, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
     "bnb_quantization_storage": OptionInfo("uint8", "BnB quantization storage", gr.Radio, {"choices": ["float16", "float32", "int8", "uint8", "float64", "bfloat16"], "visible": native}),
     "optimum_quanto_weights": OptionInfo([], "Optimum.quanto quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights_type": OptionInfo("qint8", "Optimum.quanto quantization type", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
