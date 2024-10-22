@@ -4,6 +4,8 @@
 
 ### Highlights for 2024-10-22
 
+A month later and with nearly 300 commits, here is the latest [SD.Next](https://github.com/vladmandic/automatic) update!  
+
 #### Workflow highlights
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
@@ -26,7 +28,7 @@
 - Additional integration:  
   [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
-  [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly distillation of any sd15/sdxl model  
+  [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly **distillation** of any sd15/sdxl model  
 
 #### Otherwise notable
 
