@@ -509,6 +509,39 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "olive_cache_optimized": OptionInfo(True, 'Olive cache optimized models'),
 }))
 
+options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
+    "diffusers_pipeline": OptionInfo('Autodetect', 'Diffusers pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()) }),
+    "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
+    "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
+    "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE"),
+    "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
+    "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
+    "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
+    "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
+    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 1), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
+    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 1), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
+    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
+    "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
+    "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
+    "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
+    "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
+    "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),
+    "diffusers_eval": OptionInfo(True, "Force model eval"),
+    "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
+    "disable_accelerate": OptionInfo(False, "Disable accelerate"),
+    "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty", gr.Checkbox, {"visible": False}),
+    "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
+    "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
+    "huggingface_token": OptionInfo('', 'HuggingFace token'),
+    "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
+
+    "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
+    "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),
+    "onnx_cpu_fallback": OptionInfo(True, 'ONNX allow fallback to CPU'),
+    "onnx_cache_converted": OptionInfo(True, 'ONNX cache converted models'),
+    "onnx_unload_base": OptionInfo(False, 'ONNX unload base model when processing refiner'),
+}))
+
 options_templates.update(options_section(('quantization', "Quantization Settings"), {
     "bnb_quantization": OptionInfo([], "BnB quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
     "bnb_quantization_type": OptionInfo("nf4", "BnB quantization type", gr.Radio, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
@@ -566,39 +599,6 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "inference_other_sep": OptionInfo("<h2>Other</h2>", "", gr.HTML),
     "inference_mode": OptionInfo("no-grad", "Torch inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
-}))
-
-options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
-    "diffusers_pipeline": OptionInfo('Autodetect', 'Diffusers pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()) }),
-    "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
-    "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
-    "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE"),
-    "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
-    "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
-    "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 1), "Max GPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01,}),
-    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 1), "Max CPU memory for balanced offload mode in GB", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01,}),
-    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
-    "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
-    "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
-    "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
-    "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
-    "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),
-    "diffusers_eval": OptionInfo(True, "Force model eval"),
-    "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
-    "disable_accelerate": OptionInfo(False, "Disable accelerate"),
-    "diffusers_force_zeros": OptionInfo(False, "Force zeros for prompts when empty", gr.Checkbox, {"visible": False}),
-    "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
-    "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
-    "huggingface_token": OptionInfo('', 'HuggingFace token'),
-    "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
-
-    "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
-    "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),
-    "onnx_cpu_fallback": OptionInfo(True, 'ONNX allow fallback to CPU'),
-    "onnx_cache_converted": OptionInfo(True, 'ONNX cache converted models'),
-    "onnx_unload_base": OptionInfo(False, 'ONNX unload base model when processing refiner'),
 }))
 
 options_templates.update(options_section(('system-paths', "System Paths"), {
