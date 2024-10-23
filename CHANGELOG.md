@@ -34,6 +34,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 
 - Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
+  *Note*: This is a breaking change to default settings and its recommended to check your preferred settings after upgrade  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
 - Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
