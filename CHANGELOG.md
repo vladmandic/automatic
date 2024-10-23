@@ -6,7 +6,7 @@
 
 A month later and with nearly 300 commits, here is the latest [SD.Next](https://github.com/vladmandic/automatic) update!  
 
-#### Workflow highlights
+#### Workflow highlights for 2024-10-23
 
 - **Reprocess**: New workflow options that allow you to generate at lower quality and then  
   reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
@@ -17,7 +17,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 - **Extract LoRA**: load any LoRA(s) and play with generate as usual  
   and once you like the results simply extract combined LoRA for future use!  
 
-#### New models
+#### New models for 2024-10-23
 
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
 - New models:  
@@ -30,7 +30,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly **distillation** of any sd15/sdxl model  
 
-#### What else?
+#### What else for 2024-10-23
 
 - Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
   Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
@@ -45,7 +45,6 @@ their respective parameters and architecture overview: [Models Overview](https:/
 
 And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...  
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
-
 
 ### Details for 2024-10-23
 
@@ -691,7 +690,7 @@ But theres more than SD3:
 First, yes, it is here and supported: [**StabilityAI Stable Diffusion 3 Medium**](https://stability.ai/news/stable-diffusion-3-medium)  
 for details on how to download and use, see [Wiki](https://github.com/vladmandic/automatic/wiki/SD3)
 
-#### What else?
+#### What else 2024-06-13?
 
 A lot of work on state-of-the-art multi-lingual models with both [Tenecent HunyuanDiT](https://github.com/Tencent/HunyuanDiT) and [MuLan](https://github.com/mulanai/MuLan)  
 Plus tons of minor features such as optimized initial install experience, **T-Gate** and **ResAdapter**, additional ModernUI themes (both light and dark) and fixes since the last release which was only 2 weeks ago!
