@@ -4,17 +4,18 @@ import inspect
 from collections import deque
 import torch
 from modules import prompt_parser
-from modules import devices
+from modules import devices, errors
 from modules import sd_samplers_common
 import modules.shared as shared
 from modules.script_callbacks import CFGDenoiserParams, cfg_denoiser_callback
 from modules.script_callbacks import CFGDenoisedParams, cfg_denoised_callback
 from modules.script_callbacks import AfterCFGCallbackParams, cfg_after_cfg_callback
 from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
-
+from installer import install
 
 # deal with k-diffusion imports
 k_sampling = None
+install('clean-fid')
 try:
     import k_diffusion # pylint: disable=wrong-import-order
     k_sampling = k_diffusion.sampling
@@ -25,8 +26,8 @@ try:
         import importlib
         k_diffusion = importlib.import_module('modules.k-diffusion.k_diffusion')
         k_sampling = k_diffusion.sampling
-except Exception:
-    pass
+except Exception as e:
+    errors.display(e, 'k-diffusion')
 if k_sampling is None:
     shared.log.info(f'Path search: {sys.path}')
     shared.log.error("Module not found: k-diffusion")
