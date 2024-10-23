@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-22
+## Update for 2024-10-23
 
-### Highlights for 2024-10-22
+### Highlights for 2024-10-23
 
 A month later and with nearly 300 commits, here is the latest [SD.Next](https://github.com/vladmandic/automatic) update!  
 
@@ -32,13 +32,13 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 
 #### Otherwise notable
 
-- Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
+- Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
+  Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
 - Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
   *Note*: This is a breaking change to default settings and its recommended to check your preferred settings after upgrade  
 - Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
 - Improved **LoRA** detection and handling for all supported models  
-- Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
-  Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
+- Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
 
 Oh, and we've compiled a full table with list of top-30 (*how many have you tried?*) popular text-to-image generative models,  
 their respective parameters and architecture overview: [Models Overview](https://github.com/vladmandic/automatic/wiki/Models)  
@@ -47,7 +47,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 
-### Details for 2024-10-22
+### Details for 2024-10-23
 
 - **reprocess**
   - new top-level button: reprocess latent from your history of generated image(s)  

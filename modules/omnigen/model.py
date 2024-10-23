@@ -1,21 +1,18 @@
 # The code is revised from DiT
 import os
+import math
 import torch
 import torch.nn as nn
 import numpy as np
-import math
-from typing import Dict
-
+from safetensors.torch import load_file
 from diffusers.loaders import PeftAdapterMixin
-from timm.models.vision_transformer import PatchEmbed, Attention, Mlp
 from huggingface_hub import snapshot_download
-
 from .transformer import Phi3Config, Phi3Transformer
 
 
 def modulate(x, shift, scale):
     return x * (1 + scale.unsqueeze(1)) + shift.unsqueeze(1)
- 
+
 
 class TimestepEmbedder(nn.Module):
     """
@@ -165,37 +162,35 @@ class OmniGen(nn.Module, PeftAdapterMixin):
         self.out_channels = in_channels
         self.patch_size = patch_size
         self.pos_embed_max_size = pos_embed_max_size
-
         hidden_size = transformer_config.hidden_size
-
         self.x_embedder = PatchEmbedMR(patch_size, in_channels, hidden_size, bias=True)
         self.input_x_embedder = PatchEmbedMR(patch_size, in_channels, hidden_size, bias=True)
-
         self.time_token = TimestepEmbedder(hidden_size)
         self.t_embedder = TimestepEmbedder(hidden_size)
-        
         self.pe_interpolation = pe_interpolation
         pos_embed = get_2d_sincos_pos_embed(hidden_size, pos_embed_max_size, interpolation_scale=self.pe_interpolation, base_size=64)
         self.register_buffer("pos_embed", torch.from_numpy(pos_embed).float().unsqueeze(0), persistent=True)
-
         self.final_layer = FinalLayer(hidden_size, patch_size, self.out_channels)
-
         self.initialize_weights()
-
         self.llm = Phi3Transformer(config=transformer_config)
         self.llm.config.use_cache = False
-    
+
     @classmethod
-    def from_pretrained(cls, model_name):
-        if not os.path.exists(os.path.join(model_name, 'model.pt')):
-            cache_folder = os.getenv('HF_HUB_CACHE')
+    def from_pretrained(cls, model_name: str, cache_dir: str=None):
+        if not os.path.exists(os.path.join(model_name, 'model.pt')) and not os.path.exists(os.path.join(model_name, 'model.safetensors')):
+            cache_dir = cache_dir or os.getenv('HF_HUB_CACHE')
             model_name = snapshot_download(repo_id=model_name,
-                                           cache_dir=cache_folder,
+                                           cache_dir=cache_dir,
                                            ignore_patterns=['flax_model.msgpack', 'rust_model.ot', 'tf_model.h5'])
         config = Phi3Config.from_pretrained(model_name)
         model = cls(config)
-        ckpt = torch.load(os.path.join(model_name, 'model.pt'), map_location='cpu')
-        model.load_state_dict(ckpt)
+        if os.path.exists(os.path.join(model_name, 'model.pt')):
+            state_dict = torch.load(os.path.join(model_name, 'model.pt'), map_location='cpu')
+        elif os.path.exists(os.path.join(model_name, 'model.safetensors')):
+            state_dict = load_file(os.path.join(model_name, 'model.safetensors'))
+        else:
+            raise ValueError(f"OmniGen: Could not find model file in {model_name}")
+        model.load_state_dict(state_dict)
         return model
 
     def initialize_weights(self):
@@ -208,7 +203,7 @@ class OmniGen(nn.Module, PeftAdapterMixin):
                 if module.bias is not None:
                     nn.init.constant_(module.bias, 0)
         self.apply(_basic_init)
-        
+
         # Initialize patch_embed like nn.Linear (instead of nn.Conv2d):
         w = self.x_embedder.proj.weight.data
         nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
@@ -282,7 +277,7 @@ class OmniGen(nn.Module, PeftAdapterMixin):
                     latent = self.input_x_embedder(latent)
                 else:
                     latent = self.x_embedder(latent)
-                pos_embed = self.cropped_pos_embed(height, width)    
+                pos_embed = self.cropped_pos_embed(height, width)
                 latent = latent + pos_embed
                 if padding is not None:
                     latent = torch.cat([latent, padding], dim=-2)
@@ -300,21 +295,16 @@ class OmniGen(nn.Module, PeftAdapterMixin):
                 latents = self.input_x_embedder(latents)
             else:
                 latents = self.x_embedder(latents)
-            pos_embed = self.cropped_pos_embed(height, width)  
+            pos_embed = self.cropped_pos_embed(height, width)
             latents = latents + pos_embed
             num_tokens = latents.size(1)
             shapes = [height, width]
         return latents, num_tokens, shapes
 
-    
     def forward(self, x, timestep, input_ids, input_img_latents, input_image_sizes, attention_mask, position_ids, padding_latent=None, past_key_values=None, return_past_key_values=True):
-        """
-        
-        """
         input_is_list = isinstance(x, list)
         x, num_tokens, shapes = self.patch_multiple_resolutions(x, padding_latent)
-        time_token = self.time_token(timestep, dtype=x[0].dtype).unsqueeze(1)   
-        
+        time_token = self.time_token(timestep, dtype=x[0].dtype).unsqueeze(1)
         if input_img_latents is not None:
             input_latents, _, _ = self.patch_multiple_resolutions(input_img_latents, is_input_images=True)
         if input_ids is not None:
@@ -325,7 +315,7 @@ class OmniGen(nn.Module, PeftAdapterMixin):
                     condition_embeds[b_inx, start_inx: end_inx] = input_latents[input_img_inx]
                     input_img_inx += 1
             if input_img_latents is not None:
-                assert input_img_inx == len(input_latents) 
+                assert input_img_inx == len(input_latents)
 
             input_emb = torch.cat([condition_embeds, time_token, x], dim=1)
         else:
@@ -355,7 +345,7 @@ class OmniGen(nn.Module, PeftAdapterMixin):
     def forward_with_cfg(self, x, timestep, input_ids, input_img_latents, input_image_sizes, attention_mask, position_ids, cfg_scale, use_img_cfg, img_cfg_scale, past_key_values, use_kv_cache):
         """
         Forward pass of DiT, but also batches the unconditional forward pass for classifier-free guidance.
-        """        
+        """
         self.llm.config.use_cache = use_kv_cache
         model_out, past_key_values = self.forward(x, timestep, input_ids, input_img_latents, input_image_sizes, attention_mask, position_ids, past_key_values=past_key_values, return_past_key_values=True)
         if use_img_cfg:
@@ -366,7 +356,6 @@ class OmniGen(nn.Module, PeftAdapterMixin):
             cond, uncond = torch.split(model_out, len(model_out) // 2, dim=0)
             cond = uncond + cfg_scale * (cond - uncond)
             model_out = [cond, cond]
-        
         return torch.cat(model_out, dim=0), past_key_values
 
 
@@ -374,7 +363,7 @@ class OmniGen(nn.Module, PeftAdapterMixin):
     def forward_with_separate_cfg(self, x, timestep, input_ids, input_img_latents, input_image_sizes, attention_mask, position_ids, cfg_scale, use_img_cfg, img_cfg_scale, past_key_values, use_kv_cache, return_past_key_values=True):
         """
         Forward pass of DiT, but also batches the unconditional forward pass for classifier-free guidance.
-        """        
+        """
         self.llm.config.use_cache = use_kv_cache
         if past_key_values is None:
             past_key_values = [None] * len(attention_mask)
@@ -399,9 +388,4 @@ class OmniGen(nn.Module, PeftAdapterMixin):
             model_out = [cond, cond]
         else:
             return model_out[0]
-        
         return torch.cat(model_out, dim=0), pask_key_values
-
-
-
-

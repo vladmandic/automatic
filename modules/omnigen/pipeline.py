@@ -40,9 +40,9 @@ class OmniGenPipeline():
         self.vae = vae
         self.model = model
         self.processor = processor
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.dtype: torch.dtype = torch.bfloat16,
-        self.separate_cfg_infer: bool = True,
+        self.device = None
+        self.dtype: None
+        self.separate_cfg_infer: bool = True
         self.use_kv_cache: bool = False
         # omnigen does not inherit from diffusionpipeline so we hack it
         self._internal_dict = { # pylint: disable=protected-access
@@ -62,10 +62,8 @@ class OmniGenPipeline():
         processor = OmniGenProcessor.from_pretrained(model_name)
         if os.path.exists(os.path.join(model_name, "vae")):
             vae = AutoencoderKL.from_pretrained(os.path.join(model_name, "vae"))
-        elif vae_path is not None:
-            vae = AutoencoderKL.from_pretrained(vae_path)
         else:
-            vae = AutoencoderKL.from_pretrained("stabilityai/sdxl-vae")
+            vae = AutoencoderKL.from_pretrained(vae_path or "stabilityai/sdxl-vae")
         return cls(vae, model, processor)
 
     def merge_lora(self, lora_path: str):
