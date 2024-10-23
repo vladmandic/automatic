@@ -23,8 +23,8 @@ def get_sd_models():
 def get_hypernetworks():
     return [{"name": name, "path": shared.hypernetworks[name]} for name in shared.hypernetworks]
 
-def get_face_restorers():
-    return [{"name":x.name(), "cmd_dir": getattr(x, "cmd_dir", None)} for x in shared.face_restorers]
+def get_detailers():
+    return [{"name":x.name(), "cmd_dir": getattr(x, "cmd_dir", None)} for x in shared.detailers]
 
 def get_prompt_styles():
     return [{ 'name': v.name, 'prompt': v.prompt, 'negative_prompt': v.negative_prompt, 'extra': v.extra, 'filename': v.filename, 'preview': v.preview} for v in shared.prompt_styles.styles.values()]
@@ -91,13 +91,13 @@ def post_interrogate(req: models.ReqInterrogate):
         if req.model not in get_clip_models():
             raise HTTPException(status_code=404, detail="Model not found")
         try:
-            caption = interrogate_image(image, model=req.model, mode=req.mode)
+            caption = interrogate_image(image, clip_model=req.clip_model, blip_model=req.blip_model, mode=req.mode)
         except Exception as e:
             caption = str(e)
         if not req.analyze:
             return models.ResInterrogate(caption=caption)
         else:
-            medium, artist, movement, trending, flavor = analyze_image(image, model=req.model)
+            medium, artist, movement, trending, flavor = analyze_image(image, clip_model=req.clip_model, blip_model=req.blip_model)
             return models.ResInterrogate(caption=caption, medium=medium, artist=artist, movement=movement, trending=trending, flavor=flavor)
 
 def post_vqa(req: models.ReqVQA):
@@ -158,3 +158,10 @@ def post_pnginfo(req: models.ReqImageInfo):
     params = infotext.parse(geninfo)
     script_callbacks.infotext_pasted_callback(geninfo, params)
     return models.ResImageInfo(info=geninfo, items=items, parameters=params)
+
+def get_history():
+    return shared.history.list
+
+def post_history(req: models.ReqHistory):
+    shared.history.index = shared.history.find(req.name)
+    return shared.history.index

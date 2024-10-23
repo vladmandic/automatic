@@ -328,6 +328,13 @@ function quickSaveStyle() {
   }
 }
 
+function selectHistory(id) {
+  const headers = new Headers();
+  headers.set('Content-Type', 'application/json');
+  const init = { method: 'POST', body: { name: id }, headers };
+  fetch('/sdapi/v1/history', { method: 'POST', body: JSON.stringify({ name: id }), headers });
+}
+
 let enDirty = false;
 function closeDetailsEN(...args) {
   // log('closeDetailsEN');

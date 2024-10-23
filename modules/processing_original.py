@@ -64,7 +64,7 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
         p.hr_force = False # no need to force anything
     if p.enable_hr and (latent_scale_mode is None or p.hr_force):
         if len([x for x in shared.sd_upscalers if x.name == p.hr_upscaler]) == 0:
-            shared.log.warning(f"Cannot find upscaler for hires: {p.hr_upscaler}")
+            shared.log.warning(f"HiRes: upscaler={p.hr_upscaler} unknown")
             p.enable_hr = False
 
     p.ops.append('txt2img')
@@ -84,17 +84,17 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
         target_width = p.hr_upscale_to_x
         target_height = p.hr_upscale_to_y
         decoded_samples = None
-        if shared.opts.save and shared.opts.save_images_before_highres_fix and not p.do_not_save_samples:
+        if shared.opts.samples_save and shared.opts.save_images_before_highres_fix and not p.do_not_save_samples:
             decoded_samples = decode_first_stage(p.sd_model, samples.to(dtype=devices.dtype_vae), p.full_quality)
             decoded_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
             for i, x_sample in enumerate(decoded_samples):
                 x_sample = validate_sample(x_sample)
                 image = Image.fromarray(x_sample)
-                bak_extra_generation_params, bak_restore_faces = p.extra_generation_params, p.restore_faces
+                bak_extra_generation_params, bak_detailer = p.extra_generation_params, p.detailer
                 p.extra_generation_params = {}
-                p.restore_faces = False
+                p.detailer = False
                 info = processing.create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, [], iteration=p.iteration, position_in_batch=i)
-                p.extra_generation_params, p.restore_faces = bak_extra_generation_params, bak_restore_faces
+                p.extra_generation_params, p.detailer = bak_extra_generation_params, bak_detailer
                 images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], shared.opts.samples_format, info=info, suffix="-before-hires")
         if latent_scale_mode is None or p.hr_force: # non-latent upscaling
             shared.state.job = 'Upscale'

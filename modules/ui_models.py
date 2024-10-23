@@ -17,6 +17,7 @@ from modules.merging.merge_utils import BETA_METHODS, TRIPLE_METHODS, interpolat
 from modules.merging.merge_presets import BLOCK_WEIGHTS_PRESETS, SDXL_BLOCK_WEIGHTS_PRESETS
 
 search_metadata_civit = None
+extra_ui = []
 
 
 def create_ui():
@@ -33,6 +34,28 @@ def create_ui():
 
             def gr_show(visible=True):
                 return {"visible": visible, "__type__": "update"}
+
+            with gr.Tab(label="Current"):
+                def analyze():
+                    from modules import modelstats
+                    model = modelstats.analyze()
+                    desc = f"Model: {model.name}<br>Type: {model.type}<br>Class: {model.cls}<br>Size: {model.size} bytes<br>Modified: {model.mtime}<br>"
+                    meta = model.meta
+                    components = [(m.name, m.cls, m.device, m.dtype, m.params, m.modules, str(m.config)) for m in model.modules]
+                    return [desc, components, meta]
+
+                with gr.Row():
+                    model_analyze = gr.Button(value="Analyze", variant='primary')
+                with gr.Row():
+                    model_desc = gr.HTML(value="", elem_id="model_desc")
+                with gr.Row():
+                    module_headers = ['Module', 'Class', 'Device', 'DType', 'Params', 'Modules', 'Config']
+                    model_types = ['str', 'str', 'str', 'str', 'number', 'number', 'str']
+                    model_modules = gr.DataFrame(value=None, label=None, show_label=False, interactive=False, wrap=True, headers=module_headers, datatype=model_types, type='array')
+                with gr.Row():
+                    model_meta = gr.JSON(label="Metadata", value={}, elem_id="model_meta")
+
+                model_analyze.click(fn=analyze, inputs=[], outputs=[model_desc, model_modules, model_meta])
 
             with gr.Tab(label="Convert"):
                 with gr.Row():
@@ -391,7 +414,7 @@ def create_ui():
                                 hf_selected = gr.Textbox('', label='Select model', placeholder='select model from search results or enter model name manually')
                         with gr.Column(scale=1):
                             with gr.Row():
-                                hf_variant = gr.Textbox(opts.cuda_dtype.lower(), label='Specify model variant', placeholder='')
+                                hf_variant = gr.Textbox('', label='Specify model variant', placeholder='')
                                 hf_revision = gr.Textbox('', label='Specify model revision', placeholder='')
                     with gr.Row():
                         hf_token = gr.Textbox('', label='Huggingface token', placeholder='optional access token for private or gated models')
@@ -770,3 +793,7 @@ def create_ui():
                 civit_update_btn.click(fn=civit_update_metadata, inputs=[], outputs=[civit_results4, models_outcome])
                 civit_results4.select(fn=civit_update_select, inputs=[civit_results4], outputs=[models_outcome, civit_update_download_btn])
                 civit_update_download_btn.click(fn=civit_update_download, inputs=[], outputs=[models_outcome])
+
+            for ui in extra_ui:
+                if callable(ui):
+                    ui()

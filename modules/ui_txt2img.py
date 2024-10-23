@@ -1,11 +1,10 @@
 import gradio as gr
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing, processing_vae, devices
 from modules.ui_components import ToolButton # pylint: disable=unused-import
 
 
 def calc_resolution_hires(width, height, hr_scale, hr_resize_x, hr_resize_y, hr_upscaler):
-    from modules import processing, devices
     if hr_upscaler == "None":
         return "Hires resize: None"
     p = processing.StableDiffusionProcessingTxt2Img(width=width, height=height, enable_hr=True, hr_scale=hr_scale, hr_resize_x=hr_resize_x, hr_resize_y=hr_resize_y)
@@ -21,7 +20,7 @@ def create_ui():
     modules.scripts.scripts_current = modules.scripts.scripts_txt2img
     modules.scripts.scripts_txt2img.initialize_scripts(is_img2img=False, is_control=False)
     with gr.Blocks(analytics_enabled=False) as _txt2img_interface:
-        txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, txt2img_submit, txt2img_paste, txt2img_extra_networks_button, txt2img_token_counter, txt2img_token_button, txt2img_negative_token_counter, txt2img_negative_token_button = ui_sections.create_toprow(is_img2img=False, id_part="txt2img")
+        txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, txt2img_submit, txt2img_reprocess, txt2img_paste, txt2img_extra_networks_button, txt2img_token_counter, txt2img_token_button, txt2img_negative_token_counter, txt2img_negative_token_button = ui_sections.create_toprow(is_img2img=False, id_part="txt2img")
 
         txt_prompt_img = gr.File(label="", elem_id="txt2img_prompt_image", file_count="single", type="binary", visible=False)
         txt_prompt_img.change(fn=modules.images.image_data, inputs=[txt_prompt_img], outputs=[txt2img_prompt, txt_prompt_img])
@@ -40,16 +39,17 @@ def create_ui():
                 batch_count, batch_size = ui_sections.create_batch_inputs('txt2img', accordion=False)
                 cfg_scale, cfg_end = ui_sections.create_cfg_inputs('txt2img')
                 steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "txt2img")
-                full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('txt2img')
 
                 with gr.Group(elem_classes="settings-accordion"):
                     with gr.Accordion(open=False, label="Samplers", elem_classes=["small-accordion"], elem_id="txt2img_sampler_group"):
                         ui_sections.create_sampler_options('txt2img')
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('txt2img')
-                    _cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, _cfg_end = ui_sections.create_advanced_inputs('txt2img', base=False)
+                    full_quality, tiling, hidiffusion, _cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, _cfg_end = ui_sections.create_advanced_inputs('txt2img', base=False)
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('txt2img')
                     enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
+                    detailer = shared.yolo.ui('txt2img')
                     override_settings = ui_common.create_override_inputs('txt2img')
+                    state = gr.Textbox(value='', visible=False)
 
                 with gr.Group(elem_id="txt2img_script_container"):
                     txt2img_script_inputs = modules.scripts.scripts_txt2img.setup_ui(parent='txt2img', accordion=True)
@@ -59,11 +59,12 @@ def create_ui():
             ui_common.connect_reuse_seed(subseed, reuse_subseed, txt2img_generation_info, is_subseed=True, subseed_strength=subseed_strength)
 
             dummy_component = gr.Textbox(visible=False, value='dummy')
+
             txt2img_args = [
-                dummy_component,
+                dummy_component, state,
                 txt2img_prompt, txt2img_negative_prompt, txt2img_prompt_styles,
                 steps, sampler_index, hr_sampler_index,
-                full_quality, restore_faces, tiling, hidiffusion,
+                full_quality, detailer, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
                 clip_skip,
@@ -87,9 +88,15 @@ def create_ui():
                 ],
                 show_progress=False,
             )
+
             txt2img_prompt.submit(**txt2img_dict)
             txt2img_negative_prompt.submit(**txt2img_dict)
             txt2img_submit.click(**txt2img_dict)
+
+            txt2img_reprocess[1].click(fn=processing_vae.reprocess, inputs=[txt2img_gallery], outputs=[txt2img_gallery]) # full-decode
+            txt2img_reprocess[2].click(**txt2img_dict) # hires-refine
+            txt2img_reprocess[3].click(**txt2img_dict) # face-restore
+
             txt2img_paste_fields = [
                 # prompt
                 (txt2img_prompt, "Prompt"),
@@ -113,11 +120,12 @@ def create_ui():
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (restore_faces, "Face restoration"),
+                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # second pass
                 (enable_hr, "Second pass"),
+                (enable_hr, "Refine"),
                 (denoising_strength, "Denoising strength"),
                 (hr_sampler_index, "Hires sampler"),
                 (hr_resize_mode, "Hires resize mode"),

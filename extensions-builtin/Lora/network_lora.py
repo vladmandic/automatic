@@ -13,6 +13,7 @@ class ModuleTypeLora(network.ModuleType):
 
 
 class NetworkModuleLora(network.NetworkModule):
+
     def __init__(self,  net: network.Network, weights: network.NetworkWeights):
         super().__init__(net, weights)
         self.up_model = self.create_module(weights.w, "lora_up.weight")
@@ -21,11 +22,12 @@ class NetworkModuleLora(network.NetworkModule):
         self.dim = weights.w["lora_down.weight"].shape[0]
 
     def create_module(self, weights, key, none_ok=False):
+        from modules.shared import opts
         weight = weights.get(key)
         if weight is None and none_ok:
             return None
         linear_modules = [torch.nn.Linear, torch.nn.modules.linear.NonDynamicallyQuantizableLinear, torch.nn.MultiheadAttention, diffusers_lora.LoRACompatibleLinear]
-        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ in {"NNCFLinear", "QLinear"}
+        is_linear = type(self.sd_module) in linear_modules or self.sd_module.__class__.__name__ in {"NNCFLinear", "QLinear", "Linear4bit"}
         is_conv = type(self.sd_module) in [torch.nn.Conv2d, diffusers_lora.LoRACompatibleConv] or self.sd_module.__class__.__name__ in {"NNCFConv2d", "QConv2d"}
         if is_linear:
             weight = weight.reshape(weight.shape[0], -1)
@@ -47,17 +49,19 @@ class NetworkModuleLora(network.NetworkModule):
             if weight.shape != module.weight.shape:
                 weight = weight.reshape(module.weight.shape)
             module.weight.copy_(weight)
-        module.to(device=devices.cpu, dtype=devices.dtype)
+        if opts.lora_load_gpu:
+            module = module.to(device=devices.device, dtype=devices.dtype)
         module.weight.requires_grad_(False)
         return module
 
     def calc_updown(self, target): # pylint: disable=W0237
-        up = self.up_model.weight.to(target.device, dtype=target.dtype)
-        down = self.down_model.weight.to(target.device, dtype=target.dtype)
+        target_dtype = target.dtype if target.dtype != torch.uint8 else self.up_model.weight.dtype
+        up = self.up_model.weight.to(target.device, dtype=target_dtype)
+        down = self.down_model.weight.to(target.device, dtype=target_dtype)
         output_shape = [up.size(0), down.size(1)]
         if self.mid_model is not None:
             # cp-decomposition
-            mid = self.mid_model.weight.to(target.device, dtype=target.dtype)
+            mid = self.mid_model.weight.to(target.device, dtype=target_dtype)
             updown = lyco_helpers.rebuild_cp_decomposition(up, down, mid)
             output_shape += mid.shape[2:]
         else:
@@ -71,5 +75,4 @@ class NetworkModuleLora(network.NetworkModule):
         self.down_model.to(device=devices.device)
         if hasattr(y, "scale"):
             return y(scale=1) + self.up_model(self.down_model(x)) * self.multiplier() * self.calc_scale()
-
         return y + self.up_model(self.down_model(x)) * self.multiplier() * self.calc_scale()

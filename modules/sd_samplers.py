@@ -54,7 +54,7 @@ def create_sampler(name, model):
                 model.prior_pipe.scheduler = copy.deepcopy(model.default_scheduler)
                 model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
-        shared.log.debug(f'Sampler default {type(model.scheduler).__name__}: {config}')
+        shared.log.debug(f'Sampler: sampler=default class={model.scheduler.__class__.__name__}: {config}')
         return model.scheduler
     config = find_sampler_config(name)
     if config is None or config.constructor is None:
@@ -74,13 +74,23 @@ def create_sampler(name, model):
                 shared.log.warning(f'FLUX: sampler="{name}" unsupported')
                 # sampler.sampler.register_to_config(base_image_seq_len=256, max_image_seq_len=4096, base_shift=0.5, max_shift=1.15)
                 return None
+        if 'Lumina' in model.__class__.__name__:
+            shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
+            return None
+        if 'StableDiffusion3Pipeline' in model.__class__.__name__:
+            if sampler.name != 'Heun FlowMatch':
+                return None
+            return None
+        if 'AuraFlow' in model.__class__.__name__:
+            shared.log.warning(f'AuraFlow: sampler="{name}" unsupported')
+            return None
         if not hasattr(model, 'scheduler_config'):
-            model.scheduler_config = sampler.sampler.config.copy()
+            model.scheduler_config = sampler.sampler.config.copy() if hasattr(sampler.sampler, 'config') else {}
         model.scheduler = sampler.sampler
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
             model.prior_pipe.scheduler.config.clip_sample = False
-        shared.log.debug(f'Sampler: sampler="{sampler.name}" config={sampler.config}')
+        shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={sampler.config}')
         return sampler.sampler
     else:
         return None

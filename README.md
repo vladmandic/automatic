@@ -31,7 +31,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple diffusion models!  
-  ▹ **Stable Diffusion 1.5/2.1/XL/3.0 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | FLUX.1 | AuraFlow | Würstchen | Lumina | Kolors | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | etc.**
+  ▹ **Stable Diffusion 1.5/2.1/XL/3.0/3.5 | LCM | Lightning | Segmind | Kandinsky | Pixart-α | Pixart-Σ | Stable Cascade | FLUX.1 | AuraFlow | Würstchen | Alpha Lumina | Kwai Kolors | aMUSEd | DeepFloyd IF | UniDiffusion | SD-Distilled | BLiP Diffusion | KOALA | SDXS | Hyper-SD | HunyuanDiT | CogView | OmniGen | Meissonic | etc.**
 - Built-in Control for Text, Image, Batch and video processing!  
   ▹ **ControlNet | ControlNet XS | Control LLLite | T2I Adapters | IP Adapters**  
 - Multiplatform!  
@@ -68,27 +68,31 @@ Additional models will be added as they become available and there is public int
 - [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*
 - [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)
 - [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)
+- [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
 - [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
-- [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)
+- [StabilityAI Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) Dev, Schnell  
 - [AuraFlow](https://huggingface.co/fal/AuraFlow)
 - [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
+- [Playground AI](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*
+- [Tencent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
+- [OmniGen](https://arxiv.org/pdf/2409.11340)  
+- [Meissonic](https://github.com/viiika/Meissonic)  
 - [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
-- [Playground](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*
-- [Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
-- [aMUSEd 256](https://huggingface.co/amused/amused-256) 256 and 512
+- [CogView 3+](https://huggingface.co/THUDM/CogView3-Plus-3B)
+- [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)
+- [aMUSEd](https://huggingface.co/amused/amused-256) 256 and 512
 - [Segmind Vega](https://huggingface.co/segmind/Segmind-Vega)
 - [Segmind SSD-1B](https://huggingface.co/segmind/SSD-1B)
 - [Segmind SegMoE](https://github.com/segmind/segmoe) *SD and SD-XL*
+- [Segmind SD Distilled](https://huggingface.co/blog/sd_distillation) *(all variants)*
 - [Kandinsky](https://github.com/ai-forever/Kandinsky-2) *2.1 and 2.2 and latest 3.0*
 - [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*
 - [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)
 - [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)
-- [Tencent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
 - [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
 - [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
 - [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
-- [Segmind SD Distilled](https://huggingface.co/blog/sd_distillation) *(all variants)*
 - [BLIP-Diffusion](https://dxli94.github.io/BLIP-Diffusion-website/)
 - [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
 - [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)

@@ -53,13 +53,14 @@ def control_set(kwargs):
         p_extra_args[k] = v
 
 
-def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
+def control_run(state: str = '',
+                units: List[unit.Unit] = [], inputs: List[Image.Image] = [], inits: List[Image.Image] = [], mask: Image.Image = None, unit_type: str = None, is_generator: bool = True,
                 input_type: int = 0,
                 prompt: str = '', negative_prompt: str = '', styles: List[str] = [],
                 steps: int = 20, sampler_index: int = None,
                 seed: int = -1, subseed: int = -1, subseed_strength: float = 0, seed_resize_from_h: int = -1, seed_resize_from_w: int = -1,
                 cfg_scale: float = 6.0, clip_skip: float = 1.0, image_cfg_scale: float = 6.0, diffusers_guidance_rescale: float = 0.7, pag_scale: float = 0.0, pag_adaptive: float = 0.5, cfg_end: float = 1.0,
-                full_quality: bool = True, restore_faces: bool = False, tiling: bool = False, hidiffusion: bool = False,
+                full_quality: bool = True, detailer: bool = False, tiling: bool = False, hidiffusion: bool = False,
                 hdr_mode: int = 0, hdr_brightness: float = 0, hdr_color: float = 0, hdr_sharpen: float = 0, hdr_clamp: bool = False, hdr_boundary: float = 4.0, hdr_threshold: float = 0.95,
                 hdr_maximize: bool = False, hdr_max_center: float = 0.6, hdr_max_boundry: float = 1.0, hdr_color_picker: str = None, hdr_tint_ratio: float = 0,
                 resize_mode_before: int = 0, resize_name_before: str = 'None', resize_context_before: str = 'None', width_before: int = 512, height_before: int = 512, scale_by_before: float = 1.0, selected_scale_tab_before: int = 0,
@@ -71,6 +72,20 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
                 *input_script_args
         ):
+    # handle optional initialization via ui
+    for u in units:
+        if not u.enabled:
+            continue
+        if u.process_name is not None and u.process_name != '' and u.process_name != 'None':
+            u.process.load(u.process_name, force=False)
+        if u.model_name is not None and u.model_name != '' and u.model_name != 'None':
+            if u.type == 't2i adapter':
+                u.adapter.load(u.model_name, force=False)
+            else:
+                u.controlnet.load(u.model_name, force=False)
+        if u.process is not None and u.process.override is None and u.override is not None:
+            u.process.override = u.override
+
     global instance, pipe, original_pipeline # pylint: disable=global-statement
     t_start = time.time()
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
@@ -114,7 +129,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         pag_scale = pag_scale,
         pag_adaptive = pag_adaptive,
         full_quality = full_quality,
-        restore_faces = restore_faces,
+        detailer = detailer,
         tiling = tiling,
         hidiffusion = hidiffusion,
         # resize
@@ -134,6 +149,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
         outpath_samples=shared.opts.outdir_samples or shared.opts.outdir_control_samples,
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
+    p.state = state
     # processing.process_init(p)
     resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
 
@@ -548,7 +564,7 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
                             return [], '', '', 'Reference mode without image'
                     elif unit_type == 'controlnet' and has_models:
                         if input_type == 0: # Control only
-                            if shared.sd_model_type == 'f1':
+                            if shared.sd_model_type == 'f1' and 'control_image' not in p.task_args:
                                 p.task_args['control_image'] = p.init_images # flux controlnet mandates this
                                 p.task_args['strength'] = p.denoising_strength
                         elif input_type == 1: # Init image same as control
@@ -714,15 +730,17 @@ def control_run(units: List[unit.Unit] = [], inputs: List[Image.Image] = [], ini
     if video_type != 'None' and isinstance(output_images, list):
         p.do_not_save_grid = True # pylint: disable=attribute-defined-outside-init
         output_filename = images.save_video(p, filename=None, images=output_images, video_type=video_type, duration=video_duration, loop=video_loop, pad=video_pad, interpolate=video_interpolate, sync=True)
+        if shared.opts.gradio_skip_video:
+            output_filename = ''
         image_txt = f'| Frames {len(output_images)} | Size {output_images[0].width}x{output_images[0].height}'
 
+    p.close()
     restore_pipeline()
     debug(f'Ready: {image_txt}')
 
     html_txt = f'<p>Ready {image_txt}</p>'
     if len(info_txt) > 0:
         html_txt = html_txt + infotext_to_html(info_txt[0])
-
     if is_generator:
         yield (output_images, blended_image, html_txt, output_filename)
     else:

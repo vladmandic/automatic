@@ -85,8 +85,9 @@ def apply_setting(key, value):
         return gr.update()
     if shared.cmd_opts.freeze:
         return gr.update()
-    # dont allow model to be swapped when model hash exists in prompt
-    if key == "sd_model_checkpoint" and opts.disable_weights_auto_swap:
+    if key == 'sd_backend':
+        return gr.update()
+    if shared.opts.disable_weights_auto_swap and key in ['sd_model_checkpoint', 'sd_model_refiner', 'sd_model_dict', 'sd_vae', 'sd_unet', 'sd_text_encoder']:
         return gr.update()
     if key == "sd_model_checkpoint":
         ckpt_info = sd_models.get_closet_checkpoint_match(value)

@@ -1,9 +1,11 @@
 import os
 import json
 import concurrent
-import network
 import networks
 from modules import shared, ui_extra_networks
+
+
+debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
 
 
 class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
@@ -16,22 +18,12 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
     def create_item(self, name):
         l = networks.available_networks.get(name)
+        if l is None:
+            shared.log.warning(f'Networks: type=lora registered={len(list(networks.available_networks))} file="{name}" not registered')
+            return None
         try:
             # path, _ext = os.path.splitext(l.filename)
             name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
-            if not shared.native:
-                if l.sd_version == network.SdVersion.SDXL:
-                    return None
-            elif shared.native:
-                if shared.sd_model_type == 'none': # return all when model is not loaded
-                    pass
-                elif shared.sd_model_type == 'sdxl':
-                    if l.sd_version == network.SdVersion.SD1 or l.sd_version == network.SdVersion.SD2:
-                        return None
-                elif shared.sd_model_type == 'sd':
-                    if l.sd_version == network.SdVersion.SDXL:
-                        return None
-
             item = {
                 "type": 'Lora',
                 "name": name,
@@ -41,21 +33,24 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                 "metadata": json.dumps(l.metadata, indent=4) if l.metadata else None,
                 "mtime": os.path.getmtime(l.filename),
                 "size": os.path.getsize(l.filename),
+                "version": l.sd_version,
             }
             info = self.find_info(l.filename)
 
             tags = {}
-            possible_tags = l.metadata.get('ss_tag_frequency', {}) if l.metadata is not None else {} # tags from model metedata
-            if isinstance(possible_tags, str):
-                possible_tags = {}
-            for k, v in possible_tags.items():
-                words = k.split('_', 1) if '_' in k else [v, k]
-                words = [str(w).replace('.json', '') for w in words]
-                if words[0] == '{}':
-                    words[0] = 0
-                tag = ' '.join(words[1:]).lower()
-                tags[tag] = words[0]
-
+            if l.metadata is not None:
+                modelspec_tags = l.metadata.get('modelspec.tags', {})
+                possible_tags = l.metadata.get('ss_tag_frequency', {}) # tags from model metedata
+                possible_tags.update(modelspec_tags)
+                if isinstance(possible_tags, str):
+                    possible_tags = {}
+                for k, v in possible_tags.items():
+                    words = k.split('_', 1) if '_' in k else [v, k]
+                    words = [str(w).replace('.json', '') for w in words]
+                    if words[0] == '{}':
+                        words[0] = 0
+                    tag = ' '.join(words[1:]).lower()
+                    tags[tag] = words[0]
 
             def find_version():
                 found_versions = []
@@ -69,7 +64,6 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                     found_versions = all_versions
                 return found_versions
 
-            find_version()
             for v in find_version():  # trigger words from info json
                 possible_tags = v.get('trainedWords', [])
                 if isinstance(possible_tags, list):
@@ -102,9 +96,10 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
 
             return item
         except Exception as e:
-            shared.log.debug(f"Networks error: type=lora file={name} {e}")
-            from modules import errors
-            errors.display('e', 'Lora')
+            shared.log.error(f'Networks: type=lora file="{name}" {e}')
+            if debug:
+                from modules import errors
+                errors.display('e', 'Lora')
             return None
 
     def list_items(self):

@@ -1,12 +1,11 @@
 import os
-import copy
 import torch
 import diffusers
 from modules import shared, devices, sd_models
 
 
 def get_timestep_ratio_conditioning(t, alphas_cumprod):
-    s = torch.tensor([0.008]) # diffusers uses 0.003 while the original is 0.008
+    s = torch.tensor([0.008])
     clamp_range = [0, 1]
     min_var = torch.cos(s / (1 + s) * torch.pi * 0.5) ** 2
     var = alphas_cumprod[t]
@@ -44,7 +43,7 @@ def load_text_encoder(path):
             vocab_size=49408
         )
 
-        shared.log.info(f'Loading Text Encoder: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}"')
+        shared.log.info(f'Load Text Encoder: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}"')
 
         with init_empty_weights():
             text_encoder = CLIPTextModelWithProjection(config)
@@ -74,7 +73,7 @@ def load_prior(path, config_file="default"):
         else:
             config_file = "configs/stable-cascade/prior/config.json"
 
-    shared.log.info(f'Loading UNet: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}" config="{config_file}"')
+    shared.log.info(f'Load UNet: name="{os.path.basename(os.path.splitext(path)[0])}" file="{path}" config="{config_file}"')
     prior_unet = StableCascadeUNet.from_single_file(path, config=config_file, torch_dtype=devices.dtype_unet, cache_dir=shared.opts.diffusers_dir)
 
     if os.path.isfile(os.path.splitext(path)[0] + "_text_encoder.safetensors"): # OneTrainer
@@ -106,7 +105,7 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
             decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", cache_dir=shared.opts.diffusers_dir, decoder=decoder_unet, text_encoder=None, **diffusers_load_config)
         else:
             decoder = StableCascadeDecoderPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, text_encoder=None, **diffusers_load_config)
-        shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
+        # shared.log.debug(f'StableCascade {decoder_folder}: scale={decoder.latent_dim_scale}')
         prior_text_encoder = None
         if shared.opts.sd_unet != "None":
             prior_unet, prior_text_encoder = load_prior(unet_dict[shared.opts.sd_unet])
@@ -116,7 +115,7 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
             prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, text_encoder=prior_text_encoder, image_encoder=None, feature_extractor=None, **diffusers_load_config)
         else:
             prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", cache_dir=shared.opts.diffusers_dir, prior=prior_unet, image_encoder=None, feature_extractor=None, **diffusers_load_config)
-        shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
+        # shared.log.debug(f'StableCascade {prior_folder}: scale={prior.resolution_multiple}')
         sd_model = StableCascadeCombinedPipeline(
             tokenizer=decoder.tokenizer,
             text_encoder=None,
@@ -132,14 +131,7 @@ def load_cascade_combined(checkpoint_info, diffusers_load_config):
     else:
         sd_model = StableCascadeCombinedPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
 
-    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
-    return sd_model
-
-
-def cascade_post_load(sd_model):
     sd_model.prior_pipe.scheduler.config.clip_sample = False
-    sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler)
-    sd_model.prior_pipe.get_timestep_ratio_conditioning = get_timestep_ratio_conditioning
     sd_model.decoder_pipe.text_encoder = sd_model.text_encoder = None  # Nothing uses the decoder's text encoder
     sd_model.prior_pipe.image_encoder = sd_model.prior_image_encoder = None # No img2img is implemented yet
     sd_model.prior_pipe.feature_extractor = sd_model.prior_feature_extractor = None # No img2img is implemented yet
@@ -162,10 +154,12 @@ def cascade_post_load(sd_model):
         text_encoder=None,
         latent_dim_scale=sd_model.decoder_pipe.config.latent_dim_scale,
     )
+
+    shared.log.debug(f'StableCascade combined: {sd_model.__class__.__name__}')
     return sd_model
 
 
-# Custom sampler support. Remove after the changes gets upstreamed: https://github.com/huggingface/diffusers/pull/9132
+# Balanced offload hooks:
 class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
     def guidance_scale(self):
         return self._guidance_scale

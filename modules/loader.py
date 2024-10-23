@@ -1,5 +1,6 @@
 from __future__ import annotations
 from functools import partial
+import os
 import re
 import sys
 import logging
@@ -7,11 +8,17 @@ import warnings
 import urllib3
 from modules import timer, errors
 
+
 initialized = False
 errors.install()
 logging.getLogger("DeepSpeed").disabled = True
 
+
+os.environ.setdefault('TORCH_LOGS', '-all')
 import torch # pylint: disable=C0411
+if torch.__version__.startswith('2.5.0'):
+    errors.log.warning(f'Disabling cuDNN for SDP on torch={torch.__version__}')
+    torch.backends.cuda.enable_cudnn_sdp(False)
 try:
     import intel_extension_for_pytorch as ipex # pylint: disable=import-error, unused-import
     errors.log.debug(f'Load IPEX=={ipex.__version__}')
@@ -38,6 +45,9 @@ timer.startup.record("torch")
 
 import transformers # pylint: disable=W0611,C0411
 timer.startup.record("transformers")
+
+import accelerate # pylint: disable=W0611,C0411
+timer.startup.record("accelerate")
 
 import onnxruntime # pylint: disable=W0611,C0411
 onnxruntime.set_default_logger_severity(3)
@@ -86,12 +96,11 @@ def get_packages():
         "torch": getattr(torch, "__long_version__", torch.__version__),
         "diffusers": diffusers.__version__,
         "gradio": gradio.__version__,
+        "transformers": transformers.__version__,
+        "accelerate": accelerate.__version__,
     }
 
-errors.log.info(f'Load packages: {get_packages()}')
-
 try:
-    import os
     import math
     cores = os.cpu_count()
     affinity = len(os.sched_getaffinity(0))
@@ -99,7 +108,7 @@ try:
     if threads < (affinity / 2):
         torch.set_num_threads(math.floor(affinity / 2))
         threads = torch.get_num_threads()
-        errors.log.debug(f'Detected: cores={cores} affinity={affinity} set threads={threads}')
+    errors.log.debug(f'System: cores={cores} affinity={affinity} threads={threads}')
 except Exception:
     pass
 
@@ -111,3 +120,5 @@ except ImportError:
         sys.modules["torchvision.transforms.functional_tensor"] = functional
     except ImportError:
         pass  # shrug...
+
+errors.log.info(f'System packages: {get_packages()}')

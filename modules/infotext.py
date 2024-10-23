@@ -3,7 +3,11 @@ import re
 import json
 
 
-debug = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
+if os.environ.get('SD_PASTE_DEBUG', None) is not None:
+    from modules.errors import log
+    debug = log.trace
+else:
+    debug = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
 re_size = re.compile(r"^(\d+)x(\d+)$") # int x int
 re_param = re.compile(r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)') # multi-word: value
 
@@ -75,38 +79,34 @@ def parse(infotext):
 
 
 mapping = [
+    # Backend
     ('Backend', 'sd_backend'),
+    # Models
     ('Model hash', 'sd_model_checkpoint'),
     ('Refiner', 'sd_model_refiner'),
     ('VAE', 'sd_vae'),
+    ('TE', 'sd_text_encoder'),
+    ('Unet', 'sd_unet'),
+    # Other
     ('Parser', 'prompt_attention'),
     ('Color correction', 'img2img_color_correction'),
     # Samplers
-    ('Sampler Eta', 'scheduler_eta'),
-    ('Sampler ENSD', 'eta_noise_seed_delta'),
+    ('Sampler eta delta', 'eta_noise_seed_delta'),
+    ('Sampler eta multiplier', 'initial_noise_multiplier'),
+    ('Sampler timesteps', 'schedulers_timesteps'),
+    ('Sampler spacing', 'schedulers_timestep_spacing'),
+    ('Sampler sigma', 'schedulers_sigma'),
     ('Sampler order', 'schedulers_solver_order'),
-    # Samplers diffusers
+    ('Sampler type', 'schedulers_prediction_type'),
     ('Sampler beta schedule', 'schedulers_beta_schedule'),
+    ('Sampler low order', 'schedulers_use_loworder'),
+    ('Sampler dynamic', 'schedulers_use_thresholding'),
+    ('Sampler rescale', 'schedulers_rescale_betas'),
     ('Sampler beta start', 'schedulers_beta_start'),
     ('Sampler beta end', 'schedulers_beta_end'),
-    ('Sampler DPM solver', 'schedulers_dpm_solver'),
-    # Samplers original
-    ('Sampler brownian', 'schedulers_brownian_noise'),
-    ('Sampler discard', 'schedulers_discard_penultimate'),
-    ('Sampler dyn threshold', 'schedulers_use_thresholding'),
-    ('Sampler karras', 'schedulers_use_karras'),
-    ('Sampler low order', 'schedulers_use_loworder'),
-    ('Sampler quantization', 'enable_quantization'),
-    ('Sampler sigma', 'schedulers_sigma'),
-    ('Sampler sigma min', 's_min'),
-    ('Sampler sigma max', 's_max'),
-    ('Sampler sigma churn', 's_churn'),
-    ('Sampler sigma uncond', 's_min_uncond'),
-    ('Sampler sigma noise', 's_noise'),
-    ('Sampler sigma tmin', 's_tmin'),
-    ('Sampler ENSM', 'initial_noise_multiplier'), # img2img only
-    ('UniPC skip type', 'uni_pc_skip_type'),
-    ('UniPC variant', 'uni_pc_variant'),
+    ('Sampler range', 'schedulers_timesteps_range'),
+    ('Sampler shift', 'schedulers_shift'),
+    ('Sampler dynamic shift', 'schedulers_dynamic_shift'),
     # Token Merging
     ('Mask weight', 'inpainting_mask_weight'),
     ('ToMe', 'tome_ratio'),

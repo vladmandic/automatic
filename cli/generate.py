@@ -230,7 +230,7 @@ def args(): # parse cmd arguments
     parser.add_argument('--style', type = str, default = 'random', required = False, help = 'image style, used to guide dynamic prompt when prompt is not provided')
     parser.add_argument('--suffix', type = str, default = 'random', required = False, help = 'style suffix, used to guide dynamic prompt when prompt is not provided')
     parser.add_argument('--place', type = str, default = 'random', required = False, help = 'place locator, used to guide dynamic prompt when prompt is not provided')
-    parser.add_argument('--faces', default = False, action='store_true', help = 'restore faces during upscaling')
+    parser.add_argument('--detailer', default = False, action='store_true', help = 'run detailer')
     parser.add_argument('--steps', type = int, default = 0, required = False, help = 'number of steps')
     parser.add_argument('--batch', type = int, default = 0, required = False, help = 'batch size, limited by gpu vram')
     parser.add_argument('--n', type = int, default = 0, required = False, help = 'number of iterations')
@@ -299,7 +299,7 @@ def args(): # parse cmd arguments
         _dynamic = prompt(params)
 
     sd.paths.root = params.path if params.path != '' else sd.paths.root
-    sd.generate.restore_faces = params.faces if params.faces is not None else sd.generate.restore_faces
+    sd.generate.detailer = params.detailer if params.detailer is not None else sd.generate.detailer
     sd.generate.seed = params.seed if params.seed > 0 else sd.generate.seed
     sd.generate.sampler_name = params.sampler if params.sampler != 'random' else sd.generate.sampler_name
     sd.generate.batch_size = params.batch if params.batch > 0 else sd.generate.batch_size
@@ -309,7 +309,7 @@ def args(): # parse cmd arguments
     sd.generate.height = params.height if params.height > 0 else sd.generate.height
     sd.generate.steps = params.steps if params.steps > 0 else sd.generate.steps
     sd.upscale.upscaling_resize = params.upscale if params.upscale > 0 else sd.upscale.upscaling_resize
-    sd.upscale.codeformer_visibility = 1 if params.faces else sd.upscale.codeformer_visibility
+    sd.upscale.codeformer_visibility = 1 if params.detailer else sd.upscale.codeformer_visibility
     sd.options.sd_vae = params.vae if params.vae != '' else sd.options.sd_vae
     sd.options.sd_model_checkpoint = params.model if params.model != '' else sd.options.sd_model_checkpoint
     sd.upscale.upscaler_1 = 'SwinIR_4x' if params.upscale > 1 else sd.upscale.upscaler_1

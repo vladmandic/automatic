@@ -83,7 +83,7 @@ def crop_images(images, crops):
     try:
         for i in range(len(images)):
             if crops[i]:
-                from scripts.face_details import yolo # pylint: disable=no-name-in-module
+                from shared import yolo # pylint: disable=no-name-in-module
                 yolo.load()
                 cropped = []
                 for image in images[i]:
@@ -240,5 +240,5 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         t1 = time.time()
         shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
-        shared.log.error(f'IP adapter failed to load: repo={base_repo} folder={ip_subfolder} weights={adapters} names={adapter_names} {e}')
+        shared.log.error(f'IP adapter failed to load: repo="{base_repo}" folder="{ip_subfolder}" weights={adapters} names={adapter_names} {e}')
     return True

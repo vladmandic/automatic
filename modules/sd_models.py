@@ -161,15 +161,15 @@ def list_models():
     if shared.cmd_opts.ckpt is not None:
         if not os.path.exists(shared.cmd_opts.ckpt) and not shared.native:
             if shared.cmd_opts.ckpt.lower() != "none":
-                shared.log.warning(f"Requested checkpoint not found: {shared.cmd_opts.ckpt}")
+                shared.log.warning(f'Load model: path="{shared.cmd_opts.ckpt}" not found')
         else:
             checkpoint_info = CheckpointInfo(shared.cmd_opts.ckpt)
             if checkpoint_info.name is not None:
                 checkpoint_info.register()
                 shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
     elif shared.cmd_opts.ckpt != shared.default_sd_model_file and shared.cmd_opts.ckpt is not None:
-        shared.log.warning(f"Checkpoint not found: {shared.cmd_opts.ckpt}")
-    shared.log.info(f'Available models: path="{shared.opts.ckpt_dir}" items={len(checkpoints_list)} time={time.time()-t0:.2f}')
+        shared.log.warning(f'Load model: path="{shared.cmd_opts.ckpt}" not found')
+    shared.log.info(f'Available Models: path="{shared.opts.ckpt_dir}" items={len(checkpoints_list)} time={time.time()-t0:.2f}')
     checkpoints_list = dict(sorted(checkpoints_list.items(), key=lambda cp: cp[1].filename))
 
 
@@ -250,7 +250,7 @@ def select_checkpoint(op='model'):
         return None
     checkpoint_info = get_closet_checkpoint_match(model_checkpoint)
     if checkpoint_info is not None:
-        shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
+        shared.log.info(f'Load {op}: select="{checkpoint_info.title if checkpoint_info is not None else None}"')
         return checkpoint_info
     if len(checkpoints_list) == 0:
         shared.log.warning("Cannot generate without a checkpoint")
@@ -261,14 +261,14 @@ def select_checkpoint(op='model'):
         return None
     # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
-        if model_checkpoint != 'model.ckpt' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
-            shared.log.warning(f'Selected: {op}="{model_checkpoint}" not found')
+        if model_checkpoint != 'model.safetensors' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
+            shared.log.warning(f'Load {op}: select="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
         # shared.log.warning(f"Loading fallback checkpoint: {checkpoint_info.title}")
         # shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
     else:
-        shared.log.info(f'Select: {op}="{checkpoint_info.title if checkpoint_info is not None else None}"')
+        shared.log.info(f'Load {op}: select="{checkpoint_info.title if checkpoint_info is not None else None}"')
     return checkpoint_info
 
 
@@ -342,7 +342,7 @@ def read_metadata_from_safetensors(filename):
             metadata_len = int.from_bytes(metadata_len, "little")
             json_start = file.read(2)
             if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-                shared.log.error(f"Model metadata invalid: fn={filename}")
+                shared.log.error(f'Model metadata invalid: file="{filename}"')
             json_data = json_start + file.read(metadata_len-2)
             json_obj = json.loads(json_data)
             for k, v in json_obj.get("__metadata__", {}).items():
@@ -370,7 +370,7 @@ def read_metadata_from_safetensors(filename):
                         pass
                 res[k] = v
         except Exception as e:
-            shared.log.error(f"Model metadata: fn={filename} {e}")
+            shared.log.error(f'Model metadata: file="{filename}" {e}')
     sd_metadata[filename] = res
     global sd_metadata_pending # pylint: disable=global-statement
     sd_metadata_pending += 1
@@ -382,13 +382,13 @@ def read_metadata_from_safetensors(filename):
     return res
 
 
-def read_state_dict(checkpoint_file, map_location=None): # pylint: disable=unused-argument
+def read_state_dict(checkpoint_file, map_location=None, what:str='model'): # pylint: disable=unused-argument
     if not os.path.isfile(checkpoint_file):
-        shared.log.error(f"Model is not a file: {checkpoint_file}")
+        shared.log.error(f'Load dict: path="{checkpoint_file}" not a file')
         return None
     try:
         pl_sd = None
-        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Loading model: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
+        with progress.open(checkpoint_file, 'rb', description=f'[cyan]Load {what}: [yellow]{checkpoint_file}', auto_refresh=True, console=shared.console) as f:
             _, extension = os.path.splitext(checkpoint_file)
             if extension.lower() == ".ckpt" and shared.opts.sd_disable_ckpt:
                 shared.log.warning(f"Checkpoint loading disabled: {checkpoint_file}")
@@ -421,10 +421,10 @@ def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
     if not os.path.isfile(checkpoint_info.filename):
         return None
     if checkpoint_info in checkpoints_loaded:
-        shared.log.info("Model weights loading: from cache")
+        shared.log.info("Load model: cache")
         checkpoints_loaded.move_to_end(checkpoint_info, last=True)  # FIFO -> LRU cache
         return checkpoints_loaded[checkpoint_info]
-    res = read_state_dict(checkpoint_info.filename)
+    res = read_state_dict(checkpoint_info.filename, what='model')
     if shared.opts.sd_checkpoint_cache > 0 and not shared.native:
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = res
@@ -437,7 +437,7 @@ def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
 
 def load_model_weights(model: torch.nn.Module, checkpoint_info: CheckpointInfo, state_dict, timer):
     _pipeline, _model_type = detect_pipeline(checkpoint_info.path, 'model')
-    shared.log.debug(f'Model weights loading: {memory_stats()}')
+    shared.log.debug(f'Load model: memory={memory_stats()}')
     timer.record("hash")
     if model_data.sd_dict == 'None':
         shared.opts.data["sd_model_checkpoint"] = checkpoint_info.title
@@ -446,7 +446,7 @@ def load_model_weights(model: torch.nn.Module, checkpoint_info: CheckpointInfo, 
     try:
         model.load_state_dict(state_dict, strict=False)
     except Exception as e:
-        shared.log.error(f'Error loading model weights: {checkpoint_info.filename}')
+        shared.log.error(f'Load model: path="{checkpoint_info.filename}"')
         shared.log.error(' '.join(str(e).splitlines()[:2]))
         return False
     del state_dict
@@ -560,6 +560,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
     guess = shared.opts.diffusers_pipeline
     warn = shared.log.warning if warning else lambda *args, **kwargs: None
     size = 0
+    pipeline = None
     if guess == 'Autodetect':
         try:
             guess = 'Stable Diffusion XL' if 'XL' in f.upper() else 'Stable Diffusion'
@@ -610,7 +611,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'PixArt-Alpha'
             if 'stable-diffusion-3' in f.lower():
                 guess = 'Stable Diffusion 3'
-            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower():
+            if 'stable-cascade' in f.lower() or 'stablecascade' in f.lower() or 'wuerstchen3' in f.lower() or ('sotediffusion' in f.lower() and "v2" in f.lower()):
                 if devices.dtype == torch.float16:
                     warn('Stable Cascade does not support Float16')
                 guess = 'Stable Cascade'
@@ -622,6 +623,14 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Kolors'
             if 'auraflow' in f.lower():
                 guess = 'AuraFlow'
+            if 'cogview' in f.lower():
+                guess = 'CogView'
+            if 'meissonic' in f.lower():
+                guess = 'Meissonic'
+                pipeline = 'custom'
+            if 'omnigen' in f.lower():
+                guess = 'OmniGen'
+                pipeline = 'custom'
             if 'flux' in f.lower():
                 guess = 'FLUX'
                 if size > 11000 and size < 20000:
@@ -636,23 +645,25 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             elif guess == 'Stable Diffusion XL' and 'instruct' in f.lower():
                 guess = 'Stable Diffusion XL Instruct'
             # get actual pipeline
-            pipeline = shared_items.get_pipelines().get(guess, None)
+            pipeline = shared_items.get_pipelines().get(guess, None) if pipeline is None else pipeline
             if not quiet:
-                shared.log.info(f'Autodetect: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+                shared.log.info(f'Autodetect {op}: detect="{guess}" class={getattr(pipeline, "__name__", None)} file="{f}" size={size}MB')
         except Exception as e:
-            shared.log.error(f'Error detecting diffusers pipeline: model={f} {e}')
+            shared.log.error(f'Autodetect {op}: file="{f}" {e}')
+            if debug_load:
+                errors.display(e, f'Load {op}: {f}')
             return None, None
     else:
         try:
             size = round(os.path.getsize(f) / 1024 / 1024)
-            pipeline = shared_items.get_pipelines().get(guess, None)
+            pipeline = shared_items.get_pipelines().get(guess, None) if pipeline is None else pipeline
             if not quiet:
-                shared.log.info(f'Diffusers: {op}="{guess}" class={pipeline.__name__} file="{f}" size={size}MB')
+                shared.log.info(f'Load {op}: detect="{guess}" class={getattr(pipeline, "__name__", None)} file="{f}" size={size}MB')
         except Exception as e:
-            shared.log.error(f'Error loading diffusers pipeline: model={f} {e}')
+            shared.log.error(f'Load {op}: detect="{guess}" file="{f}" {e}')
 
     if pipeline is None:
-        shared.log.warning(f'Autodetect: pipeline not recognized: {guess}: {op}={f} size={size}')
+        shared.log.warning(f'Load {op}: detect="{guess}" file="{f}" size={size} not recognized')
         pipeline = diffusers.StableDiffusionPipeline
     return pipeline, guess
 
@@ -668,6 +679,8 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
+    if new_pipe.has_accelerate:
+        set_accelerate(new_pipe)
 
 
 def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
@@ -682,28 +695,28 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
-            shared.log.debug(f'Setting {op} VAE: name="{sd_vae.loaded_vae_file}"')
+            shared.log.debug(f'Setting {op}: component=VAE name="{sd_vae.loaded_vae_file}"')
         if shared.opts.diffusers_vae_upcast != 'default':
             sd_model.vae.config.force_upcast = True if shared.opts.diffusers_vae_upcast == 'true' else False
-            shared.log.debug(f'Setting {op} VAE: upcast={sd_model.vae.config.force_upcast}')
+            shared.log.debug(f'Setting {op}: component=VAE upcast={sd_model.vae.config.force_upcast}')
         if shared.opts.no_half_vae:
             devices.dtype_vae = torch.float32
             sd_model.vae.to(devices.dtype_vae)
-            shared.log.debug(f'Setting {op} VAE: no-half=True')
+            shared.log.debug(f'Setting {op}: component=VAE no-half=True')
     if hasattr(sd_model, "enable_vae_slicing"):
         if shared.opts.diffusers_vae_slicing:
-            shared.log.debug(f'Setting {op}: slicing=True')
+            shared.log.debug(f'Setting {op}: component=VAE slicing=True')
             sd_model.enable_vae_slicing()
         else:
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
         if shared.opts.diffusers_vae_tiling:
-            shared.log.debug(f'Setting {op}: tiling=True')
+            shared.log.debug(f'Setting {op}: component=VAE tiling=True')
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
     if hasattr(sd_model, "vqvae"):
-        shared.log.debug(f'Setting {op} VQVAE: upcast=True')
+        shared.log.debug(f'Setting {op}: component=VQVAE upcast=True')
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
     set_diffusers_attention(sd_model)
@@ -713,13 +726,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
             sd_model.fuse_qkv_projections()
             shared.log.debug(f'Setting {op}: fused-qkv=True')
         except Exception as e:
-            shared.log.error(f'Error enabling fused projections: {e}')
+            shared.log.error(f'Setting {op}: fused-qkv=True {e}')
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'transformer') and hasattr(sd_model.transformer, 'fuse_qkv_projections'):
         try:
             sd_model.transformer.fuse_qkv_projections()
             shared.log.debug(f'Setting {op}: fused-qkv=True')
         except Exception as e:
-            shared.log.error(f'Error enabling fused projections: {e}')
+            shared.log.error(f'Setting {op}: fused-qkv=True {e}')
     if shared.opts.diffusers_eval:
         def eval_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
             if hasattr(model, "requires_grad_"):
@@ -727,8 +740,8 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if shared.opts.diffusers_quantization:
-        sd_model = sd_models_compile.dynamic_quantization(sd_model)
+    if len(shared.opts.torchao_quantization) > 0:
+        sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.debug(f'Setting {op}: channels-last=True')
@@ -736,6 +749,23 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
 
     if offload:
         set_diffuser_offload(sd_model, op)
+
+
+def set_accelerate_to_module(model):
+    for k in model._internal_dict.keys(): # pylint: disable=protected-access
+        component = getattr(model, k, None)
+        if isinstance(component, torch.nn.Module):
+            component.has_accelerate = True
+
+
+def set_accelerate(sd_model):
+    sd_model.has_accelerate = True
+    set_accelerate_to_module(sd_model)
+    if hasattr(sd_model, "prior_pipe"):
+        set_accelerate_to_module(sd_model.prior_pipe)
+    if hasattr(sd_model, "decoder_pipe"):
+        set_accelerate_to_module(sd_model.decoder_pipe)
+
 
 def set_diffuser_offload(sd_model, op: str = 'model'):
     if not shared.native:
@@ -746,49 +776,51 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         return
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
-    if hasattr(sd_model, "enable_model_cpu_offload"):
-        if shared.opts.diffusers_offload_mode == "model":
-            try:
-                shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
-                if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                    shared.opts.diffusers_move_base = False
-                    shared.opts.diffusers_move_unet = False
-                    shared.opts.diffusers_move_refiner = False
-                    shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
-                if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
-                    sd_model.enable_model_cpu_offload(device=devices.device)
+    if hasattr(sd_model, 'maybe_free_model_hooks') and shared.opts.diffusers_offload_mode == "none":
+        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+        sd_model.maybe_free_model_hooks()
+        sd_model.has_accelerate = False
+    if hasattr(sd_model, "enable_model_cpu_offload") and shared.opts.diffusers_offload_mode == "model":
+        try:
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Model CPU offload" is enabled')
+            if not hasattr(sd_model, "_all_hooks") or len(sd_model._all_hooks) == 0: # pylint: disable=protected-access
+                sd_model.enable_model_cpu_offload(device=devices.device)
+            else:
+                sd_model.maybe_free_model_hooks()
+            set_accelerate(sd_model)
+        except Exception as e:
+            shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
+    if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
+        try:
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
+                shared.opts.diffusers_move_base = False
+                shared.opts.diffusers_move_unet = False
+                shared.opts.diffusers_move_refiner = False
+                shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
+            if sd_model.has_accelerate:
+                if op == "vae": # reapply sequential offload to vae
+                    from accelerate import cpu_offload
+                    sd_model.vae.to("cpu")
+                    cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0) # pylint: disable=protected-access
                 else:
-                    sd_model.maybe_free_model_hooks()
-                sd_model.has_accelerate = True
-            except Exception as e:
-                shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
-    if hasattr(sd_model, "enable_sequential_cpu_offload"):
-        if shared.opts.diffusers_offload_mode == "sequential":
-            try:
-                shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
-                if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
-                    shared.opts.diffusers_move_base = False
-                    shared.opts.diffusers_move_unet = False
-                    shared.opts.diffusers_move_refiner = False
-                    shared.log.warning(f'Disabling {op} "Move model to CPU" since "Sequential CPU offload" is enabled')
-                if sd_model.has_accelerate:
-                    if op == "vae": # reapply sequential offload to vae
-                        from accelerate import cpu_offload
-                        sd_model.vae.to("cpu")
-                        cpu_offload(sd_model.vae, devices.device, offload_buffers=len(sd_model.vae._parameters) > 0) # pylint: disable=protected-access
-                    else:
-                        pass # do nothing if offload is already applied
-                else:
-                    sd_model.enable_sequential_cpu_offload(device=devices.device)
-                sd_model.has_accelerate = True
-            except Exception as e:
-                shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
+                    pass # do nothing if offload is already applied
+            else:
+                sd_model.enable_sequential_cpu_offload(device=devices.device)
+            set_accelerate(sd_model)
+        except Exception as e:
+            shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
         try:
             shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
             sd_model = apply_balanced_offload(sd_model)
         except Exception as e:
-            shared.log.error(f'Model offload error: mode={shared.opts.diffusers_offload_mode} {e}')
+            shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
 
 
 def apply_balanced_offload(sd_model):
@@ -800,7 +832,7 @@ def apply_balanced_offload(sd_model):
             return module
 
         def pre_forward(self, module, *args, **kwargs):
-            if normalize_device(module.device) != normalize_device(devices.device):
+            if devices.normalize_device(module.device) != devices.normalize_device(devices.device):
                 device_index = torch.device(devices.device).index
                 if device_index is None:
                     device_index = 0
@@ -823,9 +855,8 @@ def apply_balanced_offload(sd_model):
             return module
 
     def apply_balanced_offload_to_module(pipe):
-        module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
-        for module_name in module_names:
-            module = getattr(pipe, module_name)
+        for module_name in pipe._internal_dict.keys(): # pylint: disable=protected-access
+            module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):
                 checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
                 if checkpoint_name is None:
@@ -838,7 +869,8 @@ def apply_balanced_offload(sd_model):
                     module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
                 except Exception as e:
-                    shared.log.error(f'Balanced offload: module={module_name} {e}')
+                    if 'bitsandbytes' not in str(e):
+                        shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc(fast=True)
 
     apply_balanced_offload_to_module(sd_model)
@@ -846,19 +878,8 @@ def apply_balanced_offload(sd_model):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
-    sd_model.has_accelerate = True
-    if not shared.opts.lora_force_diffusers:
-        shared.log.warning('Balanced offload: Forcing Diffusers Lora loading method')
-        shared.opts.lora_force_diffusers = True
+    set_accelerate(sd_model)
     return sd_model
-
-
-def normalize_device(device):
-    if torch.device(device).type in {"cpu", "mps", "meta"}:
-        return torch.device(device)
-    if torch.device(device).index is None:
-        return torch.device(str(device) + ":0")
-    return torch.device(device)
 
 
 def move_model(model, device=None, force=False):
@@ -877,13 +898,14 @@ def move_model(model, device=None, force=False):
         devices.torch_gc()
         return
 
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
         if device == devices.device and model.vae.device.type != "meta": # force vae back to gpu if not in txt2img mode
             model.vae.to(device)
             if hasattr(model.vae, '_hf_hook'):
-                debug_move(f'Model move: to={device} class={model.vae.__class__} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+                debug_move(f'Model move: to={device} class={model.vae.__class__} fn={fn}') # pylint: disable=protected-access
                 model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={fn}') # pylint: disable=protected-access
     if hasattr(model, "components"): # accelerate patch
         for name, m in model.components.items():
             if not hasattr(m, "_hf_hook"): # not accelerate hook
@@ -899,7 +921,7 @@ def move_model(model, device=None, force=False):
                             shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
-    if hasattr(model, "device") and normalize_device(model.device) == normalize_device(device):
+    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device):
         return
     try:
         try:
@@ -929,12 +951,14 @@ def move_model(model, device=None, force=False):
 
 
 def move_base(model, device):
-    key = 'unet'
-    if isinstance(model, diffusers.FluxPipeline):
+    if hasattr(model, 'transformer'):
         key = 'transformer'
-    if not hasattr(model, key):
+    elif hasattr(model, 'unet'):
+        key = 'unet'
+    else:
+        shared.log.warning(f'Model move: model={model.__class__} device={device} key=unknown')
         return None
-    shared.log.debug(f'Moving to CPU: model={key}')
+    shared.log.debug(f'Model move: module={key} device={device}')
     model = getattr(model, key)
     R = model.device
     move_model(model, device)
@@ -1014,11 +1038,199 @@ def patch_diffuser_config(sd_model, model_file):
     return sd_model
 
 
+def load_diffuser_initial(diffusers_load_config, op='model'):
+    sd_model = None
+    checkpoint_info = None
+    ckpt_basename = os.path.basename(shared.cmd_opts.ckpt)
+    model_name = modelloader.find_diffuser(ckpt_basename)
+    if model_name is not None:
+        shared.log.info(f'Load model {op}: path="{model_name}"')
+        model_file = modelloader.download_diffusers_model(hub_id=model_name, variant=diffusers_load_config.get('variant', None))
+        try:
+            shared.log.debug(f'Load {op}: config={diffusers_load_config}')
+            sd_model = diffusers.DiffusionPipeline.from_pretrained(model_file, **diffusers_load_config)
+        except Exception as e:
+            shared.log.error(f'Failed loading model: {model_file} {e}')
+            errors.display(e, f'Load {op}: path="{model_file}"')
+            return None, None
+        list_models() # rescan for downloaded model
+        checkpoint_info = CheckpointInfo(model_name)
+    return sd_model, checkpoint_info
+
+
+def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='model'):
+    sd_model = None
+    try:
+        if model_type in ['Stable Cascade']: # forced pipeline
+            from modules.model_stablecascade import load_cascade_combined
+            sd_model = load_cascade_combined(checkpoint_info, diffusers_load_config)
+        elif model_type in ['InstaFlow']: # forced pipeline
+            pipeline = diffusers.utils.get_class_from_dynamic_module('instaflow_one_step', module_file='pipeline.py')
+            sd_model = pipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+        elif model_type in ['SegMoE']: # forced pipeline
+            from modules.segmoe.segmoe_model import SegMoEPipeline
+            sd_model = SegMoEPipeline(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+            sd_model = sd_model.pipe # segmoe pipe does its stuff in __init__ and __call__ is the original pipeline
+        elif model_type in ['PixArt-Sigma']: # forced pipeline
+            from modules.model_pixart import load_pixart
+            sd_model = load_pixart(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Lumina-Next']: # forced pipeline
+            from modules.model_lumina import load_lumina
+            sd_model = load_lumina(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Kolors']: # forced pipeline
+            from modules.model_kolors import load_kolors
+            sd_model = load_kolors(checkpoint_info, diffusers_load_config)
+        elif model_type in ['AuraFlow']: # forced pipeline
+            from modules.model_auraflow import load_auraflow
+            sd_model = load_auraflow(checkpoint_info, diffusers_load_config)
+        elif model_type in ['FLUX']:
+            from modules.model_flux import load_flux
+            sd_model = load_flux(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Stable Diffusion 3']:
+            from modules.model_sd3 import load_sd3
+            shared.log.debug(f'Load {op}: model="Stable Diffusion 3" variant=medium')
+            shared.opts.scheduler = 'Default'
+            sd_model = load_sd3(checkpoint_info, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
+        elif model_type in ['Meissonic']: # forced pipeline
+            from modules.model_meissonic import load_meissonic
+            sd_model = load_meissonic(checkpoint_info, diffusers_load_config)
+        elif model_type in ['OmniGen']: # forced pipeline
+            from modules.model_omnigen import load_omnigen
+            sd_model = load_omnigen(checkpoint_info, diffusers_load_config)
+    except Exception as e:
+        shared.log.error(f'Load {op}: path="{checkpoint_info.path}" {e}')
+        if debug_load:
+            errors.display(e, 'Load')
+        return None
+    return sd_model
+
+
+def load_diffuser_folder(model_type, pipeline, checkpoint_info, diffusers_load_config, op='model'):
+    sd_model = None
+    files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
+    if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
+        diffusers_load_config['variant'] = 'fp16'
+        if model_type is not None and pipeline is not None and 'ONNX' in model_type: # forced pipeline
+            try:
+                sd_model = pipeline.from_pretrained(checkpoint_info.path)
+            except Exception as e:
+                shared.log.error(f'Load {op}: type=ONNX path="{checkpoint_info.path}" {e}')
+                if debug_load:
+                    errors.display(e, 'Load')
+                return None
+        else:
+            err1, err2, err3 = None, None, None
+            if os.path.exists(checkpoint_info.path) and os.path.isdir(checkpoint_info.path):
+                if os.path.exists(os.path.join(checkpoint_info.path, 'unet', 'diffusion_pytorch_model.bin')):
+                    shared.log.debug(f'Load {op}: type=pickle')
+                    diffusers_load_config['use_safetensors'] = False
+            if debug_load:
+                shared.log.debug(f'Load {op}: args={diffusers_load_config}')
+            try: # 1 - autopipeline, best choice but not all pipelines are available
+                try:
+                    sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    sd_model.model_type = sd_model.__class__.__name__
+                except ValueError as e:
+                    if 'no variant default' in str(e):
+                        shared.log.warning(f'Load {op}: variant={diffusers_load_config["variant"]} model="{checkpoint_info.path}" using default variant')
+                        diffusers_load_config.pop('variant', None)
+                        sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        sd_model.model_type = sd_model.__class__.__name__
+                    elif 'safetensors found in directory' in str(err1):
+                        shared.log.warning(f'Load {op}: type=pickle')
+                        diffusers_load_config['use_safetensors'] = False
+                        sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                        sd_model.model_type = sd_model.__class__.__name__
+                    else:
+                        raise ValueError from e # reraise
+            except Exception as e:
+                err1 = e
+                if debug_load:
+                    errors.display(e, 'Load AutoPipeline')
+                # shared.log.error(f'AutoPipeline: {e}')
+            try: # 2 - diffusion pipeline, works for most non-linked pipelines
+                if err1 is not None:
+                    sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    sd_model.model_type = sd_model.__class__.__name__
+            except Exception as e:
+                err2 = e
+                if debug_load:
+                    errors.display(e, "Load DiffusionPipeline")
+                # shared.log.error(f'DiffusionPipeline: {e}')
+            try: # 3 - try basic pipeline just in case
+                if err2 is not None:
+                    sd_model = diffusers.StableDiffusionPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
+                    sd_model.model_type = sd_model.__class__.__name__
+            except Exception as e:
+                err3 = e  # ignore last error
+                shared.log.error(f"StableDiffusionPipeline: {e}")
+                if debug_load:
+                    errors.display(e, "Load StableDiffusionPipeline")
+            if err3 is not None:
+                shared.log.error(f'Load {op}: {checkpoint_info.path} auto={err1} diffusion={err2}')
+                return None
+    return sd_model
+
+
+def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_config, op='model'):
+    sd_model = None
+    diffusers_load_config["local_files_only"] = diffusers_version < 28 # must be true for old diffusers, otherwise false but we override config for sd15/sdxl
+    diffusers_load_config["extract_ema"] = shared.opts.diffusers_extract_ema
+    if pipeline is None:
+        shared.log.error(f'Load {op}: pipeline={shared.opts.diffusers_pipeline} not initialized')
+        return None
+    try:
+        if model_type.startswith('Stable Diffusion'):
+            if shared.opts.diffusers_force_zeros:
+                diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
+            else:
+                model_config = get_load_config(checkpoint_info.path, model_type, config_type='json')
+                if model_config is not None:
+                    if debug_load:
+                        shared.log.debug(f'Load {op}: config="{model_config}"')
+                    diffusers_load_config['config'] = model_config
+        if model_type.startswith('Stable Diffusion 3'):
+            from modules.model_sd3 import load_sd3
+            sd_model = load_sd3(checkpoint_info=checkpoint_info, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
+        elif hasattr(pipeline, 'from_single_file'):
+            diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
+            diffusers_load_config['use_safetensors'] = True
+            diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
+            if shared.opts.disable_accelerate:
+                from diffusers.utils import import_utils
+                import_utils._accelerate_available = False # pylint: disable=protected-access
+            if shared.opts.diffusers_to_gpu and model_type.startswith('Stable Diffusion'):
+                shared.log.debug(f'Diffusers accelerate: direct={shared.opts.diffusers_to_gpu}')
+                sd_hijack_accelerate.hijack_accelerate()
+            else:
+                sd_hijack_accelerate.restore_accelerate()
+            sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
+            # sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
+        elif hasattr(pipeline, 'from_ckpt'):
+            diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
+            sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
+        else:
+            shared.log.error(f'Diffusers {op} cannot load safetensor model: {checkpoint_info.path} {shared.opts.diffusers_pipeline}')
+            return None
+        if shared.opts.diffusers_vae_upcast != 'default' and model_type in ['Stable Diffusion', 'Stable Diffusion XL']:
+            diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
+        # if debug_load:
+        #    shared.log.debug(f'Model args: {diffusers_load_config}')
+        if sd_model is not None:
+            diffusers_load_config.pop('vae', None)
+            diffusers_load_config.pop('safety_checker', None)
+            diffusers_load_config.pop('requires_safety_checker', None)
+            diffusers_load_config.pop('config_files', None)
+            diffusers_load_config.pop('local_files_only', None)
+            shared.log.debug(f'Setting {op}: pipeline={sd_model.__class__.__name__} config={diffusers_load_config}') # pylint: disable=protected-access
+    except Exception as e:
+        shared.log.error(f'Diffusers failed loading: {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} config={diffusers_load_config} {e}')
+        errors.display(e, f'loading {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__}')
+        return None
+    return sd_model
+
+
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
-    if shared.cmd_opts.profile:
-        import cProfile
-        pr = cProfile.Profile()
-        pr.enable()
     if timer is None:
         timer = Timer()
     logging.getLogger("diffusers").setLevel(logging.ERROR)
@@ -1027,19 +1239,16 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "low_cpu_mem_usage": True,
         "torch_dtype": devices.dtype,
         "load_connected_pipeline": True,
-        # sd15 specific but we cant know ahead of time
-        "safety_checker": None,
-        "requires_safety_checker": False,
+        "safety_checker": None, # sd15 specific but we cant know ahead of time
+        "requires_safety_checker": False, # sd15 specific but we cant know ahead of time
         # "use_safetensors": True,
     }
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
-        shared.log.debug(f'Diffusers custom pipeline: {shared.opts.custom_diffusers_pipeline}')
+        shared.log.debug(f'Model pipeline: pipeline="{shared.opts.custom_diffusers_pipeline}"')
         diffusers_load_config['custom_pipeline'] = shared.opts.custom_diffusers_pipeline
-    # if 'LCM' in checkpoint_info.path:
-        #    diffusers_load_config['custom_pipeline'] = 'latent_consistency_txt2img'
-    if shared.opts.data.get('sd_model_checkpoint', '') == 'model.ckpt' or shared.opts.data.get('sd_model_checkpoint', '') == '':
+    if shared.opts.data.get('sd_model_checkpoint', '') == 'model.safetensors' or shared.opts.data.get('sd_model_checkpoint', '') == '':
         shared.opts.data['sd_model_checkpoint'] = "stabilityai/stable-diffusion-xl-base-1.0"
 
     if op == 'model' or op == 'dict':
@@ -1051,29 +1260,21 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
     sd_model = None
     try:
-        if shared.cmd_opts.ckpt is not None and os.path.isdir(shared.cmd_opts.ckpt) and model_data.initial: # initial load
-            ckpt_basename = os.path.basename(shared.cmd_opts.ckpt)
-            model_name = modelloader.find_diffuser(ckpt_basename)
-            if model_name is not None:
-                shared.log.info(f'Load model {op}: {model_name}')
-                model_file = modelloader.download_diffusers_model(hub_id=model_name, variant=diffusers_load_config.get('variant', None))
-                try:
-                    shared.log.debug(f'Model load {op} config: {diffusers_load_config}')
-                    sd_model = diffusers.DiffusionPipeline.from_pretrained(model_file, **diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Failed loading model: {model_file} {e}')
-                    errors.display(e, f'Load model: {model_file}')
-                list_models() # rescan for downloaded model
-                checkpoint_info = CheckpointInfo(model_name)
+        # initial load only
+        if sd_model is None:
+            if shared.cmd_opts.ckpt is not None and os.path.isdir(shared.cmd_opts.ckpt) and model_data.initial:
+                sd_model, checkpoint_info = load_diffuser_initial(diffusers_load_config, op)
 
+        # unload current model
         checkpoint_info = checkpoint_info or select_checkpoint(op=op)
         if checkpoint_info is None:
             unload_model_weights(op=op)
             return
 
-        shared.log.debug(f'Diffusers loading: path="{checkpoint_info.path}"')
+        # detect pipeline
         pipeline, model_type = detect_pipeline(checkpoint_info.path, op)
 
+        # preload vae so it can be used as param
         vae = None
         sd_vae.loaded_vae_file = None
         if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
@@ -1081,215 +1282,33 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)
             if vae is not None:
                 diffusers_load_config["vae"] = vae
+                timer.record("vae")
 
-        if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface' or checkpoint_info.type == 'transformer':
-            files = shared.walk_files(checkpoint_info.path, ['.safetensors', '.bin', '.ckpt'])
-            if 'variant' not in diffusers_load_config and any('diffusion_pytorch_model.fp16' in f for f in files): # deal with diffusers lack of variant fallback when loading
-                diffusers_load_config['variant'] = 'fp16'
-            if model_type in ['Stable Cascade']: # forced pipeline
-                try:
-                    from modules.model_stablecascade import load_cascade_combined
-                    sd_model = load_cascade_combined(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['InstaFlow']: # forced pipeline
-                try:
-                    pipeline = diffusers.utils.get_class_from_dynamic_module('instaflow_one_step', module_file='pipeline.py')
-                    sd_model = pipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['SegMoE']: # forced pipeline
-                try:
-                    from modules.segmoe.segmoe_model import SegMoEPipeline
-                    sd_model = SegMoEPipeline(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                    sd_model = sd_model.pipe # segmoe pipe does its stuff in __init__ and __call__ is the original pipeline
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['PixArt-Sigma']: # forced pipeline
-                try:
-                    from modules.model_pixart import load_pixart
-                    sd_model = load_pixart(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['Lumina-Next']: # forced pipeline
-                try:
-                    from modules.model_lumina import load_lumina
-                    sd_model = load_lumina(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['Kolors']: # forced pipeline
-                try:
-                    from modules.model_kolors import load_kolors
-                    sd_model = load_kolors(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['AuraFlow']: # forced pipeline
-                try:
-                    from modules.model_auraflow import load_auraflow
-                    sd_model = load_auraflow(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['FLUX']:
-                try:
-                    from modules.model_flux import load_flux
-                    sd_model = load_flux(checkpoint_info, diffusers_load_config)
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type in ['Stable Diffusion 3']:
-                try:
-                    from modules.model_sd3 import load_sd3
-                    shared.log.debug('Loading: model="Stable Diffusion 3" variant=medium type=diffusers')
-                    shared.opts.scheduler = 'Default'
-                    sd_model = load_sd3(cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
-                except Exception as e:
-                    shared.log.error(f'Diffusers Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            elif model_type is not None and pipeline is not None and 'ONNX' in model_type: # forced pipeline
-                try:
-                    sd_model = pipeline.from_pretrained(checkpoint_info.path)
-                except Exception as e:
-                    shared.log.error(f'ONNX Failed loading {op}: {checkpoint_info.path} {e}')
-                    if debug_load:
-                        errors.display(e, 'Load')
-                    return
-            else:
-                err1, err2, err3 = None, None, None
-                # diffusers_load_config['use_safetensors'] = True
-                if debug_load:
-                    shared.log.debug(f'Diffusers load args: {diffusers_load_config}')
-                try: # 1 - autopipeline, best choice but not all pipelines are available
-                    try:
-                        sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        sd_model.model_type = sd_model.__class__.__name__
-                    except ValueError as e:
-                        if 'no variant default' in str(e):
-                            shared.log.warning(f'Load: variant={diffusers_load_config["variant"]} model={checkpoint_info.path} using default variant')
-                            diffusers_load_config.pop('variant', None)
-                            sd_model = diffusers.AutoPipelineForText2Image.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                            sd_model.model_type = sd_model.__class__.__name__
-                        else:
-                            raise ValueError from e # reraise
-                except Exception as e:
-                    err1 = e
-                    if debug_load:
-                        errors.display(e, 'Load AutoPipeline')
-                    # shared.log.error(f'AutoPipeline: {e}')
-                try: # 2 - diffusion pipeline, works for most non-linked pipelines
-                    if err1 is not None:
-                        sd_model = diffusers.DiffusionPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        sd_model.model_type = sd_model.__class__.__name__
-                except Exception as e:
-                    err2 = e
-                    if debug_load:
-                        errors.display(e, "Load DiffusionPipeline")
-                    # shared.log.error(f'DiffusionPipeline: {e}')
-                try: # 3 - try basic pipeline just in case
-                    if err2 is not None:
-                        sd_model = diffusers.StableDiffusionPipeline.from_pretrained(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **diffusers_load_config)
-                        sd_model.model_type = sd_model.__class__.__name__
-                except Exception as e:
-                    err3 = e  # ignore last error
-                    shared.log.error(f"StableDiffusionPipeline: {e}")
-                    if debug_load:
-                        errors.display(e, "Load StableDiffusionPipeline")
-                if err3 is not None:
-                    shared.log.error(f'Failed loading {op}: {checkpoint_info.path} auto={err1} diffusion={err2}')
-                    return
-        elif os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
-            diffusers_load_config["local_files_only"] = diffusers_version < 28 # must be true for old diffusers, otherwise false but we override config for sd15/sdxl
-            diffusers_load_config["extract_ema"] = shared.opts.diffusers_extract_ema
-            if pipeline is None:
-                shared.log.error(f'Diffusers {op} pipeline not initialized: {shared.opts.diffusers_pipeline}')
-                return
-            try:
-                if model_type.startswith('Stable Diffusion'):
-                    if shared.opts.diffusers_force_zeros:
-                        diffusers_load_config['force_zeros_for_empty_prompt '] = shared.opts.diffusers_force_zeros
-                    else:
-                        model_config = get_load_config(checkpoint_info.path, model_type, config_type='json')
-                        if model_config is not None:
-                            if debug_load:
-                                shared.log.debug(f'Model config: path="{model_config}"')
-                            diffusers_load_config['config'] = model_config
-                if model_type.startswith('Stable Diffusion 3'):
-                    from modules.model_sd3 import load_sd3
-                    sd_model = load_sd3(fn=checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
-                elif hasattr(pipeline, 'from_single_file'):
-                    diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
-                    diffusers_load_config['use_safetensors'] = True
-                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
-                    if shared.opts.disable_accelerate:
-                        from diffusers.utils import import_utils
-                        import_utils._accelerate_available = False # pylint: disable=protected-access
-                    if shared.opts.diffusers_to_gpu:
-                        sd_hijack_accelerate.hijack_accelerate()
-                    else:
-                        sd_hijack_accelerate.restore_accelerate()
-                    sd_model = pipeline.from_single_file(checkpoint_info.path, **diffusers_load_config)
-                    # sd_model = patch_diffuser_config(sd_model, checkpoint_info.path)
-                elif hasattr(pipeline, 'from_ckpt'):
-                    diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
-                    sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
-                else:
-                    shared.log.error(f'Diffusers {op} cannot load safetensor model: {checkpoint_info.path} {shared.opts.diffusers_pipeline}')
-                    return
-                if shared.opts.diffusers_vae_upcast != 'default' and model_type in ['Stable Diffusion', 'Stable Diffusion XL']:
-                    diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
-                if debug_load:
-                    shared.log.debug(f'Model args: {diffusers_load_config}')
-                if sd_model is not None:
-                    diffusers_load_config.pop('vae', None)
-                    diffusers_load_config.pop('safety_checker', None)
-                    diffusers_load_config.pop('requires_safety_checker', None)
-                    diffusers_load_config.pop('config_files', None)
-                    diffusers_load_config.pop('local_files_only', None)
-                    shared.log.debug(f'Setting {op}: pipeline={sd_model.__class__.__name__} config={diffusers_load_config}') # pylint: disable=protected-access
-            except Exception as e:
-                shared.log.error(f'Diffusers failed loading: {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} config={diffusers_load_config} {e}')
-                errors.display(e, f'loading {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__}')
-                return
-        else:
-            shared.log.error(f'Diffusers cannot load: {op}={checkpoint_info.path}')
-            return
+        # load with custom loader
+        if sd_model is None:
+            sd_model = load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op)
 
-        if "StableDiffusion" in sd_model.__class__.__name__:
-            pass # scheduler is created on first use
-        elif "Kandinsky" in sd_model.__class__.__name__:
-            sd_model.scheduler.name = 'DDIM'
+        # load from hf folder-style
+        if sd_model is None:
+            if os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface' or checkpoint_info.type == 'transformer':
+                sd_model = load_diffuser_folder(model_type, pipeline, checkpoint_info, diffusers_load_config, op)
+
+        # load from single-file
+        if sd_model is None:
+            if os.path.isfile(checkpoint_info.path) and checkpoint_info.path.lower().endswith('.safetensors'):
+                sd_model = load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_config, op)
 
         if sd_model is None:
             shared.log.error('Diffuser model not loaded')
             return
+
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
         sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
         sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
-        sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
+        if hasattr(sd_model, "prior_pipe"):
+            sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
+        else:
+            sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
         sd_model.is_sdxl = False # a1111 compatibility item
         sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
         sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
@@ -1298,17 +1317,24 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if hasattr(sd_model, "set_progress_bar_config"):
             sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
-        if "StableCascade" in sd_model.__class__.__name__: # detection can fail so we are applying post load here
-            from modules.model_stablecascade import cascade_post_load
-            cascade_post_load(sd_model)
-        if model_type not in ['Stable Cascade']: # it will be handled in load_cascade if the detection works
+        if "Kandinsky" in sd_model.__class__.__name__: # need a special case
+            sd_model.scheduler.name = 'DDIM'
+
+        if model_type not in ['Stable Cascade']: # need a special-case
             sd_unet.load_unet(sd_model)
+
         timer.record("load")
 
         if op == 'refiner':
             model_data.sd_refiner = sd_model
         else:
             model_data.sd_model = sd_model
+
+        reload_text_encoder(initial=True) # must be before embeddings
+        timer.record("te")
+
+        if debug_load:
+            shared.log.trace(f'Model components: {list(get_signature(sd_model).values())}')
 
         from modules.textual_inversion import textual_inversion
         sd_model.embedding_db = textual_inversion.EmbeddingDatabase()
@@ -1336,8 +1362,6 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             move_model(sd_model, devices.device)
         timer.record("move")
 
-        reload_text_encoder(initial=True)
-
         if shared.opts.ipex_optimize:
             sd_model = sd_models_compile.ipex_optimize(sd_model)
 
@@ -1345,15 +1369,24 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             sd_model = sd_models_compile.compile_diffusers(sd_model)
         timer.record("compile")
 
+        if shared.opts.enable_linfusion:
+            from modules import linfusion
+            linfusion.apply(sd_model)
+            timer.record("linfusion")
+
     except Exception as e:
-        shared.log.error("Failed to load diffusers model")
-        errors.display(e, "loading Diffusers model")
+        shared.log.error(f"Load {op}: {e}")
+        errors.display(e, "Model")
 
     devices.torch_gc(force=True)
-    if shared.cmd_opts.profile:
-        errors.profile(pr, 'Load')
-    script_callbacks.model_loaded_callback(sd_model)
-    shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} {memory_stats()}")
+    if sd_model is not None:
+        script_callbacks.model_loaded_callback(sd_model)
+
+    if debug_load:
+        from modules import modelstats
+        modelstats.analyze()
+
+    shared.log.info(f"Load {op}: time={timer.summary()} native={get_native(sd_model)} memory={memory_stats()}")
 
 
 class DiffusersTaskType(Enum):
@@ -1364,7 +1397,7 @@ class DiffusersTaskType(Enum):
 
 
 def get_diffusers_task(pipe: diffusers.DiffusionPipeline) -> DiffusersTaskType:
-    if pipe.__class__.__name__ in ["StableVideoDiffusionPipeline", "LEditsPPPipelineStableDiffusion", "LEditsPPPipelineStableDiffusionXL"]:
+    if pipe.__class__.__name__ in ["StableVideoDiffusionPipeline", "LEditsPPPipelineStableDiffusion", "LEditsPPPipelineStableDiffusionXL", "OmniGenPipeline"]:
         return DiffusersTaskType.IMAGE_2_IMAGE
     elif pipe.__class__.__name__ == "StableDiffusionXLInstructPix2PixPipeline":
         return DiffusersTaskType.INSTRUCT
@@ -1376,7 +1409,12 @@ def get_diffusers_task(pipe: diffusers.DiffusionPipeline) -> DiffusersTaskType:
         return DiffusersTaskType.TEXT_2_IMAGE
 
 
-def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, args = {}):
+def get_signature(cls):
+    signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
+    return signature.parameters
+
+
+def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, force = False, args = {}):
     """
     args:
     - cls: can be pipeline class or a string from custom pipelines
@@ -1392,9 +1430,9 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
         if pipeline is None:
             pipeline = shared.sd_model
         new_pipe = None
-        signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
-        possible = signature.parameters.keys()
-        if isinstance(pipeline, cls) and args == {}:
+        signature = get_signature(cls)
+        possible = signature.keys()
+        if not force and isinstance(pipeline, cls) and args == {}:
             return pipeline
         pipe_dict = {}
         components_used = []
@@ -1411,10 +1449,10 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
             for item in possible:
                 if item in ['self', 'args', 'kwargs']: # skip
                     continue
-                if signature.parameters[item].default != inspect._empty: # has default value so we dont have to worry about it # pylint: disable=protected-access
+                if signature[item].default != inspect._empty: # has default value so we dont have to worry about it # pylint: disable=protected-access
                     continue
                 if item not in components_used:
-                    shared.log.warning(f'Pipeling switch: missing component={item} type={signature.parameters[item].annotation}')
+                    shared.log.warning(f'Pipeling switch: missing component={item} type={signature[item].annotation}')
                     pipe_dict[item] = None # try but not likely to work
                     components_missing.append(item)
             new_pipe = cls(**pipe_dict)
@@ -1474,7 +1512,7 @@ def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionP
 
 
 def clean_diffuser_pipe(pipe):
-    if pipe is not None and shared.sd_model_type == 'sdxl' and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
+    if pipe is not None and shared.sd_model_type == 'sdxl' and hasattr(pipe, 'config') and 'requires_aesthetics_score' in pipe.config and hasattr(pipe, '_internal_dict'):
         debug_process(f'Pipeline clean: {pipe.__class__.__name__}')
         # diffusers adds requires_aesthetics_score with img2img and complains if requires_aesthetics_score exist in txt2img
         internal_dict = dict(pipe._internal_dict) # pylint: disable=protected-access
@@ -1492,7 +1530,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'FluxControlNetPipeline']:
+    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'OmniGenPipeline']:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe
@@ -1543,7 +1581,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
     if hasattr(new_pipe, "watermark"):
         new_pipe.watermark = NoWatermark()
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={sys._getframe().f_back.f_code.co_name}") # pylint: disable=protected-access
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 
@@ -1554,10 +1593,9 @@ def set_diffusers_attention(pipe):
     def set_attn(pipe, attention):
         if attention is None:
             return
-        if not hasattr(pipe, "_get_signature_keys"):
+        if not hasattr(pipe, "_internal_dict"):
             return
-        module_names, _ = pipe._get_signature_keys(pipe) # pylint: disable=protected-access
-        modules = [getattr(pipe, n, None) for n in module_names]
+        modules = [getattr(pipe, n, None) for n in pipe._internal_dict.keys()] # pylint: disable=protected-access
         modules = [m for m in modules if isinstance(m, torch.nn.Module) and hasattr(m, "set_attn_processor")]
         for module in modules:
             if module.__class__.__name__ in ['SD3Transformer2DModel']:
@@ -1575,7 +1613,7 @@ def set_diffusers_attention(pipe):
 
     if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
         return
-    shared.log.debug(f"Setting model: attention={shared.opts.cross_attention_optimization}")
+    shared.log.debug(f'Setting model: attention="{shared.opts.cross_attention_optimization}"')
     if shared.opts.cross_attention_optimization == "Disabled":
         pass # do nothing
     elif shared.opts.cross_attention_optimization == "Scaled-Dot-Product": # The default set by Diffusers
@@ -1643,9 +1681,9 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
         state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
     checkpoint_config = sd_models_config.find_checkpoint_config(state_dict, checkpoint_info)
     if state_dict is None or checkpoint_config is None:
-        shared.log.error(f"Failed to load checkpooint: {checkpoint_info.filename}")
+        shared.log.error(f'Load {op}: path="{checkpoint_info.filename}"')
         if current_checkpoint_info is not None:
-            shared.log.info(f"Restoring previous checkpoint: {current_checkpoint_info.filename}")
+            shared.log.info(f'Load {op}: previous="{current_checkpoint_info.filename}" restore')
             load_model(current_checkpoint_info, None)
         return
     shared.log.debug(f'Model dict loaded: {memory_stats()}')
@@ -1715,15 +1753,18 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
 def reload_text_encoder(initial=False):
     if initial and (shared.opts.sd_text_encoder is None or shared.opts.sd_text_encoder == 'None'):
         return # dont unload
-    signature = inspect.signature(shared.sd_model.__class__.__init__, follow_wrapped=True, eval_str=True).parameters
+    signature = get_signature(shared.sd_model)
     t5 = [k for k, v in signature.items() if 'T5EncoderModel' in str(v)]
-    if len(t5) > 0:
-        from modules.model_t5 import set_t5
-        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="{t5[0]}"')
+    if hasattr(shared.sd_model, 'text_encoder') and 'vit' in shared.opts.sd_text_encoder.lower():
+        from modules.model_te import set_clip
+        set_clip(pipe=shared.sd_model)
+    elif len(t5) > 0:
+        from modules.model_te import set_t5
+        shared.log.debug(f'Load module: type=t5 path="{shared.opts.sd_text_encoder}" module="{t5[0]}"')
         set_t5(pipe=shared.sd_model, module=t5[0], t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
     elif hasattr(shared.sd_model, 'text_encoder_3'):
-        from modules.model_t5 import set_t5
-        shared.log.debug(f'Load: t5={shared.opts.sd_text_encoder} module="text_encoder_3"')
+        from modules.model_te import set_t5
+        shared.log.debug(f'Load module: type=t5 path="{shared.opts.sd_text_encoder}" module="text_encoder_3"')
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
@@ -1739,10 +1780,10 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
     shared.state = shared_state.State()
     shared.state.begin('Load')
     if load_dict:
-        shared.log.debug(f'Model dict: existing={sd_model is not None} target={checkpoint_info.filename} info={info}')
+        shared.log.debug(f'Load {op} dict: target="{checkpoint_info.filename}" existing={sd_model is not None} info={info}')
     else:
         model_data.sd_dict = 'None'
-        shared.log.debug(f'Load model: existing={sd_model is not None} target={checkpoint_info.filename} info={info}')
+        # shared.log.debug(f'Load {op}: target="{checkpoint_info.filename}" existing={sd_model is not None} info={info}')
     if sd_model is None:
         sd_model = model_data.sd_model if op == 'model' or op == 'dict' else model_data.sd_refiner
     if sd_model is None:  # previous model load failed
@@ -1756,7 +1797,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
         else:
             move_model(sd_model, devices.cpu)
         if (reuse_dict or shared.opts.model_reuse_dict) and not getattr(sd_model, 'has_accelerate', False):
-            shared.log.info('Reusing previous model dictionary')
+            shared.log.info(f'Load {op}: reusing dictionary')
             sd_hijack.model_hijack.undo_hijack(sd_model)
         else:
             unload_model_weights(op=op)
@@ -1788,7 +1829,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             return model_data.sd_refiner
 
     # fallback
-    shared.log.info(f"Loading using fallback: {op} model={checkpoint_info.title}")
+    shared.log.info(f"Load {op} using fallback: model={checkpoint_info.title}")
     try:
         load_model_weights(sd_model, checkpoint_info, state_dict, timer)
     except Exception:
@@ -1804,7 +1845,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             timer.record("device")
     shared.state.end()
     shared.state = orig_state
-    shared.log.info(f"Load: {op} time={timer.summary()}")
+    shared.log.info(f"Load {op}: time={timer.summary()}")
     return sd_model
 
 
@@ -1824,9 +1865,8 @@ def disable_offload(sd_model):
     if not getattr(sd_model, 'has_accelerate', False):
         return
     for _name, model in sd_model.components.items():
-        if not isinstance(model, torch.nn.Module):
-            continue
-        remove_hook_from_module(model, recurse=True)
+        if isinstance(model, torch.nn.Module):
+            remove_hook_from_module(model, recurse=True)
     sd_model.has_accelerate = False
 
 
@@ -1938,8 +1978,13 @@ def remove_token_merging(sd_model):
 
 
 def path_to_repo(fn: str = ''):
-    repo_id = fn
-    repo_id = repo_id.replace('Diffusers/', '').replace('Diffusers\\', '')
-    repo_id = repo_id.replace('diffusers/', '').replace('diffusers\\', '')
+    if isinstance(fn, CheckpointInfo):
+        fn = fn.name
+    repo_id = fn.replace('\\', '/')
+    if 'models--' in repo_id:
+        repo_id = repo_id.split('models--')[-1]
+        repo_id = repo_id.split('/')[0]
+    repo_id = repo_id.split('/')
+    repo_id = '/'.join(repo_id[-2:] if len(repo_id) > 1 else repo_id)
     repo_id = repo_id.replace('models--', '').replace('--', '/')
     return repo_id

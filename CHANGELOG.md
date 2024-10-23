@@ -1,5 +1,315 @@
 # Change Log for SD.Next
 
+## Update for 2024-10-23
+
+### Highlights for 2024-10-23
+
+A month later and with nearly 300 commits, here is the latest [SD.Next](https://github.com/vladmandic/automatic) update!  
+
+#### Workflow highlights
+
+- **Reprocess**: New workflow options that allow you to generate at lower quality and then  
+  reprocess at higher quality for select images only or generate without hires/refine and then reprocess with hires/refine  
+  and you can pick any previous latent from auto-captured history!  
+- **Detailer** Fully built-in detailer workflow with support for all standard models  
+- Built-in **model analyzer**  
+  See all details of your currently loaded model, including components, parameter count, layer count, etc.  
+- **Extract LoRA**: load any LoRA(s) and play with generate as usual  
+  and once you like the results simply extract combined LoRA for future use!  
+
+#### New models
+
+- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
+- New models:  
+  [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
+  [OmniGen](https://arxiv.org/pdf/2409.11340)  
+  [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)  
+  [Meissonic](https://github.com/viiika/Meissonic)  
+- Additional integration:  
+  [Ctrl+X](https://github.com/genforce/ctrl-x) which allows for control of **structure and appearance** without the need for extra models,  
+  [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
+  [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly **distillation** of any sd15/sdxl model  
+
+#### What else?
+
+- Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
+  Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
+- Auto-detection of best available **device/dtype** settings for your platform and GPU reduces neeed for manual configuration  
+  *Note*: This is a breaking change to default settings and its recommended to check your preferred settings after upgrade  
+- Full rewrite of **sampler options**, not far more streamlined with tons of new options to tweak scheduler behavior  
+- Improved **LoRA** detection and handling for all supported models  
+- Several of [Flux.1](https://huggingface.co/black-forest-labs/FLUX.1-dev) optimizations and new quantization types  
+
+Oh, and we've compiled a full table with list of top-30 (*how many have you tried?*) popular text-to-image generative models,  
+their respective parameters and architecture overview: [Models Overview](https://github.com/vladmandic/automatic/wiki/Models)  
+
+And there are also other goodies like multiple *XYZ grid* improvements, additional *Flux ControlNets*, additional *Interrogate models*, better *LoRA tags* support, and more...  
+[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+
+### Details for 2024-10-23
+
+- **reprocess**
+  - new top-level button: reprocess latent from your history of generated image(s)  
+  - generate using full-quality:off and then reprocess using *full quality decode*  
+  - generate without hires/refine and then *reprocess with hires/refine*  
+    *note*: you can change hires/refine settings and run-reprocess again!  
+  - reprocess using *detailer*  
+
+- **history**
+  - by default, **reprocess** will pick last latent, but you can select any latent from history!  
+  - history is under *networks -> history*  
+    each history item includes info on operations that were used, timestamp and metadata  
+  - any latent operation during workflow automatically adds one or more items to history  
+    e.g. generate base + upscale + hires + detailer  
+  - history size: *settings -> execution -> latent history size*  
+    memory usage is ~130kb of ram for 1mp image  
+  - *note* list of latents in history is not auto-refreshed, use refresh button  
+
+- **model analyzer**  
+  - see all details of your currently loaded model, including components, parameter count, layer count, etc.  
+  - in models -> current -> analyze  
+
+- **text encoder**:  
+  - allow loading different custom text encoders: *clip-vit-l, clip-vit-g, t5*  
+    will automatically find appropriate encoder in the loaded model and replace it with loaded text encoder  
+    download text encoders into folder set in settings -> system paths -> text encoders  
+    default `models/Text-encoder` folder is used if no custom path is set  
+    finetuned *clip-vit-l* models: [Detailed, Smooth](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14), [LongCLIP](https://huggingface.co/zer0int/LongCLIP-GmP-ViT-L-14)  
+    reference *clip-vit-l* and *clip-vit-g* models: [OpenCLIP-Laion2b](https://huggingface.co/collections/laion/openclip-laion-2b-64fcade42d20ced4e9389b30)  
+    *note* sd/sdxl contain heavily distilled versions of reference models, so switching to reference model produces vastly different results  
+  - xyz grid support for text encoder  
+  - full prompt parser now correctly works with different prompts in batch  
+
+- **detailer**:  
+  - replaced *face-hires* with *detailer* which can run any number of standard detailing models  
+  - includes *face/hand/person/eyes* predefined detailer models plus support for manually downloaded models  
+    set path in *settings -> system paths -> yolo*  
+  - select one or more models in detailer menu and thats it!  
+  - to avoid duplication of ui elements, detailer will use following values from **refiner**:  
+    *sampler, steps, prompts*  
+  - when using multiple detailers and prompt is *multi-line*, each line is applied to corresponding detailer  
+  - adjustable settings:  
+    *strength, max detected objects, edge padding, edge blur, min detection confidence, max detection overlap, min and max size of detected object*  
+  - image metadata includes info on used detailer models  
+  - *note* detailer defaults are not save in ui settings, they are saved in server settings  
+    to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
+  - if using models trained on multiple classes, you can specify which classes you want to detail  
+    e.g. original yolo detection model is trained on coco dataset with 80 predefined classes  
+    if you leave field blank, it will use any class found in the model  
+    you can see classes defined in the model while model itself is loaded for the first time  
+
+- **extract lora**: extract combined lora from current memory state, thanks @AI-Casanova  
+  load any LoRA(s) and play with generate as usual and once you like the results simply extract combined LoRA for future use!  
+  in *models -> extract lora*  
+
+- **sampler options**: full rewrite  
+
+  *sampler notes*:  
+  - pick a sampler and then pick values, all values have "default" as a choice to make it simpler  
+  - a lot of options are new, some are old but moved around  
+    e.g. karras checkbox is replaced with a choice of different sigma methods  
+  - not every combination of settings is valid  
+  - some settings are specific to model types  
+    e.g. sd15/sdxl typically use epsilon prediction  
+  - quite a few well-known schedulers are just variations of settings, for example:  
+    - *sampler sgm* is sampler with trailing spacing and sample prediction type  
+    - *dpm 2m* or *3m* are *dpm 1s* with orders of 2 or 3  
+    - *dpm 2m sde* is *dpm 2m* with *sde* as solver  
+    - *sampler simple* is sampler with trailing spacing and linear beta schedule
+  - xyz grid support for sampler options  
+  - metadata updates for sampler options  
+  - modernui updates for sampler options  
+  - *note* sampler options defaults are not save in ui settings, they are saved in server settings  
+    to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
+
+  *sampler options*:  
+  - sigma method: *karas, beta, exponential*  
+  - timesteps spacing: *linspace, leading, trailing*  
+  - beta schedule: *linear, scaled, cosine*  
+  - prediction type: *epsilon, sample, v-prediction*  
+  - timesteps presents: *none, ays-sd15, ays-sdxl*  
+  - timesteps override: <custom>  
+  - sampler order: *0=default, 1-5*  
+  - options: *dynamic, low order, rescale*  
+
+- [Ctrl+X](https://github.com/genforce/ctrl-x):
+  - control **structure** (*similar to controlnet*) and **appearance** (*similar to ipadapter*)  
+    without the need for extra models, all via code feed-forwards!
+  - can run in structure-only or appearance-only or both modes
+  - when providing structure and appearance input images, its best to provide a short prompts describing them  
+  - structure image can be *almost anything*: *actual photo, openpose-style stick man, 3d render, sketch, depth-map, etc.*  
+    just describe what it is in a structure prompt so it can be de-structured and correctly applied  
+  - supports sdxl in both txt2img and img2img, simply select from scripts
+
+- [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416)
+  - latest algo to provide better guidance for image generation, can be used instead of existing guidance rescale and/or PAG  
+  - in addtion to stronger guidance and reduction of burn at high guidance values, it can also increase image details  
+  - compatible with *sd15/sdxl/sc*  
+  - select in scripts -> apg  
+  - for low    cfg scale, use positive momentum: e.g. cfg=2 => momentum=0.6
+  - for normal cfg scale, use negative momentum: e.g. cfg=6 => momentum=-0.3
+  - for high   cfg scale, use neutral  momentum: e.g. cfg=10 => momentum=0.0
+
+- [LinFusion](https://github.com/Huage001/LinFusion)  
+  - apply liner distillation to during load to any sd15/sdxl model  
+  - can reduce vram use for high resolutions and increase performance
+  - *note*: use lower cfg scales as typical for distilled models  
+
+- [Flux](https://huggingface.co/black-forest-labs/FLUX.1-dev)  
+  - see [wiki](https://github.com/vladmandic/automatic/wiki/FLUX#quantization) for details on `gguf`  
+  - support for `gguf` binary format for loading unet/transformer component  
+  - support for `gguf` binary format for loading t5/text-encoder component: requires transformers pr  
+  - additional controlnets: [JasperAI](https://huggingface.co/collections/jasperai/flux1-dev-controlnets-66f27f9459d760dcafa32e08) **Depth**, **Upscaler**, **Surface**, thanks @EnragedAntelope  
+  - additional controlnets: [XLabs-AI](https://huggingface.co/XLabs-AI/flux-controlnet-hed-diffusers) **Canny**, **Depth**, **HED**  
+  - mark specific unet as unavailable if load failed  
+  - fix diffusers local model name parsing  
+  - full prompt parser will auto-select `xhinker` for flux models  
+  - controlnet support for img2img and inpaint (in addition to previous txt2img controlnet)  
+  - allow separate vae load  
+  - support for both kohya and onetrainer loras in native load mode for fp16/nf4/fp4, thanks @AI-Casanova  
+  - support for differential diffusion  
+  - added native load mode for qint8/qint4 models
+  - avoid unet load if unchanged  
+
+- [OmniGen](https://arxiv.org/pdf/2409.11340)  
+  - Radical new model with pure LLM architecture based on Phi-3  
+  - Select from *networks -> models -> reference*  
+  - Can be used for text-to-image and image-to-image  
+  - Image-to-image is *very* different, you need to specify in prompt what do you want to do  
+    and add `|image|` placeholder where input image is used!  
+    examples: `in |image| remove glasses from face`, `using depth map from |image|, create new image of a cute robot`  
+  - Params used: prompt, steps, guidance scale for prompt guidance, refine guidance scale for image guidance  
+    Recommended: guidance=3.0, refine-guidance=1.6  
+
+- [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
+  - New/improved variant of Stable Diffusion 3  
+  - Select from *networks -> models -> reference*  
+  - Available in standard and turbo variations  
+  - *Note*: Access to to both variations of SD3.5 model is gated, you must accept the conditions and use HF login  
+
+- [CogView 3 Plus](https://huggingface.co/THUDM/CogView3-Plus-3B)
+  - Select from *networks -> models -> reference*  
+  - resolution width and height can be from 512px to 2048px and must be divisible by 32  
+  - precision: bf16 or fp32  
+    fp16 is not supported due to internal model overflows  
+
+- [Meissonic](https://github.com/viiika/Meissonic)  
+  - Select from *networks -> models -> reference*  
+  - Experimental as upstream implemenation code is unstable
+  - Must set scheduler:default, generator:unset
+
+- [SageAttention](https://github.com/thu-ml/SageAttention)  
+  - new 8-bit attention implementation on top of SDP that can provide acceleration for some models, thanks @Disty0  
+  - enable in *settings -> compute settings -> sdp options -> sage attention*
+  - compatible with DiT-based models: e.g. *Flux.1, AuraFlow, CogVideoX*  
+  - not compatible with UNet-based models, e.g. *SD15, SDXL*  
+
+- **gpu**
+  - previously `cuda_dtype` in settings defaulted to `fp16` if available  
+  - now `cuda_type` defaults to **Auto** which executes `bf16` and `fp16` tests on startup and selects best available dtype  
+    if you have specific requirements, you can still set to fp32/fp16/bf16 as desired  
+    if you have gpu that incorrectly identifies bf16 or fp16 availablity, let us know so we can improve the auto-detection  
+  - support for torch **expandable segments**  
+    enable in *settings -> compute -> torch expandable segments*  
+    can provide significant memory savings for some models  
+    not enabled by default as its only supported on latest versions of torch and some gpus  
+
+- **xyz grid** full refactor  
+  - multi-mode: *selectable-script* and *alwayson-script*  
+  - allow usage combined with other scripts  
+  - allow **unet** selection  
+  - allow passing **model args** directly:  
+    allowed params will be checked against models call signature  
+    example: `width=768; height=512, width=512; height=768`  
+  - allow passing **processing args** directly:  
+    params are set directly on main processing object and can be known or new params  
+    example: `steps=10, steps=20; test=unknown`  
+  - enable working with different resolutions  
+    now you can adjust width/height in the grid just as any other param  
+  - renamed options to include section name and adjusted cost of each option  
+  - added additional metadata  
+
+- **interrogate**  
+  - add additional blip models: *blip-base, blip-large, blip-t5-xl, blip-t5-xxl, opt-2.7b, opt-6.7b*  
+  - change default params for better memory utilization  
+  - lock commits for miaoshouAI-promptgen  
+  - add optional advanced params  
+  - update logging  
+
+- **lora** auto-apply tags to prompt  
+  - controlled via *settings -> networks -> lora_apply_tags*  
+    *0:disable, -1:all-tags, n:top-n-tags*  
+  - uses tags from both model embedded data and civitai downloaded data  
+  - if lora contains no tags, lora name itself will be used as a tag  
+  - if prompt contains `_tags_` it will be used as placeholder for replacement, otherwise tags will be appended  
+  - used tags are also logged and registered in image metadata  
+  - loras are no longer filtered per detected type vs loaded model type as its unreliable  
+  - loras display in networks now shows possible version in top-left corner  
+  - correct using of `extra_networks_default_multiplier` if not scale is specified  
+  - improve lora base model detection  
+  - improve lora error handling and logging  
+  - setting `lora_load_gpu` to load LoRA directly to GPU  
+    *default*: true unless lovwram  
+
+- **quantization**  
+  - new top level settings group as we have quite a few quantization options now!  
+    configure in *settings -> quantization*  
+  - in addition to existing `optimum.quanto` and `nncf`, we now have `bitsandbytes` and `torchao`  
+  - **bitsandbytes**: fp8, fp4, nf4  
+    - quantization can be applied on-the-fly during model load  
+    - currently supports `transformers` and `t5` in **sd3** and **flux**  
+  - **torchao**: int8, int4, fp8, fp4, fpx  
+    - configure in settings -> quantization  
+    - can be applied to any model on-the-fly during load  
+
+- **huggingface**:  
+  - force logout/login on token change  
+  - unified handling of cache folder: set via `HF_HUB` or `HF_HUB_CACHE` or via settings -> system paths  
+
+- **cogvideox**:  
+  - add support for *image2video* (in addition to previous *text2video* and *video2video*)  
+  - *note*: *image2video* requires separate 5b model variant  
+
+- **torch**  
+  - due to numerous issues with torch 2.5.0 which was just released as stable, we are sticking with 2.4.1 for now  
+
+- **backend=original** is now marked as in maintenance-only mode  
+- **python 3.12** improved compatibility, automatically handle `setuptools`  
+- **control**
+  - persist/reapply units current state on server restart  
+  - better handle size before/after metadata  
+- **video** add option `gradio_skip_video` to avoid gradio issues with displaying generated videos  
+- add support for manually downloaded diffusers models from huggingface  
+- **ui**  
+  - move checkboxes `full quality, tiling, hidiffusion` to advanced section  
+  - hide token counter until tokens are known  
+  - minor ui optimizations  
+  - fix update infotext on image select  
+  - fix imageviewer exif parser  
+  - selectable info view in image viewer, thanks @ZeldaMaster501  
+  - setting to enable browser autolaunch, thanks @brknsoul  
+- **free-u** check if device/dtype are fft compatible and cast as necessary  
+- **rocm**
+  - additional gpu detection and auto-config code, thanks @lshqqytiger  
+  - experimental triton backend for flash attention, thanks @lshqqytiger  
+  - update to rocm 6.2, thanks @Disty0
+- **directml**  
+  - update `torch` to 2.4.1, thanks @lshqqytiger  
+- **extensions**  
+  - add mechanism to lock-down extension to specific working commit  
+  - added `sd-webui-controlnet` and `adetailer` last-known working commits  
+- **upscaling**  
+  - interruptible operations
+- **refactor**  
+  - general lora apply/unapply process  
+  - modularize main process loop  
+  - massive log cleanup  
+  - full lint pass  
+  - improve inference mode handling  
+  - unify quant lib loading  
+
+
 ## Update for 2024-09-13
 
 ### Highlights for 2024-09-13
@@ -105,6 +415,9 @@ Examples:
 - **prompt enhance**: improve quality and/or verbosity of your prompts  
   simply select in *scripts -> prompt enhance*
   uses [gokaygokay/Flux-Prompt-Enhance](https://huggingface.co/gokaygokay/Flux-Prompt-Enhance) model  
+- **decode**
+  - auto-set upcast if first decode fails  
+  - restore dtype on upcast  
 - **taesd** configurable number of layers  
   can be used to speed-up taesd decoding by reducing number of ops  
   e.g. if generating 1024px image, reducing layers by 1 will result in preview being 512px  

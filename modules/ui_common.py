@@ -42,7 +42,7 @@ def infotext_to_html(text):
     negative = res.get('Negative prompt', '')
     res.pop('Prompt', None)
     res.pop('Negative prompt', None)
-    params = [f'{k}: {v}' for k, v in res.items() if v is not None and 'size-' not in k.lower()]
+    params = [f'{k}: {v}' for k, v in res.items() if v is not None and not k.endswith('-1') and not k.endswith('-2')]
     params = '| '.join(params) if len(params) > 0 else ''
     code = ''
     if len(prompt) > 0:
@@ -203,10 +203,10 @@ def open_folder(result_gallery, gallery_index = 0):
     except Exception:
         folder = shared.opts.outdir_samples
     if not os.path.exists(folder):
-        shared.log.warning(f'Folder open: folder={folder} does not exist')
+        shared.log.warning(f'Folder open: folder="{folder}" does not exist')
         return
     elif not os.path.isdir(folder):
-        shared.log.warning(f"Folder open: folder={folder} not a folder")
+        shared.log.warning(f'Folder open: folder="{folder}" not a folder')
         return
 
     if not shared.cmd_opts.hide_ui_dir_config:
@@ -413,4 +413,4 @@ def update_token_counter(text, steps):
             max_length = shared.sd_model.tokenizer.model_max_length - int(has_bos_token) - int(has_eos_token)
             if max_length is None or max_length < 0 or max_length > 10000:
                 max_length = 0
-    return f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>"
+    return gr.update(value=f"<span class='gr-box gr-text-input'>{token_count}/{max_length}</span>", visible=token_count > 0)

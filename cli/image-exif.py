@@ -120,3 +120,5 @@ if __name__ == '__main__':
             for root, _dirs, files in os.walk(fn):
                 for file in files:
                     read_exif(os.path.join(root, file))
+        else:
+            print('file not found: ', fn)

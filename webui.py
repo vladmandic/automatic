@@ -24,7 +24,7 @@ import modules.scripts
 import modules.sd_models
 import modules.sd_vae
 import modules.sd_unet
-import modules.model_t5
+import modules.model_te
 import modules.progress
 import modules.ui
 import modules.txt2img
@@ -91,7 +91,7 @@ def initialize():
     modules.sd_unet.refresh_unet_list()
     timer.startup.record("unet")
 
-    modules.model_t5.refresh_t5_list()
+    modules.model_te.refresh_te_list()
     timer.startup.record("unet")
 
     extensions.list_extensions()
@@ -106,7 +106,9 @@ def initialize():
     sys.modules["modules.codeformer_model"] = codeformer
     import modules.postprocess.gfpgan_model as gfpgan
     gfpgan.setup_model(shared.opts.gfpgan_models_path)
-    timer.startup.record("face-restore")
+    import modules.postprocess.yolo as yolo
+    yolo.initialize()
+    timer.startup.record("detailer")
 
     log.debug('Load extensions')
     t_timer, t_total = modules.scripts.load_scripts()
@@ -116,11 +118,6 @@ def initialize():
 
     modelloader.load_upscalers()
     timer.startup.record("upscalers")
-
-    shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
-    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
-    shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
-    timer.startup.record("onchange")
 
     shared.reload_hypernetworks()
     shared.prompt_styles.reload()
@@ -158,8 +155,7 @@ def initialize():
 
 
 def load_model():
-    modules.devices.set_cuda_params()
-    if not shared.opts.sd_checkpoint_autoload or (shared.cmd_opts.ckpt is not None and shared.cmd_opts.ckpt.lower() != 'none'):
+    if not shared.opts.sd_checkpoint_autoload and shared.cmd_opts.ckpt is None:
         log.debug('Model auto load disabled')
     else:
         shared.state.begin('Load')
@@ -170,13 +166,16 @@ def load_model():
         shared.state.end()
         thread_model.join()
         thread_refiner.join()
+    timer.startup.record("checkpoint")
     shared.opts.onchange("sd_model_checkpoint", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='model')), call=False)
     shared.opts.onchange("sd_model_refiner", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='refiner')), call=False)
-    shared.opts.onchange("sd_text_encoder", wrap_queued_call(lambda: modules.sd_models.reload_text_encoder()), call=False)
     shared.opts.onchange("sd_model_dict", wrap_queued_call(lambda: modules.sd_models.reload_model_weights(op='dict')), call=False)
     shared.opts.onchange("sd_vae", wrap_queued_call(lambda: modules.sd_vae.reload_vae_weights()), call=False)
+    shared.opts.onchange("sd_unet", wrap_queued_call(lambda: modules.sd_unet.load_unet(shared.sd_model)), call=False)
+    shared.opts.onchange("sd_text_encoder", wrap_queued_call(lambda: modules.sd_models.reload_text_encoder()), call=False)
     shared.opts.onchange("sd_backend", wrap_queued_call(lambda: modules.sd_models.change_backend()), call=False)
-    timer.startup.record("checkpoint")
+    shared.opts.onchange("temp_dir", gr_tempdir.on_tmpdir_changed)
+    timer.startup.record("onchange")
 
 
 def create_api(app):
@@ -351,7 +350,7 @@ def webui(restart=False):
                 continue
             logger.handlers = log.handlers
         # autolaunch only on initial start
-        if cmd_opts.autolaunch and local_url is not None:
+        if (shared.opts.autolaunch or cmd_opts.autolaunch) and local_url is not None:
             cmd_opts.autolaunch = False
             shared.log.info('Launching browser')
             import webbrowser

@@ -105,6 +105,20 @@ def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.
         attn_mask = attn_mask.to(dtype=query.dtype)
     return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
 
+# Diffusers FreeU
+original_fft_fftn = torch.fft.fftn
+@wraps(torch.fft.fftn)
+def fft_fftn(input, s=None, dim=None, norm=None, *, out=None):
+    return_dtype = input.dtype
+    return original_fft_fftn(input.to(dtype=torch.float32), s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
+# Diffusers FreeU
+original_fft_ifftn = torch.fft.ifftn
+@wraps(torch.fft.ifftn)
+def fft_ifftn(input, s=None, dim=None, norm=None, *, out=None):
+    return_dtype = input.dtype
+    return original_fft_ifftn(input.to(dtype=torch.float32), s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
 # A1111 FP16
 original_functional_group_norm = torch.nn.functional.group_norm
 @wraps(torch.nn.functional.group_norm)
@@ -220,7 +234,7 @@ def torch_empty(*args, device=None, **kwargs):
 original_torch_randn = torch.randn
 @wraps(torch.randn)
 def torch_randn(*args, device=None, dtype=None, **kwargs):
-    if dtype == bytes:
+    if dtype is bytes:
         dtype = None
     if check_device(device):
         return original_torch_randn(*args, device=return_xpu(device), **kwargs)
@@ -279,7 +293,9 @@ def torch_load(f, map_location=None, *args, **kwargs):
 
 
 # Hijack Functions:
-def ipex_hijacks():
+def ipex_hijacks(legacy=True):
+    if legacy:
+        torch.nn.functional.interpolate = interpolate
     torch.tensor = torch_tensor
     torch.Tensor.to = Tensor_to
     torch.Tensor.cuda = Tensor_cuda
@@ -305,10 +321,11 @@ def ipex_hijacks():
     torch.nn.functional.layer_norm = functional_layer_norm
     torch.nn.functional.linear = functional_linear
     torch.nn.functional.conv2d = functional_conv2d
-    torch.nn.functional.interpolate = interpolate
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm
+    torch.fft.fftn = fft_fftn
+    torch.fft.ifftn = fft_ifftn
     if not device_supports_fp64:
         torch.from_numpy = from_numpy
         torch.as_tensor = as_tensor

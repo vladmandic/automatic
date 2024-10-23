@@ -28,10 +28,9 @@ models_config = cli.models_dir or config.get('models_dir') or 'models'
 models_path = models_config if os.path.isabs(models_config) else os.path.join(data_path, models_config)
 extensions_dir = os.path.join(data_path, "extensions")
 extensions_builtin_dir = "extensions-builtin"
-onnx_dir = os.path.join(models_path, "ONNX")
 sd_configs_path = os.path.join(script_path, "configs")
 sd_default_config = os.path.join(sd_configs_path, "v1-inference.yaml")
-sd_model_file = cli.ckpt or os.path.join(script_path, 'model.ckpt') # not used
+sd_model_file = cli.ckpt or os.path.join(script_path, 'model.safetensors') # not used
 default_sd_model_file = sd_model_file # not used
 debug = log.trace if os.environ.get('SD_PATH_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: PATH')
@@ -76,7 +75,13 @@ def create_path(folder):
 
 def create_paths(opts):
     def fix_path(folder):
-        tgt = opts.data.get(folder, None) or opts.data_labels[folder].default
+        tgt = None
+        if folder in opts.data:
+            tgt = opts.data[folder]
+        elif folder in opts.data_labels:
+            tgt = opts.data_labels[folder].default
+        else:
+            log.warning(f'Path: folder="{folder}" unknown')
         if tgt is None or tgt == '':
             return tgt
         fix = tgt
@@ -95,16 +100,16 @@ def create_paths(opts):
     create_path(sd_configs_path)
     create_path(extensions_dir)
     create_path(extensions_builtin_dir)
-    create_path(onnx_dir)
     create_path(fix_path('temp_dir'))
     create_path(fix_path('ckpt_dir'))
     create_path(fix_path('diffusers_dir'))
     create_path(fix_path('vae_dir'))
     create_path(fix_path('unet_dir'))
-    create_path(fix_path('t5_dir'))
+    create_path(fix_path('te_dir'))
     create_path(fix_path('lora_dir'))
     create_path(fix_path('embeddings_dir'))
     create_path(fix_path('hypernetwork_dir'))
+    create_path(fix_path('onnx_temp_dir'))
     create_path(fix_path('outdir_samples'))
     create_path(fix_path('outdir_txt2img_samples'))
     create_path(fix_path('outdir_img2img_samples'))
@@ -118,6 +123,7 @@ def create_paths(opts):
     create_path(fix_path('outdir_save'))
     create_path(fix_path('outdir_video'))
     create_path(fix_path('styles_dir'))
+    create_path(fix_path('yolo_dir'))
     create_path(fix_path('wildcards_dir'))
 
 

@@ -42,7 +42,8 @@ function checkPaused(state) {
 function setProgress(res) {
   const elements = ['txt2img_generate', 'img2img_generate', 'extras_generate', 'control_generate'];
   const progress = (res?.progress || 0);
-  const job = res?.job || '';
+  let job = res?.job || '';
+  job = job.replace('txt2img', 'Generate').replace('img2img', 'Generate');
   const perc = res && (progress > 0) ? `${Math.round(100.0 * progress)}%` : '';
   let sec = res?.eta || 0;
   let eta = '';

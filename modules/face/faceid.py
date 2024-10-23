@@ -80,13 +80,13 @@ def face_id(
             basename, _ext = os.path.splitext(filename)
             model_path = hf.hf_hub_download(repo_id=folder, filename=filename, cache_dir=shared.opts.diffusers_dir)
             if model_path is None:
-                shared.log.error(f"FaceID download failed: model={model} file={ip_ckpt}")
+                shared.log.error(f'FaceID download failed: model={model} file="{ip_ckpt}"')
                 return None
             if faceid_model_weights is None or faceid_model_name != model or not cache:
-                shared.log.debug(f"FaceID load: model={model} file={ip_ckpt}")
+                shared.log.debug(f'FaceID load: model={model} file="{ip_ckpt}"')
                 faceid_model_weights = torch.load(model_path, map_location="cpu")
             else:
-                shared.log.debug(f"FaceID cached: model={model} file={ip_ckpt}")
+                shared.log.debug(f'FaceID cached: model={model} file="{ip_ckpt}"')
 
             if "XL Plus" in model and shared.sd_model_type == 'sd':
                 image_encoder_path = "laion/CLIP-ViT-H-14-laion2B-s32B-b79K"

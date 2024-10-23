@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, face_restoration, sd_hijack_freeu, sd_models, sd_vae, processing_helpers
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer, face_restoration
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -52,6 +52,8 @@ class Processed:
         self.batch_size = max(1, p.batch_size)
         self.restore_faces = p.restore_faces or False
         self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
+        self.detailer = p.detailer or False
+        self.detailer_model = shared.opts.detailer_model if p.detailer else None
         self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
@@ -96,8 +98,8 @@ class Processed:
             "cfg_scale": self.cfg_scale,
             "steps": self.steps,
             "batch_size": self.batch_size,
-            "restore_faces": self.restore_faces,
-            "face_restoration_model": self.face_restoration_model,
+            "detailer": self.detailer,
+            "detailer_model": self.detailer_model,
             "sd_model_hash": self.sd_model_hash,
             "seed_resize_from_w": self.seed_resize_from_w,
             "seed_resize_from_h": self.seed_resize_from_h,
@@ -116,6 +118,7 @@ class Processed:
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
+    timer.process.reset()
     debug(f'Process images: {vars(p)}')
     if not hasattr(p.sd_model, 'sd_checkpoint_info'):
         return None
@@ -168,11 +171,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             p.height = 8 * int(p.height / 8)
 
         script_callbacks.before_process_callback(p)
+        timer.process.record('pre')
 
         if shared.cmd_opts.profile:
-            import cProfile
-            profile_python = cProfile.Profile()
-            profile_python.enable()
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 import torch.profiler # pylint: disable=redefined-outer-name
                 activities=[torch.profiler.ProfilerActivity.CPU]
@@ -180,12 +181,23 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     activities.append(torch.profiler.ProfilerActivity.CUDA)
                 shared.log.debug(f'Torch profile: activities={activities}')
                 if shared.profiler is None:
-                    shared.profiler = torch.profiler.profile(activities=activities, profile_memory=True, with_modules=True)
+                    profile_args = {
+                        'activities': activities,
+                        'profile_memory': True,
+                        'with_modules': True,
+                        'with_stack': os.environ.get('SD_PROFILE_STACK', None) is not None,
+                        'experimental_config': torch._C._profiler._ExperimentalConfig(verbose=True) if os.environ.get('SD_PROFILE_STACK', None) is not None else None, # pylint: disable=protected-access
+                        'with_flops': os.environ.get('SD_PROFILE_FLOPS', None) is not None,
+                        'record_shapes': os.environ.get('SD_PROFILE_SHAPES', None) is not None,
+                        'on_trace_ready': torch.profiler.tensorboard_trace_handler(os.environ.get('SD_PROFILE_FOLDER', None)) if os.environ.get('SD_PROFILE_FOLDER', None) is not None else None,
+                    }
+                    shared.log.debug(f'Torch profile: {profile_args}')
+                    shared.profiler = torch.profiler.profile(**profile_args)
                 shared.profiler.start()
-                shared.profiler.step()
+                if not shared.native:
+                    shared.profiler.step()
                 processed = process_images_inner(p)
                 errors.profile_torch(shared.profiler, 'Process')
-            errors.profile(profile_python, 'Process')
         else:
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 processed = process_images_inner(p)
@@ -206,6 +218,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     sd_models.reload_model_weights()
                 if k == 'sd_vae':
                     sd_vae.reload_vae_weights()
+        timer.process.record('post')
     return processed
 
 
@@ -228,9 +241,10 @@ def process_init(p: StableDiffusionProcessing):
                 p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
             else:
                 p.all_seeds = []
-                for i in range(len(p.all_prompts)):
-                    seed = get_fixed_seed(p.seed)
-                    p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
+                if p.all_prompts is not None:
+                    for i in range(len(p.all_prompts)):
+                        seed = get_fixed_seed(p.seed)
+                        p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
     if p.all_subseeds is None:
         if type(subseed) == list:
             p.all_subseeds = [int(s) for s in subseed]
@@ -238,6 +252,10 @@ def process_init(p: StableDiffusionProcessing):
             p.all_subseeds = [int(subseed) + x for x in range(len(p.all_prompts))]
     if reset_prompts:
         p.all_prompts, p.all_negative_prompts = shared.prompt_styles.apply_styles_to_prompts(p.all_prompts, p.all_negative_prompts, p.styles, p.all_seeds)
+        p.prompts = p.all_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
+        p.negative_prompts = p.all_negative_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
+        p.prompts, _ = extra_networks.parse_prompts(p.prompts)
+
 
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     """this is the main loop that both txt2img and img2img use; it calls func_init once inside all the scopes and func_sample once per batch"""
@@ -259,9 +277,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         modules.sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=False)
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
-
-    def infotext(_inxex=0): # dummy function overriden if there are iterations
-        return ''
 
     ema_scope_context = p.sd_model.ema_scope if not shared.native else nullcontext
     shared.state.job_count = p.n_iter
@@ -300,76 +315,92 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
-            x_samples_ddim = None
+            samples = None
+            timer.process.record('init')
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                x_samples_ddim = p.scripts.process_images(p)
-            if x_samples_ddim is None:
+                processed = p.scripts.process_images(p)
+                if processed is not None:
+                    samples = processed.images
+                    infotexts = processed.infotexts
+            if samples is None:
                 if not shared.native:
                     from modules.processing_original import process_original
-                    x_samples_ddim = process_original(p)
+                    samples = process_original(p)
                 elif shared.native:
                     from modules.processing_diffusers import process_diffusers
-                    x_samples_ddim = process_diffusers(p)
+                    samples = process_diffusers(p)
                 else:
                     raise ValueError(f"Unknown backend {shared.backend}")
+            timer.process.record('process')
 
             if not shared.opts.keep_incomplete and shared.state.interrupted:
-                x_samples_ddim = []
+                samples = []
 
             if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
                 devices.torch_gc()
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                p.scripts.postprocess_batch(p, x_samples_ddim, batch_number=n)
+                p.scripts.postprocess_batch(p, samples, batch_number=n)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
                 p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
-                batch_params = scripts.PostprocessBatchListArgs(list(x_samples_ddim))
+                batch_params = scripts.PostprocessBatchListArgs(list(samples))
                 p.scripts.postprocess_batch_list(p, batch_params, batch_number=n)
-                x_samples_ddim = batch_params.images
+                samples = batch_params.images
 
-            def infotext(index): # pylint: disable=function-redefined
-                return create_infotext(p, p.prompts, p.seeds, p.subseeds, index=index, all_negative_prompts=p.negative_prompts)
-
-            for i, x_sample in enumerate(x_samples_ddim):
-                debug(f'Processing result: index={i+1}/{len(x_samples_ddim)} iteration={n+1}/{p.n_iter}')
+            for i, sample in enumerate(samples):
+                debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
-                if type(x_sample) == Image.Image:
-                    image = x_sample
-                    x_sample = np.array(x_sample)
+                if type(sample) == Image.Image:
+                    image = sample
+                    sample = np.array(sample)
                 else:
-                    x_sample = validate_sample(x_sample)
-                    image = Image.fromarray(x_sample)
+                    sample = validate_sample(sample)
+                    image = Image.fromarray(sample)
                 if p.restore_faces:
-                    if not p.do_not_save_samples and shared.opts.save_images_before_face_restoration:
-                        images.save_image(Image.fromarray(x_sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=infotext(i), p=p, suffix="-before-face-restore")
-                    p.ops.append('face')
-                    x_sample = face_restoration.restore_faces(x_sample, p)
-                    if x_sample is not None:
-                        image = Image.fromarray(x_sample)
+                    p.ops.append('restore')
+                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-restore")
+                    sample = face_restoration.restore_faces(sample, p)
+                    if sample is not None:
+                        image = Image.fromarray(sample)
+                if p.detailer:
+                    p.ops.append('detailer')
+                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-detailer")
+                    sample = detailer.detail(sample, p)
+                    if sample is not None:
+                        image = Image.fromarray(sample)
+                if p.color_corrections is not None and i < len(p.color_corrections):
+                    p.ops.append('color')
+                    if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
+                        orig = p.color_corrections
+                        p.color_corrections = None
+                        p.color_corrections = orig
+                        image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
+                        info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                        images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
+                    image = apply_color_correction(p.color_corrections[i], image)
                 if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                     pp = scripts.PostprocessImageArgs(image)
                     p.scripts.postprocess_image(p, pp)
                     if pp.image is not None:
                         image = pp.image
-                if p.color_corrections is not None and i < len(p.color_corrections):
-                    if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
-                        orig = p.color_corrections
-                        p.color_corrections = None
-                        info = infotext(i)
-                        p.color_corrections = orig
-                        image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
-                        images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
-                    p.ops.append('color')
-                    image = apply_color_correction(p.color_corrections[i], image)
                 if shared.opts.mask_apply_overlay:
                     image = apply_overlay(image, p.paste_to, i, p.overlay_images)
-                text = infotext(i)
-                infotexts.append(text)
-                image.info["parameters"] = text
+
+                if len(infotexts) > i:
+                    info = infotexts[i]
+                else:
+                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
+                    infotexts.append(info)
+                image.info["parameters"] = info
                 output_images.append(image)
                 if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
-                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p) # main save image
+                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
+                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
                     image1 = image.convert('RGBA').convert('RGBa')
@@ -377,14 +408,16 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
                     image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
                     if shared.opts.save_mask:
-                        images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask")
+                        images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask")
                     if shared.opts.save_mask_composite:
-                        images.save_image(image_mask_composite, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=text, p=p, suffix="-mask-composite")
+                        images.save_image(image_mask_composite, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask-composite")
                     if shared.opts.return_mask:
                         output_images.append(image_mask)
                     if shared.opts.return_mask_composite:
                         output_images.append(image_mask_composite)
-            del x_samples_ddim
+
+            timer.process.record('post')
+            del samples
             devices.torch_gc()
 
         if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
@@ -393,21 +426,21 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
 
         t1 = time.time()
-        shared.log.info(f'Processed: images={len(output_images)} time={t1 - t0:.2f} its={(p.steps * len(output_images)) / (t1 - t0):.2f} memory={memstats.memory_stats()}')
 
         p.color_corrections = None
         index_of_first_image = 0
         if (shared.opts.return_grid or shared.opts.grid_save) and not p.do_not_save_grid and len(output_images) > 1:
             if images.check_grid_size(output_images):
+                r, c = images.get_grid_size(output_images, p.batch_size)
                 grid = images.image_grid(output_images, p.batch_size)
+                grid_text = f'{r}x{c}'
+                grid_info = create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, index=0, grid=grid_text)
                 if shared.opts.return_grid:
-                    text = infotext(-1)
-                    infotexts.insert(0, text)
-                    grid.info["parameters"] = text
+                    infotexts.insert(0, grid_info)
                     output_images.insert(0, grid)
                     index_of_first_image = 1
                 if shared.opts.grid_save:
-                    images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=infotext(-1), p=p, grid=True, suffix="-grid") # main save grid
+                    images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=grid_info, p=p, grid=True, suffix="-grid") # main save grid
 
     if shared.native:
         from modules import ipadapter
@@ -422,8 +455,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             p.image_mask = ImageOps.invert(p.image_mask)
             output_images.append(p.image_mask)
         elif getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
-            if getattr(p, 'mask_for_facehires', None) is not None:
-                output_images.append(p.mask_for_facehires)
+            if getattr(p, 'mask_for_detailer', None) is not None:
+                output_images.append(p.mask_for_detailer)
             else:
                 output_images.append(p.image_mask)
 
@@ -431,7 +464,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         p,
         images_list=output_images,
         seed=p.all_seeds[0],
-        info=infotext(0),
+        info=infotexts[0] if len(infotexts) > 0 else '',
         comments="\n".join(comments),
         subseed=p.all_subseeds[0],
         index_of_first_image=index_of_first_image,
@@ -439,4 +472,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     )
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner) and not (shared.state.interrupted or shared.state.skipped):
         p.scripts.postprocess(p, processed)
+    timer.process.record('post')
+    shared.log.info(f'Processed: images={len(output_images)} its={(p.steps * len(output_images)) / (t1 - t0):.2f} time={t1-t0:.2f} timers={timer.process.dct(min_time=0.02)} memory={memstats.memory_stats()}')
     return processed

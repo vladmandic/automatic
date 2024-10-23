@@ -17,10 +17,12 @@ token_type = None # used by helper get_tokens
 cache = {}
 
 
-def compel_hijack(self, token_ids: torch.Tensor,
-                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+def compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+    if not devices.same_device(self.text_encoder.device, devices.device):
+        sd_models.move_model(self.text_encoder, devices.device)
     needs_hidden_states = self.returned_embeddings_type != 1
     text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
+
     if not needs_hidden_states:
         return text_encoder_output.last_hidden_state
     try:
@@ -40,22 +42,21 @@ def compel_hijack(self, token_ids: torch.Tensor,
     return hidden_state
 
 
-def sd3_compel_hijack(self, token_ids: torch.Tensor,
-                  attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
+def sd3_compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
     needs_hidden_states = True
     text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
     clip_skip = int(self.returned_embeddings_type)
     hidden_state = text_encoder_output.hidden_states[-(clip_skip+1)]
-
     return hidden_state
+
 
 def insert_parser_highjack(pipename):
     if "StableDiffusion3" in pipename:
         EmbeddingsProvider._encode_token_ids_to_embeddings = sd3_compel_hijack # pylint: disable=protected-access
-        debug("Loading SD3 Parser hijack")
+        debug("Load SD3 Parser hijack")
     else:
         EmbeddingsProvider._encode_token_ids_to_embeddings = compel_hijack # pylint: disable=protected-access
-        debug("Loading Standard Parser hijack")
+        debug("Load Standard Parser hijack")
 
 
 
@@ -126,7 +127,11 @@ def get_tokens(msg, prompt):
     if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
         if token_dict is None or token_type != shared.sd_model_type:
             token_type = shared.sd_model_type
-            fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'tokenizer', 'vocab.json')
+            fn = shared.sd_model.tokenizer.name_or_path
+            if fn.endswith('tokenizer'):
+                fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'vocab.json')
+            else:
+                fn = os.path.join(shared.sd_model.tokenizer.name_or_path, 'tokenizer', 'vocab.json')
             token_dict = shared.readfile(fn, silent=True)
             for k, v in shared.sd_model.tokenizer.added_tokens_decoder.items():
                 token_dict[str(v)] = k
@@ -147,6 +152,7 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
+    params_match = prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and steps == cache.get('steps', None)
     if (
         'StableDiffusion' not in pipe.__class__.__name__ and
         'DemoFusion' not in pipe.__class__.__name__ and
@@ -155,7 +161,7 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
     ):
         shared.log.warning(f"Prompt parser not supported: {pipe.__class__.__name__}")
         return
-    elif shared.opts.sd_textencoder_cache and prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and cache.get('model_type', None) == shared.sd_model_type and steps == cache.get('steps', None):
+    elif shared.opts.sd_textencoder_cache and cache.get('model_type', None) == shared.sd_model_type and params_match:
         p.prompt_embeds = cache.get('prompt_embeds', None)
         p.positive_pooleds = cache.get('positive_pooleds', None)
         p.negative_embeds = cache.get('negative_embeds', None)
@@ -165,38 +171,68 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
         return
     else:
         t0 = time.time()
-        positive_schedule, scheduled = get_prompt_schedule(prompts[0], steps)
-        negative_schedule, neg_scheduled = get_prompt_schedule(negative_prompts[0], steps)
-        p.scheduled_prompt = scheduled or neg_scheduled
-        p.prompt_embeds = []
-        p.positive_pooleds = []
-        p.negative_embeds = []
-        p.negative_pooleds = []
-
         if shared.opts.diffusers_offload_mode == "balanced":
             pipe = sd_models.apply_balanced_offload(pipe)
         elif hasattr(pipe, "maybe_free_model_hooks"):
-            # if the last job is interrupted, model will stay in the vram and cause oom, send everything back to cpu before continuing
             pipe.maybe_free_model_hooks()
             devices.torch_gc()
 
-        for i in range(max(len(positive_schedule), len(negative_schedule))):
-            positive_prompt = positive_schedule[i % len(positive_schedule)]
-            negative_prompt = negative_schedule[i % len(negative_schedule)]
-            if shared.opts.prompt_attention == "xhinker parser":
-                prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
-            else:
-                prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
-            if prompt_embed is not None:
-                p.prompt_embeds.append(torch.cat([prompt_embed] * len(prompts), dim=0))
-            if negative_embed is not None:
-                p.negative_embeds.append(torch.cat([negative_embed] * len(negative_prompts), dim=0))
-            if positive_pooled is not None:
-                p.positive_pooleds.append(torch.cat([positive_pooled] * len(prompts), dim=0))
-            if negative_pooled is not None:
-                p.negative_pooleds.append(torch.cat([negative_pooled] * len(negative_prompts), dim=0))
+        prompt_embeds, positive_pooleds, negative_embeds, negative_pooleds = [], [], [], []
+        last_prompt, last_negative = None, None
+        for prompt, negative in zip(prompts, negative_prompts):
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = None, None, None, None
+            if last_prompt == prompt and last_negative == negative:
+                prompt_embeds.append(prompt_embeds[-1])
+                negative_embeds.append(negative_embeds[-1])
+                if len(positive_pooleds) > 0:
+                    positive_pooleds.append(positive_pooleds[-1])
+                if len(negative_pooleds) > 0:
+                    negative_pooleds.append(negative_pooleds[-1])
+                continue
+            positive_schedule, scheduled = get_prompt_schedule(prompt, steps)
+            negative_schedule, neg_scheduled = get_prompt_schedule(negative, steps)
+            p.scheduled_prompt = scheduled or neg_scheduled
+            p.prompt_embeds = []
+            p.positive_pooleds = []
+            p.negative_embeds = []
+            p.negative_pooleds = []
 
-        if shared.opts.sd_textencoder_cache:
+            for i in range(max(len(positive_schedule), len(negative_schedule))):
+                positive_prompt = positive_schedule[i % len(positive_schedule)]
+                negative_prompt = negative_schedule[i % len(negative_schedule)]
+                if shared.opts.prompt_attention == "xhinker parser" or 'Flux' in pipe.__class__.__name__:
+                    prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
+                else:
+                    prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, clip_skip)
+                if prompt_embed is not None:
+                    prompt_embeds.append(prompt_embed)
+                if negative_embed is not None:
+                    negative_embeds.append(negative_embed)
+                if positive_pooled is not None:
+                    positive_pooleds.append(positive_pooled)
+                if negative_pooled is not None:
+                    negative_pooleds.append(negative_pooled)
+            last_prompt, last_negative = prompt, negative
+
+        def fix_length(embeds):
+            max_len = max([e.shape[1] for e in embeds if e is not None])
+            for i, e in enumerate(embeds):
+                if e is not None and e.shape[1] < max_len:
+                    expanded = torch.zeros((e.shape[0], max_len, e.shape[2]), device=e.device, dtype=e.dtype)
+                    expanded[:, :e.shape[1], :] = e
+                    embeds[i] = expanded
+            return torch.cat(embeds, dim=0).to(devices.device, dtype=devices.dtype)
+
+        if len(prompt_embeds) > 0:
+            p.prompt_embeds.append(fix_length(prompt_embeds))
+        if len(negative_embeds) > 0:
+            p.negative_embeds.append(fix_length(negative_embeds))
+        if len(positive_pooleds) > 0:
+            p.positive_pooleds.append(fix_length(positive_pooleds))
+        if len(negative_pooleds) > 0:
+            p.negative_pooleds.append(fix_length(negative_pooleds))
+
+        if shared.opts.sd_textencoder_cache and p.batch_size == 1:
             cache.update({
                 'prompt_embeds': p.prompt_embeds,
                 'negative_embeds': p.negative_embeds,
@@ -268,10 +304,19 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
         no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(no_mask_provider)
     elif getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
+        if not devices.same_device(pipe.text_encoder.device, devices.device):
+            sd_models.move_model(pipe.text_encoder, devices.device)
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
+        if not devices.same_device(pipe.text_encoder_2.device, devices.device):
+            sd_models.move_model(pipe.text_encoder_2, devices.device)
         provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        embeddings_providers.append(provider)
+    if getattr(pipe, "tokenizer_3", None) is not None and getattr(pipe, "text_encoder_3", None) is not None:
+        if not devices.same_device(pipe.text_encoder_3.device, devices.device):
+            sd_models.move_model(pipe.text_encoder_3, devices.device)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_3, text_encoder=pipe.text_encoder_3, truncate=False, returned_embeddings_type=embedding_type, device=device)
         embeddings_providers.append(provider)
     return embeddings_providers
 
@@ -359,6 +404,8 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
     pooled_prompt_embeds = []
     negative_pooled_prompt_embeds = []
     for i in range(len(embedding_providers)):
+        if i >= len(positives): # te may be missing/unloaded
+            break
         t0 = time.time()
         text = list(positives[i])
         weights = list(positive_weights[i])
@@ -370,9 +417,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
             pos = text.index('BREAK')
             debug(f'Prompt: section="{text[:pos]}" len={len(text[:pos])} weights={weights[:pos]}')
             if len(text[:pos]) > 0:
-                embed, ptokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(
-                    text_batch=[text[:pos]], fragment_weights_batch=[weights[:pos]], device=device,
-                    should_return_tokens=True)
+                embed, ptokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[text[:pos]], fragment_weights_batch=[weights[:pos]], device=device, should_return_tokens=True)
                 provider_embed.append(embed)
             text = text[pos + 1:]
             weights = weights[pos + 1:]

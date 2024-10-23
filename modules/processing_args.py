@@ -6,7 +6,7 @@ import time
 import inspect
 import torch
 import numpy as np
-from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers
+from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
 
@@ -19,7 +19,7 @@ def task_specific_kwargs(p, model):
     is_img2img_model = bool('Zero123' in shared.sd_model.__class__.__name__)
     if len(getattr(p, 'init_images', [])) > 0:
         p.init_images = [p.convert('RGB') for p in p.init_images]
-    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE and not is_img2img_model:
+    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0 and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
             task_args = {
@@ -38,6 +38,14 @@ def task_specific_kwargs(p, model):
             p.width = 8 * math.ceil(p.init_images[0].width / 8)
             p.height = 8 * math.ceil(p.init_images[0].height / 8)
             task_args['width'], task_args['height'] = p.width, p.height
+        if model.__class__.__name__ == 'OmniGenPipeline':
+            p.width = 16 * math.ceil(p.init_images[0].width / 16)
+            p.height = 16 * math.ceil(p.init_images[0].height / 16)
+            task_args = {
+                'width': p.width,
+                'height': p.height,
+                'input_images': [p.init_images], # omnigen expects list-of-lists
+            }
     elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INSTRUCT and len(getattr(p, 'init_images', [])) > 0:
         p.ops.append('instruct')
         task_args = {
@@ -49,7 +57,10 @@ def task_specific_kwargs(p, model):
     elif (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING or is_img2img_model) and len(getattr(p, 'init_images', [])) > 0:
         if shared.sd_model_type == 'sdxl':
             model.register_to_config(requires_aesthetics_score = False)
-        p.ops.append('inpaint')
+        if p.detailer:
+            p.ops.append('detailer')
+        else:
+            p.ops.append('inpaint')
         width, height = processing_helpers.resize_init_images(p)
         task_args = {
             'image': p.init_images,
@@ -96,24 +107,10 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     debug(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     parser = 'Fixed attention'
+    steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
-    steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
-    if 'timesteps' in possible:
-        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
-        timesteps = [int(x) for x in timesteps if x.isdigit()]
-        if len(timesteps) > 0:
-            if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
-                try:
-                    args['timesteps'] = timesteps
-                    p.steps = len(timesteps)
-                    p.timesteps = timesteps
-                    steps = p.steps
-                    shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
-                except Exception as e:
-                    shared.log.error(f'Sampler timesteps: {e}')
-            else:
-                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
+    # prompt_parser_diffusers.fix_position_ids(model)
     if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
@@ -126,12 +123,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             shared.log.error(f'Prompt parser encode: {e}')
             if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                 errors.display(e, 'Prompt parser encode')
-    if 'clip_skip' in possible and parser == 'Fixed attention':
-        if clip_skip == 1:
-            pass # clip_skip = None
-        else:
-            args['clip_skip'] = clip_skip - 1
+        timer.process.record('encode', reset=False)
+
     if 'prompt' in possible:
+        if 'OmniGen' in model.__class__.__name__:
+            p.prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
@@ -158,6 +154,29 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
+
+    if 'clip_skip' in possible and parser == 'Fixed attention':
+        if clip_skip == 1:
+            pass # clip_skip = None
+        else:
+            args['clip_skip'] = clip_skip - 1
+
+    if 'timesteps' in possible:
+        timesteps = re.split(',| ', shared.opts.schedulers_timesteps)
+        timesteps = [int(x) for x in timesteps if x.isdigit()]
+        if len(timesteps) > 0:
+            if hasattr(model.scheduler, 'set_timesteps') and "timesteps" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
+                try:
+                    args['timesteps'] = timesteps
+                    p.steps = len(timesteps)
+                    p.timesteps = timesteps
+                    steps = p.steps
+                    shared.log.debug(f'Sampler: steps={len(timesteps)} timesteps={timesteps}')
+                except Exception as e:
+                    shared.log.error(f'Sampler timesteps: {e}')
+            else:
+                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
+
     if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
         model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
         model.scheduler.noise_sampler_seed = p.seeds # some schedulers have internal noise generator and do not use pipeline generator
@@ -165,6 +184,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         args['noise_sampler_seed'] = p.seeds
     if 'guidance_scale' in possible:
         args['guidance_scale'] = p.cfg_scale
+    if 'img_guidance_scale' in possible and hasattr(p, 'image_cfg_scale'):
+        args['img_guidance_scale'] = p.image_cfg_scale
     if 'generator' in possible:
         args['generator'] = get_generator(p)
     if 'latents' in possible and getattr(p, "init_latent", None) is not None:
@@ -268,6 +289,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if isinstance(v, list) and len(v) > 0 and (isinstance(v[0], torch.Tensor) or isinstance(v[0], np.ndarray)):
             clean[k] = [x.shape for x in v]
     shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
+
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
         txt = 'HDR:'
         txt += f' Brightness={p.hdr_brightness}' if p.hdr_brightness != 0 else ' Brightness off'

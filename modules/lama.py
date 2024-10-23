@@ -72,7 +72,7 @@ def download_model():
     filename = os.path.basename(parts.path)
     cached_file = os.path.join(model_dir, filename)
     if not os.path.exists(cached_file):
-        log.info(f'LaMa download: url={LAMA_MODEL_URL} file={cached_file}')
+        log.info(f'LaMa download: url="{LAMA_MODEL_URL}" file="{cached_file}"')
         hash_prefix = None
         download_url_to_file(LAMA_MODEL_URL, cached_file, hash_prefix, progress=True)
     return cached_file

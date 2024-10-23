@@ -31,7 +31,7 @@ class ExtraNetworksPageVAEs(ui_extra_networks.ExtraNetworksPage):
                 record["description"] = self.find_description(filename, record["info"])
                 yield record
             except Exception as e:
-                shared.log.debug(f"Networks error: type=vae file={filename} {e}")
+                shared.log.debug(f'Networks error: type=vae file="{filename}" {e}')
 
     def allowed_directories_for_previews(self):
         return [v for v in [shared.opts.vae_dir] if v is not None]

@@ -175,10 +175,10 @@ class StyleDatabase:
             try:
                 os.makedirs(opts.styles_dir, exist_ok=True)
                 self.save_styles(opts.styles_dir, verbose=True)
-                shared.log.debug(f'Migrated styles: file={legacy_file} folder={opts.styles_dir}')
+                shared.log.debug(f'Migrated styles: file="{legacy_file}" folder="{opts.styles_dir}"')
                 self.reload()
             except Exception as e:
-                shared.log.error(f'styles failed to migrate: file={legacy_file} error={e}')
+                shared.log.error(f'styles failed to migrate: file="{legacy_file}" error={e}')
         if not os.path.isdir(opts.styles_dir):
             opts.styles_dir = os.path.join(paths.models_path, "styles")
             self.path = opts.styles_dir
@@ -216,7 +216,7 @@ class StyleDatabase:
                     )
                     self.styles[style["name"]] = new_style
             except Exception as e:
-                shared.log.error(f'Failed to load style: file={fn} error={e}')
+                shared.log.error(f'Failed to load style: file="{fn}" error={e}')
             return new_style
 
 
@@ -228,7 +228,7 @@ class StyleDatabase:
             import concurrent
             future_items = {}
             candidates = list(files_cache.list_files(folder, ext_filter=['.json'], recursive=files_cache.not_hidden))
-            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=shared.max_workers) as executor:
                 for fn in candidates:
                     if os.path.isfile(fn) and fn.lower().endswith(".json"):
                         future_items[executor.submit(self.load_style, fn, None)] = fn
@@ -244,7 +244,7 @@ class StyleDatabase:
 
         list_folder(self.path)
         t1 = time.time()
-        shared.log.debug(f'Load styles: folder="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
+        shared.log.info(f'Available Styles: folder="{self.path}" items={len(self.styles.keys())} time={t1-t0:.2f}')
 
     def find_style(self, name):
         found = [style for style in self.styles.values() if style.name == name]
@@ -334,9 +334,9 @@ class StyleDatabase:
                 with open(fn, 'w', encoding='utf-8') as f:
                     json.dump(style, f, indent=2)
                     if verbose:
-                        shared.log.debug(f'Saved style: name={name} file={fn}')
+                        shared.log.debug(f'Saved style: name={name} file="{fn}"')
             except Exception as e:
-                shared.log.error(f'Failed to save style: name={name} file={path} error={e}')
+                shared.log.error(f'Failed to save style: name={name} file="{path}" error={e}')
         count = len(list(self.styles))
         if count > 0:
             shared.log.debug(f'Saved styles: folder="{path}" items={count}')

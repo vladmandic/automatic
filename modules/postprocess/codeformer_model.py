@@ -1,9 +1,10 @@
 import os
 import cv2
 import torch
-import modules.face_restoration
+import modules.detailer
 from modules import shared, devices, modelloader, errors
 from modules.paths import models_path
+from installer import install
 
 # codeformer people made a choice to include modified basicsr library to their project which makes
 # it utterly impossible to use it alongside with other libraries that also use basicsr, like GFPGAN.
@@ -27,7 +28,7 @@ def setup_model(dirname):
         return
 
     try:
-        class FaceRestorerCodeFormer(modules.face_restoration.FaceRestoration):
+        class FaceRestorerCodeFormer(modules.detailer.Detailer):
             def name(self):
                 return "CodeFormer"
 
@@ -37,11 +38,15 @@ def setup_model(dirname):
                 self.cmd_dir = dirname
 
             def create_models(self):
-                from modules.postprocess.codeformer_arch import CodeFormer
-                from facelib.utils.face_restoration_helper import FaceRestoreHelper
-                from facelib.detection.retinaface import retinaface
+                try:
+                    from modules.postprocess.codeformer_arch import CodeFormer
+                    from facelib.utils.face_restoration_helper import FaceRestoreHelper
+                    from facelib.detection.retinaface import retinaface
+                except Exception as e:
+                    shared.log.error(f"CodeFormer error: {e}")
+                    return None, None
                 if self.net is not None and self.face_helper is not None:
-                    self.net.to(devices.device_codeformer)
+                    self.net.to(devices.device)
                     return self.net, self.face_helper
                 model_paths = modelloader.load_models(model_path, model_url, self.cmd_dir, download_name='codeformer-v0.1.0.pth', ext_filter=['.pth'])
                 if len(model_paths) != 0:
@@ -49,14 +54,14 @@ def setup_model(dirname):
                 else:
                     shared.log.error(f"Model failed loading: type=CodeFormer model={model_path}")
                     return None, None
-                net = CodeFormer(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=['32', '64', '128', '256']).to(devices.device_codeformer)
+                net = CodeFormer(dim_embd=512, codebook_size=1024, n_head=8, n_layers=9, connect_list=['32', '64', '128', '256']).to(devices.device)
                 checkpoint = torch.load(ckpt_path)['params_ema']
                 net.load_state_dict(checkpoint)
                 net.eval()
                 shared.log.info(f"Model loaded: type=CodeFormer model={ckpt_path}")
                 if hasattr(retinaface, 'device'):
-                    retinaface.device = devices.device_codeformer
-                face_helper = FaceRestoreHelper(1, face_size=512, crop_ratio=(1, 1), det_model='retinaface_resnet50', save_ext='png', use_parse=True, device=devices.device_codeformer)
+                    retinaface.device = devices.device
+                face_helper = FaceRestoreHelper(1, face_size=512, crop_ratio=(1, 1), det_model='retinaface_resnet50', save_ext='png', use_parse=True, device=devices.device)
                 self.net = net
                 self.face_helper = face_helper
                 return net, face_helper
@@ -74,7 +79,7 @@ def setup_model(dirname):
                 self.create_models()
                 if self.net is None or self.face_helper is None:
                     return np_image
-                self.send_model_to(devices.device_codeformer)
+                self.send_model_to(devices.device)
                 self.face_helper.clean_all()
                 self.face_helper.read_image(np_image)
                 self.face_helper.get_face_landmarks_5(only_center_face=False, resize=640, eye_dist_threshold=5)
@@ -82,7 +87,7 @@ def setup_model(dirname):
                 for cropped_face in self.face_helper.cropped_faces:
                     cropped_face_t = img2tensor(cropped_face / 255., bgr2rgb=True, float32=True)
                     normalize(cropped_face_t, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
-                    cropped_face_t = cropped_face_t.unsqueeze(0).to(devices.device_codeformer)
+                    cropped_face_t = cropped_face_t.unsqueeze(0).to(devices.device)
                     try:
                         with devices.inference_context():
                             output = self.net(cropped_face_t, w=w if w is not None else shared.opts.code_former_weight, adain=True)[0] # pylint: disable=not-callable
@@ -100,7 +105,7 @@ def setup_model(dirname):
                 if original_resolution != restored_img.shape[0:2]:
                     restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LINEAR)
                 self.face_helper.clean_all()
-                if shared.opts.face_restoration_unload:
+                if shared.opts.detailer_unload:
                     self.send_model_to(devices.cpu)
                 return restored_img
 

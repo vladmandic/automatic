@@ -9,28 +9,38 @@ from typing import Dict
 from urllib.parse import urlparse
 from PIL import Image
 import rich.progress as p
+import huggingface_hub as hf
 from modules import shared, errors, files_cache
 from modules.upscaler import Upscaler, UpscalerLanczos, UpscalerNearest, UpscalerNone
 from modules.paths import script_path, models_path
 
 
-loggedin = False
+loggedin = None
 diffuser_repos = []
 debug = shared.log.trace if os.environ.get('SD_DOWNLOAD_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 def hf_login(token=None):
     global loggedin # pylint: disable=global-statement
-    import huggingface_hub as hf
     token = token or shared.opts.huggingface_token
-    if token is not None and len(token) > 2 and not loggedin:
+    if token is None or len(token) <= 2:
+        shared.log.debug('HF login: no token provided')
+        return
+    if os.environ.get('HUGGING_FACE_HUB_TOKEN', None) is not None:
+        shared.log.warning('HF login: removing existing env variable: HUGGING_FACE_HUB_TOKEN')
+        del os.environ['HUGGING_FACE_HUB_TOKEN']
+    if os.environ.get('HF_TOKEN', None) is not None:
+        shared.log.warning('HF login: removing existing env variable: HF_TOKEN')
+        del os.environ['HF_TOKEN']
+    if loggedin != token:
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
-            hf.login(shared.opts.huggingface_token)
+            hf.logout()
+            hf.login(token=token, add_to_git_credential=False, write_permission=False)
         text = stdout.getvalue() or ''
         line = [l for l in text.split('\n') if 'Token' in l]
-        shared.log.info(f'HF login: {line[0] if len(line) > 0 else text}')
-        loggedin = True
+        shared.log.info(f'HF login: token="{hf.constants.HF_TOKEN_PATH}" {line[0] if len(line) > 0 else text}')
+        loggedin = token
 
 
 def download_civit_meta(model_path: str, model_id):
@@ -40,11 +50,11 @@ def download_civit_meta(model_path: str, model_id):
     if r.status_code == 200:
         try:
             shared.writefile(r.json(), filename=fn, mode='w', silent=True)
-            msg = f'CivitAI download: id={model_id} url={url} file={fn}'
+            msg = f'CivitAI download: id={model_id} url={url} file="{fn}"'
             shared.log.info(msg)
             return msg
         except Exception as e:
-            msg = f'CivitAI download error: id={model_id} url={url} file={fn} {e}'
+            msg = f'CivitAI download error: id={model_id} url={url} file="{fn}" {e}'
             errors.display(e, 'CivitAI download error')
             shared.log.error(msg)
             return msg
@@ -56,7 +66,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     preview_file = os.path.splitext(model_path)[0] + ext
     if os.path.exists(preview_file):
         return ''
-    res = f'CivitAI download: url={preview_url} file={preview_file}'
+    res = f'CivitAI download: url={preview_url} file="{preview_file}"'
     r = shared.req(preview_url, stream=True)
     total_size = int(r.headers.get('content-length', 0))
     block_size = 16384 # 16KB blocks
@@ -78,7 +88,7 @@ def download_civit_preview(model_path: str, preview_url: str):
     except Exception as e:
         os.remove(preview_file)
         res += f' error={e}'
-        shared.log.error(f'CivitAI download error: url={preview_url} file={preview_file} written={written} {e}')
+        shared.log.error(f'CivitAI download error: url={preview_url} file="{preview_file}" written={written} {e}')
     shared.state.end()
     if img is None:
         return res
@@ -185,8 +195,9 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
     if hub_id is None or len(hub_id) == 0:
         return None
     from diffusers import DiffusionPipeline
-    import huggingface_hub as hf
     shared.state.begin('HuggingFace')
+    if hub_id.startswith('huggingface/'):
+        hub_id = hub_id.replace('huggingface/', '')
     if download_config is None:
         download_config = {
             "force_download": False,
@@ -249,7 +260,6 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 
 def load_diffusers_models(clear=True):
-    # excluded_models = ['PhotoMaker', 'inswapper_128', 'IP-Adapter']
     excluded_models = []
     t0 = time.time()
     place = shared.opts.diffusers_dir
@@ -270,27 +280,32 @@ def load_diffusers_models(clear=True):
                 name = name.replace("--", "/")
                 folder = os.path.join(place, folder)
                 friendly = os.path.join(place, name)
+                if os.path.exists(os.path.join(folder, 'model_index.json')): # direct download of diffusers model
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': folder, 'hash': '', 'mtime': os.path.getmtime(folder), 'model_info': os.path.join(folder, 'model_info.json'), 'model_index': os.path.join(folder, 'model_index.json') }
+                    diffuser_repos.append(repo)
+                    continue
                 snapshots = os.listdir(os.path.join(folder, "snapshots"))
                 if len(snapshots) == 0:
-                    shared.log.warning(f"Diffusers folder has no snapshots: location={place} folder={folder} name={name}")
+                    shared.log.warning(f'Diffusers folder has no snapshots: location="{place}" folder="{folder}" name="{name}"')
                     continue
-                for snapshot in snapshots:
+                for snapshot in snapshots: # download using from_pretrained which uses huggingface_hub or huggingface_hub directly and creates snapshot-like structure
                     commit = os.path.join(folder, 'snapshots', snapshot)
                     mtime = os.path.getmtime(commit)
                     info = os.path.join(commit, "model_info.json")
                     index = os.path.join(commit, "model_index.json")
-                    if (not os.path.exists(index)) and (not os.path.exists(info)):
+                    config = os.path.join(commit, "config.json")
+                    if (not os.path.exists(index)) and (not os.path.exists(info)) and (not os.path.exists(config)):
                         debug(f'Diffusers skip model no info: {name}')
                         continue
-                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index }
+                    repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index, 'model_config': config }
                     diffuser_repos.append(repo)
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue
             except Exception as e:
-                debug(f"Error analyzing diffusers model: {folder} {e}")
+                debug(f'Error analyzing diffusers model: "{folder}" {e}')
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: folder={place} items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
+    shared.log.debug(f'Scanning diffusers cache: folder="{place}" items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
     return diffuser_repos
 
 
@@ -298,14 +313,8 @@ def find_diffuser(name: str):
     repo = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(repo) > 0:
         return repo['name']
-    import huggingface_hub as hf
     hf_api = hf.HfApi()
-    hf_filter = hf.ModelFilter(
-        model_name=name,
-        # task='text-to-image',
-        library=['diffusers'],
-    )
-    models = list(hf_api.list_models(filter=hf_filter, full=True, limit=20, sort="downloads", direction=-1))
+    models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
         return models[0].id
@@ -328,7 +337,7 @@ def get_reference_opts(name: str, quiet=False):
         # shared.log.error(f'Reference: model="{name}" not found')
         return {}
     if not quiet:
-        shared.log.debug(f'Reference: model="{name}" {model_opts.get("extras", None)}')
+        shared.log.debug(f'Reference: model="{name}" {model_opts}')
     return model_opts
 
 
@@ -436,7 +445,7 @@ def load_file_from_url(url: str, *, model_dir: str, progress: bool = True, file_
         file_name = os.path.basename(parts.path)
     cached_file = os.path.abspath(os.path.join(model_dir, file_name))
     if not os.path.exists(cached_file):
-        shared.log.info(f'Downloading: url="{url}" file={cached_file}')
+        shared.log.info(f'Downloading: url="{url}" file="{cached_file}"')
         download_url_to_file(url, cached_file)
     if os.path.exists(cached_file):
         return cached_file
@@ -569,5 +578,5 @@ def load_upscalers():
         names.append(name[8:])
     shared.sd_upscalers = sorted(datas, key=lambda x: x.name.lower() if not isinstance(x.scaler, (UpscalerNone, UpscalerLanczos, UpscalerNearest)) else "") # Special case for UpscalerNone keeps it at the beginning of the list.
     t1 = time.time()
-    shared.log.debug(f"Load upscalers: total={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} {names}")
+    shared.log.info(f"Available Upscalers: items={len(shared.sd_upscalers)} downloaded={len([x for x in shared.sd_upscalers if x.data_path is not None and os.path.isfile(x.data_path)])} user={len([x for x in shared.sd_upscalers if x.custom])} time={t1-t0:.2f} types={names}")
     return [x.name for x in shared.sd_upscalers]

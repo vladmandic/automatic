@@ -4,6 +4,7 @@ import ctypes
 import shutil
 import zipfile
 import urllib.request
+from typing import Optional
 from modules import rocm
 
 
@@ -71,3 +72,12 @@ def load(zluda_path: os.PathLike) -> None:
             return os.path.join(cpp_extension.ROCM_HOME, *paths)
         cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
     rocm.conceal = conceal
+
+
+def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
+    if agent is not None:
+        if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
+            return "2.3.1"
+        elif agent.arch == rocm.MicroArchitecture.GCN:
+            return "2.2.1"
+    return "2.3.1"

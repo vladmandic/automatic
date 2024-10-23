@@ -16,7 +16,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
     if id_part is None:
         id_part = "img2img" if is_img2img else "txt2img"
     with gr.Row(elem_id=f"{id_part}_toprow", variant="compact"):
-        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=5):
+        with gr.Column(elem_id=f"{id_part}_prompt_container", scale=4):
             with gr.Row():
                 with gr.Column(scale=80):
                     with gr.Row():
@@ -27,7 +27,12 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                         negative_prompt = gr.Textbox(elem_id=f"{id_part}_neg_prompt", label="Negative prompt", show_label=False, lines=3, placeholder="Negative prompt", elem_classes=["prompt"])
         with gr.Column(scale=1, elem_id=f"{id_part}_actions_column"):
             with gr.Row(elem_id=f"{id_part}_generate_box"):
+                reprocess = []
                 submit = gr.Button('Generate', elem_id=f"{id_part}_generate", variant='primary')
+                reprocess.append(gr.Button('Reprocess', elem_id=f"{id_part}_reprocess", variant='primary', visible=True))
+                reprocess.append(gr.Button('Reprocess decode', elem_id=f"{id_part}_reprocess_decode", variant='primary', visible=False))
+                reprocess.append(gr.Button('Reprocess refine', elem_id=f"{id_part}_reprocess_refine", variant='primary', visible=False))
+                reprocess.append(gr.Button('Reprocess face', elem_id=f"{id_part}_reprocess_detail", variant='primary', visible=False))
             with gr.Row(elem_id=f"{id_part}_generate_line2"):
                 interrupt = gr.Button('Stop', elem_id=f"{id_part}_interrupt")
                 interrupt.click(fn=lambda: shared.state.interrupt(), _js="requestInterrupt", inputs=[], outputs=[])
@@ -41,9 +46,9 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                 button_extra = gr.Button(value='Networks', variant='secondary', elem_id=f"{id_part}_extra_networks_btn") # symbols.networks
                 button_clear.click(fn=lambda *x: ['', ''], inputs=[prompt, negative_prompt], outputs=[prompt, negative_prompt], show_progress=False)
             with gr.Row(elem_id=f"{id_part}_counters"):
-                token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{id_part}_token_counter", elem_classes=["token-counter"])
+                token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{id_part}_token_counter", elem_classes=["token-counter"], visible=False)
                 token_button = gr.Button(visible=False, elem_id=f"{id_part}_token_button")
-                negative_token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{id_part}_negative_token_counter", elem_classes=["token-counter"])
+                negative_token_counter = gr.HTML(value="<span>0/75</span>", elem_id=f"{id_part}_negative_token_counter", elem_classes=["token-counter"], visible=False)
                 negative_token_button = gr.Button(visible=False, elem_id=f"{id_part}_negative_token_button")
             with gr.Row(elem_id=f"{id_part}_styles_row"):
                 styles = gr.Dropdown(label="Styles", elem_id=f"{id_part}_styles", choices=[style.name for style in shared.prompt_styles.styles.values()], value=[], multiselect=True)
@@ -54,7 +59,7 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
                 styles_btn_select.click(_js="applyStyles", fn=parse_style, inputs=[styles], outputs=[styles])
                 styles_btn_apply.click(fn=apply_styles, inputs=[prompt, negative_prompt, styles], outputs=[prompt, negative_prompt, styles])
                 styles_btn_save.click(fn=lambda: None, _js='() => quickSaveStyle()', inputs=[], outputs=[])
-    return prompt, styles, negative_prompt, submit, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
+    return prompt, styles, negative_prompt, submit, reprocess, button_paste, button_extra, token_counter, token_button, negative_token_counter, negative_token_button
 
 
 def ar_change(ar, width, height):
@@ -141,18 +146,9 @@ def create_seed_inputs(tab, reuse_visible=True):
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
 
 
-def create_options(tab):
-    with gr.Row(elem_id=f"{tab}_advanced_options"):
-        full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
-        restore_faces = gr.Checkbox(label='Face restore', value=False, elem_id=f"{tab}_restore_faces")
-        tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
-        hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
-    return full_quality, restore_faces, tiling, hidiffusion
-
-
 def create_cfg_inputs(tab):
     with gr.Row():
-        cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='CFG scale', value=6.0, elem_id=f"{tab}_cfg_scale")
+        cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Guidance scale', value=6.0, elem_id=f"{tab}_cfg_scale")
         cfg_end = gr.Slider(minimum=0.0, maximum=1.0, step=0.1, label='Guidance end', value=1.0, elem_id=f"{tab}_cfg_end")
     return cfg_scale, cfg_end
 
@@ -160,19 +156,23 @@ def create_cfg_inputs(tab):
 def create_advanced_inputs(tab, base=True):
     with gr.Accordion(open=False, label="Advanced", elem_id=f"{tab}_advanced", elem_classes=["small-accordion"]):
         with gr.Group():
+            with gr.Row(elem_id=f"{tab}_advanced_options"):
+                full_quality = gr.Checkbox(label='Full quality', value=True, elem_id=f"{tab}_full_quality")
+                tiling = gr.Checkbox(label='Tiling', value=False, elem_id=f"{tab}_tiling")
+                hidiffusion = gr.Checkbox(label='HiDiffusion', value=False, elem_id=f"{tab}_hidiffusion")
             if base:
                 cfg_scale, cfg_end = create_cfg_inputs(tab)
             else:
                 cfg_scale, cfg_end = None, None
             with gr.Row():
-                image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Secondary guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
+                image_cfg_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.1, label='Refine guidance', value=6.0, elem_id=f"{tab}_image_cfg_scale")
                 diffusers_guidance_rescale = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Rescale guidance', value=0.7, elem_id=f"{tab}_image_cfg_rescale", visible=shared.native)
             with gr.Row():
                 diffusers_pag_scale = gr.Slider(minimum=0.0, maximum=30.0, step=0.05, label='Attention guidance', value=0.0, elem_id=f"{tab}_pag_scale", visible=shared.native)
                 diffusers_pag_adaptive = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Adaptive scaling', value=0.5, elem_id=f"{tab}_pag_adaptive", visible=shared.native)
             with gr.Row():
                 clip_skip = gr.Slider(label='CLIP skip', value=1, minimum=0, maximum=12, step=0.1, elem_id=f"{tab}_clip_skip", interactive=True)
-    return cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
+    return full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, diffusers_pag_scale, diffusers_pag_adaptive, cfg_end
 
 
 def create_correction_inputs(tab):
@@ -216,26 +216,44 @@ def create_sampler_options(tabname):
         shared.opts.data['schedulers_sigma'] = sampler_algo
         shared.opts.save(shared.config_filename, silent=True)
 
-    def set_sampler_diffuser_options(sampler_options):
-        shared.opts.data['schedulers_use_karras'] = 'karras' in sampler_options
-        shared.opts.data['schedulers_use_thresholding'] = 'dynamic thresholding' in sampler_options
+    def set_sampler_options(sampler_options):
+        shared.opts.data['schedulers_use_thresholding'] = 'dynamic' in sampler_options
         shared.opts.data['schedulers_use_loworder'] = 'low order' in sampler_options
-        shared.opts.data['schedulers_rescale_betas'] = 'rescale beta' in sampler_options
+        shared.opts.data['schedulers_rescale_betas'] = 'rescale' in sampler_options
         shared.log.debug(f'Sampler set options: {sampler_options}')
         shared.opts.save(shared.config_filename, silent=True)
 
-    def set_sampler_timesteps(spacing, timesteps):
-        shared.log.debug(f'Sampler set options: spacing={spacing} timesteps={timesteps}')
-        if 'schedulers_timestep_spacing' in shared.opts.data:
-            shared.opts.data['schedulers_timestep_spacing'] = spacing
-        else:
-            shared.opts.schedulers_timestep_spacing = spacing
-        if 'schedulers_timesteps' in shared.opts.data:
-            shared.opts.data['schedulers_timesteps'] = timesteps
-        else:
-            shared.opts.schedulers_timesteps = timesteps
+    def set_sampler_timesteps(timesteps):
+        shared.log.debug(f'Sampler set options: timesteps={timesteps}')
+        shared.opts.schedulers_timesteps = timesteps
         shared.opts.save(shared.config_filename, silent=True)
 
+    def set_sampler_spacing(spacing):
+        shared.log.debug(f'Sampler set options: spacing={spacing}')
+        shared.opts.schedulers_timestep_spacing = spacing
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_sigma(sampler_sigma):
+        shared.log.debug(f'Sampler set options: sigma={sampler_sigma}')
+        shared.opts.schedulers_sigma = sampler_sigma
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_order(sampler_order):
+        shared.log.debug(f'Sampler set options: order={sampler_order}')
+        shared.opts.schedulers_solver_order = sampler_order
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_prediction(sampler_prediction):
+        shared.log.debug(f'Sampler set options: prediction={sampler_prediction}')
+        shared.opts.schedulers_prediction_type = sampler_prediction
+        shared.opts.save(shared.config_filename, silent=True)
+
+    def set_sampler_beta(sampler_beta):
+        shared.log.debug(f'Sampler set options: beta={sampler_beta}')
+        shared.opts.schedulers_beta_schedule = sampler_beta
+        shared.opts.save(shared.config_filename, silent=True)
+
+    # 'linear', 'scaled_linear', 'squaredcos_cap_v2'
     def set_sampler_preset(preset):
         if preset == 'AYS SD15':
             return '999,850,736,645,545,455,343,233,124,24'
@@ -252,34 +270,44 @@ def create_sampler_options(tabname):
             sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
         with gr.Row(elem_classes=['flex-break']):
             shared.opts.data['schedulers_sigma'] = shared.opts.data.get('schedulers_sigma', 'default')
-            sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data['schedulers_sigma'], type='value')
+            sampler_algo = gr.Radio(label='Sigma algorithm', elem_id=f"{tabname}_sigma_algo", choices=['default', 'karras', 'exponential', 'polyexponential'], value=shared.opts.data.schedulers_sigma, type='value')
         sampler_options.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
         sampler_algo.change(fn=set_sampler_original_options, inputs=[sampler_options, sampler_algo], outputs=[])
-    else:
+
+    else: # shared.native
         with gr.Row(elem_classes=['flex-break']):
-            options = ['karras', 'dynamic threshold', 'low order', 'rescale beta']
-            values = []
-            values += ['karras'] if shared.opts.data.get('schedulers_use_karras', True) else []
-            values += ['dynamic threshold'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
-            values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
-            values += ['rescale beta'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
-            sampler_options = gr.CheckboxGroup(label='Sampler options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
-        with gr.Row(elem_classes=['flex-break']):
+            sampler_sigma = gr.Dropdown(label='Sigma method', elem_id=f"{tabname}_sampler_sigma", choices=['default', 'karras', 'beta', 'exponential'], value=shared.opts.schedulers_sigma, type='value')
             sampler_spacing = gr.Dropdown(label='Timestep spacing', elem_id=f"{tabname}_sampler_spacing", choices=['default', 'linspace', 'leading', 'trailing'], value=shared.opts.schedulers_timestep_spacing, type='value')
-            sampler_presets = gr.Dropdown(label='Presets', elem_id=f"{tabname}_sampler_presets", choices=['None', 'AYS SD15', 'AYS SDXL'], value='None', type='value')
         with gr.Row(elem_classes=['flex-break']):
+            sampler_beta = gr.Dropdown(label='Beta schedule', elem_id=f"{tabname}_sampler_beta", choices=['default', 'linear', 'scaled', 'cosine'], value=shared.opts.schedulers_beta_schedule, type='value')
+            sampler_prediction = gr.Dropdown(label='Prediction method', elem_id=f"{tabname}_sampler_prediction", choices=['default', 'epsilon', 'sample', 'v_prediction'], value=shared.opts.schedulers_prediction_type, type='value')
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_presets = gr.Dropdown(label='Timesteps presets', elem_id=f"{tabname}_sampler_presets", choices=['None', 'AYS SD15', 'AYS SDXL'], value='None', type='value')
             sampler_timesteps = gr.Textbox(label='Timesteps override', elem_id=f"{tabname}_sampler_timesteps", value=shared.opts.schedulers_timesteps)
-        sampler_options.change(fn=set_sampler_diffuser_options, inputs=[sampler_options], outputs=[])
-        sampler_spacing.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
-        sampler_timesteps.change(fn=set_sampler_timesteps, inputs=[sampler_spacing, sampler_timesteps], outputs=[])
+        with gr.Row(elem_classes=['flex-break']):
+            sampler_order = gr.Slider(minimum=0, maximum=5, step=1, label="Sampler order", value=shared.opts.schedulers_solver_order, elem_id=f"{tabname}_sampler_order")
+            options = ['low order', 'dynamic', 'rescale']
+            values = []
+            values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
+            values += ['dynamic'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
+            values += ['rescale'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
+            sampler_options = gr.CheckboxGroup(label='Options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
+
+        sampler_sigma.change(fn=set_sampler_sigma, inputs=[sampler_sigma], outputs=[])
+        sampler_spacing.change(fn=set_sampler_spacing, inputs=[sampler_spacing], outputs=[])
         sampler_presets.change(fn=set_sampler_preset, inputs=[sampler_presets], outputs=[sampler_timesteps])
+        sampler_timesteps.change(fn=set_sampler_timesteps, inputs=[sampler_timesteps], outputs=[])
+        sampler_beta.change(fn=set_sampler_beta, inputs=[sampler_beta], outputs=[])
+        sampler_prediction.change(fn=set_sampler_prediction, inputs=[sampler_prediction], outputs=[])
+        sampler_order.change(fn=set_sampler_order, inputs=[sampler_order], outputs=[])
+        sampler_options.change(fn=set_sampler_options, inputs=[sampler_options], outputs=[])
 
 
 def create_hires_inputs(tab):
     with gr.Accordion(open=False, label="Refine", elem_id=f"{tab}_second_pass", elem_classes=["small-accordion"]):
         with gr.Group():
             with gr.Row(elem_id=f"{tab}_hires_row1"):
-                enable_hr = gr.Checkbox(label='Enable second pass', value=False, elem_id=f"{tab}_enable_hr")
+                enable_hr = gr.Checkbox(label='Enable refine pass', value=False, elem_id=f"{tab}_enable_hr")
             """
             with gr.Row(elem_id=f"{tab}_hires_fix_row1", variant="compact"):
                 hr_upscaler = gr.Dropdown(label="Upscaler", elem_id=f"{tab}_hr_upscaler", choices=[*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]], value=shared.latent_upscale_default_mode)
@@ -291,18 +319,18 @@ def create_hires_inputs(tab):
             hr_resize_mode, hr_upscaler, hr_resize_context, hr_resize_x, hr_resize_y, hr_scale, _selected_scale_tab = create_resize_inputs(tab, None, accordion=False, latent=True, non_zero=False)
             with gr.Row(elem_id=f"{tab}_hires_fix_row2", variant="compact"):
                 hr_force = gr.Checkbox(label='Force HiRes', value=False, elem_id=f"{tab}_hr_force")
-                hr_sampler_index = gr.Dropdown(label='Secondary sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Same as primary', type="index")
+                hr_sampler_index = gr.Dropdown(label='Refine sampler', elem_id=f"{tab}_sampling_alt", choices=[x.name for x in sd_samplers.samplers], value='Same as primary', type="index")
             with gr.Row(elem_id=f"{tab}_hires_row2"):
                 hr_second_pass_steps = gr.Slider(minimum=0, maximum=99, step=1, label='HiRes steps', elem_id=f"{tab}_steps_alt", value=20)
                 denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Strength', value=0.3, elem_id=f"{tab}_denoising_strength")
         with gr.Group(visible=shared.native):
             with gr.Row(elem_id=f"{tab}_refiner_row1", variant="compact"):
                 refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Refiner start', value=0.0, elem_id=f"{tab}_refiner_start")
-                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=10)
+                refiner_steps = gr.Slider(minimum=0, maximum=99, step=1, label="Refiner steps", elem_id=f"{tab}_refiner_steps", value=20)
             with gr.Row(elem_id=f"{tab}_refiner_row3", variant="compact"):
-                refiner_prompt = gr.Textbox(value='', label='Secondary prompt', elem_id=f"{tab}_refiner_prompt")
+                refiner_prompt = gr.Textbox(value='', lines=2, label='Refine prompt', elem_id=f"{tab}_refiner_prompt", elem_classes=["prompt"])
             with gr.Row(elem_id="txt2img_refiner_row4", variant="compact"):
-                refiner_negative = gr.Textbox(value='', label='Secondary negative prompt', elem_id=f"{tab}_refiner_neg_prompt")
+                refiner_negative = gr.Textbox(value='', lines=2, label='Refine negative prompt', elem_id=f"{tab}_refiner_neg_prompt", elem_classes=["prompt"])
     return enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative
 
 
@@ -332,8 +360,9 @@ def create_resize_inputs(tab, images, accordion=True, latent=False, non_zero=Tru
                         with gr.Row():
                             with gr.Column(elem_id=f"{tab}_column_size_fixed"):
                                 with gr.Row():
-                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Width {prefix}" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_width")
-                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Height {prefix}" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}_resize_height")
+                                    suffix = '_resize' if tab != 'img2img' else ''
+                                    width = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Width {prefix}" if non_zero else "Resize width", value=1024 if non_zero else 0, elem_id=f"{tab}{suffix}_width")
+                                    height = gr.Slider(minimum=64 if non_zero else 0, maximum=8192, step=8, label=f"Height {prefix}" if non_zero else "Resize height", value=1024 if non_zero else 0, elem_id=f"{tab}{suffix}_height")
                                     ar_list = ['AR'] + [x.strip() for x in shared.opts.aspect_ratios.split(',') if x.strip() != '']
                                     ar_dropdown = gr.Dropdown(show_label=False, interactive=True, choices=ar_list, value=ar_list[0], elem_id=f"{tab}_resize_ar", elem_classes=["ar-dropdown"])
                                     for c in [ar_dropdown, width, height]:

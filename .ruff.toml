@@ -3,24 +3,29 @@ exclude = [
     ".git",
     ".ruff_cache",
     ".vscode",
+    "modules/apg",
+    "modules/control/proc",
+    "modules/control/units",
+    "modules/dcsolver",
+    "modules/ggml",
     "modules/hidiffusion",
     "modules/hijack",
+    "modules/intel/ipex",
+    "modules/intel/openvino",
     "modules/k-diffusion",
     "modules/ldsr",
     "modules/pag",
+    "modules/postprocess/aurasr_arch.py",
+    "modules/prompt_parser_xhinker.py",
     "modules/rife",
+    "modules/segmoe",
     "modules/taesd",
     "modules/todo",
     "modules/unipc",
+    "modules/vdm",
     "modules/xadapter",
-    "modules/dcsolver",
-    "modules/intel/openvino",
-    "modules/intel/ipex",
-    "modules/segmoe",
-    "modules/control/proc",
-    "modules/control/units",
-    "modules/prompt_parser_xhinker.py",
-    "modules/postprocess/aurasr_arch.py",
+    "modules/meissonic",
+    "modules/omnigen",
     "repositories",
     "extensions-builtin/sd-extension-chainner/nodes",
     "extensions-builtin/sd-webui-agent-scheduler",
@@ -65,6 +70,7 @@ ignore = [
   "E731",   # Do not assign a `lambda` expression, use a `def`
   "E741",   # Ambiguous variable name
   "F401",   # Imported by unused
+  "NPY002", # replace legacy random
   "RUF005", # Consider iterable unpacking
   "RUF010", # Use explicit conversion flag
   "RUF012", # Mutable class attributes

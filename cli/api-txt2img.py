@@ -49,7 +49,7 @@ def generate(args): # pylint: disable=redefined-outer-name
     options['width'] = int(args.width)
     options['height'] = int(args.height)
     if args.faces:
-        options['restore_faces'] = args.faces
+        options['detailer'] = args.detailer
         options['denoising_strength'] = 0.5
         options['hr_sampler_name'] = args.sampler
     data = post('/sdapi/v1/txt2img', options)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument('--height', required=False, default=512, help='image height')
     parser.add_argument('--steps', required=False, default=20, help='number of steps')
     parser.add_argument('--seed', required=False, default=-1, help='initial seed')
-    parser.add_argument('--faces', action='store_true', help='restore faces')
+    parser.add_argument('--detailer', action='store_true', help='run detailer')
     parser.add_argument('--sampler', required=False, default='Euler a', help='sampler name')
     parser.add_argument('--output', required=False, default=None, help='output image file')
     parser.add_argument('--model', required=False, help='model name')

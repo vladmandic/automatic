@@ -24,7 +24,7 @@ def remove_all_forward_hooks(model: torch.nn.Module) -> None:
     for _name, child in model._modules.items(): # pylint: disable=protected-access
         if child is not None:
             if hasattr(child, "_forward_hooks"):
-                child._forward_hooks: Dict[int, Callable] = OrderedDict()
+                child._forward_hooks = OrderedDict()
             remove_all_forward_hooks(child)
 
 

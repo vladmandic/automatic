@@ -8,8 +8,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
-from modules import devices
-from modules.shared import log, console
+from modules import devices, shared
 from modules.upscaler import compile_upscaler
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +54,7 @@ class RealESRGANer():
             self.device = torch.device(
                 f'cuda:{gpu_id}' if torch.cuda.is_available() else 'cpu') if device is None else device
         else:
-            self.device = devices.device_esrgan if device is None else device
+            self.device = devices.device if device is None else device
 
         if isinstance(model_path, list):
             # dni
@@ -67,7 +66,7 @@ class RealESRGANer():
                 from modules.modelloader import load_file_from_url
                 model_path = load_file_from_url(url=model_path, model_dir=os.path.join(ROOT_DIR, 'weights'), progress=True, file_name=None)
             loadnet = torch.load(model_path, map_location=torch.device('cpu'))
-            log.info(f"Upscaler loaded: type={self.name} model={model_path}")
+            shared.log.info(f"Upscaler loaded: type={self.name} model={model_path}")
 
         # prefer to use params_ema
         if 'params_ema' in loadnet:
@@ -139,11 +138,15 @@ class RealESRGANer():
         tiles_y = math.ceil(height / self.tile_size)
 
         # loop over all tiles
-        with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=console) as progress:
+        with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=shared.console) as progress:
             task = progress.add_task(description="Upscaling", total=tiles_y * tiles_x)
             with torch.no_grad():
                 for y in range(tiles_y):
+                    if shared.state.interrupted:
+                        break
                     for x in range(tiles_x):
+                        if shared.state.interrupted:
+                            break
                         # extract tile from input image
                         ofs_x = x * self.tile_size
                         ofs_y = y * self.tile_size
@@ -169,7 +172,7 @@ class RealESRGANer():
                         try:
                             output_tile = self.model(input_tile)
                         except Exception as e:
-                            log.error(f'Upscale error: type=R-ESRGAN {e}')
+                            shared.log.error(f'Upscale error: type=R-ESRGAN {e}')
 
                         # output tile area on total image
                         output_start_x = input_start_x * self.scale

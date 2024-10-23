@@ -1,21 +1,28 @@
 {
+  "Tempest SD-XL v0.1": {
+    "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
+    "preview": "TempestV0.1-Artistic.jpg",
+    "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
+    "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
+  },
+
   "Juggernaut SD-XL XI": {
     "path": "juggernautXL_juggXIByRundiffusion.safetensors@https://civitai.com/api/download/models/782002",
     "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
     "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+    "extras": "sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
   "Juggernaut SD-XL X Hyper": {
     "path": "Juggernaut_X_RunDiffusion_Hyper.safetensors@https://civitai.com/api/download/models/471120",
     "preview": "juggernautXL_v9Rundiffusionphoto2.jpg",
     "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+    "extras": "sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
   "Juggernaut SD-XL IX Lightning": {
     "path": "juggernautXL_v9Rdphoto2Lightning.safetensors@https://civitai.com/api/download/models/357609",
     "preview": "juggernautXL_v9Rdphoto2Lightning.jpg",
     "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
+    "extras": "sampler: DPM SDE, steps: 6, cfg_scale: 2.0"
   },
   "Juggernaut SD Reborn": {
     "original": true,
@@ -42,15 +49,8 @@
     "path": "dreamshaperXL_v21TurboDPMSDE.safetensors@https://civitai.com/api/download/models/351306",
     "preview": "dreamshaperXL_v21TurboDPMSDE.jpg",
     "desc": "Showcase finetuned model based on Stable diffusion XL",
-    "extras": "width: 1024, height: 1024, sampler: DPM SDE, steps: 8, cfg_scale: 2.0"
+    "extras": "sampler: DPM SDE, steps: 8, cfg_scale: 2.0"
   }, 
-
-  "Tempest SD-XL v0.1": {
-    "path": "TempestV0.1-Artistic.safetensors@https://huggingface.co/dataautogpt3/TempestV0.1/resolve/main/TempestV0.1-Artistic.safetensors?download=true",
-    "preview": "TempestV0.1-Artistic.jpg",
-    "desc": "The TempestV0.1 Initiative is a powerhouse in image generation, leveraging an unparalleled dataset of over 6 million images. The collection's vast scale, with resolutions from 1400x2100 to 4800x7200, encompasses 200GB of high-quality content.",
-    "extras": "width: 2048, height: 1024, sampler: DEIS, steps: 40, cfg_scale: 6.0"
-  },
 
   "SDXS DreamShaper 512": {
     "path": "IDKiro/sdxs-512-dreamshaper",
@@ -93,7 +93,7 @@
     "path": "sd_xl_base_1.0.safetensors@https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors?download=true",
     "preview": "sd_xl_base_1.0.jpg",
     "desc": "Stable Diffusion XL (SDXL) is the latest AI image generation model that is tailored towards more photorealistic outputs with more detailed imagery and composition compared to previous SD models, including SD 2.1. It can make realistic faces, legible text within the images, and better image composition, all while using shorter and simpler prompts at a greatly increased base resolution of 1024x1024. Just like its predecessors, SDXL has the ability to generate image variations using image-to-image prompting, inpainting (reimagining of the selected parts of an image), and outpainting (creating new parts that lie outside the image borders).",
-    "extras": "width: 1024, height: 1024, sampler: DEIS, steps: 20, cfg_scale: 6.0"
+    "extras": "sampler: DEIS, steps: 20, cfg_scale: 6.0"
   },
   "StabilityAI Stable Cascade": {
     "path": "huggingface/stabilityai/stable-cascade",
@@ -101,7 +101,7 @@
     "variant": "bf16",
     "desc": "Stable Cascade is a diffusion model built upon the Würstchen architecture and its main difference to other models like Stable Diffusion is that it is working at a much smaller latent space. Why is this important? The smaller the latent space, the faster you can run inference and the cheaper the training becomes. How small is the latent space? Stable Diffusion uses a compression factor of 8, resulting in a 1024x1024 image being encoded to 128x128. Stable Cascade achieves a compression factor of 42, meaning that it is possible to encode a 1024x1024 image to 24x24, while maintaining crisp reconstructions. The text-conditional model is then trained in the highly compressed latent space. Previous versions of this architecture, achieved a 16x cost reduction over Stable Diffusion 1.5",
     "preview": "stabilityai--stable-cascade.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
+    "extras": "sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
   },
   "StabilityAI Stable Cascade Lite": {
     "path": "huggingface/stabilityai/stable-cascade-lite",
@@ -109,16 +109,31 @@
     "variant": "bf16",
     "desc": "Stable Cascade is a diffusion model built upon the Würstchen architecture and its main difference to other models like Stable Diffusion is that it is working at a much smaller latent space. Why is this important? The smaller the latent space, the faster you can run inference and the cheaper the training becomes. How small is the latent space? Stable Diffusion uses a compression factor of 8, resulting in a 1024x1024 image being encoded to 128x128. Stable Cascade achieves a compression factor of 42, meaning that it is possible to encode a 1024x1024 image to 24x24, while maintaining crisp reconstructions. The text-conditional model is then trained in the highly compressed latent space. Previous versions of this architecture, achieved a 16x cost reduction over Stable Diffusion 1.5",
     "preview": "stabilityai--stable-cascade.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
+    "extras": "sampler: Default, cfg_scale: 4.0, image_cfg_scale: 1.0"
   },
   "StabilityAI Stable Diffusion 3 Medium": {
-    "path": "huggingface/stabilityai/stable-diffusion-3-medium-diffusers",
+    "path": "stabilityai/stable-diffusion-3-medium-diffusers",
     "skip": true,
     "variant": "fp16",
-    "te3": null,
     "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
     "preview": "stabilityai--stable-diffusion-3.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 7.0"
+    "extras": "sampler: Default, cfg_scale: 7.0"
+  },
+  "StabilityAI Stable Diffusion 3.5 Large": {
+    "path": "stabilityai/stable-diffusion-3.5-large",
+    "skip": true,
+    "variant": "fp16",
+    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "preview": "stabilityai--stable-diffusion-3_5.jpg",
+    "extras": "sampler: Default, cfg_scale: 7.0"
+  },
+  "StabilityAI Stable Diffusion 3.5 Turbo": {
+    "path": "stabilityai/stable-diffusion-3.5-large-turbo",
+    "skip": true,
+    "variant": "fp16",
+    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "preview": "stabilityai--stable-diffusion-3_5.jpg",
+    "extras": "sampler: Default, cfg_scale: 7.0"
   },
 
   "Black Forest Labs FLUX.1 Dev": {
@@ -126,43 +141,49 @@
     "preview": "black-forest-labs--FLUX.1-dev.jpg",
     "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+    "extras": "sampler: Default, cfg_scale: 3.5"
   },
   "Black Forest Labs FLUX.1 Schnell": {
     "path": "black-forest-labs/FLUX.1-schnell",
     "preview": "black-forest-labs--FLUX.1-schnell.jpg",
     "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching. Trained using latent adversarial diffusion distillation, FLUX.1 [schnell] can generate high-quality images in only 1 to 4 steps",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+    "extras": "sampler: Default, cfg_scale: 3.5"
   },
   "Black Forest Labs FLUX.1 Dev qint8": {
     "path": "Disty0/FLUX.1-dev-qint8",
     "preview": "black-forest-labs--FLUX.1-dev.jpg",
     "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+    "extras": "sampler: Default, cfg_scale: 3.5"
   },
   "Black Forest Labs FLUX.1 Dev qint4": {
     "path": "Disty0/FLUX.1-dev-qint4",
     "preview": "black-forest-labs--FLUX.1-dev.jpg",
     "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+    "extras": "sampler: Default, cfg_scale: 3.5"
   },
   "Black Forest Labs FLUX.1 Dev nf4": {
     "path": "sayakpaul/flux.1-dev-nf4",
     "preview": "black-forest-labs--FLUX.1-dev.jpg",
     "desc": "FLUX.1 models are based on a hybrid architecture of multimodal and parallel diffusion transformer blocks, scaled to 12B parameters and builing on flow matching",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 3.5"
+    "extras": "sampler: Default, cfg_scale: 3.5"
   },
+
+  "VectorSpaceLab OmniGen v1": {
+    "path": "Shitao/OmniGen-v1",
+    "desc": "OmniGen is a unified image generation model that can generate a wide range of images from multi-modal prompts. It is designed to be simple, flexible and easy to use.",
+    "preview": "Shitao--OmniGen-v1.jpg",
+    "skip": true
+  }, 
 
   "AuraFlow 0.3": {
     "path": "fal/AuraFlow-v0.3",
     "desc": "AuraFlow v0.3 is the fully open-sourced flow-based text-to-image generation model. The model was trained with more compute compared to the previous version, AuraFlow-v0.2. Compared to AuraFlow-v0.2, the model is fine-tuned on more aesthetic datasets and now supports various aspect ratio, (now width and height up to 1536 pixels).",
     "preview": "fal--AuraFlow-v0.3.jpg",
-    "skip": true,
-    "extras": "width: 1024, height: 1024"
+    "skip": true
   }, 
 
   "Segmind Vega": {
@@ -171,7 +192,7 @@
     "desc": "The Segmind-Vega Model is a distilled version of the Stable Diffusion XL (SDXL), offering a remarkable 70% reduction in size and an impressive 100% speedup while retaining high-quality text-to-image generation capabilities. Trained on diverse datasets, including Grit and Midjourney scrape data, it excels at creating a wide range of visual content based on textual prompts. Employing a knowledge distillation strategy, Segmind-Vega leverages the teachings of several expert models, including SDXL, ZavyChromaXL, and JuggernautXL, to combine their strengths and produce compelling visual outputs.",
     "variant": "fp16",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 9.0"
+    "extras": "sampler: Default, cfg_scale: 9.0"
   },
   "Segmind SSD-1B": {
     "path": "huggingface/segmind/SSD-1B",
@@ -179,7 +200,7 @@
     "desc": "The Segmind Stable Diffusion Model (SSD-1B) offers a compact, efficient, and distilled version of the SDXL model. At 50% smaller and 60% faster than Stable Diffusion XL (SDXL), it provides quick and seamless performance without sacrificing image quality.",
     "variant": "fp16",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 9.0"
+    "extras": "sampler: Default, cfg_scale: 9.0"
   },
   "Segmind Tiny": {
     "path": "segmind/tiny-sd",
@@ -197,7 +218,7 @@
     "path": "segmind/SegMoE-4x2-v0",
     "preview": "segmind--SegMoE-4x2-v0.jpg",
     "desc": "SegMoE-4x2-v0 is an untrained Segmind Mixture of Diffusion Experts Model generated using segmoe from 4 Expert SDXL models. SegMoE is a powerful framework for dynamically combining Stable Diffusion Models into a Mixture of Experts within minutes without training",
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
   },
 
   "Pixart-α XL 2 Medium": {
@@ -210,7 +231,7 @@
     "path": "PixArt-alpha/PixArt-XL-2-1024-MS",
     "desc": "PixArt-α is a Transformer-based T2I diffusion model whose image generation quality is competitive with state-of-the-art image generators (e.g., Imagen, SDXL, and even Midjourney), and the training speed markedly surpasses existing large-scale T2I models. Extensive experiments demonstrate that PIXART-α excels in image quality, artistry, and semantic control. It can directly generate 1024px images from text prompts within a single sampling process.",
     "preview": "PixArt-alpha--PixArt-XL-2-1024-MS.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+    "extras": "sampler: Default, cfg_scale: 2.0"
   },
   "Pixart-Σ Small": {
     "path": "huggingface/PixArt-alpha/PixArt-Sigma-XL-2-512-MS",
@@ -224,21 +245,21 @@
     "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
     "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+    "extras": "sampler: Default, cfg_scale: 2.0"
   },
   "Pixart-Σ Large": {
     "path": "huggingface/PixArt-alpha/PixArt-Sigma-XL-2-2K-MS",
     "desc": "PixArt-Σ, a Diffusion Transformer model (DiT) capable of directly generating images at 4K resolution. PixArt-Σ represents a significant advancement over its predecessor, PixArt-α, offering images of markedly higher fidelity and improved alignment with text prompts.",
     "preview": "PixArt-alpha--pixart_sigma_sdxlvae_T5_diffusers.jpg",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+    "extras": "sampler: Default, cfg_scale: 2.0"
   },
   
   "Tencent HunyuanDiT 1.2": {
     "path": "Tencent-Hunyuan/HunyuanDiT-v1.2-Diffusers",
     "desc": "Hunyuan-DiT : A Powerful Multi-Resolution Diffusion Transformer with Fine-Grained Chinese Understanding.",
     "preview": "Tencent-Hunyuan--HunyuanDiT-v1.2-Diffusers.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 2.0"
+    "extras": "sampler: Default, cfg_scale: 2.0"
   },
 
   "AlphaVLLM Lumina Next SFT": {
@@ -246,7 +267,7 @@
     "desc": "The Lumina-Next-SFT is a Next-DiT model containing 2B parameters and utilizes Gemma-2B as the text encoder, enhanced through high-quality supervised fine-tuning (SFT).",
     "preview": "Alpha-VLLM--Lumina-Next-SFT-diffusers.jpg",
     "skip": true,
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
   }, 
 
   "Kwai Kolors": {
@@ -274,7 +295,7 @@
     "desc": "Kandinsky 3.0 is an open-source text-to-image diffusion model built upon the Kandinsky2-x model family. In comparison to its predecessors, Kandinsky 3.0 incorporates more data and specifically related to Russian culture, which allows to generate pictures related to Russin culture. Furthermore, enhancements have been made to the text understanding and visual quality of the model, achieved by increasing the size of the text encoder and Diffusion U-Net models, respectively.",
     "preview": "kandinsky-community--kandinsky-3.jpg",
     "variant": "fp16",
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
   },
 
   "Playground v1": {
@@ -299,13 +320,26 @@
     "path": "playgroundai/playground-v2-1024px-aesthetic",
     "desc": "Playground v2 is a diffusion-based text-to-image generative model. The model was trained from scratch by the research team at Playground. Images generated by Playground v2 are favored 2.5 times more than those produced by Stable Diffusion XL, according to Playground’s user study.",
     "preview": "playgroundai--playground-v2-1024px-aesthetic.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
   },
   "Playground v2.5": {
     "path": "playground-v2.5-1024px-aesthetic.fp16.safetensors@https://huggingface.co/playgroundai/playground-v2.5-1024px-aesthetic/resolve/main/playground-v2.5-1024px-aesthetic.fp16.safetensors?download=true",
     "desc": "Playground v2.5 is a diffusion-based text-to-image generative model, and a successor to Playground v2. Playground v2.5 is the state-of-the-art open-source model in aesthetic quality. Our user studies demonstrate that our model outperforms SDXL, Playground v2, PixArt-α, DALL-E 3, and Midjourney 5.2.",
     "preview": "playgroundai--playground-v2-1024px-aesthetic.jpg",
-    "extras": "width: 1024, height: 1024, sampler: DPM++ 2M EDM"
+    "extras": "sampler: DPM++ 2M EDM"
+  },
+
+  "CogView 3 Plus": {
+    "path": "THUDM/CogView3-Plus-3B",
+    "desc": "This model is the DiT version of CogView3, a text-to-image generation model, supporting image generation from 512 to 2048px. Resolution: Width and height must meet the range from 512px to 2048px and must be divisible by 32.",
+    "preview": "THUDM--CogView3-Plus-3B.jpg",
+    "skip": true
+  },
+  "Meissonic": {
+    "path": "MeissonFlow/Meissonic",
+    "desc": "Meissonic is a non-autoregressive mask image modeling text-to-image synthesis model that can generate high-resolution images. It is designed to run on consumer graphics cards.",
+    "preview": "MeissonFlow--Meissonic.jpg",
+    "skip": true
   },
 
   "aMUSEd 256": {
@@ -326,7 +360,7 @@
     "path": "warp-ai/wuerstchen",
     "desc": "Würstchen is a diffusion model whose text-conditional model works in a highly compressed latent space of images. Why is this important? Compressing data can reduce computational costs for both training and inference by magnitudes. Training on 1024x1024 images, is way more expensive than training at 32x32. Usually, other works make use of a relatively small compression, in the range of 4x - 8x spatial compression. Würstchen takes this to an extreme. Through its novel design, we achieve a 42x spatial compression. Würstchen employs a two-stage compression, what we call Stage A and Stage B. Stage A is a VQGAN, and Stage B is a Diffusion Autoencoder (more details can be found in the paper). A third model, Stage C, is learned in that highly compressed latent space. This training requires fractions of the compute used for current top-performing models, allowing also cheaper and faster inference.",
     "preview": "warp-ai--wuerstchen.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default, cfg_scale: 4.0, image_cfg_scale: 0.0"
+    "extras": "sampler: Default, cfg_scale: 4.0, image_cfg_scale: 0.0"
   },
   "KOALA 700M": {
     "path": "huggingface/etri-vilab/koala-700m-llava-cap",
@@ -334,7 +368,7 @@
     "skip": true,
     "desc": "Fast text-to-image model, called KOALA, by compressing SDXL's U-Net and distilling knowledge from SDXL into our model. KOALA-700M can generate a 1024x1024 image in less than 1.5 seconds on an NVIDIA 4090 GPU, which is more than 2x faster than SDXL.",
     "preview": "etri-vilab--koala-700m-llava-cap.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
   },
   "Tsinghua UniDiffuser": {
     "path": "thu-ml/unidiffuser-v1",
@@ -356,7 +390,13 @@
     "path": "DeepFloyd/IF-I-M-v1.0",
     "desc": "DeepFloyd-IF is a pixel-based text-to-image triple-cascaded diffusion model, that can generate pictures with new state-of-the-art for photorealism and language understanding. The result is a highly efficient model that outperforms current state-of-the-art models, achieving a zero-shot FID-30K score of 6.66 on the COCO dataset. It is modular and composed of frozen text mode and three pixel cascaded diffusion modules, each designed to generate images of increasing resolution: 64x64, 256x256, and 1024x1024.",
     "preview": "DeepFloyd--IF-I-M-v1.0.jpg",
-    "extras": "width: 1024, height: 1024, sampler: Default"
+    "extras": "sampler: Default"
+  },
+  "DeepFloyd IF Large": {
+    "path": "DeepFloyd/IF-I-L-v1.0",
+    "desc": "DeepFloyd-IF is a pixel-based text-to-image triple-cascaded diffusion model, that can generate pictures with new state-of-the-art for photorealism and language understanding. The result is a highly efficient model that outperforms current state-of-the-art models, achieving a zero-shot FID-30K score of 6.66 on the COCO dataset. It is modular and composed of frozen text mode and three pixel cascaded diffusion modules, each designed to generate images of increasing resolution: 64x64, 256x256, and 1024x1024.",
+    "preview": "DeepFloyd--IF-I-M-v1.0.jpg",
+    "extras": "sampler: Default"
   }
 
 }

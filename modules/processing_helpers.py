@@ -17,6 +17,14 @@ debug_steps = shared.log.trace if os.environ.get('SD_STEPS_DEBUG', None) is not 
 debug_steps('Trace: STEPS')
 
 
+def is_txt2img():
+    return sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
+
+
+def is_refiner_enabled(p):
+    return p.enable_hr and p.refiner_steps > 0 and p.refiner_start > 0 and p.refiner_start < 1 and shared.sd_refiner is not None
+
+
 def setup_color_correction(image):
     debug("Calibrating color correction")
     correction_target = cv2.cvtColor(np.asarray(image.copy()), cv2.COLOR_RGB2LAB)
@@ -339,6 +347,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 def validate_sample(tensor):
     if not isinstance(tensor, np.ndarray) and not isinstance(tensor, torch.Tensor):
         return tensor
+    dtype = tensor.dtype
     if tensor.dtype == torch.bfloat16: # numpy does not support bf16
         tensor = tensor.to(torch.float16)
     if isinstance(tensor, torch.Tensor) and hasattr(tensor, 'detach'):
@@ -346,16 +355,21 @@ def validate_sample(tensor):
     elif isinstance(tensor, np.ndarray):
         sample = tensor
     else:
-        shared.log.warning(f'Unknown sample type: {type(tensor)}')
+        shared.log.warning(f'Decode: type={type(tensor)} unknown sample')
     sample = 255.0 * np.moveaxis(sample, 0, 2) if not shared.native else 255.0 * sample
     with warnings.catch_warnings(record=True) as w:
         cast = sample.astype(np.uint8)
-    if len(w) > 0:
+    minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
+    if len(w) > 0 or minimum == maximum:
         nans = np.isnan(sample).sum()
         cast = np.nan_to_num(sample)
-        minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
         cast = cast.astype(np.uint8)
-        shared.log.error(f'Failed to validate samples: sample={sample.shape} min={minimum:.2f} max={maximum:.2f} mean={mean:.2f} invalid={nans}')
+        vae = shared.sd_model.vae.dtype if hasattr(shared.sd_model, 'vae') else None
+        upcast = getattr(shared.sd_model.vae.config, 'force_upcast', None) if hasattr(shared.sd_model, 'vae') and hasattr(shared.sd_model.vae, 'config') else None
+        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} mean={mean} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
+        if upcast is not None and not upcast:
+            setattr(shared.sd_model.vae.config, 'force_upcast', True) # noqa: B010
+            shared.log.warning('Decode: upcast=True set, retry operation')
     return cast
 
 
@@ -429,10 +443,11 @@ def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
 def calculate_base_steps(p, use_denoise_start, use_refiner_start):
     if len(getattr(p, 'timesteps', [])) > 0:
         return None
-    is_txt2img = sd_models.get_diffusers_task(shared.sd_model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE
-    if not is_txt2img:
+    if not is_txt2img():
         if use_denoise_start and shared.sd_model_type == 'sdxl':
             steps = p.steps // (1 - p.refiner_start)
+        elif shared.sd_model_type == 'omnigen':
+            steps = p.steps
         elif p.denoising_strength > 0:
             steps = (p.steps // p.denoising_strength) + 1
         else:
@@ -546,31 +561,15 @@ def update_sampler(p, sd_model, second_pass=False):
         if sampler is None:
             shared.log.warning(f'Sampler: sampler="{sampler_selection}" not found')
             sampler = sd_samplers.all_samplers_map.get("UniPC")
-        if len(getattr(p, 'timesteps', [])) > 0:
-            if 'schedulers_use_karras' in shared.opts.data:
-                shared.opts.data['schedulers_use_karras'] = False
-            else:
-                shared.opts.schedulers_use_karras = False
         sampler = sd_samplers.create_sampler(sampler.name, sd_model)
         if sampler is None or sampler_selection == 'Default':
             return
         sampler_options = []
-        if sampler.config.get('use_karras_sigmas', False):
-            sampler_options.append('karras')
-        if sampler.config.get('rescale_betas_zero_snr', False):
-            sampler_options.append('rescale beta')
-        if sampler.config.get('thresholding', False):
-            sampler_options.append('dynamic thresholding')
-        if 'algorithm_type' in sampler.config:
-            sampler_options.append(sampler.config['algorithm_type'])
-        if shared.opts.schedulers_prediction_type != 'default':
-            sampler_options.append(shared.opts.schedulers_prediction_type)
-        if shared.opts.schedulers_beta_schedule != 'default':
-            sampler_options.append(shared.opts.schedulers_beta_schedule)
-        if 'beta_start' in sampler.config and (shared.opts.schedulers_beta_start > 0 or shared.opts.schedulers_beta_end > 0):
-            sampler_options.append(f'beta {shared.opts.schedulers_beta_start}-{shared.opts.schedulers_beta_end}')
-        if 'solver_order' in sampler.config:
-            sampler_options.append(f'order {shared.opts.schedulers_solver_order}')
-        if 'lower_order_final' in sampler.config:
+        if sampler.config.get('rescale_betas_zero_snr', False) and shared.opts.schedulers_rescale_betas != shared.opts.data_labels.get('schedulers_rescale_betas').default:
+            sampler_options.append('rescale')
+        if sampler.config.get('thresholding', False) and shared.opts.schedulers_use_thresholding != shared.opts.data_labels.get('schedulers_use_thresholding').default:
+            sampler_options.append('dynamic')
+        if 'lower_order_final' in sampler.config and shared.opts.schedulers_use_loworder != shared.opts.data_labels.get('schedulers_use_loworder').default:
             sampler_options.append('low order')
-        p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)
+        if len(sampler_options) > 0:
+            p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)

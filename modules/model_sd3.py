@@ -1,41 +1,40 @@
 import os
-import torch
 import diffusers
 import transformers
 
 
-def load_sd3(fn=None, cache_dir=None, config=None):
-    from modules import devices, modelloader
-    repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    model_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
-    dtype = torch.float16
+default_repo_id = 'stabilityai/stable-diffusion-3-medium'
+
+
+def load_sd3(checkpoint_info, cache_dir=None, config=None):
+    from modules import shared, devices, modelloader, sd_models
+    repo_id = sd_models.path_to_repo(checkpoint_info.name)
+    dtype = devices.dtype
     kwargs = {}
-    if fn is not None and fn.endswith('.safetensors') and os.path.exists(fn):
-        model_id = fn
+    if checkpoint_info.path is not None and checkpoint_info.path.endswith('.safetensors') and os.path.exists(checkpoint_info.path):
         loader = diffusers.StableDiffusion3Pipeline.from_single_file
-        _diffusers_major, diffusers_minor, diffusers_micro = int(diffusers.__version__.split('.')[0]), int(diffusers.__version__.split('.')[1]), int(diffusers.__version__.split('.')[2]) # pylint: disable=use-maxsplit-arg
-        fn_size = os.path.getsize(fn)
-        if (diffusers_minor <= 29 and diffusers_micro < 1) or fn_size < 5e9: # te1/te2 do not get loaded correctly in diffusers 0.29.0 if model is without te1/te2
+        fn_size = os.path.getsize(checkpoint_info.path)
+        if fn_size < 5e9:
             kwargs = {
                 'text_encoder': transformers.CLIPTextModelWithProjection.from_pretrained(
-                    repo_id,
+                    default_repo_id,
                     subfolder='text_encoder',
                     cache_dir=cache_dir,
                     torch_dtype=dtype,
                 ),
                 'text_encoder_2': transformers.CLIPTextModelWithProjection.from_pretrained(
-                    repo_id,
+                    default_repo_id,
                     subfolder='text_encoder_2',
                     cache_dir=cache_dir,
                     torch_dtype=dtype,
                 ),
                 'tokenizer': transformers.CLIPTokenizer.from_pretrained(
-                    repo_id,
+                    default_repo_id,
                     subfolder='tokenizer',
                     cache_dir=cache_dir,
                 ),
                 'tokenizer_2': transformers.CLIPTokenizer.from_pretrained(
-                    repo_id,
+                    default_repo_id,
                     subfolder='tokenizer_2',
                     cache_dir=cache_dir,
                 ),
@@ -49,16 +48,34 @@ def load_sd3(fn=None, cache_dir=None, config=None):
             kwargs = {}
     else:
         modelloader.hf_login()
-        model_id = repo_id
         loader = diffusers.StableDiffusion3Pipeline.from_pretrained
+        kwargs['variant'] = 'fp16'
+
+    if len(shared.opts.bnb_quantization) > 0:
+        from modules.model_quant import load_bnb
+        load_bnb('Load model: type=SD3')
+        bnb_config = diffusers.BitsAndBytesConfig(
+            load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
+            load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
+            bnb_4bit_quant_storage=shared.opts.bnb_quantization_storage,
+            bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
+            bnb_4bit_compute_dtype=devices.dtype
+        )
+        if 'Model' in shared.opts.bnb_quantization:
+            transformer = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+            kwargs['transformer'] = transformer
+        if 'Text Encoder' in shared.opts.bnb_quantization:
+            te3 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+            kwargs['text_encoder_3'] = te3
+
     pipe = loader(
-        model_id,
+        repo_id,
         torch_dtype=dtype,
         cache_dir=cache_dir,
         config=config,
         **kwargs,
     )
-    diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Pipeline
-    diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["stable-diffusion-3"] = diffusers.StableDiffusion3Img2ImgPipeline
     devices.torch_gc()
     return pipe

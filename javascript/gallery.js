@@ -276,33 +276,34 @@ async function gallerySort(btn) {
   const arr = Array.from(el.files.children).filter((node) => node.name); // filter out separators
   const fragment = document.createDocumentFragment();
   el.files.innerHTML = '';
+  log('gallerySort', btn.charCodeAt(0));
   switch (btn.charCodeAt(0)) {
-    case 61789:
+    case 61789: // name asc
       arr
         .sort((a, b) => a.name.localeCompare(b.name))
         .forEach((node) => fragment.appendChild(node));
       break;
-    case 61790:
+    case 61790: // name dsc
       arr
         .sort((b, a) => a.name.localeCompare(b.name))
         .forEach((node) => fragment.appendChild(node));
       break;
-    case 61792:
+    case 61792: // size asc
       arr
         .sort((a, b) => a.size - b.size)
         .forEach((node) => fragment.appendChild(node));
       break;
-    case 61793:
+    case 61793: // size dsc
       arr
         .sort((b, a) => a.size - b.size)
         .forEach((node) => fragment.appendChild(node));
       break;
-    case 61794:
+    case 61794: // resolution asc
       arr
         .sort((a, b) => a.width * a.height - b.width * b.height)
         .forEach((node) => fragment.appendChild(node));
       break;
-    case 61795:
+    case 61795: // resolution dsc
       arr
         .sort((b, a) => a.width * a.height - b.width * b.height)
         .forEach((node) => fragment.appendChild(node));

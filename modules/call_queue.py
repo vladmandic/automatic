@@ -59,6 +59,7 @@ def wrap_gradio_call(func, extra_outputs=None, add_stats=False, name=None):
             else:
                 res = list(res)
             if shared.cmd_opts.profile:
+                pr.disable()
                 errors.profile(pr, 'Wrap')
         except Exception as e:
             errors.display(e, 'gradio call')

@@ -138,7 +138,7 @@ def resolve_vae(checkpoint_file):
 
 
 def load_vae_dict(filename):
-    vae_ckpt = sd_models.read_state_dict(filename)
+    vae_ckpt = sd_models.read_state_dict(filename, what='vae')
     vae_dict_1 = {k: v for k, v in vae_ckpt.items() if k[0:4] != "loss" and k not in vae_ignore_keys}
     return vae_dict_1
 
@@ -154,7 +154,7 @@ def load_vae(model, vae_file=None, vae_source="unknown-source"):
             vae_dict_1 = load_vae_dict(vae_file)
             _load_vae_dict(model, vae_dict_1)
         except Exception as e:
-            shared.log.error(f"Loading VAE failed: model={vae_file} source={vae_source} {e}")
+            shared.log.error(f"Load VAE failed: model={vae_file} source={vae_source} {e}")
             if debug:
                 errors.display(e, 'VAE')
             restore_base_vae(model)
@@ -210,7 +210,7 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
     vae_config = sd_models.get_load_config(model_file, model_type, config_type='json')
     if vae_config is not None:
         diffusers_load_config['config'] = os.path.join(vae_config, 'vae')
-    shared.log.info(f'Load VAE: model="{vae_file}" source={vae_source} config={diffusers_load_config}')
+    shared.log.info(f'Load module: type=VAE model="{vae_file}" source={vae_source} config={diffusers_load_config}')
     try:
         import diffusers
         if os.path.isfile(vae_file):
@@ -236,7 +236,7 @@ def load_vae_diffusers(model_file, vae_file=None, vae_source="unknown-source"):
             sd_models.move_model(vae, devices.device)
         return vae
     except Exception as e:
-        shared.log.error(f"Loading VAE failed: model={vae_file} {e}")
+        shared.log.error(f"Load VAE failed: model={vae_file} {e}")
         if debug:
             errors.display(e, 'VAE')
     return None
@@ -278,8 +278,6 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         return None
     if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
         lowvram.send_everything_to_cpu()
-    # else:
-    #    sd_models.move_model(sd_model, devices.cpu)
 
     if not shared.native:
         sd_hijack.model_hijack.undo_hijack(sd_model)

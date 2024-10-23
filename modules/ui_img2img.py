@@ -3,7 +3,7 @@ from PIL import Image
 import gradio as gr
 import numpy as np
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
-from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste
+from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 
 
 def process_interrogate(interrogation_function, mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
@@ -38,7 +38,7 @@ def create_ui():
     modules.scripts.scripts_current = modules.scripts.scripts_img2img
     modules.scripts.scripts_img2img.initialize_scripts(is_img2img=True, is_control=False)
     with gr.Blocks(analytics_enabled=False) as _img2img_interface:
-        img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, img2img_submit, img2img_paste, img2img_extra_networks_button, img2img_token_counter, img2img_token_button, img2img_negative_token_counter, img2img_negative_token_button = ui_sections.create_toprow(is_img2img=True, id_part="img2img")
+        img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, img2img_submit, img2img_reprocess, img2img_paste, img2img_extra_networks_button, img2img_token_counter, img2img_token_button, img2img_negative_token_counter, img2img_negative_token_button = ui_sections.create_toprow(is_img2img=True, id_part="img2img")
         img2img_prompt_img = gr.File(label="", elem_id="img2img_prompt_image", file_count="single", type="binary", visible=False)
 
         with gr.Row(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks_ui:
@@ -66,6 +66,7 @@ def create_ui():
 
                 with gr.Tabs(elem_id="mode_img2img"):
                     img2img_selected_tab = gr.State(0) # pylint: disable=abstract-class-instantiated
+                    state = gr.Textbox(value='', visible=False)
                     with gr.TabItem('Image', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
                         init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=512)
                         interrogate_clip, interrogate_booru = ui_sections.create_interrogate_buttons('img2img')
@@ -128,9 +129,9 @@ def create_ui():
                             denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.50, elem_id="img2img_denoising_strength")
                             refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Denoise start', value=0.0, elem_id="img2img_refiner_start")
 
-                    cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
-                    full_quality, restore_faces, tiling, hidiffusion = ui_sections.create_options('img2img')
+                    full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('img2img')
+                    detailer = shared.yolo.ui('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
                     with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
@@ -163,7 +164,7 @@ def create_ui():
             dummy_component1 = gr.Textbox(visible=False, value='dummy')
             dummy_component2 = gr.Number(visible=False, value=0)
             img2img_args = [
-                dummy_component1, dummy_component2,
+                dummy_component1, state, dummy_component2,
                 img2img_prompt, img2img_negative_prompt, img2img_prompt_styles,
                 init_img,
                 sketch,
@@ -176,7 +177,7 @@ def create_ui():
                 sampler_index,
                 mask_blur, mask_alpha,
                 inpainting_fill,
-                full_quality, restore_faces, tiling, hidiffusion,
+                full_quality, detailer, tiling, hidiffusion,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale,
                 diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
@@ -208,7 +209,12 @@ def create_ui():
             img2img_prompt.submit(**img2img_dict)
             img2img_negative_prompt.submit(**img2img_dict)
             img2img_submit.click(**img2img_dict)
+
             dummy_component = gr.Textbox(visible=False, value='dummy')
+
+            img2img_reprocess[1].click(fn=processing_vae.reprocess, inputs=[img2img_gallery], outputs=[img2img_gallery]) # full-decode
+            img2img_reprocess[2].click(**img2img_dict) # hires-refine
+            img2img_reprocess[3].click(**img2img_dict) # face-restore
 
             interrogate_args = dict(
                 _js="get_img2img_tab_index",
@@ -261,7 +267,7 @@ def create_ui():
                 (clip_skip, "Clip skip"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (restore_faces, "Face restoration"),
+                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # inpaint

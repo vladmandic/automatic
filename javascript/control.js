@@ -1,4 +1,6 @@
 function controlInputMode(inputMode, ...args) {
+  const updateEl = gradioApp().getElementById('control_update');
+  if (updateEl) updateEl.click();
   const tab = gradioApp().querySelector('#control-tab-input button.selected');
   if (!tab) return ['Select', ...args];
   inputMode = tab.innerText;

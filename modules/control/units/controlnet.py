@@ -4,7 +4,7 @@ from typing import Union
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, ControlNetModel
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
-from modules import errors, sd_models, devices
+from modules import errors, sd_models, devices, model_quant
 
 
 what = 'ControlNet'
@@ -69,12 +69,15 @@ predefined_sdxl = {
 predefined_f1 = {
     "InstantX Union": 'InstantX/FLUX.1-dev-Controlnet-Union',
     "InstantX Canny": 'InstantX/FLUX.1-dev-Controlnet-Canny',
+    "JasperAI Depth": 'jasperai/Flux.1-dev-Controlnet-Depth',
+    "JasperAI Surface Normals": 'jasperai/Flux.1-dev-Controlnet-Surface-Normals',
+    "JasperAI Upscaler": 'jasperai/Flux.1-dev-Controlnet-Upscaler',
     "Shakker-Labs Union": 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
     "Shakker-Labs Pose": 'Shakker-Labs/FLUX.1-dev-ControlNet-Pose',
     "Shakker-Labs Depth": 'Shakker-Labs/FLUX.1-dev-ControlNet-Depth',
-    "XLabs-AI Canny": 'XLabs-AI/flux-controlnet-canny-v3',
-    "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-v3',
-    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-v3',
+    "XLabs-AI Canny": 'XLabs-AI/flux-controlnet-canny-diffusers',
+    "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-diffusers',
+    "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
 models = {}
 all_models = {}
@@ -181,7 +184,7 @@ class ControlNet():
         cls = self.get_class()
         self.model = cls.from_single_file(model_path, **self.load_config)
 
-    def load(self, model_id: str = None) -> str:
+    def load(self, model_id: str = None, force: bool = True) -> str:
         try:
             t0 = time.time()
             model_id = model_id or self.model_id
@@ -197,6 +200,9 @@ class ControlNet():
             if model_path is None:
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
                 return
+            if model_id == self.model_id and not force:
+                log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
+                return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
             if model_path.endswith('.safetensors'):
                 self.load_safetensors(model_path)
@@ -205,6 +211,9 @@ class ControlNet():
                     model_path = model_path.replace('/bin', '')
                     self.load_config['use_safetensors'] = False
                 cls = self.get_class()
+                if cls is None:
+                    log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
+                    return
                 self.model = cls.from_pretrained(model_path, **self.load_config)
             if self.dtype is not None:
                 self.model.to(self.dtype)
@@ -220,8 +229,7 @@ class ControlNet():
             elif "ControlNet" in opts.optimum_quanto_weights:
                 try:
                     log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
-                    from installer import install
-                    install('optimum-quanto', quiet=True)
+                    model_quant.load_quanto('Load model: type=ControlNet')
                     from modules.sd_models_compile import optimum_quanto_model
                     self.model = optimum_quanto_model(self.model)
                 except Exception as e:
@@ -276,7 +284,7 @@ class ControlNetPipeline():
         elif detect.is_f1(pipeline):
             from diffusers import FluxControlNetPipeline
             self.pipeline = FluxControlNetPipeline(
-                vae=pipeline.vae,
+                vae=pipeline.vae.to(devices.device),
                 text_encoder=pipeline.text_encoder,
                 text_encoder_2=pipeline.text_encoder_2,
                 tokenizer=pipeline.tokenizer,

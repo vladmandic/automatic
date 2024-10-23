@@ -3,7 +3,7 @@ import os
 import time
 import torch
 import numpy as np
-from modules import shared, processing_correction, extra_networks
+from modules import shared, processing_correction, extra_networks, timer
 
 
 p = None
@@ -34,6 +34,7 @@ def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[to
 
 
 def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
+    t0 = time.time()
     if p is None:
         return kwargs
     latents = kwargs.get('latents', None)
@@ -98,4 +99,8 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
         shared.log.error(f'Callback: {e}')
     if shared.cmd_opts.profile and shared.profiler is not None:
         shared.profiler.step()
+    t1 = time.time()
+    if 'callback' not in timer.process.records:
+        timer.process.records['callback'] = 0
+    timer.process.records['callback'] += t1 - t0
     return kwargs

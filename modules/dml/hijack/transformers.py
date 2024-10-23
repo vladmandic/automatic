@@ -1,5 +1,5 @@
-import torch
 from typing import Optional
+import torch
 import transformers.models.clip.modeling_clip
 
 # Copied from transformers.models.bart.modeling_bart._make_causal_mask

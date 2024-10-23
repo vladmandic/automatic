@@ -93,7 +93,7 @@ class ExtraNetworksPageStyles(ui_extra_networks.ExtraNetworksPage):
                 "size": os.path.getsize(style.filename),
             }
         except Exception as e:
-            shared.log.debug(f"Networks error: type=style file={k} {e}")
+            shared.log.debug(f'Networks error: type=style file="{k}" {e}')
         return item
 
     def list_items(self):

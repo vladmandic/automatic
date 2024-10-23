@@ -169,6 +169,12 @@ def start_server(immediate=True, server=None):
     uvicorn = None
     if args.test:
         installer.log.info("Test only")
+        installer.log.critical('Logging: level=critical')
+        installer.log.error('Logging: level=error')
+        installer.log.warning('Logging: level=warning')
+        installer.log.info('Logging: level=info')
+        installer.log.debug('Logging: level=debug')
+        installer.log.trace('Logging: level=trace')
         server.wants_restart = False
     else:
         if args.api_only:
@@ -176,6 +182,7 @@ def start_server(immediate=True, server=None):
         else:
             uvicorn = server.webui(restart=not immediate)
     if args.profile:
+        pr.disable()
         installer.print_profile(pr, 'WebUI')
     return uvicorn, server
 
@@ -208,6 +215,7 @@ def main():
         installer.install("uv", "uv")
     installer.check_torch()
     installer.check_onnx()
+    installer.check_torchao()
     installer.check_diffusers()
     installer.check_modified_files()
     if args.reinstall:

@@ -1,8 +1,10 @@
 from types import MethodType, SimpleNamespace
 import io
 import contextlib
+from functools import wraps
 import torch
 from torch.nn.functional import silu
+import diffusers
 
 from modules import shared
 shared.log.debug('Importing LDM')
@@ -18,7 +20,6 @@ with contextlib.redirect_stdout(stdout):
 
 import modules.textual_inversion.textual_inversion
 from modules import devices, sd_hijack_optimizations
-from modules import sd_hijack_clip, sd_hijack_open_clip, sd_hijack_unet, sd_hijack_xlmr, xlmr
 from modules.hypernetworks import hypernetwork
 
 attention_CrossAttention_forward = ldm.modules.attention.CrossAttention.forward
@@ -38,6 +39,7 @@ current_optimizer = SimpleNamespace(**{ "name": "none" })
 
 def apply_optimizations():
     undo_optimizations()
+    from modules import sd_hijack_unet
     ldm.modules.diffusionmodules.model.nonlinearity = silu
     ldm.modules.diffusionmodules.openaimodel.th = sd_hijack_unet.th
     optimization_method = None
@@ -157,6 +159,7 @@ class StableDiffusionModelHijack:
         self.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
 
     def hijack(self, m):
+        from modules import sd_hijack_clip, sd_hijack_open_clip, sd_hijack_unet, sd_hijack_xlmr, xlmr
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:
             model_embeddings = m.cond_stage_model.roberta.embeddings
             model_embeddings.token_embedding = EmbeddingsWithFixes(model_embeddings.word_embeddings, self)
@@ -221,6 +224,7 @@ class StableDiffusionModelHijack:
         self.layers = flatten(m)
 
     def undo_hijack(self, m):
+        from modules import sd_hijack_clip, sd_hijack_open_clip, xlmr
         if not hasattr(m, 'cond_stage_model'):
             return # not ldm model
         if type(m.cond_stage_model) == xlmr.BertSeriesModelWithTransformation:
@@ -331,3 +335,41 @@ ldm.models.diffusion.plms.PLMSSampler.register_buffer = register_buffer
 
 # Ensure samping from Guassian for DDPM follows types
 ldm.modules.distributions.distributions.DiagonalGaussianDistribution.sample = lambda self: self.mean.to(self.parameters.dtype) + self.std.to(self.parameters.dtype) * torch.randn(self.mean.shape, dtype=self.parameters.dtype).to(device=self.parameters.device)
+
+
+# Upcast BF16 to FP32
+original_fft_fftn = torch.fft.fftn
+@wraps(torch.fft.fftn)
+def fft_fftn(input, s=None, dim=None, norm=None, *, out=None): # pylint: disable=redefined-builtin
+    return_dtype = input.dtype
+    if input.dtype == torch.bfloat16:
+        input = input.to(dtype=torch.float32)
+    return original_fft_fftn(input, s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
+
+# Upcast BF16 to FP32
+original_fft_ifftn = torch.fft.ifftn
+@wraps(torch.fft.ifftn)
+def fft_ifftn(input, s=None, dim=None, norm=None, *, out=None): # pylint: disable=redefined-builtin
+    return_dtype = input.dtype
+    if input.dtype == torch.bfloat16:
+        input = input.to(dtype=torch.float32)
+    return original_fft_ifftn(input, s=s, dim=dim, norm=norm, out=out).to(dtype=return_dtype)
+
+
+# Diffusers FreeU
+# Diffusers is imported before sd_hijacks so fourier_filter needs hijacking too
+original_fourier_filter = diffusers.utils.torch_utils.fourier_filter
+@wraps(diffusers.utils.torch_utils.fourier_filter)
+def fourier_filter(x_in, threshold, scale):
+    return_dtype = x_in.dtype
+    if x_in.dtype == torch.bfloat16:
+        x_in = x_in.to(dtype=torch.float32)
+    return original_fourier_filter(x_in, threshold, scale).to(dtype=return_dtype)
+
+
+# IPEX always upcasts
+if devices.backend != "ipex":
+    torch.fft.fftn = fft_fftn
+    torch.fft.ifftn = fft_ifftn
+    diffusers.utils.torch_utils.fourier_filter = fourier_filter

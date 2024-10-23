@@ -23,15 +23,15 @@ def refresh_unet_list():
     modules.sd_unet.refresh_unet_list()
 
 
-def sd_t5_items():
-    import modules.model_t5
+def sd_te_items():
+    import modules.model_te
     predefined = ['None', 'T5 FP4', 'T5 FP8', 'T5 INT8', 'T5 QINT8', 'T5 FP16']
-    return predefined + list(modules.model_t5.t5_dict)
+    return predefined + list(modules.model_te.te_dict)
 
 
-def refresh_t5_list():
-    import modules.model_t5
-    modules.model_t5.refresh_t5_list()
+def refresh_te_list():
+    import modules.model_te
+    modules.model_te.refresh_te_list()
 
 
 def list_crossattention(diffusers=False):
@@ -85,6 +85,7 @@ def get_pipelines():
         'SegMoE': getattr(diffusers, 'StableDiffusionPipeline', None), # dynamically redefined and loaded in sd_models.load_diffuser
         'Kolors': getattr(diffusers, 'KolorsPipeline', None),
         'AuraFlow': getattr(diffusers, 'AuraFlowPipeline', None),
+        'CogView': getattr(diffusers, 'CogView3PlusPipeline', None),
     }
     if hasattr(diffusers, 'OnnxStableDiffusionPipeline'):
         onnx_pipelines = {

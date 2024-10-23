@@ -26,7 +26,7 @@ def open_embeddings(filename):
     embeddings = []
     skipped = []
     if filename is None:
-        return embeddings, skipped
+        return None
     filenames = list(filename)
     exts = [".SAFETENSORS", '.BIN', '.PT']
     for _filename in filenames:
@@ -134,18 +134,18 @@ def insert_vectors(embedding, tokenizers, text_encoders, hiddensizes):
     Future warning, if another text encoder becomes available with embedding dimensions in [768,1280,4096]
     this may cause collisions.
     """
-    for vector, size in zip(embedding.vec, embedding.vector_sizes):
-        if size not in hiddensizes:
-            continue
-        idx = hiddensizes.index(size)
-        unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
-        if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
-            text_encoders[idx].resize_token_embeddings(len(tokenizers[idx]))
-        for token, v in zip(embedding.tokens, vector.unbind()):
-            token_id = tokenizers[idx].convert_tokens_to_ids(token)
-            if token_id > unk_token_id:
-                text_encoders[idx].get_input_embeddings().weight.data[token_id] = v
-
+    with devices.inference_context():
+        for vector, size in zip(embedding.vec, embedding.vector_sizes):
+            if size not in hiddensizes:
+                continue
+            idx = hiddensizes.index(size)
+            unk_token_id = tokenizers[idx].convert_tokens_to_ids(tokenizers[idx].unk_token)
+            if text_encoders[idx].get_input_embeddings().weight.data.shape[0] != len(tokenizers[idx]):
+                text_encoders[idx].resize_token_embeddings(len(tokenizers[idx]))
+            for token, v in zip(embedding.tokens, vector.unbind()):
+                token_id = tokenizers[idx].convert_tokens_to_ids(token)
+                if token_id > unk_token_id:
+                    text_encoders[idx].get_input_embeddings().weight.data[token_id] = v
 
 
 class Embedding:
@@ -287,9 +287,7 @@ class EmbeddingDatabase:
             try:
                 embedding.vector_sizes = [v.shape[-1] for v in embedding.vec]
                 if shared.opts.diffusers_convert_embed and 768 in hiddensizes and 1280 in hiddensizes and 1280 not in embedding.vector_sizes and 768 in embedding.vector_sizes:
-                    embedding.vec.append(
-                        convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)],
-                                        text_encoders[hiddensizes.index(1280)]))
+                    embedding.vec.append(convert_embedding(embedding.vec[embedding.vector_sizes.index(768)], text_encoders[hiddensizes.index(768)], text_encoders[hiddensizes.index(1280)]))
                     embedding.vector_sizes.append(1280)
                 if (not all(vs in hiddensizes for vs in embedding.vector_sizes) or  # Skip SD2.1 in SD1.5/SDXL/SD3 vis versa
                         len(embedding.vector_sizes) > len(hiddensizes) or  # Skip SDXL/SD3 in SD1.5
@@ -297,10 +295,10 @@ class EmbeddingDatabase:
                     embedding.tokens = []
                     self.skipped_embeddings[embedding.name] = embedding
             except Exception as e:
-                shared.log.error(f'Embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
+                shared.log.error(f'Load embedding invalid: name="{embedding.name}" fn="{filename}" {e}')
                 self.skipped_embeddings[embedding.name] = embedding
         if overwrite:
-            shared.log.info(f"Loading Bundled embeddings: {list(data.keys())}")
+            shared.log.info(f"Load bundled embeddings: {list(data.keys())}")
             for embedding in embeddings:
                 if embedding.name not in self.skipped_embeddings:
                     deref_tokenizers(embedding.tokens, tokenizers)
@@ -311,7 +309,8 @@ class EmbeddingDatabase:
                     insert_vectors(embedding, tokenizers, text_encoders, hiddensizes)
                     self.register_embedding(embedding, shared.sd_model)
                 except Exception as e:
-                    shared.log.error(f'Embedding load: name={embedding.name} fn={embedding.filename} {e}')
+                    shared.log.error(f'Load embedding: name="{embedding.name}" file="{embedding.filename}" {e}')
+                    errors.display(e, f'Load embedding: name="{embedding.name}" file="{embedding.filename}"')
         return
 
     def load_from_file(self, path, filename):
@@ -418,7 +417,7 @@ class EmbeddingDatabase:
         if self.previously_displayed_embeddings != displayed_embeddings:
             self.previously_displayed_embeddings = displayed_embeddings
             t1 = time.time()
-            shared.log.info(f"Load embeddings: loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)} time={t1-t0:.2f}")
+            shared.log.info(f"Load network: type=embeddings loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)} time={t1-t0:.2f}")
 
 
     def find_embedding_at_position(self, tokens, offset):

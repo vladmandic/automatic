@@ -13,7 +13,10 @@ class SdVersion(enum.Enum):
     Unknown = 1
     SD1 = 2
     SD2 = 3
+    SD3 = 3
     SDXL = 4
+    SC = 5
+    F1 = 6
 
 
 class NetworkOnDisk:
@@ -40,13 +43,38 @@ class NetworkOnDisk:
         self.sd_version = self.detect_version()
 
     def detect_version(self):
-        if str(self.metadata.get('ss_base_model_version', "")).startswith("sdxl_"):
-            return SdVersion.SDXL
-        elif str(self.metadata.get('ss_v2', "")) == "True":
-            return SdVersion.SD2
-        elif len(self.metadata):
-            return SdVersion.SD1
-        return SdVersion.Unknown
+        base = str(self.metadata.get('ss_base_model_version', "")).lower()
+        arch = str(self.metadata.get('modelspec.architecture', "")).lower()
+        if base.startswith("sd_v1"):
+            return 'sd1'
+        if base.startswith("sdxl"):
+            return 'xl'
+        if base.startswith("stable_cascade"):
+            return 'sc'
+        if base.startswith("sd3"):
+            return 'sd3'
+        if base.startswith("flux"):
+            return 'f1'
+
+        if arch.startswith("stable-diffusion-v1"):
+            return 'sd1'
+        if arch.startswith("stable-diffusion-xl"):
+            return 'xl'
+        if arch.startswith("stable-cascade"):
+            return 'sc'
+        if arch.startswith("flux"):
+            return 'f1'
+
+        if "v1-5" in str(self.metadata.get('ss_sd_model_name', "")):
+            return 'sd1'
+        if str(self.metadata.get('ss_v2', "")) == "True":
+            return 'sd2'
+        if 'flux' in self.name.lower():
+            return 'f1'
+        if 'xl' in self.name.lower():
+            return 'xl'
+
+        return ''
 
     def set_hash(self, v):
         self.hash = v or ''
@@ -72,6 +100,7 @@ class Network:  # LoraModule
         self.bundle_embeddings = {}
         self.mtime = None
         self.mentioned_name = None
+        self.tags = None
         """the text that was used to add the network to prompt - can be either name or an alias"""
 
 

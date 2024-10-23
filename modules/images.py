@@ -2,23 +2,19 @@ import io
 import re
 import os
 import sys
-import math
 import json
-import uuid
-import time
 import queue
-import string
 import random
-import hashlib
 import datetime
 import threading
-from pathlib import Path
-from collections import namedtuple
 import numpy as np
 import piexif
 import piexif.helper
-from PIL import Image, ImageFont, ImageDraw, PngImagePlugin, ExifTags
+from PIL import Image, PngImagePlugin, ExifTags
 from modules import sd_samplers, shared, script_callbacks, errors, paths
+from modules.images_grid import image_grid, get_grid_size, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation, Grid # pylint: disable=unused-import
+from modules.images_resize import resize_image # pylint: disable=unused-import
+from modules.images_namegen import FilenameGenerator, get_next_sequence_number # pylint: disable=unused-import
 
 
 debug = errors.log.trace if os.environ.get('SD_PATH_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -27,550 +23,6 @@ try:
     register_heif_opener()
 except Exception:
     pass
-
-
-def check_grid_size(imgs):
-    mp = 0
-    for img in imgs:
-        mp += img.width * img.height if img is not None else 0
-    mp = round(mp / 1000000)
-    ok = mp <= shared.opts.img_max_size_mp
-    if not ok:
-        shared.log.warning(f'Maximum image size exceded: size={mp} maximum={shared.opts.img_max_size_mp} MPixels')
-    return ok
-
-
-def image_grid(imgs, batch_size=1, rows=None):
-    if rows is None:
-        if shared.opts.n_rows > 0:
-            rows = shared.opts.n_rows
-        elif shared.opts.n_rows == 0:
-            rows = batch_size
-        else:
-            rows = math.floor(math.sqrt(len(imgs)))
-            while len(imgs) % rows != 0:
-                rows -= 1
-    if rows > len(imgs):
-        rows = len(imgs)
-    cols = math.ceil(len(imgs) / rows)
-    params = script_callbacks.ImageGridLoopParams(imgs, cols, rows)
-    script_callbacks.image_grid_callback(params)
-    imgs = [i for i in imgs if i is not None] if imgs is not None else []
-    if len(imgs) == 0:
-        return None
-    w, h = imgs[0].size
-    grid = Image.new('RGB', size=(params.cols * w, params.rows * h), color=shared.opts.grid_background)
-    for i, img in enumerate(params.imgs):
-        grid.paste(img, box=(i % params.cols * w, i // params.cols * h))
-    return grid
-
-
-Grid = namedtuple("Grid", ["tiles", "tile_w", "tile_h", "image_w", "image_h", "overlap"])
-
-
-def split_grid(image, tile_w=512, tile_h=512, overlap=64):
-    w = image.width
-    h = image.height
-    non_overlap_width = tile_w - overlap
-    non_overlap_height = tile_h - overlap
-    cols = math.ceil((w - overlap) / non_overlap_width)
-    rows = math.ceil((h - overlap) / non_overlap_height)
-    dx = (w - tile_w) / (cols - 1) if cols > 1 else 0
-    dy = (h - tile_h) / (rows - 1) if rows > 1 else 0
-    grid = Grid([], tile_w, tile_h, w, h, overlap)
-    for row in range(rows):
-        row_images = []
-        y = int(row * dy)
-        if y + tile_h >= h:
-            y = h - tile_h
-        for col in range(cols):
-            x = int(col * dx)
-            if x + tile_w >= w:
-                x = w - tile_w
-            tile = image.crop((x, y, x + tile_w, y + tile_h))
-            row_images.append([x, tile_w, tile])
-        grid.tiles.append([y, tile_h, row_images])
-    return grid
-
-
-def combine_grid(grid):
-    def make_mask_image(r):
-        r = r * 255 / grid.overlap
-        r = r.astype(np.uint8)
-        return Image.fromarray(r, 'L')
-
-    mask_w = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape((1, grid.overlap)).repeat(grid.tile_h, axis=0))
-    mask_h = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape((grid.overlap, 1)).repeat(grid.image_w, axis=1))
-    combined_image = Image.new("RGB", (grid.image_w, grid.image_h))
-    for y, h, row in grid.tiles:
-        combined_row = Image.new("RGB", (grid.image_w, h))
-        for x, w, tile in row:
-            if x == 0:
-                combined_row.paste(tile, (0, 0))
-                continue
-            combined_row.paste(tile.crop((0, 0, grid.overlap, h)), (x, 0), mask=mask_w)
-            combined_row.paste(tile.crop((grid.overlap, 0, w, h)), (x + grid.overlap, 0))
-        if y == 0:
-            combined_image.paste(combined_row, (0, 0))
-            continue
-        combined_image.paste(combined_row.crop((0, 0, combined_row.width, grid.overlap)), (0, y), mask=mask_h)
-        combined_image.paste(combined_row.crop((0, grid.overlap, combined_row.width, h)), (0, y + grid.overlap))
-    return combined_image
-
-
-class GridAnnotation:
-    def __init__(self, text='', is_active=True):
-        self.text = text
-        self.is_active = is_active
-        self.size = None
-
-
-def get_font(fontsize):
-    try:
-        return ImageFont.truetype(shared.opts.font or "javascript/notosans-nerdfont-regular.ttf", fontsize)
-    except Exception:
-        return ImageFont.truetype("javascript/notosans-nerdfont-regular.ttf", fontsize)
-
-
-def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, title=None):
-    def wrap(drawing, text, font, line_length):
-        lines = ['']
-        for word in text.split():
-            line = f'{lines[-1]} {word}'.strip()
-            if drawing.textlength(line, font=font) <= line_length:
-                lines[-1] = line
-            else:
-                lines.append(word)
-        return lines
-
-    def draw_texts(drawing: ImageDraw, draw_x, draw_y, lines, initial_fnt, initial_fontsize):
-        for line in lines:
-            font = initial_fnt
-            fontsize = initial_fontsize
-            while drawing.multiline_textbbox((0,0), text=line.text, font=font)[2] > line.allowed_width and fontsize > 0:
-                fontsize -= 1
-                font = get_font(fontsize)
-            drawing.multiline_text((draw_x, draw_y + line.size[1] / 2), line.text, font=font, fill=shared.opts.font_color if line.is_active else color_inactive, anchor="mm", align="center")
-            if not line.is_active:
-                drawing.line((draw_x - line.size[0] // 2, draw_y + line.size[1] // 2, draw_x + line.size[0] // 2, draw_y + line.size[1] // 2), fill=color_inactive, width=4)
-            draw_y += line.size[1] + line_spacing
-
-    fontsize = (width + height) // 25
-    line_spacing = fontsize // 2
-    font = get_font(fontsize)
-    color_inactive = (127, 127, 127)
-    pad_left = 0 if sum([sum([len(line.text) for line in lines]) for lines in ver_texts]) == 0 else width * 3 // 4
-    cols = im.width // width
-    rows = im.height // height
-    assert cols == len(hor_texts), f'bad number of horizontal texts: {len(hor_texts)}; must be {cols}'
-    assert rows == len(ver_texts), f'bad number of vertical texts: {len(ver_texts)}; must be {rows}'
-    calc_img = Image.new("RGB", (1, 1), shared.opts.grid_background)
-    calc_d = ImageDraw.Draw(calc_img)
-    title_texts = [title] if title else [[GridAnnotation()]]
-    for texts, allowed_width in zip(hor_texts + ver_texts + title_texts, [width] * len(hor_texts) + [pad_left] * len(ver_texts) + [(width+margin)*cols]):
-        items = [] + texts
-        texts.clear()
-        for line in items:
-            wrapped = wrap(calc_d, line.text, font, allowed_width)
-            texts += [GridAnnotation(x, line.is_active) for x in wrapped]
-        for line in texts:
-            bbox = calc_d.multiline_textbbox((0, 0), line.text, font=font)
-            line.size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
-            line.allowed_width = allowed_width
-    hor_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing for lines in hor_texts]
-    ver_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing * len(lines) for lines in ver_texts]
-    pad_top = 0 if sum(hor_text_heights) == 0 else max(hor_text_heights) + line_spacing * 2
-    title_pad = 0
-    if title:
-        title_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing for lines in title_texts] # pylint: disable=unsubscriptable-object
-        title_pad = 0 if sum(title_text_heights) == 0 else max(title_text_heights) + line_spacing * 2
-    result = Image.new("RGB", (im.width + pad_left + margin * (cols-1), im.height + pad_top + title_pad + margin * (rows-1)), shared.opts.grid_background)
-    for row in range(rows):
-        for col in range(cols):
-            cell = im.crop((width * col, height * row, width * (col+1), height * (row+1)))
-            result.paste(cell, (pad_left + (width + margin) * col, pad_top + title_pad + (height + margin) * row))
-    d = ImageDraw.Draw(result)
-    if title:
-        x = pad_left + ((width+margin)*cols) / 2
-        y = title_pad / 2 - title_text_heights[0] / 2
-        draw_texts(d, x, y, title_texts[0], font, fontsize)
-    for col in range(cols):
-        x = pad_left + (width + margin) * col + width / 2
-        y = (pad_top / 2 - hor_text_heights[col] / 2) + title_pad
-        draw_texts(d, x, y, hor_texts[col], font, fontsize)
-    for row in range(rows):
-        x = pad_left / 2
-        y = (pad_top + (height + margin) * row + height / 2 - ver_text_heights[row] / 2) + title_pad
-        draw_texts(d, x, y, ver_texts[row], font, fontsize)
-    return result
-
-
-def draw_prompt_matrix(im, width, height, all_prompts, margin=0):
-    prompts = all_prompts[1:]
-    boundary = math.ceil(len(prompts) / 2)
-    prompts_horiz = prompts[:boundary]
-    prompts_vert = prompts[boundary:]
-    hor_texts = [[GridAnnotation(x, is_active=pos & (1 << i) != 0) for i, x in enumerate(prompts_horiz)] for pos in range(1 << len(prompts_horiz))]
-    ver_texts = [[GridAnnotation(x, is_active=pos & (1 << i) != 0) for i, x in enumerate(prompts_vert)] for pos in range(1 << len(prompts_vert))]
-    return draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin)
-
-
-def resize_image(resize_mode, im, width, height, upscaler_name=None, output_type='image', context=None):
-    upscaler_name = upscaler_name or shared.opts.upscaler_for_img2img
-
-    def latent(im, w, h, upscaler):
-        from modules.processing_vae import vae_encode, vae_decode
-        import torch
-        latents = vae_encode(im, shared.sd_model, full_quality=False) # TODO enable full VAE mode for resize-latent
-        latents = torch.nn.functional.interpolate(latents, size=(int(h // 8), int(w // 8)), mode=upscaler["mode"], antialias=upscaler["antialias"])
-        im = vae_decode(latents, shared.sd_model, output_type='pil', full_quality=False)[0]
-        return im
-
-    def resize(im, w, h):
-        w = int(w)
-        h = int(h)
-        if upscaler_name is None or upscaler_name == "None" or im.mode == 'L':
-            return im.resize((w, h), resample=Image.Resampling.LANCZOS) # force for mask
-        scale = max(w / im.width, h / im.height)
-        if scale > 1.0:
-            upscalers = [x for x in shared.sd_upscalers if x.name.lower().replace('-', ' ') == upscaler_name.lower().replace('-', ' ')]
-            if len(upscalers) > 0:
-                upscaler = upscalers[0]
-                im = upscaler.scaler.upscale(im, scale, upscaler.data_path)
-            else:
-                upscaler = shared.latent_upscale_modes.get(upscaler_name, None)
-                if upscaler is not None:
-                    im = latent(im, w, h, upscaler)
-                else:
-                    upscaler = shared.sd_upscalers[0]
-                    shared.log.warning(f"Resize upscaler: invalid={upscaler_name} fallback={upscaler.name}")
-                    shared.log.debug(f"Resize upscaler: available={[u.name for u in shared.sd_upscalers]}")
-        if im.width != w or im.height != h: # probably downsample after upscaler created larger image
-            im = im.resize((w, h), resample=Image.Resampling.LANCZOS)
-        return im
-
-    def crop(im):
-        ratio = width / height
-        src_ratio = im.width / im.height
-        src_w = width if ratio > src_ratio else im.width * height // im.height
-        src_h = height if ratio <= src_ratio else im.height * width // im.width
-        resized = resize(im, src_w, src_h)
-        res = Image.new(im.mode, (width, height))
-        res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
-        return res
-
-    def fill(im, color=None):
-        color = color or shared.opts.image_background
-        """
-        ratio = round(width / height, 1)
-        src_ratio = round(im.width / im.height, 1)
-        src_w = width if ratio < src_ratio else im.width * height // im.height
-        src_h = height if ratio >= src_ratio else im.height * width // im.width
-        resized = resize(im, src_w, src_h)
-        res = Image.new(im.mode, (width, height))
-        res.paste(resized, box=(width // 2 - src_w // 2, height // 2 - src_h // 2))
-        if ratio < src_ratio:
-            fill_height = height // 2 - src_h // 2
-            if width > 0 and fill_height > 0:
-                res.paste(resized.resize((width, fill_height), box=(0, 0, width, 0)), box=(0, 0))
-                res.paste(resized.resize((width, fill_height), box=(0, resized.height, width, resized.height)), box=(0, fill_height + src_h))
-        elif ratio > src_ratio:
-            fill_width = width // 2 - src_w // 2
-            if height > 0 and fill_width > 0:
-                res.paste(resized.resize((fill_width, height), box=(0, 0, 0, height)), box=(0, 0))
-                res.paste(resized.resize((fill_width, height), box=(resized.width, 0, resized.width, height)), box=(fill_width + src_w, 0))
-        return res
-        """
-        ratio = min(width / im.width, height / im.height)
-        im = resize(im, int(im.width * ratio), int(im.height * ratio))
-        res = Image.new(im.mode, (width, height), color=color)
-        res.paste(im, box=((width - im.width)//2, (height - im.height)//2))
-        return res
-
-    def context_aware(im, width, height, context):
-        import seam_carving # https://github.com/li-plus/seam-carving
-        if 'forward' in context:
-            energy_mode = "forward"
-        elif 'backward' in context:
-            energy_mode = "backward"
-        else:
-            return im
-        if 'Add' in context:
-            src_ratio = min(width / im.width, height / im.height)
-            src_w = int(im.width * src_ratio)
-            src_h = int(im.height * src_ratio)
-            src_image = resize(im, src_w, src_h)
-        elif 'Remove' in context:
-            ratio = width / height
-            src_ratio = im.width / im.height
-            src_w = width if ratio > src_ratio else im.width * height // im.height
-            src_h = height if ratio <= src_ratio else im.height * width // im.width
-            src_image = resize(im, src_w, src_h)
-        else:
-            return im
-        res = Image.fromarray(seam_carving.resize(
-            src_image, # source image (rgb or gray)
-            size=(width, height),  # target size
-            energy_mode=energy_mode,  # choose from {backward, forward}
-            order="width-first",  # choose from {width-first, height-first}
-            keep_mask=None,  # object mask to protect from removal
-        ))
-        return res
-
-    t0 = time.time()
-    if resize_mode is None:
-        resize_mode = 0
-    if resize_mode == 0 or (im.width == width and im.height == height) or (width == 0 and height == 0): # none
-        res = im.copy()
-    elif resize_mode == 1: # fixed
-        res = resize(im, width, height)
-    elif resize_mode == 2: # crop
-        res = crop(im)
-    elif resize_mode == 3: # fill
-        res = fill(im)
-    elif resize_mode == 4: # edge
-        from modules import masking
-        res = fill(im, color=0)
-        res, _mask = masking.outpaint(res)
-    elif resize_mode == 5:  # context-aware
-        res = context_aware(im, width, height, context)
-    else:
-        res = im.copy()
-        shared.log.error(f'Invalid resize mode: {resize_mode}')
-    t1 = time.time()
-    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={sys._getframe(1).f_code.co_filename}:{sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
-    return np.array(res) if output_type == 'np' else res
-
-
-re_nonletters = re.compile(r'[\s' + string.punctuation + ']+')
-re_pattern = re.compile(r"(.*?)(?:\[([^\[\]]+)\]|$)")
-re_pattern_arg = re.compile(r"(.*)<([^>]*)>$")
-re_attention = re.compile(r'[\(*\[*](\w+)(:\d+(\.\d+))?[\)*\]*]|')
-re_network = re.compile(r'\<\w+:(\w+)(:\d+(\.\d+))?\>|')
-re_brackets = re.compile(r'[\([{})\]]')
-
-NOTHING = object()
-
-
-class FilenameGenerator:
-    replacements = {
-        'width': lambda self: self.image.width,
-        'height': lambda self: self.image.height,
-        'batch_number': lambda self: self.batch_number,
-        'iter_number': lambda self: self.iter_number,
-        'num': lambda self: NOTHING if self.p.n_iter == 1 and self.p.batch_size == 1 else self.p.iteration * self.p.batch_size + self.p.batch_index + 1,
-        'generation_number': lambda self: NOTHING if self.p.n_iter == 1 and self.p.batch_size == 1 else self.p.iteration * self.p.batch_size + self.p.batch_index + 1,
-        'date': lambda self: datetime.datetime.now().strftime('%Y-%m-%d'),
-        'datetime': lambda self, *args: self.datetime(*args),  # accepts formats: [datetime], [datetime<Format>], [datetime<Format><Time Zone>]
-        'hasprompt': lambda self, *args: self.hasprompt(*args),  # accepts formats:[hasprompt<prompt1|default><prompt2>..]
-        'hash': lambda self: self.image_hash(),
-        'image_hash': lambda self: self.image_hash(),
-        'timestamp': lambda self: getattr(self.p, "job_timestamp", shared.state.job_timestamp),
-        'job_timestamp': lambda self: getattr(self.p, "job_timestamp", shared.state.job_timestamp),
-
-        'model': lambda self: shared.sd_model.sd_checkpoint_info.title,
-        'model_shortname': lambda self: shared.sd_model.sd_checkpoint_info.model_name,
-        'model_name': lambda self: shared.sd_model.sd_checkpoint_info.model_name,
-        'model_hash': lambda self: shared.sd_model.sd_checkpoint_info.shorthash,
-
-        'prompt': lambda self: self.prompt_full(),
-        'prompt_no_styles': lambda self: self.prompt_no_style(),
-        'prompt_words': lambda self: self.prompt_words(),
-        'prompt_hash': lambda self: hashlib.sha256(self.prompt.encode()).hexdigest()[0:8],
-
-        'sampler': lambda self: self.p and self.p.sampler_name,
-        'seed': lambda self: self.seed and str(self.seed) or '',
-        'steps': lambda self: self.p and getattr(self.p, 'steps', 0),
-        'cfg': lambda self: self.p and getattr(self.p, 'cfg_scale', 0),
-        'clip_skip': lambda self: self.p and getattr(self.p, 'clip_skip', 0),
-        'denoising': lambda self: self.p and getattr(self.p, 'denoising_strength', 0),
-        'styles': lambda self: self.p and ", ".join([style for style in self.p.styles if not style == "None"]) or "None",
-        'uuid': lambda self: str(uuid.uuid4()),
-    }
-    default_time_format = '%Y%m%d%H%M%S'
-
-    def __init__(self, p, seed, prompt, image, grid=False):
-        if p is None:
-            debug('Filename generator init skip')
-        else:
-            debug(f'Filename generator init: {seed} {prompt}')
-        self.p = p
-        if seed is not None and int(seed) > 0:
-            self.seed = seed
-        elif hasattr(p, 'all_seeds'):
-            self.seed = p.all_seeds[0]
-        else:
-            self.seed = 0
-        self.prompt = prompt
-        self.image = image
-        if not grid:
-            self.batch_number = NOTHING if self.p is None or getattr(self.p, 'batch_size', 1) == 1 else (self.p.batch_index + 1 if hasattr(self.p, 'batch_index') else NOTHING)
-            self.iter_number = NOTHING if self.p is None or getattr(self.p, 'n_iter', 1) == 1 else (self.p.iteration + 1 if hasattr(self.p, 'iteration') else NOTHING)
-        else:
-            self.batch_number = NOTHING
-            self.iter_number = NOTHING
-
-    def hasprompt(self, *args):
-        lower = self.prompt.lower()
-        if getattr(self, 'p', None) is None or getattr(self, 'prompt', None) is None:
-            return None
-        outres = ""
-        for arg in args:
-            if arg != "":
-                division = arg.split("|")
-                expected = division[0].lower()
-                default = division[1] if len(division) > 1 else ""
-                if lower.find(expected) >= 0:
-                    outres = f'{outres}{expected}'
-                else:
-                    outres = outres if default == "" else f'{outres}{default}'
-        return outres
-
-    def image_hash(self):
-        if getattr(self, 'image', None) is None:
-            return None
-        import base64
-        from io import BytesIO
-        buffered = BytesIO()
-        self.image.save(buffered, format="JPEG")
-        img_str = base64.b64encode(buffered.getvalue())
-        shorthash = hashlib.sha256(img_str).hexdigest()[0:8]
-        return shorthash
-
-    def prompt_full(self):
-        return self.prompt_sanitize(self.prompt)
-
-    def prompt_words(self):
-        if getattr(self, 'prompt', None) is None:
-            return ''
-        no_attention = re_attention.sub(r'\1', self.prompt)
-        no_network = re_network.sub(r'\1', no_attention)
-        no_brackets = re_brackets.sub('', no_network)
-        words = [x for x in re_nonletters.split(no_brackets or "") if len(x) > 0]
-        prompt = " ".join(words[0:shared.opts.directories_max_prompt_words])
-        return self.prompt_sanitize(prompt)
-
-    def prompt_no_style(self):
-        if getattr(self, 'p', None) is None or getattr(self, 'prompt', None) is None:
-            return None
-        prompt_no_style = self.prompt
-        for style in shared.prompt_styles.get_style_prompts(self.p.styles):
-            if len(style) > 0:
-                for part in style.split("{prompt}"):
-                    prompt_no_style = prompt_no_style.replace(part, "").replace(", ,", ",")
-                prompt_no_style = prompt_no_style.replace(style, "")
-        return self.prompt_sanitize(prompt_no_style)
-
-    def datetime(self, *args):
-        import pytz
-        time_datetime = datetime.datetime.now()
-        time_format = args[0] if len(args) > 0 and args[0] != "" else self.default_time_format
-        try:
-            time_zone = pytz.timezone(args[1]) if len(args) > 1 else None
-        except pytz.exceptions.UnknownTimeZoneError:
-            time_zone = None
-        time_zone_time = time_datetime.astimezone(time_zone)
-        try:
-            formatted_time = time_zone_time.strftime(time_format)
-        except (ValueError, TypeError):
-            formatted_time = time_zone_time.strftime(self.default_time_format)
-        return formatted_time
-
-    def prompt_sanitize(self, prompt):
-        invalid_chars = '#<>:\'"\\|?*\n\t\r'
-        sanitized = prompt.translate({ ord(x): '_' for x in invalid_chars }).strip()
-        debug(f'Prompt sanitize: input="{prompt}" output={sanitized}')
-        return sanitized
-
-    def sanitize(self, filename):
-        invalid_chars = '\'"|?*\n\t\r' # <https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file>
-        invalid_folder = ':'
-        invalid_files = ['CON', 'PRN', 'AUX', 'NUL', 'NULL', 'COM0', 'COM1', 'LPT0', 'LPT1']
-        invalid_prefix = ', '
-        invalid_suffix = '.,_ '
-        fn, ext = os.path.splitext(filename)
-        parts = Path(fn).parts
-        newparts = []
-        for i, part in enumerate(parts):
-            part = part.translate({ ord(x): '_' for x in invalid_chars })
-            if i > 0 or (len(part) >= 2 and part[1] != invalid_folder): # skip drive, otherwise remove
-                part = part.translate({ ord(x): '_' for x in invalid_folder })
-            part = part.lstrip(invalid_prefix).rstrip(invalid_suffix)
-            if part in invalid_files: # reserved names
-                [part := part.replace(word, '_') for word in invalid_files] # pylint: disable=expression-not-assigned
-            newparts.append(part)
-        fn = str(Path(*newparts))
-        max_length = max(256 - len(ext), os.statvfs(__file__).f_namemax - 32 if hasattr(os, 'statvfs') else 256 - len(ext))
-        while len(os.path.abspath(fn)) > max_length:
-            fn = fn[:-1]
-        fn += ext
-        debug(f'Filename sanitize: input="{filename}" parts={parts} output="{fn}" ext={ext} max={max_length} len={len(fn)}')
-        return fn
-
-    def sequence(self, x, dirname, basename):
-        if shared.opts.save_images_add_number or '[seq]' in x:
-            if '[seq]' not in x:
-                x = os.path.join(os.path.dirname(x), f"[seq]-{os.path.basename(x)}")
-            basecount = get_next_sequence_number(dirname, basename)
-            for i in range(9999):
-                seq = f"{basecount + i:05}" if basename == '' else f"{basename}-{basecount + i:04}"
-                filename = x.replace('[seq]', seq)
-                if not os.path.exists(filename):
-                    debug(f'Prompt sequence: input="{x}" seq={seq} output="{filename}"')
-                    x = filename
-                    break
-        return x
-
-    def apply(self, x):
-        res = ''
-        for m in re_pattern.finditer(x):
-            text, pattern = m.groups()
-            if pattern is None:
-                res += text
-                continue
-            pattern_args = []
-            while True:
-                m = re_pattern_arg.match(pattern)
-                if m is None:
-                    break
-                pattern, arg = m.groups()
-                pattern_args.insert(0, arg)
-            fun = self.replacements.get(pattern.lower(), None)
-            if fun is not None:
-                try:
-                    debug(f'Filename apply: pattern={pattern.lower()} args={pattern_args}')
-                    replacement = fun(self, *pattern_args)
-                except Exception as e:
-                    replacement = None
-                    shared.log.error(f'Filename apply pattern: {x} {e}')
-                if replacement == NOTHING:
-                    continue
-                if replacement is not None:
-                    res += text + str(replacement).replace('/', '-').replace('\\', '-')
-                    continue
-            else:
-                res += text + f'[{pattern}]' # reinsert unknown pattern
-        return res
-
-
-def get_next_sequence_number(path, basename):
-    """
-    Determines and returns the next sequence number to use when saving an image in the specified directory.
-    """
-    result = -1
-    if basename != '':
-        basename = f"{basename}-"
-    prefix_length = len(basename)
-    if not os.path.isdir(path):
-        return 0
-    for p in os.listdir(path):
-        if p.startswith(basename):
-            parts = os.path.splitext(p[prefix_length:])[0].split('-')  # splits the filename (removing the basename first if one is defined, so the sequence number is always the first element)
-            try:
-                result = max(int(parts[0]), result)
-            except ValueError:
-                pass
-    return result + 1
 
 
 def atomically_save_image():
@@ -649,8 +101,25 @@ save_thread = threading.Thread(target=atomically_save_image, daemon=True)
 save_thread.start()
 
 
-def save_image(image, path, basename='', seed=None, prompt=None, extension=shared.opts.samples_format, info=None, short_filename=False, no_prompt=False, grid=False, pnginfo_section_name='parameters', p=None, existing_info=None, forced_filename=None, suffix='', save_to_dirs=None): # pylint: disable=unused-argument
-    debug(f'Save: fn={sys._getframe(1).f_code.co_name}') # pylint: disable=protected-access
+def save_image(image,
+               path=None,
+               basename='',
+               seed=None,
+               prompt=None,
+               extension=shared.opts.samples_format,
+               info=None,
+               short_filename=False,
+               no_prompt=False,
+               grid=False,
+               pnginfo_section_name='parameters',
+               p=None,
+               existing_info=None,
+               forced_filename=None,
+               suffix='',
+               save_to_dirs=None,
+            ): # pylint: disable=unused-argument
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    debug(f'Save: fn={fn}') # pylint: disable=protected-access
     if image is None:
         shared.log.warning('Image is none')
         return None, None, None
@@ -660,7 +129,7 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
         path = shared.opts.outdir_save
     namegen = FilenameGenerator(p, seed, prompt, image, grid=grid)
     suffix = suffix if suffix is not None else ''
-    basename = basename if basename is not None else ''
+    basename = '' if basename is None else basename
     if shared.opts.save_to_dirs:
         dirname = namegen.apply(shared.opts.directories_filename_pattern or "[prompt_words]")
         path = os.path.join(path, dirname)
@@ -671,9 +140,13 @@ def save_image(image, path, basename='', seed=None, prompt=None, extension=share
             file_decoration = "[seq]-[prompt_words]"
         file_decoration = namegen.apply(file_decoration)
         file_decoration += suffix if suffix is not None else ''
+        if file_decoration.startswith(basename):
+            basename = ''
         filename = os.path.join(path, f"{file_decoration}.{extension}") if basename == '' else os.path.join(path, f"{basename}-{file_decoration}.{extension}")
     else:
         forced_filename += suffix if suffix is not None else ''
+        if forced_filename.startswith(basename):
+            basename = ''
         filename = os.path.join(path, f"{forced_filename}.{extension}") if basename == '' else os.path.join(path, f"{basename}-{forced_filename}.{extension}")
     pnginfo = existing_info or {}
     if info is None:

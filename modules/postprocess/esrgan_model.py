@@ -3,9 +3,8 @@ import torch
 from PIL import Image
 from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn, TimeElapsedColumn
 import modules.postprocess.esrgan_model_arch as arch
-from modules import images, devices
+from modules import images, devices, shared
 from modules.upscaler import Upscaler, UpscalerData, compile_upscaler
-from modules.shared import opts, log, console
 
 
 def mod2normal(state_dict):
@@ -128,11 +127,11 @@ class UpscalerESRGAN(Upscaler):
         model = self.load_model(selected_model)
         if model is None:
             return img
-        model.to(devices.device_esrgan)
+        model.to(devices.device)
         img = esrgan_upscale(model, img)
-        if opts.upscaler_unload and selected_model in self.models:
+        if shared.opts.upscaler_unload and selected_model in self.models:
             del self.models[selected_model]
-            log.debug(f"Upscaler unloaded: type={self.name} model={selected_model}")
+            shared.log.debug(f"Upscaler unloaded: type={self.name} model={selected_model}")
             devices.torch_gc(force=True)
         return img
 
@@ -141,10 +140,10 @@ class UpscalerESRGAN(Upscaler):
         if info is None:
             return
         if self.models.get(info.local_data_path, None) is not None:
-            log.debug(f"Upscaler cached: type={self.name} model={info.local_data_path}")
+            shared.log.debug(f"Upscaler cached: type={self.name} model={info.local_data_path}")
             return self.models[info.local_data_path]
-        state_dict = torch.load(info.local_data_path, map_location='cpu' if devices.device_esrgan.type == 'mps' else None)
-        log.info(f"Upscaler loaded: type={self.name} model={info.local_data_path}")
+        state_dict = torch.load(info.local_data_path, map_location='cpu' if devices.device.type == 'mps' else None)
+        shared.log.info(f"Upscaler loaded: type={self.name} model={info.local_data_path}")
 
         if "params_ema" in state_dict:
             state_dict = state_dict["params_ema"]
@@ -179,7 +178,7 @@ def upscale_without_tiling(model, img):
     img = img[:, :, ::-1]
     img = np.ascontiguousarray(np.transpose(img, (2, 0, 1))) / 255
     img = torch.from_numpy(img).float()
-    img = img.unsqueeze(0).to(devices.device_esrgan)
+    img = img.unsqueeze(0).to(devices.device)
     with devices.inference_context():
         output = model(img)
     output = output.squeeze().float().cpu().clamp_(0, 1).detach().numpy()
@@ -190,21 +189,25 @@ def upscale_without_tiling(model, img):
 
 
 def esrgan_upscale(model, img):
-    if opts.upscaler_tile_size == 0:
+    if shared.opts.upscaler_tile_size == 0:
         return upscale_without_tiling(model, img)
 
-    grid = images.split_grid(img, opts.upscaler_tile_size, opts.upscaler_tile_size, opts.upscaler_tile_overlap)
+    grid = images.split_grid(img, shared.opts.upscaler_tile_size, shared.opts.upscaler_tile_size, shared.opts.upscaler_tile_overlap)
     newtiles = []
     scale_factor = 1
 
-    with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=console) as progress:
+    with Progress(TextColumn('[cyan]{task.description}'), BarColumn(), TaskProgressColumn(), TimeRemainingColumn(), TimeElapsedColumn(), console=shared.console) as progress:
         total = 0
         for _y, _h, row in grid.tiles:
             total += len(row)
         task = progress.add_task(description="Upscaling", total=total)
         for y, h, row in grid.tiles:
+            if shared.state.interrupted:
+                break
             newrow = []
             for tiledata in row:
+                if shared.state.interrupted:
+                    break
                 x, w, tile = tiledata
                 output = upscale_without_tiling(model, tile)
                 scale_factor = output.width // tile.width
