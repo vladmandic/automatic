@@ -210,7 +210,7 @@ def torch_gc(force=False, fast=False):
     if 'gc' not in timer.process.records:
         timer.process.records['gc'] = 0
     timer.process.records['gc'] += t1 - t0
-    if not force:
+    if not force or collected == 0:
         return
     mem = memstats.memory_stats()
     saved = round(gpu.get('used', 0) - mem.get('gpu', {}).get('used', 0), 2)
