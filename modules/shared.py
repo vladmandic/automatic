@@ -82,6 +82,7 @@ compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
 console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
+max_workers = 8
 if os.environ.get("HF_HUB_CACHE", None) is not None:
     hfcache_dir = os.environ.get("HF_HUB_CACHE")
 elif os.environ.get("HF_HUB", None) is not None:
@@ -1120,7 +1121,6 @@ device = devices.device
 batch_cond_uncond = opts.always_batch_cond_uncond or not (cmd_opts.lowvram or cmd_opts.medvram)
 parallel_processing_allowed = not cmd_opts.lowvram
 mem_mon = modules.memmon.MemUsageMonitor("MemMon", devices.device)
-max_workers = 8
 history = history.History()
 if devices.backend == "directml":
     directml_do_hijack()
