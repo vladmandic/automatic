@@ -123,6 +123,7 @@
     "venv",
     "panzoom.js",
     "split.js",
-    "exifr.js"
+    "exifr.js",
+    "iframeResizer.min.js"
   ]
 }

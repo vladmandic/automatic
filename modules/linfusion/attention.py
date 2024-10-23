@@ -44,7 +44,7 @@ class GeneralizedLinearAttention(Attention):
         self.to_q_ = get_none_linear_projection(query_dim, mid_dim, **kwargs)
         self.to_k_ = get_none_linear_projection(query_dim, mid_dim, **kwargs)
 
-    def forward(
+    def forward( # pylint: disable=unused-argument
         self,
         hidden_states,
         encoder_hidden_states=None,

@@ -191,7 +191,7 @@ class DiffusionSampler:
         if 'lower_order_final' in self.config:
             self.config['lower_order_final'] = shared.opts.schedulers_use_loworder
         if 'solver_order' in self.config and int(shared.opts.schedulers_solver_order) > 0:
-            self.config['solver_order'] = (shared.opts.schedulers_solver_order)
+            self.config['solver_order'] = int(shared.opts.schedulers_solver_order)
         if 'predict_x0' in self.config:
             self.config['solver_type'] = shared.opts.uni_pc_variant
         if 'beta_start' in self.config and shared.opts.schedulers_beta_start > 0:

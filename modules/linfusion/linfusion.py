@@ -86,7 +86,7 @@ class LinFusion(ModelMixin, ConfigMixin):
         if load_pretrained:
             # Load from pretrained
             if not pretrained_model_name_or_path:
-                pipe_name_path = pipe_name_path or pipeline._internal_dict._name_or_path
+                pipe_name_path = pipe_name_path or pipeline._internal_dict._name_or_path # pylint: disable=protected-access
                 pretrained_model_name_or_path = model_dict.get(pipe_name_path, None)
                 if pretrained_model_name_or_path:
                     print(
