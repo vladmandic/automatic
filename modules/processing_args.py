@@ -256,12 +256,13 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     # handle missing resolution
     if args.get('image', None) is not None and ('width' not in args or 'height' not in args):
-        if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
-            args['width'] = 8 * args['image'].shape[-1]
-            args['height'] = 8 * args['image'].shape[-2]
-        else:
-            args['width'] = 8 * math.ceil(args['image'][0].width / 8)
-            args['height'] = 8 * math.ceil(args['image'][0].height / 8)
+        if 'width' in possible and 'height' in possible:
+            if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
+                args['width'] = 8 * args['image'].shape[-1]
+                args['height'] = 8 * args['image'].shape[-2]
+            else:
+                args['width'] = 8 * math.ceil(args['image'][0].width / 8)
+                args['height'] = 8 * math.ceil(args['image'][0].height / 8)
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:
