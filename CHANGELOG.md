@@ -17,7 +17,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 - **Extract LoRA**: load any LoRA(s) and play with generate as usual  
   and once you like the results simply extract combined LoRA for future use!  
 
-#### Newly supported
+#### New models
 
 - New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
 - New models:  
@@ -30,7 +30,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
   [APG: Adaptive Projected Guidance](https://arxiv.org/pdf/2410.02416) for optimal **guidance** control,  
   [LinFusion](https://github.com/Huage001/LinFusion) for on-the-fly **distillation** of any sd15/sdxl model  
 
-#### Otherwise notable
+#### What else?
 
 - Tons of work on **dynamic quantization** that can be applied *on-the-fly* during model load to any model type (*you do not need to use pre-quantized models*)  
   Supported quantization engines include `BitsAndBytes`, `TorchAO`, `Optimum.quanto`, `NNCF` compression, and more...  
