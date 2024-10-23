@@ -13,6 +13,7 @@ def load_omnigen(checkpoint_info, diffusers_load_config={}): # pylint: disable=u
     # init
     pipe.device = devices.device
     pipe.dtype = devices.dtype
+    pipe.model.device = devices.device
     pipe.separate_cfg_infer = True
     pipe.use_kv_cache = False
     pipe.model.to(device=devices.device, dtype=devices.dtype)
