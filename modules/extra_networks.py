@@ -91,7 +91,7 @@ def activate(p, extra_network_data, step=0):
             try:
                 extra_network.activate(p, extra_network_args, step=step)
             except Exception as e:
-                errors.display(e, f"activating extra network: name={extra_network_name} args:{extra_network_args}")
+                errors.display(e, f"Activating network: type={extra_network_name} args:{extra_network_args}")
 
         for extra_network_name, extra_network in extra_network_registry.items():
             args = extra_network_data.get(extra_network_name, None)
@@ -100,7 +100,7 @@ def activate(p, extra_network_data, step=0):
             try:
                 extra_network.activate(p, [])
             except Exception as e:
-                errors.display(e, f"activating extra network: name={extra_network_name}")
+                errors.display(e, f"Activating network: type={extra_network_name}")
 
     if stepwise:
         p.extra_network_data = extra_network_data
