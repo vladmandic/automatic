@@ -1210,7 +1210,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
             diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir
             sd_model = pipeline.from_ckpt(checkpoint_info.path, **diffusers_load_config)
         else:
-            shared.log.error(f'Diffusers {op} cannot load safetensor model: {checkpoint_info.path} {shared.opts.diffusers_pipeline}')
+            shared.log.error(f'Load {op}: file="{checkpoint_info.path}" {shared.opts.diffusers_pipeline} cannot load safetensor model')
             return None
         if shared.opts.diffusers_vae_upcast != 'default' and model_type in ['Stable Diffusion', 'Stable Diffusion XL']:
             diffusers_load_config['force_upcast'] = True if shared.opts.diffusers_vae_upcast == 'true' else False
@@ -1224,8 +1224,11 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
             diffusers_load_config.pop('local_files_only', None)
             shared.log.debug(f'Setting {op}: pipeline={sd_model.__class__.__name__} config={diffusers_load_config}') # pylint: disable=protected-access
     except Exception as e:
-        shared.log.error(f'Diffusers failed loading: {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} config={diffusers_load_config} {e}')
-        errors.display(e, f'loading {op}={checkpoint_info.path} pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__}')
+        shared.log.error(f'Load {op}: file="{checkpoint_info.path}" pipeline={shared.opts.diffusers_pipeline}/{sd_model.__class__.__name__} config={diffusers_load_config} {e}')
+        if 'Weights for this component appear to be missing in the checkpoint' in str(e):
+            shared.log.error(f'Load {op}: file="{checkpoint_info.path}" is not a complete model')
+        else:
+            errors.display(e, 'Load')
         return None
     return sd_model
 
@@ -1299,7 +1302,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 sd_model = load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_config, op)
 
         if sd_model is None:
-            shared.log.error('Diffuser model not loaded')
+            shared.log.error('Load {op}: no model loaded')
             return
 
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
