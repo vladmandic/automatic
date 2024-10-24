@@ -14,6 +14,9 @@ Fixes:
 - fix send-to-control  
 - fix k-diffusion  
 - fix sd3 img2img and hires  
+- fix ipadapter supported model detection  
+- fix t2iadapter auto-download
+- fix omnigen dynamic attention  
 - handle a1111 prompt scheduling  
 - handle omnigen image placeholder in prompt  
 
