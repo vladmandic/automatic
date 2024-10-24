@@ -121,12 +121,19 @@ def process_base(p: processing.StableDiffusionProcessing):
         shared.log.info(e)
     except ValueError as e:
         shared.state.interrupted = True
-        shared.log.error(f'Processing: args={base_args} {e}')
+        err_args = base_args.copy()
+        for k, v in base_args.items():
+            if isinstance(v, torch.Tensor):
+                err_args[k] = f'{v.device}:{v.dtype}:{v.shape}'
+        shared.log.error(f'Processing: args={err_args} {e}')
         if shared.cmd_opts.debug:
             errors.display(e, 'Processing')
     except RuntimeError as e:
         shared.state.interrupted = True
-        shared.log.error(f'Processing: step=base args={base_args} {e}')
+        for k, v in base_args.items():
+            if isinstance(v, torch.Tensor):
+                err_args[k] = f'{v.device}:{v.dtype}:{v.shape}'
+        shared.log.error(f'Processing: step=base args={err_args} {e}')
         errors.display(e, 'Processing')
         modelstats.analyze()
 

@@ -108,6 +108,12 @@ class DiffusersTextualInversionManager(BaseTextualInversionManager):
 
 def get_prompt_schedule(prompt, steps):
     t0 = time.time()
+    if shared.native:
+        # TODO prompt scheduling
+        # prompt schedule returns array of prompts which would require that each prompt is fed to the model per-step
+        # prompt scheduling should instead interpolate between each prompt in schedule
+        # this temporarily disables prompt scheduling
+        return [prompt], False
     temp = []
     schedule = prompt_parser.get_learned_conditioning_prompt_schedules([prompt], steps)[0]
     if all(x == schedule[0] for x in schedule):
@@ -213,6 +219,9 @@ def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, c
                 if negative_pooled is not None:
                     negative_pooleds.append(negative_pooled)
             last_prompt, last_negative = prompt, negative
+            # TODO prompt scheduling
+            # interpolation should happen here and then we can re-enable prompt scheduling
+            # ive tried simple torch.mean and its not good-enough
 
         def fix_length(embeds):
             max_len = max([e.shape[1] for e in embeds if e is not None])
