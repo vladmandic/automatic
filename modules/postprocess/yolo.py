@@ -56,7 +56,7 @@ class YoloRestorer(Detailer):
                     name = os.path.splitext(os.path.basename(f))[0]
                     if name not in files:
                         self.list[name] = os.path.join(shared.opts.yolo_dir, f)
-        shared.log.info(f'Available Yolo: path="{shared.opts.yolo_dir} items={len(list(self.list))} downloaded={downloaded}')
+        shared.log.info(f'Available Yolo: path="{shared.opts.yolo_dir}" items={len(list(self.list))} downloaded={downloaded}')
         return self.list
 
     def dependencies(self):

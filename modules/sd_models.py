@@ -417,6 +417,16 @@ def read_state_dict(checkpoint_file, map_location=None, what:str='model'): # pyl
     return sd
 
 
+def get_safetensor_keys(filename):
+    keys = []
+    try:
+        with safetensors.torch.safe_open(filename, framework="pt", device="cpu") as f:
+            keys = f.keys()
+    except Exception as e:
+        shared.log.error(f'Load dict: path="{filename}" {e}')
+    return keys
+
+
 def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
     if not os.path.isfile(checkpoint_info.filename):
         return None
@@ -1088,7 +1098,7 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
             sd_model = load_flux(checkpoint_info, diffusers_load_config)
         elif model_type in ['Stable Diffusion 3']:
             from modules.model_sd3 import load_sd3
-            shared.log.debug(f'Load {op}: model="Stable Diffusion 3" variant=medium')
+            shared.log.debug(f'Load {op}: model="Stable Diffusion 3"')
             shared.opts.scheduler = 'Default'
             sd_model = load_sd3(checkpoint_info, cache_dir=shared.opts.diffusers_dir, config=diffusers_load_config.get('config', None))
         elif model_type in ['Meissonic']: # forced pipeline
