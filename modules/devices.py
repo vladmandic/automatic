@@ -280,10 +280,17 @@ def test_bf16():
     if bf16_ok is not None:
         return bf16_ok
     if opts.cuda_dtype != 'BF16': # don't override if the user sets it
-        if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml' or backend == 'zluda': # override
+        if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
             bf16_ok = False
             return bf16_ok
-        if backend == 'rocm':
+        elif backend == 'zluda':
+            device_name = torch.cuda.get_device_name(device)
+            if "AMD Radeon RX " in device_name: # only force AMD
+                device_name = device_name.replace("AMD Radeon RX ", "").split(" ", maxsplit=1)[0]
+                if len(device_name) == 4 and device_name[0] in {"5", "6"}: # RDNA 1 and 2
+                    bf16_ok = False
+                    return bf16_ok
+        elif backend == 'rocm':
             gcn_arch = getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000")[3:7]
             if len(gcn_arch) == 4 and gcn_arch[0:2] == "10": # RDNA 1 and 2
                 bf16_ok = False
