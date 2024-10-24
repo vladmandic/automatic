@@ -7,6 +7,7 @@ from openvino.frontend import FrontEndManager
 from openvino.frontend.pytorch.fx_decoder import TorchFXPythonDecoder
 from openvino.frontend.pytorch.torchdynamo.partition import Partitioner
 from openvino.runtime import Core, Type, PartialShape, serialize
+from openvino.properties import hint as ov_hints
 
 from torch._dynamo.backends.common import fake_tensor_unsupported
 from torch._dynamo.backends.registry import register_backend
@@ -156,7 +157,6 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
     core = Core()
 
     device = get_device()
-    cache_root = shared.opts.openvino_cache_path
     global dont_use_4bit_nncf
     global dont_use_nncf
     global dont_use_quant
@@ -233,9 +233,14 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         else:
             om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=8, ratio=shared.opts.nncf_compress_weights_raito)
 
-
+    hints = {}
+    if shared.opts.openvino_accuracy == "performance":
+        hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.PERFORMANCE
+    elif shared.opts.openvino_accuracy == "accuracy":
+        hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.ACCURACY
     if model_hash_str is not None:
-        core.set_property({'CACHE_DIR': cache_root + '/blob'})
+        hints['CACHE_DIR'] = shared.opts.openvino_cache_path + '/blob'
+    core.set_property(hints)
     dont_use_nncf = False
     dont_use_quant = False
     dont_use_4bit_nncf = False
@@ -286,7 +291,11 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
         else:
             om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=8, ratio=shared.opts.nncf_compress_weights_raito)
 
-    core.set_property({'CACHE_DIR': shared.opts.openvino_cache_path + '/blob'})
+    hints = {'CACHE_DIR': shared.opts.openvino_cache_path + '/blob'}
+    if shared.opts.openvino_accuracy == "performance":
+        hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.PERFORMANCE
+    elif shared.opts.openvino_accuracy == "accuracy":
+        hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.ACCURACY
     dont_use_nncf = False
     dont_use_quant = False
     dont_use_4bit_nncf = False
