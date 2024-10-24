@@ -43,7 +43,6 @@ def initialize_zluda():
         if hasattr(torch.backends.cuda, "enable_cudnn_sdp"):
             torch.backends.cuda.enable_cudnn_sdp(False)
             torch.backends.cuda.enable_cudnn_sdp = do_nothing
-        shared.opts.sdp_options = ['Math attention']
 
         # ONNX Runtime is not supported
         ort.capi._pybind_state.get_available_providers = lambda: [v for v in available_execution_providers if v != ExecutionProvider.CUDA] # pylint: disable=protected-access
