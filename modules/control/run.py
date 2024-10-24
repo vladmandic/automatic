@@ -219,7 +219,7 @@ def control_run(state: str = '',
     p_extra_args = {}
 
     if shared.sd_model is None:
-        shared.log.warning('Model not loaded')
+        shared.log.warning('Aborted: op=control model not loaded')
         return [], '', '', 'Error: model not loaded'
 
     unit_type = unit_type.strip().lower() if unit_type is not None else ''

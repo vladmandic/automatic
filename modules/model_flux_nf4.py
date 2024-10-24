@@ -200,7 +200,7 @@ def load_flux_nf4(checkpoint_info):
                 create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
     except Exception as e:
         transformer, text_encoder_2 = None, None
-        shared.log.error(f"Load model: type=FLUX Failed to load UNET: {e}")
+        shared.log.error(f"Load model: type=FLUX failed to load UNET: {e}")
         if debug:
             from modules import errors
             errors.display(e, 'FLUX:')

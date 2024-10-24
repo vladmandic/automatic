@@ -616,7 +616,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (detailer, "Face restoration"),
+                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
                 # second pass

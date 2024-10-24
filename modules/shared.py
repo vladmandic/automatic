@@ -19,7 +19,6 @@ from modules import errors, devices, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
-from modules.zluda import initialize_zluda
 from modules.memstats import memory_stats
 import modules.interrogate
 import modules.memmon
@@ -413,8 +412,8 @@ def get_default_modes():
 
     if devices.backend == "rocm":
         default_sdp_options =  ['Memory attention', 'Math attention']
-    #elif devices.backend == "zluda":
-    #    sdp_options_default =  ['Math attention']
+    elif devices.backend == "zluda":
+        default_sdp_options =  ['Math attention']
     else:
         default_sdp_options = ['Flash attention', 'Memory attention', 'Math attention']
     if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options):
@@ -496,6 +495,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
 
     "openvino_sep": OptionInfo("<h2>OpenVINO</h2>", "", gr.HTML, {"visible": cmd_opts.use_openvino}),
     "openvino_devices": OptionInfo([], "OpenVINO devices to use", gr.CheckboxGroup, {"choices": get_openvino_device_list() if cmd_opts.use_openvino else [], "visible": cmd_opts.use_openvino}), # pylint: disable=E0606
+    "openvino_accuracy": OptionInfo("performance", "OpenVINO accuracy mode", gr.Radio, {"choices": ['performance', 'accuracy'], "visible": cmd_opts.use_openvino}),
     "openvino_disable_model_caching": OptionInfo(False, "OpenVINO disable model caching", gr.Checkbox, {"visible": cmd_opts.use_openvino}),
     "openvino_disable_memory_cleanup": OptionInfo(True, "OpenVINO disable memory cleanup after compile", gr.Checkbox, {"visible": cmd_opts.use_openvino}),
 
@@ -1124,7 +1124,8 @@ mem_mon = modules.memmon.MemUsageMonitor("MemMon", devices.device)
 history = history.History()
 if devices.backend == "directml":
     directml_do_hijack()
-elif devices.backend == "cuda":
+elif devices.backend == "zluda":
+    from modules.zluda import initialize_zluda
     initialize_zluda()
 initialize_onnx()
 try:

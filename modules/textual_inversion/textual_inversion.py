@@ -262,7 +262,6 @@ class EmbeddingDatabase:
         if shared.native:
             return 0
         if not shared.sd_loaded:
-            shared.log.error('Model not loaded')
             return 0
         vec = shared.sd_model.cond_stage_model.encode_embedding_init_text(",", 1)
         return vec.shape[1]

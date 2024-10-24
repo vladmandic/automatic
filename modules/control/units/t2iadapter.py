@@ -11,17 +11,17 @@ what = 'T2I-Adapter'
 debug = log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: CONTROL')
 predefined_sd15 = {
-    'Segment': 'TencentARC/t2iadapter_seg_sd14v1',
-    'Zoe Depth': 'TencentARC/t2iadapter_zoedepth_sd15v1',
-    'OpenPose': 'TencentARC/t2iadapter_openpose_sd14v1',
-    'KeyPose': 'TencentARC/t2iadapter_keypose_sd14v1',
-    'Color': 'TencentARC/t2iadapter_color_sd14v1',
-    'Depth v1': 'TencentARC/t2iadapter_depth_sd14v1',
-    'Depth v2': 'TencentARC/t2iadapter_depth_sd15v2',
-    'Canny v1': 'TencentARC/t2iadapter_canny_sd14v1',
-    'Canny v2': 'TencentARC/t2iadapter_canny_sd15v2',
-    'Sketch v1': 'TencentARC/t2iadapter_sketch_sd14v1',
-    'Sketch v2': 'TencentARC/t2iadapter_sketch_sd15v2',
+    'Segment': ('TencentARC/t2iadapter_seg_sd14v1', {}),
+    'Zoe Depth': ('TencentARC/t2iadapter_zoedepth_sd15v1', {}),
+    'OpenPose': ('TencentARC/t2iadapter_openpose_sd14v1', {}),
+    'KeyPose': ('TencentARC/t2iadapter_keypose_sd14v1', {}),
+    'Color': ('TencentARC/t2iadapter_color_sd14v1', {}),
+    'Depth v1': ('TencentARC/t2iadapter_depth_sd14v1', {}),
+    'Depth v2': ('TencentARC/t2iadapter_depth_sd15v2', {}),
+    'Canny v1': ('TencentARC/t2iadapter_canny_sd14v1', {}),
+    'Canny v2': ('TencentARC/t2iadapter_canny_sd15v2', {}),
+    'Sketch v1': ('TencentARC/t2iadapter_sketch_sd14v1', {}),
+    'Sketch v2': ('TencentARC/t2iadapter_sketch_sd15v2', {}),
     # 'Coadapter Canny': 'TencentARC/T2I-Adapter/models/coadapter-canny-sd15v1.pth',
     # 'Coadapter Color': 'TencentARC/T2I-Adapter/models/coadapter-color-sd15v1.pth',
     # 'Coadapter Depth': 'TencentARC/T2I-Adapter/models/coadapter-depth-sd15v1.pth',
@@ -30,12 +30,12 @@ predefined_sd15 = {
     # 'Coadapter Style': 'TencentARC/T2I-Adapter/models/coadapter-style-sd15v1.pth',
 }
 predefined_sdxl = {
-    'Canny XL': 'TencentARC/t2i-adapter-canny-sdxl-1.0',
-    'LineArt XL': 'TencentARC/t2i-adapter-lineart-sdxl-1.0',
-    'Sketch XL': 'TencentARC/t2i-adapter-sketch-sdxl-1.0',
-    'Zoe Depth XL': 'TencentARC/t2i-adapter-depth-zoe-sdxl-1.0',
-    'OpenPose XL': 'TencentARC/t2i-adapter-openpose-sdxl-1.0',
-    'Midas Depth XL': 'TencentARC/t2i-adapter-depth-midas-sdxl-1.0',
+    'Canny XL': ('TencentARC/t2i-adapter-canny-sdxl-1.0', { 'use_safetensors': True, 'variant': 'fp16' }),
+    'LineArt XL': ('TencentARC/t2i-adapter-lineart-sdxl-1.0', { 'use_safetensors': True, 'variant': 'fp16' }),
+    'Sketch XL': ('TencentARC/t2i-adapter-sketch-sdxl-1.0', { 'use_safetensors': True, 'variant': 'fp16' }),
+    'Zoe Depth XL': ('TencentARC/t2i-adapter-depth-zoe-sdxl-1.0', { 'use_safetensors': True, 'variant': 'fp16' }),
+    'OpenPose XL': ('TencentARC/t2i-adapter-openpose-sdxl-1.0', { 'use_safetensors': True }),
+    'Midas Depth XL': ('TencentARC/t2i-adapter-depth-midas-sdxl-1.0', { 'use_safetensors': True, 'variant': 'fp16' }),
 }
 
 models = {}
@@ -96,7 +96,8 @@ class Adapter():
             if model_id not in all_models:
                 log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
                 return
-            model_path = all_models[model_id]
+            model_path, model_args = all_models[model_id]
+            self.load_config.update(model_args)
             if model_path is None:
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
                 return

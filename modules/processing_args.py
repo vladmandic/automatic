@@ -127,7 +127,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
-            p.prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
+            prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
@@ -256,12 +256,13 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     # handle missing resolution
     if args.get('image', None) is not None and ('width' not in args or 'height' not in args):
-        if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
-            args['width'] = 8 * args['image'].shape[-1]
-            args['height'] = 8 * args['image'].shape[-2]
-        else:
-            args['width'] = 8 * math.ceil(args['image'][0].width / 8)
-            args['height'] = 8 * math.ceil(args['image'][0].height / 8)
+        if 'width' in possible and 'height' in possible:
+            if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
+                args['width'] = 8 * args['image'].shape[-1]
+                args['height'] = 8 * args['image'].shape[-2]
+            else:
+                args['width'] = 8 * math.ceil(args['image'][0].width / 8)
+                args['height'] = 8 * math.ceil(args['image'][0].height / 8)
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:

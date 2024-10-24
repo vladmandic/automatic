@@ -46,6 +46,16 @@ def has_xpu() -> bool:
     return bool(hasattr(torch, 'xpu') and torch.xpu.is_available())
 
 
+def has_zluda() -> bool:
+    if not cuda_ok:
+        return False
+    try:
+        device = torch.device("cuda")
+        return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+    except Exception:
+        return False
+
+
 def get_backend(shared_cmd_opts):
     global args # pylint: disable=global-statement
     args = shared_cmd_opts
@@ -55,6 +65,8 @@ def get_backend(shared_cmd_opts):
         name = 'directml'
     elif has_xpu():
         name = 'ipex'
+    elif has_zluda():
+        name = 'zluda'
     elif torch.cuda.is_available() and torch.version.cuda:
         name = 'cuda'
     elif torch.cuda.is_available() and torch.version.hip:
@@ -109,7 +121,7 @@ def get_gpu_info():
                     'device': f'{torch.xpu.get_device_name(torch.xpu.current_device())} n={torch.xpu.device_count()}',
                     'ipex': get_package_version('intel-extension-for-pytorch'),
                 }
-            elif backend == 'cuda':
+            elif backend == 'cuda' or backend == 'zluda':
                 return {
                     'device': f'{torch.cuda.get_device_name(torch.cuda.current_device())} n={torch.cuda.device_count()} arch={torch.cuda.get_arch_list()[-1]} capability={torch.cuda.get_device_capability(device)}',
                     'cuda': torch.version.cuda,
@@ -267,9 +279,22 @@ def test_bf16():
     global bf16_ok # pylint: disable=global-statement
     if bf16_ok is not None:
         return bf16_ok
-    if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
-        bf16_ok = False
-        return bf16_ok
+    if opts.cuda_dtype != 'BF16': # don't override if the user sets it
+        if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
+            bf16_ok = False
+            return bf16_ok
+        elif backend == 'zluda':
+            device_name = torch.cuda.get_device_name(device)
+            if device_name.startswith("AMD Radeon RX "): # only force AMD
+                device_name = device_name.replace("AMD Radeon RX ", "").split(" ", maxsplit=1)[0]
+                if len(device_name) == 4 and device_name[0] in {"5", "6"}: # RDNA 1 and 2
+                    bf16_ok = False
+                    return bf16_ok
+        elif backend == 'rocm':
+            gcn_arch = getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000")[3:7]
+            if len(gcn_arch) == 4 and gcn_arch[0:2] == "10": # RDNA 1 and 2
+                bf16_ok = False
+                return bf16_ok
     try:
         import torch.nn.functional as F
         image = torch.randn(1, 4, 32, 32).to(device=device, dtype=torch.bfloat16)

@@ -41,7 +41,7 @@ def load_flux_quanto(checkpoint_info):
             except Exception:
                 shared.log.error(f"Load model: type=FLUX Failed to cast transformer to {devices.dtype}, set dtype to {transformer.dtype}")
     except Exception as e:
-        shared.log.error(f"Load model: type=FLUX Failed to load Quanto transformer: {e}")
+        shared.log.error(f"Load model: type=FLUX failed to load Quanto transformer: {e}")
         if debug:
             from modules import errors
             errors.display(e, 'FLUX Quanto:')
@@ -68,7 +68,7 @@ def load_flux_quanto(checkpoint_info):
             except Exception:
                 shared.log.error(f"Load model: type=FLUX Failed to cast text encoder to {devices.dtype}, set dtype to {text_encoder_2.dtype}")
     except Exception as e:
-        shared.log.error(f"Load model: type=FLUX Failed to load Quanto text encoder: {e}")
+        shared.log.error(f"Load model: type=FLUX failed to load Quanto text encoder: {e}")
         if debug:
             from modules import errors
             errors.display(e, 'FLUX Quanto:')
@@ -100,7 +100,7 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
         else:
             transformer = diffusers.FluxTransformer2DModel.from_single_file(repo_path, **diffusers_load_config)
     except Exception as e:
-        shared.log.error(f"Load model: type=FLUX Failed to load BnB transformer: {e}")
+        shared.log.error(f"Load model: type=FLUX failed to load BnB transformer: {e}")
         transformer, text_encoder_2 = None, None
         if debug:
             from modules import errors
@@ -222,7 +222,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 shared.opts.sd_unet = 'None'
                 sd_unet.failed_unet.append(shared.opts.sd_unet)
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX Failed to load UNet: {e}")
+            shared.log.error(f"Load model: type=FLUX failed to load UNet: {e}")
             shared.opts.sd_unet = 'None'
             if debug:
                 from modules import errors
@@ -236,7 +236,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             else:
                 text_encoder_2 = load_t5(name=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX Failed to load T5: {e}")
+            shared.log.error(f"Load model: type=FLUX failed to load T5: {e}")
             shared.opts.sd_text_encoder = 'None'
             if debug:
                 from modules import errors
@@ -251,7 +251,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 vae_config = os.path.join('configs', 'flux', 'vae', 'config.json')
                 vae = diffusers.AutoencoderKL.from_single_file(vae_file, config=vae_config, **diffusers_load_config)
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX Failed to load VAE: {e}")
+            shared.log.error(f"Load model: type=FLUX failed to load VAE: {e}")
             shared.opts.sd_vae = 'None'
             if debug:
                 from modules import errors
@@ -267,7 +267,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             if _text_encoder is not None:
                 text_encoder_2 = _text_encoder
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX Failed to load NF4 components: {e}")
+            shared.log.error(f"Load model: type=FLUX failed to load NF4 components: {e}")
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX NF4:')
@@ -279,7 +279,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             if _text_encoder is not None:
                 text_encoder_2 = _text_encoder
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX Failed to load Quanto components: {e}")
+            shared.log.error(f"Load model: type=FLUX failed to load Quanto components: {e}")
             if debug:
                 from modules import errors
                 errors.display(e, 'FLUX Quanto:')
