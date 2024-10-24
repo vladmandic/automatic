@@ -285,7 +285,7 @@ def test_bf16():
             return bf16_ok
         elif backend == 'zluda':
             device_name = torch.cuda.get_device_name(device)
-            if "AMD Radeon RX " in device_name: # only force AMD
+            if device_name.startswith("AMD Radeon RX "): # only force AMD
                 device_name = device_name.replace("AMD Radeon RX ", "").split(" ", maxsplit=1)[0]
                 if len(device_name) == 4 and device_name[0] in {"5", "6"}: # RDNA 1 and 2
                     bf16_ok = False

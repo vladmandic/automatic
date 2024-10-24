@@ -296,6 +296,7 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
         hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.PERFORMANCE
     elif shared.opts.openvino_accuracy == "accuracy":
         hints[ov_hints.execution_mode] = ov_hints.ExecutionMode.ACCURACY
+    core.set_property(hints)
     dont_use_nncf = False
     dont_use_quant = False
     dont_use_4bit_nncf = False
