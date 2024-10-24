@@ -130,6 +130,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             errors.display(e, 'Processing')
     except RuntimeError as e:
         shared.state.interrupted = True
+        err_args = base_args.copy()
         for k, v in base_args.items():
             if isinstance(v, torch.Tensor):
                 err_args[k] = f'{v.device}:{v.dtype}:{v.shape}'

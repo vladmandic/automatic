@@ -113,9 +113,6 @@ def unapply(pipe): # pylint: disable=arguments-differ
 
 def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_crops=[False], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
     global clip_loaded # pylint: disable=global-statement
-    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
-        shared.log.error(f'IP adapter: model={shared.sd_model_type} class={pipe.__class__.__name__} not supported')
-        return False
     # overrides
     if hasattr(p, 'ip_adapter_names'):
         if isinstance(p.ip_adapter_names, str):
@@ -131,6 +128,9 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         unapply(pipe)
         if hasattr(p, 'ip_adapter_images'):
             del p.ip_adapter_images
+        return False
+    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
+        shared.log.error(f'IP adapter: model={shared.sd_model_type} class={pipe.__class__.__name__} not supported')
         return False
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
