@@ -7,8 +7,8 @@ Improvements:
   - report when loading incomplete model  
   - handle missing model components  
   - handle component preloading  
-- OpenVINO add accuracy option  
-- ZLUDA guess GPU arch  
+- OpenVINO: add accuracy option  
+- ZLUDA: guess GPU arch  
 
 Fixes:  
 - fix send-to-control  
