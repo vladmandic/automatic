@@ -1,5 +1,22 @@
 # Change Log for SD.Next
 
+## Update for 2024-10-24
+
+Improvements:
+- SD3 loader enhancements
+  - report when loading incomplete model  
+  - handle missing model components  
+  - handle component preloading  
+- OpenVINO add accuracy option  
+- ZLUDA guess GPU arch  
+
+Fixes:  
+- fix send-to-control  
+- fix k-diffusion  
+- fix sd3 img2img and hires  
+- handle a1111 prompt scheduling  
+- handle omnigen image placeholder in prompt  
+
 ## Update for 2024-10-23
 
 ### Highlights for 2024-10-23

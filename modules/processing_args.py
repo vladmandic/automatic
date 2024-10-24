@@ -127,7 +127,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
-            p.prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
+            prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
