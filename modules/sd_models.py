@@ -187,9 +187,7 @@ def update_model_hashes():
         ckpt.sha256 = hashes.sha256(ckpt.filename, f"checkpoint/{ckpt.name}")
         ckpt.shorthash = ckpt.sha256[0:10] if ckpt.sha256 is not None else None
         if ckpt.sha256 is not None:
-            txt.append(f'Calculated full hash: <b>{ckpt.title}</b> {ckpt.shorthash}')
-        else:
-            txt.append(f'Skipped hash calculation: <b>{ckpt.title}</b>')
+            txt.append(f'Hash: <b>{ckpt.title}</b> {ckpt.shorthash}')
     txt.append(f'Updated hashes for <b>{len(lst)}</b> out of <b>{len(checkpoints_list)}</b> models')
     txt = '<br>'.join(txt)
     return txt
