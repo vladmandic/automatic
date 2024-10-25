@@ -99,11 +99,25 @@ def download_civit_preview(model_path: str, preview_url: str):
 
 download_pbar = None
 
-def download_civit_model_thread(model_name, model_url, model_path, model_type, token):
+def download_civit_model_thread(model_name: str, model_url: str, model_path: str = "", model_type: str = "Model", token: str = None):
     import hashlib
     sha256 = hashlib.sha256()
-    sha256.update(model_name.encode('utf-8'))
+    sha256.update(model_url.encode('utf-8'))
     temp_file = sha256.hexdigest()[:8] + '.tmp'
+
+    headers = {}
+    starting_pos = 0
+    if os.path.isfile(temp_file):
+        starting_pos = os.path.getsize(temp_file)
+        headers['Range'] = f'bytes={starting_pos}-'
+    if token is not None and len(token) > 0:
+        headers['Authorization'] = f'Bearer {token}'
+
+    r = shared.req(model_url, headers=headers, stream=True)
+    total_size = int(r.headers.get('content-length', 0))
+    if model_name is None or len(model_name) == 0:
+        cn = r.headers.get('content-disposition', '')
+        model_name = cn.split('filename=')[-1].strip('"')
 
     if model_type == 'LoRA':
         model_file = os.path.join(shared.opts.lora_dir, model_path, model_name)
@@ -124,17 +138,6 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
         shared.log.warning(res)
         return res
 
-    headers = {}
-    starting_pos = 0
-    if os.path.isfile(temp_file):
-        starting_pos = os.path.getsize(temp_file)
-        res += f' resume={round(starting_pos/1024/1024)}Mb'
-        headers['Range'] = f'bytes={starting_pos}-'
-    if token is not None and len(token) > 0:
-        headers['Authorization'] = f'Bearer {token}'
-
-    r = shared.req(model_url, headers=headers, stream=True)
-    total_size = int(r.headers.get('content-length', 0))
     res += f' size={round((starting_pos + total_size)/1024/1024, 2)}Mb'
     shared.log.info(res)
     shared.state.begin('CivitAI')
@@ -177,7 +180,10 @@ def download_civit_model_thread(model_name, model_url, model_path, model_type, t
         shared.log.debug(f'Model download complete: temp="{temp_file}" path="{model_file}"')
         os.rename(temp_file, model_file)
     shared.state.end()
-    return res
+    if os.path.exists(model_file):
+        return model_file
+    else:
+        return None
 
 
 def download_civit_model(model_url: str, model_name: str, model_path: str, model_type: str, token: str = None):
@@ -309,7 +315,7 @@ def load_diffusers_models(clear=True):
     return diffuser_repos
 
 
-def find_diffuser(name: str):
+def find_diffuser(name: str, full=False):
     repo = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(repo) > 0:
         return repo['name']
@@ -317,7 +323,10 @@ def find_diffuser(name: str):
     models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
-        return models[0].id
+        if not full:
+            return models[0].id
+        else:
+            return [m.id for m in models]
     return None
 
 

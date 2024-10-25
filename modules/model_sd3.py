@@ -75,7 +75,7 @@ def load_missing(kwargs, fn, cache_dir):
     if size > 15000:
         repo_id = 'stabilityai/stable-diffusion-3.5-large'
     else:
-        repo_id = 'stabilityai/stable-diffusion-3-medium'
+        repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     if 'text_encoder' not in kwargs and 'text_encoder' not in keys:
         kwargs['text_encoder'] = transformers.CLIPTextModelWithProjection.from_pretrained(repo_id, subfolder='text_encoder', cache_dir=cache_dir, torch_dtype=devices.dtype)
         shared.log.debug(f'Load model: type=SD3 missing=te1 repo="{repo_id}"')

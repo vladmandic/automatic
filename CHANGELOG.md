@@ -1,12 +1,24 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-24
+## Update for 2024-10-25
 
 Improvements:
+- Model selector:
+  - change-in-behavior
+  - when typing, it will auto-load model as soon as exactly one match is found
+  - allows entering model that are not on the list which triggers huggingface search  
+    e.g. `stabilityai/stable-diffusion-xl-base-1.0`  
+    partial search hits are displayed in the log  
+    if exact model is found, it will be auto-downloaded and loaded  
+  - allows entering civitai direct download link which triggers model download  
+    e.g. `https://civitai.com/api/download/models/72396?type=Model&format=SafeTensor&size=full&fp=fp16`  
+  - auto-search-and-download can be disabled in settings -> models -> auto-download  
+    this also disables reference models as they are auto-downloaded on first use as well  
 - SD3 loader enhancements
   - report when loading incomplete model  
   - handle missing model components  
   - handle component preloading  
+  - native lora handler  
   - gguf transformer loader (prototype)  
 - OpenVINO: add accuracy option  
 - ZLUDA: guess GPU arch  

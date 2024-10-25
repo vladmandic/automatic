@@ -115,7 +115,8 @@ class CheckpointInfo:
         if self.sha256 is None:
             return None
         self.shorthash = self.sha256[0:10]
-        checkpoints_list.pop(self.title)
+        if self.title in checkpoints_list:
+            checkpoints_list.pop(self.title)
         self.title = f'{self.name} [{self.shorthash}]'
         self.register()
         return self.shorthash
@@ -193,28 +194,51 @@ def update_model_hashes():
     return txt
 
 
-def get_closet_checkpoint_match(search_string):
-    if search_string.startswith('huggingface/'):
-        model_name = search_string.replace('huggingface/', '')
+def get_closet_checkpoint_match(s: str):
+    if s.startswith('https://huggingface.co/'):
+        s = s.replace('https://huggingface.co/', '')
+    if s.startswith('huggingface/'):
+        model_name = s.replace('huggingface/', '')
         checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
         checkpoint_info.type = 'huggingface'
         return checkpoint_info
-    checkpoint_info = checkpoint_aliases.get(search_string, None)
+
+    # alias search
+    checkpoint_info = checkpoint_aliases.get(s, None)
     if checkpoint_info is not None:
         return checkpoint_info
-    found = sorted([info for info in checkpoints_list.values() if search_string in info.title], key=lambda x: len(x.title))
-    if found and len(found) > 0:
+
+    # models search
+    found = sorted([info for info in checkpoints_list.values() if os.path.basename(info.title).lower().startswith(s.lower())], key=lambda x: len(x.title))
+    if found and len(found) == 1:
         return found[0]
-    found = sorted([info for info in checkpoints_list.values() if search_string.split(' ')[0] in info.title], key=lambda x: len(x.title))
-    if found and len(found) > 0:
-        return found[0]
-    for v in shared.reference_models.values():
-        pth = v['path'].split('@')[-1]
-        if search_string in pth or os.path.basename(search_string) in pth:
-            model_name = search_string.replace('huggingface/', '')
-            checkpoint_info = CheckpointInfo(v['path']) # create a virutal model info
+
+    # reference search
+    """
+    found = sorted([info for info in shared.reference_models.values() if os.path.basename(info['path']).lower().startswith(s.lower())], key=lambda x: len(x['path']))
+    if found and len(found) == 1:
+        checkpoint_info = CheckpointInfo(found[0]['path']) # create a virutal model info
+        checkpoint_info.type = 'huggingface'
+        return checkpoint_info
+    """
+
+    # huggingface search
+    if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
+        modelloader.hf_login()
+        found = modelloader.find_diffuser(s, full=True)
+        shared.log.info(f'HF search: model="{s}" results={found}')
+        if found is not None and len(found) == 1 and found[0] == s:
+            checkpoint_info = CheckpointInfo(s)
             checkpoint_info.type = 'huggingface'
             return checkpoint_info
+
+    # civitai search
+    if shared.opts.sd_checkpoint_autodownload and s.startswith("https://civitai.com/api/download/models"):
+        fn = modelloader.download_civit_model_thread(model_name=None, model_url=s, model_path='', model_type='Model', token=None)
+        if fn is not None:
+            checkpoint_info = CheckpointInfo(fn)
+            return checkpoint_info
+
     return None
 
 
@@ -260,7 +284,7 @@ def select_checkpoint(op='model'):
     # checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
         if model_checkpoint != 'model.safetensors' and model_checkpoint != 'stabilityai/stable-diffusion-xl-base-1.0':
-            shared.log.warning(f'Load {op}: select="{model_checkpoint}" not found')
+            shared.log.info(f'Load {op}: search="{model_checkpoint}" not found')
         else:
             shared.log.info("Selecting first available checkpoint")
         # shared.log.warning(f"Loading fallback checkpoint: {checkpoint_info.title}")
@@ -1310,7 +1334,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
                 sd_model = load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_config, op)
 
         if sd_model is None:
-            shared.log.error('Load {op}: no model loaded')
+            shared.log.error(f'Load {op}: name="{checkpoint_info.name if checkpoint_info is not None else None}" not loaded')
             return
 
         sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
