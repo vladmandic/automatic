@@ -204,11 +204,12 @@ class StableDiffusionProcessing:
         self.hdr_color_picker=hdr_color_picker
         self.hdr_tint_ratio=hdr_tint_ratio
         # globals
-        self.scheduled_prompt: bool = False
-        self.prompt_embeds = []
-        self.positive_pooleds = []
-        self.negative_embeds = []
-        self.negative_pooleds = []
+        self.embedder = None
+        # self.scheduled_prompt: bool = False
+        # self.prompt_embeds = []
+        # self.positive_pooleds = []
+        # self.negative_embeds = []
+        # self.negative_pooleds = []
 
     @property
     def sd_model(self):

@@ -117,7 +117,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         'Flux' in model.__class__.__name__
     ):
         try:
-            prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
+            # prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
+            p.embedder = prompt_parser_diffusers.PromptEmbedder(prompts, negative_prompts, clip_skip, p)
             parser = shared.opts.prompt_attention
         except Exception as e:
             shared.log.error(f'Prompt parser encode: {e}')
@@ -128,27 +129,27 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
-        if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
-            args['prompt_embeds'] = p.prompt_embeds[0]
+        if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and p.embedder is not None:
+            args['prompt_embeds'] = p.embedder('prompt_embeds')
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['prompt_embeds_pooled'] = p.positive_pooleds[0].unsqueeze(0)
-            elif 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
-            elif 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
-            elif 'Flux' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
+                args['prompt_embeds_pooled'] = p.embedder('positive_pooleds').unsqueeze(0)
+            elif 'XL' in model.__class__.__name__ and p.embedder is not None:
+                args['pooled_prompt_embeds'] = p.embedder('positive_pooleds')
+            elif 'StableDiffusion3' in model.__class__.__name__ and p.embedder is not None:
+                args['pooled_prompt_embeds'] = p.embedder('positive_pooleds')
+            elif 'Flux' in model.__class__.__name__ and p.embedder is not None:
+                args['pooled_prompt_embeds'] = p.embedder('positive_pooleds')
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
-        if hasattr(model, 'text_encoder') and 'negative_prompt_embeds' in possible and len(p.negative_embeds) > 0 and p.negative_embeds[0] is not None:
-            args['negative_prompt_embeds'] = p.negative_embeds[0]
-            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_prompt_embeds_pooled'] = p.negative_pooleds[0].unsqueeze(0)
-            if 'XL' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
-            if 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
+        if hasattr(model, 'text_encoder') and 'negative_prompt_embeds' in possible and p.embedder is not None:
+            args['negative_prompt_embeds'] = p.embedder('negative_embeds')
+            if 'StableCascade' in model.__class__.__name__ and p.embedder is not None:
+                args['negative_prompt_embeds_pooled'] = p.embedder('negative_pooleds').unsqueeze(0)
+            if 'XL' in model.__class__.__name__ and p.embedder is not None:
+                args['negative_pooled_prompt_embeds'] = p.embedder('negative_pooleds')
+            if 'StableDiffusion3' in model.__class__.__name__ and p.embedder is not None:
+                args['negative_pooled_prompt_embeds'] = p.embedder('negative_pooleds')
         else:
             if 'PixArtSigmaPipeline' in model.__class__.__name__: # pixart-sigma pipeline throws list-of-list for negative prompt
                 args['negative_prompt'] = negative_prompts[0]

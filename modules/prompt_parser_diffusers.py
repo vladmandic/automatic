@@ -7,6 +7,7 @@ from compel.embeddings_provider import BaseTextualInversionManager, EmbeddingsPr
 from transformers import PreTrainedTokenizer
 from modules import shared, prompt_parser, devices, sd_models
 from modules.prompt_parser_xhinker import get_weighted_text_embeddings_sd15, get_weighted_text_embeddings_sdxl_2p, get_weighted_text_embeddings_sd3, get_weighted_text_embeddings_flux1
+from modules.processing_helpers import fix_prompts
 
 debug_enabled = os.environ.get('SD_PROMPT_DEBUG', None)
 debug = shared.log.trace if os.environ.get('SD_PROMPT_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -15,6 +16,131 @@ orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_em
 token_dict = None # used by helper get_tokens
 token_type = None # used by helper get_tokens
 cache = {}
+
+
+def prompt_compatible():
+    if (
+            'StableDiffusion' not in shared.sd_model.__class__.__name__ and
+            'DemoFusion' not in shared.sd_model.__class__.__name__ and
+            'StableCascade' not in shared.sd_model.__class__.__name__ and
+            'Flux' not in shared.sd_model.__class__.__name__
+    ):
+        shared.log.warning(f"Prompt parser not supported: {shared.sd_model.__class__.__name__}")
+        return False
+    return True
+
+
+def prepare_model():
+    pipe = shared.sd_model
+    if shared.opts.diffusers_offload_mode == "balanced":
+        pipe = sd_models.apply_balanced_offload(pipe)
+    elif hasattr(pipe, "maybe_free_model_hooks"):
+        pipe.maybe_free_model_hooks()
+        devices.torch_gc()
+    return pipe
+
+
+class PromptEmbedder:
+    def __init__(self, prompts, negative_prompts, clip_skip, p):
+        t0 = time.time()
+        # self.prompts, self.negative_prompts, _, _ = fix_prompts(prompts, negative_prompts, None, None)
+        self.prompts = prompts
+        self.negative_prompts = negative_prompts
+        self.batchsize = len(self.prompts)
+        self.allsame = self.compare_prompts()  # collapses batched prompts to single prompt if same
+        self.steps = p.steps
+        self.clip_skip = clip_skip
+        self.prompt_embeds = [[]] * self.batchsize
+        self.positive_pooleds = [[]] * self.batchsize
+        self.negative_embeds = [[]] * self.batchsize
+        self.negative_pooleds = [[]] * self.batchsize
+        self.positive_schedule = None
+        self.negative_schedule = None
+        self.scheduled_prompt = False
+        pipe = prepare_model()
+        # per prompt in batch
+        for batchidx, (prompt, negative_prompt) in enumerate(zip(self.prompts, self.negative_prompts)):
+            self.prepare_schedule(prompt, negative_prompt)
+            if self.scheduled_prompt:
+                self.scheduled_encode(pipe, batchidx)
+            else:
+                self.encode(pipe, prompt, negative_prompt, batchidx)
+        if self.allsame:
+            self.duplicate_embeds()
+        debug(f"Prompt encode: time={(time.time() - t0):.3f}")
+
+    def compare_prompts(self):
+        same = (self.prompts == [self.prompts[0]] * len(self.prompts) and
+                self.negative_prompts == [self.negative_prompts[0]] * len(self.negative_prompts))
+        if same:
+            self.prompts = [self.prompts[0]]
+            self.negative_prompts = [self.negative_prompts[0]]
+        return same
+
+    def prepare_schedule(self, prompt, negative_prompt):
+        self.positive_schedule, scheduled = get_prompt_schedule(prompt, self.steps)
+        self.negative_schedule, neg_scheduled = get_prompt_schedule(negative_prompt, self.steps)
+        self.scheduled_prompt = scheduled or neg_scheduled
+
+    def scheduled_encode(self, pipe, batchidx):
+        prompt_dict = {}
+        for i in range(max(len(self.positive_schedule), len(self.negative_schedule))):
+            positive_prompt = self.positive_schedule[i % len(self.positive_schedule)]
+            negative_prompt = self.negative_schedule[i % len(self.negative_schedule)]
+            # skip repeated scheduled subprompts
+            idx = prompt_dict.get(positive_prompt+negative_prompt)
+            if idx is not None:
+                self.extend_embeds(batchidx, idx)
+                continue
+            self.encode(pipe, positive_prompt, negative_prompt, batchidx)
+            prompt_dict[positive_prompt+negative_prompt] = i
+
+    def extend_embeds(self, batchidx, idx):
+        self.prompt_embeds[batchidx].append(self.prompt_embeds[batchidx][idx])
+        self.negative_embeds[batchidx].append(self.negative_embeds[batchidx][idx])
+        if len(self.positive_pooleds[batchidx]) > 0:
+            self.positive_pooleds[batchidx].append(self.positive_pooleds[batchidx][idx])
+        if len(self.negative_pooleds[batchidx]) > 0:
+            self.negative_pooleds[batchidx].append(self.negative_pooleds[batchidx][idx])
+
+    def duplicate_embeds(self):
+        self.prompt_embeds = self.prompt_embeds[0] * self.batchsize
+        self.positive_pooleds = self.positive_pooleds[0] * self.batchsize
+        self.negative_embeds = self.negative_embeds[0] * self.batchsize
+        self.negative_pooleds = self.negative_pooleds[0] * self.batchsize
+
+    def encode(self, pipe, positive_prompt, negative_prompt, batchidx):
+        if shared.opts.prompt_attention == "xhinker parser" or 'Flux' in pipe.__class__.__name__:
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(
+                pipe, positive_prompt, negative_prompt, self.clip_skip)
+        else:
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(
+                pipe, positive_prompt, negative_prompt, self.clip_skip)
+        if prompt_embed is not None:
+            self.prompt_embeds[batchidx].append(prompt_embed)
+        if negative_embed is not None:
+            self.negative_embeds[batchidx].append(negative_embed)
+        if positive_pooled is not None:
+            self.positive_pooleds[batchidx].append(positive_pooled)
+        if negative_pooled is not None:
+            self.negative_pooleds[batchidx].append(negative_pooled)
+
+        if debug_enabled:
+            get_tokens('positive', positive_prompt)
+            get_tokens('negative', negative_prompt)
+        pipe = prepare_model()
+
+    def __call__(self, key, step=0):
+        batch = getattr(self, key)
+        res = []
+        for embed in batch:
+            if len(embed) == 0:
+                return None
+            if len(embed) == 1:
+                res.append(embed[0])
+            else:
+                res.append(embed[step])
+        return torch.stack(res)
 
 
 def compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
