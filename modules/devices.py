@@ -4,6 +4,7 @@ import time
 import contextlib
 from functools import wraps
 import torch
+from modules import rocm
 from modules.errors import log, display, install as install_traceback
 from installer import install
 
@@ -283,16 +284,14 @@ def test_bf16():
         if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
             bf16_ok = False
             return bf16_ok
-        elif backend == 'zluda':
-            device_name = torch.cuda.get_device_name(device)
-            if device_name.startswith("AMD Radeon RX "): # only force AMD
-                device_name = device_name.replace("AMD Radeon RX ", "").split(" ", maxsplit=1)[0]
-                if len(device_name) == 4 and device_name[0] in {"5", "6"}: # RDNA 1 and 2
-                    bf16_ok = False
-                    return bf16_ok
-        elif backend == 'rocm':
-            gcn_arch = getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000")[3:7]
-            if len(gcn_arch) == 4 and gcn_arch[0:2] == "10": # RDNA 1 and 2
+        elif backend == 'rocm' or backend == 'zluda':
+            gcn_arch = None
+            if backend == 'rocm':
+                gcn_arch = rocm.Agent.parse_gfx_version(getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000"))
+            else:
+                from modules.zluda_installer import default_agent
+                gcn_arch = 0x0 if default_agent is None else default_agent.gfx_version
+            if gcn_arch < 0x1100: # all cards before RDNA 3
                 bf16_ok = False
                 return bf16_ok
     try:

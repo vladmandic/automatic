@@ -549,6 +549,7 @@ def install_rocm_zluda():
         log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
+        zluda_installer.set_default_agent(device)
         try:
             if args.reinstall_zluda:
                 zluda_installer.uninstall()
