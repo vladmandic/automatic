@@ -285,13 +285,13 @@ def test_bf16():
             bf16_ok = False
             return bf16_ok
         elif backend == 'rocm' or backend == 'zluda':
-            gcn_arch = None
+            agent = None
             if backend == 'rocm':
-                gcn_arch = rocm.Agent.parse_gfx_version(getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000"))
+                agent = rocm.Agent(getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000"))
             else:
                 from modules.zluda_installer import default_agent
-                gcn_arch = 0x0 if default_agent is None else default_agent.gfx_version
-            if gcn_arch < 0x1100: # all cards before RDNA 3
+                agent = default_agent
+            if agent is not None and agent.gfx_version < 0x1100 and agent.arch != rocm.MicroArchitecture.CDNA: # all cards before RDNA 3 except for CDNA cards
                 bf16_ok = False
                 return bf16_ok
     try:
