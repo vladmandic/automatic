@@ -116,6 +116,7 @@ def create_ui():
                 (subseed_strength, "Variation strength"),
                 # advanced
                 (cfg_scale, "CFG scale"),
+                (cfg_end, "CFG end"),
                 (clip_skip, "Clip skip"),
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),

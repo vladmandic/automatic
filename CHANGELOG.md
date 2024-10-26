@@ -26,6 +26,7 @@ Improvements:
   - gguf transformer loader (prototype)  
 - OpenVINO: add accuracy option  
 - ZLUDA: guess GPU arch  
+- Major model load refactor
 
 Fixes:  
 - fix send-to-control  

@@ -122,10 +122,12 @@ def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
                 bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
                 bnb_4bit_compute_dtype=devices.dtype
             )
-            if 'Model' in shared.opts.bnb_quantization and transformer is None:
+            if ('Model' in shared.opts.bnb_quantization) and (transformer is None):
                 transformer = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
                 shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-            if 'Text Encoder' in shared.opts.bnb_quantization and text_encoder_2 is None:
+            if ('Text Encoder' in shared.opts.bnb_quantization) and (text_encoder_2 is None):
+                if repo_id == 'sayakpaul/flux.1-dev-nf4':
+                    repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
                 text_encoder_2 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
                 shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
         except Exception as e:

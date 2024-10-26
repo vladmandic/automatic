@@ -188,7 +188,7 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
     _, extension = os.path.splitext(output_modelname)
 
     if os.path.exists(output_modelname) and not kwargs.get("overwrite", False):
-        return [*[gr.Dropdown.update(choices=sd_models.checkpoint_tiles()) for _ in range(4)], f"Model alredy exists: {output_modelname}"]
+        return [*[gr.Dropdown.update(choices=sd_models.checkpoint_titles()) for _ in range(4)], f"Model alredy exists: {output_modelname}"]
     if extension.lower() == ".safetensors":
         safetensors.torch.save_file(theta_0, output_modelname, metadata=metadata)
     else:
@@ -202,7 +202,7 @@ def run_modelmerger(id_task, **kwargs):  # pylint: disable=unused-argument
         created_model.calculate_shorthash()
     devices.torch_gc(force=True)
     shared.state.end()
-    return [*[gr.Dropdown.update(choices=sd_models.checkpoint_tiles()) for _ in range(4)], f"Model saved to {output_modelname}"]
+    return [*[gr.Dropdown.update(choices=sd_models.checkpoint_titles()) for _ in range(4)], f"Model saved to {output_modelname}"]
 
 
 def run_modelconvert(model, checkpoint_formats, precision, conv_type, custom_name, unet_conv, text_encoder_conv,

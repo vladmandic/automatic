@@ -44,6 +44,8 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
 timer.startup.record("torch")
 
 import transformers # pylint: disable=W0611,C0411
+from transformers import logging as transformers_logging # pylint: disable=W0611,C0411
+transformers_logging.set_verbosity_error()
 timer.startup.record("transformers")
 
 import accelerate # pylint: disable=W0611,C0411

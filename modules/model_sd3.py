@@ -85,6 +85,9 @@ def load_missing(kwargs, fn, cache_dir):
     if 'text_encoder_3' not in kwargs and 'text_encoder_3' not in keys:
         kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, torch_dtype=devices.dtype)
         shared.log.debug(f'Load model: type=SD3 missing=te3 repo="{repo_id}"')
+    if 'vae' not in kwargs and 'vae' not in keys:
+        kwargs['vae'] = diffusers.AutoencoderKL.from_pretrained(repo_id, subfolder='vae', cache_dir=cache_dir, torch_dtype=devices.dtype)
+        shared.log.debug(f'Load model: type=SD3 missing=vae repo="{repo_id}"')
     # if 'transformer' not in kwargs and 'transformer' not in keys:
     #    kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(default_repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype)
     return kwargs
@@ -120,7 +123,8 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
 
     kwargs = {}
     kwargs = load_overrides(kwargs, cache_dir)
-    kwargs = load_quants(kwargs, repo_id, cache_dir)
+    if fn is None or not os.path.exists(fn):
+        kwargs = load_quants(kwargs, repo_id, cache_dir)
 
     loader = diffusers.StableDiffusion3Pipeline.from_pretrained
     if fn is not None and os.path.exists(fn):

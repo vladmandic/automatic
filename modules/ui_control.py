@@ -612,6 +612,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 (mask_controls[6], "Mask auto"),
                 # advanced
                 (cfg_scale, "CFG scale"),
+                (cfg_end, "CFG end"),
                 (clip_skip, "Clip skip"),
                 (image_cfg_scale, "Image CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),

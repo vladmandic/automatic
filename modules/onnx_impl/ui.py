@@ -15,7 +15,7 @@ def create_ui():
     from modules.ui_common import create_refresh_button
     from modules.ui_components import DropdownMulti
     from modules.shared import log, opts, cmd_opts, refresh_checkpoints
-    from modules.sd_models import checkpoint_tiles, get_closet_checkpoint_match
+    from modules.sd_models import checkpoint_titles, get_closet_checkpoint_match
     from modules.paths import sd_configs_path
     from .execution_providers import ExecutionProvider, install_execution_provider
     from .utils import check_diffusers_cache
@@ -46,7 +46,7 @@ def create_ui():
                 with gr.TabItem("Manage cache", id="manage_cache"):
                     cache_state_dirname = gr.Textbox(value=None, visible=False)
                     with gr.Row():
-                        model_dropdown = gr.Dropdown(label="Model", value="Please select model", choices=checkpoint_tiles())
+                        model_dropdown = gr.Dropdown(label="Model", value="Please select model", choices=checkpoint_titles())
                         create_refresh_button(model_dropdown, refresh_checkpoints, {}, "onnx_cache_refresh_diffusers_model")
                     with gr.Row():
                         def remove_cache_onnx_converted(dirname: str):

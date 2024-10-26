@@ -280,12 +280,13 @@ def options_section(section_identifier, options_dict):
     return options_dict
 
 
-def list_checkpoint_tiles():
+def list_checkpoint_titles():
     import modules.sd_models # pylint: disable=W0621
-    return modules.sd_models.checkpoint_tiles()
+    return modules.sd_models.checkpoint_titles()
 
 
-default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.safetensors"
+list_checkpoint_tiles = list_checkpoint_titles # alias for legacy typo
+default_checkpoint = list_checkpoint_titles()[0] if len(list_checkpoint_titles()) > 0 else "model.safetensors"
 
 
 def is_url(string):
@@ -427,12 +428,12 @@ startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
-    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
-    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
+    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
     "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": shared_items.sd_te_items()}, refresh=shared_items.refresh_te_list),
-    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
     "sd_checkpoint_autodownload": OptionInfo(True, "Model auto-download on demand"),
     "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results"),

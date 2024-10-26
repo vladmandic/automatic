@@ -23,6 +23,7 @@ def load_bnb(msg='', silent=False):
         bnb = None
         if not silent:
             raise
+    return None
 
 
 def load_quanto(msg='', silent=False):
@@ -42,6 +43,7 @@ def load_quanto(msg='', silent=False):
         quanto = None
         if not silent:
             raise
+    return None
 
 
 def get_quant(name):
