@@ -393,7 +393,7 @@ def get_default_modes():
             elif gpu_memory <= 8:
                 cmd_opts.medvram = True
                 default_offload_mode = "model"
-                log.info(f"Device detect: memory={gpu_memory:.1f} ptimization=medvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
             else:
                 default_offload_mode = "none"
                 log.info(f"Device detect: memory={gpu_memory:.1f} optimization=none")
@@ -479,6 +479,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_expandable_segments": OptionInfo(False, "Torch expandable segments"),
+    "cuda_mem_fraction": OptionInfo(0.0, "Torch memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 

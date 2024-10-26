@@ -51,8 +51,8 @@ def has_zluda() -> bool:
     if not cuda_ok:
         return False
     try:
-        device = torch.device("cuda")
-        return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+        dev = torch.device("cuda")
+        return torch.cuda.get_device_name(dev).endswith("[ZLUDA]")
     except Exception:
         return False
 
@@ -207,7 +207,7 @@ def torch_gc(force=False, fast=False):
         force = True
     if oom > previous_oom:
         previous_oom = oom
-        log.warning(f'GPU out-of-memory error: {mem}')
+        log.warning(f'Torch GPU out-of-memory error: {mem}')
         force = True
     if force:
         # actual gc
@@ -247,11 +247,24 @@ def set_cuda_sync_mode(mode):
         return
     try:
         import ctypes
-        log.info(f'Set cuda sync: mode={mode}')
+        log.info(f'Torch CUDA sync: mode={mode}')
         torch.cuda.set_device(torch.device(get_optimal_device_name()))
         ctypes.CDLL('libcudart.so').cudaSetDeviceFlags({'auto': 0, 'spin': 1, 'yield': 2, 'block': 4}[mode])
     except Exception:
         pass
+
+
+def set_cuda_memory_limit():
+    if not cuda_ok or opts.cuda_mem_fraction == 0:
+        return
+    from modules.shared import cmd_opts
+    try:
+        torch_gc(force=True)
+        mem = torch.cuda.get_device_properties(device).total_memory
+        torch.cuda.set_per_process_memory_fraction(float(opts.cuda_mem_fraction), cmd_opts.device_id if cmd_opts.device_id is not None else 0)
+        log.info(f'Torch CUDA memory limit: fraction={opts.cuda_mem_fraction:.2f} limit={round(opts.cuda_mem_fraction * mem / 1024 / 1024)} total={round(mem / 1024 / 1024)}')
+    except Exception as e:
+        log.warning(f'Torch CUDA memory limit: fraction={opts.cuda_mem_fraction:.2f} {e}')
 
 
 def test_fp16():
@@ -449,6 +462,7 @@ def set_dtype():
 
 def set_cuda_params():
     override_ipex_math()
+    set_cuda_memory_limit()
     set_cudnn_params()
     set_sdpa_params()
     set_dtype()

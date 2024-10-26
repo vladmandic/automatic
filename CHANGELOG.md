@@ -1,8 +1,12 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-25
+## Update for 2024-10-26
 
 Improvements:
+- Torch CUDA set device memory limit
+  in *settings -> compute settings -> torch memory limit*  
+  default=0 meaning no limit, if set torch will limit memory usage to specified fraction  
+  *note*: this is not a hard limit, torch will try to stay under this value  
 - Model selector:
   - change-in-behavior
   - when typing, it will auto-load model as soon as exactly one match is found
