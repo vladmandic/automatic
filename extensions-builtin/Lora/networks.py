@@ -127,6 +127,8 @@ def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_
 
 
 def load_network(name, network_on_disk) -> network.Network:
+    if not shared.sd_loaded:
+        return
     t0 = time.time()
     cached = lora_cache.get(name, None)
     if debug:

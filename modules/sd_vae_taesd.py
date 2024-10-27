@@ -171,20 +171,24 @@ def decode(latents):
     try:
         with devices.inference_context():
             latents = latents.detach().clone().to(devices.device, dtype)
-            if len(latents.shape) == 3:
+            if len(latents.shape) == 3 and latents.shape[0] == 4:
                 latents = latents.unsqueeze(0)
                 image = vae.decoder(latents).clamp(0, 1).detach()
                 image = 2.0 * image - 1.0 # typical normalized range except for preview which runs denormalization
                 return image[0]
-            elif len(latents.shape) == 4:
+            elif len(latents.shape) == 4 and latents.shape[1] == 4:
                 image = vae.decoder(latents).clamp(0, 1).detach()
                 image = 2.0 * image - 1.0 # typical normalized range except for preview which runs denormalization
                 return image
             else:
-                shared.log.error(f'TAESD decode unsupported latent type: {latents.shape}')
+                if not previous_warnings:
+                    shared.log.error(f'TAESD decode unsupported latent type: {latents.shape}')
+                    previous_warnings = True
                 return latents
     except Exception as e:
-        shared.log.error(f'VAE decode taesd: {e}')
+        if not previous_warnings:
+            shared.log.error(f'VAE decode taesd: {e}')
+            previous_warnings = True
         return latents
 
 

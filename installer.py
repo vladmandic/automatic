@@ -731,7 +731,7 @@ def check_torch():
             else:
                 if args.use_zluda:
                     log.warning("ZLUDA failed to initialize: no HIP SDK found")
-                log.info('Using CPU-only Torch')
+                log.warning('Torch: CPU-only version installed')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
         install(torch_command, 'torch torchvision', quiet=True)
