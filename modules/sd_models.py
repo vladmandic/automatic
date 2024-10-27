@@ -31,6 +31,7 @@ debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not No
 debug_load = os.environ.get('SD_LOAD_DEBUG', None)
 debug_process = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 diffusers_version = int(diffusers.__version__.split('.')[1])
+checkpoint_tiles = checkpoint_titles # legacy compatibility
 
 
 class NoWatermark:
