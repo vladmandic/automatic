@@ -171,12 +171,12 @@ def decode(latents):
     try:
         with devices.inference_context():
             latents = latents.detach().clone().to(devices.device, dtype)
-            if len(latents.shape) == 3 and latents.shape[0] == 4:
+            if len(latents.shape) == 3:
                 latents = latents.unsqueeze(0)
                 image = vae.decoder(latents).clamp(0, 1).detach()
                 image = 2.0 * image - 1.0 # typical normalized range except for preview which runs denormalization
                 return image[0]
-            elif len(latents.shape) == 4 and latents.shape[1] == 4:
+            elif len(latents.shape) == 4:
                 image = vae.decoder(latents).clamp(0, 1).detach()
                 image = 2.0 * image - 1.0 # typical normalized range except for preview which runs denormalization
                 return image

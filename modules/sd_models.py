@@ -1,5 +1,6 @@
 import io
 import sys
+import time
 import json
 import copy
 import inspect
@@ -453,7 +454,6 @@ def move_model(model, device=None, force=False):
             if hasattr(model.vae, '_hf_hook'):
                 debug_move(f'Model move: to={device} class={model.vae.__class__} fn={fn}') # pylint: disable=protected-access
                 model.vae._hf_hook.execution_device = device # pylint: disable=protected-access
-    debug_move(f'Model move: device={device} class={model.__class__} accelerate={getattr(model, "has_accelerate", False)} fn={fn}') # pylint: disable=protected-access
     if hasattr(model, "components"): # accelerate patch
         for name, m in model.components.items():
             if not hasattr(m, "_hf_hook"): # not accelerate hook
@@ -472,8 +472,9 @@ def move_model(model, device=None, force=False):
     if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device):
         return
     try:
+        t0 = time.time()
         try:
-            model.to(device)
+            model.to(device, non_blocking=True)
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
@@ -493,8 +494,11 @@ def move_model(model, device=None, force=False):
                 pass # ignore model move if sequential offload is enabled
             else:
                 raise e0
+        t1 = time.time()
     except Exception as e1:
         shared.log.error(f'Model move: device={device} {e1}')
+    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 0.1:
+        shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access
     devices.torch_gc()
 
 
