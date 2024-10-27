@@ -496,6 +496,7 @@ def move_model(model, device=None, force=False):
                 raise e0
         t1 = time.time()
     except Exception as e1:
+        t1 = time.time()
         shared.log.error(f'Model move: device={device} {e1}')
     if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 0.1:
         shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access

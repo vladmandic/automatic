@@ -14,12 +14,15 @@ improvements:
     e.g. `https://civitai.com/api/download/models/72396?type=Model&format=SafeTensor&size=full&fp=fp16`  
   - auto-search-and-download can be disabled in settings -> models -> auto-download  
     this also disables reference models as they are auto-downloaded on first use as well  
-- sd3 loader enhancements
+- sd3 enhancements:  
   - report when loading incomplete model  
-  - handle missing model components  
+  - handle missing model components during load  
   - handle component preloading  
   - native lora handler  
   - gguf transformer loader (prototype)  
+- samplers:
+  - support for original k-diffusion samplers  
+    select scripts -> k-diffusion -> sampler  
 - ipadapter:
   - list available adapters based on loaded model type
   - add adapter `ostris consistency` for sd15/sdxl

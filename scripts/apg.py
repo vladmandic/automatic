@@ -62,10 +62,13 @@ class Script(scripts.Script):
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, eta, momentum, threshold): # pylint: disable=arguments-differ, unused-argument
         from modules import apg
+        if self.orig_pipe is None:
+            return processed
         # restore pipeline
-        if shared.sd_model_type == "sdxl":
+        if shared.sd_model_type == "sdxl" or shared.sd_model_type == "sd":
             shared.sd_model = self.orig_pipe
         elif shared.sd_model_type == "sc":
             shared.sd_model.prior_pipe = self.orig_pipe
         apg.buffer = None
+        self.orig_pipe = None
         return processed

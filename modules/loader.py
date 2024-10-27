@@ -63,6 +63,9 @@ errors.install([gradio])
 import pydantic # pylint: disable=W0611,C0411
 timer.startup.record("pydantic")
 
+import diffusers.utils.import_utils # pylint: disable=W0611,C0411
+diffusers.utils.import_utils._k_diffusion_available = True # pylint: disable=protected-access # monkey-patch since we use k-diffusion from git
+diffusers.utils.import_utils._k_diffusion_version = '0.0.12' # pylint: disable=protected-access
 import diffusers # pylint: disable=W0611,C0411
 import diffusers.loaders.single_file # pylint: disable=W0611,C0411
 import huggingface_hub # pylint: disable=W0611,C0411
