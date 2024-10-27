@@ -184,8 +184,8 @@ def preprocess_pipeline(p):
     return shared.sd_model
 
 
-def ORTDiffusionModelPart_to(self, *args, **kwargs):
-    self.parent_model = self.parent_model.to(*args, **kwargs)
+def ORTPipelinePart_to(self, *args, **kwargs):
+    self.parent_pipeline = self.parent_pipeline.to(*args, **kwargs)
     return self
 
 
@@ -241,9 +241,9 @@ def initialize_onnx():
         diffusers.ORTStableDiffusionXLPipeline = diffusers.OnnxStableDiffusionXLPipeline # Huggingface model compatibility
         diffusers.ORTStableDiffusionXLImg2ImgPipeline = diffusers.OnnxStableDiffusionXLImg2ImgPipeline
 
-        optimum.onnxruntime.modeling_diffusion._ORTDiffusionModelPart.to = ORTDiffusionModelPart_to # pylint: disable=protected-access
-    except Exception:
-        pass
+        optimum.onnxruntime.modeling_diffusion.ORTPipelinePart.to = ORTPipelinePart_to # pylint: disable=protected-access
+    except Exception as e:
+        log.debug(f'ONNX failed to initialize XL pipelines: {e}')
 
     initialized = True
 
