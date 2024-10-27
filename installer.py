@@ -254,11 +254,12 @@ def uninstall(package, quiet = False):
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     originalArg = arg
-    uv = uv and args.uv
-    pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
+    package = arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()
+    uv = uv and args.uv and not package.startswith('git+')
+    pipCmd = "uv pip" if uv else "pip"
     if not quiet and '-r ' not in arg:
-        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
+        log.info(f'Install: package="{package}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     all_args = f'{pip_log}{arg} {env_args}'.strip()
     if not quiet:

@@ -1,13 +1,9 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-26
+## Update for 2024-10-27
 
-Improvements:
-- Torch CUDA set device memory limit
-  in *settings -> compute settings -> torch memory limit*  
-  default=0 meaning no limit, if set torch will limit memory usage to specified fraction  
-  *note*: this is not a hard limit, torch will try to stay under this value  
-- Model selector:
+improvements:
+- model selector:
   - change-in-behavior
   - when typing, it will auto-load model as soon as exactly one match is found
   - allows entering model that are not on the list which triggers huggingface search  
@@ -18,17 +14,26 @@ Improvements:
     e.g. `https://civitai.com/api/download/models/72396?type=Model&format=SafeTensor&size=full&fp=fp16`  
   - auto-search-and-download can be disabled in settings -> models -> auto-download  
     this also disables reference models as they are auto-downloaded on first use as well  
-- SD3 loader enhancements
+- sd3 loader enhancements
   - report when loading incomplete model  
   - handle missing model components  
   - handle component preloading  
   - native lora handler  
   - gguf transformer loader (prototype)  
-- OpenVINO: add accuracy option  
-- ZLUDA: guess GPU arch  
-- Major model load refactor
+- ipadapter:
+  - list available adapters based on loaded model type
+  - add adapter `ostris consistency` for sd15/sdxl
+- torch
+  - CUDA set device memory limit
+    in *settings -> compute settings -> torch memory limit*  
+    default=0 meaning no limit, if set torch will limit memory usage to specified fraction  
+    *note*: this is not a hard limit, torch will try to stay under this value  
+- compute backends:
+  - OpenVINO: add accuracy option  
+  - ZLUDA: guess GPU arch  
+- major model load refactor
 
-Fixes:  
+fixes:  
 - fix send-to-control  
 - fix k-diffusion  
 - fix sd3 img2img and hires  

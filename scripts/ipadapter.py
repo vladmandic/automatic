@@ -1,7 +1,7 @@
 import json
 from PIL import Image
 import gradio as gr
-from modules import scripts, processing, shared, ipadapter
+from modules import scripts, processing, shared, ipadapter, ui_common
 
 
 MAX_ADAPTERS = 4
@@ -60,9 +60,12 @@ class Script(scripts.Script):
             for i in range(MAX_ADAPTERS):
                 with gr.Accordion(f'Adapter {i+1}', visible=i==0) as unit:
                     with gr.Row():
-                        adapters.append(gr.Dropdown(label='Adapter', choices=list(ipadapter.ADAPTERS), value='None'))
-                        scales.append(gr.Slider(label='Scale', minimum=0.0, maximum=1.0, step=0.01, value=0.5))
-                        crops.append(gr.Checkbox(label='Crop', default=False, interactive=True))
+                        adapter = gr.Dropdown(label='Adapter', choices=list(ipadapter.get_adapters()), value='None')
+                        adapters.append(adapter)
+                        ui_common.create_refresh_button(adapter, ipadapter.get_adapters)
+                    with gr.Row():
+                        scales.append(gr.Slider(label='Strength', minimum=0.0, maximum=1.0, step=0.01, value=0.5))
+                        crops.append(gr.Checkbox(label='Crop to portrait', default=False, interactive=True))
                     with gr.Row():
                         starts.append(gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.1, value=0))
                         ends.append(gr.Slider(label='End', minimum=0.0, maximum=1.0, step=0.1, value=1))
