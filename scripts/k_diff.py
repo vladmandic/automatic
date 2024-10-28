@@ -8,7 +8,10 @@ from modules import scripts, processing, shared, sd_models
 class Script(scripts.Script):
     supported_models = ['sd', 'sdxl']
     orig_pipe = None
-    library = importlib.import_module('k_diffusion')
+    try:
+        library = importlib.import_module('k_diffusion')
+    except Exception:
+        library = None
 
     def title(self):
         return 'K-Diffusion'
@@ -40,6 +43,8 @@ class Script(scripts.Script):
         if shared.sd_model_type not in self.supported_models:
             shared.log.warning(f'K-Diffusion: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={self.supported_models}')
             return None
+        if self.library is None:
+            return
         cls = None
         if shared.sd_model_type == "sd":
             cls = diffusers.pipelines.StableDiffusionKDiffusionPipeline
