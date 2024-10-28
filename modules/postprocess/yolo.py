@@ -191,12 +191,20 @@ class YoloRestorer(Detailer):
             pp = None
             shared.opts.data['mask_apply_overlay'] = True
             resolution = 512 if shared.sd_model_type in ['none', 'sd', 'lcm', 'unknown'] else 1024
+            orig_prompt: str = orig_p.get('all_prompts', [''])[0]
+            orig_negative: str = orig_p.get('all_negative_prompts', [''])[0]
             prompt: str = orig_p.get('refiner_prompt', '')
             negative: str = orig_p.get('refiner_negative', '')
             if len(prompt) == 0:
-                prompt = orig_p.get('all_prompts', [''])[0]
+                prompt = orig_prompt
+            else:
+                prompt = prompt.replace('[PROMPT]', orig_prompt)
+                prompt = prompt.replace('[prompt]', orig_prompt)
             if len(negative) == 0:
-                negative = orig_p.get('all_negative_prompts', [''])[0]
+                negative = orig_negative
+            else:
+                negative = negative.replace('[PROMPT]', orig_negative)
+                negative = negative.replace('[prompt]', orig_negative)
             prompt_lines = prompt.split('\n')
             negative_lines = negative.split('\n')
             prompt = prompt_lines[i % len(prompt_lines)]
