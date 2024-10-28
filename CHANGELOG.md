@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-27
+## Update for 2024-10-28
 
 improvements:
 - model selector:
@@ -26,6 +26,8 @@ improvements:
 - ipadapter:
   - list available adapters based on loaded model type
   - add adapter `ostris consistency` for sd15/sdxl
+- detailer:
+  - add `[prompt]` to refine/defailer prompts as placeholder referencing original prompt  
 - torch
   - CUDA set device memory limit
     in *settings -> compute settings -> torch memory limit*  

@@ -3,6 +3,7 @@ import re
 import sys
 import time
 from collections import namedtuple
+from dataclasses import dataclass
 import gradio as gr
 from modules import paths, script_callbacks, extensions, script_loading, scripts_postprocessing, errors, timer
 
@@ -21,6 +22,11 @@ class PostprocessImageArgs:
 class PostprocessBatchListArgs:
     def __init__(self, images):
         self.images = images
+
+
+@dataclass
+class OnComponent:
+    component: gr.blocks.Block
 
 
 class Script:
