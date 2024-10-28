@@ -7,7 +7,8 @@ import os
 import torch
 from modules import shared, sd_vae_taesd, devices
 
-debug = shared.log.trace if os.environ.get('SD_HDR_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug_enabled = os.environ.get('SD_HDR_DEBUG', None) is not None
+debug = shared.log.trace if debug_enabled else lambda *args, **kwargs: None
 debug('Trace: HDR')
 
 
@@ -119,16 +120,18 @@ def correction_callback(p, timestep, kwargs):
     if not any([p.hdr_clamp, p.hdr_mode, p.hdr_maximize, p.hdr_sharpen, p.hdr_color, p.hdr_brightness, p.hdr_tint_ratio]):
         return kwargs
     latents = kwargs["latents"]
-    debug('')
-    debug(f' Timestep: {timestep}')
+    if debug_enabled:
+        debug('')
+        debug(f' Timestep: {timestep}')
     # debug(f'HDR correction: latents={latents.shape}')
     if len(latents.shape) == 4: # standard batched latent
         for i in range(latents.shape[0]):
             latents[i] = correction(p, timestep, latents[i])
-            debug(f"Full Mean: {latents[i].mean().item()}")
-            debug(f"Channel Means: {latents[i].mean(dim=(-1, -2), keepdim=True).flatten().float().cpu().numpy()}")
-            debug(f"Channel Mins: {latents[i].min(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
-            debug(f"Channel Maxes: {latents[i].max(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
+            if debug_enabled:
+                debug(f"Full Mean: {latents[i].mean().item()}")
+                debug(f"Channel Means: {latents[i].mean(dim=(-1, -2), keepdim=True).flatten().float().cpu().numpy()}")
+                debug(f"Channel Mins: {latents[i].min(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
+                debug(f"Channel Maxes: {latents[i].max(-1, keepdim=True)[0].min(-2, keepdim=True)[0].flatten().float().cpu().numpy()}")
     elif len(latents.shape) == 5 and latents.shape[0] == 1: # probably animatediff
         latents = latents.squeeze(0).permute(1, 0, 2, 3)
         for i in range(latents.shape[0]):
