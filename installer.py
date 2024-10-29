@@ -227,9 +227,9 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                     exact = pkg_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} allowing experimental")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} allowing experimental")
                         else:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} version mismatch")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} version mismatch")
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:

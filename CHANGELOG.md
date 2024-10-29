@@ -15,12 +15,15 @@ improvements:
   - auto-search-and-download can be disabled in settings -> models -> auto-download  
     this also disables reference models as they are auto-downloaded on first use as well  
 - sd3 enhancements:  
+  - allow on-the-fly bnb quantization during load
   - report when loading incomplete model  
   - handle missing model components during load  
   - handle component preloading  
   - native lora handler  
   - support for all sd35 variants: *medium/large/large-turbo*
   - gguf transformer loader (prototype)  
+- flux.1 enhancements:  
+  - allow on-the-fly bnb quantization during load
 - samplers:
   - support for original k-diffusion samplers  
     select via *scripts -> k-diffusion -> sampler*  

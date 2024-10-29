@@ -1,9 +1,27 @@
 import sys
+import diffusers
 from installer import install, log
 
 
 bnb = None
 quanto = None
+
+
+def create_bnb_config(kwargs):
+    from modules import shared, devices
+    if len(shared.opts.bnb_quantization) > 0:
+        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+            load_bnb('Load model')
+            bnb_config = diffusers.BitsAndBytesConfig(
+                load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
+                load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
+                bnb_4bit_quant_storage=shared.opts.bnb_quantization_storage,
+                bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
+                bnb_4bit_compute_dtype=devices.dtype
+            )
+            kwargs['quantization_config'] = bnb_config
+            shared.log.debug(f'Quantization: module=all type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    return kwargs
 
 
 def load_bnb(msg='', silent=False):
