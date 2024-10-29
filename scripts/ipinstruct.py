@@ -102,7 +102,7 @@ class Script(scripts.Script):
             simple_cfg_mode = False,
         )
         processed = processing.Processed(p, images_list=image_list, seed=p.seed, subseed=p.subseed, index_of_first_image=0) # manually created processed object
-        p.extra_generation_params["IPInstruct"] = f''
+        # p.extra_generation_params["IPInstruct"] = f''
         return processed
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, **kwargs): # pylint: disable=unused-argument

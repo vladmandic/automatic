@@ -1391,9 +1391,10 @@ def disable_offload(sd_model):
     from accelerate.hooks import remove_hook_from_module
     if not getattr(sd_model, 'has_accelerate', False):
         return
-    for _name, model in sd_model.components.items():
-        if isinstance(model, torch.nn.Module):
-            remove_hook_from_module(model, recurse=True)
+    if hasattr(sd_model, 'components'):
+        for _name, model in sd_model.components.items():
+            if isinstance(model, torch.nn.Module):
+                remove_hook_from_module(model, recurse=True)
     sd_model.has_accelerate = False
 
 
