@@ -375,6 +375,9 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
 def apply_balanced_offload(sd_model):
     from accelerate import infer_auto_device_map, dispatch_model
     from accelerate.hooks import add_hook_to_module, remove_hook_from_module, ModelHook
+    excluded = ['OmniGenPipeline']
+    if sd_model.__class__.__name__ in excluded:
+        return sd_model
 
     class dispatch_from_cpu_hook(ModelHook):
         def init_hook(self, module):
