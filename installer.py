@@ -573,7 +573,8 @@ def install_rocm_zluda():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
         if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
+            # torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
         elif rocm.version == "6.1": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
         elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
