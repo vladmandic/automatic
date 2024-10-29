@@ -160,7 +160,6 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     shared.log.debug(f'Load model: type=SD3 kwargs={list(kwargs)}')
 
     kwargs = create_bnb_config(kwargs)
-    print('HERE', repo_id, kwargs)
     pipe = loader(
         repo_id,
         torch_dtype=devices.dtype,
