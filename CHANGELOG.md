@@ -2,7 +2,23 @@
 
 ## Update for 2024-10-29
 
-improvements:
+### Highlights for 2024-10-29
+
+- Support for **all SD3.x variants**  
+  *SD3.0-Medium, SD3.5-Medium, SD3.5-Large, SD3.0-Large-Turbo*
+- Allow quantization using `bitsandbytes` on-the-fly during models load
+  Load any variant of SD3.x or FLUX.1 and apply quantization during load without the need for pre-quantized models  
+- Allow for custom model URL in standard model selector  
+  Can be used to specify any model from *HuggingFace* or *CivitAI*  
+- Full support for `torch==2.5.1`
+- New wiki articles: [Gated Access](https://github.com/vladmandic/automatic/wiki/Gated), [Quantization](https://github.com/vladmandic/automatic/wiki/Quantization), [Offloading](https://github.com/vladmandic/automatic/wiki/Offload)  
+
+Plus tons of smaller improvements and cumulative fixes reported since last release  
+
+[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+### Details for 2024-10-29
+
 - model selector:
   - change-in-behavior
   - when typing, it will auto-load model as soon as exactly one match is found
@@ -46,7 +62,6 @@ improvements:
   - [Gated Access Wiki](https://github.com/vladmandic/automatic/wiki/Gated)  
   - [Quantization Wiki](https://github.com/vladmandic/automatic/wiki/Quantization)  
   - [Offloading Wiki](https://github.com/vladmandic/automatic/wiki/Offload)  
-
 
 fixes:  
 - fix send-to-control  
