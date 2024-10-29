@@ -36,11 +36,11 @@ torchsde==0.2.6
 antlr4-python3-runtime==4.9.3
 requests==2.32.3
 tqdm==4.66.5
-accelerate==1.0.0
+accelerate==1.0.1
 opencv-contrib-python-headless==4.9.0.80
 einops==0.4.1
 gradio==3.43.2
-huggingface_hub==0.25.2
+huggingface_hub==0.26.2
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.1
@@ -49,7 +49,7 @@ scipy
 pandas
 protobuf==4.25.3
 pytorch_lightning==1.9.4
-tokenizers==0.20.0
+tokenizers==0.20.1
 transformers==4.46.0
 urllib3==1.26.19
 Pillow==10.4.0
@@ -61,8 +61,7 @@ torchdiffeq
 dctorch
 scikit-image
 seam-carving
-open-clip-torch
 
-# TODO temporary block for torch==2.5.0
-torchvision!=0.20.0
+# block
 torch!=2.5.0
+torchvision!=0.20.0
