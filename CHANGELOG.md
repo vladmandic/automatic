@@ -23,13 +23,14 @@ improvements:
   - gguf transformer loader (prototype)  
 - samplers:
   - support for original k-diffusion samplers  
-    select scripts -> k-diffusion -> sampler  
+    select via *scripts -> k-diffusion -> sampler*  
 - ipadapter:
   - list available adapters based on loaded model type
   - add adapter `ostris consistency` for sd15/sdxl
 - detailer:
   - add `[prompt]` to refine/defailer prompts as placeholder referencing original prompt  
 - torch
+  - use `torch==2.5.1` by default on supported platforms
   - CUDA set device memory limit
     in *settings -> compute settings -> torch memory limit*  
     default=0 meaning no limit, if set torch will limit memory usage to specified fraction  
