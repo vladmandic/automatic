@@ -52,37 +52,49 @@ class MicroArchitecture(Enum):
 
 class Agent:
     name: str
+    gfx_version: int
     arch: MicroArchitecture
     is_apu: bool
     if sys.platform != "win32":
         blaslt_supported: bool
 
+    @staticmethod
+    def parse_gfx_version(name: str) -> int:
+        result = 0
+        for i in range(3, len(name)):
+            if name[i].isdigit():
+                result *= 0x10
+                result += ord(name[i]) - 48
+                continue
+            if name[i] in "abcdef":
+                result *= 0x10
+                result += ord(name[i]) - 87
+                continue
+            break
+        return result
+
     def __init__(self, name: str):
         self.name = name
-        gfx = name[3:7]
-        if len(gfx) == 4:
+        self.gfx_version = Agent.parse_gfx_version(name)
+        if self.gfx_version > 0x1000:
             self.arch = MicroArchitecture.RDNA
-        elif gfx in ("908", "90a", "942",):
+        elif self.gfx_version in (0x908, 0x90a, 0x942,):
             self.arch = MicroArchitecture.CDNA
         else:
             self.arch = MicroArchitecture.GCN
-        self.is_apu = gfx.startswith("115") or gfx in ("801", "902", "90c", "1013", "1033", "1035", "1036", "1103",)
+        self.is_apu = (self.gfx_version & 0xFFF0 == 0x1150) or self.gfx_version in (0x801, 0x902, 0x90c, 0x1013, 0x1033, 0x1035, 0x1036, 0x1103,)
         if sys.platform != "win32":
             self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
 
     def get_gfx_version(self) -> Union[str, None]:
-        if self.name.startswith("gfx12"):
+        if self.gfx_version >= 0x1200:
             return "12.0.0"
-        elif self.name.startswith("gfx11"):
+        elif self.gfx_version >= 0x1100:
             return "11.0.0"
-        elif self.name.startswith("gfx103"):
+        elif self.gfx_version >= 0x1000:
+            # gfx1010 users had to override gfx version to 10.3.0 in Linux
+            # it is unknown whether overriding is needed in ZLUDA
             return "10.3.0"
-        elif self.name.startswith("gfx102"):
-            return "10.2.0"
-        elif self.name.startswith("gfx101"):
-            return "10.1.0"
-        elif self.name.startswith("gfx100"):
-            return "10.0.0"
         return None
 
 
@@ -198,7 +210,7 @@ else:
         if os.environ.get("FLASH_ATTENTION_USE_TRITON_ROCM", "FALSE") == "TRUE":
             return "pytest git+https://github.com/ROCm/flash-attention@micmelesse/upstream_pr"
         default = "git+https://github.com/ROCm/flash-attention"
-        if agent.arch == MicroArchitecture.RDNA:
+        if agent.gfx_version >= 0x1100:
             default = "git+https://github.com/ROCm/flash-attention@howiejay/navi_support"
         return os.environ.get("FLASH_ATTENTION_PACKAGE", default)
 

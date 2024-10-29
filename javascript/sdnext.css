@@ -38,7 +38,7 @@ td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 .gradio-button.secondary-down, .gradio-button.secondary-down:hover { box-shadow: 1px 1px 1px rgba(0,0,0,0.25) inset, 0px 0px 3px rgba(0,0,0,0.15) inset; }
 .gradio-button.secondary-down:hover { background: var(--button-secondary-background-fill-hover); color: var(--button-secondary-text-color-hover); }
 .gradio-button.tool { max-width: min-content; min-width: min-content !important; font-size: 20px !important; color: var(--body-text-color) !important; align-self: end; margin-bottom: 4px; }
-.gradio-checkbox { margin: 0.75em 1.5em 0 0; align-self: center; }
+.gradio-checkbox { margin-right: 1em !important; align-self: center; }
 .gradio-column { min-width: min(160px, 100%) !important; }
 .gradio-container { max-width: unset !important; padding: var(--block-label-padding) !important; }
 .gradio-container .prose a, .gradio-container .prose a:visited{ color: unset; text-decoration: none; }

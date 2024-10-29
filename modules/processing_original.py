@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from PIL import Image
-from modules import shared, devices, processing, images, sd_models, sd_vae, sd_samplers, processing_helpers, prompt_parser
+from modules import shared, devices, processing, images, sd_vae, sd_samplers, processing_helpers, prompt_parser, token_merge
 from modules.sd_hijack_hypertile import hypertile_set
 
 
@@ -135,10 +135,10 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
                     p.sampler.initialize(p)
                 samples = samples[:, :, p.truncate_y//2:samples.shape[2]-(p.truncate_y+1)//2, p.truncate_x//2:samples.shape[3]-(p.truncate_x+1)//2]
                 noise = create_random_tensors(samples.shape[1:], seeds=seeds, subseeds=subseeds, subseed_strength=subseed_strength, p=p)
-                sd_models.apply_token_merging(p.sd_model)
+                token_merge.apply_token_merging(p.sd_model)
                 hypertile_set(p, hr=True)
                 samples = p.sampler.sample_img2img(p, samples, noise, conditioning, unconditional_conditioning, steps=p.hr_second_pass_steps or p.steps, image_conditioning=image_conditioning)
-                sd_models.apply_token_merging(p.sd_model)
+                token_merge.apply_token_merging(p.sd_model)
             else:
                 p.ops.append('upscale')
         x = None

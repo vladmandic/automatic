@@ -22,7 +22,7 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML('<a href="https://github.com/showlab/X-Adapter">&nbsp X-Adapter</a><br>')
         with gr.Row():
-            model = gr.Dropdown(label='Adapter model', choices=['None'] + sd_models.checkpoint_tiles(), value='None')
+            model = gr.Dropdown(label='Adapter model', choices=['None'] + sd_models.checkpoint_titles(), value='None')
             sampler = gr.Dropdown(label='Adapter sampler', choices=[s.name for s in sd_samplers.samplers], value='Default')
         with gr.Row():
             width = gr.Slider(label='Adapter width', minimum=64, maximum=2048, step=8, value=1024)
@@ -34,7 +34,7 @@ class Script(scripts.Script):
             lora = gr.Textbox('', label='Adapter LoRA', default='')
         return model, sampler, width, height, start, scale, lora
 
-    def run(self, p: processing.StableDiffusionProcessing, model, sampler, width, height, start, scale, lora): # pylint: disable=arguments-differ
+    def run(self, p: processing.StableDiffusionProcessing, model, sampler, width, height, start, scale, lora): # pylint: disable=arguments-differ, unused-argument
         from modules.xadapter.xadapter_hijacks import PositionNet
         diffusers.models.embeddings.PositionNet = PositionNet # patch diffusers==0.26 from diffusers==0.20
         from modules.xadapter.adapter import Adapter_XL

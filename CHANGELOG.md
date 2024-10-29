@@ -1,16 +1,69 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-24
+## Update for 2024-10-29
 
-Improvements:
-- SD3 loader enhancements
+### Highlights for 2024-10-29
+
+- Support for **all SD3.x variants**  
+  *SD3.0-Medium, SD3.5-Medium, SD3.5-Large, SD3.0-Large-Turbo*
+- Allow quantization using `bitsandbytes` on-the-fly during models load
+  Load any variant of SD3.x or FLUX.1 and apply quantization during load without the need for pre-quantized models  
+- Allow for custom model URL in standard model selector  
+  Can be used to specify any model from *HuggingFace* or *CivitAI*  
+- Full support for `torch==2.5.1`
+- New wiki articles: [Gated Access](https://github.com/vladmandic/automatic/wiki/Gated), [Quantization](https://github.com/vladmandic/automatic/wiki/Quantization), [Offloading](https://github.com/vladmandic/automatic/wiki/Offload)  
+
+Plus tons of smaller improvements and cumulative fixes reported since last release  
+
+[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+### Details for 2024-10-29
+
+- model selector:
+  - change-in-behavior
+  - when typing, it will auto-load model as soon as exactly one match is found
+  - allows entering model that are not on the list which triggers huggingface search  
+    e.g. `stabilityai/stable-diffusion-xl-base-1.0`  
+    partial search hits are displayed in the log  
+    if exact model is found, it will be auto-downloaded and loaded  
+  - allows entering civitai direct download link which triggers model download  
+    e.g. `https://civitai.com/api/download/models/72396?type=Model&format=SafeTensor&size=full&fp=fp16`  
+  - auto-search-and-download can be disabled in settings -> models -> auto-download  
+    this also disables reference models as they are auto-downloaded on first use as well  
+- sd3 enhancements:  
+  - allow on-the-fly bnb quantization during load
   - report when loading incomplete model  
-  - handle missing model components  
+  - handle missing model components during load  
   - handle component preloading  
-- OpenVINO: add accuracy option  
-- ZLUDA: guess GPU arch  
+  - native lora handler  
+  - support for all sd35 variants: *medium/large/large-turbo*
+  - gguf transformer loader (prototype)  
+- flux.1 enhancements:  
+  - allow on-the-fly bnb quantization during load
+- samplers:
+  - support for original k-diffusion samplers  
+    select via *scripts -> k-diffusion -> sampler*  
+- ipadapter:
+  - list available adapters based on loaded model type
+  - add adapter `ostris consistency` for sd15/sdxl
+- detailer:
+  - add `[prompt]` to refine/defailer prompts as placeholder referencing original prompt  
+- torch
+  - use `torch==2.5.1` by default on supported platforms
+  - CUDA set device memory limit
+    in *settings -> compute settings -> torch memory limit*  
+    default=0 meaning no limit, if set torch will limit memory usage to specified fraction  
+    *note*: this is not a hard limit, torch will try to stay under this value  
+- compute backends:
+  - OpenVINO: add accuracy option  
+  - ZLUDA: guess GPU arch  
+- major model load refactor
+- wiki: new articles
+  - [Gated Access Wiki](https://github.com/vladmandic/automatic/wiki/Gated)  
+  - [Quantization Wiki](https://github.com/vladmandic/automatic/wiki/Quantization)  
+  - [Offloading Wiki](https://github.com/vladmandic/automatic/wiki/Offload)  
 
-Fixes:  
+fixes:  
 - fix send-to-control  
 - fix k-diffusion  
 - fix sd3 img2img and hires  

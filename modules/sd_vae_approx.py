@@ -46,7 +46,7 @@ def nn_approximation(sample): # Approximate NN
         sd_vae_approx_model.load_state_dict(approx_weights)
         sd_vae_approx_model.eval()
         sd_vae_approx_model.to(device, dtype)
-        shared.log.debug(f'VAE load: type=approximate model={model_path}')
+        shared.log.debug(f'VAE load: type=approximate model="{model_path}"')
     try:
         in_sample = sample.to(device, dtype).unsqueeze(0)
         sd_vae_approx_model.to(device, dtype)

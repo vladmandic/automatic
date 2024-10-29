@@ -263,6 +263,7 @@ def create_ui():
                 (refiner_start, "Refiner start"),
                 # advanced
                 (cfg_scale, "CFG scale"),
+                (cfg_end, "CFG end"),
                 (image_cfg_scale, "Image CFG scale"),
                 (clip_skip, "Clip skip"),
                 (diffusers_guidance_rescale, "CFG rescale"),

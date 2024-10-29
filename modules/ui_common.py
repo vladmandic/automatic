@@ -319,13 +319,18 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
             return result_gallery, generation_info, html_info, html_info_formatted, html_log
 
 
-def create_refresh_button(refresh_component, refresh_method, refreshed_args, elem_id, visible: bool = True):
+def create_refresh_button(refresh_component, refresh_method, refreshed_args = None, elem_id = None, visible: bool = True):
     def refresh():
         refresh_method()
-        args = refreshed_args() if callable(refreshed_args) else refreshed_args
+        if refreshed_args is None:
+            args = {"choices": refresh_method()} # pylint: disable=unnecessary-lambda-assignment
+        elif callable(refreshed_args):
+            args = refreshed_args()
+        else:
+            args = refreshed_args
         for k, v in args.items():
             setattr(refresh_component, k, v)
-        return gr.update(**(args or {}))
+        return gr.update(**args)
 
     refresh_button = ui_components.ToolButton(value=ui_symbols.refresh, elem_id=elem_id, visible=visible)
     refresh_button.click(fn=refresh, inputs=[], outputs=[refresh_component])

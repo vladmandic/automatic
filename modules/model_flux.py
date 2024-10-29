@@ -122,10 +122,12 @@ def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
                 bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
                 bnb_4bit_compute_dtype=devices.dtype
             )
-            if 'Model' in shared.opts.bnb_quantization and transformer is None:
+            if ('Model' in shared.opts.bnb_quantization) and (transformer is None):
                 transformer = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
                 shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-            if 'Text Encoder' in shared.opts.bnb_quantization and text_encoder_2 is None:
+            if ('Text Encoder' in shared.opts.bnb_quantization) and (text_encoder_2 is None):
+                if repo_id == 'sayakpaul/flux.1-dev-nf4':
+                    repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
                 text_encoder_2 = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
                 shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
         except Exception as e:
@@ -285,25 +287,26 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
                 errors.display(e, 'FLUX Quanto:')
 
     # initialize pipeline with pre-loaded components
-    components = {}
-    transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
+    kwargs = {}
+    # transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
     if transformer is not None:
-        components['transformer'] = transformer
+        kwargs['transformer'] = transformer
         sd_unet.loaded_unet = shared.opts.sd_unet
     if text_encoder_1 is not None:
-        components['text_encoder'] = text_encoder_1
+        kwargs['text_encoder'] = text_encoder_1
         model_te.loaded_te = shared.opts.sd_text_encoder
     if text_encoder_2 is not None:
-        components['text_encoder_2'] = text_encoder_2
+        kwargs['text_encoder_2'] = text_encoder_2
         model_te.loaded_te = shared.opts.sd_text_encoder
     if vae is not None:
-        components['vae'] = vae
-    shared.log.debug(f'Load model: type=FLUX preloaded={list(components)}')
+        kwargs['vae'] = vae
+    shared.log.debug(f'Load model: type=FLUX preloaded={list(kwargs)}')
     if repo_id == 'sayakpaul/flux.1-dev-nf4':
         repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
-    for c in components:
-        if components[c].dtype == torch.float32 and devices.dtype != torch.float32:
-            shared.log.warning(f'Load model: type=FLUX component={c} dtype={components[c].dtype} cast dtype={devices.dtype}')
-            components[c] = components[c].to(dtype=devices.dtype)
-    pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **components, **diffusers_load_config)
+    for c in kwargs:
+        if kwargs[c].dtype == torch.float32 and devices.dtype != torch.float32:
+            shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype}')
+            kwargs[c] = kwargs[c].to(dtype=devices.dtype)
+    kwargs = model_quant.create_bnb_config(kwargs)
+    pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
     return pipe

@@ -227,9 +227,9 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                     exact = pkg_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} allowing experimental")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} allowing experimental")
                         else:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} version mismatch")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} version mismatch")
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:
@@ -254,11 +254,12 @@ def uninstall(package, quiet = False):
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     originalArg = arg
-    uv = uv and args.uv
-    pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
+    package = arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()
+    uv = uv and args.uv and not package.startswith('git+')
+    pipCmd = "uv pip" if uv else "pip"
     if not quiet and '-r ' not in arg:
-        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
+        log.info(f'Install: package="{package}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     all_args = f'{pip_log}{arg} {env_args}'.strip()
     if not quiet:
@@ -454,7 +455,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = 'e45c25d03aeb0a967d8aaa0f6a79f280f6838e1f'
+    sha = '0d1d267b12e47b40b0e8f265339c76e0f45f8c49'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -489,7 +490,7 @@ def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
-    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+    return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
@@ -549,6 +550,7 @@ def install_rocm_zluda():
         log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
+        zluda_installer.set_default_agent(device)
         try:
             if args.reinstall_zluda:
                 zluda_installer.uninstall()
@@ -570,8 +572,10 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) >= 6.1: # assume the latest if version check fails
-            #torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
+            # torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif rocm.version == "6.1": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
         elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
@@ -730,7 +734,7 @@ def check_torch():
             else:
                 if args.use_zluda:
                     log.warning("ZLUDA failed to initialize: no HIP SDK found")
-                log.info('Using CPU-only Torch')
+                log.warning('Torch: CPU-only version installed')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
         install(torch_command, 'torch torchvision', quiet=True)
@@ -817,6 +821,7 @@ def install_packages():
     log.info('Verifying packages')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip', quiet=True)
+    install('open-clip-torch', no_deps=True, quiet=True)
     # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0')
     # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', None)
     # if tensorflow_package is not None:

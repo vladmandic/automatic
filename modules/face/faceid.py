@@ -6,8 +6,9 @@ import numpy as np
 import diffusers
 import huggingface_hub as hf
 from PIL import Image
-from modules import processing, shared, devices, extra_networks, sd_models, sd_hijack_freeu, script_callbacks, ipadapter
+from modules import processing, shared, devices, extra_networks, sd_hijack_freeu, script_callbacks, ipadapter, token_merge
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
+
 
 FACEID_MODELS = {
     "FaceID Base": "h94/IP-Adapter-FaceID/ip-adapter-faceid_sd15.bin",
@@ -69,7 +70,7 @@ def face_id(
         shared.prompt_styles.apply_styles_to_extra(p)
 
         if shared.opts.cuda_compile_backend == 'none':
-            sd_models.apply_token_merging(p.sd_model)
+            token_merge.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, not shared.native)
 
         script_callbacks.before_process_callback(p)
@@ -246,7 +247,7 @@ def face_id(
         if faceid_model is not None and original_load_ip_adapter is not None:
             faceid_model.__class__.load_ip_adapter = original_load_ip_adapter
         if shared.opts.cuda_compile_backend == 'none':
-            sd_models.remove_token_merging(p.sd_model)
+            token_merge.remove_token_merging(p.sd_model)
         script_callbacks.after_process_callback(p)
 
     return processed_images

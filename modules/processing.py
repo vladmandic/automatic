@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_vae, processing_helpers, timer, face_restoration
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_checkpoint, sd_vae, processing_helpers, timer, face_restoration, token_merge
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -46,7 +46,8 @@ class Processed:
         self.width = p.width if hasattr(p, 'width') else (self.images[0].width if len(self.images) > 0 else 0)
         self.height = p.height if hasattr(p, 'height') else (self.images[0].height if len(self.images) > 0 else 0)
         self.sampler_name = p.sampler_name or ''
-        self.cfg_scale = p.cfg_scale or 0
+        self.cfg_scale = p.cfg_scale if p.cfg_scale > 1 else None
+        self.cfg_end = p.cfg_end if p.cfg_end < 0 else None
         self.image_cfg_scale = p.image_cfg_scale or 0
         self.steps = p.steps or 0
         self.batch_size = max(1, p.batch_size)
@@ -96,6 +97,7 @@ class Processed:
             "height": self.height,
             "sampler_name": self.sampler_name,
             "cfg_scale": self.cfg_scale,
+            "cfg_end": self.cfg_end,
             "steps": self.steps,
             "batch_size": self.batch_size,
             "detailer": self.detailer,
@@ -136,11 +138,11 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     processed = None
     try:
         # if no checkpoint override or the override checkpoint can't be found, remove override entry and load opts checkpoint
-        if p.override_settings.get('sd_model_checkpoint', None) is not None and sd_models.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
+        if p.override_settings.get('sd_model_checkpoint', None) is not None and sd_checkpoint.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
             shared.log.warning(f"Override not found: checkpoint={p.override_settings.get('sd_model_checkpoint', None)}")
             p.override_settings.pop('sd_model_checkpoint', None)
             sd_models.reload_model_weights()
-        if p.override_settings.get('sd_model_refiner', None) is not None and sd_models.checkpoint_aliases.get(p.override_settings.get('sd_model_refiner')) is None:
+        if p.override_settings.get('sd_model_refiner', None) is not None and sd_checkpoint.checkpoint_aliases.get(p.override_settings.get('sd_model_refiner')) is None:
             shared.log.warning(f"Override not found: refiner={p.override_settings.get('sd_model_refiner', None)}")
             p.override_settings.pop('sd_model_refiner', None)
             sd_models.reload_model_weights()
@@ -162,7 +164,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
         if shared.opts.cuda_compile_backend == 'none':
-            sd_models.apply_token_merging(p.sd_model)
+            token_merge.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, not shared.native)
 
         if p.width is not None:
@@ -205,7 +207,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     finally:
         pag.unapply()
         if shared.opts.cuda_compile_backend == 'none':
-            sd_models.remove_token_merging(p.sd_model)
+            token_merge.remove_token_merging(p.sd_model)
 
         script_callbacks.after_process_callback(p)
 

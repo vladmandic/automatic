@@ -160,11 +160,11 @@ def decode(latents):
         download_model(model_path)
         if os.path.exists(model_path):
             taesd_models[f'{model_class}-decoder'] = TAESD(decoder_path=model_path, encoder_path=None)
-            shared.log.debug(f'VAE load: type=taesd model={model_path}')
+            shared.log.debug(f'VAE load: type=taesd model="{model_path}"')
             vae = taesd_models[f'{model_class}-decoder']
             vae.decoder.to(devices.device, dtype)
         else:
-            shared.log.error(f'VAE load: type=taesd model={model_path} not found')
+            shared.log.error(f'VAE load: type=taesd model="{model_path}" not found')
             return latents
     if vae is None:
         return latents
@@ -181,10 +181,14 @@ def decode(latents):
                 image = 2.0 * image - 1.0 # typical normalized range except for preview which runs denormalization
                 return image
             else:
-                shared.log.error(f'TAESD decode unsupported latent type: {latents.shape}')
+                if not previous_warnings:
+                    shared.log.error(f'TAESD decode unsupported latent type: {latents.shape}')
+                    previous_warnings = True
                 return latents
     except Exception as e:
-        shared.log.error(f'VAE decode taesd: {e}')
+        if not previous_warnings:
+            shared.log.error(f'VAE decode taesd: {e}')
+            previous_warnings = True
         return latents
 
 
@@ -204,7 +208,7 @@ def encode(image):
         model_path = os.path.join(paths.models_path, "TAESD", f"tae{model_class}_encoder.pth")
         download_model(model_path)
         if os.path.exists(model_path):
-            shared.log.debug(f'VAE load: type=taesd model={model_path}')
+            shared.log.debug(f'VAE load: type=taesd model="{model_path}"')
             taesd_models[f'{model_class}-encoder'] = TAESD(encoder_path=model_path, decoder_path=None)
             vae = taesd_models[f'{model_class}-encoder']
             vae.encoder.to(devices.device, devices.dtype_vae)

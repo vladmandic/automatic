@@ -20,6 +20,7 @@ from modules.paths import models_path, script_path, data_path, sd_configs_path, 
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
 from modules.memstats import memory_stats
+from modules.ui_components import DropdownEditable
 import modules.interrogate
 import modules.memmon
 import modules.styles
@@ -279,12 +280,13 @@ def options_section(section_identifier, options_dict):
     return options_dict
 
 
-def list_checkpoint_tiles():
+def list_checkpoint_titles():
     import modules.sd_models # pylint: disable=W0621
-    return modules.sd_models.checkpoint_tiles()
+    return modules.sd_models.checkpoint_titles()
 
 
-default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.safetensors"
+list_checkpoint_tiles = list_checkpoint_titles # alias for legacy typo
+default_checkpoint = list_checkpoint_titles()[0] if len(list_checkpoint_titles()) > 0 else "model.safetensors"
 
 
 def is_url(string):
@@ -392,7 +394,7 @@ def get_default_modes():
             elif gpu_memory <= 8:
                 cmd_opts.medvram = True
                 default_offload_mode = "model"
-                log.info(f"Device detect: memory={gpu_memory:.1f} ptimization=medvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
             else:
                 default_offload_mode = "none"
                 log.info(f"Device detect: memory={gpu_memory:.1f} optimization=none")
@@ -426,13 +428,14 @@ startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
-    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
-    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
+    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
     "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": shared_items.sd_te_items()}, refresh=shared_items.refresh_te_list),
-    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
+    "sd_checkpoint_autodownload": OptionInfo(True, "Model auto-download on demand"),
     "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results"),
     "stream_load": OptionInfo(False, "Load models using stream loading method", gr.Checkbox, {"visible": not native }),
     "model_reuse_dict": OptionInfo(False, "Reuse loaded model dictionary", gr.Checkbox, {"visible": False}),
@@ -477,6 +480,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_expandable_segments": OptionInfo(False, "Torch expandable segments"),
+    "cuda_mem_fraction": OptionInfo(0.0, "Torch memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 
@@ -969,7 +973,7 @@ class Options:
                 self.data_labels[key].onchange()
             except Exception as err:
                 log.error(f'Error in onchange callback: {key} {value} {err}')
-                errors.display(e, 'Error in onchange callback')
+                errors.display(err, 'Error in onchange callback')
                 setattr(self, key, oldval)
                 return False
         return True
@@ -1247,7 +1251,7 @@ def req(url_addr, headers = None, **kwargs):
     try:
         res = requests.get(url_addr, timeout=30, headers=headers, verify=False, allow_redirects=True, **kwargs)
     except Exception as err:
-        log.error(f'HTTP request error: url={url_addr} {e}')
+        log.error(f'HTTP request error: url={url_addr} {err}')
         res = { 'status_code': 500, 'text': f'HTTP request error: url={url_addr} {err}' }
         res = SimpleNamespace(**res)
     return res

@@ -44,6 +44,9 @@ tunableop_results*.csv
 !webui.sh
 !package.json
 
+# dynamically generated
+/repositories/ip-instruct/
+
 # all dynamic stuff
 /extensions/**/*
 /outputs/**/*
@@ -59,7 +62,6 @@ tunableop_results*.csv
 .vscode/
 .idea/
 /localizations
-
 .*/
 
 # force included
