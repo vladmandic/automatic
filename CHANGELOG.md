@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-28
+## Update for 2024-10-29
 
 improvements:
 - model selector:
@@ -19,6 +19,7 @@ improvements:
   - handle missing model components during load  
   - handle component preloading  
   - native lora handler  
+  - support for all sd35 variants: *medium/large/large-turbo*
   - gguf transformer loader (prototype)  
 - samplers:
   - support for original k-diffusion samplers  
@@ -37,6 +38,11 @@ improvements:
   - OpenVINO: add accuracy option  
   - ZLUDA: guess GPU arch  
 - major model load refactor
+- wiki: new articles
+  - [Gated Access Wiki](https://github.com/vladmandic/automatic/wiki/Gated)  
+  - [Quantization Wiki](https://github.com/vladmandic/automatic/wiki/Quantization)  
+  - [Offloading Wiki](https://github.com/vladmandic/automatic/wiki/Offload)  
+
 
 fixes:  
 - fix send-to-control  

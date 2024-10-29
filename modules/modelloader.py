@@ -318,7 +318,7 @@ def load_diffusers_models(clear=True):
 def find_diffuser(name: str, full=False):
     repo = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(repo) > 0:
-        return repo['name']
+        return [repo[0]['name']]
     hf_api = hf.HfApi()
     models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')

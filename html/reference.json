@@ -119,11 +119,19 @@
     "preview": "stabilityai--stable-diffusion-3.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },
+  "StabilityAI Stable Diffusion 3.5 Medium": {
+    "path": "stabilityai/stable-diffusion-3.5-medium",
+    "skip": true,
+    "variant": "fp16",
+    "desc": "Stable Diffusion 3.5 Medium is a Multimodal Diffusion Transformer with improvements (MMDiT-X) text-to-image model that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency.",
+    "preview": "stabilityai--stable-diffusion-3_5.jpg",
+    "extras": "sampler: Default, cfg_scale: 7.0"
+  },
   "StabilityAI Stable Diffusion 3.5 Large": {
     "path": "stabilityai/stable-diffusion-3.5-large",
     "skip": true,
     "variant": "fp16",
-    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "desc": "Stable Diffusion 3.5 Large is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency.",
     "preview": "stabilityai--stable-diffusion-3_5.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },
@@ -131,7 +139,7 @@
     "path": "stabilityai/stable-diffusion-3.5-large-turbo",
     "skip": true,
     "variant": "fp16",
-    "desc": "Stable Diffusion 3 Medium is a Multimodal Diffusion Transformer (MMDiT) text-to-image model that features greatly improved performance in image quality, typography, complex prompt understanding, and resource-efficiency",
+    "desc": "Stable Diffusion 3.5 Large Turbo is a Multimodal Diffusion Transformer (MMDiT) text-to-image model with Adversarial Diffusion Distillation (ADD) that features improved performance in image quality, typography, complex prompt understanding, and resource-efficiency, with a focus on fewer inference steps.",
     "preview": "stabilityai--stable-diffusion-3_5.jpg",
     "extras": "sampler: Default, cfg_scale: 7.0"
   },

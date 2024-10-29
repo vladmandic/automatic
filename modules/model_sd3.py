@@ -49,6 +49,24 @@ def load_overrides(kwargs, cache_dir):
     return kwargs
 
 
+def create_bnb_config(kwargs):
+    if len(shared.opts.bnb_quantization) > 0:
+        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+            from modules.model_quant import load_bnb
+            load_bnb('Load model: type=SD3')
+            bnb_config = diffusers.BitsAndBytesConfig(
+                load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
+                load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
+                bnb_4bit_quant_storage=shared.opts.bnb_quantization_storage,
+                bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
+                bnb_4bit_compute_dtype=devices.dtype
+            )
+            kwargs['quantization_config'] = bnb_config
+            shared.log.debug(f'Quantization: module=all type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+
+    return kwargs
+
+
 def load_quants(kwargs, repo_id, cache_dir):
     if len(shared.opts.bnb_quantization) > 0:
         from modules.model_quant import load_bnb
@@ -127,7 +145,7 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
         kwargs = load_quants(kwargs, repo_id, cache_dir)
 
     loader = diffusers.StableDiffusion3Pipeline.from_pretrained
-    if fn is not None and os.path.exists(fn):
+    if fn is not None and os.path.exists(fn) and os.path.isfile(fn):
         if fn.endswith('.safetensors'):
             loader = diffusers.StableDiffusion3Pipeline.from_single_file
             kwargs = load_missing(kwargs, fn, cache_dir)
@@ -139,8 +157,10 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     else:
         kwargs['variant'] = 'fp16'
 
-    shared.log.debug(f'Load model: type=SD3 preloaded={list(kwargs)}')
+    shared.log.debug(f'Load model: type=SD3 kwargs={list(kwargs)}')
 
+    kwargs = create_bnb_config(kwargs)
+    print('HERE', repo_id, kwargs)
     pipe = loader(
         repo_id,
         torch_dtype=devices.dtype,
@@ -148,5 +168,5 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
         config=config,
         **kwargs,
     )
-    devices.torch_gc()
+    devices.torch_gc(force=True)
     return pipe
