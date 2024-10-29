@@ -61,6 +61,7 @@ torchdiffeq
 dctorch
 scikit-image
 seam-carving
+sentencepiece
 
 # block
 torch!=2.5.0

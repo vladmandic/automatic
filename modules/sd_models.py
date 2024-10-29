@@ -477,7 +477,7 @@ def move_model(model, device=None, force=False):
     try:
         t0 = time.time()
         try:
-            model.to(device, non_blocking=True)
+            model.to(device)
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
