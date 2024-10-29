@@ -67,14 +67,14 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             pipe.set_ip_adapter_scale(ip_adapter_scales)
     if step != getattr(pipe, 'num_timesteps', 0):
         kwargs = processing_correction.correction_callback(p, timestep, kwargs)
-    # if p.scheduled_prompt and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
-    #     try:
-    #         i = (step + 1) % len(p.prompt_embeds)
-    #         kwargs["prompt_embeds"] = p.prompt_embeds[i][0:1].expand(kwargs["prompt_embeds"].shape)
-    #         j = (step + 1) % len(p.negative_embeds)
-    #         kwargs["negative_prompt_embeds"] = p.negative_embeds[j][0:1].expand(kwargs["negative_prompt_embeds"].shape)
-    #     except Exception as e:
-    #         shared.log.debug(f"Callback: {e}")
+    if p.embedder is not None:
+        try:
+            if 'prompt_embeds' in kwargs:
+                kwargs["prompt_embeds"] = p.embedder("prompt_embeds", step + 1)
+            if 'negative_prompt_embeds' in kwargs:
+                kwargs["negative_prompt_embeds"] = p.embedder("negative_prompt_embeds", step + 1)
+        except Exception as e:
+            shared.log.debug(f"Callback: {e}")
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
         if "PAG" in shared.sd_model.__class__.__name__:
             pipe._guidance_scale = 1.001 if pipe._guidance_scale > 1 else pipe._guidance_scale  # pylint: disable=protected-access
