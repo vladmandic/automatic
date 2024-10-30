@@ -1,5 +1,15 @@
 # Change Log for SD.Next
 
+## Update for 2024-10-30
+
+- XYZ grid: optional per-image time benchmark info
+- UI: add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)
+- SD3: support for ControlNets:
+  - *InstantX Canny, Pose, Depth, Tile*
+  - *Alimama Inpainting, SoftEdge*
+  - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
+    e.g. SD3 controlnets vary from 1GB to over 4GB in size  
+
 ## Update for 2024-10-29
 
 ### Highlights for 2024-10-29

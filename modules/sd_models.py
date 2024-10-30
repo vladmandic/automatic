@@ -1052,6 +1052,15 @@ def clean_diffuser_pipe(pipe):
 
 
 def set_diffuser_pipe(pipe, new_pipe_type):
+    exclude = [
+        'StableDiffusionReferencePipeline',
+        'StableDiffusionAdapterPipeline',
+        'AnimateDiffPipeline',
+        'AnimateDiffSDXLPipeline',
+        'OmniGenPipeline',
+        'StableDiffusion3ControlNetPipeline',
+    ]
+
     n = getattr(pipe.__class__, '__name__', '')
     if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
         clean_diffuser_pipe(pipe)
@@ -1060,7 +1069,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'OmniGenPipeline']:
+    if n in exclude:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe
