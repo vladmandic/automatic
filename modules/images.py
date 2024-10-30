@@ -10,7 +10,7 @@ import threading
 import numpy as np
 import piexif
 import piexif.helper
-from PIL import Image, PngImagePlugin, ExifTags
+from PIL import Image, PngImagePlugin, ExifTags, ImageDraw
 from modules import sd_samplers, shared, script_callbacks, errors, paths
 from modules.images_grid import image_grid, get_grid_size, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation, Grid # pylint: disable=unused-import
 from modules.images_resize import resize_image # pylint: disable=unused-import
@@ -359,6 +359,14 @@ def flatten(img, bgcolor):
         background.paste(img, mask=img)
         img = background
     return img.convert('RGB')
+
+
+def draw_overlay(im, text):
+    d = ImageDraw.Draw(im)
+    fontsize = (im.width + im.height) // 50
+    font = get_font(fontsize)
+    d.text((fontsize//2, fontsize//2), text, font=font, fill=shared.opts.font_color)
+    return im
 
 
 def set_watermark(image, watermark):

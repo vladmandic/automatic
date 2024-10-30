@@ -4,23 +4,28 @@ from PIL import Image
 from modules import shared, images, processing
 
 
-def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend, include_lone_images, include_sub_grids, first_axes_processed, second_axes_processed, margin_size, no_grid): # pylint: disable=unused-argument
-    hor_texts = [[images.GridAnnotation(x)] for x in x_labels]
-    ver_texts = [[images.GridAnnotation(y)] for y in y_labels]
-    title_texts = [[images.GridAnnotation(z)] for z in z_labels]
+def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend, include_lone_images, include_sub_grids, first_axes_processed, second_axes_processed, margin_size, no_grid: False, include_time: False): # pylint: disable=unused-argument
+    x_texts = [[images.GridAnnotation(x)] for x in x_labels]
+    y_texts = [[images.GridAnnotation(y)] for y in y_labels]
+    z_texts = [[images.GridAnnotation(z)] for z in z_labels]
     list_size = (len(xs) * len(ys) * len(zs))
     processed_result = None
     shared.state.job_count = list_size * p.n_iter
     t0 = time.time()
+    i = 0
 
     def process_cell(x, y, z, ix, iy, iz):
-        nonlocal processed_result
+        nonlocal processed_result, i
+        i += 1
+        shared.log.debug(f'XYZ grid process: x={ix+1}/{len(xs)} y={iy+1}/{len(ys)} z={iz+1}/{len(zs)} total={i/list_size:.2f}')
 
         def index(ix, iy, iz):
             return ix + iy * len(xs) + iz * len(xs) * len(ys)
 
         shared.state.job = 'grid'
+        p0 = time.time()
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
+        p1 = time.time()
         if processed_result is None:
             processed_result = copy(processed)
             if processed_result is None:
@@ -30,13 +35,17 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
             processed_result.all_prompts = [None] * list_size
             processed_result.all_seeds = [None] * list_size
             processed_result.infotexts = [None] * list_size
+            processed_result.time = [0] * list_size
             processed_result.index_of_first_image = 1
         idx = index(ix, iy, iz)
         if processed is not None and processed.images:
             processed_result.images[idx] = processed.images[0]
+            if include_time:
+                processed_result.images[idx] = images.draw_overlay(processed_result.images[idx], f'time: {p1 - p0:.2f}')
             processed_result.all_prompts[idx] = processed.prompt
             processed_result.all_seeds[idx] = processed.seed
             processed_result.infotexts[idx] = processed.infotexts[0]
+            processed_result.time[idx] = round(p1 - p0, 2)
         else:
             cell_mode = "P"
             cell_size = (processed_result.width, processed_result.height)
@@ -44,6 +53,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
                 cell_mode = processed_result.images[0].mode
                 cell_size = processed_result.images[0].size
             processed_result.images[idx] = Image.new(cell_mode, cell_size)
+        return
 
     if first_axes_processed == 'x':
         for ix, x in enumerate(xs):
@@ -93,7 +103,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         if (not no_grid or include_sub_grids) and images.check_grid_size(to_process):
             grid = images.image_grid(to_process, rows=len(ys))
             if draw_legend:
-                grid = images.draw_grid_annotations(grid, w, h, hor_texts, ver_texts, margin_size, title=title_texts[i])
+                grid = images.draw_grid_annotations(grid, w, h, x_texts, y_texts, margin_size, title=z_texts[i])
             processed_result.images.insert(i, grid)
             processed_result.all_prompts.insert(i, processed_result.all_prompts[idx0])
             processed_result.all_seeds.insert(i, processed_result.all_seeds[idx0])

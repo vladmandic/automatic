@@ -57,9 +57,10 @@ class Script(scripts.Script):
                     draw_legend = gr.Checkbox(label='Draw legend', value=True, elem_id=self.elem_id("draw_legend"), container=False)
                     csv_mode = gr.Checkbox(label='Use text inputs', value=False, elem_id=self.elem_id("csv_mode"), container=False)
                     no_fixed_seeds = gr.Checkbox(label='Use random seeds', value=False, elem_id=self.elem_id("no_fixed_seeds"), container=False)
+                    include_time = gr.Checkbox(label='Add time info', value=False, elem_id=self.elem_id("include_time"), container=False)
                 with gr.Column():
-                    include_grid = gr.Checkbox(label='Create main grid', value=True, elem_id=self.elem_id("no_xyz_grid"), container=False)
-                    include_subgrids = gr.Checkbox(label='Create partial grids', value=False, elem_id=self.elem_id("include_sub_grids"), container=False)
+                    include_grid = gr.Checkbox(label='Include main grid', value=True, elem_id=self.elem_id("no_xyz_grid"), container=False)
+                    include_subgrids = gr.Checkbox(label='Include sub grids', value=False, elem_id=self.elem_id("include_sub_grids"), container=False)
                     include_images = gr.Checkbox(label='Include images', value=False, elem_id=self.elem_id("include_lone_images"), container=False)
             with gr.Row():
                 margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
@@ -139,9 +140,9 @@ class Script(scripts.Script):
             (z_values_dropdown, lambda params:get_dropdown_update_from_params("Z",params)),
         )
 
-        return [enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, margin_size]
+        return [enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size]
 
-    def process(self, p, enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, margin_size): # pylint: disable=W0221
+    def process(self, p, enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size): # pylint: disable=W0221
         global active, cache # pylint: disable=W0603
         cache = None
         if not enabled or active:
@@ -327,6 +328,7 @@ class Script(scripts.Script):
                 second_axes_processed=second_axes_processed,
                 margin_size=margin_size,
                 no_grid=not include_grid,
+                include_time=include_time,
             )
 
         if not processed.images:
@@ -355,5 +357,5 @@ class Script(scripts.Script):
         cache = processed
         return processed
 
-    def process_images(self, p, enabled, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, margin_size): # pylint: disable=W0221, W0613
+    def process_images(self, p, *args): # pylint: disable=W0221, W0613
         return cache

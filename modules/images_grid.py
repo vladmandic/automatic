@@ -113,7 +113,7 @@ def get_font(fontsize):
         return ImageFont.truetype("javascript/notosans-nerdfont-regular.ttf", fontsize)
 
 
-def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, title=None):
+def draw_grid_annotations(im, width, height, x_texts, y_texts, margin=0, title=None):
     def wrap(drawing, text, font, line_length):
         lines = ['']
         for word in text.split():
@@ -140,15 +140,15 @@ def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, tit
     line_spacing = fontsize // 2
     font = get_font(fontsize)
     color_inactive = (127, 127, 127)
-    pad_left = 0 if sum([sum([len(line.text) for line in lines]) for lines in ver_texts]) == 0 else width * 3 // 4
-    cols = len(hor_texts)
-    rows = len(ver_texts)
+    pad_left = 0 if sum([sum([len(line.text) for line in lines]) for lines in y_texts]) == 0 else width * 3 // 4
+    cols = len(x_texts)
+    rows = len(y_texts)
     # assert cols == len(hor_texts), f'bad number of horizontal texts: {len(hor_texts)}; must be {cols}'
     # assert rows == len(hor_texts), f'bad number of vertical texts: {len(ver_texts)}; must be {rows}'
     calc_img = Image.new("RGB", (1, 1), shared.opts.grid_background)
     calc_d = ImageDraw.Draw(calc_img)
     title_texts = [title] if title else [[GridAnnotation()]]
-    for texts, allowed_width in zip(hor_texts + ver_texts + title_texts, [width] * len(hor_texts) + [pad_left] * len(ver_texts) + [(width+margin)*cols]):
+    for texts, allowed_width in zip(x_texts + y_texts + title_texts, [width] * len(x_texts) + [pad_left] * len(y_texts) + [(width+margin)*cols]):
         items = [] + texts
         texts.clear()
         for line in items:
@@ -158,8 +158,8 @@ def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, tit
             bbox = calc_d.multiline_textbbox((0, 0), line.text, font=font)
             line.size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
             line.allowed_width = allowed_width
-    hor_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing for lines in hor_texts]
-    ver_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing * len(lines) for lines in ver_texts]
+    hor_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing for lines in x_texts]
+    ver_text_heights = [sum([line.size[1] + line_spacing for line in lines]) - line_spacing * len(lines) for lines in y_texts]
     pad_top = 0 if sum(hor_text_heights) == 0 else max(hor_text_heights) + line_spacing * 2
     title_pad = 0
     if title:
@@ -178,11 +178,11 @@ def draw_grid_annotations(im, width, height, hor_texts, ver_texts, margin=0, tit
     for col in range(cols):
         x = pad_left + (width + margin) * col + width / 2
         y = (pad_top / 2 - hor_text_heights[col] / 2) + title_pad
-        draw_texts(d, x, y, hor_texts[col], font, fontsize)
+        draw_texts(d, x, y, x_texts[col], font, fontsize)
     for row in range(rows):
         x = pad_left / 2
         y = (pad_top + (height + margin) * row + height / 2 - ver_text_heights[row] / 2) + title_pad
-        draw_texts(d, x, y, ver_texts[row], font, fontsize)
+        draw_texts(d, x, y, y_texts[row], font, fontsize)
     return result
 
 

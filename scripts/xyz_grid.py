@@ -48,10 +48,11 @@ class Script(scripts.Script):
                 csv_mode = gr.Checkbox(label='Text inputs', value=False, elem_id=self.elem_id("csv_mode"), container=False)
                 draw_legend = gr.Checkbox(label='Legend', value=True, elem_id=self.elem_id("draw_legend"), container=False)
                 no_fixed_seeds = gr.Checkbox(label='Random seeds', value=False, elem_id=self.elem_id("no_fixed_seeds"), container=False)
+                include_time = gr.Checkbox(label='Add time info', value=False, elem_id=self.elem_id("include_time"), container=False)
             with gr.Column():
-                no_grid = gr.Checkbox(label='Skip grid', value=False, elem_id=self.elem_id("no_xyz_grid"), container=False)
-                include_lone_images = gr.Checkbox(label='Sub-images', value=False, elem_id=self.elem_id("include_lone_images"), container=False)
-                include_sub_grids = gr.Checkbox(label='Sub-grids', value=False, elem_id=self.elem_id("include_sub_grids"), container=False)
+                include_grid = gr.Checkbox(label='Include main grid', value=True, elem_id=self.elem_id("no_xyz_grid"), container=False)
+                include_subgrids = gr.Checkbox(label='Include sub grids', value=False, elem_id=self.elem_id("include_sub_grids"), container=False)
+                include_images = gr.Checkbox(label='Include images', value=False, elem_id=self.elem_id("include_lone_images"), container=False)
         with gr.Row():
             margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
         with gr.Row():
@@ -130,10 +131,9 @@ class Script(scripts.Script):
             (z_values_dropdown, lambda params:get_dropdown_update_from_params("Z",params)),
         )
 
-        return [x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, no_grid, include_lone_images, include_sub_grids, margin_size]
+        return [x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size]
 
-    def run(self, p, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, no_grid, include_lone_images, include_sub_grids, margin_size): # pylint: disable=W0221
-        shared.log.debug(f'xyzgrid: x_type={x_type}|x_values={x_values}|x_values_dropdown={x_values_dropdown}|y_type={y_type}|{y_values}={y_values}|{y_values_dropdown}={y_values_dropdown}|z_type={z_type}|z_values={z_values}|z_values_dropdown={z_values_dropdown}|draw_legend={draw_legend}|include_lone_images={include_lone_images}|include_sub_grids={include_sub_grids}|no_grid={no_grid}|margin_size={margin_size}')
+    def run(self, p, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size): # pylint: disable=W0221
         if not no_fixed_seeds:
             processing.fix_seed(p)
         if not shared.opts.return_grid:
@@ -307,38 +307,39 @@ class Script(scripts.Script):
                 z_labels=[z_opt.format_value(p, z_opt, z) for z in zs],
                 cell=cell,
                 draw_legend=draw_legend,
-                include_lone_images=include_lone_images,
-                include_sub_grids=include_sub_grids,
+                include_lone_images=include_images,
+                include_sub_grids=include_subgrids,
                 first_axes_processed=first_axes_processed,
                 second_axes_processed=second_axes_processed,
                 margin_size=margin_size,
-                no_grid=no_grid,
+                no_grid=not include_grid,
+                include_time=include_time,
             )
 
         if not processed.images:
             return processed # It broke, no further handling needed.
         z_count = len(zs)
         processed.infotexts[:1+z_count] = grid_infotext[:1+z_count] # Set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
-        if not include_lone_images:
+        if not include_images:
              # Don't need sub-images anymore, drop from list:
-            if no_grid and include_sub_grids:
+            if not include_grid and include_subgrids:
                 processed.images = processed.images[:z_count] # we don't have the main grid image, and need zero additional sub-images
             else:
                 processed.images = processed.images[:z_count+1] # we either have the main grid image, or need one sub-images
         if shared.opts.grid_save: # Auto-save main and sub-grids:
-            grid_count = z_count + ( 1 if not no_grid and z_count > 1 else 0 )
+            grid_count = z_count + ( 1 if include_grid and z_count > 1 else 0 )
             for g in range(grid_count):
                 adj_g = g-1 if g > 0 else g
                 info = processed.infotexts[g]
                 prompt = processed.all_prompts[adj_g]
                 seed = processed.all_seeds[adj_g]
                 images.save_image(processed.images[g], p.outpath_grids, "grid", info=info, extension=shared.opts.grid_format, prompt=prompt, seed=seed, grid=True, p=processed)
-        if not include_sub_grids: # Done with sub-grids, drop all related information:
+        if not include_subgrids: # Done with sub-grids, drop all related information:
             for _sg in range(z_count):
                 del processed.images[1]
                 del processed.all_prompts[1]
                 del processed.all_seeds[1]
                 del processed.infotexts[1]
-        elif no_grid:
+        elif include_grid:
             del processed.infotexts[0]
         return processed
