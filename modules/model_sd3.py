@@ -1,7 +1,7 @@
 import os
 import diffusers
 import transformers
-from modules import shared, devices, sd_models, sd_unet, model_te, model_quant
+from modules import shared, devices, sd_models, sd_unet, model_te, model_quant, model_tools
 
 
 def load_overrides(kwargs, cache_dir):
@@ -69,7 +69,7 @@ def load_quants(kwargs, repo_id, cache_dir):
 
 
 def load_missing(kwargs, fn, cache_dir):
-    keys = sd_models.get_safetensor_keys(fn)
+    keys = model_tools.get_safetensor_keys(fn)
     size = os.stat(fn).st_size // 1024 // 1024
     if size > 15000:
         repo_id = 'stabilityai/stable-diffusion-3.5-large'
@@ -129,7 +129,11 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     if fn is not None and os.path.exists(fn) and os.path.isfile(fn):
         if fn.endswith('.safetensors'):
             loader = diffusers.StableDiffusion3Pipeline.from_single_file
-            kwargs = load_missing(kwargs, fn, cache_dir)
+            # required_modules = model_tools.get_modules(diffusers.StableDiffusion3Pipeline)
+            # have_modules = model_tools.get_safetensor_keys(fn)
+            # loaded_modules = model_tools.load_modules('stabilityai/stable-diffusion-3.5-medium', required_modules)
+            # kwargs = {**kwargs, **loaded_modules}
+            # kwargs = load_missing(kwargs, fn, cache_dir)
             repo_id = fn
         elif fn.endswith('.gguf'):
             kwargs = load_gguf(kwargs, fn)

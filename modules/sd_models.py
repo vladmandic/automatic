@@ -75,16 +75,6 @@ def read_state_dict(checkpoint_file, map_location=None, what:str='model'): # pyl
     return sd
 
 
-def get_safetensor_keys(filename):
-    keys = []
-    try:
-        with safetensors.torch.safe_open(filename, framework="pt", device="cpu") as f:
-            keys = f.keys()
-    except Exception as e:
-        shared.log.error(f'Load dict: path="{filename}" {e}')
-    return keys
-
-
 def get_state_dict_from_checkpoint(pl_sd):
     checkpoint_dict_replacements = {
         'cond_stage_model.transformer.embeddings.': 'cond_stage_model.transformer.text_model.embeddings.',

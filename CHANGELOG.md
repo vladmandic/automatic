@@ -9,6 +9,9 @@
   - *Alimama Inpainting, SoftEdge*
   - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
     e.g. SD3 controlnets vary from 1GB to over 4GB in size  
+- SD3: support for all-in-one safetensors
+  - examples: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031) [medium](https://civitai.com/models/900327)
+  - *note*: enable bnb on-the-fly quantization for even bigger gains  
 
 ## Update for 2024-10-29
 

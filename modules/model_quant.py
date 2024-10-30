@@ -7,10 +7,10 @@ bnb = None
 quanto = None
 
 
-def create_bnb_config(kwargs):
+def create_bnb_config(kwargs = None):
     from modules import shared, devices
     if len(shared.opts.bnb_quantization) > 0:
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in (kwargs or {}):
             load_bnb()
             bnb_config = diffusers.BitsAndBytesConfig(
                 load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
@@ -19,8 +19,12 @@ def create_bnb_config(kwargs):
                 bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
                 bnb_4bit_compute_dtype=devices.dtype
             )
-            kwargs['quantization_config'] = bnb_config
             shared.log.debug(f'Quantization: module=all type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+            if kwargs is None:
+                return bnb_config
+            else:
+                kwargs['quantization_config'] = bnb_config
+                return kwargs
     return kwargs
 
 
