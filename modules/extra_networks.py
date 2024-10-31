@@ -104,6 +104,7 @@ def activate(p, extra_network_data, step=0):
 
     p.extra_network_data = extra_network_data
     if stepwise:
+        p.stepwise_lora = True
         shared.opts.data['lora_functional'] = functional
 
 

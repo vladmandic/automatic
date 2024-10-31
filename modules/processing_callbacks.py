@@ -3,8 +3,7 @@ import os
 import time
 import torch
 import numpy as np
-from modules import shared, processing_correction, extra_networks, timer
-
+from modules import shared, processing_correction, extra_networks, timer, prompt_parser_diffusers
 
 p = None
 debug_callback = shared.log.trace if os.environ.get('SD_CALLBACK_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -49,7 +48,7 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             if shared.state.interrupted or shared.state.skipped:
                 raise AssertionError('Interrupted...')
             time.sleep(0.1)
-    if hasattr(p, "extra_network_data"):
+    if hasattr(p, "stepwise_lora"):
         extra_networks.activate(p, p.extra_network_data, step=step)
     if latents is None:
         return kwargs
@@ -67,12 +66,12 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             pipe.set_ip_adapter_scale(ip_adapter_scales)
     if step != getattr(pipe, 'num_timesteps', 0):
         kwargs = processing_correction.correction_callback(p, timestep, kwargs)
-    if p.embedder is not None:
+    if prompt_parser_diffusers.embedder is not None:
         try:
             if 'prompt_embeds' in kwargs:
-                kwargs["prompt_embeds"] = p.embedder("prompt_embeds", step + 1)
+                kwargs["prompt_embeds"] = prompt_parser_diffusers.embedder("prompt_embeds", step + 1)
             if 'negative_prompt_embeds' in kwargs:
-                kwargs["negative_prompt_embeds"] = p.embedder("negative_prompt_embeds", step + 1)
+                kwargs["negative_prompt_embeds"] = prompt_parser_diffusers.embedder("negative_prompt_embeds", step + 1)
         except Exception as e:
             shared.log.debug(f"Callback: {e}")
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:

@@ -16,6 +16,7 @@ orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_em
 token_dict = None # used by helper get_tokens
 token_type = None # used by helper get_tokens
 cache = OrderedDict()
+embedder = None
 
 
 def prompt_compatible():
@@ -41,13 +42,13 @@ def prepare_model():
 
 
 class PromptEmbedder:
-    def __init__(self, prompts, negative_prompts, clip_skip, p):
+    def __init__(self, prompts, negative_prompts, steps, clip_skip, p):
         t0 = time.time()
         self.prompts = prompts
         self.negative_prompts = negative_prompts
         self.batchsize = len(self.prompts)
         self.allsame = self.compare_prompts()  # collapses batched prompts to single prompt if possible
-        self.steps = p.steps
+        self.steps = steps
         self.clip_skip = clip_skip
         # All embeds are nested lists, outer list batch length, inner schedule length
         self.prompt_embeds = [[]] * self.batchsize
