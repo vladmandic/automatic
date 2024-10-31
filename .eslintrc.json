@@ -112,6 +112,8 @@
     "idbPut": "readonly",
     "idbDel": "readonly",
     "idbAdd": "readonly",
+    // changelog.js
+    "initChangelog": "readonly",
     // notification.js
     "sendNotification": "readonly"
   },

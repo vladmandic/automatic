@@ -355,13 +355,20 @@ def create_ui(startup_timer = None):
                 ui_onnx.create_ui()
 
             with gr.TabItem("Change log", id="change_log", elem_id="system_tab_changelog"):
-                with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
-                    md = f.read()
-                gr.Markdown(md)
+                def get_changelog():
+                    with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        content = content.replace('# Change Log for SD.Next', '  ')
+                    return content
 
-            with gr.TabItem("Licenses", id="system_licenses", elem_id="system_tab_licenses"):
-                gr.HTML(shared.html("licenses.html"), elem_id="licenses", elem_classes="licenses")
-                create_dirty_indicator("tab_licenses", [], interactive=False)
+                with gr.Column():
+                    get_changelog_btn = gr.Button(value='Get changelog', elem_id="get_changelog")
+                with gr.Column():
+                    _changelog_search = gr.Textbox(label="Search", elem_id="changelog_search")
+                    _changelog_result = gr.HTML(elem_id="changelog_result")
+
+                changelog_markdown = gr.Markdown('', elem_id="changelog_markdown")
+                get_changelog_btn.click(fn=get_changelog, outputs=[changelog_markdown], show_progress=True)
 
         def unload_sd_weights():
             modules.sd_models.unload_model_weights(op='model')

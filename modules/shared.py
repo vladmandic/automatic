@@ -1101,7 +1101,7 @@ profiler = None
 opts = Options()
 config_filename = cmd_opts.config
 opts.load(config_filename)
-cmd_opts = cmd_args.compatibility_args(opts, cmd_opts)
+cmd_opts = cmd_args.settings_args(opts, cmd_opts)
 if cmd_opts.use_xformers:
     opts.data['cross_attention_optimization'] = 'xFormers'
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility
