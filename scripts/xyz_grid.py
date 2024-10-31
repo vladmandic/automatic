@@ -317,16 +317,15 @@ class Script(scripts.Script):
             )
 
         if not processed.images:
-            return processed # It broke, no further handling needed.
+            return processed # something broke, no further handling needed.
         z_count = len(zs)
-        processed.infotexts[:1+z_count] = grid_infotext[:1+z_count] # Set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
-        if not include_images:
-             # Don't need sub-images anymore, drop from list:
+        processed.infotexts[:1+z_count] = grid_infotext[:1+z_count] # set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
+        if not include_images: # dont need sub-images anymore, drop from list:
             if not include_grid and include_subgrids:
                 processed.images = processed.images[:z_count] # we don't have the main grid image, and need zero additional sub-images
             else:
                 processed.images = processed.images[:z_count+1] # we either have the main grid image, or need one sub-images
-        if shared.opts.grid_save: # Auto-save main and sub-grids:
+        if shared.opts.grid_save: # auto-save main and sub-grids:
             grid_count = z_count + ( 1 if include_grid and z_count > 1 else 0 )
             for g in range(grid_count):
                 adj_g = g-1 if g > 0 else g
@@ -334,7 +333,7 @@ class Script(scripts.Script):
                 prompt = processed.all_prompts[adj_g]
                 seed = processed.all_seeds[adj_g]
                 images.save_image(processed.images[g], p.outpath_grids, "grid", info=info, extension=shared.opts.grid_format, prompt=prompt, seed=seed, grid=True, p=processed)
-        if not include_subgrids: # Done with sub-grids, drop all related information:
+        if not include_subgrids: # done with sub-grids, drop all related information:
             for _sg in range(z_count):
                 del processed.images[1]
                 del processed.all_prompts[1]
