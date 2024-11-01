@@ -6,16 +6,18 @@
   - optional per-image time benchmark info
 - UI:
   - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)
-- Docs: since [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) is the up-to-date source of info
-  - go to system -> changelog and search/highligh/navigate directly in UI!
-- SD3: support for ControlNets:
+- Docs:
+  - add built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
+    since changelog is the best up-to-date source of info
+    go to system -> changelog and search/highligh/navigate directly in UI!
+- SD3: ControlNets:
   - *InstantX Canny, Pose, Depth, Tile*
   - *Alimama Inpainting, SoftEdge*
   - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
     e.g. SD3 controlnets vary from 1GB to over 4GB in size  
-- SD3: support for all-in-one safetensors
+- SD3: all-in-one safetensors
   - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)
-  - *note*: enable bnb on-the-fly quantization for even bigger gains  
+  - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
 - CLI:
   - refactor command line params  
     run `webui.sh`/`webui.bat` with `--help` to see all options  
