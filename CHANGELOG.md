@@ -29,6 +29,7 @@
   - list diffusers remove duplicates  
   - fix legacy extensions access to shared objects  
   - fix diffusers load from folder  
+  - move dowwloads of some auxillary models to hfcache instead of models folder  
 
 ## Update for 2024-10-29
 
