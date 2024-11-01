@@ -82,6 +82,7 @@ def watermark(params, file):
 
     exif = get_exif(image)
 
+    wm = None
     if params.command == 'read':
         fn = params.input
         wm = get_watermark(image, params)

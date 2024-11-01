@@ -374,6 +374,8 @@ def set_watermark(image, watermark):
         wm_image = None
         try:
             wm_image = Image.open(shared.opts.image_watermark_image)
+            if wm_image.mode != 'RGBA':
+                wm_image = wm_image.convert('RGBA')
         except Exception as e:
             shared.log.warning(f'Set image watermark: fn="{shared.opts.image_watermark_image}" {e}')
         if wm_image is not None:
@@ -392,8 +394,14 @@ def set_watermark(image, watermark):
             try:
                 for x in range(wm_image.width):
                     for y in range(wm_image.height):
-                        r, g, b, _a = wm_image.getpixel((x, y))
-                        if not (r == 0 and g == 0 and b == 0):
+                        rgba = wm_image.getpixel((x, y))
+                        orig = image.getpixel((x+position[0], y+position[1]))
+                        # alpha blend
+                        a = rgba[3] / 255
+                        r = int(rgba[0] * a + orig[0] * (1 - a))
+                        g = int(rgba[1] * a + orig[1] * (1 - a))
+                        b = int(rgba[2] * a + orig[2] * (1 - a))
+                        if not a == 0:
                             image.putpixel((x+position[0], y+position[1]), (r, g, b))
                 shared.log.debug(f'Set image watermark: fn="{shared.opts.image_watermark_image}" image={wm_image} position={position}')
             except Exception as e:

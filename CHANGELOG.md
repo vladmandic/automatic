@@ -28,6 +28,7 @@ This release can be considered an LTS release before we kick off the next round 
   - Repo: move screenshots to GH pages
   - Update requirements
 - Fixes:
+  - custom watermark add alphablending
   - detailer min/max size as fractions of image size  
   - ipadapter load on-demand  
   - ipadapter face use correct yolo model  
