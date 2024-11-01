@@ -3,7 +3,7 @@ const appStartTime = performance.now();
 async function preloadImages() {
   const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const imagePromises = [];
-  const num = Math.floor(10 * Math.random());
+  const num = Math.floor(9.99 * Math.random());
   const imageUrls = [
     `file=html/logo-bg-${dark ? 'dark' : 'light'}.jpg`,
     `file=html/logo-bg-${num}.jpg`,
