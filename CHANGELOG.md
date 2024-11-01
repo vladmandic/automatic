@@ -1,9 +1,11 @@
 # Change Log for SD.Next
 
-## Update for 2024-10-31
+## Update for 2024-11-01
 
-- XYZ grid: optional per-image time benchmark info
-- UI: add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)
+- XYZ grid:
+  - optional per-image time benchmark info
+- UI:
+  - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)
 - Docs: since [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) is the up-to-date source of info
   - go to system -> changelog and search/highligh/navigate directly in UI!
 - SD3: support for ControlNets:
@@ -14,10 +16,17 @@
 - SD3: support for all-in-one safetensors
   - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)
   - *note*: enable bnb on-the-fly quantization for even bigger gains  
-- CLI: refactor command line params
-  - run `webui.sh`/`webui.bat` with `--help` to see all options  
-- Repo: move screenshots to GH pages
-- Update requirements
+- CLI:
+  - refactor command line params  
+    run `webui.sh`/`webui.bat` with `--help` to see all options  
+- Other:
+  - Repo: move screenshots to GH pages
+  - Update requirements
+- Fixes:
+  - ipadapter load on-demand  
+  - ipadapter face use correct yolo model  
+  - fix legacy extensions access to shared objects  
+  - fix diffusers load from folder  
 
 ## Update for 2024-10-29
 
