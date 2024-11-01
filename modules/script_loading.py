@@ -14,7 +14,7 @@ def load_module(path):
     module_spec = importlib.util.spec_from_file_location(os.path.basename(path), path)
     module = importlib.util.module_from_spec(module_spec)
     try:
-        if '/sd-extension-' in path or '/Lora' in path: # safe extensions without stdout intercept
+        if 'sd-extension-' in path or 'Lora' in path: # safe extensions without stdout intercept
             module_spec.loader.exec_module(module)
         else:
             if debug:

@@ -319,6 +319,13 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 .gallery-sort { background: var(--input-background-fill) !important; margin: 0 !important; padding: 6px !important; }
 .gallery-sort:hover { background: var(--button-primary-background-fill-hover) !important; }
 
+/* changelog */
+#changelog_markdown { max-height: 55vh; margin-top: 1em; }
+#changelog_result { display: flex; margin-left: 1em; align-items: center; }
+.changelog_arrow { font-size: 2em; padding: 0.1em; cursor: pointer; height: 1em; background-color: var(--button-secondary-background-fill); }
+.changelog_arrow:hover { background-color: var(--button-primary-border-color-hover); }
+.changelog_highlight { background-color: var(--color-warning); }
+
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }
 .motd { margin-top: 2em; color: var(--body-text-color-subdued); font-family: monospace; font-variant: all-petite-caps; }

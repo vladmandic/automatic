@@ -20,5 +20,12 @@ def is_f1(model):
     if model is None:
         return False
     if hasattr(model, '__name__'):
-        return model.__name__ == p.FluxPipeline.__name__
-    return isinstance(model, p.FluxPipeline)
+        return model.__name__ == p.FluxPipeline.__name__ or model.__name__ == p.FluxImg2ImgPipeline.__name__ or model.__name__ == p.FluxInpaintPipeline.__name__
+    return isinstance(model, p.FluxPipeline) or isinstance(model, p.FluxImg2ImgPipeline) or isinstance(model, p.FluxInpaintPipeline)
+
+def is_sd3(model):
+    if model is None:
+        return False
+    if hasattr(model, '__name__'):
+        return model.__name__ == p.StableDiffusion3Pipeline.__name__ or model.__name__ == p.StableDiffusion3Img2ImgPipeline.__name__ or model.__name__ == p.StableDiffusion3InpaintPipeline.__name__
+    return isinstance(model, p.StableDiffusion3Pipeline) or isinstance(model, p.StableDiffusion3Img2ImgPipeline) or isinstance(model, p.StableDiffusion3InpaintPipeline)

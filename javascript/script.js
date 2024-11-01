@@ -133,19 +133,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Add a ctrl+enter as a shortcut to start a generation
+ * Add a listener to the document for keydown events
  */
 document.addEventListener('keydown', (e) => {
-  let handled = false;
-  if (e.key !== undefined) {
-    if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
-  } else if (e.keyCode !== undefined) {
-    if ((e.keyCode === 13 && (e.metaKey || e.ctrlKey || e.altKey))) handled = true;
-  }
-  if (handled) {
-    const button = getUICurrentTabContent().querySelector('button[id$=_generate]');
-    if (button) button.click();
+  let elem;
+  if (e.key === 'Escape') elem = getUICurrentTabContent().querySelector('button[id$=_interrupt]');
+  if (e.key === 'Enter' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_generate]');
+  if (e.key === 'Backspace' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_reprocess]');
+  if (e.key === ' ' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_extra_networks_btn]');
+  if (e.key === 's' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id^=save_]');
+  if (e.key === 'Insert' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id^=save_]');
+  if (e.key === 'Delete' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id^=delete_]');
+  // if (e.key === 'm' && e.ctrlKey) elem = gradioApp().getElementById('setting_sd_model_checkpoint');
+  if (elem) {
     e.preventDefault();
+    log('hotkey', { key: e.key, meta: e.metaKey, ctrl: e.ctrlKey, alt: e.altKey }, elem?.id, elem.nodeName);
+    if (elem.nodeName === 'BUTTON') elem.click();
+    else elem.focus();
   }
 });
 

@@ -44,6 +44,11 @@ tunableop_results*.csv
 !webui.sh
 !package.json
 
+# pyinstaller
+*.spec
+build/
+dist/
+
 # dynamically generated
 /repositories/ip-instruct/
 
@@ -69,3 +74,4 @@ tunableop_results*.csv
 !/models/VAE-approx/model.pt
 !/models/Reference
 !/models/Reference/**/*
+

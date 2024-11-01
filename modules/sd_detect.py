@@ -84,6 +84,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             if 'omnigen' in f.lower():
                 guess = 'OmniGen'
                 pipeline = 'custom'
+            if 'sd3' in f.lower():
+                guess = 'Stable Diffusion 3'
             if 'flux' in f.lower():
                 guess = 'FLUX'
                 if size > 11000 and size < 20000:

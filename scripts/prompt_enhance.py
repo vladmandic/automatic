@@ -32,10 +32,10 @@ class Script(scripts.Script):
 
     def load(self):
         if self.tokenizer is None:
-            self.tokenizer = AutoTokenizer.from_pretrained('gokaygokay/Flux-Prompt-Enhance', cache_dir=shared.opts.diffusers_dir)
+            self.tokenizer = AutoTokenizer.from_pretrained('gokaygokay/Flux-Prompt-Enhance', cache_dir=shared.opts.hfcache_dir)
         if self.model is None:
             shared.log.info(f'Prompt enhance: model="{repo_id}"')
-            self.model = AutoModelForSeq2SeqLM.from_pretrained('gokaygokay/Flux-Prompt-Enhance', cache_dir=shared.opts.diffusers_dir).to(device=devices.cpu, dtype=devices.dtype)
+            self.model = AutoModelForSeq2SeqLM.from_pretrained('gokaygokay/Flux-Prompt-Enhance', cache_dir=shared.opts.hfcache_dir).to(device=devices.cpu, dtype=devices.dtype)
 
     def enhance(self, prompt, auto_apply: bool = False, temperature: float = 0.7, repetition_penalty: float = 1.2, max_length: int = 128):
         self.load()

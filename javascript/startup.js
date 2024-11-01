@@ -16,6 +16,7 @@ async function initStartup() {
   initImageViewer();
   initGallery();
   initiGenerationParams();
+  initChangelog();
   setupControlUI();
 
   // reconnect server session

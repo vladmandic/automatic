@@ -19,7 +19,7 @@ from modules import paths, shared, shared_state, modelloader, devices, script_ca
 from modules.timer import Timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
-from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
+from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
 
 
 model_dir = "Stable-diffusion"
@@ -73,16 +73,6 @@ def read_state_dict(checkpoint_file, map_location=None, what:str='model'): # pyl
         errors.display(e, f'Load model: {checkpoint_file}')
         sd = None
     return sd
-
-
-def get_safetensor_keys(filename):
-    keys = []
-    try:
-        with safetensors.torch.safe_open(filename, framework="pt", device="cpu") as f:
-            keys = f.keys()
-    except Exception as e:
-        shared.log.error(f'Load dict: path="{filename}" {e}')
-    return keys
 
 
 def get_state_dict_from_checkpoint(pl_sd):
@@ -1052,6 +1042,15 @@ def clean_diffuser_pipe(pipe):
 
 
 def set_diffuser_pipe(pipe, new_pipe_type):
+    exclude = [
+        'StableDiffusionReferencePipeline',
+        'StableDiffusionAdapterPipeline',
+        'AnimateDiffPipeline',
+        'AnimateDiffSDXLPipeline',
+        'OmniGenPipeline',
+        'StableDiffusion3ControlNetPipeline',
+    ]
+
     n = getattr(pipe.__class__, '__name__', '')
     if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
         clean_diffuser_pipe(pipe)
@@ -1060,7 +1059,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
-    if n in ['StableDiffusionReferencePipeline', 'StableDiffusionAdapterPipeline', 'AnimateDiffPipeline', 'AnimateDiffSDXLPipeline', 'OmniGenPipeline']:
+    if n in exclude:
         return pipe
     if 'Onnx' in pipe.__class__.__name__:
         return pipe

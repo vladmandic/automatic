@@ -36,6 +36,7 @@ ADAPTERS_SDXL = {
     'Ostris Composition ViT-H SDXL': { 'name': 'ip_plus_composition_sdxl.safetensors', 'repo': 'ostris/ip-composition-adapter', 'subfolder': '' },
 }
 ADAPTERS = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
+ADAPTERS_ALL = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
 
 
 def get_adapters():
@@ -101,13 +102,12 @@ def crop_images(images, crops):
     try:
         for i in range(len(images)):
             if crops[i]:
-                from shared import yolo # pylint: disable=no-name-in-module
-                yolo.load()
+                from modules.shared import yolo # pylint: disable=no-name-in-module
                 cropped = []
                 for image in images[i]:
-                    faces = yolo.predict(image)
+                    faces = yolo.predict('face-yolo8n', image)
                     if len(faces) > 0:
-                        cropped.append(faces[0].face)
+                        cropped.append(faces[0].item)
                 if len(cropped) == len(images[i]):
                     images[i] = cropped
                 else:
@@ -135,7 +135,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_names'):
         if isinstance(p.ip_adapter_names, str):
             p.ip_adapter_names = [p.ip_adapter_names]
-        adapters = [ADAPTERS.get(adapter_name, None) for adapter_name in p.ip_adapter_names if adapter_name is not None and adapter_name.lower() != 'none']
+        adapters = [ADAPTERS_ALL.get(adapter_name, None) for adapter_name in p.ip_adapter_names if adapter_name is not None and adapter_name.lower() != 'none']
         adapter_names = p.ip_adapter_names
     else:
         if isinstance(adapter_names, str):
