@@ -128,9 +128,9 @@ class YoloRestorer(Detailer):
                 mask_image = None
                 w, h = box[2] - box[0], box[3] - box[1]
                 size = w * h / (image.width * image.height)
-                min_size = (shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 else 0) * min(w, h)
-                max_size = (shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 else 1) * max(w, h)
-                if (min(w, h) > min_size) and (max(w, h) < max_size):
+                min_size = (shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 and shared.opts.detailer_min_size < 1 else 0) * min(w, h)
+                max_size = (shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 and shared.opts.detailer_min_size < 1 else 1) * max(w, h)
+                if (min(w, h) >= int(min_size)) and (max(w, h) <= int(max_size)):
                     if mask:
                         mask_image = image.copy()
                         mask_image = Image.new('L', image.size, 0)
