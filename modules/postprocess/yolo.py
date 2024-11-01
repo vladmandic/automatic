@@ -78,6 +78,10 @@ class YoloRestorer(Detailer):
         ) -> list[YoloResult]:
 
         result = []
+        if isinstance(model, str):
+            model = self.models.get(model, None)
+            if model is None:
+                _, model = self.load(model)
         if model is None:
             return result
         args = {
@@ -138,6 +142,7 @@ class YoloRestorer(Detailer):
 
     def load(self, model_name: str = None):
         from modules import modelloader
+        model = None
         self.dependencies()
         if model_name is None:
             model_name = list(self.list)[0]
@@ -158,7 +163,7 @@ class YoloRestorer(Detailer):
                     return model_name, model
             except Exception as e:
                 shared.log.error(f'Load: type=Detailer name="{model_name}" error="{e}"')
-        return None
+        return None, None
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
         if hasattr(p, 'recursion'):
