@@ -26,6 +26,7 @@
   - detailer min/max size as fractions of image size  
   - ipadapter load on-demand  
   - ipadapter face use correct yolo model  
+  - list diffusers remove duplicates  
   - fix legacy extensions access to shared objects  
   - fix diffusers load from folder  
 

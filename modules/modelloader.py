@@ -273,6 +273,7 @@ def load_diffusers_models(clear=True):
         place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
+    already_found = []
     try:
         for folder in os.listdir(place):
             try:
@@ -303,7 +304,11 @@ def load_diffusers_models(clear=True):
                     if (not os.path.exists(index)) and (not os.path.exists(info)) and (not os.path.exists(config)):
                         debug(f'Diffusers skip model no info: {name}')
                         continue
+                    if name in already_found:
+                        debug(f'Diffusers skip model already found: {name}')
+                        continue
                     repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index, 'model_config': config }
+                    already_found.append(name)
                     diffuser_repos.append(repo)
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue

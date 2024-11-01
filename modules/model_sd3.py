@@ -142,7 +142,7 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     else:
         kwargs['variant'] = 'fp16'
 
-    shared.log.debug(f'Load model: type=SD3 kwargs={list(kwargs)}')
+    shared.log.debug(f'Load model: type=SD3 kwargs={list(kwargs)} repo="{repo_id}"')
 
     kwargs = model_quant.create_bnb_config(kwargs)
     pipe = loader(
