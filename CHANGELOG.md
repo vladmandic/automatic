@@ -2,6 +2,9 @@
 
 ## Update for 2024-11-01
 
+Smaller release just 3 days after the last one, but with some important fixes and improvements.  
+This release can be considered an LTS release before we kick off the next round of major updates.  
+
 - XYZ grid:
   - optional per-image time benchmark info
 - UI:
