@@ -22,17 +22,20 @@ let currentElement = -1;
 function changelogNavigate(found) {
   const result = gradioApp().getElementById('changelog_result');
   result.innerHTML = '';
+  const text = document.createElement('p');
 
   const onPrev = () => {
     if (currentElement > 0) {
       currentElement--;
       found[currentElement].scrollIntoView();
+      text.innerHTML = ` &nbsp search item ${currentElement + 1} of ${found.length}`;
     }
   };
   const onNext = () => {
     if (currentElement < found.length - 1) {
       currentElement++;
       found[currentElement].scrollIntoView();
+      text.innerHTML = ` &nbsp search item ${currentElement + 1} of ${found.length}`;
     }
   };
 
@@ -40,15 +43,16 @@ function changelogNavigate(found) {
   prev.innerHTML = ' ⇦ ';
   prev.className = 'changelog_arrow';
   prev.onclick = onPrev;
+  prev.title = 'Search previous';
   result.appendChild(prev);
 
   const next = document.createElement('p');
   next.innerHTML = ' ⇨ ';
   next.className = 'changelog_arrow';
+  next.title = 'Search next';
   next.onclick = onNext;
   result.appendChild(next);
 
-  const text = document.createElement('p');
   text.innerHTML = ` &nbsp found ${found.length} items`;
   result.appendChild(text);
 }
@@ -60,7 +64,7 @@ async function initChangelog() {
     if (changelogElements.length < 100) changelogElements = getAllChildren(md);
     const found = [];
     for (const el of changelogElements) {
-      if (getText(el).toLowerCase().includes(search.value.toLowerCase())) {
+      if (search.value.length > 1 && getText(el).toLowerCase().includes(search.value.toLowerCase())) {
         el.classList.add('changelog_highlight');
         found.push(el);
       } else {

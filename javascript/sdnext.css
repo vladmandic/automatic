@@ -321,8 +321,9 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 
 /* changelog */
 #changelog_markdown { max-height: 55vh; margin-top: 1em; }
-#changelog_result { display: flex; cursor: pointer; margin-left: 1em; }
-.changelog_arrow { font-size: 2em; margin-right: 0.5em; }
+#changelog_result { display: flex; margin-left: 1em; align-items: center; }
+.changelog_arrow { font-size: 2em; padding: 0.1em; cursor: pointer; height: 1em; background-color: var(--button-secondary-background-fill); }
+.changelog_arrow:hover { background-color: var(--button-primary-border-color-hover); }
 .changelog_highlight { background-color: var(--color-warning); }
 
 /* loader */
