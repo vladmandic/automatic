@@ -128,7 +128,9 @@ class YoloRestorer(Detailer):
                 mask_image = None
                 w, h = box[2] - box[0], box[3] - box[1]
                 size = w * h / (image.width * image.height)
-                if (min(w, h) > shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 else True) and (max(w, h) < shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 else True):
+                min_size = (shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 else 0) * min(w, h)
+                max_size = (shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 else 1) * max(w, h)
+                if (min(w, h) > min_size) and (max(w, h) < max_size):
                     if mask:
                         mask_image = image.copy()
                         mask_image = Image.new('L', image.size, 0)
@@ -328,8 +330,10 @@ class YoloRestorer(Detailer):
                 min_confidence = gr.Slider(label="Min confidence", elem_id=f"{tab}_detailer_conf", value=shared.opts.detailer_conf, minimum=0.0, maximum=1.0, step=0.05)
                 iou = gr.Slider(label="Max overlap", elem_id=f"{tab}_detailer_iou", value=shared.opts.detailer_iou, minimum=0, maximum=1.0, step=0.05)
             with gr.Row():
-                min_size = gr.Slider(label="Min size", elem_id=f"{tab}_detailer_min_size", value=shared.opts.detailer_min_size, minimum=0, maximum=1024, step=1)
-                max_size = gr.Slider(label="Max size", elem_id=f"{tab}_detailer_max_size", value=shared.opts.detailer_max_size, minimum=0, maximum=1024, step=1)
+                min_size = shared.opts.detailer_min_size if shared.opts.detailer_min_size < 1 else 0.0
+                min_size = gr.Slider(label="Min size", elem_id=f"{tab}_detailer_min_size", value=min_size, minimum=0.1, maximum=1.0, step=0.05)
+                max_size = shared.opts.detailer_min_size if shared.opts.detailer_min_size < 1 and shared.opts.detailer_min_size > 0 else 1.0
+                max_size = gr.Slider(label="Max size", elem_id=f"{tab}_detailer_max_size", value=max_size, minimum=0.1, maximum=1.0, step=0.05)
             detailers.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
             classes.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
             strength.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])

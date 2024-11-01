@@ -23,6 +23,7 @@
   - Repo: move screenshots to GH pages
   - Update requirements
 - Fixes:
+  - detailer min/max size as fractions of image size  
   - ipadapter load on-demand  
   - ipadapter face use correct yolo model  
   - fix legacy extensions access to shared objects  
