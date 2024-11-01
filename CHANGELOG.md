@@ -35,6 +35,7 @@ This release can be considered an LTS release before we kick off the next round 
   - fix legacy extensions access to shared objects  
   - fix diffusers load from folder  
   - fix lora enum logging on windows  
+  - fix xyz grid with batch count  
   - move dowwloads of some auxillary models to hfcache instead of models folder  
 
 ## Update for 2024-10-29
