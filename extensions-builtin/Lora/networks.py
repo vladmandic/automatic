@@ -533,18 +533,14 @@ def network_MultiheadAttention_load_state_dict(self, *args, **kwargs):
 
 
 def list_available_networks():
+    t0 = time.time()
     available_networks.clear()
     available_network_aliases.clear()
     forbidden_network_aliases.clear()
     available_network_hash_lookup.clear()
     forbidden_network_aliases.update({"none": 1, "Addams": 1})
-    directories = []
-    if os.path.exists(shared.cmd_opts.lora_dir):
-        directories.append(shared.cmd_opts.lora_dir)
-    else:
+    if not os.path.exists(shared.cmd_opts.lora_dir):
         shared.log.warning(f'LoRA directory not found: path="{shared.cmd_opts.lora_dir}"')
-    if os.path.exists(shared.cmd_opts.lyco_dir) and shared.cmd_opts.lyco_dir != shared.cmd_opts.lora_dir:
-        directories.append(shared.cmd_opts.lyco_dir)
 
     def add_network(filename):
         if not os.path.isfile(filename):
@@ -565,11 +561,12 @@ def list_available_networks():
         except OSError as e:  # should catch FileNotFoundError and PermissionError etc.
             shared.log.error(f'LoRA: filename="{filename}" {e}')
 
-    candidates = list(files_cache.list_files(*directories, ext_filter=[".pt", ".ckpt", ".safetensors"]))
+    candidates = list(files_cache.list_files(shared.cmd_opts.lora_dir, ext_filter=[".pt", ".ckpt", ".safetensors"]))
     with concurrent.futures.ThreadPoolExecutor(max_workers=shared.max_workers) as executor:
         for fn in candidates:
             executor.submit(add_network, fn)
-    shared.log.info(f'Available LoRAs: items={len(available_networks)} folders={len(forbidden_network_aliases)}')
+    t1 = time.time()
+    shared.log.info(f'Available LoRAs: path="{shared.cmd_opts.lora_dir}" items={len(available_networks)} folders={len(forbidden_network_aliases)} time={t1 - t0:.2f}')
 
 
 def infotext_pasted(infotext, params): # pylint: disable=W0613
