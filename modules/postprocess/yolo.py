@@ -25,7 +25,6 @@ class YoloResult:
         self.box = box
         self.mask = mask
         self.item = item
-        self.size = size
         self.width = width
         self.height = height
         self.args = args
@@ -127,17 +126,17 @@ class YoloRestorer(Detailer):
                 box = box.tolist()
                 mask_image = None
                 w, h = box[2] - box[0], box[3] - box[1]
-                size = w * h / (image.width * image.height)
-                min_size = (shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 else 0) * min(w, h)
-                max_size = (shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 else 1) * max(w, h)
-                if (min(w, h) > min_size) and (max(w, h) < max_size):
+                x_size, y_size = w/image.width, h/image.height
+                min_size = shared.opts.detailer_min_size if shared.opts.detailer_min_size > 0 and shared.opts.detailer_min_size < 1 else 0
+                max_size = shared.opts.detailer_max_size if shared.opts.detailer_max_size > 0 and shared.opts.detailer_max_size < 1 else 1
+                if x_size >= min_size and y_size >=min_size and x_size <= max_size and y_size <= max_size:
                     if mask:
                         mask_image = image.copy()
                         mask_image = Image.new('L', image.size, 0)
                         draw = ImageDraw.Draw(mask_image)
                         draw.rectangle(box, fill="white", outline=None, width=0)
                         cropped = image.crop(box)
-                        result.append(YoloResult(cls=cls, label=label, score=round(score, 2), box=box, mask=mask_image, item=cropped, size=size, width=w, height=h, args=args))
+                        result.append(YoloResult(cls=cls, label=label, score=round(score, 2), box=box, mask=mask_image, item=cropped, width=w, height=h, args=args))
                 if len(result) >= shared.opts.detailer_max:
                     break
         return result

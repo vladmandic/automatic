@@ -152,7 +152,7 @@ def create_ui(_blocks: gr.Blocks=None):
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
 
-            with gr.Row(variant='compact', elem_id="control_extra_networks", visible=False) as extra_networks_ui:
+            with gr.Row(variant='compact', elem_id="control_extra_networks", elem_classes=["extra_networks_root"], visible=False) as extra_networks_ui:
                 from modules import timer, ui_extra_networks
                 extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, btn_extra, 'control', skip_indexing=shared.opts.extra_network_skip_indexing)
                 timer.startup.record('ui-networks')

@@ -50,6 +50,7 @@ card_list = '''
         </div>
     </div>
 '''
+preview_map = None
 
 
 def init_api(app):
@@ -350,6 +351,9 @@ class ExtraNetworksPage:
         return self.link_preview(preview_file)
 
     def update_all_previews(self, items):
+        global preview_map # pylint: disable=global-statement
+        if preview_map is None:
+            preview_map = shared.readfile('html/previews.json', silent=True)
         t0 = time.time()
         reference_path = os.path.abspath(os.path.join('models', 'Reference'))
         possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
@@ -379,7 +383,13 @@ class ExtraNetworksPage:
                     item['preview'] = self.link_preview(all_previews[file_idx])
                     break
             if item.get('preview', None) is None:
+                found = preview_map.get(base, None)
+                if found is not None:
+                    item['preview'] = self.link_preview(found)
+                    debug(f'EN mapped-preview: {item["name"]}={found}')
+            if item.get('preview', None) is None:
                 item['preview'] = self.link_preview('html/card-no-preview.png')
+                debug(f'EN missing-preview: {item["name"]}')
         self.preview_time += time.time() - t0
 
 

@@ -30,8 +30,8 @@ MODELS = {
 def git(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.GitForCausalLM.from_pretrained(repo)
-        processor = transformers.GitProcessor.from_pretrained(repo)
+        model = transformers.GitForCausalLM.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        processor = transformers.GitProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device, devices.dtype)
     shared.log.debug(f'VQA: class={model.__class__.__name__} processor={processor.__class__} model={repo}')
@@ -55,8 +55,8 @@ def git(question: str, image: Image.Image, repo: str = None):
 def blip(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.BlipForQuestionAnswering.from_pretrained(repo)
-        processor = transformers.BlipProcessor.from_pretrained(repo)
+        model = transformers.BlipForQuestionAnswering.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        processor = transformers.BlipProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device, devices.dtype)
     inputs = processor(image, question, return_tensors="pt")
@@ -73,8 +73,8 @@ def blip(question: str, image: Image.Image, repo: str = None):
 def vilt(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.ViltForQuestionAnswering.from_pretrained(repo)
-        processor = transformers.ViltProcessor.from_pretrained(repo)
+        model = transformers.ViltForQuestionAnswering.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        processor = transformers.ViltProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device)
     shared.log.debug(f'VQA: class={model.__class__.__name__} processor={processor.__class__} model={repo}')
@@ -94,8 +94,8 @@ def vilt(question: str, image: Image.Image, repo: str = None):
 def pix(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.Pix2StructForConditionalGeneration.from_pretrained(repo)
-        processor = transformers.Pix2StructProcessor.from_pretrained(repo)
+        model = transformers.Pix2StructForConditionalGeneration.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
+        processor = transformers.Pix2StructProcessor.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
     model.to(devices.device)
     shared.log.debug(f'VQA: class={model.__class__.__name__} processor={processor.__class__} model={repo}')
@@ -115,8 +115,8 @@ def pix(question: str, image: Image.Image, repo: str = None):
 def moondream(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True) # revision = "2024-03-05"
-        processor = transformers.AutoTokenizer.from_pretrained(repo) # revision = "2024-03-05"
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, cache_dir=shared.opts.hfcache_dir) # revision = "2024-03-05"
+        processor = transformers.AutoTokenizer.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
         model.eval()
     model.to(devices.device, devices.dtype)
@@ -142,8 +142,8 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         return R
     if model is None or loaded != repo:
         transformers.dynamic_module_utils.get_imports = get_imports
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, revision=revision)
-        processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True, revision=revision)
+        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)
+        processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)
         transformers.dynamic_module_utils.get_imports = _get_imports
         loaded = repo
         model.eval()

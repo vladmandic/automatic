@@ -90,6 +90,8 @@
     "getENActiveTab": "readonly",
     "quickApplyStyle": "readonly",
     "quickSaveStyle": "readonly",
+    "setupExtraNetworks": "readonly",
+    "showNetworks": "readonly",
     // from python
     "localization": "readonly",
     // progressbar.js

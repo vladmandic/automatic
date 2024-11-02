@@ -25,7 +25,7 @@ def create_ui():
         txt_prompt_img = gr.File(label="", elem_id="txt2img_prompt_image", file_count="single", type="binary", visible=False)
         txt_prompt_img.change(fn=modules.images.image_data, inputs=[txt_prompt_img], outputs=[txt2img_prompt, txt_prompt_img])
 
-        with gr.Row(variant='compact', elem_id="txt2img_extra_networks", visible=False) as extra_networks_ui:
+        with gr.Row(variant='compact', elem_id="txt2img_extra_networks", elem_classes=["extra_networks_root"], visible=False) as extra_networks_ui:
             from modules import ui_extra_networks
             extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, txt2img_extra_networks_button, 'txt2img', skip_indexing=shared.opts.extra_network_skip_indexing)
             timer.startup.record('ui-networks')

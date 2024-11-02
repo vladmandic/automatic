@@ -877,8 +877,9 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
 }))
 
 options_templates.update(options_section(('extra_networks', "Networks"), {
-    "extra_networks_sep1": OptionInfo("<h2>Extra networks UI</h2>", "", gr.HTML),
-    "extra_networks": OptionInfo(["All"], "Networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
+    "extra_networks_sep1": OptionInfo("<h2>Networks UI</h2>", "", gr.HTML),
+    "extra_networks_show": OptionInfo(True, "UI show on startup"),
+    "extra_networks": OptionInfo(["All"], "Available networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
     "extra_networks_sort": OptionInfo("Default", "Sort order", gr.Dropdown, {"choices": ['Default', 'Name [A-Z]', 'Name [Z-A]', 'Date [Newest]', 'Date [Oldest]', 'Size [Largest]', 'Size [Smallest]']}),
     "extra_networks_view": OptionInfo("gallery", "UI view", gr.Radio, {"choices": ["gallery", "list"]}),
     "extra_networks_card_cover": OptionInfo("sidebar", "UI position", gr.Radio, {"choices": ["cover", "inline", "sidebar"]}),
@@ -888,13 +889,18 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_card_square": OptionInfo(True, "UI disable variable aspect ratio"),
     "extra_networks_fetch": OptionInfo(True, "UI fetch network info on mouse-over"),
     "extra_networks_card_fit": OptionInfo("cover", "UI image contain method", gr.Radio, {"choices": ["contain", "cover", "fill"], "visible": False}),
-    "extra_networks_sep2": OptionInfo("<h2>Extra networks general</h2>", "", gr.HTML),
-    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
-    "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
+
+    "extra_networks_model_sep": OptionInfo("<h2>Models</h2>", "", gr.HTML),
+    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
+    "extra_networks_embed_sep": OptionInfo("<h2>Embeddings</h2>", "", gr.HTML),
     "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": native}),
-    "extra_networks_sep3": OptionInfo("<h2>Extra networks settings</h2>", "", gr.HTML),
+    "extra_networks_styles_sep": OptionInfo("<h2>Styles</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
+    "extra_networks_wildcard_sep": OptionInfo("<h2>Wildcards</h2>", "", gr.HTML),
+    "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
+    "extra_networks_lora_sep": OptionInfo("<h2>LoRA</h2>", "", gr.HTML),
+    "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info"),
     "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
@@ -905,9 +911,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_quant": OptionInfo("NF4","LoRA precision in quantized models", gr.Radio, {"choices": ["NF4", "FP4"]}),
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple LoRA", gr.Checkbox, { "visible": False }),
     "lora_load_gpu": OptionInfo(True if not cmd_opts.lowvram else False, "Load LoRA directly to GPU"),
-    "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support"),
+
+    "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support", gr.Checkbox, {"visible": False}),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, { "choices": ["None"], "visible": False }),
-    "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
 }))
 
 options_templates.update(options_section((None, "Hidden options"), {
