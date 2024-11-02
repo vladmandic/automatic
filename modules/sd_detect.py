@@ -110,7 +110,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     modules = model_tools.list_to_dict(keys)
                     modules = model_tools.remove_entries_after_depth(modules, 3)
                     t1 = time.time()
-                    shared.log.debug(f'Autodetect {op}: modules={modules} time={t1-t0:.2f}')
+                    shared.log.debug(f'Autodetect modules: {modules} time={t1-t0:.2f}')
         except Exception as e:
             shared.log.error(f'Autodetect {op}: file="{f}" {e}')
             if debug_load:
