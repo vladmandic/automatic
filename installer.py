@@ -595,11 +595,11 @@ def install_rocm_zluda():
             install(ort_package, 'onnxruntime-training')
 
         if installed("torch") and device is not None:
-            if 'Flash attention' in opts.get('sdp_options'):
+            if 'Flash attention' in opts.get('sdp_options', ''):
                 if not installed('flash-attn'):
                     install(rocm.get_flash_attention_command(device), reinstall=True)
-            elif not args.experimental:
-                uninstall('flash-attn')
+            #elif not args.experimental:
+            #    uninstall('flash-attn')
 
         if device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
