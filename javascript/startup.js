@@ -32,6 +32,7 @@ async function initStartup() {
   removeSplash();
 
   // post startup tasks that may take longer but are not critical
+  showNetworks();
   setHints();
   applyStyles();
   initIndexDB();

@@ -375,6 +375,7 @@ function setupExtraNetworksForTab(tabname) {
   if (!tabs) return;
 
   // buttons
+  const btnShow = gradioApp().getElementById(`${tabname}_extra_networks_btn`);
   const btnRefresh = gradioApp().getElementById(`${tabname}_extra_refresh`);
   const btnScan = gradioApp().getElementById(`${tabname}_extra_scan`);
   const btnSave = gradioApp().getElementById(`${tabname}_extra_save`);
@@ -448,48 +449,67 @@ function setupExtraNetworksForTab(tabname) {
 
   // en style
   if (!en) return;
+  let lastView;
+  let heightInitialized = false;
   const intersectionObserver = new IntersectionObserver((entries) => {
-    for (const el of Array.from(gradioApp().querySelectorAll('.extra-networks-page'))) {
-      el.style.height = `${window.opts.extra_networks_height}vh`;
-      el.parentElement.style.width = '-webkit-fill-available';
+    if (!heightInitialized) {
+      heightInitialized = true;
+      let h = 0;
+      const target = window.opts.extra_networks_card_cover === 'sidebar' ? 0 : window.opts.extra_networks_height;
+      if (window.opts.theme_type === 'Standard') h = target > 0 ? target : 55;
+      else h = target > 0 ? target : 87;
+      for (const el of Array.from(gradioApp().getElementById(`${tabname}_extra_tabs`).querySelectorAll('.extra-networks-page'))) {
+        if (h > 0) el.style.height = `${h}vh`;
+        el.parentElement.style.width = '-webkit-fill-available';
+      }
     }
-    if (entries[0].intersectionRatio > 0) {
-      refreshENpage();
-      // sortExtraNetworks('fixed');
-      if (window.opts.extra_networks_card_cover === 'cover') {
-        en.style.transition = '';
-        en.style.zIndex = 100;
-        en.style.top = '13em';
-        en.style.position = 'absolute';
-        en.style.right = 'unset';
-        en.style.width = 'unset';
-        en.style.height = 'unset';
-        gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
-      } else if (window.opts.extra_networks_card_cover === 'sidebar') {
-        en.style.zIndex = 100;
-        en.style.position = 'absolute';
-        en.style.right = '0';
-        en.style.top = '13em';
-        en.style.height = 'auto';
-        en.style.transition = 'width 0.3s ease';
-        en.style.width = `${window.opts.extra_networks_sidebar_width}vw`;
-        gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
+    if (lastView !== entries[0].intersectionRatio > 0) {
+      lastView = entries[0].intersectionRatio > 0;
+      if (lastView) {
+        refreshENpage();
+        // sortExtraNetworks('fixed');
+        if (window.opts.extra_networks_card_cover === 'cover') {
+          en.style.position = 'absolute';
+          en.style.height = 'unset';
+          en.style.width = 'unset';
+          en.style.right = 'unset';
+          en.style.top = '13em';
+          en.style.transition = '';
+          en.style.zIndex = 100;
+          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
+        } else if (window.opts.extra_networks_card_cover === 'sidebar') {
+          en.style.position = 'absolute';
+          en.style.height = 'auto';
+          en.style.width = `${window.opts.extra_networks_sidebar_width}vw`;
+          en.style.right = '0';
+          en.style.top = '13em';
+          en.style.transition = 'width 0.3s ease';
+          en.style.zIndex = 100;
+          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
+        } else {
+          en.style.position = 'relative';
+          en.style.height = 'unset';
+          en.style.width = 'unset';
+          en.style.right = 'unset';
+          en.style.top = 0;
+          en.style.transition = '';
+          en.style.zIndex = 0;
+          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
+        }
       } else {
-        en.style.transition = '';
-        en.style.zIndex = 0;
-        en.style.top = 0;
-        en.style.position = 'relative';
-        en.style.right = 'unset';
-        en.style.width = 'unset';
-        en.style.height = 'unset';
+        if (window.opts.extra_networks_card_cover === 'sidebar') en.style.width = 0;
         gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
       }
-    } else {
-      if (window.opts.extra_networks_card_cover === 'sidebar') en.style.width = 0;
-      gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = 'unset';
     }
   });
   intersectionObserver.observe(en); // monitor visibility
+}
+
+async function showNetworks() {
+  for (const tabname of ['txt2img', 'img2img', 'control']) {
+    if (window.opts.extra_networks_show) gradioApp().getElementById(`${tabname}_extra_networks_btn`).click();
+  }
+  log('showNetworks');
 }
 
 async function setupExtraNetworks() {
