@@ -1,5 +1,4 @@
 import inspect
-import importlib
 import gradio as gr
 import diffusers
 from modules import scripts, processing, shared, sd_models
@@ -8,10 +7,7 @@ from modules import scripts, processing, shared, sd_models
 class Script(scripts.Script):
     supported_models = ['sd', 'sdxl']
     orig_pipe = None
-    try:
-        library = importlib.import_module('k_diffusion')
-    except Exception:
-        library = None
+    library = None
 
     def title(self):
         return 'K-Diffusion'
@@ -28,10 +24,8 @@ class Script(scripts.Script):
 
     def samplers(self):
         samplers = []
-        sampling = getattr(self.library, 'sampling', None)
-        if sampling is None:
-            return samplers
-        for s in dir(sampling):
+        from modules import sd_samplers_kdiffusion
+        for s in dir(sd_samplers_kdiffusion.k_sampling):
             if s.startswith('sample_'):
                 samplers.append(s.replace('sample_', ''))
         return samplers
@@ -43,8 +37,6 @@ class Script(scripts.Script):
         if shared.sd_model_type not in self.supported_models:
             shared.log.warning(f'K-Diffusion: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={self.supported_models}')
             return None
-        if self.library is None:
-            return
         cls = None
         if shared.sd_model_type == "sd":
             cls = diffusers.pipelines.StableDiffusionKDiffusionPipeline
