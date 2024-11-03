@@ -101,7 +101,8 @@ def process_base(p: processing.StableDiffusionProcessing):
             output = SimpleNamespace(**output)
         if isinstance(output, list):
             output = SimpleNamespace(images=output)
-        shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
+        if hasattr(output, 'images'):
+            shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
         timer.process.record('pipeline')
         hidiffusion.unapply()
         sd_models_compile.openvino_post_compile(op="base") # only executes on compiled vino models

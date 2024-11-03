@@ -84,7 +84,7 @@ class Script(scripts.Script):
                 shared.log.error(f'Text2Video: failed to find model={model["path"]}')
                 return
             shared.log.debug(f'Text2Video loading: model={checkpoint}')
-            shared.opts.sd_model_checkpoint = checkpoint
+            shared.opts.sd_model_checkpoint = checkpoint.name
             sd_models.reload_model_weights(op='model')
 
         p.ops.append('text2video')

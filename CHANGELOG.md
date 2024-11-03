@@ -1,36 +1,37 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-02
+## Update for 2024-11-03
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
 
-- Docs:
+- Docs:  
   - add built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
-    since changelog is the best up-to-date source of info
-    go to system -> changelog and search/highligh/navigate directly in UI!
-- SD3: ControlNets:
-  - *InstantX Canny, Pose, Depth, Tile*
-  - *Alimama Inpainting, SoftEdge*
+    since changelog is the best up-to-date source of info  
+    go to system -> changelog and search/highligh/navigate directly in UI!  
+- SD3: ControlNets:  
+  - *InstantX Canny, Pose, Depth, Tile*  
+  - *Alimama Inpainting, SoftEdge*  
   - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
     e.g. SD3 controlnets vary from 1GB to over 4GB in size  
-- SD3: all-in-one safetensors
-  - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)
+- SD3: all-in-one safetensors  
+  - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
   - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
-- UI:
-  - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)
-  - add show networks on startup setting
+- UI:  
+  - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
+  - add show networks on startup setting  
   - better mapping of networks previews  
   - optimize networks display load  
-- XYZ grid:
-  - optional per-image time benchmark info
-- CLI:
+- XYZ grid:  
+  - optional per-image time benchmark info  
+- CLI:  
   - refactor command line params  
     run `webui.sh`/`webui.bat` with `--help` to see all options  
-- Other:
-  - Repo: move screenshots to GH pages
-  - Update requirements
-- Fixes:
+- Other:  
+  - Model loader: Report modules included in safetensors when attempting to load a model  
+  - Repo: move screenshots to GH pages  
+  - Requirements: update  
+- Fixes:  
   - custom watermark add alphablending  
   - detailer min/max size as fractions of image size  
   - ipadapter load on-demand  
@@ -43,6 +44,8 @@ This release can be considered an LTS release before we kick off the next round 
   - fix vqa models ignoring hfcache folder setting  
   - fix network height in standard vs modern ui  
   - fix k-diff enum on startup  
+  - fix text2video scripts  
+  - dont uninstall flash-attn
   - move downloads of some auxillary models to hfcache instead of models folder  
 
 ## Update for 2024-10-29
