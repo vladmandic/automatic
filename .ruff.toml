@@ -26,6 +26,7 @@ exclude = [
     "modules/xadapter",
     "modules/meissonic",
     "modules/omnigen",
+    "modules/pulid/eva_clip",
     "repositories",
     "extensions-builtin/sd-extension-chainner/nodes",
     "extensions-builtin/sd-webui-agent-scheduler",

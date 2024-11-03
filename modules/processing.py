@@ -34,14 +34,14 @@ images_tensor_to_samples = processing_helpers.images_tensor_to_samples
 
 
 class Processed:
-    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
+    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info=None, subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
         self.images = images_list
         self.prompt = p.prompt or ''
         self.negative_prompt = p.negative_prompt or ''
         self.seed = seed if seed != -1 else p.seed
         self.subseed = subseed
         self.subseed_strength = p.subseed_strength
-        self.info = info
+        self.info = info or create_infotext(p)
         self.comments = comments or ''
         self.width = p.width if hasattr(p, 'width') else (self.images[0].width if len(self.images) > 0 else 0)
         self.height = p.height if hasattr(p, 'height') else (self.images[0].height if len(self.images) > 0 else 0)
@@ -80,7 +80,7 @@ class Processed:
         self.all_negative_prompts = all_negative_prompts or p.all_negative_prompts or [self.negative_prompt]
         self.all_seeds = all_seeds or p.all_seeds or [self.seed]
         self.all_subseeds = all_subseeds or p.all_subseeds or [self.subseed]
-        self.infotexts = infotexts or [info]
+        self.infotexts = infotexts or [self.info]
 
     def js(self):
         obj = {
