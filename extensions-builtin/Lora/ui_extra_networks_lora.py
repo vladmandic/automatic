@@ -5,7 +5,7 @@ import networks
 from modules import shared, ui_extra_networks
 
 
-debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
+debug = os.environ.get('SD_LORA_DEBUG', None) is not None
 
 
 class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
@@ -16,34 +16,18 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def refresh(self):
         networks.list_available_networks()
 
-    def create_item(self, name):
-        l = networks.available_networks.get(name)
-        if l is None:
-            shared.log.warning(f'Networks: type=lora registered={len(list(networks.available_networks))} file="{name}" not registered')
-            return None
+    def get_tags(self, l, info):
+        tags = {}
         try:
-            # path, _ext = os.path.splitext(l.filename)
-            name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
-            item = {
-                "type": 'Lora',
-                "name": name,
-                "filename": l.filename,
-                "hash": l.shorthash,
-                "prompt": json.dumps(f" <lora:{l.get_alias()}:{shared.opts.extra_networks_default_multiplier}>"),
-                "metadata": json.dumps(l.metadata, indent=4) if l.metadata else None,
-                "mtime": os.path.getmtime(l.filename),
-                "size": os.path.getsize(l.filename),
-                "version": l.sd_version,
-            }
-            info = self.find_info(l.filename)
-
-            tags = {}
             if l.metadata is not None:
                 modelspec_tags = l.metadata.get('modelspec.tags', {})
                 possible_tags = l.metadata.get('ss_tag_frequency', {}) # tags from model metedata
-                possible_tags.update(modelspec_tags)
                 if isinstance(possible_tags, str):
                     possible_tags = {}
+                if isinstance(modelspec_tags, str):
+                    modelspec_tags = {}
+                if len(list(modelspec_tags)) > 0:
+                    possible_tags.update(modelspec_tags)
                 for k, v in possible_tags.items():
                     words = k.split('_', 1) if '_' in k else [v, k]
                     words = [str(w).replace('.json', '') for w in words]
@@ -80,20 +64,41 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
                 tag = tag.strip().lower()
                 if tag not in tags:
                     tags[tag] = 0
+        except Exception:
+            pass
+        bad_chars = [';', ':', '<', ">", "*", '?', '\'', '\"', '(', ')', '[', ']', '{', '}', '\\', '/']
+        clean_tags = {}
+        for k, v in tags.items():
+            tag = ''.join(i for i in k if i not in bad_chars).strip()
+            clean_tags[tag] = v
 
-            bad_chars = [';', ':', '<', ">", "*", '?', '\'', '\"', '(', ')', '[', ']', '{', '}', '\\', '/']
-            clean_tags = {}
-            for k, v in tags.items():
-                tag = ''.join(i for i in k if i not in bad_chars).strip()
-                clean_tags[tag] = v
+        clean_tags.pop('img', None)
+        clean_tags.pop('dataset', None)
+        return clean_tags
 
-            clean_tags.pop('img', None)
-            clean_tags.pop('dataset', None)
-
+    def create_item(self, name):
+        l = networks.available_networks.get(name)
+        if l is None:
+            shared.log.warning(f'Networks: type=lora registered={len(list(networks.available_networks))} file="{name}" not registered')
+            return None
+        try:
+            # path, _ext = os.path.splitext(l.filename)
+            name = os.path.splitext(os.path.relpath(l.filename, shared.cmd_opts.lora_dir))[0]
+            item = {
+                "type": 'Lora',
+                "name": name,
+                "filename": l.filename,
+                "hash": l.shorthash,
+                "prompt": json.dumps(f" <lora:{l.get_alias()}:{shared.opts.extra_networks_default_multiplier}>"),
+                "metadata": json.dumps(l.metadata, indent=4) if l.metadata else None,
+                "mtime": os.path.getmtime(l.filename),
+                "size": os.path.getsize(l.filename),
+                "version": l.sd_version,
+            }
+            info = self.find_info(l.filename)
             item["info"] = info
             item["description"] = self.find_description(l.filename, info) # use existing info instead of double-read
-            item["tags"] = clean_tags
-
+            item["tags"] = self.get_tags(l, info)
             return item
         except Exception as e:
             shared.log.error(f'Networks: type=lora file="{name}" {e}')
