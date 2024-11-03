@@ -797,6 +797,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         # preload vae so it can be used as param
         vae = None
         sd_vae.loaded_vae_file = None
+        if model_type is None:
+            shared.log.error(f'Load {op}: pipeline={shared.opts.diffusers_pipeline} not detected')
+            return
         if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
             vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename)
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)

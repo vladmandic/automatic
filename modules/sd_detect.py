@@ -82,6 +82,9 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             if 'meissonic' in f.lower():
                 guess = 'Meissonic'
                 pipeline = 'custom'
+            if 'monetico' in f.lower():
+                guess = 'Monetico'
+                pipeline = 'custom'
             if 'omnigen' in f.lower():
                 guess = 'OmniGen'
                 pipeline = 'custom'

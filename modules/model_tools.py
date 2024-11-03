@@ -15,12 +15,15 @@ def remove_entries_after_depth(d, depth, current_depth=0):
 
 def list_to_dict(flat_list):
     result_dict = {}
-    for item in flat_list:
-        keys = item.split('.')
-        d = result_dict
-        for key in keys[:-1]:
-            d = d.setdefault(key, {})
-        d[keys[-1]] = None
+    try:
+        for item in flat_list:
+            keys = item.split('.')
+            d = result_dict
+            for key in keys[:-1]:
+                d = d.setdefault(key, {})
+            d[keys[-1]] = None
+    except Exception:
+        pass
     return result_dict
 
 

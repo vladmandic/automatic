@@ -31,6 +31,9 @@ This release can be considered an LTS release before we kick off the next round 
   - Model loader: Report modules included in safetensors when attempting to load a model  
   - Repo: move screenshots to GH pages  
   - Requirements: update  
+- CLI:
+  - added `cli/model-metadata.py` to display metadata in any safetensors file
+  - added `cli/model-keys.py` to quicky display content of any safetensors file
 - Fixes:  
   - custom watermark add alphablending  
   - detailer min/max size as fractions of image size  
