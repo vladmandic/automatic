@@ -289,6 +289,7 @@ class StableDiffusionXLPuLIDPipeline:
             """
             raise NotImplementedError('pulid: img2img')
         else:
+            # standard txt2img will full noise
             latents = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
             latents = latents.to(dtype=self.pipe.unet.dtype, device=self.device)
         return latents
