@@ -1052,6 +1052,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'AnimateDiffSDXLPipeline',
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
+        'StableDiffusionXLPuLIDPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')

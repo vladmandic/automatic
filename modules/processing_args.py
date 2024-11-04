@@ -100,10 +100,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if hasattr(model, "set_progress_bar_config"):
         model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
     args = {}
-    if hasattr(model, 'pipe'): # recurse
+    if hasattr(model, 'pipe') and not hasattr(model, 'no_recurse'): # recurse
         model = model.pipe
     signature = inspect.signature(type(model).__call__, follow_wrapped=True)
     possible = list(signature.parameters)
+
     debug(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     parser = 'Fixed attention'
@@ -128,7 +129,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
-        if hasattr(model, 'text_encoder') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
+        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
             args['prompt_embeds'] = p.prompt_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['prompt_embeds_pooled'] = p.positive_pooleds[0].unsqueeze(0)
@@ -141,7 +142,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
-        if hasattr(model, 'text_encoder') and 'negative_prompt_embeds' in possible and len(p.negative_embeds) > 0 and p.negative_embeds[0] is not None:
+        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'negative_prompt_embeds' in possible and len(p.negative_embeds) > 0 and p.negative_embeds[0] is not None:
             args['negative_prompt_embeds'] = p.negative_embeds[0]
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
                 args['negative_prompt_embeds_pooled'] = p.negative_pooleds[0].unsqueeze(0)

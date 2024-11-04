@@ -24,7 +24,7 @@ from attention_processor import AttnProcessor2_0 as AttnProcessor
 from attention_processor import IDAttnProcessor2_0 as IDAttnProcessor
 
 
-class PuLIDPipeline:
+class StableDiffusionXLPuLIDPipeline:
     def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler='dpmpp_sde', cache_dir=None):
         super().__init__()
         self.device = device
@@ -73,7 +73,6 @@ class PuLIDPipeline:
         self.handler_ante = insightface.model_zoo.get_model(os.path.join(local_dir, 'glintr100.onnx'))
         self.handler_ante.prepare(ctx_id=0)
 
-        torch.cuda.empty_cache()
         self.load_pretrain()
 
         # other configs
@@ -249,34 +248,75 @@ class PuLIDPipeline:
         # return id_embedding
         return uncond_id_embedding, id_embedding
 
-    def __call__(self, x, sigma, **extra_args):
+    def set_progress_bar_config(self, bar_format: str = None, ncols: int = 80, colour: str = None):
+        import functools
+        from tqdm.auto import trange as trange_orig
+        import pulid_utils
+        pulid_utils.trange = functools.partial(trange_orig, bar_format=bar_format, ncols=ncols, colour=colour)
+
+    def sample(self, x, sigma, **extra_args):
         x_ddim_space = x / (sigma[:, None, None, None] ** 2 + self.sigma_data**2) ** 0.5
         t = self.timestep(sigma)
         cfg_scale = extra_args['cfg_scale']
         eps_positive = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['positive'])[0]
         eps_negative = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['negative'])[0]
         noise_pred = eps_negative + cfg_scale * (eps_positive - eps_negative)
-        return x - noise_pred * sigma[:, None, None, None]
+        latent = x - noise_pred * sigma[:, None, None, None]
+        if self.callback_on_step_end is not None:
+            self.step += 1
+            self.callback_on_step_end(self.pipe, step=self.step, timestep=t, kwargs={ 'latents': latent })
+        return latent
 
-    def inference(
+    def init_latent(self, seed, size, image, strength): # pylint: disable=unused-argument
+        if image is not None and strength > 0:
+            # TODO pulid img2img
+            # input can be PIL.Image or np.ndarray so it needs to be converted to rgb tensor
+            # image must be resized, encoded and noised according to denoising strength
+            # see below for example from StableDiffusionXLImg2ImgPipeline
+            latents = None
+            """
+            image = self.image_processor.preprocess(image)
+            latents = self.prepare_latents(
+                image,
+                latent_timestep,
+                batch_size,
+                num_images_per_prompt,
+                prompt_embeds.dtype,
+                device,
+                generator,
+                add_noise,
+            )
+            """
+            raise NotImplementedError('pulid: img2img')
+        else:
+            latents = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
+            latents = latents.to(dtype=self.pipe.unet.dtype, device=self.device)
+        return latents
+
+    def __call__(
         self,
-        prompt,
-        size,
-        prompt_n='',
+        prompt: str='',
+        negative_prompt: str='',
+        width: int=1024,
+        height: int=1024,
+        guidance_scale: float=7.0,
+        num_inference_steps: int=50,
+        seed: int=-1,
+        image: np.ndarray=None,
+        strength: float=0.3,
         id_embedding=None,
         uncond_id_embedding=None,
-        id_scale=1.0,
-        guidance_scale=1.2,
-        steps=4,
-        seed=-1,
+        id_scale: float=1.0,
+        callback_on_step_end=None,
     ):
-
+        self.step = 0 # pylint: disable=attribute-defined-outside-init
+        self.callback_on_step_end = callback_on_step_end # pylint: disable=attribute-defined-outside-init
+        size = (1, height, width)
         # sigmas
-        sigmas = self.get_sigmas_karras(steps).to(self.device)
+        sigmas = self.get_sigmas_karras(num_inference_steps).to(self.device)
 
         # latents
-        noise = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
-        noise = noise.to(dtype=self.pipe.unet.dtype, device=self.device)
+        noise = self.init_latent(seed, size, image, strength)
         latents = noise * sigmas[0].to(noise)
 
         (
@@ -286,7 +326,7 @@ class PuLIDPipeline:
             negative_pooled_prompt_embeds,
         ) = self.pipe.encode_prompt(
             prompt=prompt,
-            negative_prompt=prompt_n,
+            negative_prompt=negative_prompt,
         )
 
         add_time_ids = list((size[1], size[2]) + (0, 0) + (size[1], size[2]))
@@ -307,7 +347,7 @@ class PuLIDPipeline:
             ),
         )
 
-        latents = self.sampler(self, latents, sigmas, extra_args=sampler_kwargs, disable=False)
+        latents = self.sampler(self.sample, latents, sigmas, extra_args=sampler_kwargs, disable=False)
         latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device) / self.pipe.vae.config.scaling_factor
         images = self.pipe.vae.decode(latents).sample
         images = self.pipe.image_processor.postprocess(images, output_type='pil')

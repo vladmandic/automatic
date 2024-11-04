@@ -158,6 +158,8 @@ def get_tokens(msg, prompt):
 
 
 def encode_prompts(pipe, p, prompts: list, negative_prompts: list, steps: int, clip_skip: typing.Optional[int] = None):
+    if not hasattr(pipe, 'text_encoder') or not hasattr(pipe, 'tokenizer'):
+        return
     params_match = prompts == cache.get('prompts', None) and negative_prompts == cache.get('negative_prompts', None) and clip_skip == cache.get('clip_skip', None) and steps == cache.get('steps', None)
     if (
         'StableDiffusion' not in pipe.__class__.__name__ and

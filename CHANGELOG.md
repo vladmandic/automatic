@@ -11,8 +11,9 @@ This release can be considered an LTS release before we kick off the next round 
     go to system -> changelog and search/highligh/navigate directly in UI!  
 - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
   - advanced method of face transfer with better quality as well as control over identity and appearance  
-  - compatible with *sdxl*  
   - select in *scripts -> pulid*  
+  - compatible with *sdxl*  
+  - can be used in xyz grid  
 - SD3: ControlNets:  
   - *InstantX Canny, Pose, Depth, Tile*  
   - *Alimama Inpainting, SoftEdge*  

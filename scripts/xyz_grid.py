@@ -258,6 +258,7 @@ class Script(scripts.Script):
         def cell(x, y, z, ix, iy, iz):
             if shared.state.interrupted:
                 return processing.Processed(p, [], p.seed, "")
+            p.xyz = True
             pc = copy(p)
             pc.override_settings_restore_afterwards = False
             pc.styles = pc.styles[:]
