@@ -416,6 +416,8 @@ def apply_balanced_offload(sd_model):
                 devices.torch_gc(fast=True)
 
     apply_balanced_offload_to_module(sd_model)
+    if hasattr(sd_model, "pipe"):
+        apply_balanced_offload_to_module(sd_model.pipe)
     if hasattr(sd_model, "prior_pipe"):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
     if hasattr(sd_model, "decoder_pipe"):
