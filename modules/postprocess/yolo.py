@@ -156,10 +156,10 @@ class YoloRestorer(Detailer):
             try:
                 model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
                 if model_file is not None:
-                    from ultralytics import YOLO # pylint: disable=import-outside-toplevel
-                    model = YOLO(model_file)
+                    import ultralytics
+                    model = ultralytics.YOLO(model_file)
                     classes = list(model.names.values())
-                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" classes={classes}')
+                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" ultralytics={ultralytics.__version__} classes={classes}')
                     self.models[model_name] = model
                     return model_name, model
             except Exception as e:
