@@ -377,10 +377,11 @@ def update(folder, keep_branch = False, rebase = True):
     else:
         res = git(f'pull origin {b} {arg}', folder)
         debug(f'Install update: folder={folder} branch={b} args={arg} {res}')
-    commit = extensions_commit.get(os.path.basename(folder), None)
-    if commit is not None:
-        res = git(f'checkout {commit}', folder)
-        debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
+    if not args.experimental:
+        commit = extensions_commit.get(os.path.basename(folder), None)
+        if commit is not None:
+            res = git(f'checkout {commit}', folder)
+            debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
     return res
 
 
@@ -547,7 +548,6 @@ def install_rocm_zluda():
             os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
             del args.device_id
 
-        log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
         zluda_installer.set_default_agent(device)
