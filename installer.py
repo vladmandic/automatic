@@ -1139,6 +1139,28 @@ def check_ui(ver):
         os.chdir(cwd)
 
 
+def check_venv():
+    import site
+    pkg_path = [os.path.relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
+    log.debug(f'Packages: venv={os.path.relpath(sys.prefix)} site={pkg_path}')
+    for p in pkg_path:
+        invalid = []
+        for f in os.listdir(p):
+            if f.startswith('~'):
+                invalid.append(f)
+        if len(invalid) > 0:
+            log.warning(f'Packages: site="{p}" invalid={invalid} removing')
+        for f in invalid:
+            fn = os.path.join(p, f)
+            try:
+                if os.path.isdir(fn):
+                    shutil.rmtree(fn)
+                elif os.path.isfile(fn):
+                    os.unlink(fn)
+            except Exception as e:
+                log.error(f'Packages: site={p} invalid={f} error={e}')
+
+
 # check version of the main repo and optionally upgrade it
 def check_version(offline=False, reset=True): # pylint: disable=unused-argument
     if args.skip_all:

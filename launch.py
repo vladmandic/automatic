@@ -208,6 +208,7 @@ def main():
         installer.log.info('Skipping GIT operations')
     installer.check_version()
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
+    installer.check_venv()
     installer.log.info(f'Args: {sys.argv[1:]}')
     if not args.skip_env:
         installer.set_environment()

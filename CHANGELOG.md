@@ -33,6 +33,10 @@ This release can be considered an LTS release before we kick off the next round 
   - add show networks on startup setting  
   - better mapping of networks previews  
   - optimize networks display load  
+- Installer:
+  - Log `venv` and package search paths
+  - Auto-remove invalid packages from `venv/site-packages`  
+    e.g. packages starting with `~` which are left-over due to windows access violation  
 - CLI:  
   - refactor command line params  
     run `webui.sh`/`webui.bat` with `--help` to see all options  
