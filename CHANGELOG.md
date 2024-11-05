@@ -15,6 +15,11 @@ This release can be considered an LTS release before we kick off the next round 
   - select in *scripts -> pulid*  
   - compatible with *sdxl*  
   - can be used in xyz grid  
+- [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
+  - alternative to traditional `img2img` with more control over restoration process  
+  - select in *image -> scripts -> instantir*  
+  - compatible with *sdxl*  
+  - *note*: after used once it cannot be unloaded without reloading base model  
 - SD3: ControlNets:  
   - *InstantX Canny, Pose, Depth, Tile*  
   - *Alimama Inpainting, SoftEdge*  
@@ -40,13 +45,12 @@ This release can be considered an LTS release before we kick off the next round 
 - CLI:  
   - refactor command line params  
     run `webui.sh`/`webui.bat` with `--help` to see all options  
+  - added `cli/model-metadata.py` to display metadata in any safetensors file
+  - added `cli/model-keys.py` to quicky display content of any safetensors file
 - Other:  
   - Model loader: Report modules included in safetensors when attempting to load a model  
   - Repo: move screenshots to GH pages  
   - Requirements: update  
-- CLI:
-  - added `cli/model-metadata.py` to display metadata in any safetensors file
-  - added `cli/model-keys.py` to quicky display content of any safetensors file
 - Fixes:  
   - custom watermark add alphablending  
   - detailer min/max size as fractions of image size  
