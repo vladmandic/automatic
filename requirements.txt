@@ -49,8 +49,8 @@ scipy
 pandas
 protobuf==4.25.3
 pytorch_lightning==1.9.4
-tokenizers==0.20.1
-transformers==4.46.1
+tokenizers==0.20.3
+transformers==4.46.2
 urllib3==1.26.19
 Pillow==10.4.0
 timm==0.9.16

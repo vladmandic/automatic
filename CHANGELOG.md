@@ -28,6 +28,13 @@ This release can be considered an LTS release before we kick off the next round 
 - SD3: all-in-one safetensors  
   - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
   - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
+- [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) base and large:
+  - *in process -> visual query*
+  - caption modes:
+    `<GENERATE_TAGS>` generate tags  
+    `<CAPTION>`, `<DETAILED_CAPTION>`, `<MORE_DETAILED_CAPTION>` caption image  
+    `<ANALYZE>` image composition  
+    `<MIXED_CAPTION>`, `<MIXED_CAPTION_PLUS>` detailed caption and tags with optional analyze  
 - XYZ grid:  
   - optional time benchmark info to individual images  
   - optional add params to individual images  
