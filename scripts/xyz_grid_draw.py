@@ -4,7 +4,7 @@ from PIL import Image
 from modules import shared, images, processing
 
 
-def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend, include_lone_images, include_sub_grids, first_axes_processed, second_axes_processed, margin_size, no_grid: False, include_time: False): # pylint: disable=unused-argument
+def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend, include_lone_images, include_sub_grids, first_axes_processed, second_axes_processed, margin_size, no_grid: False, include_time: False, include_text: False): # pylint: disable=unused-argument
     x_texts = [[images.GridAnnotation(x)] for x in x_labels]
     y_texts = [[images.GridAnnotation(y)] for y in y_labels]
     z_texts = [[images.GridAnnotation(z)] for z in z_labels]
@@ -40,8 +40,18 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         idx = index(ix, iy, iz)
         if processed is not None and processed.images:
             processed_result.images[idx] = processed.images[0]
+            overlay_text = ''
+            if include_text:
+                if len(x_labels[ix]) > 0:
+                    overlay_text += f'{x_labels[ix]}\n'
+                if len(y_labels[iy]) > 0:
+                    overlay_text += f'{y_labels[iy]}\n'
+                if len(z_labels[iz]) > 0:
+                    overlay_text += f'{z_labels[iz]}\n'
             if include_time:
-                processed_result.images[idx] = images.draw_overlay(processed_result.images[idx], f'time: {p1 - p0:.2f}')
+                overlay_text += f'Time: {p1 - p0:.2f}'
+            if len(overlay_text) > 0:
+                processed_result.images[idx] = images.draw_overlay(processed_result.images[idx], overlay_text)
             processed_result.all_prompts[idx] = processed.prompt
             processed_result.all_seeds[idx] = processed.seed
             processed_result.infotexts[idx] = processed.infotexts[0]

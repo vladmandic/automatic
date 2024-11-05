@@ -1,4 +1,5 @@
 # xyz grid that shows as selectable script
+import os
 import csv
 import random
 from collections import namedtuple
@@ -16,6 +17,9 @@ from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 
 
+debug = shared.log.trace if os.environ.get('SD_XYZ_DEBUG', None) is not None else lambda *args, **kwargs: None
+
+
 class Script(scripts.Script):
     current_axis_options = []
 
@@ -26,6 +30,7 @@ class Script(scripts.Script):
         self.current_axis_options = [x for x in axis_options if type(x) == AxisOption or x.is_img2img == is_img2img]
         with gr.Row():
             gr.HTML('<span">&nbsp XYZ Grid</span><br>')
+
         with gr.Row():
             with gr.Column():
                 with gr.Row(variant='compact'):
@@ -43,18 +48,42 @@ class Script(scripts.Script):
                     z_values = gr.Textbox(label="Z values", container=True, lines=1, elem_id=self.elem_id("z_values"))
                     z_values_dropdown = gr.Dropdown(label="Z values", container=True, visible=False, multiselect=True, interactive=True)
                     fill_z_button = ToolButton(value=symbols.fill, elem_id="xyz_grid_fill_z_tool_button", visible=False)
+
         with gr.Row():
             with gr.Column():
                 csv_mode = gr.Checkbox(label='Text inputs', value=False, elem_id=self.elem_id("csv_mode"), container=False)
                 draw_legend = gr.Checkbox(label='Legend', value=True, elem_id=self.elem_id("draw_legend"), container=False)
                 no_fixed_seeds = gr.Checkbox(label='Random seeds', value=False, elem_id=self.elem_id("no_fixed_seeds"), container=False)
                 include_time = gr.Checkbox(label='Add time info', value=False, elem_id=self.elem_id("include_time"), container=False)
+                include_text = gr.Checkbox(label='Add text info', value=False, elem_id=self.elem_id("include_text"), container=False)
             with gr.Column():
                 include_grid = gr.Checkbox(label='Include main grid', value=True, elem_id=self.elem_id("no_xyz_grid"), container=False)
                 include_subgrids = gr.Checkbox(label='Include sub grids', value=False, elem_id=self.elem_id("include_sub_grids"), container=False)
                 include_images = gr.Checkbox(label='Include images', value=False, elem_id=self.elem_id("include_lone_images"), container=False)
+                create_video = gr.Checkbox(label='Create video', value=False, elem_id=self.elem_id("xyz_create_video"), container=False)
+
+        with gr.Row(visible=False) as ui_video:
+            def video_type_change(video_type):
+                return [
+                    gr.update(visible=video_type != 'None'),
+                    gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
+                    gr.update(visible=video_type == 'MP4'),
+                    gr.update(visible=video_type == 'MP4'),
+                ]
+
+            with gr.Column():
+                video_type = gr.Dropdown(label='Video type', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
+            with gr.Column():
+                video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False)
+                video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id="control_video_loop")
+                video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
+                video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
+            video_type.change(fn=video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
+        create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
+
         with gr.Row():
             margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
+
         with gr.Row():
             swap_xy_axes_button = gr.Button(value="Swap X/Y", elem_id="xy_grid_swap_axes_button", variant="secondary")
             swap_yz_axes_button = gr.Button(value="Swap Y/Z", elem_id="yz_grid_swap_axes_button", variant="secondary")
@@ -131,9 +160,25 @@ class Script(scripts.Script):
             (z_values_dropdown, lambda params:get_dropdown_update_from_params("Z",params)),
         )
 
-        return [x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size]
+        return [
+            x_type, x_values, x_values_dropdown,
+            y_type, y_values, y_values_dropdown,
+            z_type, z_values, z_values_dropdown,
+            csv_mode, draw_legend, no_fixed_seeds,
+            include_grid, include_subgrids, include_images,
+            include_time, include_text, margin_size,
+            create_video, video_type, video_duration, video_loop, video_pad, video_interpolate,
+        ]
 
-    def run(self, p, x_type, x_values, x_values_dropdown, y_type, y_values, y_values_dropdown, z_type, z_values, z_values_dropdown, csv_mode, draw_legend, no_fixed_seeds, include_grid, include_subgrids, include_images, include_time, margin_size): # pylint: disable=W0221
+    def run(self, p,
+            x_type, x_values, x_values_dropdown,
+            y_type, y_values, y_values_dropdown,
+            z_type, z_values, z_values_dropdown,
+            csv_mode, draw_legend, no_fixed_seeds,
+            include_grid, include_subgrids, include_images,
+            include_time, include_text, margin_size,
+            create_video, video_type, video_duration, video_loop, video_pad, video_interpolate,
+           ): # pylint: disable=W0221
         if not no_fixed_seeds:
             processing.fix_seed(p)
         if not shared.opts.return_grid:
@@ -315,31 +360,40 @@ class Script(scripts.Script):
                 margin_size=margin_size,
                 no_grid=not include_grid,
                 include_time=include_time,
+                include_text=include_text,
             )
 
         if not processed.images:
             return processed # something broke, no further handling needed.
-        z_count = len(zs)
-        processed.infotexts[:1+z_count] = grid_infotext[:1+z_count] # set the grid infotexts to the real ones with extra_generation_params (1 main grid + z_count sub-grids)
-        if not include_images: # dont need sub-images anymore, drop from list:
-            if not include_grid and include_subgrids:
-                processed.images = processed.images[:z_count] # we don't have the main grid image, and need zero additional sub-images
-            else:
-                processed.images = processed.images[:z_count+1] # we either have the main grid image, or need one sub-images
-        if shared.opts.grid_save: # auto-save main and sub-grids:
-            grid_count = z_count + ( 1 if include_grid and z_count > 1 else 0 )
-            for g in range(grid_count):
+        # processed.images = (1)*grid + (z > 1 ? z : 0)*subgrids + (x*y*z)*images
+        have_grid = 1 if include_grid else 0
+        have_subgrids = len(zs) if len(zs) > 1 and include_subgrids else 0
+        have_images = processed.images[have_grid+have_subgrids:]
+        processed.infotexts[:have_grid+have_subgrids] = grid_infotext[:have_grid+have_subgrids] # update infotexts with grid and subgrid info
+        shared.log.debug(f'XYZ grid: grid={have_grid} subgrids={have_subgrids} images={len(have_images)} total={len(processed.images)}')
+
+        if not include_images: # dont need images anymore, drop from list:
+            processed.images = processed.images[:have_grid+have_subgrids]
+            debug(f'XYZ grid remove images: total={processed.images}')
+
+        if shared.opts.grid_save and not shared.state.interrupted: # auto-save main and sub-grids:
+            for g in range(have_grid + have_subgrids):
                 adj_g = g-1 if g > 0 else g
                 info = processed.infotexts[g]
                 prompt = processed.all_prompts[adj_g]
                 seed = processed.all_seeds[adj_g]
+                debug(f'XYZ grid save grid: i={g+1}')
                 images.save_image(processed.images[g], p.outpath_grids, "grid", info=info, extension=shared.opts.grid_format, prompt=prompt, seed=seed, grid=True, p=processed)
-        if not include_subgrids: # done with sub-grids, drop all related information:
-            for _sg in range(z_count):
+
+        if not include_subgrids and have_subgrids > 0: # done with sub-grids, drop all related information:
+            for _sg in range(have_subgrids):
                 del processed.images[1]
                 del processed.all_prompts[1]
                 del processed.all_seeds[1]
                 del processed.infotexts[1]
-        elif include_grid:
-            del processed.infotexts[0]
+            debug(f'XYZ grid remove subgrids: total={processed.images}')
+
+        if create_video and video_type != 'None' and not shared.state.interrupted:
+            images.save_video(p, filename=None, images=have_images, video_type=video_type, duration=video_duration, loop=video_loop, pad=video_pad, interpolate=video_interpolate)
+
         return processed

@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-04
+## Update for 2024-11-05
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
@@ -11,6 +11,7 @@ This release can be considered an LTS release before we kick off the next round 
     go to system -> changelog and search/highligh/navigate directly in UI!  
 - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
   - advanced method of face transfer with better quality as well as control over identity and appearance  
+    try it out, likely the best quality available for sdxl models  
   - select in *scripts -> pulid*  
   - compatible with *sdxl*  
   - can be used in xyz grid  
@@ -22,13 +23,16 @@ This release can be considered an LTS release before we kick off the next round 
 - SD3: all-in-one safetensors  
   - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
   - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
+- XYZ grid:  
+  - optional time benchmark info to individual images  
+  - optional add params to individual images  
+  - create video from generated grid images  
+    supports all standard video types and interpolation  
 - UI:  
   - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
   - add show networks on startup setting  
   - better mapping of networks previews  
   - optimize networks display load  
-- XYZ grid:  
-  - optional per-image time benchmark info  
 - CLI:  
   - refactor command line params  
     run `webui.sh`/`webui.bat` with `--help` to see all options  
@@ -49,6 +53,8 @@ This release can be considered an LTS release before we kick off the next round 
   - fix diffusers load from folder  
   - fix lora enum logging on windows  
   - fix xyz grid with batch count  
+  - fix xyz grid include images  
+  - fix xyz skip on interrupted  
   - fix vqa models ignoring hfcache folder setting  
   - fix network height in standard vs modern ui  
   - fix k-diff enum on startup  

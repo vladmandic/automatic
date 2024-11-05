@@ -361,11 +361,11 @@ def flatten(img, bgcolor):
     return img.convert('RGB')
 
 
-def draw_overlay(im, text):
+def draw_overlay(im, text: str = '', y_offset: int = 0):
     d = ImageDraw.Draw(im)
     fontsize = (im.width + im.height) // 50
     font = get_font(fontsize)
-    d.text((fontsize//2, fontsize//2), text, font=font, fill=shared.opts.font_color)
+    d.text((fontsize//2, fontsize//2 + y_offset), text, font=font, fill=shared.opts.font_color)
     return im
 
 
