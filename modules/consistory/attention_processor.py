@@ -17,12 +17,11 @@
 # are not a contribution and subject to the license under the LICENSE file located at the root directory.
 
 
-from diffusers.utils import USE_PEFT_BACKEND
 from typing import Callable, Optional
 import torch
 import torch.nn.functional as F
+from diffusers.utils import USE_PEFT_BACKEND
 from diffusers.models.attention_processor import Attention
-
 from .consistory_utils import AnchorCache, FeatureInjector, QueryStore
 
 
@@ -235,7 +234,7 @@ class ConsistoryExtendedAttnXFormersAttnProcessor:
         # dropout
         hidden_states = attn.to_out[1](hidden_states)
 
-        if (feature_injector is not None):
+        if feature_injector is not None:
             output_res = int(hidden_states.shape[1] ** 0.5)
 
             if anchors_cache and anchors_cache.is_inject_mode():
@@ -270,8 +269,7 @@ def register_extended_self_attn(unet, attnstore, extended_attn_kwargs):
                          'up_113': 64, 'up_115': 64, 'up_117': 64, 'up_119': 64}
     attn_procs = {}
     for i, name in enumerate(unet.attn_processors.keys()):
-        is_self_attn = (i % 2 == 0)
-
+        is_self_attn = i % 2 == 0
         if name.startswith("mid_block"):
             place_in_unet = f"mid_{i}"
         elif name.startswith("up_blocks"):

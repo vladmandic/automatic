@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-05
+## Update for 2024-11-06
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
@@ -9,55 +9,71 @@ This release can be considered an LTS release before we kick off the next round 
   - add built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
     since changelog is the best up-to-date source of info  
     go to system -> changelog and search/highligh/navigate directly in UI!  
-- [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
-  - advanced method of face transfer with better quality as well as control over identity and appearance  
-    try it out, likely the best quality available for sdxl models  
-  - select in *scripts -> pulid*  
-  - compatible with *sdxl*  
-  - can be used in xyz grid  
-- [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
-  - alternative to traditional `img2img` with more control over restoration process  
-  - select in *image -> scripts -> instantir*  
-  - compatible with *sdxl*  
-  - *note*: after used once it cannot be unloaded without reloading base model  
-- SD3: ControlNets:  
-  - *InstantX Canny, Pose, Depth, Tile*  
-  - *Alimama Inpainting, SoftEdge*  
-  - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
-    e.g. SD3 controlnets vary from 1GB to over 4GB in size  
-- SD3: all-in-one safetensors  
-  - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
-  - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
-- [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) base and large:
-  - *in process -> visual query*
-  - caption modes:
-    `<GENERATE_TAGS>` generate tags  
-    `<CAPTION>`, `<DETAILED_CAPTION>`, `<MORE_DETAILED_CAPTION>` caption image  
-    `<ANALYZE>` image composition  
-    `<MIXED_CAPTION>`, `<MIXED_CAPTION_PLUS>` detailed caption and tags with optional analyze  
-- XYZ grid:  
-  - optional time benchmark info to individual images  
-  - optional add params to individual images  
-  - create video from generated grid images  
-    supports all standard video types and interpolation  
-- UI:  
-  - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
-  - add show networks on startup setting  
-  - better mapping of networks previews  
-  - optimize networks display load  
-- Installer:
-  - Log `venv` and package search paths
-  - Auto-remove invalid packages from `venv/site-packages`  
-    e.g. packages starting with `~` which are left-over due to windows access violation  
-- CLI:  
-  - refactor command line params  
-    run `webui.sh`/`webui.bat` with `--help` to see all options  
-  - added `cli/model-metadata.py` to display metadata in any safetensors file
-  - added `cli/model-keys.py` to quicky display content of any safetensors file
+
+- Integrations:
+  - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
+    - advanced method of face transfer with better quality as well as control over identity and appearance  
+      try it out, likely the best quality available for sdxl models  
+    - select in *scripts -> pulid*  
+    - compatible with *sdxl*  
+    - can be used in xyz grid  
+  - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
+    - alternative to traditional `img2img` with more control over restoration process  
+    - select in *image -> scripts -> instantir*  
+    - compatible with *sdxl*  
+    - *note*: after used once it cannot be unloaded without reloading base model  
+  - [ConsiStory](https://github.com/NVlabs/consistory): Consistent Image Generation  
+    - create consistent anchor image and then generate images that are consistent with anchor  
+    - select in *scripts -> consistory*  
+    - compatible with *sdxl*
+    - *note*: very resource intensive and not compatible with model offloading  
+    - *note*: changing default parameters can lead to unexpected results and/or failures  
+    - *note*: after used once it cannot be unloaded without reloading base model  
+  - [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) base and large:
+    - *in process -> visual query*
+    - caption modes:
+      `<GENERATE_TAGS>` generate tags  
+      `<CAPTION>`, `<DETAILED_CAPTION>`, `<MORE_DETAILED_CAPTION>` caption image  
+      `<ANALYZE>` image composition  
+      `<MIXED_CAPTION>`, `<MIXED_CAPTION_PLUS>` detailed caption and tags with optional analyze  
+
+- Model improvements:
+  - SD3: ControlNets:  
+    - *InstantX Canny, Pose, Depth, Tile*  
+    - *Alimama Inpainting, SoftEdge*  
+    - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
+      e.g. SD3 controlnets vary from 1GB to over 4GB in size  
+  - SD3: all-in-one safetensors  
+    - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
+    - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
+
+- Workflow improvements:
+  - XYZ grid:  
+    - optional time benchmark info to individual images  
+    - optional add params to individual images  
+    - create video from generated grid images  
+      supports all standard video types and interpolation  
+  - UI:  
+    - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
+    - add show networks on startup setting  
+    - better mapping of networks previews  
+    - optimize networks display load  
 - Other:  
-  - Model loader: Report modules included in safetensors when attempting to load a model  
-  - Repo: move screenshots to GH pages  
-  - Requirements: update  
+  - Installer:
+    - Log `venv` and package search paths
+    - Auto-remove invalid packages from `venv/site-packages`  
+      e.g. packages starting with `~` which are left-over due to windows access violation  
+    - Requirements: update  
+  - Model loader:
+    - Report modules included in safetensors when attempting to load a model  
+  - CLI:  
+    - refactor command line params  
+      run `webui.sh`/`webui.bat` with `--help` to see all options  
+    - added `cli/model-metadata.py` to display metadata in any safetensors file
+    - added `cli/model-keys.py` to quicky display content of any safetensors file
+  - Internal:
+    - Repo: move screenshots to GH pages  
+
 - Fixes:  
   - custom watermark add alphablending  
   - detailer min/max size as fractions of image size  

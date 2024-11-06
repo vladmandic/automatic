@@ -3,26 +3,18 @@
 # This work is licensed under the LICENSE file
 # located at the root directory.
 
+from typing import List
+from collections import defaultdict
 import numpy as np
 import torch
-from collections import defaultdict
-from diffusers.utils.import_utils import is_xformers_available
-from typing import Optional, List
-
 from .utils.general_utils import get_dynamic_threshold
 
-if is_xformers_available():
-    import xformers
-    import xformers.ops
-else:
-    xformers = None
 
 class FeatureInjector:
     def __init__(self, nn_map, nn_distances, attn_masks, inject_range_alpha=[(10,20,0.8)], swap_strategy='min', dist_thr='dynamic', inject_unet_parts=['up']):
         self.nn_map = nn_map
         self.nn_distances = nn_distances
         self.attn_masks = attn_masks
-
         self.inject_range_alpha = inject_range_alpha if isinstance(inject_range_alpha, list) else [inject_range_alpha]
         self.swap_strategy = swap_strategy # 'min / 'mean' / 'first'
         self.dist_thr = dist_thr
