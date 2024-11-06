@@ -4,6 +4,7 @@ import time
 import contextlib
 from functools import wraps
 import torch
+from modules import rocm
 from modules.errors import log, display, install as install_traceback
 from installer import install
 
@@ -50,8 +51,8 @@ def has_zluda() -> bool:
     if not cuda_ok:
         return False
     try:
-        device = torch.device("cuda")
-        return torch.cuda.get_device_name(device).endswith("[ZLUDA]")
+        dev = torch.device("cuda")
+        return torch.cuda.get_device_name(dev).endswith("[ZLUDA]")
     except Exception:
         return False
 
@@ -206,7 +207,7 @@ def torch_gc(force=False, fast=False):
         force = True
     if oom > previous_oom:
         previous_oom = oom
-        log.warning(f'GPU out-of-memory error: {mem}')
+        log.warning(f'Torch GPU out-of-memory error: {mem}')
         force = True
     if force:
         # actual gc
@@ -246,11 +247,24 @@ def set_cuda_sync_mode(mode):
         return
     try:
         import ctypes
-        log.info(f'Set cuda sync: mode={mode}')
+        log.info(f'Torch CUDA sync: mode={mode}')
         torch.cuda.set_device(torch.device(get_optimal_device_name()))
         ctypes.CDLL('libcudart.so').cudaSetDeviceFlags({'auto': 0, 'spin': 1, 'yield': 2, 'block': 4}[mode])
     except Exception:
         pass
+
+
+def set_cuda_memory_limit():
+    if not cuda_ok or opts.cuda_mem_fraction == 0:
+        return
+    from modules.shared import cmd_opts
+    try:
+        torch_gc(force=True)
+        mem = torch.cuda.get_device_properties(device).total_memory
+        torch.cuda.set_per_process_memory_fraction(float(opts.cuda_mem_fraction), cmd_opts.device_id if cmd_opts.device_id is not None else 0)
+        log.info(f'Torch CUDA memory limit: fraction={opts.cuda_mem_fraction:.2f} limit={round(opts.cuda_mem_fraction * mem / 1024 / 1024)} total={round(mem / 1024 / 1024)}')
+    except Exception as e:
+        log.warning(f'Torch CUDA memory limit: fraction={opts.cuda_mem_fraction:.2f} {e}')
 
 
 def test_fp16():
@@ -283,16 +297,14 @@ def test_bf16():
         if sys.platform == "darwin" or backend == 'openvino' or backend == 'directml': # override
             bf16_ok = False
             return bf16_ok
-        elif backend == 'zluda':
-            device_name = torch.cuda.get_device_name(device)
-            if device_name.startswith("AMD Radeon RX "): # only force AMD
-                device_name = device_name.replace("AMD Radeon RX ", "").split(" ", maxsplit=1)[0]
-                if len(device_name) == 4 and device_name[0] in {"5", "6"}: # RDNA 1 and 2
-                    bf16_ok = False
-                    return bf16_ok
-        elif backend == 'rocm':
-            gcn_arch = getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000")[3:7]
-            if len(gcn_arch) == 4 and gcn_arch[0:2] == "10": # RDNA 1 and 2
+        elif backend == 'rocm' or backend == 'zluda':
+            agent = None
+            if backend == 'rocm':
+                agent = rocm.Agent(getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000"))
+            else:
+                from modules.zluda_installer import default_agent
+                agent = default_agent
+            if agent is not None and agent.gfx_version < 0x1100 and agent.arch != rocm.MicroArchitecture.CDNA: # all cards before RDNA 3 except for CDNA cards
                 bf16_ok = False
                 return bf16_ok
     try:
@@ -450,6 +462,7 @@ def set_dtype():
 
 def set_cuda_params():
     override_ipex_math()
+    set_cuda_memory_limit()
     set_cudnn_params()
     set_sdpa_params()
     set_dtype()

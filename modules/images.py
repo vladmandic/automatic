@@ -10,7 +10,7 @@ import threading
 import numpy as np
 import piexif
 import piexif.helper
-from PIL import Image, PngImagePlugin, ExifTags
+from PIL import Image, PngImagePlugin, ExifTags, ImageDraw
 from modules import sd_samplers, shared, script_callbacks, errors, paths
 from modules.images_grid import image_grid, get_grid_size, split_grid, combine_grid, check_grid_size, get_font, draw_grid_annotations, draw_prompt_matrix, GridAnnotation, Grid # pylint: disable=unused-import
 from modules.images_resize import resize_image # pylint: disable=unused-import
@@ -361,11 +361,21 @@ def flatten(img, bgcolor):
     return img.convert('RGB')
 
 
+def draw_overlay(im, text: str = '', y_offset: int = 0):
+    d = ImageDraw.Draw(im)
+    fontsize = (im.width + im.height) // 50
+    font = get_font(fontsize)
+    d.text((fontsize//2, fontsize//2 + y_offset), text, font=font, fill=shared.opts.font_color)
+    return im
+
+
 def set_watermark(image, watermark):
     if shared.opts.image_watermark_position != 'none': # visible watermark
         wm_image = None
         try:
             wm_image = Image.open(shared.opts.image_watermark_image)
+            if wm_image.mode != 'RGBA':
+                wm_image = wm_image.convert('RGBA')
         except Exception as e:
             shared.log.warning(f'Set image watermark: fn="{shared.opts.image_watermark_image}" {e}')
         if wm_image is not None:
@@ -384,8 +394,14 @@ def set_watermark(image, watermark):
             try:
                 for x in range(wm_image.width):
                     for y in range(wm_image.height):
-                        r, g, b, _a = wm_image.getpixel((x, y))
-                        if not (r == 0 and g == 0 and b == 0):
+                        rgba = wm_image.getpixel((x, y))
+                        orig = image.getpixel((x+position[0], y+position[1]))
+                        # alpha blend
+                        a = rgba[3] / 255
+                        r = int(rgba[0] * a + orig[0] * (1 - a))
+                        g = int(rgba[1] * a + orig[1] * (1 - a))
+                        b = int(rgba[2] * a + orig[2] * (1 - a))
+                        if not a == 0:
                             image.putpixel((x+position[0], y+position[1]), (r, g, b))
                 shared.log.debug(f'Set image watermark: fn="{shared.opts.image_watermark_image}" image={wm_image} position={position}')
             except Exception as e:

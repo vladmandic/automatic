@@ -1,7 +1,7 @@
 import os
 import diffusers
 import transformers
-from modules import shared, devices, sd_models, sd_unet, model_te
+from modules import shared, devices, sd_models, sd_unet, model_te, model_quant, model_tools
 
 
 def load_overrides(kwargs, cache_dir):
@@ -51,8 +51,7 @@ def load_overrides(kwargs, cache_dir):
 
 def load_quants(kwargs, repo_id, cache_dir):
     if len(shared.opts.bnb_quantization) > 0:
-        from modules.model_quant import load_bnb
-        load_bnb('Load model: type=SD3')
+        model_quant.load_bnb('Load model: type=SD3')
         bnb_config = diffusers.BitsAndBytesConfig(
             load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
             load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
@@ -70,7 +69,7 @@ def load_quants(kwargs, repo_id, cache_dir):
 
 
 def load_missing(kwargs, fn, cache_dir):
-    keys = sd_models.get_safetensor_keys(fn)
+    keys = model_tools.get_safetensor_keys(fn)
     size = os.stat(fn).st_size // 1024 // 1024
     if size > 15000:
         repo_id = 'stabilityai/stable-diffusion-3.5-large'
@@ -85,6 +84,9 @@ def load_missing(kwargs, fn, cache_dir):
     if 'text_encoder_3' not in kwargs and 'text_encoder_3' not in keys:
         kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, torch_dtype=devices.dtype)
         shared.log.debug(f'Load model: type=SD3 missing=te3 repo="{repo_id}"')
+    if 'vae' not in kwargs and 'vae' not in keys:
+        kwargs['vae'] = diffusers.AutoencoderKL.from_pretrained(repo_id, subfolder='vae', cache_dir=cache_dir, torch_dtype=devices.dtype)
+        shared.log.debug(f'Load model: type=SD3 missing=vae repo="{repo_id}"')
     # if 'transformer' not in kwargs and 'transformer' not in keys:
     #    kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(default_repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype)
     return kwargs
@@ -120,13 +122,18 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
 
     kwargs = {}
     kwargs = load_overrides(kwargs, cache_dir)
-    kwargs = load_quants(kwargs, repo_id, cache_dir)
+    if fn is None or not os.path.exists(fn):
+        kwargs = load_quants(kwargs, repo_id, cache_dir)
 
     loader = diffusers.StableDiffusion3Pipeline.from_pretrained
-    if fn is not None and os.path.exists(fn):
+    if fn is not None and os.path.exists(fn) and os.path.isfile(fn):
         if fn.endswith('.safetensors'):
             loader = diffusers.StableDiffusion3Pipeline.from_single_file
-            kwargs = load_missing(kwargs, fn, cache_dir)
+            # required_modules = model_tools.get_modules(diffusers.StableDiffusion3Pipeline)
+            # have_modules = model_tools.get_safetensor_keys(fn)
+            # loaded_modules = model_tools.load_modules('stabilityai/stable-diffusion-3.5-medium', required_modules)
+            # kwargs = {**kwargs, **loaded_modules}
+            # kwargs = load_missing(kwargs, fn, cache_dir)
             repo_id = fn
         elif fn.endswith('.gguf'):
             kwargs = load_gguf(kwargs, fn)
@@ -135,8 +142,9 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     else:
         kwargs['variant'] = 'fp16'
 
-    shared.log.debug(f'Load model: type=SD3 preloaded={list(kwargs)}')
+    shared.log.debug(f'Load model: type=SD3 kwargs={list(kwargs)} repo="{repo_id}"')
 
+    kwargs = model_quant.create_bnb_config(kwargs)
     pipe = loader(
         repo_id,
         torch_dtype=devices.dtype,
@@ -144,5 +152,5 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
         config=config,
         **kwargs,
     )
-    devices.torch_gc()
+    devices.torch_gc(force=True)
     return pipe

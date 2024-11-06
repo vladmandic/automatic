@@ -16,6 +16,7 @@ async function initStartup() {
   initImageViewer();
   initGallery();
   initiGenerationParams();
+  initChangelog();
   setupControlUI();
 
   // reconnect server session
@@ -31,6 +32,7 @@ async function initStartup() {
   removeSplash();
 
   // post startup tasks that may take longer but are not critical
+  showNetworks();
   setHints();
   applyStyles();
   initIndexDB();

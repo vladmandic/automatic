@@ -267,6 +267,7 @@ def img2img(id_task: str, state: str, mode: int,
         processed = modules.scripts.scripts_img2img.run(p, *args)
         if processed is None:
             processed = processing.process_images(p)
+        processed = modules.scripts.scripts_img2img.after(p, processed, *args)
     p.close()
     generation_info_js = processed.js() if processed is not None else ''
     if processed is None:

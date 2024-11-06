@@ -3,8 +3,6 @@ Lightweight IP-Adapter applied to existing pipeline in Diffusers
 - Downloads image_encoder or first usage (2.5GB)
 - Introduced via: https://github.com/huggingface/diffusers/pull/5713
 - IP adapters: https://huggingface.co/h94/IP-Adapter
-TODO ipadapter items:
-- SD/SDXL autodetect
 """
 
 import os
@@ -14,21 +12,42 @@ from PIL import Image
 from modules import processing, shared, devices, sd_models
 
 
-base_repo = "h94/IP-Adapter"
+clip_repo = "h94/IP-Adapter"
 clip_loaded = None
-ADAPTERS = {
-    'None': 'none',
-    'Base': 'ip-adapter_sd15.safetensors',
-    'Base ViT-G': 'ip-adapter_sd15_vit-G.safetensors',
-    'Light': 'ip-adapter_sd15_light.safetensors',
-    'Plus': 'ip-adapter-plus_sd15.safetensors',
-    'Plus Face': 'ip-adapter-plus-face_sd15.safetensors',
-    'Full Face': 'ip-adapter-full-face_sd15.safetensors',
-    'Base SDXL': 'ip-adapter_sdxl.safetensors',
-    'Base ViT-H SDXL': 'ip-adapter_sdxl_vit-h.safetensors',
-    'Plus ViT-H SDXL': 'ip-adapter-plus_sdxl_vit-h.safetensors',
-    'Plus Face ViT-H SDXL': 'ip-adapter-plus-face_sdxl_vit-h.safetensors',
+ADAPTERS_NONE = {
+    'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
 }
+ADAPTERS_SD15 = {
+    'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
+    'Base': { 'name': 'ip-adapter_sd15.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Base ViT-G': { 'name': 'ip-adapter_sd15_vit-G.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Light': { 'name': 'ip-adapter_sd15_light.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Plus': { 'name': 'ip-adapter-plus_sd15.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Plus Face': { 'name': 'ip-adapter-plus-face_sd15.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Full Face': { 'name': 'ip-adapter-full-face_sd15.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'models' },
+    'Ostris Composition ViT-H': { 'name': 'ip_plus_composition_sd15.safetensors', 'repo': 'ostris/ip-composition-adapter', 'subfolder': '' },
+}
+ADAPTERS_SDXL = {
+    'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
+    'Base SDXL': { 'name': 'ip-adapter_sdxl.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'sdxl_models' },
+    'Base ViT-H SDXL': { 'name': 'ip-adapter_sdxl_vit-h.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'sdxl_models' },
+    'Plus ViT-H SDXL': { 'name': 'ip-adapter-plus_sdxl_vit-h.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'sdxl_models' },
+    'Plus Face ViT-H SDXL': { 'name': 'ip-adapter-plus-face_sdxl_vit-h.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'sdxl_models' },
+    'Ostris Composition ViT-H SDXL': { 'name': 'ip_plus_composition_sdxl.safetensors', 'repo': 'ostris/ip-composition-adapter', 'subfolder': '' },
+}
+ADAPTERS = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
+ADAPTERS_ALL = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
+
+
+def get_adapters():
+    global ADAPTERS # pylint: disable=global-statement
+    if shared.sd_model_type == 'sd':
+        ADAPTERS = ADAPTERS_SD15
+    elif shared.sd_model_type == 'sdxl':
+        ADAPTERS = ADAPTERS_SDXL
+    else:
+        ADAPTERS = ADAPTERS_NONE
+    return list(ADAPTERS)
 
 
 def get_images(input_images):
@@ -83,13 +102,12 @@ def crop_images(images, crops):
     try:
         for i in range(len(images)):
             if crops[i]:
-                from shared import yolo # pylint: disable=no-name-in-module
-                yolo.load()
+                from modules.shared import yolo # pylint: disable=no-name-in-module
                 cropped = []
                 for image in images[i]:
-                    faces = yolo.predict(image)
+                    faces = yolo.predict('face-yolo8n', image)
                     if len(faces) > 0:
-                        cropped.append(faces[0].face)
+                        cropped.append(faces[0].item)
                 if len(cropped) == len(images[i]):
                     images[i] = cropped
                 else:
@@ -117,13 +135,13 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     if hasattr(p, 'ip_adapter_names'):
         if isinstance(p.ip_adapter_names, str):
             p.ip_adapter_names = [p.ip_adapter_names]
-        adapters = [ADAPTERS.get(adapter, None) for adapter in p.ip_adapter_names if adapter is not None and adapter.lower() != 'none']
+        adapters = [ADAPTERS_ALL.get(adapter_name, None) for adapter_name in p.ip_adapter_names if adapter_name is not None and adapter_name.lower() != 'none']
         adapter_names = p.ip_adapter_names
     else:
         if isinstance(adapter_names, str):
             adapter_names = [adapter_names]
         adapters = [ADAPTERS.get(adapter, None) for adapter in adapter_names]
-    adapters = [adapter for adapter in adapters if adapter is not None and adapter.lower() != 'none']
+    adapters = [adapter for adapter in adapters if adapter is not None and adapter['name'].lower() != 'none']
     if len(adapters) == 0:
         unapply(pipe)
         if hasattr(p, 'ip_adapter_images'):
@@ -189,41 +207,48 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
 
     for adapter_name in adapter_names:
         # which clip to use
-        if 'ViT' not in adapter_name:
-            clip_repo = base_repo
-            clip_subfolder = 'models/image_encoder' if shared.sd_model_type == 'sd' else 'sdxl_models/image_encoder' # defaults per model
+        if 'ViT' not in adapter_name: # defaults per model
+            if shared.sd_model_type == 'sd':
+                clip_subfolder = 'models/image_encoder'
+            else:
+                clip_subfolder = 'sdxl_models/image_encoder'
         elif 'ViT-H' in adapter_name:
-            clip_repo = base_repo
             clip_subfolder = 'models/image_encoder' # this is vit-h
         elif 'ViT-G' in adapter_name:
-            clip_repo = base_repo
             clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
         else:
             shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
             return False
 
-        # load feature extractor used by ip adapter
-        if pipe.feature_extractor is None:
+    # load feature extractor used by ip adapter
+    if pipe.feature_extractor is None:
+        try:
             from transformers import CLIPImageProcessor
             shared.log.debug('IP adapter load: feature extractor')
             pipe.feature_extractor = CLIPImageProcessor()
-        # load image encoder used by ip adapter
-        if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
-            try:
-                from transformers import CLIPVisionModelWithProjection
-                shared.log.debug(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}"')
-                pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir, use_safetensors=True)
-                clip_loaded = f'{clip_repo}/{clip_subfolder}'
-            except Exception as e:
-                shared.log.error(f'IP adapter: failed to load image encoder: {e}')
-                return False
-        sd_models.move_model(pipe.image_encoder, devices.device)
+        except Exception as e:
+            shared.log.error(f'IP adapter load: feature extractor {e}')
+            return False
+
+    # load image encoder used by ip adapter
+    if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
+        try:
+            from transformers import CLIPVisionModelWithProjection
+            shared.log.debug(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}"')
+            pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir, use_safetensors=True)
+            clip_loaded = f'{clip_repo}/{clip_subfolder}'
+        except Exception as e:
+            shared.log.error(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}" {e}')
+            return False
+    sd_models.move_model(pipe.image_encoder, devices.device)
 
     # main code
-    t0 = time.time()
-    ip_subfolder = 'models' if shared.sd_model_type == 'sd' else 'sdxl_models'
     try:
-        pipe.load_ip_adapter([base_repo], subfolder=[ip_subfolder], weight_name=adapters)
+        t0 = time.time()
+        repos = [adapter['repo'] for adapter in adapters]
+        subfolders = [adapter['subfolder'] for adapter in adapters]
+        names = [adapter['name'] for adapter in adapters]
+        pipe.load_ip_adapter(repos, subfolder=subfolders, weight_name=names)
         if hasattr(p, 'ip_adapter_layers'):
             pipe.set_ip_adapter_scale(p.ip_adapter_layers)
             ip_str = ';'.join(adapter_names) + ':' + json.dumps(p.ip_adapter_layers)
@@ -240,5 +265,5 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         t1 = time.time()
         shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
-        shared.log.error(f'IP adapter failed to load: repo="{base_repo}" folder="{ip_subfolder}" weights={adapters} names={adapter_names} {e}')
+        shared.log.error(f'IP adapter load: adapters={adapter_names} repo={repos} folders={subfolders} names={names} {e}')
     return True

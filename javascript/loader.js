@@ -3,7 +3,7 @@ const appStartTime = performance.now();
 async function preloadImages() {
   const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const imagePromises = [];
-  const num = Math.floor(10 * Math.random());
+  const num = Math.floor(9.99 * Math.random());
   const imageUrls = [
     `file=html/logo-bg-${dark ? 'dark' : 'light'}.jpg`,
     `file=html/logo-bg-${num}.jpg`,
@@ -27,7 +27,7 @@ async function preloadImages() {
 async function createSplash() {
   const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   log('createSplash', { theme: dark ? 'dark' : 'light' });
-  const num = Math.floor(11 * Math.random());
+  const num = Math.floor(9.99 * Math.random());
   const splash = `
     <div id="splash" class="splash" style="background: ${dark ? 'black' : 'white'}">
       <div class="loading"><div class="loader"></div></div>

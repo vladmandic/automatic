@@ -189,7 +189,7 @@ def create_override_settings_dict(text_pairs):
 def connect_paste(button, local_paste_fields, input_comp, override_settings_component, tabname):
 
     def paste_func(prompt):
-        if prompt is None or len(prompt.strip()) == 0 and not shared.cmd_opts.hide_ui_dir_config:
+        if prompt is None or len(prompt.strip()) == 0:
             filename = os.path.join(data_path, "params.txt")
             if os.path.exists(filename):
                 with open(filename, "r", encoding="utf8") as file:

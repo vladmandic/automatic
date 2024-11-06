@@ -32,7 +32,7 @@ def get_app(mp_name):
                 repo_id='vladmandic/insightface-faceanalysis',
                 filename=f'{mp_name}.zip',
                 local_dir_use_symlinks=False,
-                cache_dir=opts.diffusers_dir,
+                cache_dir=opts.hfcache_dir,
                 local_dir=local_dir
             )
         if not os.path.exists(extract_dir):

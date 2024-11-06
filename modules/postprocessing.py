@@ -37,7 +37,6 @@ def run_postprocessing(extras_mode, image, image_folder: List[tempfile.NamedTemp
             image_ext.append(ext)
         shared.log.debug(f'Process: mode=batch inputs={len(image_folder)} images={len(image_data)}')
     elif extras_mode == 2:
-        assert not shared.cmd_opts.hide_ui_dir_config, '--hide-ui-dir-config option must be disabled'
         assert input_dir, 'input directory not selected'
         image_list = os.listdir(input_dir)
         for filename in image_list:

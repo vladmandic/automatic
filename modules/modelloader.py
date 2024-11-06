@@ -273,6 +273,7 @@ def load_diffusers_models(clear=True):
         place = os.path.join(models_path, 'Diffusers')
     if clear:
         diffuser_repos.clear()
+    already_found = []
     try:
         for folder in os.listdir(place):
             try:
@@ -303,7 +304,11 @@ def load_diffusers_models(clear=True):
                     if (not os.path.exists(index)) and (not os.path.exists(info)) and (not os.path.exists(config)):
                         debug(f'Diffusers skip model no info: {name}')
                         continue
+                    if name in already_found:
+                        debug(f'Diffusers skip model already found: {name}')
+                        continue
                     repo = { 'name': name, 'filename': name, 'friendly': friendly, 'folder': folder, 'path': commit, 'hash': snapshot, 'mtime': mtime, 'model_info': info, 'model_index': index, 'model_config': config }
+                    already_found.append(name)
                     diffuser_repos.append(repo)
                     if os.path.exists(os.path.join(folder, 'hidden')):
                         continue
@@ -318,7 +323,7 @@ def load_diffusers_models(clear=True):
 def find_diffuser(name: str, full=False):
     repo = [r for r in diffuser_repos if name == r['name'] or name == r['friendly'] or name == r['path']]
     if len(repo) > 0:
-        return repo['name']
+        return [repo[0]['name']]
     hf_api = hf.HfApi()
     models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')

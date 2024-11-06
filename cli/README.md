@@ -1,16 +1,43 @@
 # Stable-Diffusion Productivity Scripts
 
-Note: All scripts have built-in `--help` parameter that can be used to get more information
+## API Examples
 
-<br>
+### Run Generate
 
-## Main Scripts
+- `cli/api-txt2img.py`
+- `cli/api-img2img.py`
+- `cli/api-control.py`
 
-### Generate
+### Monitor
+
+- `cli/api-progress.py`
+
+### Generic
+
+- `cli/api-json.py`
+
+### Process
+
+- `cli/api-info.py`
+- `cli/api-upscale.py`
+- `cli/api-vqa.py`
+- `cli/api-preprocess.py`
+
+### Other
+
+- `cli/api-faceid.py`
+- `cli/api-faces.py`
+- `cli/api-mask.py`
+
+### JavaScript
+
+- `cli/api-txt2img.js`
+
+## Generate
 
 Text-to-image with all of the possible parameters  
 Supports upsampling, face restoration and grid creation  
-> python generate.py
+> python cli/generate.py
 
 By default uses parameters from  `generate.json`
 
@@ -19,25 +46,6 @@ Parameters that are not specified will be randomized:
 - Prompt will be dynamically created from template of random samples: `random.json`
 - Sampler/Scheduler will be randomly picked from available ones
 - CFG Scale set to 5-10
-
-### Train
-
-Combined pipeline for **embeddings**, **lora**, **lycoris**, **dreambooth** and **hypernetwork**  
-Optionally runs several image processing steps before training:
-
-- keep original image
-- detect and extract face
-- detect and extract body
-- detect blur
-- detect dynamic range
-- attempt to upscale low resolution images
-- attempt to restore quality of low quality images
-- automatically generate captions using interrogate
-- resize image
-- square image
-- run image segmentation to remove background
-
-> python train.py
 
 <br>
 

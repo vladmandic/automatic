@@ -50,12 +50,13 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 <br>
 
 *Main interface using **StandardUI***:  
-![Screenshot-Dark](html/screenshot-text2image.jpg)
+![screenshot-text2image](https://github.com/user-attachments/assets/87ac2813-65c2-45f4-80b8-67b26ccf5cd6)
 
 *Main interface using **ModernUI***:  
-![Screenshot-Dark](html/screenshot-modernui-f1.jpg)
-![Screenshot-Dark](html/screenshot-modernui.jpg)
-![Screenshot-Dark](html/screenshot-modernui-sd3.jpg)
+
+![screenshot-modernui-f1](https://github.com/user-attachments/assets/b509a280-8d3b-48b5-8525-363bad8c1ed2)
+![screenshot-modernui](https://github.com/user-attachments/assets/fef33127-f733-4e78-b66e-17729539512f)
+![screenshot-modernui-sd3](https://github.com/user-attachments/assets/1ed02ecc-23e4-4fda-8ae5-2d7393dc530c)
 
 For screenshots and informations on other available themes, see [Themes Wiki](https://github.com/vladmandic/automatic/wiki/Themes)
 
@@ -63,12 +64,13 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
 
 ## Model support
 
-Additional models will be added as they become available and there is public interest in them
+Additional models will be added as they become available and there is public interest in them  
+See [models overview](https://github.com/vladmandic/automatic/wiki/Models) for details on each model, including their architecture, complexity and other info  
 
 - [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*
 - [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models)
-- [StabilityAI Stable Diffusion 3 Medium](https://stability.ai/news/stable-diffusion-3-medium)
-- [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
+- [StabilityAI Stable Diffusion](https://stability.ai/news/stable-diffusion-3-medium) 
+- [Stable Diffusion 3.x](https://huggingface.co/stabilityai/stable-diffusion-3.5-large) 3.0 Medium, 3.5 Medium, 3.5 Large, 3.5 Large Turbo
 - [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
 - [StabilityAI Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
 - [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) Dev, Schnell  
@@ -136,13 +138,13 @@ Also supported are modifiers such as:
 ## Examples
 
 *IP Adapters*:
-![Screenshot-IPAdapter](html/screenshot-ipadapter.jpg)
+![screenshot-ipadapter](https://github.com/user-attachments/assets/92830894-845c-49ec-92d9-18c8a577d04f)
 
 *Color grading*:  
-![Screenshot-Color](html/screenshot-color.jpg)
+![screenshot-control](https://github.com/user-attachments/assets/cdad2722-ae7c-4c9c-94d6-5ea35a4b1356)
 
 *InstantID*:  
-![Screenshot-InstantID](html/screenshot-instantid.jpg)
+![screenshot-instantid](https://github.com/user-attachments/assets/f38a5660-32b3-4235-9da1-c79eccf5372f)
 
 > [!IMPORTANT]
 > - Loading any model other than standard SD 1.x / SD 2.x requires use of backend **Diffusers**  
@@ -173,92 +175,34 @@ Also supported are modifiers such as:
 
 Once SD.Next is installed, simply run `webui.ps1` or `webui.bat` (*Windows*) or `webui.sh` (*Linux or MacOS*)
 
-List of available parameters, run `webui --help` for the full & up-to-date list:
+For list of available command line options, run `webui --help` for the full & up-to-date list
 
-    Server options:
-      --config CONFIG                                    Use specific server configuration file, default: config.json
-      --ui-config UI_CONFIG                              Use specific UI configuration file, default: ui-config.json
-      --medvram                                          Split model stages and keep only active part in VRAM, default: False
-      --lowvram                                          Split model components and keep only active part in VRAM, default: False
-      --ckpt CKPT                                        Path to model checkpoint to load immediately, default: None
-      --vae VAE                                          Path to VAE checkpoint to load immediately, default: None
-      --data-dir DATA_DIR                                Base path where all user data is stored, default:
-      --models-dir MODELS_DIR                            Base path where all models are stored, default: models
-      --allow-code                                       Allow custom script execution, default: False
-      --share                                            Enable UI accessible through Gradio site, default: False
-      --insecure                                         Enable extensions tab regardless of other options, default: False
-      --use-cpu USE_CPU [USE_CPU ...]                    Force use CPU for specified modules, default: []
-      --listen                                           Launch web server using public IP address, default: False
-      --port PORT                                        Launch web server with given server port, default: 7860
-      --freeze                                           Disable editing settings
-      --auth AUTH                                        Set access authentication like "user:pwd,user:pwd""
-      --auth-file AUTH_FILE                              Set access authentication using file, default: None
-      --autolaunch                                       Open the UI URL in the system's default browser upon launch
-      --docs                                             Mount API docs, default: False
-      --api-only                                         Run in API only mode without starting UI
-      --api-log                                          Enable logging of all API requests, default: False
-      --device-id DEVICE_ID                              Select the default CUDA device to use, default: None
-      --cors-origins CORS_ORIGINS                        Allowed CORS origins as comma-separated list, default: None
-      --cors-regex CORS_REGEX                            Allowed CORS origins as regular expression, default: None
-      --tls-keyfile TLS_KEYFILE                          Enable TLS and specify key file, default: None
-      --tls-certfile TLS_CERTFILE                        Enable TLS and specify cert file, default: None
-      --tls-selfsign                                     Enable TLS with self-signed certificates, default: False
-      --server-name SERVER_NAME                          Sets hostname of server, default: None
-      --no-hashing                                       Disable hashing of checkpoints, default: False
-      --no-metadata                                      Disable reading of metadata from models, default: False
-      --disable-queue                                    Disable queues, default: False
-      --subpath SUBPATH                                  Customize the URL subpath for usage with reverse proxy
-      --backend {original,diffusers}                     force model pipeline type
-      --allowed-paths ALLOWED_PATHS [ALLOWED_PATHS ...]  add additional paths to paths allowed for web access
-
-    Setup options:
-      --reset                                            Reset main repository to latest version, default: False
-      --upgrade                                          Upgrade main repository to latest version, default: False
-      --requirements                                     Force re-check of requirements, default: False
-      --quick                                            Bypass version checks, default: False
-      --use-directml                                     Use DirectML if no compatible GPU is detected, default: False
-      --use-openvino                                     Use Intel OpenVINO backend, default: False
-      --use-ipex                                         Force use Intel OneAPI XPU backend, default: False
-      --use-cuda                                         Force use nVidia CUDA backend, default: False
-      --use-rocm                                         Force use AMD ROCm backend, default: False
-      --use-zluda                                        Force use ZLUDA, AMD GPUs only, default: False
-      --use-xformers                                     Force use xFormers cross-optimization, default: False
-      --skip-requirements                                Skips checking and installing requirements, default: False
-      --skip-extensions                                  Skips running individual extension installers, default: False
-      --skip-git                                         Skips running all GIT operations, default: False
-      --skip-torch                                       Skips running Torch checks, default: False
-      --skip-all                                         Skips running all checks, default: False
-      --skip-env                                         Skips setting of env variables during startup, default: False
-      --experimental                                     Allow unsupported versions of libraries, default: False
-      --reinstall                                        Force reinstallation of all requirements, default: False
-      --test                                             Run test only and exit
-      --version                                          Print version information
-      --ignore                                           Ignore any errors and attempt to continue
-      --safe                                             Run in safe mode with no user extensions
-      --uv                                               Use uv as installer, default: False
-
-    Logging options:
-      --log LOG                                          Set log file, default: None
-      --debug                                            Run installer with debug logging, default: False
-      --profile                                          Run profiler, default: False
+> [!TIP]
+> All command line options can also be set via env variable
+> For example `--debug` is same as `set SD_DEBUG=true`  
 
 ## Notes
 
 > [!TIP]
 > If you don't want to use built-in `venv` support and prefer to run SD.Next in your own environment such as *Docker* container, *Conda* environment or any other virtual environment, you can skip `venv` create/activate and launch SD.Next directly using `python launch.py` (command line flags noted above still apply).
 
+### Quantization
+
+**SD.Next** comes with broad quantization support, including support for BitsAndBytes, Optimum.Quanto, TorchAO, NNCF and GGUF
+See [Quantization Wiki](https://github.com/vladmandic/automatic/wiki/Quantization)
+
 ### Control
 
 **SD.Next** comes with built-in control for all types of text2image, image2image, video2video and batch processing
 
 *Control interface*:  
-![Screenshot-Control](html/screenshot-control.jpg)
+![screenshot-control](https://github.com/user-attachments/assets/cdad2722-ae7c-4c9c-94d6-5ea35a4b1356)
 
 *Control processors*:  
-![Screenshot-Process](html/screenshot-processors.jpg)
+![screenshot-processors](https://github.com/user-attachments/assets/7bccb82b-366e-4bdb-ae57-cc53fac95d3c)
 
 *Masking*:
-![Screenshot-Mask](html/screenshot-mask.jpg)
+![screenshot-mask](https://github.com/user-attachments/assets/4b057e65-64f0-44ea-93b4-c3b69bc55532)
 
 ### Extensions
 

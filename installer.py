@@ -227,9 +227,9 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                     exact = pkg_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} allowing experimental")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} allowing experimental")
                         else:
-                            log.warning(f"Package: {p[0]} {pkg_version} required {p[1]} version mismatch")
+                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} version mismatch")
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:
@@ -254,11 +254,12 @@ def uninstall(package, quiet = False):
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     originalArg = arg
-    uv = uv and args.uv
-    pipCmd = "uv pip" if uv else "pip"
     arg = arg.replace('>=', '==')
+    package = arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()
+    uv = uv and args.uv and not package.startswith('git+')
+    pipCmd = "uv pip" if uv else "pip"
     if not quiet and '-r ' not in arg:
-        log.info(f'Install: package="{arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()}" mode={"uv" if uv else "pip"}')
+        log.info(f'Install: package="{package}" mode={"uv" if uv else "pip"}')
     env_args = os.environ.get("PIP_EXTRA_ARGS", "")
     all_args = f'{pip_log}{arg} {env_args}'.strip()
     if not quiet:
@@ -376,10 +377,11 @@ def update(folder, keep_branch = False, rebase = True):
     else:
         res = git(f'pull origin {b} {arg}', folder)
         debug(f'Install update: folder={folder} branch={b} args={arg} {res}')
-    commit = extensions_commit.get(os.path.basename(folder), None)
-    if commit is not None:
-        res = git(f'checkout {commit}', folder)
-        debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
+    if not args.experimental:
+        commit = extensions_commit.get(os.path.basename(folder), None)
+        if commit is not None:
+            res = git(f'checkout {commit}', folder)
+            debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
     return res
 
 
@@ -454,7 +456,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '435f6b7e47c031f98b8374b1689e1abeb17bfdb6'
+    sha = '0d1d267b12e47b40b0e8f265339c76e0f45f8c49'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -489,7 +491,7 @@ def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
     install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
-    return os.environ.get('TORCH_COMMAND', 'torch==2.4.1+cu124 torchvision==0.19.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+    return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
@@ -546,11 +548,11 @@ def install_rocm_zluda():
             os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
             del args.device_id
 
-        log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
+        zluda_installer.set_default_agent(device)
         try:
-            if args.reinstall_zluda:
+            if args.reinstall:
                 zluda_installer.uninstall()
             zluda_path = zluda_installer.get_path()
             zluda_installer.install(zluda_path)
@@ -570,8 +572,10 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) >= 6.1: # assume the latest if version check fails
-            #torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm6.1')
+        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
+            # torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif rocm.version == "6.1": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
         elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
@@ -591,11 +595,11 @@ def install_rocm_zluda():
             install(ort_package, 'onnxruntime-training')
 
         if installed("torch") and device is not None:
-            if 'Flash attention' in opts.get('sdp_options'):
+            if 'Flash attention' in opts.get('sdp_options', ''):
                 if not installed('flash-attn'):
                     install(rocm.get_flash_attention_command(device), reinstall=True)
-            elif not args.experimental:
-                uninstall('flash-attn')
+            #elif not args.experimental:
+            #    uninstall('flash-attn')
 
         if device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
@@ -730,7 +734,7 @@ def check_torch():
             else:
                 if args.use_zluda:
                     log.warning("ZLUDA failed to initialize: no HIP SDK found")
-                log.info('Using CPU-only Torch')
+                log.warning('Torch: CPU-only version installed')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
         install(torch_command, 'torch torchvision', quiet=True)
@@ -817,6 +821,7 @@ def install_packages():
     log.info('Verifying packages')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip', quiet=True)
+    install('open-clip-torch', no_deps=True, quiet=True)
     # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', 'tensorflow==2.13.0')
     # tensorflow_package = os.environ.get('TENSORFLOW_PACKAGE', None)
     # if tensorflow_package is not None:
@@ -1134,6 +1139,28 @@ def check_ui(ver):
         os.chdir(cwd)
 
 
+def check_venv():
+    import site
+    pkg_path = [os.path.relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
+    log.debug(f'Packages: venv={os.path.relpath(sys.prefix)} site={pkg_path}')
+    for p in pkg_path:
+        invalid = []
+        for f in os.listdir(p):
+            if f.startswith('~'):
+                invalid.append(f)
+        if len(invalid) > 0:
+            log.warning(f'Packages: site="{p}" invalid={invalid} removing')
+        for f in invalid:
+            fn = os.path.join(p, f)
+            try:
+                if os.path.isdir(fn):
+                    shutil.rmtree(fn)
+                elif os.path.isfile(fn):
+                    os.unlink(fn)
+            except Exception as e:
+                log.error(f'Packages: site={p} invalid={f} error={e}')
+
+
 # check version of the main repo and optionally upgrade it
 def check_version(offline=False, reset=True): # pylint: disable=unused-argument
     if args.skip_all:
@@ -1229,39 +1256,44 @@ def check_timestamp():
 
 
 def add_args(parser):
-    group = parser.add_argument_group('Setup options')
-    group.add_argument('--reset', default = os.environ.get("SD_RESET",False), action='store_true', help = "Reset main repository to latest version, default: %(default)s")
-    group.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
-    group.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
-    group.add_argument('--quick', default = os.environ.get("SD_QUICK",False), action='store_true', help = "Bypass version checks, default: %(default)s")
-    group.add_argument('--use-directml', default = os.environ.get("SD_USEDIRECTML",False), action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
-    group.add_argument("--use-openvino", default = os.environ.get("SD_USEOPENVINO",False), action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
-    group.add_argument("--use-ipex", default = os.environ.get("SD_USEIPEX",False), action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
-    group.add_argument("--use-cuda", default = os.environ.get("SD_USECUDA",False), action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
-    group.add_argument("--use-rocm", default = os.environ.get("SD_USEROCM",False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
-    group.add_argument('--use-zluda', default=os.environ.get("SD_USEZLUDA", False), action='store_true', help = "Force use ZLUDA, AMD GPUs only, default: %(default)s")
-    group.add_argument("--use-xformers", default = os.environ.get("SD_USEXFORMERS",False), action='store_true', help="Force use xFormers cross-optimization, default: %(default)s")
-    group.add_argument('--skip-requirements', default = os.environ.get("SD_SKIPREQUIREMENTS",False), action='store_true', help = "Skips checking and installing requirements, default: %(default)s")
-    group.add_argument('--skip-extensions', default = os.environ.get("SD_SKIPEXTENSION",False), action='store_true', help = "Skips running individual extension installers, default: %(default)s")
-    group.add_argument('--skip-git', default = os.environ.get("SD_SKIPGIT",False), action='store_true', help = "Skips running all GIT operations, default: %(default)s")
-    group.add_argument('--skip-torch', default = os.environ.get("SD_SKIPTORCH",False), action='store_true', help = "Skips running Torch checks, default: %(default)s")
-    group.add_argument('--skip-all', default = os.environ.get("SD_SKIPALL",False), action='store_true', help = "Skips running all checks, default: %(default)s")
-    group.add_argument('--skip-env', default = os.environ.get("SD_SKIPENV",False), action='store_true', help = "Skips setting of env variables during startup, default: %(default)s")
-    group.add_argument('--experimental', default = os.environ.get("SD_EXPERIMENTAL",False), action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
-    group.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
-    group.add_argument('--reinstall-zluda', default = os.environ.get("SD_REINSTALL_ZLUDA",False), action='store_true', help = "Force reinstallation of ZLUDA, default: %(default)s")
-    group.add_argument('--test', default = os.environ.get("SD_TEST",False), action='store_true', help = "Run test only and exit")
-    group.add_argument('--version', default = False, action='store_true', help = "Print version information")
-    group.add_argument('--ignore', default = os.environ.get("SD_IGNORE",False), action='store_true', help = "Ignore any errors and attempt to continue")
-    group.add_argument('--safe', default = os.environ.get("SD_SAFE",False), action='store_true', help = "Run in safe mode with no user extensions")
-    group.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
+    group_setup = parser.add_argument_group('Setup')
+    group_setup.add_argument('--reset', default = os.environ.get("SD_RESET",False), action='store_true', help = "Reset main repository to latest version, default: %(default)s")
+    group_setup.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
+    group_setup.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
+    group_setup.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
+    group_setup.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
 
-    group = parser.add_argument_group('Logging options')
-    group.add_argument("--log", type=str, default=os.environ.get("SD_LOG", None), help="Set log file, default: %(default)s")
-    group.add_argument('--debug', default = os.environ.get("SD_DEBUG",False), action='store_true', help = "Run installer with debug logging, default: %(default)s")
-    group.add_argument("--profile", default=os.environ.get("SD_PROFILE", False), action='store_true', help="Run profiler, default: %(default)s")
-    group.add_argument('--docs', default=os.environ.get("SD_DOCS", False), action='store_true', help = "Mount API docs, default: %(default)s")
-    group.add_argument("--api-log", default=os.environ.get("SD_APILOG", False), action='store_true', help="Enable logging of all API requests, default: %(default)s")
+    group_startup = parser.add_argument_group('Startup')
+    group_startup.add_argument('--quick', default = os.environ.get("SD_QUICK",False), action='store_true', help = "Bypass version checks, default: %(default)s")
+    group_startup.add_argument('--skip-requirements', default = os.environ.get("SD_SKIPREQUIREMENTS",False), action='store_true', help = "Skips checking and installing requirements, default: %(default)s")
+    group_startup.add_argument('--skip-extensions', default = os.environ.get("SD_SKIPEXTENSION",False), action='store_true', help = "Skips running individual extension installers, default: %(default)s")
+    group_startup.add_argument('--skip-git', default = os.environ.get("SD_SKIPGIT",False), action='store_true', help = "Skips running all GIT operations, default: %(default)s")
+    group_startup.add_argument('--skip-torch', default = os.environ.get("SD_SKIPTORCH",False), action='store_true', help = "Skips running Torch checks, default: %(default)s")
+    group_startup.add_argument('--skip-all', default = os.environ.get("SD_SKIPALL",False), action='store_true', help = "Skips running all checks, default: %(default)s")
+    group_startup.add_argument('--skip-env', default = os.environ.get("SD_SKIPENV",False), action='store_true', help = "Skips setting of env variables during startup, default: %(default)s")
+
+    group_compute = parser.add_argument_group('Compute Engine')
+    group_compute.add_argument('--use-directml', default = os.environ.get("SD_USEDIRECTML",False), action='store_true', help = "Use DirectML if no compatible GPU is detected, default: %(default)s")
+    group_compute.add_argument("--use-openvino", default = os.environ.get("SD_USEOPENVINO",False), action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
+    group_compute.add_argument("--use-ipex", default = os.environ.get("SD_USEIPEX",False), action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
+    group_compute.add_argument("--use-cuda", default = os.environ.get("SD_USECUDA",False), action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
+    group_compute.add_argument("--use-rocm", default = os.environ.get("SD_USEROCM",False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
+    group_compute.add_argument('--use-zluda', default=os.environ.get("SD_USEZLUDA", False), action='store_true', help = "Force use ZLUDA, AMD GPUs only, default: %(default)s")
+    group_compute.add_argument("--use-xformers", default = os.environ.get("SD_USEXFORMERS",False), action='store_true', help="Force use xFormers cross-optimization, default: %(default)s")
+
+    group_diag = parser.add_argument_group('Diagnostics')
+    group_diag.add_argument('--safe', default = os.environ.get("SD_SAFE",False), action='store_true', help = "Run in safe mode with no user extensions")
+    group_diag.add_argument('--experimental', default = os.environ.get("SD_EXPERIMENTAL",False), action='store_true', help = "Allow unsupported versions of libraries, default: %(default)s")
+    group_diag.add_argument('--test', default = os.environ.get("SD_TEST",False), action='store_true', help = "Run test only and exit")
+    group_diag.add_argument('--version', default = False, action='store_true', help = "Print version information")
+    group_diag.add_argument('--ignore', default = os.environ.get("SD_IGNORE",False), action='store_true', help = "Ignore any errors and attempt to continue")
+
+    group_log = parser.add_argument_group('Logging')
+    group_log.add_argument("--log", type=str, default=os.environ.get("SD_LOG", None), help="Set log file, default: %(default)s")
+    group_log.add_argument('--debug', default = os.environ.get("SD_DEBUG",False), action='store_true', help = "Run installer with debug logging, default: %(default)s")
+    group_log.add_argument("--profile", default=os.environ.get("SD_PROFILE", False), action='store_true', help="Run profiler, default: %(default)s")
+    group_log.add_argument('--docs', default=os.environ.get("SD_DOCS", False), action='store_true', help = "Mount API docs, default: %(default)s")
+    group_log.add_argument("--api-log", default=os.environ.get("SD_APILOG", False), action='store_true', help="Enable logging of all API requests, default: %(default)s")
 
 
 def parse_args(parser):

@@ -44,7 +44,7 @@ def single_sample_to_image(sample, approximation=None):
             if sample.dtype == torch.bfloat16 and (approximation == 0 or approximation == 1):
                 sample = sample.to(torch.float16)
         except Exception as e:
-            warn_once(f'live preview: {e}')
+            warn_once(f'Preview: {e}')
 
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
@@ -82,7 +82,7 @@ def single_sample_to_image(sample, approximation=None):
             transform = T.ToPILImage()
             image = transform(x_sample)
         except Exception as e:
-            warn_once(f'live preview: {e}')
+            warn_once(f'Preview: {e}')
             image = Image.new(mode="RGB", size=(512, 512))
         return image
 

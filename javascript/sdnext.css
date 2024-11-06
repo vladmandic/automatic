@@ -38,7 +38,7 @@ td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 .gradio-button.secondary-down, .gradio-button.secondary-down:hover { box-shadow: 1px 1px 1px rgba(0,0,0,0.25) inset, 0px 0px 3px rgba(0,0,0,0.15) inset; }
 .gradio-button.secondary-down:hover { background: var(--button-secondary-background-fill-hover); color: var(--button-secondary-text-color-hover); }
 .gradio-button.tool { max-width: min-content; min-width: min-content !important; font-size: 20px !important; color: var(--body-text-color) !important; align-self: end; margin-bottom: 4px; }
-.gradio-checkbox { margin: 0.75em 1.5em 0 0; align-self: center; }
+.gradio-checkbox { margin-right: 1em !important; align-self: center; }
 .gradio-column { min-width: min(160px, 100%) !important; }
 .gradio-container { max-width: unset !important; padding: var(--block-label-padding) !important; }
 .gradio-container .prose a, .gradio-container .prose a:visited{ color: unset; text-decoration: none; }
@@ -203,7 +203,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #extensions .date { opacity: 0.85; font-size: var(--text-sm); }
 
 /* extra networks */
-#txt2img_extra_networks, #img2img_extra_networks, #control_extra_networks { width: 0; }
+.extra_networks_root { width: 0; position: absolute; height: auto; right: 0; top: 13em; z-index: 100; } /* default is sidebar view */
 .extra-networks { background: var(--background-color); padding: var(--block-label-padding); }
 .extra-networks > div { margin: 0; border-bottom: none !important; gap: 0.3em 0; }
 .extra-networks .second-line { display: flex; width: -moz-available; width: -webkit-fill-available; gap: 0.3em; box-shadow: var(--input-shadow); }
@@ -318,6 +318,13 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 #gallery_gallery img { object-fit: contain; height: 100% !important; }
 .gallery-sort { background: var(--input-background-fill) !important; margin: 0 !important; padding: 6px !important; }
 .gallery-sort:hover { background: var(--button-primary-background-fill-hover) !important; }
+
+/* changelog */
+#changelog_markdown { max-height: 55vh; margin-top: 1em; }
+#changelog_result { display: flex; margin-left: 1em; align-items: center; }
+.changelog_arrow { font-size: 2em; padding: 0.1em; cursor: pointer; height: 1em; background-color: var(--button-secondary-background-fill); }
+.changelog_arrow:hover { background-color: var(--button-primary-border-color-hover); }
+.changelog_highlight { background-color: var(--color-warning); }
 
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }

@@ -1,7 +1,7 @@
 import os
 import time
 from typing import Union
-from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, ControlNetModel
+from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPipeline, StableDiffusion3Pipeline, ControlNetModel
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
 from modules import errors, sd_models, devices, model_quant
@@ -50,7 +50,6 @@ predefined_sdxl = {
     'Depth Zoe XL': 'diffusers/controlnet-zoe-depth-sdxl-1.0',
     'Depth Mid XL': 'diffusers/controlnet-depth-sdxl-1.0-mid',
     'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/bin',
-    # 'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/OpenPoseXL2.safetensors',
     'Xinsir Union XL': 'xinsir/controlnet-union-sdxl-1.0',
     'Xinsir OpenPose XL': 'xinsir/controlnet-openpose-sdxl-1.0',
     'Xinsir Canny XL': 'xinsir/controlnet-canny-sdxl-1.0',
@@ -79,11 +78,20 @@ predefined_f1 = {
     "XLabs-AI Depth": 'XLabs-AI/flux-controlnet-depth-diffusers',
     "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
+predefined_sd3 = {
+    "InstantX Canny": 'InstantX/SD3-Controlnet-Canny',
+    "InstantX Pose": 'InstantX/SD3-Controlnet-Pose',
+    "InstantX Depth": 'InstantX/SD3-Controlnet-Depth',
+    "InstantX Tile": 'InstantX/SD3-Controlnet-Tile',
+    "Alimama Inpainting": 'alimama-creative/SD3-Controlnet-Inpainting',
+    "Alimama SoftEdge": 'alimama-creative/SD3-Controlnet-Softedge',
+}
 models = {}
 all_models = {}
 all_models.update(predefined_sd15)
 all_models.update(predefined_sdxl)
 all_models.update(predefined_f1)
+all_models.update(predefined_sd3)
 cache_dir = 'models/control/controlnet'
 
 
@@ -118,9 +126,11 @@ def list_models(refresh=False):
         models = ['None'] + list(predefined_sd15) + sorted(find_models())
     elif modules.shared.sd_model_type == 'f1':
         models = ['None'] + list(predefined_f1) + sorted(find_models())
+    elif modules.shared.sd_model_type == 'sd3':
+        models = ['None'] + list(predefined_sd3) + sorted(find_models())
     else:
         log.warning(f'Control {what} model list failed: unknown model type')
-        models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(find_models())
+        models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(predefined_f1) + sorted(predefined_sd3) + sorted(find_models())
     debug(f'Control list {what}: path={cache_dir} models={models}')
     return models
 
@@ -151,6 +161,8 @@ class ControlNet():
             from diffusers import ControlNetModel as model_class # pylint: disable=reimported # sdxl shares same model class
         elif modules.shared.sd_model_type == 'f1':
             from diffusers import FluxControlNetModel as model_class
+        elif modules.shared.sd_model_type == 'sd3':
+            from diffusers import SD3ControlNetModel as model_class
         else:
             log.error(f'Control {what}: type={modules.shared.sd_model_type} unsupported model')
             return None
@@ -247,7 +259,11 @@ class ControlNet():
 
 
 class ControlNetPipeline():
-    def __init__(self, controlnet: Union[ControlNetModel, list[ControlNetModel]], pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline, FluxPipeline], dtype = None):
+    def __init__(self,
+                 controlnet: Union[ControlNetModel, list[ControlNetModel]],
+                 pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline, FluxPipeline, StableDiffusion3Pipeline],
+                 dtype = None,
+                ):
         t0 = time.time()
         self.orig_pipeline = pipeline
         self.pipeline = None
@@ -289,6 +305,20 @@ class ControlNetPipeline():
                 text_encoder_2=pipeline.text_encoder_2,
                 tokenizer=pipeline.tokenizer,
                 tokenizer_2=pipeline.tokenizer_2,
+                transformer=pipeline.transformer,
+                scheduler=pipeline.scheduler,
+                controlnet=controlnet, # can be a list
+            )
+        elif detect.is_sd3(pipeline):
+            from diffusers import StableDiffusion3ControlNetPipeline
+            self.pipeline = StableDiffusion3ControlNetPipeline(
+                vae=pipeline.vae,
+                text_encoder=pipeline.text_encoder,
+                text_encoder_2=pipeline.text_encoder_2,
+                text_encoder_3=pipeline.text_encoder_3,
+                tokenizer=pipeline.tokenizer,
+                tokenizer_2=pipeline.tokenizer_2,
+                tokenizer_3=pipeline.tokenizer_3,
                 transformer=pipeline.transformer,
                 scheduler=pipeline.scheduler,
                 controlnet=controlnet, # can be a list

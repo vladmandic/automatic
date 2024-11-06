@@ -113,10 +113,9 @@ class APIProcess():
         images = []
         scores = []
         with self.queue_lock:
-            yolo.load()
-            faces = yolo.predict(image)
+            faces = yolo.predict('face-yolo8n', image)
             for face in faces:
-                images.append(encode_pil_to_base64(face.face))
+                images.append(encode_pil_to_base64(face.item))
                 scores.append(face.score)
         shared.state.end(api=False)
         return ResFace(images=images, scores=scores)

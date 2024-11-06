@@ -280,12 +280,13 @@ def options_section(section_identifier, options_dict):
     return options_dict
 
 
-def list_checkpoint_tiles():
+def list_checkpoint_titles():
     import modules.sd_models # pylint: disable=W0621
-    return modules.sd_models.checkpoint_tiles()
+    return modules.sd_models.checkpoint_titles()
 
 
-default_checkpoint = list_checkpoint_tiles()[0] if len(list_checkpoint_tiles()) > 0 else "model.safetensors"
+list_checkpoint_tiles = list_checkpoint_titles # alias for legacy typo
+default_checkpoint = list_checkpoint_titles()[0] if len(list_checkpoint_titles()) > 0 else "model.safetensors"
 
 
 def is_url(string):
@@ -393,7 +394,7 @@ def get_default_modes():
             elif gpu_memory <= 8:
                 cmd_opts.medvram = True
                 default_offload_mode = "model"
-                log.info(f"Device detect: memory={gpu_memory:.1f} ptimization=medvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
             else:
                 default_offload_mode = "none"
                 log.info(f"Device detect: memory={gpu_memory:.1f} optimization=none")
@@ -427,12 +428,12 @@ startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default
 
 options_templates.update(options_section(('sd', "Execution & Models"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
-    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
-    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
+    "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
     "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": shared_items.sd_te_items()}, refresh=shared_items.refresh_te_list),
-    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
     "sd_checkpoint_autodownload": OptionInfo(True, "Model auto-download on demand"),
     "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results", gr.Checkbox, {"visible": False}),
@@ -480,6 +481,7 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_expandable_segments": OptionInfo(False, "Torch expandable segments"),
+    "cuda_mem_fraction": OptionInfo(0.0, "Torch memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
     "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 
@@ -820,8 +822,8 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "detailer_conf": OptionInfo(0.6, "Min confidence", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05, "visible": False}),
     "detailer_max": OptionInfo(2, "Max detected", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1, "visible": False}),
     "detailer_iou": OptionInfo(0.5, "Max overlap", gr.Slider, {"minimum": 0, "maximum": 1.0, "step": 0.05, "visible": False}),
-    "detailer_min_size": OptionInfo(0, "Min object size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1, "visible": False}),
-    "detailer_max_size": OptionInfo(0, "Max object size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 1, "visible": False}),
+    "detailer_min_size": OptionInfo(0.0, "Min object size", gr.Slider, {"minimum": 0.1, "maximum": 1, "step": 0.05, "visible": False}),
+    "detailer_max_size": OptionInfo(1.0, "Max object size", gr.Slider, {"minimum": 0.1, "maximum": 1, "step": 0.05, "visible": False}),
     "detailer_padding": OptionInfo(20, "Item padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": False}),
     "detailer_blur": OptionInfo(10, "Item edge blur", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": False}),
     "detailer_strength": OptionInfo(0.5, "Detailer strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False}),
@@ -876,8 +878,9 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
 }))
 
 options_templates.update(options_section(('extra_networks', "Networks"), {
-    "extra_networks_sep1": OptionInfo("<h2>Extra networks UI</h2>", "", gr.HTML),
-    "extra_networks": OptionInfo(["All"], "Networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
+    "extra_networks_sep1": OptionInfo("<h2>Networks UI</h2>", "", gr.HTML),
+    "extra_networks_show": OptionInfo(True, "UI show on startup"),
+    "extra_networks": OptionInfo(["All"], "Available networks", gr.Dropdown, lambda: {"multiselect":True, "choices": ['All'] + [en.title for en in extra_networks]}),
     "extra_networks_sort": OptionInfo("Default", "Sort order", gr.Dropdown, {"choices": ['Default', 'Name [A-Z]', 'Name [Z-A]', 'Date [Newest]', 'Date [Oldest]', 'Size [Largest]', 'Size [Smallest]']}),
     "extra_networks_view": OptionInfo("gallery", "UI view", gr.Radio, {"choices": ["gallery", "list"]}),
     "extra_networks_card_cover": OptionInfo("sidebar", "UI position", gr.Radio, {"choices": ["cover", "inline", "sidebar"]}),
@@ -887,13 +890,18 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_card_square": OptionInfo(True, "UI disable variable aspect ratio"),
     "extra_networks_fetch": OptionInfo(True, "UI fetch network info on mouse-over"),
     "extra_networks_card_fit": OptionInfo("cover", "UI image contain method", gr.Radio, {"choices": ["contain", "cover", "fill"], "visible": False}),
-    "extra_networks_sep2": OptionInfo("<h2>Extra networks general</h2>", "", gr.HTML),
-    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
-    "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
+
+    "extra_networks_model_sep": OptionInfo("<h2>Models</h2>", "", gr.HTML),
+    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
+    "extra_networks_embed_sep": OptionInfo("<h2>Embeddings</h2>", "", gr.HTML),
     "diffusers_convert_embed": OptionInfo(False, "Auto-convert SD 1.5 embeddings to SDXL ", gr.Checkbox, {"visible": native}),
-    "extra_networks_sep3": OptionInfo("<h2>Extra networks settings</h2>", "", gr.HTML),
+    "extra_networks_styles_sep": OptionInfo("<h2>Styles</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
+    "extra_networks_wildcard_sep": OptionInfo("<h2>Wildcards</h2>", "", gr.HTML),
+    "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
+    "extra_networks_lora_sep": OptionInfo("<h2>LoRA</h2>", "", gr.HTML),
+    "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info"),
     "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
@@ -904,9 +912,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_quant": OptionInfo("NF4","LoRA precision in quantized models", gr.Radio, {"choices": ["NF4", "FP4"]}),
     "lora_functional": OptionInfo(False, "Use Kohya method for handling multiple LoRA", gr.Checkbox, { "visible": False }),
     "lora_load_gpu": OptionInfo(True if not cmd_opts.lowvram else False, "Load LoRA directly to GPU"),
-    "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support"),
+
+    "hypernetwork_enabled": OptionInfo(False, "Enable Hypernetwork support", gr.Checkbox, {"visible": False}),
     "sd_hypernetwork": OptionInfo("None", "Add hypernetwork to prompt", gr.Dropdown, { "choices": ["None"], "visible": False }),
-    "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
 }))
 
 options_templates.update(options_section((None, "Hidden options"), {
@@ -1100,7 +1108,7 @@ profiler = None
 opts = Options()
 config_filename = cmd_opts.config
 opts.load(config_filename)
-cmd_opts = cmd_args.compatibility_args(opts, cmd_opts)
+cmd_opts = cmd_args.settings_args(opts, cmd_opts)
 if cmd_opts.use_xformers:
     opts.data['cross_attention_optimization'] = 'xFormers'
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility

@@ -41,7 +41,7 @@ def create_ui():
         img2img_prompt, img2img_prompt_styles, img2img_negative_prompt, img2img_submit, img2img_reprocess, img2img_paste, img2img_extra_networks_button, img2img_token_counter, img2img_token_button, img2img_negative_token_counter, img2img_negative_token_button = ui_sections.create_toprow(is_img2img=True, id_part="img2img")
         img2img_prompt_img = gr.File(label="", elem_id="img2img_prompt_image", file_count="single", type="binary", visible=False)
 
-        with gr.Row(variant='compact', elem_id="img2img_extra_networks", visible=False) as extra_networks_ui:
+        with gr.Row(variant='compact', elem_id="img2img_extra_networks", elem_classes=["extra_networks_root"], visible=False) as extra_networks_ui:
             from modules import ui_extra_networks
             extra_networks_ui_img2img = ui_extra_networks.create_ui(extra_networks_ui, img2img_extra_networks_button, 'img2img', skip_indexing=shared.opts.extra_network_skip_indexing)
             timer.startup.record('ui-networks')
@@ -263,6 +263,7 @@ def create_ui():
                 (refiner_start, "Refiner start"),
                 # advanced
                 (cfg_scale, "CFG scale"),
+                (cfg_end, "CFG end"),
                 (image_cfg_scale, "Image CFG scale"),
                 (clip_skip, "Clip skip"),
                 (diffusers_guidance_rescale, "CFG rescale"),

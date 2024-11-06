@@ -90,6 +90,8 @@
     "getENActiveTab": "readonly",
     "quickApplyStyle": "readonly",
     "quickSaveStyle": "readonly",
+    "setupExtraNetworks": "readonly",
+    "showNetworks": "readonly",
     // from python
     "localization": "readonly",
     // progressbar.js
@@ -112,6 +114,8 @@
     "idbPut": "readonly",
     "idbDel": "readonly",
     "idbAdd": "readonly",
+    // changelog.js
+    "initChangelog": "readonly",
     // notification.js
     "sendNotification": "readonly"
   },

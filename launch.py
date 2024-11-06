@@ -164,7 +164,6 @@ def start_server(immediate=True, server=None):
     module_spec = importlib.util.spec_from_file_location('webui', 'webui.py')
     server = importlib.util.module_from_spec(module_spec)
     installer.log.debug(f'Starting module: {server}')
-    get_custom_args()
     module_spec.loader.exec_module(server)
     uvicorn = None
     if args.test:
@@ -209,6 +208,8 @@ def main():
         installer.log.info('Skipping GIT operations')
     installer.check_version()
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
+    installer.check_venv()
+    installer.log.info(f'Args: {sys.argv[1:]}')
     if not args.skip_env:
         installer.set_environment()
     if args.uv:
@@ -246,6 +247,7 @@ def main():
                 installer.log.warning(f'See log file for more details: {installer.log_file}')
     installer.extensions_preload(parser) # adds additional args from extensions
     args = installer.parse_args(parser)
+    get_custom_args()
 
     uv, instance = start_server(immediate=True, server=None)
     while True:
