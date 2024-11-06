@@ -27,6 +27,7 @@ exclude = [
     "modules/meissonic",
     "modules/omnigen",
     "modules/instantir",
+    "modules/consistory",
     "modules/pulid/eva_clip",
     "repositories",
     "extensions-builtin/sd-extension-chainner/nodes",
