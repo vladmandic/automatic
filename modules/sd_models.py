@@ -1083,9 +1083,9 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     # in some cases we want to reset the pipeline to parent as they dont have their own variants
     if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING:
         if n == 'StableDiffusionPAGPipeline':
-            new_pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
+            pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
         if n == 'StableDiffusionXLPAGPipeline':
-            new_pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
+            pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)

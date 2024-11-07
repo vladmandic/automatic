@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-06
+## Update for 2024-11-07
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
@@ -9,7 +9,7 @@ This release can be considered an LTS release before we kick off the next round 
   - add built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
     since changelog is the best up-to-date source of info  
     go to system -> changelog and search/highligh/navigate directly in UI!  
-
+  - major [Wiki](https://github.com/vladmandic/automatic/wiki) updates  
 - Integrations:
   - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
     - advanced method of face transfer with better quality as well as control over identity and appearance  
@@ -74,6 +74,7 @@ This release can be considered an LTS release before we kick off the next round 
     - added `cli/model-keys.py` to quicky display content of any safetensors file
   - Internal:
     - Repo: move screenshots to GH pages  
+    - Auto pipeline switching coveres wrapper classes and nested pipelines  
 
 - Fixes:  
   - custom watermark add alphablending  
