@@ -148,7 +148,8 @@ class ExtraNetworksPage:
             if self.title == 'Model':
                 return
             opt = xyz_grid.AxisOption(f"[Network] {self.title}", str, add_prompt, choices=lambda: [x["name"] for x in self.items])
-            xyz_grid.axis_options.append(opt)
+            if opt not in xyz_grid.axis_options:
+                xyz_grid.axis_options.append(opt)
 
     def link_preview(self, filename):
         quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
