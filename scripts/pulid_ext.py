@@ -30,8 +30,6 @@ class Script(scripts.Script):
             install('insightface', 'insightface', ignore=False)
             install('albumentations==1.4.3', 'albumentations', ignore=False, reinstall=True)
             install('pydantic==1.10.15', 'pydantic', ignore=False, reinstall=True)
-        # if not installed('apex', reload=False, quiet=True):
-        #     install('apex', 'apex', ignore=False)
 
     def register(self): # register xyz grid elements
         def apply_field(field):
@@ -74,8 +72,8 @@ class Script(scripts.Script):
             strength = gr.Slider(label = 'Strength', value = 0.8, mininimum = 0, maximum = 1, step = 0.01)
             zero = gr.Slider(label = 'Zero', value = 20, mininimum = 0, maximum = 80, step = 1)
         with gr.Row():
-            sampler = gr.Dropdown(label="Sampler", choices=['dpmpp_sde', 'dpmpp_2m'], value='dpmpp_sde', visible=True)
-            ortho = gr.Dropdown(label="Ortho", choices=['off', 'v1', 'v2'], value='v2', visible=True)
+            sampler = gr.Dropdown(label="Sampler", value='dpmpp_sde', choices=['dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2s_ancestral', 'dpmpp_3m_sde', 'dpmpp_sde', 'euler', 'euler_ancestral'])
+            ortho = gr.Dropdown(label="Ortho", choices=['off', 'v1', 'v2'], value='v2')
         with gr.Row():
             files = gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100)
         with gr.Row():
@@ -124,16 +122,17 @@ class Script(scripts.Script):
         strength = getattr(p, 'pulid_strength', strength)
         zero = getattr(p, 'pulid_zero', zero)
         ortho = getattr(p, 'pulid_ortho', ortho)
+        sampler = getattr(p, 'pulid_sampler', sampler)
+        sampler_fn = getattr(self.pulid.sampling, f'sample_{sampler}', None)
 
         if shared.sd_model_type == 'sdxl' and not hasattr(shared.sd_model, 'pipe'):
             try:
                 stdout = io.StringIO()
-                ctx = contextlib.nullcontext if debug else contextlib.redirect_stdout(stdout)
+                ctx = contextlib.nullcontext() if debug else contextlib.redirect_stdout(stdout)
                 with ctx:
                     shared.sd_model = self.pulid.StableDiffusionXLPuLIDPipeline(
                         pipe =shared.sd_model,
                         device=devices.device,
-                        sampler=sampler,
                         cache_dir=shared.opts.hfcache_dir,
                     )
                 shared.sd_model.no_recurse = True
@@ -146,6 +145,7 @@ class Script(scripts.Script):
                 errors.display(e, 'PuLID')
                 return None
 
+        shared.sd_model.sampler = sampler_fn
         shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler} images={[i.shape for i in images]}')
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
