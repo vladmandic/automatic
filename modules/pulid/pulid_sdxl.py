@@ -261,31 +261,25 @@ class StableDiffusionXLPuLIDPipeline:
         return latent
 
     def init_latent(self, seed, size, image, strength): # pylint: disable=unused-argument
+        # standard txt2img will full noise
+        noise = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
+        noise = noise.to(dtype=self.pipe.unet.dtype, device=self.device)
         if image is not None and strength > 0:
-            # TODO pulid img2img
-            # input can be PIL.Image or np.ndarray so it needs to be converted to rgb tensor
-            # image must be resized, encoded and noised according to denoising strength
-            # see below for example from StableDiffusionXLImg2ImgPipeline
-            latents = None
-            """
-            image = self.image_processor.preprocess(image)
-            latents = self.prepare_latents(
+            image = self.pipe.image_processor.preprocess(image)
+            latents = self.pipe.prepare_latents(
                 image,
-                latent_timestep,
-                batch_size,
-                num_images_per_prompt,
-                prompt_embeds.dtype,
-                device,
-                generator,
-                add_noise,
+                None,  # timestep (not needed)
+                1,  # batch_size
+                1,  # num_images_per_prompt
+                noise.dtype,
+                noise.device,
+                None,  # generator
+                False,  # add_noise
             )
-            """
-            raise NotImplementedError(f'PuLID: task=img2img class={self.__class__.__name__} pipe={self.pipe.__class__.__name__} image={image} strength={strength}')
         else:
-            # standard txt2img will full noise
-            latents = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
-            latents = latents.to(dtype=self.pipe.unet.dtype, device=self.device)
-        return latents
+            latents = torch.zeros_like(noise)
+
+        return latents, noise
 
     def __call__(
         self,
@@ -309,10 +303,14 @@ class StableDiffusionXLPuLIDPipeline:
         size = (1, height, width)
         # sigmas
         sigmas = self.get_sigmas_karras(num_inference_steps).to(self.device)
+        if image is not None and strength > 0:
+            _, num_inference_steps = self.pipe.get_timesteps(num_inference_steps, strength, self.device, None)  # denoising_start disabled
+            sigmas = sigmas[-(num_inference_steps + 1):].to(self.device) # shorten sigmas in i2i
+
 
         # latents
-        noise = self.init_latent(seed, size, image, strength)
-        latents = noise * sigmas[0].to(noise)
+        latents, noise = self.init_latent(seed, size, image, strength)
+        latents = latents + noise * sigmas[0].to(noise)
 
         (
             prompt_embeds,
