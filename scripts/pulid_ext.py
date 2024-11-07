@@ -191,9 +191,6 @@ class Script(scripts.Script):
             p.task_args['id_embedding'] = id_embedding
             p.task_args['uncond_id_embedding'] = uncond_id_embedding
             p.task_args['id_scale'] = strength
-            if len(getattr(p, 'init_images', [])) > 0:
-                p.task_args['image'] = p.init_images[0]
-                p.task_args['strength'] = p.denoising_strength
             p.extra_generation_params["PuLID"] = f'Strength={strength} Zero={zero} Ortho={ortho}'
             p.extra_generation_params["Sampler"] = sampler
             if getattr(p, 'xyz', False): # xyz will run its own processing

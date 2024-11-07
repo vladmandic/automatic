@@ -155,7 +155,6 @@ class StableDiffusionXLPuLIDPipeline:
             state_dict_dict[module][new_k] = v
 
         for module in state_dict_dict:
-            print(f'loading from {module}')
             getattr(self, module).load_state_dict(state_dict_dict[module], strict=True)
 
     def to_gray(self, img):
@@ -200,7 +199,6 @@ class StableDiffusionXLPuLIDPipeline:
             align_face = self.face_helper.cropped_faces[0]
             # incase insightface didn't detect face
             if id_ante_embedding is None:
-                print('fail to detect face using insightface, extract embedding on align face')
                 id_ante_embedding = self.handler_ante.get_feat(align_face)
 
             id_ante_embedding = torch.from_numpy(id_ante_embedding).to(self.device)
