@@ -32,9 +32,14 @@ class Script(scripts.Script):
 
         import sys
         xyz_classes = [v for k, v in sys.modules.items() if 'xyz_grid_classes' in k][0]
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] ETA", float, apply_field("apg_eta")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Momentum", float, apply_field("apg_momentum")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")))
+        options = [
+            xyz_classes.AxisOption("[APG] ETA", float, apply_field("apg_eta")),
+            xyz_classes.AxisOption("[APG] Momentum", float, apply_field("apg_momentum")),
+            xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")),
+        ]
+        for option in options:
+            if option not in xyz_classes.axis_options:
+                xyz_classes.axis_options.append(option)
 
     def run(self, p: processing.StableDiffusionProcessing, eta = 0.0, momentum = 0.0, threshold = 0.0): # pylint: disable=arguments-differ
         supported_model_list = ['sd', 'sdxl', 'sc']

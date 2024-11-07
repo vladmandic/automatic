@@ -40,9 +40,15 @@ class Script(scripts.Script):
 
         import sys
         xyz_classes = [v for k, v in sys.modules.items() if 'xyz_grid_classes' in k][0]
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[PuLID] Strength", float, apply_field("pulid_strength")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[PuLID] Zero", int, apply_field("pulid_zero")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[PuLID] Ortho", str, apply_field("pulid_ortho"), choices=lambda: ['off', 'v1', 'v2']))
+        options = [
+            xyz_classes.AxisOption("[PuLID] Strength", float, apply_field("pulid_strength")),
+            xyz_classes.AxisOption("[PuLID] Zero", int, apply_field("pulid_zero")),
+            xyz_classes.AxisOption("[PuLID] Ortho", str, apply_field("pulid_ortho"), choices=lambda: ['off', 'v1', 'v2']),
+        ]
+        for option in options:
+            if option not in xyz_classes.axis_options:
+                xyz_classes.axis_options.append(option)
+
 
     def load_images(self, files):
         self.images = []
