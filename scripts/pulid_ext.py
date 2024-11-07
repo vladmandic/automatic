@@ -8,6 +8,7 @@ from modules import shared, devices, errors, scripts, processing, processing_hel
 
 
 debug = os.environ.get('SD_PULID_DEBUG', None) is not None
+direct = False
 
 
 class Script(scripts.Script):
@@ -148,7 +149,7 @@ class Script(scripts.Script):
                     )
                 shared.sd_model.no_recurse = True
                 sd_models.copy_diffuser_options(shared.sd_model, shared.sd_model.pipe)
-                sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
+                # sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
                 sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
                 devices.torch_gc()
             except Exception as e:
@@ -165,7 +166,7 @@ class Script(scripts.Script):
         shared.sd_model.debug_img_list = []
         uncond_id_embedding, id_embedding = shared.sd_model.get_id_embedding(images)
 
-        if debug: # run pipeline directly
+        if direct: # run pipeline directly
             shared.state.begin('PuLID')
             processing.fix_seed(p)
             p.seed = processing_helpers.get_fixed_seed(p.seed)
