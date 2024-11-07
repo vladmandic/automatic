@@ -307,6 +307,7 @@ class StableDiffusionXLPuLIDPipeline:
         num_inference_steps: int=50,
         seed: int=-1,
         image: np.ndarray=None,
+        mask_image: np.ndarray=None,
         strength: float=0.3,
         id_embedding=None,
         uncond_id_embedding=None,
@@ -356,4 +357,22 @@ class StableDiffusionXLPuLIDPipeline:
         images = self.pipe.vae.decode(latents).sample
         images = self.pipe.image_processor.postprocess(images, output_type='pil')
 
+        if mask_image is not None:
+            # TODO: pulid inpaint
+            # easiest inpaint is to use normal img2img and then combine output with input using mask
+            # note that mask can be binary or grayscale (soft mask)
+            raise NotImplementedError('pulid: inpaint')
+
         return images
+
+
+class StableDiffusionXLPuLIDPipelineImage(StableDiffusionXLPuLIDPipeline):
+    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler=None, cache_dir=None): # pylint: disable=useless-parent-delegation
+        super().__init__(pipe, device, sampler, cache_dir)
+        # we dont do anything special here, just having different class so task-type can be detected/assigned
+
+
+class StableDiffusionXLPuLIDPipelineInpaint(StableDiffusionXLPuLIDPipeline):
+    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler=None, cache_dir=None): # pylint: disable=useless-parent-delegation
+        super().__init__(pipe, device, sampler, cache_dir)
+        # we dont do anything special here, just having different class so task-type can be detected/assigned

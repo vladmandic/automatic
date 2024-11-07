@@ -1062,7 +1062,6 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'AnimateDiffSDXLPipeline',
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
-        'StableDiffusionXLPuLIDPipeline',
         'InstantIRPipeline',
     ]
 
@@ -1084,6 +1083,13 @@ def set_diffuser_pipe(pipe, new_pipe_type):
             pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
         if n == 'StableDiffusionXLPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
+        if n == 'StableDiffusionXLPuLIDPipeline':
+            from modules import pulid
+            if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
+                pipe.__class__ = pulid.StableDiffusionXLPuLIDPipelineImage
+            else:
+                pipe.__class__ = pulid.StableDiffusionXLPuLIDPipelineInpaint
+            return pipe
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
     sd_model_checkpoint = getattr(pipe, "sd_model_checkpoint", None)
