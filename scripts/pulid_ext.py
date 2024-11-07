@@ -106,9 +106,10 @@ class Script(scripts.Script):
             try:
                 from modules import pulid # pylint: disable=redefined-outer-name
                 self.pulid = pulid
-                # from diffusers import pipelines
-                # pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["pilid"] = pulid.StableDiffusionXLPuLIDPipeline
-                # pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["omnigen"] = pulid.StableDiffusionXLPuLIDPipelineImg2Img
+                from diffusers import pipelines
+                pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING["pulid"] = pulid.StableDiffusionXLPuLIDPipeline
+                pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING["pulid"] = pulid.StableDiffusionXLPuLIDPipelineImage
+                pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING["pulid"] = pulid.StableDiffusionXLPuLIDPipelineInpaint
             except Exception as e:
                 shared.log.error(f'PuLID: failed to import library: {e}')
                 return None
@@ -124,6 +125,8 @@ class Script(scripts.Script):
         ortho = getattr(p, 'pulid_ortho', ortho)
         sampler = getattr(p, 'pulid_sampler', sampler)
         sampler_fn = getattr(self.pulid.sampling, f'sample_{sampler}', None)
+        if sampler_fn is None:
+            sampler_fn = self.pulid.sampling.sample_dpmpp_2m_sde
 
         if shared.sd_model_type == 'sdxl' and not hasattr(shared.sd_model, 'pipe'):
             try:
@@ -146,7 +149,7 @@ class Script(scripts.Script):
                 return None
 
         shared.sd_model.sampler = sampler_fn
-        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler} images={[i.shape for i in images]}')
+        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]}')
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
         self.pulid.attention.ORTHO_v2 = ortho == 'v2'
@@ -184,6 +187,7 @@ class Script(scripts.Script):
                 p.task_args['image'] = p.init_images[0]
                 p.task_args['strength'] = p.denoising_strength
             p.extra_generation_params["PuLID"] = f'Strength={strength} Zero={zero} Ortho={ortho}'
+            p.extra_generation_params["Sampler"] = sampler
             if getattr(p, 'xyz', False): # xyz will run its own processing
                 return None
             processed: processing.Processed = processing.process_images(p) # runs processing using main loop
