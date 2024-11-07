@@ -64,6 +64,10 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Comment": comment,
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }
+    if shared.opts.add_model_name_to_info and getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None:
+        args["Model"] = shared.sd_model.sd_checkpoint_info.model_name.replace(',', '').replace(':', '')
+    if shared.opts.add_model_hash_to_info and getattr(shared.sd_model, 'sd_model_hash', None) is not None:
+        args["Model hash"] = shared.sd_model.sd_model_hash
     # native
     if grid is None and (p.n_iter > 1 or p.batch_size > 1) and index >= 0:
         args['Index'] = f'{p.iteration + 1}x{index + 1}'

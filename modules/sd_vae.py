@@ -289,7 +289,7 @@ def reload_vae_weights(sd_model=None, vae_file=unspecified):
         if vae_file is not None:
             shared.log.info(f"VAE weights loaded: {vae_file}")
     else:
-        if hasattr(sd_model, "vae") and hasattr(sd_model, "sd_checkpoint_info"):
+        if hasattr(sd_model, "vae") and getattr(sd_model, "sd_checkpoint_info", None) is not None:
             vae = load_vae_diffusers(sd_model.sd_checkpoint_info.filename, vae_file, vae_source)
             if vae is not None:
                 if not hasattr(sd_model, 'original_vae'):

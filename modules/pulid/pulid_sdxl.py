@@ -91,14 +91,6 @@ class StableDiffusionXLPuLIDPipeline:
 
         if sampler is not None:
             self.sampler = sampler
-        """
-        if sampler == 'dpmpp_sde':
-            self.sampler = sample_dpmpp_sde
-        elif sampler == 'dpmpp_2m':
-            self.sampler = sample_dpmpp_2m
-        else:
-            raise NotImplementedError(f'sampler {sampler} not implemented')
-        """
 
     @property
     def sigma_min(self):
@@ -252,8 +244,8 @@ class StableDiffusionXLPuLIDPipeline:
     def set_progress_bar_config(self, bar_format: str = None, ncols: int = 80, colour: str = None):
         import functools
         from tqdm.auto import trange as trange_orig
-        import pulid_utils
-        pulid_utils.trange = functools.partial(trange_orig, bar_format=bar_format, ncols=ncols, colour=colour)
+        import pulid_sampling
+        pulid_sampling.trange = functools.partial(trange_orig, bar_format=bar_format, ncols=ncols, colour=colour)
 
     def sample(self, x, sigma, **extra_args):
         x_ddim_space = x / (sigma[:, None, None, None] ** 2 + self.sigma_data**2) ** 0.5
@@ -288,7 +280,7 @@ class StableDiffusionXLPuLIDPipeline:
                 add_noise,
             )
             """
-            raise NotImplementedError('pulid: img2img')
+            raise NotImplementedError(f'PuLID: task=img2img class={self.__class__.__name__} pipe={self.pipe.__class__.__name__} image={image} strength={strength}')
         else:
             # standard txt2img will full noise
             latents = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
@@ -359,7 +351,7 @@ class StableDiffusionXLPuLIDPipeline:
             # TODO: pulid inpaint
             # easiest inpaint is to use normal img2img and then combine output with input using mask
             # note that mask can be binary or grayscale (soft mask)
-            raise NotImplementedError('pulid: inpaint')
+            raise NotImplementedError(f'PuLID: task=inpaint class={self.__class__.__name__} pipe={self.pipe.__class__.__name__} mask_image={mask_image}')
 
         return images
 
