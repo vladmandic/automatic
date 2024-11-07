@@ -75,13 +75,15 @@ class Script(scripts.Script):
             sampler = gr.Dropdown(label="Sampler", value='dpmpp_sde', choices=['dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2s_ancestral', 'dpmpp_3m_sde', 'dpmpp_sde', 'euler', 'euler_ancestral'])
             ortho = gr.Dropdown(label="Ortho", choices=['off', 'v1', 'v2'], value='v2')
         with gr.Row():
+            cache = gr.Checkbox(label='Keep model', value=False)
+        with gr.Row():
             files = gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100)
         with gr.Row():
             gallery = gr.Gallery(show_label=False, value=[], visible=False, container=False, rows=1)
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
-        return [strength, zero, sampler, ortho, gallery]
+        return [strength, zero, sampler, ortho, gallery, cache]
 
-    def run(self, p: processing.StableDiffusionProcessing, strength: float = 0.8, zero: int = 20, sampler: str = 'dpmpp_sde', ortho: str = 'v2', gallery: list = []): # pylint: disable=arguments-differ
+    def run(self, p: processing.StableDiffusionProcessing, strength: float = 0.8, zero: int = 20, sampler: str = 'dpmpp_sde', ortho: str = 'v2', gallery: list = [], cache: bool = False): # pylint: disable=arguments-differ, unused-argument
         images = []
         try:
             if len(gallery) == 0:
@@ -197,6 +199,11 @@ class Script(scripts.Script):
         return processed
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
+        _strength, _zero, _sampler, _ortho, _gallery, cache = args
+        cache = getattr(p, 'pulid_cache', cache)
+        if cache:
+            shared.log.debug(f'PuLID cache: class={shared.sd_model.__class__.__name__}')
+            return processed
         if hasattr(shared.sd_model, 'pipe') and shared.sd_model_type == "sdxl":
             if hasattr(shared.sd_model, 'app'):
                 shared.sd_model.app = None
@@ -204,7 +211,7 @@ class Script(scripts.Script):
                 shared.sd_model.face_helper = None
                 shared.sd_model.clip_vision_model = None
                 shared.sd_model.handler_ante = None
-                devices.torch_gc(force=True)
             shared.sd_model = shared.sd_model.pipe
-            # shared.log.debug(f'PuLID restore: class={shared.sd_model.__class__.__name__}')
+            devices.torch_gc(force=True)
+            shared.log.debug(f'PuLID restore: class={shared.sd_model.__class__.__name__}')
         return processed
