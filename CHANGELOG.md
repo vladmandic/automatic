@@ -17,6 +17,7 @@ This release can be considered an LTS release before we kick off the next round 
     - select in *scripts -> pulid*  
     - compatible with *sdxl*  
     - can be used in xyz grid  
+    - *note*: this module contains several advanced features on top of original implementation  
   - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
     - alternative to traditional `img2img` with more control over restoration process  
     - select in *image -> scripts -> instantir*  

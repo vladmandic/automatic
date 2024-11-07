@@ -291,10 +291,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
 
 
 def set_accelerate_to_module(model):
-    for k in model._internal_dict.keys(): # pylint: disable=protected-access
-        component = getattr(model, k, None)
-        if isinstance(component, torch.nn.Module):
-            component.has_accelerate = True
+    if hasattr(model, "pipe"):
+        set_accelerate_to_module(model.pipe)
+    if hasattr(model, "_internal_dict"):
+        for k in model._internal_dict.keys(): # pylint: disable=protected-access
+            component = getattr(model, k, None)
+            if isinstance(component, torch.nn.Module):
+                component.has_accelerate = True
 
 
 def set_accelerate(sd_model):
@@ -397,6 +400,10 @@ def apply_balanced_offload(sd_model):
             return module
 
     def apply_balanced_offload_to_module(pipe):
+        if hasattr(pipe, "pipe"):
+            apply_balanced_offload_to_module(pipe.pipe)
+        if not hasattr(pipe, "_internal_dict"):
+            return
         for module_name in pipe._internal_dict.keys(): # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):

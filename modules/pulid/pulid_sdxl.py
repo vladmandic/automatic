@@ -19,13 +19,12 @@ from insightface.app import FaceAnalysis
 from eva_clip import create_model_and_transforms
 from eva_clip.constants import OPENAI_DATASET_MEAN, OPENAI_DATASET_STD
 from encoders_transformer import IDFormer
-from pulid_utils import sample_dpmpp_2m, sample_dpmpp_sde
 from attention_processor import AttnProcessor2_0 as AttnProcessor
 from attention_processor import IDAttnProcessor2_0 as IDAttnProcessor
 
 
 class StableDiffusionXLPuLIDPipeline:
-    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler='dpmpp_sde', cache_dir=None):
+    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler=None, cache_dir=None):
         super().__init__()
         self.device = device
         self.pipe = pipe
@@ -90,12 +89,16 @@ class StableDiffusionXLPuLIDPipeline:
         self.log_sigmas = self.sigmas.log()
         self.sigma_data = 1.0
 
+        if sampler is not None:
+            self.sampler = sampler
+        """
         if sampler == 'dpmpp_sde':
             self.sampler = sample_dpmpp_sde
         elif sampler == 'dpmpp_2m':
             self.sampler = sample_dpmpp_2m
         else:
             raise NotImplementedError(f'sampler {sampler} not implemented')
+        """
 
     @property
     def sigma_min(self):

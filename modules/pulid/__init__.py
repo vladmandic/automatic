@@ -8,3 +8,4 @@ sys.path.append(os.path.dirname(__file__))
 from pulid_sdxl import StableDiffusionXLPuLIDPipeline
 from pulid_utils import resize_numpy_image_long as resize
 import attention_processor as attention
+import pulid_sampling as sampling
