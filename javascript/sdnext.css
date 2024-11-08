@@ -326,6 +326,11 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 .changelog_arrow:hover { background-color: var(--button-primary-border-color-hover); }
 .changelog_highlight { background-color: var(--color-warning); }
 
+/* wiki */
+#wiki_result > div > div { padding: 0.5em; margin-right: 2em; }
+#wiki_result li { display: block; }
+#wiki_result h3 { background-color: var(--background-fill-primary); margin: 0; padding: 0.3em; margin-bottom: 0.2em; }
+
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }
 .motd { margin-top: 2em; color: var(--body-text-color-subdued); font-family: monospace; font-variant: all-petite-caps; }

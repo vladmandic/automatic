@@ -106,6 +106,8 @@ class APIGenerate():
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
             p.outpath_samples = shared.opts.outdir_samples or shared.opts.outdir_txt2img_samples
+            for key, value in getattr(txt2imgreq, "extra", {}).items():
+                setattr(p, key, value)
             shared.state.begin('API TXT', api=True)
             script_args = script.init_script_args(p, txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner)
             if selectable_scripts is not None:
@@ -150,6 +152,8 @@ class APIGenerate():
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_img2img_grids
             p.outpath_samples = shared.opts.outdir_img2img_samples
+            for key, value in getattr(img2imgreq, "extra", {}).items():
+                setattr(p, key, value)
             shared.state.begin('API-IMG', api=True)
             script_args = script.init_script_args(p, img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
             if selectable_scripts is not None:

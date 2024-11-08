@@ -210,6 +210,7 @@ ReqTxt2Img = PydanticModelGenerator(
         {"key": "alwayson_scripts", "type": dict, "default": {}},
         {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[ItemFace], "default": None, "exclude": True},
+        {"key": "extra", "type": Optional[dict], "default": {}, "exclude": True},
     ]
 ).generate_model()
 StableDiffusionTxt2ImgProcessingAPI = ReqTxt2Img
@@ -235,6 +236,7 @@ ReqImg2Img = PydanticModelGenerator(
         {"key": "alwayson_scripts", "type": dict, "default": {}},
         {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face_id", "type": Optional[ItemFace], "default": None, "exclude": True},
+        {"key": "extra", "type": Optional[dict], "default": {}, "exclude": True},
     ]
 ).generate_model()
 StableDiffusionImg2ImgProcessingAPI = ReqImg2Img
