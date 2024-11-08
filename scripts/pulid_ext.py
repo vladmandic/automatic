@@ -9,13 +9,15 @@ from modules import shared, devices, errors, scripts, processing, processing_hel
 
 debug = os.environ.get('SD_PULID_DEBUG', None) is not None
 direct = False
+registered = False
+uploaded_images = []
 
 
 class Script(scripts.Script):
     def __init__(self):
-        self.images = []
         self.pulid = None
         self.cache = None
+        self.mask_apply_overlay = shared.opts.mask_apply_overlay
         super().__init__()
         self.register() # pulid is script with processing override so xyz doesnt execute
 
@@ -33,6 +35,10 @@ class Script(scripts.Script):
             install('pydantic==1.10.15', 'pydantic', ignore=False, reinstall=True)
 
     def register(self): # register xyz grid elements
+        global registered # pylint: disable=global-statement
+        if registered:
+            return
+        registered = True
         def apply_field(field):
             def fun(p, x, xs): # pylint: disable=unused-argument
                 setattr(p, field, x)
@@ -52,7 +58,7 @@ class Script(scripts.Script):
 
 
     def load_images(self, files):
-        self.images = []
+        uploaded_images.clear()
         for file in files or []:
             try:
                 if isinstance(file, str):
@@ -66,10 +72,10 @@ class Script(scripts.Script):
                     image = Image.open(file.name) # _TemporaryFileWrapper from gr.Files
                 else:
                     raise ValueError(f'IP adapter unknown input: {file}')
-                self.images.append(image)
+                uploaded_images.append(image)
             except Exception as e:
                 shared.log.warning(f'IP adapter failed to load image: {e}')
-        return gr.update(value=self.images, visible=len(self.images) > 0)
+        return gr.update(value=uploaded_images, visible=len(uploaded_images) > 0)
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):
@@ -95,7 +101,7 @@ class Script(scripts.Script):
         try:
             if len(gallery) == 0:
                 from modules.api.api import decode_base64_to_image
-                images = getattr(p, 'pulid_images', self.images)
+                images = getattr(p, 'pulid_images', uploaded_images)
                 images = [decode_base64_to_image(image) if isinstance(image, str) else image for image in images]
             else:
                 images = [Image.open(f['name']) if isinstance(f, dict) else f for f in gallery]
@@ -134,6 +140,8 @@ class Script(scripts.Script):
         ortho = getattr(p, 'pulid_ortho', ortho)
         sampler = getattr(p, 'pulid_sampler', sampler)
         sampler_fn = getattr(self.pulid.sampling, f'sample_{sampler}', None)
+        self.mask_apply_overlay = shared.opts.mask_apply_overlay
+        shared.opts.data['mask_apply_overlay'] = False
         if sampler_fn is None:
             sampler_fn = self.pulid.sampling.sample_dpmpp_2m_sde
 
@@ -149,7 +157,7 @@ class Script(scripts.Script):
                     )
                 shared.sd_model.no_recurse = True
                 sd_models.copy_diffuser_options(shared.sd_model, shared.sd_model.pipe)
-                # sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
+                sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
                 sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
                 devices.torch_gc()
             except Exception as e:
@@ -204,11 +212,12 @@ class Script(scripts.Script):
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
         _strength, _zero, _sampler, _ortho, _gallery, cache = args
-        cache = getattr(p, 'pulid_cache', cache)
-        if cache:
-            shared.log.debug(f'PuLID cache: class={shared.sd_model.__class__.__name__}')
-            return processed
         if hasattr(shared.sd_model, 'pipe') and shared.sd_model_type == "sdxl":
+            shared.opts.data['mask_apply_overlay'] = self.mask_apply_overlay
+            cache = getattr(p, 'pulid_cache', cache)
+            if cache:
+                shared.log.debug(f'PuLID cache: class={shared.sd_model.__class__.__name__}')
+                return processed
             if hasattr(shared.sd_model, 'app'):
                 shared.sd_model.app = None
                 shared.sd_model.ip_adapter = None

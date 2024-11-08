@@ -486,7 +486,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 image = images.resize_image(self.resize_mode, image, self.width, self.height, upscaler_name=self.resize_name, context=self.resize_context)
                 self.width = image.width
                 self.height = image.height
-            if self.image_mask is not None and shared.opts.mask_apply_overlay:
+            if self.image_mask is not None and shared.opts.mask_apply_overlay and not hasattr(self, 'xyz'):
                 image_masked = Image.new('RGBa', (image.width, image.height))
                 image_to_paste = image.convert("RGBA").convert("RGBa")
                 image_to_mask = ImageOps.invert(self.mask_for_overlay.convert('L')) if self.mask_for_overlay is not None else None

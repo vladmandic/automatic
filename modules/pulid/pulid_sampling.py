@@ -393,8 +393,8 @@ def sample_dpmpp_2s_ancestral(model, x, sigmas, extra_args=None, callback=None, 
     extra_args = {} if extra_args is None else extra_args
     noise_sampler = default_noise_sampler(x) if noise_sampler is None else noise_sampler
     s_in = x.new_ones([x.shape[0]])
-    sigma_fn = lambda t: t.neg().exp()
-    t_fn = lambda sigma: sigma.log().neg()
+    sigma_fn = lambda t: t.neg().exp() # pylint: disable=C3001
+    t_fn = lambda sigma: sigma.log().neg() # pylint: disable=C3001
 
     for i in trange(len(sigmas) - 1, disable=disable):
         denoised = model(x, sigmas[i] * s_in, **extra_args)
@@ -430,8 +430,8 @@ def sample_dpmpp_sde(model, x, sigmas, extra_args=None, callback=None, disable=N
     noise_sampler = BrownianTreeNoiseSampler(x, sigma_min, sigma_max) if noise_sampler is None else noise_sampler
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
-    sigma_fn = lambda t: t.neg().exp()
-    t_fn = lambda sigma: sigma.log().neg()
+    sigma_fn = lambda t: t.neg().exp() # pylint: disable=C3001
+    t_fn = lambda sigma: sigma.log().neg() # pylint: disable=C3001
 
     for i in trange(len(sigmas) - 1, disable=disable):
         denoised = model(x, sigmas[i] * s_in, **extra_args)
@@ -472,8 +472,8 @@ def sample_dpmpp_2m(model, x, sigmas, extra_args=None, callback=None, disable=No
     """DPM-Solver++(2M)."""
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
-    sigma_fn = lambda t: t.neg().exp()
-    t_fn = lambda sigma: sigma.log().neg()
+    sigma_fn = lambda t: t.neg().exp() # pylint: disable=C3001
+    t_fn = lambda sigma: sigma.log().neg() # pylint: disable=C3001
     old_denoised = None
 
     for i in trange(len(sigmas) - 1, disable=disable):
