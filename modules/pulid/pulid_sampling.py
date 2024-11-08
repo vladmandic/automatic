@@ -67,6 +67,15 @@ def default_noise_sampler(x):
     return lambda sigma, sigma_next: torch.randn_like(x)
 
 
+def inpaint_mask(x, i, steps, mask_args):
+    noised_original = mask_args["latent"].clone().to(x)
+    latent_mask = mask_args["latent_mask"].to(x)
+    if i < steps:
+        noised_original += mask_args["noise"].to(x) * mask_args["sigmas"][i+1].to(x)
+    x = (latent_mask * x) + ((1 - latent_mask) * noised_original.to(x))
+    return x
+
+
 class BatchedBrownianTree:
     """A wrapper around torchsde.BrownianTree that enables batches of entropy."""
 
@@ -120,7 +129,7 @@ class BrownianTreeNoiseSampler:
 
 
 @torch.no_grad()
-def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1.):
+def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1., mask_args=None):
     """Implements Algorithm 2 (Euler steps) from Karras et al. (2022)."""
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
@@ -137,11 +146,13 @@ def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None,
         dt = sigmas[i + 1] - sigma_hat
         # Euler method
         x = x + (d * dt).to(x.dtype)
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
 @torch.no_grad()
-def sample_euler_ancestral(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None):
+def sample_euler_ancestral(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, mask_args=None):
     """Ancestral sampling with Euler method steps."""
     extra_args = {} if extra_args is None else extra_args
     noise_sampler = default_noise_sampler(x) if noise_sampler is None else noise_sampler
@@ -157,6 +168,8 @@ def sample_euler_ancestral(model, x, sigmas, extra_args=None, callback=None, dis
         x = x + (d * dt).to(x.dtype)
         if sigmas[i + 1] > 0:
             x = x + (noise_sampler(sigmas[i], sigmas[i + 1]) * s_noise * sigma_up).to(x.dtype)
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
@@ -375,7 +388,7 @@ class DPMSolver(nn.Module):
 
 
 @torch.no_grad()
-def sample_dpmpp_2s_ancestral(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None):
+def sample_dpmpp_2s_ancestral(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, mask_args=None):
     """Ancestral sampling with DPM-Solver++(2S) second-order steps."""
     extra_args = {} if extra_args is None else extra_args
     noise_sampler = default_noise_sampler(x) if noise_sampler is None else noise_sampler
@@ -405,11 +418,13 @@ def sample_dpmpp_2s_ancestral(model, x, sigmas, extra_args=None, callback=None, 
         # Noise addition
         if sigmas[i + 1] > 0:
             x = x + noise_sampler(sigmas[i], sigmas[i + 1]) * s_noise * sigma_up
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
 @torch.no_grad()
-def sample_dpmpp_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, r=1 / 2):
+def sample_dpmpp_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, r=1 / 2, mask_args=None):
     """DPM-Solver++ (stochastic)."""
     sigma_min, sigma_max = sigmas[sigmas > 0].min(), sigmas.max()
     noise_sampler = BrownianTreeNoiseSampler(x, sigma_min, sigma_max) if noise_sampler is None else noise_sampler
@@ -447,11 +462,13 @@ def sample_dpmpp_sde(model, x, sigmas, extra_args=None, callback=None, disable=N
             denoised_d = (1 - fac) * denoised + fac * denoised_2
             x = (sigma_fn(t_next_) / sigma_fn(t)) * x - (t - t_next_).expm1() * denoised_d
             x = x + noise_sampler(sigma_fn(t), sigma_fn(t_next)) * s_noise * su
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
 @torch.no_grad()
-def sample_dpmpp_2m(model, x, sigmas, extra_args=None, callback=None, disable=None):
+def sample_dpmpp_2m(model, x, sigmas, extra_args=None, callback=None, disable=None, mask_args=None):
     """DPM-Solver++(2M)."""
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
@@ -473,11 +490,13 @@ def sample_dpmpp_2m(model, x, sigmas, extra_args=None, callback=None, disable=No
             denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised_d
         old_denoised = denoised
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
 @torch.no_grad()
-def sample_dpmpp_2m_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, solver_type='midpoint'):
+def sample_dpmpp_2m_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, solver_type='midpoint', mask_args=None):
     """DPM-Solver++(2M) SDE."""
 
     if solver_type not in {'heun', 'midpoint'}:
@@ -518,11 +537,13 @@ def sample_dpmpp_2m_sde(model, x, sigmas, extra_args=None, callback=None, disabl
 
         old_denoised = denoised
         h_last = h
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
 
 
 @torch.no_grad()
-def sample_dpmpp_3m_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None):
+def sample_dpmpp_3m_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, mask_args=None):
     """DPM-Solver++(3M) SDE."""
 
     sigma_min, sigma_max = sigmas[sigmas > 0].min(), sigmas.max()
@@ -568,4 +589,6 @@ def sample_dpmpp_3m_sde(model, x, sigmas, extra_args=None, callback=None, disabl
 
         denoised_1, denoised_2 = denoised, denoised_1
         h_1, h_2 = h, h_1
+        if mask_args is not None:
+            x = inpaint_mask(x, i, len(sigmas) - 2, mask_args)
     return x
