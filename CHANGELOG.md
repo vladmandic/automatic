@@ -18,7 +18,7 @@ This release can be considered an LTS release before we kick off the next round 
     - advanced method of face transfer with better quality as well as control over identity and appearance  
       try it out, likely the best quality available for sdxl models  
     - select in *scripts -> pulid*  
-    - compatible with *sdxl* for text-to-image and image-to-image  
+    - compatible with *sdxl* for text-to-image, image-to-image, inpaint and detailer workflows  
     - can be used in xyz grid  
     - *note*: this module contains several advanced features on top of original implementation  
   - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
