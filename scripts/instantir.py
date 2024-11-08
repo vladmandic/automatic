@@ -12,7 +12,7 @@ class Script(scripts.Script):
         self.orig_ip_unapply = None
 
     def title(self):
-        return 'InstantIR'
+        return 'InstantIR: Image Restoration'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False

@@ -7,14 +7,14 @@ from modules import shared, scripts, processing, processing_helpers, sd_models, 
 
 class Script(scripts.Script):
     def title(self):
-        return 'Ctrl-X'
+        return 'Ctrl-X: Controlling Structure and Appearance'
 
     def show(self, is_img2img):
         return shared.native
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/genforce/ctrl-x">&nbsp Ctrl-X</a><br>')
+            gr.HTML('<a href="https://github.com/genforce/ctrl-x">&nbsp Ctrl-X: Controlling Structure and Appearance</a><br>')
         with gr.Accordion(label='Structure', open=True):
             with gr.Row():
                 struct_prompt = gr.Textbox(label='Prompt', value='', rows=1)

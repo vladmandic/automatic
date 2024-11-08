@@ -46,14 +46,14 @@ text_encoder_path = None
 
 class Script(scripts.Script):
     def title(self):
-        return 'MuLan'
+        return 'MuLan: Multi Language Prompts'
 
     def show(self, is_img2img):
         return True if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/mulanai/MuLan">&nbsp MuLan</a><br>')
+            gr.HTML('<a href="https://github.com/mulanai/MuLan">&nbsp MuLan: Multi Language Prompts</a><br>')
         with gr.Row():
             selected_encoder = gr.Dropdown(label='Encoder', choices=ENCODERS, value=ENCODERS[0])
         return [selected_encoder]

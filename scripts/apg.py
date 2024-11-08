@@ -9,14 +9,14 @@ class Script(scripts.Script):
         self.register()
 
     def title(self):
-        return 'APG'
+        return 'APG: Adaptive Projected Guidance'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
 
     def ui(self, _is_img2img): # ui elements
         with gr.Row():
-            gr.HTML('<a href="https://arxiv.org/abs/2410.02416">&nbsp APG: Adaptive projected guidance</a><br>')
+            gr.HTML('<a href="https://arxiv.org/abs/2410.02416">&nbsp APG: Adaptive Projected Guidance</a><br>')
         with gr.Row():
             eta = gr.Slider(label="ETA", value=1.0, minimum=0, maximum=2.0, step=0.05)
             momentum = gr.Slider(label="Momentum", value=-0.50, minimum=-1.0, maximum=1.0, step=0.05)

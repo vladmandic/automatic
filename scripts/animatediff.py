@@ -189,7 +189,7 @@ def set_free_noise(frames):
 
 class Script(scripts.Script):
     def title(self):
-        return 'AnimateDiff'
+        return 'Video AnimateDiff'
 
     def show(self, is_img2img):
         # return scripts.AlwaysVisible if shared.native else False

@@ -20,7 +20,7 @@ class Script(scripts.Script):
         self.register() # pulid is script with processing override so xyz doesnt execute
 
     def title(self):
-        return 'PuLID'
+        return 'PuLID: ID Customization'
 
     def show(self, _is_img2img):
         return shared.native

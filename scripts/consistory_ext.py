@@ -22,7 +22,7 @@ class Script(scripts.Script):
         self.anchor_cache_second_stage = None
 
     def title(self):
-        return 'ConsiStory'
+        return 'ConsiStory: Consistent Image Generation'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native and shared.cmd_opts.experimental else False

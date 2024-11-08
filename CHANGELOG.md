@@ -58,6 +58,7 @@ This release can be considered an LTS release before we kick off the next round 
     - create video from generated grid images  
       supports all standard video types and interpolation  
   - UI:  
+    - better gallery and networks sidebar sizing
     - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
     - add show networks on startup setting  
     - better mapping of networks previews  
@@ -68,6 +69,8 @@ This release can be considered an LTS release before we kick off the next round 
     - Auto-remove invalid packages from `venv/site-packages`  
       e.g. packages starting with `~` which are left-over due to windows access violation  
     - Requirements: update  
+  - Scripts:
+    - More verbose descriptions for all scripts
   - Model loader:
     - Report modules included in safetensors when attempting to load a model  
   - CLI:  
