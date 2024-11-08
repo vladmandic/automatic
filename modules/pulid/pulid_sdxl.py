@@ -260,22 +260,40 @@ class StableDiffusionXLPuLIDPipeline:
             self.callback_on_step_end(self.pipe, step=self.step, timestep=t, kwargs={ 'latents': latent })
         return latent
 
-    def init_latent(self, seed, size, image, strength): # pylint: disable=unused-argument
+    def init_latent(self, seed, size, image, mask_image, strength, width, height): # pylint: disable=unused-argument
         # standard txt2img will full noise
         noise = torch.randn((size[0], 4, size[1] // 8, size[2] // 8), device="cpu", generator=torch.manual_seed(seed))
         noise = noise.to(dtype=self.pipe.unet.dtype, device=self.device)
-        if image is not None and strength > 0:
+        if strength > 0 and image is not None:
             image = self.pipe.image_processor.preprocess(image)
-            latents = self.pipe.prepare_latents(
-                image,
-                None,  # timestep (not needed)
-                1,  # batch_size
-                1,  # num_images_per_prompt
-                noise.dtype,
-                noise.device,
-                None,  # generator
-                False,  # add_noise
-            )
+            if mask_image is not None:  # Inpaint
+                latents = self.pipe.prepare_latents(1,  # batch_size,
+                                                    self.pipe.vae.config.latent_channels,  # num_channels_latents
+                                                    height,
+                                                    width,
+                                                    noise.dtype,
+                                                    noise.device,
+                                                    None,  # generator
+                                                    latents=None,
+                                                    image=image,
+                                                    timestep=1000,
+                                                    is_strength_max=False,
+                                                    add_noise=False,
+                                                    return_noise=False,
+                                                    return_image_latents=False,
+                                                    )
+                latents = latents[0]
+            else:  # img2img
+                latents = self.pipe.prepare_latents(image,
+                                                    None,  # timestep (not needed)
+                                                    1,  # batch_size
+                                                    1,  # num_images_per_prompt
+                                                    noise.dtype,
+                                                    noise.device,
+                                                    None,  # generator
+                                                    False,  # add_noise
+                                                    )
+
         else:
             latents = torch.zeros_like(noise)
 
@@ -309,8 +327,8 @@ class StableDiffusionXLPuLIDPipeline:
 
 
         # latents
-        latents, noise = self.init_latent(seed, size, image, strength)
-        latents = latents + noise * sigmas[0].to(noise)
+        latent, noise = self.init_latent(seed, size, image, mask_image, strength, width, height)
+        noisy_latent = latent + noise * sigmas[0].to(noise)
 
         (
             prompt_embeds,
@@ -339,17 +357,35 @@ class StableDiffusionXLPuLIDPipeline:
                 cross_attention_kwargs={'id_embedding': uncond_id_embedding, 'id_scale': id_scale},
             ),
         )
+        if mask_image is not None:
+            latent_mask = torch.Tensor(np.asarray(mask_image.convert("L").resize((noisy_latent.shape[-1], noisy_latent.shape[-2])))).reshape((noisy_latent.shape[-2], noisy_latent.shape[-1]))
+            latent_mask /= latent_mask.max()
+            mask_args = dict(
+                latent=latent,
+                latent_mask=latent_mask,
+                noise=noise,
+                sigmas=sigmas,
+            )
+        else:
+            mask_args = None
 
-        latents = self.sampler(self.sample, latents, sigmas, extra_args=sampler_kwargs, disable=False)
+        latents = self.sampler(self.sample, noisy_latent, sigmas, extra_args=sampler_kwargs, disable=False, mask_args=mask_args)
         latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device) / self.pipe.vae.config.scaling_factor
         images = self.pipe.vae.decode(latents).sample
         images = self.pipe.image_processor.postprocess(images, output_type='pil')
 
-        if mask_image is not None:
-            # TODO: pulid inpaint
-            # easiest inpaint is to use normal img2img and then combine output with input using mask
-            # note that mask can be binary or grayscale (soft mask)
-            raise NotImplementedError(f'PuLID: task=inpaint class={self.__class__.__name__} pipe={self.pipe.__class__.__name__} mask_image={mask_image}')
+        # Pixel space final mask
+        # if mask_image is not None:
+        #     # TODO: Fix XYZ
+        #      from PIL import Image
+        #     mask_image = np.asarray(mask_image.convert("L"))
+        #     mask_image = mask_image / mask_image.max()
+        #     mask_image = mask_image.reshape(1,mask_image.shape[0],mask_image.shape[1],1)
+        #     image = np.asarray(image).astype(mask_image.dtype)
+        #     images = np.asarray(images).astype(mask_image.dtype)
+        #     images = ((1 - mask_image) * image) + (mask_image * images)
+        #     images = images[0].round().astype(np.uint8)
+        #     images = [Image.fromarray(images)]
 
         return images
 
