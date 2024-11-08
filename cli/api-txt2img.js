@@ -20,23 +20,6 @@ const sd_options = {
   cfg_scale: 6,
   width: 512,
   height: 512,
-  /*
-  // enable second pass
-  enable_hr: true,
-  // second pass: upscale
-  hr_upscaler: 'SCUNet GAN',
-  hr_scale: 2.0,
-  // second pass: hires
-  hr_force: true,
-  hr_second_pass_steps: 20,
-  hr_sampler_name: 'UniPC',
-  denoising_strength: 0.5,
-  // second pass: refiner
-  refiner_steps: 5,
-  refiner_start: 0.8,
-  refiner_prompt: '',
-  refiner_negative: '',
-  */
   // api return options
   save_images: false,
   send_images: true,
@@ -55,7 +38,7 @@ async function main() {
     const json = await res.json();
     console.log('result:', json.info);
     for (const i in json.images) { // eslint-disable-line guard-for-in
-      const f = `/tmp/test-{${i}.jpg`;
+      const f = `/tmp/test-${i}.jpg`;
       fs.writeFileSync(f, atob(json.images[i]), 'binary');
       console.log('image saved:', f);
     }

@@ -40,8 +40,6 @@ def atomically_save_image():
         except Exception:
             shared.log.warning(f'Save: unknown image format: {extension}')
             image_format = 'JPEG'
-        if shared.opts.image_watermark_enabled or (shared.opts.image_watermark_position != 'none' and shared.opts.image_watermark_image != ''):
-            image = set_watermark(image, shared.opts.image_watermark)
         exifinfo = (exifinfo or "") if shared.opts.image_metadata else ""
         # additional metadata saved in files
         if shared.opts.save_txt and len(exifinfo) > 0:
@@ -153,6 +151,11 @@ def save_image(image,
         info = image.info.get(pnginfo_section_name, '')
     if info is not None:
         pnginfo[pnginfo_section_name] = info
+
+    wm_text = getattr(p, 'watermark_text', shared.opts.image_watermark)
+    wm_image = getattr(p, 'watermark_image', shared.opts.image_watermark_image)
+    image = set_watermark(image, wm_text, wm_image)
+
     params = script_callbacks.ImageSaveParams(image, p, filename, pnginfo)
     params.filename = namegen.sanitize(filename)
     dirname = os.path.dirname(params.filename)
@@ -369,45 +372,46 @@ def draw_overlay(im, text: str = '', y_offset: int = 0):
     return im
 
 
-def set_watermark(image, watermark):
-    if shared.opts.image_watermark_position != 'none': # visible watermark
-        wm_image = None
-        try:
-            wm_image = Image.open(shared.opts.image_watermark_image)
-            if wm_image.mode != 'RGBA':
-                wm_image = wm_image.convert('RGBA')
-        except Exception as e:
-            shared.log.warning(f'Set image watermark: fn="{shared.opts.image_watermark_image}" {e}')
-        if wm_image is not None:
-            if shared.opts.image_watermark_position == 'top/left':
-                position = (0, 0)
-            elif shared.opts.image_watermark_position == 'top/right':
-                position = (image.width - wm_image.width, 0)
-            elif shared.opts.image_watermark_position == 'bottom/left':
-                position = (0, image.height - wm_image.height)
-            elif shared.opts.image_watermark_position == 'bottom/right':
-                position = (image.width - wm_image.width, image.height - wm_image.height)
-            elif shared.opts.image_watermark_position == 'center':
-                position = ((image.width - wm_image.width) // 2, (image.height - wm_image.height) // 2)
-            else:
-                position = (random.randint(0, image.width - wm_image.width), random.randint(0, image.height - wm_image.height))
+def set_watermark(image, wm_text: str = None, wm_image: Image.Image = None):
+    if shared.opts.image_watermark_position != 'none' and wm_image is not None: # visible watermark
+        if isinstance(wm_image, str):
             try:
-                for x in range(wm_image.width):
-                    for y in range(wm_image.height):
-                        rgba = wm_image.getpixel((x, y))
-                        orig = image.getpixel((x+position[0], y+position[1]))
-                        # alpha blend
-                        a = rgba[3] / 255
-                        r = int(rgba[0] * a + orig[0] * (1 - a))
-                        g = int(rgba[1] * a + orig[1] * (1 - a))
-                        b = int(rgba[2] * a + orig[2] * (1 - a))
-                        if not a == 0:
-                            image.putpixel((x+position[0], y+position[1]), (r, g, b))
-                shared.log.debug(f'Set image watermark: fn="{shared.opts.image_watermark_image}" image={wm_image} position={position}')
+                wm_image = Image.open(wm_image)
             except Exception as e:
                 shared.log.warning(f'Set image watermark: image={wm_image} {e}')
+                return image
+        if isinstance(wm_image, Image.Image):
+            if wm_image.mode != 'RGBA':
+                wm_image = wm_image.convert('RGBA')
+        if shared.opts.image_watermark_position == 'top/left':
+            position = (0, 0)
+        elif shared.opts.image_watermark_position == 'top/right':
+            position = (image.width - wm_image.width, 0)
+        elif shared.opts.image_watermark_position == 'bottom/left':
+            position = (0, image.height - wm_image.height)
+        elif shared.opts.image_watermark_position == 'bottom/right':
+            position = (image.width - wm_image.width, image.height - wm_image.height)
+        elif shared.opts.image_watermark_position == 'center':
+            position = ((image.width - wm_image.width) // 2, (image.height - wm_image.height) // 2)
+        else:
+            position = (random.randint(0, image.width - wm_image.width), random.randint(0, image.height - wm_image.height))
+        try:
+            for x in range(wm_image.width):
+                for y in range(wm_image.height):
+                    rgba = wm_image.getpixel((x, y))
+                    orig = image.getpixel((x+position[0], y+position[1]))
+                    # alpha blend
+                    a = rgba[3] / 255
+                    r = int(rgba[0] * a + orig[0] * (1 - a))
+                    g = int(rgba[1] * a + orig[1] * (1 - a))
+                    b = int(rgba[2] * a + orig[2] * (1 - a))
+                    if not a == 0:
+                        image.putpixel((x+position[0], y+position[1]), (r, g, b))
+            shared.log.debug(f'Set image watermark: image={wm_image} position={position}')
+        except Exception as e:
+            shared.log.warning(f'Set image watermark: image={wm_image} {e}')
 
-    if shared.opts.image_watermark_enabled: # invisible watermark
+    if shared.opts.image_watermark_enabled and wm_text is not None: # invisible watermark
         from imwatermark import WatermarkEncoder
         wm_type = 'bytes'
         wm_method = 'dwtDctSvd'
@@ -416,16 +420,16 @@ def set_watermark(image, watermark):
         info = image.info
         data = np.asarray(image)
         encoder = WatermarkEncoder()
-        text = f"{watermark:<{length}}"[:length]
+        text = f"{wm_text:<{length}}"[:length]
         bytearr = text.encode(encoding='ascii', errors='ignore')
         try:
             encoder.set_watermark(wm_type, bytearr)
             encoded = encoder.encode(data, wm_method)
             image = Image.fromarray(encoded)
             image.info = info
-            shared.log.debug(f'Set invisible watermark: {watermark} method={wm_method} bits={wm_length}')
+            shared.log.debug(f'Set invisible watermark: {wm_text} method={wm_method} bits={wm_length}')
         except Exception as e:
-            shared.log.warning(f'Set invisible watermark error: {watermark} method={wm_method} bits={wm_length} {e}')
+            shared.log.warning(f'Set invisible watermark error: {wm_text} method={wm_method} bits={wm_length} {e}')
 
     return image
 
