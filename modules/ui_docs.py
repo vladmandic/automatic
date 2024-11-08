@@ -61,6 +61,6 @@ def create_ui_wiki():
         wiki_search = gr.Textbox(label="Search Wiki Pages", elem_id="wiki_search")
         wiki_search_btn = ui_components.ToolButton(value=ui_symbols.search, label="Search", elem_id="wiki_search_btn")
     with gr.Row():
-        wiki_result = gr.HTML(elem_id="wiki_result", value='test')
+        wiki_result = gr.HTML(elem_id="wiki_result", value='')
     wiki_search.submit(_js="wikiSearch", fn=search_github, inputs=[wiki_search], outputs=[wiki_result])
     wiki_search_btn.click(_js="wikiSearch", fn=search_github, inputs=[wiki_search], outputs=[wiki_result])
