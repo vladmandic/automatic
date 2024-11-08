@@ -181,6 +181,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
         model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
         model.scheduler.noise_sampler_seed = p.seeds # some schedulers have internal noise generator and do not use pipeline generator
+    if 'seed' in possible:
+        args['seed'] = p.seed
     if 'noise_sampler_seed' in possible:
         args['noise_sampler_seed'] = p.seeds
     if 'guidance_scale' in possible:
