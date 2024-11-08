@@ -132,6 +132,7 @@ axis_options = [
     AxisOption("[Postprocess] Upscaler", str, apply_upscaler, cost=0.4, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
     AxisOption("[Postprocess] Context", str, apply_context, choices=lambda: ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]),
     AxisOption("[Postprocess] Detailer", str, apply_detailer, fmt=format_value_add_label),
+    AxisOption("[Postprocess] Detailer strength", str, apply_field("detailer_strength")),
     AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
     AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),
     AxisOption("[HDR] Color", float, apply_field("hdr_color")),

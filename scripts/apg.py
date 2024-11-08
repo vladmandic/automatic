@@ -2,6 +2,9 @@ import gradio as gr
 from modules import scripts, processing, shared, sd_models
 
 
+registered = False
+
+
 class Script(scripts.Script):
     def __init__(self):
         super().__init__()
@@ -24,6 +27,10 @@ class Script(scripts.Script):
         return [eta, momentum, threshold]
 
     def register(self): # register xyz grid elements
+        global registered # pylint: disable=global-statement
+        if registered:
+            return
+        registered = True
         def apply_field(field):
             def fun(p, x, xs): # pylint: disable=unused-argument
                 setattr(p, field, x)

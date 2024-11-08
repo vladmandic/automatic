@@ -449,6 +449,9 @@ def move_model(model, device=None, force=False):
         devices.torch_gc()
         return
 
+    if hasattr(model, 'pipe'):
+        move_model(model.pipe, device, force)
+
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
         if device == devices.device and model.vae.device.type != "meta": # force vae back to gpu if not in txt2img mode
@@ -476,7 +479,8 @@ def move_model(model, device=None, force=False):
     try:
         t0 = time.time()
         try:
-            model.to(device)
+            if hasattr(model, 'to'):
+                model.to(device)
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
@@ -486,7 +490,8 @@ def move_model(model, device=None, force=False):
                         if hasattr(component, 'modules'):
                             for module in component.modules():
                                 try:
-                                    module.to(device)
+                                    if hasattr(module, 'to'):
+                                        module.to(device)
                                 except Exception as e2:
                                     if 'Cannot copy out of meta tensor' in str(e2):
                                         if os.environ.get('SD_MOVE_DEBUG', None):
