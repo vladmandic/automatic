@@ -1221,7 +1221,7 @@ class DemoFusionSDXLPipeline(DiffusionPipeline, FromSingleFileMixin, LoraLoaderM
 
 class Script(scripts.Script):
     def title(self):
-        return 'DemoFusion'
+        return 'DemoFusion: High-Resolution Image Generation'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
@@ -1229,7 +1229,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/PRIS-CV/DemoFusion">&nbsp DemoFusion</a><br>')
+            gr.HTML('<a href="https://github.com/PRIS-CV/DemoFusion">&nbsp DemoFusion: High-Resolution Image Generation</a><br>')
         with gr.Row():
             cosine_scale_1 = gr.Slider(minimum=0, maximum=5, step=0.1, value=3, label="Cosine scale 1")
             cosine_scale_2 = gr.Slider(minimum=0, maximum=5, step=0.1, value=1, label="Cosine scale 2")

@@ -23,7 +23,7 @@ MODELS = [
 
 class Script(scripts.Script):
     def title(self):
-        return 'Text-to-Video'
+        return 'Video: ModelScope'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False

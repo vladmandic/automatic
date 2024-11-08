@@ -9,14 +9,14 @@ class Script(scripts.Script):
     orig_pipe = None
 
     def title(self):
-        return 'K-Diffusion'
+        return 'K-Diffusion Samplers'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
 
     def ui(self, _is_img2img): # ui elements
         with gr.Row():
-            gr.HTML('<a href="https://github.com/crowsonkb/k-diffusion">&nbsp K-Diffusion samplers</a><br>')
+            gr.HTML('<a href="https://github.com/crowsonkb/k-diffusion">&nbsp K-Diffusion Samplers</a><br>')
         with gr.Row():
             sampler = gr.Dropdown(label="Sampler", choices=self.samplers())
         return [sampler]

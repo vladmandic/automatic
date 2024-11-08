@@ -1858,14 +1858,14 @@ MODELS = {
 
 class Script(scripts.Script):
     def title(self):
-        return 'Differential diffusion'
+        return 'Differential diffusion: Individual Pixel Strength'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/exx8/differential-diffusion">&nbsp Differential diffusion</a><br><span>Select a model for auto-preprocess or upload an image map</span><br>')
+            gr.HTML('<a href="https://github.com/exx8/differential-diffusion">&nbsp Differential diffusion: Individual Pixel Strength</a><br><span>Select a model for auto-preprocess or upload an image map</span><br>')
         with gr.Row():
             enabled = gr.Checkbox(label='Enabled', value=True)
             invert = gr.Checkbox(label='Mask invert', value=False)

@@ -9,7 +9,7 @@ debug = shared.log.trace if os.environ.get('SD_FACE_DEBUG', None) is not None el
 
 class Script(scripts.Script):
     def title(self):
-        return 'Face'
+        return 'Face: Multiple ID Transfers'
 
     def show(self, is_img2img):
         return True if shared.native else False
@@ -45,7 +45,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML("<span>&nbsp Face module</span><br>")
+            gr.HTML("<span>&nbsp Face: Multiple ID Transfers</span><br>")
         with gr.Row():
             mode = gr.Dropdown(label='Mode', choices=['None', 'FaceID', 'FaceSwap', 'InstantID', 'PhotoMaker'], value='None')
         with gr.Group(visible=False) as cfg_faceid:

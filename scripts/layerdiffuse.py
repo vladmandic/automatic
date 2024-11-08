@@ -5,7 +5,7 @@ from modules import shared, scripts, sd_models
 class Script(scripts.Script):
 
     def title(self):
-        return 'LayerDiffuse'
+        return 'LayerDiffuse: Transparent Image'
 
     def show(self, is_img2img):
         return True if shared.native else False
@@ -40,7 +40,7 @@ class Script(scripts.Script):
     def ui(self, _is_img2img):
         with gr.Row():
             gr.HTML("""
-                    <a href="https://github.com/rootonchair/diffuser_layerdiffuse">&nbsp LayerDiffuse</a><br><br>
+                    <a href="https://github.com/rootonchair/diffuser_layerdiffuse">&nbsp LayerDiffuse: Transparent Image</a><br><br>
                     <div>- Click Apply to model to apply LayerDiffuse to current model</div>
                     <div>- Click Reload model to remove LayerDiffuse from current model</div><br>
                     """)

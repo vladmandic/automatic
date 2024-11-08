@@ -5,7 +5,7 @@ from modules import scripts, processing, shared, devices, sd_models
 
 class Script(scripts.Script):
     def title(self):
-        return 'LEdits++'
+        return 'LEdits: Limitless Image Editing'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False
@@ -13,7 +13,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://leditsplusplus-project.static.hf.space/index.html">&nbsp LEdits++</a><br>')
+            gr.HTML('<a href="https://leditsplusplus-project.static.hf.space/index.html">&nbsp LEdits++: Limitless Image Editing</a><br>')
         with gr.Row():
             edit_start = gr.Slider(label='Edit start', minimum=0.0, maximum=1.0, step=0.01, value=0.1)
             edit_stop = gr.Slider(label='Edit stop', minimum=0.0, maximum=1.0, step=0.01, value=1.0)
