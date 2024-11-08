@@ -6,9 +6,11 @@ Smaller release just few days after the last one, but with some important fixes 
 This release can be considered an LTS release before we kick off the next round of major updates.  
 
 - Docs:  
-  - add built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
+  - UI built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
     since changelog is the best up-to-date source of info  
     go to system -> changelog and search/highligh/navigate directly in UI!  
+  - UI built-in [wiki](https://github.com/vladmandic/automatic/wiki)  
+    go to system -> wiki and search wiki pages directly in UI!  
   - major [Wiki](https://github.com/vladmandic/automatic/wiki) updates  
 - Integrations:
   - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
