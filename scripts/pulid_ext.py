@@ -174,10 +174,10 @@ class Script(scripts.Script):
         shared.sd_model.debug_img_list = []
         uncond_id_embedding, id_embedding = shared.sd_model.get_id_embedding(images)
 
+        p.seed = processing_helpers.get_fixed_seed(p.seed)
         if direct: # run pipeline directly
             shared.state.begin('PuLID')
             processing.fix_seed(p)
-            p.seed = processing_helpers.get_fixed_seed(p.seed)
             p.prompt = shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)
             p.negative_prompt = shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)
             with devices.inference_context():
