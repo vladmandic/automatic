@@ -167,13 +167,14 @@ class PromptEmbedder:
         pipe = prepare_model()
 
     def __call__(self, key, step=0):
-        batch = getattr(self, key)
+        batch = getattr(self, key) # for batch-size=1, len(batch)==1
         res = []
         for i in range(self.batchsize):
-            if len(batch[i]) == 0:
+            if len(batch[i]) == 0: # if not using prompt-scheduling, this will be len(batch[i])==1
                 return None
             else:
-                res.append(batch[i][step])
+                # causes error in callback
+                res.append(batch[i][step]) # and this requests element for specific step when called from callback - but self.scheduled_prompt==False so len(batch[i])==1 and step is list index out-of-bounds!
                 if step != 0:  # For Callback
                     res.append(batch[i][step])  # Diffusers internally doubles batch dimension
         return torch.cat(res)
