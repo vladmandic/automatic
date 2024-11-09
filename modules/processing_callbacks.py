@@ -73,7 +73,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
             if 'negative_prompt_embeds' in kwargs:
                 kwargs["negative_prompt_embeds"] = prompt_parser_diffusers.embedder("negative_prompt_embeds", step + 1)
         except Exception as e:
-            shared.log.debug(f"Callback: {e}")
+            debug_callback(f"Callback: {e}")
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
         if "PAG" in shared.sd_model.__class__.__name__:
             pipe._guidance_scale = 1.001 if pipe._guidance_scale > 1 else pipe._guidance_scale  # pylint: disable=protected-access

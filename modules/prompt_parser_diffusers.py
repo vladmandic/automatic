@@ -172,11 +172,12 @@ class PromptEmbedder:
         for i in range(self.batchsize):
             if len(batch[i]) == 0: # if not using prompt-scheduling, this will be len(batch[i])==1
                 return None
-            else:
-                # causes error in callback
+            try:
                 res.append(batch[i][step]) # and this requests element for specific step when called from callback - but self.scheduled_prompt==False so len(batch[i])==1 and step is list index out-of-bounds!
-                if step != 0:  # For Callback
-                    res.append(batch[i][step])  # Diffusers internally doubles batch dimension
+            except IndexError:
+                res.append(batch[i][0])
+            if step != 0:  # For Callback
+                res.append(res[-1])  # Diffusers internally doubles batch dimension
         return torch.cat(res)
 
 
