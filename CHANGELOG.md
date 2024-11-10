@@ -15,7 +15,7 @@ This release can be considered an LTS release before we kick off the next round 
   - major [Wiki](https://github.com/vladmandic/automatic/wiki) and [Home](https://github.com/vladmandic/automatic) updates  
 - Integrations:
   - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
-    - advanced method of face transfer with better quality as well as control over identity and appearance  
+    - advanced method of face id transfer with better quality as well as control over identity and appearance  
       try it out, likely the best quality available for sdxl models  
     - select in *scripts -> pulid*  
     - compatible with *sdxl* for text-to-image, image-to-image, inpaint and detailer workflows  
@@ -98,7 +98,8 @@ This release can be considered an LTS release before we kick off the next round 
   - fix network height in standard vs modern ui  
   - fix k-diff enum on startup  
   - fix text2video scripts  
-  - dont uninstall flash-attn
+  - dont uninstall flash-attn  
+  - ui css fixes  
   - move downloads of some auxillary models to hfcache instead of models folder  
 
 ## Update for 2024-10-29

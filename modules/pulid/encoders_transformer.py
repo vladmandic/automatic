@@ -32,10 +32,8 @@ class PerceiverAttentionCA(nn.Module):
         self.dim_head = dim_head
         self.heads = heads
         inner_dim = dim_head * heads
-
         self.norm1 = nn.LayerNorm(dim if kv_dim is None else kv_dim)
         self.norm2 = nn.LayerNorm(dim)
-
         self.to_q = nn.Linear(dim, inner_dim, bias=False)
         self.to_kv = nn.Linear(dim if kv_dim is None else kv_dim, inner_dim * 2, bias=False)
         self.to_out = nn.Linear(inner_dim, dim, bias=False)
@@ -50,12 +48,9 @@ class PerceiverAttentionCA(nn.Module):
         """
         x = self.norm1(x)
         latents = self.norm2(latents)
-
         b, seq_len, _ = latents.shape
-
         q = self.to_q(latents)
         k, v = self.to_kv(x).chunk(2, dim=-1)
-
         q = reshape_tensor(q, self.heads)
         k = reshape_tensor(k, self.heads)
         v = reshape_tensor(v, self.heads)
@@ -65,7 +60,6 @@ class PerceiverAttentionCA(nn.Module):
         weight = (q * scale) @ (k * scale).transpose(-2, -1)  # More stable with f16 than dividing afterwards
         weight = torch.softmax(weight.float(), dim=-1).type(weight.dtype)
         out = weight @ v
-
         out = out.permute(0, 2, 1, 3).reshape(b, seq_len, -1)
 
         return self.to_out(out)
@@ -78,10 +72,8 @@ class PerceiverAttention(nn.Module):
         self.dim_head = dim_head
         self.heads = heads
         inner_dim = dim_head * heads
-
         self.norm1 = nn.LayerNorm(dim if kv_dim is None else kv_dim)
         self.norm2 = nn.LayerNorm(dim)
-
         self.to_q = nn.Linear(dim, inner_dim, bias=False)
         self.to_kv = nn.Linear(dim if kv_dim is None else kv_dim, inner_dim * 2, bias=False)
         self.to_out = nn.Linear(inner_dim, dim, bias=False)
@@ -96,13 +88,10 @@ class PerceiverAttention(nn.Module):
         """
         x = self.norm1(x)
         latents = self.norm2(latents)
-
         b, seq_len, _ = latents.shape
-
         q = self.to_q(latents)
         kv_input = torch.cat((x, latents), dim=-2)
         k, v = self.to_kv(kv_input).chunk(2, dim=-1)
-
         q = reshape_tensor(q, self.heads)
         k = reshape_tensor(k, self.heads)
         v = reshape_tensor(v, self.heads)
@@ -112,7 +101,6 @@ class PerceiverAttention(nn.Module):
         weight = (q * scale) @ (k * scale).transpose(-2, -1)  # More stable with f16 than dividing afterwards
         weight = torch.softmax(weight.float(), dim=-1).type(weight.dtype)
         out = weight @ v
-
         out = out.permute(0, 2, 1, 3).reshape(b, seq_len, -1)
 
         return self.to_out(out)
@@ -145,7 +133,6 @@ class IDFormer(nn.Module):
         assert depth % 5 == 0
         self.depth = depth // 5
         scale = dim ** -0.5
-
         self.latents = nn.Parameter(torch.randn(1, num_queries, dim) * scale)
         self.proj_out = nn.Parameter(scale * torch.randn(dim, output_dim))
 
@@ -233,7 +220,6 @@ class IDEncoder(nn.Module):
                     nn.Linear(1024, context_dim),
                 ),
             )
-
             setattr(
                 self,
                 f'mapping_patch_{i}',

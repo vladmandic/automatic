@@ -153,6 +153,7 @@ class Script(scripts.Script):
 
         self.mask_apply_overlay = shared.opts.mask_apply_overlay
         shared.opts.data['mask_apply_overlay'] = False
+        sdp = shared.opts.cross_attention_optimization == "Scaled-Dot-Product"
         strength = getattr(p, 'pulid_strength', strength)
         zero = getattr(p, 'pulid_zero', zero)
         ortho = getattr(p, 'pulid_ortho', ortho)
@@ -173,7 +174,7 @@ class Script(scripts.Script):
                         providers=devices.onnx,
                         offload=offload,
                         version=version,
-                        sdp=shared.opts.cross_attention_optimization == "Scaled-Dot-Product",
+                        sdp=sdp,
                         cache_dir=shared.opts.hfcache_dir,
                     )
                 shared.sd_model.no_recurse = True
@@ -187,7 +188,7 @@ class Script(scripts.Script):
                 return None
 
         shared.sd_model.sampler = sampler_fn
-        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} version="{version}" strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]} offload={offload}')
+        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} version="{version}" sdp={sdp} strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]} offload={offload}')
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
         self.pulid.attention.ORTHO_v2 = ortho == 'v2'
