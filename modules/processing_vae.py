@@ -35,7 +35,7 @@ def create_latents(image, p, dtype=None, device=None):
 
 def full_vae_decode(latents, model):
     t0 = time.time()
-    if not hasattr(model, 'vae'):
+    if model is None or not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
     if debug:
@@ -170,7 +170,14 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
     elif full_quality and hasattr(shared.sd_model, "vae"):
-        decoded = full_vae_decode(latents=latents, model=shared.sd_model)
+        parent = shared.sd_model if hasattr(shared.sd_model, 'vae') else None
+        if hasattr(shared.sd_model, 'vae'):
+            parent = shared.sd_model
+        elif hasattr(shared.sd_model, 'pipe') and hasattr(shared.sd_model.pipe, 'vae'):
+            parent = shared.sd_model.pipe
+        else:
+            parent = None
+        decoded = full_vae_decode(latents=latents, model=parent)
     else:
         decoded = taesd_vae_decode(latents=latents)
 

@@ -402,9 +402,11 @@ def apply_balanced_offload(sd_model):
     def apply_balanced_offload_to_module(pipe):
         if hasattr(pipe, "pipe"):
             apply_balanced_offload_to_module(pipe.pipe)
-        if not hasattr(pipe, "_internal_dict"):
-            return
-        for module_name in pipe._internal_dict.keys(): # pylint: disable=protected-access
+        if hasattr(pipe, "_internal_dict"):
+            keys = pipe._internal_dict.keys() # pylint: disable=protected-access
+        else:
+            keys = get_signature(shared.sd_model).keys()
+        for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):
                 checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
