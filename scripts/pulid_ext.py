@@ -90,6 +90,8 @@ class Script(scripts.Script):
             sampler = gr.Dropdown(label="Sampler", value='dpmpp_sde', choices=['dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2s_ancestral', 'dpmpp_3m_sde', 'dpmpp_sde', 'euler', 'euler_ancestral'])
             ortho = gr.Dropdown(label="Ortho", choices=['off', 'v1', 'v2'], value='v2')
         with gr.Row():
+            version = gr.Dropdown(label="Version", value='v1.1', choices=['v1.0', 'v1.1'])
+        with gr.Row():
             restore = gr.Checkbox(label='Restore pipe on end', value=False)
             offload = gr.Checkbox(label='Offload face module', value=True)
         with gr.Row():
@@ -97,9 +99,20 @@ class Script(scripts.Script):
         with gr.Row():
             gallery = gr.Gallery(show_label=False, value=[], visible=False, container=False, rows=1)
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
-        return [strength, zero, sampler, ortho, gallery, restore, offload]
+        return [strength, zero, sampler, ortho, gallery, restore, offload, version]
 
-    def run(self, p: processing.StableDiffusionProcessing, strength: float = 0.8, zero: int = 20, sampler: str = 'dpmpp_sde', ortho: str = 'v2', gallery: list = [], restore: bool = False, offload: bool = True): # pylint: disable=arguments-differ, unused-argument
+    def run(
+            self,
+            p: processing.StableDiffusionProcessing,
+            strength: float = 0.8,
+            zero: int = 20,
+            sampler: str = 'dpmpp_sde',
+            ortho: str = 'v2',
+            gallery: list = [],
+            restore: bool = False,
+            offload: bool = True,
+            version: str = 'v1.1'
+        ): # pylint: disable=arguments-differ, unused-argument
         images = []
         try:
             if len(gallery) == 0:
@@ -154,11 +167,13 @@ class Script(scripts.Script):
                 ctx = contextlib.nullcontext() if debug else contextlib.redirect_stdout(stdout)
                 with ctx:
                     shared.sd_model = self.pulid.StableDiffusionXLPuLIDPipeline(
-                        pipe =shared.sd_model,
+                        pipe=shared.sd_model,
                         device=devices.device,
                         dtype=devices.dtype,
                         providers=devices.onnx,
                         offload=offload,
+                        version=version,
+                        sdp=shared.opts.cross_attention_optimization == "Scaled-Dot-Product",
                         cache_dir=shared.opts.hfcache_dir,
                     )
                 shared.sd_model.no_recurse = True
@@ -172,7 +187,7 @@ class Script(scripts.Script):
                 return None
 
         shared.sd_model.sampler = sampler_fn
-        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]} offload={offload}')
+        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} version="{version}" strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]} offload={offload}')
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
         self.pulid.attention.ORTHO_v2 = ortho == 'v2'
@@ -224,7 +239,7 @@ class Script(scripts.Script):
         return processed
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
-        _strength, _zero, _sampler, _ortho, _gallery, restore, _offload = args
+        _strength, _zero, _sampler, _ortho, _gallery, restore, _offload, _version = args
         if hasattr(shared.sd_model, 'pipe') and shared.sd_model_type == "sdxl":
             shared.opts.data['mask_apply_overlay'] = self.mask_apply_overlay
             restore = getattr(p, 'pulid_restore', restore)

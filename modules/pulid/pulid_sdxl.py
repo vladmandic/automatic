@@ -19,23 +19,28 @@ from insightface.app import FaceAnalysis
 
 from eva_clip import create_model_and_transforms
 from eva_clip.constants import OPENAI_DATASET_MEAN, OPENAI_DATASET_STD
-from encoders_transformer import IDFormer
-from attention_processor import AttnProcessor2_0 as AttnProcessor
-from attention_processor import IDAttnProcessor2_0 as IDAttnProcessor
+from encoders_transformer import IDFormer, IDEncoder
 
 
 class StableDiffusionXLPuLIDPipeline:
-    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, dtype: torch.dtype=None, providers: list=None, offload: bool=True, sampler=None, cache_dir=None):
+    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, dtype: torch.dtype=None, providers: list=None, offload: bool=True, sampler=None, cache_dir=None, sdp: bool=True, version: str='v1.1'):
         super().__init__()
         self.device = device
         self.dtype = dtype or torch.float16
         self.pipe = pipe
         self.cache_dir = cache_dir
         self.offload = offload
-        self.hack_unet_attn_layers(self.pipe.unet)
+        self.sdp = sdp
+        self.version = version
+        self.folder = 'models--ToTheBeginning--PuLID'
+
         self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
-        self.id_adapter = IDFormer().to(self.device, self.dtype)
+        if self.version == 'v1.1':
+            self.id_adapter = IDFormer().to(self.device, self.dtype)
+        else:
+            self.id_adapter = IDEncoder().to(self.device, self.dtype)
         self.providers = providers or ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        self.hack_unet_attn_layers(self.pipe.unet)
 
         # preprocessors
         # face align and parsing
@@ -63,11 +68,11 @@ class StableDiffusionXLPuLIDPipeline:
         self.eva_transform_std = eva_transform_std
 
         # antelopev2
-        local_dir = os.path.join(self.cache_dir, 'pulid', 'models', 'antelopev2')
+        local_dir = os.path.join(self.cache_dir, self.folder, 'models', 'antelopev2')
         _loc = snapshot_download('DIAMONIK7777/antelopev2', local_dir=local_dir)
         self.app = FaceAnalysis(
             name='antelopev2',
-            root=os.path.join(self.cache_dir, 'pulid'),
+            root=os.path.join(self.cache_dir, self.folder),
             providers=self.providers,
         )
         self.app.prepare(ctx_id=0, det_size=(640, 640))
@@ -119,6 +124,12 @@ class StableDiffusionXLPuLIDPipeline:
         return torch.cat([sigmas, sigmas.new_zeros([1])])
 
     def hack_unet_attn_layers(self, unet):
+        if self.sdp:
+            from attention_processor import AttnProcessor2_0 as AttnProcessor
+            from attention_processor import IDAttnProcessor2_0 as IDAttnProcessor
+        else:
+            from attention_processor import AttnProcessor
+            from attention_processor import IDAttnProcessor
         id_adapter_attn_procs = {}
         for name, _ in unet.attn_processors.items():
             cross_attention_dim = None if name.endswith("attn1.processor") else unet.config.cross_attention_dim
@@ -143,8 +154,12 @@ class StableDiffusionXLPuLIDPipeline:
         self.id_adapter_attn_layers = nn.ModuleList(unet.attn_processors.values())
 
     def load_pretrain(self):
-        ckpt_path = hf_hub_download('guozinan/PuLID', 'pulid_v1.1.safetensors', local_dir=os.path.join(self.cache_dir, 'pulid'))
-        state_dict = load_file(ckpt_path)
+        if self.version == 'v1.1':
+            ckpt_path = hf_hub_download('guozinan/PuLID', 'pulid_v1.1.safetensors', local_dir=os.path.join(self.cache_dir, self.folder))
+            state_dict = load_file(ckpt_path)
+        else:
+            ckpt_path = hf_hub_download('guozinan/PuLID', 'pulid_v1.bin', local_dir=os.path.join(self.cache_dir, self.folder))
+            state_dict = torch.load(ckpt_path, map_location="cpu")
         state_dict_dict = {}
         for k, v in state_dict.items():
             module = k.split('.')[0]
@@ -371,7 +386,10 @@ class StableDiffusionXLPuLIDPipeline:
         else:
             mask_args = None
 
+        # actual sampling loop
         latents = self.sampler(self.sample, noisy_latent, sigmas, extra_args=sampler_kwargs, disable=False, mask_args=mask_args)
+
+        # process output
         if output_type == 'latent':
             images = self.pipe.image_processor.postprocess(latents, output_type='latent')
         elif output_type == 'np':
