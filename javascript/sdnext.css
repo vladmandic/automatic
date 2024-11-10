@@ -13,11 +13,12 @@ footer { display: none; margin-top: 0 !important;}
 table { overflow-x: auto !important; overflow-y: auto !important; }
 td { border-bottom: none !important; padding: 0 0.5em !important; }
 tr { border-bottom: none !important; padding: 0 0.5em !important; }
+td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 textarea { overflow-y: auto !important; }
 span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
 input[type='color'] { width: 64px; height: 32px; }
-td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: 4px; }
 
 /* gradio elements */
 .block .padded:not(.gradio-accordion) { padding: 4px 0 0 0 !important; margin-right: 0; min-width: 90px !important; }
