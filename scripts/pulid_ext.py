@@ -1,5 +1,6 @@
 import io
 import os
+import time
 import contextlib
 import gradio as gr
 import numpy as np
@@ -18,6 +19,7 @@ class Script(scripts.Script):
         self.pulid = None
         self.cache = None
         self.mask_apply_overlay = shared.opts.mask_apply_overlay
+        self.preprocess = 0
         super().__init__()
         self.register() # pulid is script with processing override so xyz doesnt execute
 
@@ -88,15 +90,16 @@ class Script(scripts.Script):
             sampler = gr.Dropdown(label="Sampler", value='dpmpp_sde', choices=['dpmpp_2m', 'dpmpp_2m_sde', 'dpmpp_2s_ancestral', 'dpmpp_3m_sde', 'dpmpp_sde', 'euler', 'euler_ancestral'])
             ortho = gr.Dropdown(label="Ortho", choices=['off', 'v1', 'v2'], value='v2')
         with gr.Row():
-            cache = gr.Checkbox(label='Keep model', value=False)
+            restore = gr.Checkbox(label='Restore pipe on end', value=False)
+            offload = gr.Checkbox(label='Offload face module', value=True)
         with gr.Row():
             files = gr.File(label='Input images', file_count='multiple', file_types=['image'], type='file', interactive=True, height=100)
         with gr.Row():
             gallery = gr.Gallery(show_label=False, value=[], visible=False, container=False, rows=1)
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
-        return [strength, zero, sampler, ortho, gallery, cache]
+        return [strength, zero, sampler, ortho, gallery, restore, offload]
 
-    def run(self, p: processing.StableDiffusionProcessing, strength: float = 0.8, zero: int = 20, sampler: str = 'dpmpp_sde', ortho: str = 'v2', gallery: list = [], cache: bool = False): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, strength: float = 0.8, zero: int = 20, sampler: str = 'dpmpp_sde', ortho: str = 'v2', gallery: list = [], restore: bool = False, offload: bool = True): # pylint: disable=arguments-differ, unused-argument
         images = []
         try:
             if len(gallery) == 0:
@@ -135,13 +138,13 @@ class Script(scripts.Script):
             shared.log.warning('PuLID: batch size not supported')
             p.batch_size = 1
 
+        self.mask_apply_overlay = shared.opts.mask_apply_overlay
+        shared.opts.data['mask_apply_overlay'] = False
         strength = getattr(p, 'pulid_strength', strength)
         zero = getattr(p, 'pulid_zero', zero)
         ortho = getattr(p, 'pulid_ortho', ortho)
         sampler = getattr(p, 'pulid_sampler', sampler)
         sampler_fn = getattr(self.pulid.sampling, f'sample_{sampler}', None)
-        self.mask_apply_overlay = shared.opts.mask_apply_overlay
-        shared.opts.data['mask_apply_overlay'] = False
         if sampler_fn is None:
             sampler_fn = self.pulid.sampling.sample_dpmpp_2m_sde
 
@@ -153,6 +156,9 @@ class Script(scripts.Script):
                     shared.sd_model = self.pulid.StableDiffusionXLPuLIDPipeline(
                         pipe =shared.sd_model,
                         device=devices.device,
+                        dtype=devices.dtype,
+                        providers=devices.onnx,
+                        offload=offload,
                         cache_dir=shared.opts.hfcache_dir,
                     )
                 shared.sd_model.no_recurse = True
@@ -166,13 +172,20 @@ class Script(scripts.Script):
                 return None
 
         shared.sd_model.sampler = sampler_fn
-        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]}')
+        shared.log.info(f'PuLID: class={shared.sd_model.__class__.__name__} strength={strength} zero={zero} ortho={ortho} sampler={sampler_fn} images={[i.shape for i in images]} offload={offload}')
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
         self.pulid.attention.ORTHO_v2 = ortho == 'v2'
         images = [self.pulid.resize(image, 1024) for image in images]
         shared.sd_model.debug_img_list = []
+
+        # get id embedding used for attention
+        t0 = time.time()
         uncond_id_embedding, id_embedding = shared.sd_model.get_id_embedding(images)
+        if offload:
+            devices.torch_gc()
+        t1 = time.time()
+        self.preprocess = t1-t0
 
         p.seed = processing_helpers.get_fixed_seed(p.seed)
         if direct: # run pipeline directly
@@ -211,20 +224,18 @@ class Script(scripts.Script):
         return processed
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
-        _strength, _zero, _sampler, _ortho, _gallery, cache = args
+        _strength, _zero, _sampler, _ortho, _gallery, restore, _offload = args
         if hasattr(shared.sd_model, 'pipe') and shared.sd_model_type == "sdxl":
             shared.opts.data['mask_apply_overlay'] = self.mask_apply_overlay
-            cache = getattr(p, 'pulid_cache', cache)
-            if cache:
-                shared.log.debug(f'PuLID cache: class={shared.sd_model.__class__.__name__}')
-                return processed
-            if hasattr(shared.sd_model, 'app'):
-                shared.sd_model.app = None
-                shared.sd_model.ip_adapter = None
-                shared.sd_model.face_helper = None
-                shared.sd_model.clip_vision_model = None
-                shared.sd_model.handler_ante = None
-            shared.sd_model = shared.sd_model.pipe
-            devices.torch_gc(force=True)
-            shared.log.debug(f'PuLID restore: class={shared.sd_model.__class__.__name__}')
+            restore = getattr(p, 'pulid_restore', restore)
+            if restore:
+                if hasattr(shared.sd_model, 'app'):
+                    shared.sd_model.app = None
+                    shared.sd_model.ip_adapter = None
+                    shared.sd_model.face_helper = None
+                    shared.sd_model.clip_vision_model = None
+                    shared.sd_model.handler_ante = None
+                shared.sd_model = shared.sd_model.pipe
+                devices.torch_gc(force=True)
+            shared.log.debug(f'PuLID complete: class={shared.sd_model.__class__.__name__} preprocess={self.preprocess:.2f} pipe={"restore" if restore else "cache"}')
         return processed

@@ -2,7 +2,6 @@ import hashlib
 import os
 import urllib
 import warnings
-from functools import partial
 from typing import Dict, Union
 
 from tqdm import tqdm
@@ -277,7 +276,7 @@ def download_pretrained_from_url(
                 loop.update(len(buffer))
 
     if expected_sha256 and not hashlib.sha256(open(download_target, "rb").read()).hexdigest().startswith(expected_sha256):
-        raise RuntimeError(f"Model has been downloaded but the SHA256 checksum does not not match")
+        raise RuntimeError("Model has been downloaded but the SHA256 checksum does not not match")
 
     return download_target
 

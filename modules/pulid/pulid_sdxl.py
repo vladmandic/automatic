@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from diffusers import DPMSolverMultistepScheduler, StableDiffusionXLPipeline
+from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 
 from huggingface_hub import hf_hub_download, snapshot_download
 from safetensors.torch import load_file
@@ -24,14 +25,17 @@ from attention_processor import IDAttnProcessor2_0 as IDAttnProcessor
 
 
 class StableDiffusionXLPuLIDPipeline:
-    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, sampler=None, cache_dir=None):
+    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, dtype: torch.dtype=None, providers: list=None, offload: bool=True, sampler=None, cache_dir=None):
         super().__init__()
         self.device = device
+        self.dtype = dtype or torch.float16
         self.pipe = pipe
         self.cache_dir = cache_dir
+        self.offload = offload
         self.hack_unet_attn_layers(self.pipe.unet)
         self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
-        self.id_adapter = IDFormer().to(self.device)
+        self.id_adapter = IDFormer().to(self.device, self.dtype)
+        self.providers = providers or ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
         # preprocessors
         # face align and parsing
@@ -43,13 +47,12 @@ class StableDiffusionXLPuLIDPipeline:
             save_ext='png',
             device=self.device,
         )
-        self.face_helper.face_parse = None
         self.face_helper.face_parse = init_parsing_model(model_name='bisenet', device=self.device)
 
         # clip-vit backbone
-        model, _, _ = create_model_and_transforms('EVA02-CLIP-L-14-336', 'eva_clip', force_custom_clip=True)
-        model = model.visual
-        self.clip_vision_model = model.to(self.device)
+        eva_precision = 'fp16' if self.dtype == torch.float16 or self.dtype == torch.bfloat16 else 'fp32'
+        eva_model, _, _ = create_model_and_transforms('EVA02-CLIP-L-14-336', 'eva_clip', force_custom_clip=True, precision=eva_precision, device=self.device)
+        self.clip_vision_model = eva_model.visual.to(dtype=self.dtype)
         eva_transform_mean = getattr(self.clip_vision_model, 'image_mean', OPENAI_DATASET_MEAN)
         eva_transform_std = getattr(self.clip_vision_model, 'image_std', OPENAI_DATASET_STD)
         if not isinstance(eva_transform_mean, (list, tuple)):
@@ -60,13 +63,12 @@ class StableDiffusionXLPuLIDPipeline:
         self.eva_transform_std = eva_transform_std
 
         # antelopev2
-        # snapshot_download('DIAMONIK7777/antelopev2', local_dir='models/antelopev2')
         local_dir = os.path.join(self.cache_dir, 'pulid', 'models', 'antelopev2')
         _loc = snapshot_download('DIAMONIK7777/antelopev2', local_dir=local_dir)
         self.app = FaceAnalysis(
             name='antelopev2',
             root=os.path.join(self.cache_dir, 'pulid'),
-            providers=['CUDAExecutionProvider', 'CPUExecutionProvider'],
+            providers=self.providers,
         )
         self.app.prepare(ctx_id=0, det_size=(640, 640))
         self.handler_ante = insightface.model_zoo.get_model(os.path.join(local_dir, 'glintr100.onnx'))
@@ -89,8 +91,12 @@ class StableDiffusionXLPuLIDPipeline:
         self.log_sigmas = self.sigmas.log()
         self.sigma_data = 1.0
 
+        # default scheduler
         if sampler is not None:
             self.sampler = sampler
+        else:
+            from modules.pulid import sampling
+            self.sampler = sampling.sample_dpmpp_sde
 
     @property
     def sigma_min(self):
@@ -130,7 +136,7 @@ class StableDiffusionXLPuLIDPipeline:
                 id_adapter_attn_procs[name] = IDAttnProcessor(
                     hidden_size=hidden_size,
                     cross_attention_dim=cross_attention_dim,
-                ).to(unet.device)
+                ).to(unet.device, unet.dtype)
             else:
                 id_adapter_attn_procs[name] = AttnProcessor()
         unet.set_attn_processor(id_adapter_attn_procs)
@@ -144,7 +150,7 @@ class StableDiffusionXLPuLIDPipeline:
             module = k.split('.')[0]
             state_dict_dict.setdefault(module, {})
             new_k = k[len(module) + 1 :]
-            state_dict_dict[module][new_k] = v
+            state_dict_dict[module][new_k] = v.to(self.dtype)
 
         for module in state_dict_dict:
             getattr(self, module).load_state_dict(state_dict_dict[module], strict=True)
@@ -161,24 +167,17 @@ class StableDiffusionXLPuLIDPipeline:
         """
         id_cond_list = []
         id_vit_hidden_list = []
+        self.face_helper.face_det.to(self.device)
+        self.clip_vision_model.to(self.device)
         for _ii, image in enumerate(image_list):
             self.face_helper.clean_all()
             image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             # get antelopev2 embedding
             face_info = self.app.get(image_bgr)
             if len(face_info) > 0:
-                face_info = sorted(
-                    face_info, key=lambda x: (x['bbox'][2] - x['bbox'][0]) * (x['bbox'][3] - x['bbox'][1])
-                )[
-                    -1
-                ]  # only use the maximum face
+                face_info = sorted(face_info, key=lambda x: (x['bbox'][2] - x['bbox'][0]) * (x['bbox'][3] - x['bbox'][1]))[-1] # only use the maximum face
                 id_ante_embedding = face_info['embedding']
-                self.debug_img_list.append(
-                    image[
-                        int(face_info['bbox'][1]) : int(face_info['bbox'][3]),
-                        int(face_info['bbox'][0]) : int(face_info['bbox'][2]),
-                    ]
-                )
+                self.debug_img_list.append(image[int(face_info['bbox'][1]) : int(face_info['bbox'][3]), int(face_info['bbox'][0]) : int(face_info['bbox'][2])])
             else:
                 id_ante_embedding = None
 
@@ -210,13 +209,9 @@ class StableDiffusionXLPuLIDPipeline:
             self.debug_img_list.append(tensor2img(face_features_image, rgb2bgr=False))
 
             # transform img before sending to eva-clip-vit
-            face_features_image = resize(
-                face_features_image, self.clip_vision_model.image_size, InterpolationMode.BICUBIC
-            )
-            face_features_image = normalize(face_features_image, self.eva_transform_mean, self.eva_transform_std)
-            id_cond_vit, id_vit_hidden = self.clip_vision_model(
-                face_features_image, return_all_features=False, return_hidden=True, shuffle=False
-            )
+            face_features_image = resize(face_features_image, self.clip_vision_model.image_size, InterpolationMode.BICUBIC)
+            face_features_image = normalize(face_features_image, self.eva_transform_mean, self.eva_transform_std).to(self.dtype)
+            id_cond_vit, id_vit_hidden = self.clip_vision_model(face_features_image, return_all_features=False, return_hidden=True, shuffle=False)
             id_cond_vit_norm = torch.norm(id_cond_vit, 2, 1, True)
             id_cond_vit = torch.div(id_cond_vit, id_cond_vit_norm)
 
@@ -225,18 +220,24 @@ class StableDiffusionXLPuLIDPipeline:
             id_cond_list.append(id_cond)
             id_vit_hidden_list.append(id_vit_hidden)
 
-        id_uncond = torch.zeros_like(id_cond_list[0])
+        self.id_adapter.to(self.device)
+        id_uncond = torch.zeros_like(id_cond_list[0]).to(self.dtype)
         id_vit_hidden_uncond = []
         for layer_idx in range(0, len(id_vit_hidden_list[0])):
-            id_vit_hidden_uncond.append(torch.zeros_like(id_vit_hidden_list[0][layer_idx]))
+            id_vit_hidden_uncond.append(torch.zeros_like(id_vit_hidden_list[0][layer_idx]).to(self.dtype))
 
-        id_cond = torch.stack(id_cond_list, dim=1)
+        id_cond = torch.stack(id_cond_list, dim=1).to(self.dtype)
         id_vit_hidden = id_vit_hidden_list[0]
         for i in range(1, len(image_list)):
             for j, x in enumerate(id_vit_hidden_list[i]):
-                id_vit_hidden[j] = torch.cat([id_vit_hidden[j], x], dim=1)
+                id_vit_hidden[j] = torch.cat([id_vit_hidden[j], x], dim=1).to(self.dtype)
         id_embedding = self.id_adapter(id_cond, id_vit_hidden)
         uncond_id_embedding = self.id_adapter(id_uncond, id_vit_hidden_uncond)
+
+        if self.offload:
+            self.face_helper.face_det.to('cpu')
+            self.id_adapter.to('cpu')
+            self.clip_vision_model.to('cpu')
 
         # return id_embedding
         return uncond_id_embedding, id_embedding
@@ -314,6 +315,7 @@ class StableDiffusionXLPuLIDPipeline:
         id_embedding=None,
         uncond_id_embedding=None,
         id_scale: float=1.0,
+        output_type: str='pil',
         callback_on_step_end=None,
     ):
         self.step = 0 # pylint: disable=attribute-defined-outside-init
@@ -370,24 +372,15 @@ class StableDiffusionXLPuLIDPipeline:
             mask_args = None
 
         latents = self.sampler(self.sample, noisy_latent, sigmas, extra_args=sampler_kwargs, disable=False, mask_args=mask_args)
-        latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device) / self.pipe.vae.config.scaling_factor
-        images = self.pipe.vae.decode(latents).sample
-        images = self.pipe.image_processor.postprocess(images, output_type='pil')
-
-        # Pixel space final mask
-        # if mask_image is not None:
-        #     # TODO: Fix XYZ
-        #      from PIL import Image
-        #     mask_image = np.asarray(mask_image.convert("L"))
-        #     mask_image = mask_image / mask_image.max()
-        #     mask_image = mask_image.reshape(1,mask_image.shape[0],mask_image.shape[1],1)
-        #     image = np.asarray(image).astype(mask_image.dtype)
-        #     images = np.asarray(images).astype(mask_image.dtype)
-        #     images = ((1 - mask_image) * image) + (mask_image * images)
-        #     images = images[0].round().astype(np.uint8)
-        #     images = [Image.fromarray(images)]
-
-        return images
+        if output_type == 'latent':
+            images = self.pipe.image_processor.postprocess(latents, output_type='latent')
+        elif output_type == 'np':
+            images = self.pipe.image_processor.postprocess(latents, output_type='np')
+        else:
+            latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device) / self.pipe.vae.config.scaling_factor
+            images = self.pipe.vae.decode(latents).sample
+            images = self.pipe.image_processor.postprocess(images, output_type='pil')
+        return StableDiffusionXLPipelineOutput(images)
 
 
 class StableDiffusionXLPuLIDPipelineImage(StableDiffusionXLPuLIDPipeline):
