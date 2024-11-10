@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-08
+## Update for 2024-11-10
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
