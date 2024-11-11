@@ -63,6 +63,8 @@ This release can be considered an LTS release before we kick off the next round 
     - add show networks on startup setting  
     - better mapping of networks previews  
     - optimize networks display load  
+  - Image2image:
+    - integrated refine/upscale/hires workflow
 - Other:  
   - Installer:
     - Log `venv` and package search paths
