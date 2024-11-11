@@ -70,7 +70,7 @@ def control_run(state: str = '',
                 enable_hr: bool = False, hr_sampler_index: int = None, hr_denoising_strength: float = 0.3, hr_resize_mode: int = 0, hr_resize_context: str = 'None', hr_upscaler: str = None, hr_force: bool = False, hr_second_pass_steps: int = 20,
                 hr_scale: float = 1.0, hr_resize_x: int = 0, hr_resize_y: int = 0, refiner_steps: int = 5, refiner_start: float = 0.0, refiner_prompt: str = '', refiner_negative: str = '',
                 video_skip_frames: int = 0, video_type: str = 'None', video_duration: float = 2.0, video_loop: bool = False, video_pad: int = 0, video_interpolate: int = 0,
-                *input_script_args
+                *input_script_args,
         ):
     # handle optional initialization via ui
     for u in units:

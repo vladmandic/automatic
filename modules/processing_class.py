@@ -69,7 +69,6 @@ class StableDiffusionProcessing:
                  hdr_tint_ratio: float = 0,
                  # img2img
                  init_images: list = None,
-                 init_latent: Any = None,
                  resize_mode: int = 0,
                  resize_name: str = 'None',
                  resize_context: str = 'None',
@@ -80,7 +79,6 @@ class StableDiffusionProcessing:
                  selected_scale_tab: int = 0, # pylint: disable=unused-argument # a1111 compatibility
                  # inpaint
                  mask: Any = None,
-                 image_mask: Any = None,
                  latent_mask: Any = None,
                  mask_for_overlay: Any = None,
                  mask_blur: int = 4,
@@ -179,7 +177,7 @@ class StableDiffusionProcessing:
         self.image_cfg_scale = image_cfg_scale
         self.scale_by = scale_by
         self.mask = mask
-        self.image_mask = mask
+        self.image_mask = mask # TODO duplciate mask params
         self.latent_mask = latent_mask
         self.mask_blur = mask_blur
         self.inpainting_fill = inpainting_fill
@@ -221,6 +219,7 @@ class StableDiffusionProcessing:
         self.mask_for_overlay = mask_for_overlay
         self.paste_to = paste_to
         self.init_latent = None
+
         # special handled items
         if firstphase_width != 0 or firstphase_height != 0:
             self.hr_upscale_to_x = self.width
@@ -238,6 +237,7 @@ class StableDiffusionProcessing:
         self.all_negative_prompts = None
         self.all_seeds = None
         self.all_subseeds = None
+
         # ip adapter
         self.ip_adapter_names = []
         self.ip_adapter_scales = [0.0]
@@ -245,6 +245,7 @@ class StableDiffusionProcessing:
         self.ip_adapter_starts = [0.0]
         self.ip_adapter_ends = [1.0]
         self.ip_adapter_crops = []
+
         # a1111 compatibility items
         shared.opts.data['clip_skip'] = int(self.clip_skip) # for compatibility with a1111 sd_hijack_clip
         self.seed_enable_extras: bool = True,
@@ -263,12 +264,14 @@ class StableDiffusionProcessing:
         self.initial_noise_multiplier = initial_noise_multiplier or shared.opts.initial_noise_multiplier
         self.image_conditioning = None
         self.prompt_for_display: str = None
+
         # scripts
         self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
         self.script_args_value: list = field(default=None, init=False)
         self.scripts_setup_complete: bool = field(default=False, init=False)
         self.script_args = script_args
         self.per_script_args = {}
+
         # settings to processing
         self.ddim_discretize = shared.opts.ddim_discretize
         self.s_min_uncond = shared.opts.s_min_uncond
