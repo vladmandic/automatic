@@ -147,6 +147,7 @@ def taesd_vae_encode(image):
 
 def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
     t0 = time.time()
+    model = model or shared.sd_model
     if latents is None or not torch.is_tensor(latents): # already decoded
         return latents
     prev_job = shared.state.job
@@ -169,15 +170,8 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
 
     if latents.shape[-1] <= 4: # not a latent, likely an image
         decoded = latents.float().cpu().numpy()
-    elif full_quality and hasattr(shared.sd_model, "vae"):
-        parent = shared.sd_model if hasattr(shared.sd_model, 'vae') else None
-        if hasattr(shared.sd_model, 'vae'):
-            parent = shared.sd_model
-        elif hasattr(shared.sd_model, 'pipe') and hasattr(shared.sd_model.pipe, 'vae'):
-            parent = shared.sd_model.pipe
-        else:
-            parent = None
-        decoded = full_vae_decode(latents=latents, model=parent)
+    elif full_quality and hasattr(model, "vae"):
+        decoded = full_vae_decode(latents=latents, model=model)
     else:
         decoded = taesd_vae_decode(latents=latents)
 
