@@ -32,14 +32,14 @@ def load_bnb(msg='', silent=False):
     global bnb # pylint: disable=global-statement
     if bnb is not None:
         return bnb
-    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'Quantization: type=bitsandbytes fn={fn}') # pylint: disable=protected-access
     install('bitsandbytes', quiet=True)
     try:
         import bitsandbytes
         bnb = bitsandbytes
         diffusers.utils.import_utils._bitsandbytes_available = True # pylint: disable=protected-access
         diffusers.utils.import_utils._bitsandbytes_version = '0.43.3' # pylint: disable=protected-access
+        fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+        log.debug(f'Quantization: type=bitsandbytes version={bnb.__version__} fn={fn}') # pylint: disable=protected-access
         return bnb
     except Exception as e:
         if len(msg) > 0:
@@ -54,12 +54,12 @@ def load_quanto(msg='', silent=False):
     global quanto # pylint: disable=global-statement
     if quanto is not None:
         return quanto
-    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'Quantization: type=quanto fn={fn}') # pylint: disable=protected-access
     install('optimum-quanto', quiet=True)
     try:
         from optimum import quanto as optimum_quanto # pylint: disable=no-name-in-module
         quanto = optimum_quanto
+        fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+        log.debug(f'Quantization: type=quanto version={quanto.__version__} fn={fn}') # pylint: disable=protected-access
         return quanto
     except Exception as e:
         if len(msg) > 0:
