@@ -152,13 +152,14 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
         p.is_hr_pass = True
         if hasattr(p, 'init_hr'):
             p.init_hr(p.hr_scale, p.hr_upscaler, force=p.hr_force)
-        else: # fake hires for img2img
-            p.hr_scale = p.scale_by
-            p.hr_upscaler = p.resize_name
-            p.hr_resize_mode = p.resize_mode
-            p.hr_resize_context = p.resize_context
-            p.hr_upscale_to_x = p.width
-            p.hr_upscale_to_y = p.height
+        else:
+            if not p.is_hr_pass: # fake hires for img2img if not actual hr pass
+                p.hr_scale = p.scale_by
+                p.hr_upscaler = p.resize_name
+                p.hr_resize_mode = p.resize_mode
+                p.hr_resize_context = p.resize_context
+            p.hr_upscale_to_x = p.width * p.hr_scale if p.hr_resize_x == 0 else p.hr_resize_x
+            p.hr_upscale_to_y = p.height * p.hr_scale if p.hr_resize_y == 0 else p.hr_resize_y
         prev_job = shared.state.job
 
         # hires runs on original pipeline
