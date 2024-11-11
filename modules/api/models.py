@@ -11,14 +11,6 @@ API_NOT_ALLOWED = [
     "sd_model",
     "outpath_samples",
     "outpath_grids",
-    "sampler_index",
-    "extra_generation_params",
-    "overlay_images",
-    "do_not_reload_embeddings",
-    "seed_enable_extras",
-    "prompt_for_display",
-    "sampler_noise_scheduler_override",
-    "ddim_discretize"
 ]
 
 class ModelDef(BaseModel):

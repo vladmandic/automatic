@@ -145,7 +145,6 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         if self.active and networks.debug:
             shared.log.debug(f"Network end: type=LoRA load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
         if self.errors:
-            p.comment("Networks with errors: " + ", ".join(f"{k} ({v})" for k, v in self.errors.items()))
             for k, v in self.errors.items():
                 shared.log.error(f'LoRA: name="{k}" errors={v}')
             self.errors.clear()
