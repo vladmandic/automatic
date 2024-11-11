@@ -110,6 +110,9 @@ def setup_logging():
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",
         "inspect.value.border": "black",
+        "logging.level.info": "blue_violet",
+        "logging.level.debug": "purple4",
+        "logging.level.trace": "dark_blue",
     }))
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
