@@ -4,7 +4,7 @@ import insightface
 import numpy as np
 import torch
 import torch.nn as nn
-from diffusers import DPMSolverMultistepScheduler, StableDiffusionXLPipeline
+from diffusers import StableDiffusionXLPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 
 from huggingface_hub import hf_hub_download, snapshot_download
@@ -20,6 +20,10 @@ from insightface.app import FaceAnalysis
 from eva_clip import create_model_and_transforms
 from eva_clip.constants import OPENAI_DATASET_MEAN, OPENAI_DATASET_STD
 from encoders_transformer import IDFormer, IDEncoder
+from modules.errors import log
+
+
+debug = log.trace if os.environ.get('SD_PULID_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 class StableDiffusionXLPuLIDPipeline:
@@ -33,14 +37,17 @@ class StableDiffusionXLPuLIDPipeline:
         self.sdp = sdp
         self.version = version
         self.folder = 'models--ToTheBeginning--PuLID'
+        debug(f'PulID init: device={self.device} dtype={self.dtype} dir={self.cache_dir} offload={self.offload} sdp={self.sdp} version={self.version}')
 
-        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
+        # self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
+        self.hack_unet_attn_layers(self.pipe.unet)
         if self.version == 'v1.1':
             self.id_adapter = IDFormer().to(self.device, self.dtype)
         else:
             self.id_adapter = IDEncoder().to(self.device, self.dtype)
+        debug(f'PulID load: adapter={self.id_adapter.__class__.__name__}')
         self.providers = providers or ['CUDAExecutionProvider', 'CPUExecutionProvider']
-        self.hack_unet_attn_layers(self.pipe.unet)
+        debug(f'PulID load: providers={self.providers}')
 
         # preprocessors
         # face align and parsing
@@ -53,11 +60,13 @@ class StableDiffusionXLPuLIDPipeline:
             device=self.device,
         )
         self.face_helper.face_parse = init_parsing_model(model_name='bisenet', device=self.device)
+        debug(f'PulID load: facehelper={self.face_helper.__class__.__name__}')
 
         # clip-vit backbone
         eva_precision = 'fp16' if self.dtype == torch.float16 or self.dtype == torch.bfloat16 else 'fp32'
         eva_model, _, _ = create_model_and_transforms('EVA02-CLIP-L-14-336', 'eva_clip', force_custom_clip=True, precision=eva_precision, device=self.device)
         self.clip_vision_model = eva_model.visual.to(dtype=self.dtype)
+        debug(f'PulID load: evaclip={self.clip_vision_model.__class__.__name__} precision={eva_precision}')
         eva_transform_mean = getattr(self.clip_vision_model, 'image_mean', OPENAI_DATASET_MEAN)
         eva_transform_std = getattr(self.clip_vision_model, 'image_std', OPENAI_DATASET_STD)
         if not isinstance(eva_transform_mean, (list, tuple)):
@@ -75,9 +84,11 @@ class StableDiffusionXLPuLIDPipeline:
             root=os.path.join(self.cache_dir, self.folder),
             providers=self.providers,
         )
+        debug(f'PulID load: faceanalysis={_loc}')
         self.app.prepare(ctx_id=0, det_size=(640, 640))
         self.handler_ante = insightface.model_zoo.get_model(os.path.join(local_dir, 'glintr100.onnx'))
         self.handler_ante.prepare(ctx_id=0)
+        debug(f'PulID load: handler={self.handler_ante.__class__.__name__}')
 
         self.load_pretrain()
 
@@ -150,6 +161,7 @@ class StableDiffusionXLPuLIDPipeline:
                 ).to(unet.device, unet.dtype)
             else:
                 id_adapter_attn_procs[name] = AttnProcessor()
+        debug(f'PulID attention: cls={IDAttnProcessor} std={AttnProcessor} len={len(id_adapter_attn_procs.keys())}')
         unet.set_attn_processor(id_adapter_attn_procs)
         self.id_adapter_attn_layers = nn.ModuleList(unet.attn_processors.values())
 
@@ -160,6 +172,7 @@ class StableDiffusionXLPuLIDPipeline:
         else:
             ckpt_path = hf_hub_download('guozinan/PuLID', 'pulid_v1.bin', local_dir=os.path.join(self.cache_dir, self.folder))
             state_dict = torch.load(ckpt_path, map_location="cpu")
+        debug(f'PulID load: fn="{ckpt_path}"')
         state_dict_dict = {}
         for k, v in state_dict.items():
             module = k.split('.')[0]
@@ -255,6 +268,7 @@ class StableDiffusionXLPuLIDPipeline:
             self.clip_vision_model.to('cpu')
 
         # return id_embedding
+        debug(f'PulID embedding: cond={id_embedding.shape} uncond={uncond_id_embedding.shape}')
         return uncond_id_embedding, id_embedding
 
     def set_progress_bar_config(self, bar_format: str = None, ncols: int = 80, colour: str = None):
@@ -264,9 +278,10 @@ class StableDiffusionXLPuLIDPipeline:
         pulid_sampling.trange = functools.partial(trange_orig, bar_format=bar_format, ncols=ncols, colour=colour)
 
     def sample(self, x, sigma, **extra_args):
-        x_ddim_space = x / (sigma[:, None, None, None] ** 2 + self.sigma_data**2) ** 0.5
         t = self.timestep(sigma)
+        x_ddim_space = x / (sigma[:, None, None, None] ** 2 + self.sigma_data**2) ** 0.5
         cfg_scale = extra_args['cfg_scale']
+        debug(f'PulID sample start: step={self.step+1} x={x.shape} dtype={x.dtype} timestep={t.item()} sigma={sigma.shape} cfg={cfg_scale} args={extra_args.keys()}')
         eps_positive = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['positive'])[0]
         eps_negative = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['negative'])[0]
         noise_pred = eps_negative + cfg_scale * (eps_positive - eps_negative)
@@ -274,6 +289,7 @@ class StableDiffusionXLPuLIDPipeline:
         if self.callback_on_step_end is not None:
             self.step += 1
             self.callback_on_step_end(self.pipe, step=self.step, timestep=t, kwargs={ 'latents': latent })
+        debug(f'PulID sample end:   step={self.step} x={latent.shape} dtype={x.dtype} min={torch.amin(latent)} max={torch.amax(latent)}')
         return latent
 
     def init_latent(self, seed, size, image, mask_image, strength, width, height): # pylint: disable=unused-argument
@@ -299,6 +315,7 @@ class StableDiffusionXLPuLIDPipeline:
                                                     return_image_latents=False,
                                                     )
                 latents = latents[0]
+                debug(f'PulID noise: op=inpaint latent={latents.shape} image={image} mask={mask_image} dtype={latents.dtype}')
             else:  # img2img
                 latents = self.pipe.prepare_latents(image,
                                                     None,  # timestep (not needed)
@@ -309,10 +326,10 @@ class StableDiffusionXLPuLIDPipeline:
                                                     None,  # generator
                                                     False,  # add_noise
                                                     )
-
+                debug(f'PulID noise: op=img2img latent={latents.shape} image={image} dtype={latents.dtype}')
         else:
             latents = torch.zeros_like(noise)
-
+            debug(f'PulID noise: op=txt2img latent={latents.shape} dtype={latents.dtype}')
         return latents, noise
 
     def __call__(
@@ -333,6 +350,7 @@ class StableDiffusionXLPuLIDPipeline:
         output_type: str='pil',
         callback_on_step_end=None,
     ):
+        debug(f'PulID call: width={width} height={height} cfg={guidance_scale} steps={num_inference_steps} seed={seed} strength={strength} id_scale={id_scale} output={output_type}')
         self.step = 0 # pylint: disable=attribute-defined-outside-init
         self.callback_on_step_end = callback_on_step_end # pylint: disable=attribute-defined-outside-init
         size = (1, height, width)
@@ -341,11 +359,12 @@ class StableDiffusionXLPuLIDPipeline:
         if image is not None and strength > 0:
             _, num_inference_steps = self.pipe.get_timesteps(num_inference_steps, strength, self.device, None)  # denoising_start disabled
             sigmas = sigmas[-(num_inference_steps + 1):].to(self.device) # shorten sigmas in i2i
-
+        debug(f'PulID sigmas: sigmas={sigmas.shape} dtype={sigmas.dtype}')
 
         # latents
         latent, noise = self.init_latent(seed, size, image, mask_image, strength, width, height)
         noisy_latent = latent + noise * sigmas[0].to(noise)
+        debug(f'PulID noisy: latent={noisy_latent.shape} dtype={noisy_latent.dtype}')
 
         (
             prompt_embeds,
@@ -390,14 +409,17 @@ class StableDiffusionXLPuLIDPipeline:
         latents = self.sampler(self.sample, noisy_latent, sigmas, extra_args=sampler_kwargs, disable=False, mask_args=mask_args)
 
         # process output
+        latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device)
+        debug(f'PulID output: latent={latents.shape} dtype={latents.dtype}')
         if output_type == 'latent':
             images = self.pipe.image_processor.postprocess(latents, output_type='latent')
         elif output_type == 'np':
             images = self.pipe.image_processor.postprocess(latents, output_type='np')
         else:
-            latents = latents.to(dtype=self.pipe.vae.dtype, device=self.device) / self.pipe.vae.config.scaling_factor
+            latents = latents / self.pipe.vae.config.scaling_factor
             images = self.pipe.vae.decode(latents).sample
             images = self.pipe.image_processor.postprocess(images, output_type='pil')
+        debug(f'PulID output: type={type(images)} images={images.shape if hasattr(images, "shape") else images}')
         return StableDiffusionXLPipelineOutput(images)
 
 
