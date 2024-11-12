@@ -1,19 +1,19 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-10
+## Update for 2024-11-12
 
 Smaller release just few days after the last one, but with some important fixes and improvements.  
 This release can be considered an LTS release before we kick off the next round of major updates.  
 
 - Docs:  
-  - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)
+  - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  
   - UI built-in [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) search  
     since changelog is the best up-to-date source of info  
     go to info -> changelog and search/highligh/navigate directly in UI!  
   - UI built-in [wiki](https://github.com/vladmandic/automatic/wiki)  
     go to info -> wiki and search wiki pages directly in UI!  
   - major [Wiki](https://github.com/vladmandic/automatic/wiki) and [Home](https://github.com/vladmandic/automatic) updates  
-- Integrations:
+- Integrations:  
   - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
     - advanced method of face id transfer with better quality as well as control over identity and appearance  
       try it out, likely the best quality available for sdxl models  
@@ -21,7 +21,7 @@ This release can be considered an LTS release before we kick off the next round 
     - compatible with *sdxl* for text-to-image, image-to-image, inpaint and detailer workflows  
     - can be used in xyz grid  
     - *note*: this module contains several advanced features on top of original implementation  
-  - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
+  - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference  
     - alternative to traditional `img2img` with more control over restoration process  
     - select in *image -> scripts -> instantir*  
     - compatible with *sdxl*  
@@ -29,19 +29,19 @@ This release can be considered an LTS release before we kick off the next round 
   - [ConsiStory](https://github.com/NVlabs/consistory): Consistent Image Generation  
     - create consistent anchor image and then generate images that are consistent with anchor  
     - select in *scripts -> consistory*  
-    - compatible with *sdxl*
+    - compatible with *sdxl*  
     - *note*: very resource intensive and not compatible with model offloading  
     - *note*: changing default parameters can lead to unexpected results and/or failures  
     - *note*: after used once it cannot be unloaded without reloading base model  
-  - [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) base and large:
-    - *in process -> visual query*
-    - caption modes:
+  - [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) base and large:  
+    - *in process -> visual query*  
+    - caption modes:  
       `<GENERATE_TAGS>` generate tags  
       `<CAPTION>`, `<DETAILED_CAPTION>`, `<MORE_DETAILED_CAPTION>` caption image  
       `<ANALYZE>` image composition  
       `<MIXED_CAPTION>`, `<MIXED_CAPTION_PLUS>` detailed caption and tags with optional analyze  
 
-- Model improvements:
+- Model improvements:  
   - SD3: ControlNets:  
     - *InstantX Canny, Pose, Depth, Tile*  
     - *Alimama Inpainting, SoftEdge*  
@@ -51,38 +51,44 @@ This release can be considered an LTS release before we kick off the next round 
     - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
     - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
 
-- Workflow improvements:
+- Workflow improvements:  
   - XYZ grid:  
     - optional time benchmark info to individual images  
     - optional add params to individual images  
     - create video from generated grid images  
       supports all standard video types and interpolation  
+  - Prompt parser:  
+    - support for prompt scheduling  
+    - renamed parser options: `native`, `xhinker`, `compel`, `a1111`, `fixed`  
+    - improved caching  
   - UI:  
-    - better gallery and networks sidebar sizing
+    - better gallery and networks sidebar sizing  
     - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
     - add show networks on startup setting  
     - better mapping of networks previews  
     - optimize networks display load  
-  - Image2image:
-    - integrated refine/upscale/hires workflow
+  - Image2image:  
+    - integrated refine/upscale/hires workflow  
 - Other:  
-  - Installer:
-    - Log `venv` and package search paths
+  - Installer:  
+    - Log `venv` and package search paths  
     - Auto-remove invalid packages from `venv/site-packages`  
       e.g. packages starting with `~` which are left-over due to windows access violation  
     - Requirements: update  
-  - Scripts:
-    - More verbose descriptions for all scripts
-  - Model loader:
+  - Scripts:  
+    - More verbose descriptions for all scripts  
+  - Model loader:  
     - Report modules included in safetensors when attempting to load a model  
   - CLI:  
     - refactor command line params  
       run `webui.sh`/`webui.bat` with `--help` to see all options  
-    - added `cli/model-metadata.py` to display metadata in any safetensors file
-    - added `cli/model-keys.py` to quicky display content of any safetensors file
-  - Internal:
+    - added `cli/model-metadata.py` to display metadata in any safetensors file  
+    - added `cli/model-keys.py` to quicky display content of any safetensors file  
+  - Internal:  
     - Repo: move screenshots to GH pages  
     - Auto pipeline switching coveres wrapper classes and nested pipelines  
+    - Full settings validation on load of `config.json`  
+    - Refactor of all params in main processing classes  
 
 - Fixes:  
   - custom watermark add alphablending  

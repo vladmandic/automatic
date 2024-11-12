@@ -110,7 +110,7 @@ def initialize():
     yolo.initialize()
     timer.startup.record("detailer")
 
-    log.debug('Load extensions')
+    log.info('Load extensions')
     t_timer, t_total = modules.scripts.load_scripts()
     timer.startup.record("extensions")
     timer.startup.records["extensions"] = t_total # scripts can reset the time
@@ -179,7 +179,7 @@ def load_model():
 
 
 def create_api(app):
-    log.debug('Creating API')
+    log.debug('API initialize')
     from modules.api.api import Api
     api = Api(app, queue_lock)
     return api
@@ -231,7 +231,7 @@ def start_common():
 
 
 def start_ui():
-    log.debug('Creating UI')
+    log.info('UI start')
     modules.script_callbacks.before_ui_callback()
     timer.startup.record("before-ui")
     shared.demo = modules.ui.create_ui(timer.startup)

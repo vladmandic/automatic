@@ -291,7 +291,7 @@ def get_prompt_schedule(prompt, steps):
 def get_tokens(msg, prompt):
     global token_dict, token_type # pylint: disable=global-statement
     if not shared.native:
-        return
+        return 0
     if shared.sd_loaded and hasattr(shared.sd_model, 'tokenizer') and shared.sd_model.tokenizer is not None:
         if token_dict is None or token_type != shared.sd_model_type:
             token_type = shared.sd_model_type
