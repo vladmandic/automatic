@@ -44,7 +44,7 @@ class Script(scripts.Script):
         orig_offload = shared.opts.diffusers_model_cpu_offload
         orig_prompt_attention = shared.opts.prompt_attention
         shared.opts.data['diffusers_model_cpu_offload'] = False
-        shared.opts.data['prompt_attention'] = 'Fixed attention'
+        shared.opts.data['prompt_attention'] = 'fixed'
         # shared.sd_model.maybe_free_model_hooks() # ledits is not compatible with offloading
         # shared.sd_model.has_accelerate = False
         sd_models.move_model(shared.sd_model, devices.device, force=True)

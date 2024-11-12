@@ -47,6 +47,7 @@ class PromptEmbedder:
         self.prompts = prompts
         self.negative_prompts = negative_prompts
         self.batchsize = len(self.prompts)
+        self.attention = None
         self.allsame = self.compare_prompts()  # collapses batched prompts to single prompt if possible
         self.steps = steps
         self.clip_skip = clip_skip
@@ -75,6 +76,10 @@ class PromptEmbedder:
     def checkcache(self, p):
         if shared.opts.sd_textencoder_cache_size == 0:
             return False
+        if self.attention != shared.opts.prompt_attention:
+            debug(f"Prompt change: parser={shared.opts.prompt_attention}")
+            cache.clear()
+            return False
 
         def flatten(xss):
             return [x for xs in xss for x in xs]
@@ -97,23 +102,22 @@ class PromptEmbedder:
                               'positive_pooleds': self.positive_pooleds,
                               'negative_pooleds': self.negative_pooleds,
                               }
-                debug(f"Prompt cache: Adding {key}")
+                debug(f"Prompt cache: add={key}")
                 while len(cache) > int(shared.opts.sd_textencoder_cache_size):
                     cache.popitem(last=False)
         if item:
             self.__dict__.update(cache[key])
             cache.move_to_end(key)
-            if self.allsame and len(self.prompt_embeds) < self.batchsize:  # If current batch larger than cached
+            if self.allsame and len(self.prompt_embeds) < self.batchsize:
                 self.prompt_embeds = [self.prompt_embeds[0]] * self.batchsize
                 self.positive_pooleds = [self.positive_pooleds[0]] * self.batchsize
                 self.negative_prompt_embeds = [self.negative_prompt_embeds[0]] * self.batchsize
                 self.negative_pooleds = [self.negative_pooleds[0]] * self.batchsize
-            debug(f"Prompt cache: Retrieving {key}")
+            debug(f"Prompt cache: get={key}")
             return True
 
     def compare_prompts(self):
-        same = (self.prompts == [self.prompts[0]] * len(self.prompts) and
-                self.negative_prompts == [self.negative_prompts[0]] * len(self.negative_prompts))
+        same = (self.prompts == [self.prompts[0]] * len(self.prompts) and self.negative_prompts == [self.negative_prompts[0]] * len(self.negative_prompts))
         if same:
             self.prompts = [self.prompts[0]]
             self.negative_prompts = [self.negative_prompts[0]]
@@ -123,6 +127,7 @@ class PromptEmbedder:
         self.positive_schedule, scheduled = get_prompt_schedule(prompt, self.steps)
         self.negative_schedule, neg_scheduled = get_prompt_schedule(negative_prompt, self.steps)
         self.scheduled_prompt = scheduled or neg_scheduled
+        debug(f"Prompt schedule: positive={self.positive_schedule} negative={self.negative_schedule} scheduled={scheduled}")
 
     def scheduled_encode(self, pipe, batchidx):
         prompt_dict = {}  # index cache
@@ -138,20 +143,21 @@ class PromptEmbedder:
             prompt_dict[positive_prompt+negative_prompt] = i
 
     def extend_embeds(self, batchidx, idx):  # Extends scheduled prompt via index
-        self.prompt_embeds[batchidx].append(self.prompt_embeds[batchidx][idx])
-        self.negative_prompt_embeds[batchidx].append(self.negative_prompt_embeds[batchidx][idx])
+        if len(self.prompt_embeds[batchidx]) > 0:
+            self.prompt_embeds[batchidx].append(self.prompt_embeds[batchidx][idx])
+        if len(self.negative_prompt_embeds[batchidx]) > 0:
+            self.negative_prompt_embeds[batchidx].append(self.negative_prompt_embeds[batchidx][idx])
         if len(self.positive_pooleds[batchidx]) > 0:
             self.positive_pooleds[batchidx].append(self.positive_pooleds[batchidx][idx])
         if len(self.negative_pooleds[batchidx]) > 0:
             self.negative_pooleds[batchidx].append(self.negative_pooleds[batchidx][idx])
 
     def encode(self, pipe, positive_prompt, negative_prompt, batchidx):
-        if shared.opts.prompt_attention == "xhinker parser" or 'Flux' in pipe.__class__.__name__:
-            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(
-                pipe, positive_prompt, negative_prompt, self.clip_skip)
+        self.attention = shared.opts.prompt_attention
+        if self.attention == "xhinker" or 'Flux' in pipe.__class__.__name__:
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
         else:
-            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(
-                pipe, positive_prompt, negative_prompt, self.clip_skip)
+            prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
         if prompt_embed is not None:
             self.prompt_embeds[batchidx].append(prompt_embed)
         if negative_embed is not None:
@@ -311,6 +317,7 @@ def get_tokens(msg, prompt):
                 tokens.append(f'UNK_{i}')
         token_count = len(ids) - int(has_bos_token) - int(has_eos_token)
         debug(f'Prompt tokenizer: type={msg} tokens={token_count} {tokens}')
+    return token_count
 
 
 def normalize_prompt(pairs: list):
@@ -338,6 +345,12 @@ def get_prompts_with_weights(prompt: str):
     if shared.opts.prompt_mean_norm:
         texts_and_weights = normalize_prompt(texts_and_weights)
     texts, text_weights = zip(*texts_and_weights)
+    if debug_enabled:
+        all_tokens = 0
+        for text in texts:
+            tokens = get_tokens('section', text)
+            all_tokens += tokens
+        debug(f'Prompt tokenizer: parser={shared.opts.prompt_attention} tokens={all_tokens}')
     debug(f'Prompt: weights={texts_and_weights} time={(time.time() - t0):.3f}')
     return texts, text_weights
 
@@ -479,7 +492,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         # negative prompt has no keywords
         embed, ntokens = embedding_providers[i].get_embeddings_for_weighted_prompt_fragments(text_batch=[negatives[i]], fragment_weights_batch=[negative_weights[i]], device=device, should_return_tokens=True)
         negative_prompt_embeds.append(embed)
-        debug(f'Prompt: unpadded shape={prompt_embeds[0].shape} TE{i+1} ptokens={torch.count_nonzero(ptokens)} ntokens={torch.count_nonzero(ntokens)} time={(time.time() - t0):.3f}')
+        debug(f'Prompt: unpadded={prompt_embeds[0].shape} TE{i+1} ptokens={torch.count_nonzero(ptokens)} ntokens={torch.count_nonzero(ntokens)} time={(time.time() - t0):.3f}')
     if SD3:
         t0 = time.time()
         pooled_prompt_embeds.append(embedding_providers[0].get_pooled_embeddings(texts=positives[0] if len(positives[0]) == 1 else [" ".join(positives[0])], device=device))
@@ -488,7 +501,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         negative_pooled_prompt_embeds.append(embedding_providers[1].get_pooled_embeddings(texts=negatives[-1] if len(negatives[-1]) == 1 else [" ".join(negatives[-1])], device=device))
         pooled_prompt_embeds = torch.cat(pooled_prompt_embeds, dim=-1)
         negative_pooled_prompt_embeds = torch.cat(negative_pooled_prompt_embeds, dim=-1)
-        debug(f'Prompt: pooled shape={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
+        debug(f'Prompt: pooled={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
     elif prompt_embeds[-1].shape[-1] > 768:
         t0 = time.time()
         if shared.opts.diffusers_pooled == "weighted":

@@ -107,7 +107,7 @@ class Script(scripts.Script):
                 pipe.to(device=devices.device, dtype=devices.dtype)
             except Exception:
                 pass
-            shared.opts.data['prompt_attention'] = 'Fixed attention'
+            shared.opts.data['prompt_attention'] = 'fixed'
             prompt = shared.prompt_styles.apply_styles_to_prompt(p.prompt, p.styles)
             negative = shared.prompt_styles.apply_negative_styles_to_prompt(p.negative_prompt, p.styles)
             p.task_args['prompt'] = prompt

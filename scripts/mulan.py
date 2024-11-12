@@ -87,7 +87,7 @@ class Script(scripts.Script):
         # mulan only works with single image, single prompt and in fixed attention
         p.batch_size = 1
         p.n_iter = 1
-        shared.opts.prompt_attention = 'Fixed attention'
+        shared.opts.prompt_attention = 'fixed'
         if isinstance(p.prompt, list):
             p.prompt = p.prompt[0]
         p.task_args['prompt'] = p.prompt

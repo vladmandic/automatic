@@ -107,12 +107,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     debug(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
-    parser = 'Fixed attention'
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
-    # prompt_parser_diffusers.fix_position_ids(model)
-    if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
+    parser = 'fixed'
+    if shared.opts.prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
@@ -125,6 +124,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                 errors.display(e, 'Prompt parser encode')
         timer.process.record('encode', reset=False)
+    else:
+        prompt_parser_diffusers.embedder = None
 
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
@@ -156,7 +157,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             else:
                 args['negative_prompt'] = negative_prompts
 
-    if 'clip_skip' in possible and parser == 'Fixed attention':
+    if 'clip_skip' in possible and parser == 'fixed':
         if clip_skip == 1:
             pass # clip_skip = None
         else:

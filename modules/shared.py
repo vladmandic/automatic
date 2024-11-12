@@ -273,6 +273,40 @@ class OptionInfo:
         self.comment_after += " <span class='info'>(requires restart)</span>"
         return self
 
+    def validate(self, opt, value):
+        args = self.component_args if self.component_args is not None else {}
+        if callable(args):
+            try:
+                args = args()
+            except Exception:
+                args = {}
+        choices = args.get("choices", [])
+        if callable(choices):
+            try:
+                choices = choices()
+            except Exception:
+                choices = []
+        if len(choices) > 0:
+            if not isinstance(value, list):
+                value = [value]
+            for v in value:
+                if v not in choices:
+                    log.warning(f'Setting validation: "{opt}"="{v}" default="{self.default}" choices={choices}')
+                    return False
+        minimum = args.get("minimum", None)
+        maximum = args.get("maximum", None)
+        if (minimum is not None and value < minimum) or (maximum is not None and value > maximum):
+            log.error(f'Setting validation: "{opt}"={value} default={self.default} minimum={minimum} maximum={maximum}')
+            return False
+        return True
+
+    def __str__(self) -> str:
+        args = self.component_args if self.component_args is not None else {}
+        if callable(args):
+            args = args()
+        choices = args.get("choices", [])
+        return f'OptionInfo: label="{self.label}" section="{self.section}" component="{self.component}" default="{self.default}" refresh="{self.refresh is not None}" change="{self.onchange is not None}" args={args} choices={choices}'
+
 
 def options_section(section_identifier, options_dict):
     for v in options_dict.values():
@@ -442,7 +476,7 @@ options_templates.update(options_section(('sd', "Execution & Models"), {
     "model_reuse_dict": OptionInfo(False, "Reuse loaded model dictionary", gr.Checkbox, {"visible": False}),
     "prompt_mean_norm": OptionInfo(False, "Prompt attention normalization", gr.Checkbox),
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
-    "prompt_attention": OptionInfo("Full parser", "Prompt attention parser", gr.Radio, {"choices": ["Full parser", "Compel parser", "xhinker parser", "A1111 parser", "Fixed attention"] }),
+    "prompt_attention": OptionInfo("native", "Prompt attention parser", gr.Radio, {"choices": ["native", "compel", "xhinker", "a1111", "fixed"] }),
     "latent_history": OptionInfo(16, "Latent history size", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
     "sd_vae_checkpoint_cache": OptionInfo(0, "Cached VAEs", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": False}),
@@ -994,7 +1028,7 @@ class Options:
         if filename is None:
             filename = self.filename
         if cmd_opts.freeze:
-            log.warning(f'Settings saving is disabled: {filename}')
+            log.warning(f'Setting: fn="{filename}" save disabled')
             return
         try:
             # output = json.dumps(self.data, indent=2)
@@ -1002,12 +1036,12 @@ class Options:
             unused_settings = []
 
             if os.environ.get('SD_CONFIG_DEBUG', None) is not None:
-                log.debug('Config: user settings')
+                log.debug('Settings: user')
                 for k, v in self.data.items():
                     log.trace(f'  Config: item={k} value={v} default={self.data_labels[k].default if k in self.data_labels else None}')
-                log.debug('Config: default settings')
+                log.debug('Settings: defaults')
                 for k in self.data_labels.keys():
-                    log.trace(f'  Config: item={k} default={self.data_labels[k].default}')
+                    log.trace(f'  Setting: item={k} default={self.data_labels[k].default}')
 
             for k, v in self.data.items():
                 if k in self.data_labels:
@@ -1022,9 +1056,9 @@ class Options:
                             unused_settings.append(k)
             writefile(diff, filename, silent=silent)
             if len(unused_settings) > 0:
-                log.debug(f"Unused settings: {unused_settings}")
+                log.debug(f"Settings: unused={unused_settings}")
         except Exception as err:
-            log.error(f'Save settings failed: {filename} {err}')
+            log.error(f'Settings: fn="{filename}" {err}')
 
     def save(self, filename=None, silent=False):
         threading.Thread(target=self.save_atomic, args=(filename, silent)).start()
@@ -1040,7 +1074,7 @@ class Options:
         if filename is None:
             filename = self.filename
         if not os.path.isfile(filename):
-            log.debug(f'Created default config: {filename}')
+            log.debug(f'Settings: fn="{filename}" created')
             self.save(filename)
             return
         self.data = readfile(filename, lock=True)
@@ -1048,13 +1082,16 @@ class Options:
             self.data['quicksettings_list'] = [i.strip() for i in self.data.get('quicksettings').split(',')]
         unknown_settings = []
         for k, v in self.data.items():
-            info = self.data_labels.get(k, None)
+            info: OptionInfo = self.data_labels.get(k, None)
+            if not info.validate(k, v):
+                self.data[k] = info.default
             if info is not None and not self.same_type(info.default, v):
-                log.error(f"Error: bad setting value: {k}: {v} ({type(v).__name__}; expected {type(info.default).__name__})")
+                log.warning(f"Setting validation: {k}={v} ({type(v).__name__} expected={type(info.default).__name__})")
+                self.data[k] = info.default
             if info is None and k not in compatibility_opts and not k.startswith('uiux_'):
                 unknown_settings.append(k)
         if len(unknown_settings) > 0:
-            log.debug(f"Unknown settings: {unknown_settings}")
+            log.warning(f"Setting validation: unknown={unknown_settings}")
 
     def onchange(self, key, func, call=True):
         item = self.data_labels.get(key)

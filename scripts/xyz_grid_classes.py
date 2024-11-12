@@ -37,6 +37,7 @@ class SharedSettingsStackHelper(object):
     sd_text_encoder = None
     extra_networks_default_multiplier = None
     disable_weights_auto_swap = None
+    prompt_attention = None
 
     def __enter__(self):
         #Save overridden settings so they can be restored later.
@@ -52,6 +53,7 @@ class SharedSettingsStackHelper(object):
         self.sd_text_encoder = shared.opts.sd_text_encoder
         self.extra_networks_default_multiplier = shared.opts.extra_networks_default_multiplier
         self.disable_weights_auto_swap = shared.opts.disable_weights_auto_swap
+        self.prompt_attention = shared.opts.prompt_attention
         shared.opts.data["disable_weights_auto_swap"] = False
 
     def __exit__(self, exc_type, exc_value, tb):
@@ -62,6 +64,7 @@ class SharedSettingsStackHelper(object):
         shared.opts.data["tome_ratio"] = self.tome_ratio
         shared.opts.data["todo_ratio"] = self.todo_ratio
         shared.opts.data["extra_networks_default_multiplier"] = self.extra_networks_default_multiplier
+        shared.opts.data["prompt_attention"] = self.prompt_attention
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:
             shared.opts.data["sd_model_checkpoint"] = self.sd_model_checkpoint
             sd_models.reload_model_weights(op='model')
@@ -92,6 +95,7 @@ axis_options = [
     AxisOption("[Model] Dictionary", str, apply_dict, fmt=format_value_add_label, cost=0.9, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
     AxisOption("[Prompt] Search & replace", str, apply_prompt, fmt=format_value_add_label),
     AxisOption("[Prompt] Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
+    AxisOption("[Prompt] Prompt parser", str, apply_setting("prompt_attention"), choices=lambda: ["native", "compel", "xhinker", "a1111", "fixed"]),
     AxisOption("[Network] LoRA", str, apply_lora, cost=0.5, choices=list_lora),
     AxisOption("[Network] LoRA strength", float, apply_setting('extra_networks_default_multiplier')),
     AxisOption("[Network] Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
