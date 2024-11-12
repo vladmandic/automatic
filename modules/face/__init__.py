@@ -28,10 +28,10 @@ class Script(scripts.Script):
                 elif hasattr(file, 'name'):
                     image = Image.open(file.name) # _TemporaryFileWrapper from gr.Files
                 else:
-                    raise ValueError(f'PhotoMaker unknown input: {file}')
+                    raise ValueError(f'Face: unknown input: {file}')
                 init_images.append(image)
             except Exception as e:
-                shared.log.warning(f'PhotoMaker failed to load image: {e}')
+                shared.log.warning(f'Face: failed to load image: {e}')
         return init_images
 
     def mode_change(self, mode):

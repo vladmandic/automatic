@@ -2,8 +2,30 @@
 
 ## Update for 2024-11-12
 
-Smaller release just few days after the last one, but with some important fixes and improvements.  
-This release can be considered an LTS release before we kick off the next round of major updates.  
+### Highlights for 2024-11-12
+
+*What's New?*
+
+First, a massive update to docs including new UI top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki), many updates and new articles AND full **built-in search** capabilities
+
+**New integrations**:
+- [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment
+- [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
+- [ConsiStory](https://github.com/NVlabs/consistory): Consistent Image Generation
+- [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) VQA captioning
+
+**Workflow Improvements**:
+- SD3x: ControlNets and all-in-one-safetensors
+- XYZ grid: benchmarking, video creation, etc.
+- Enhanced prompt parsing
+- UI improvements
+- Installer self-healing `venv`
+
+And quite a few more improvements and fixes since the last update - for full details see changelog...
+
+[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+### Details for 2024-11-12
 
 - Docs:  
   - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  
@@ -60,6 +82,7 @@ This release can be considered an LTS release before we kick off the next round 
   - Prompt parser:  
     - support for prompt scheduling  
     - renamed parser options: `native`, `xhinker`, `compel`, `a1111`, `fixed`  
+    - parser options are available in xyz grid  
     - improved caching  
   - UI:  
     - better gallery and networks sidebar sizing  
@@ -85,21 +108,12 @@ This release can be considered an LTS release before we kick off the next round 
     - added `cli/model-metadata.py` to display metadata in any safetensors file  
     - added `cli/model-keys.py` to quicky display content of any safetensors file  
   - Internal:  
-    - Repo: move screenshots to GH pages  
     - Auto pipeline switching coveres wrapper classes and nested pipelines  
     - Full settings validation on load of `config.json`  
     - Refactor of all params in main processing classes  
 
 - Fixes:  
   - custom watermark add alphablending  
-  - detailer min/max size as fractions of image size  
-  - ipadapter load on-demand  
-  - ipadapter face use correct yolo model  
-  - list diffusers remove duplicates  
-  - fix legacy extensions access to shared objects  
-  - fix diffusers load from folder  
-  - fix lora enum logging on windows  
-  - fix xyz grid with batch count  
   - fix xyz grid include images  
   - fix xyz skip on interrupted  
   - fix vqa models ignoring hfcache folder setting  
@@ -108,7 +122,25 @@ This release can be considered an LTS release before we kick off the next round 
   - fix text2video scripts  
   - dont uninstall flash-attn  
   - ui css fixes  
-  - move downloads of some auxillary models to hfcache instead of models folder  
+
+## Update for 2024-11-01
+
+Smaller release just 3 days after the last one, but with some important fixes and improvements.  
+This release can be considered an LTS release before we kick off the next round of major updates.  
+
+- Other:
+  - Repo: move screenshots to GH pages
+  - Update requirements
+- Fixes:
+  - detailer min/max size as fractions of image size  
+  - ipadapter load on-demand  
+  - ipadapter face use correct yolo model  
+  - list diffusers remove duplicates  
+  - fix legacy extensions access to shared objects  
+  - fix diffusers load from folder  
+  - fix lora enum logging on windows  
+  - fix xyz grid with batch count  
+  - move dowwloads of some auxillary models to hfcache instead of models folder  
 
 ## Update for 2024-10-29
 
