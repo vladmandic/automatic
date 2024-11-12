@@ -1082,8 +1082,9 @@ class Options:
         unknown_settings = []
         for k, v in self.data.items():
             info: OptionInfo = self.data_labels.get(k, None)
-            if not info.validate(k, v):
-                self.data[k] = info.default
+            if info is not None:
+                if not info.validate(k, v):
+                    self.data[k] = info.default
             if info is not None and not self.same_type(info.default, v):
                 log.warning(f"Setting validation: {k}={v} ({type(v).__name__} expected={type(info.default).__name__})")
                 self.data[k] = info.default
