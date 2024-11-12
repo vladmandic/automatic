@@ -13,6 +13,19 @@ def set_callbacks_p(processing):
     global p # pylint: disable=global-statement
     p = processing
 
+def prompt_callback(step, kwargs):
+    if prompt_parser_diffusers.embedder is None or 'prompt_embeds' not in kwargs:
+        return kwargs
+    try:
+        prompt_embeds = prompt_parser_diffusers.embedder('prompt_embeds', step + 1)
+        negative_prompt_embeds = prompt_parser_diffusers.embedder('negative_prompt_embeds', step + 1)
+        if p.cfg_scale > 1:  # Perform guidance
+            prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)  # Combined embeds
+        assert prompt_embeds.shape == kwargs['prompt_embeds'].shape, f"prompt_embed shape mismatch {kwargs['prompt_embeds'].shape} {prompt_embeds.shape}"
+        kwargs['prompt_embeds'] = prompt_embeds
+    except Exception as e:
+        debug_callback(f"Callback: {e}")
+    return kwargs
 
 def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[torch.FloatTensor, np.ndarray]):
     if p is None:
@@ -66,14 +79,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
             pipe.set_ip_adapter_scale(ip_adapter_scales)
     if step != getattr(pipe, 'num_timesteps', 0):
         kwargs = processing_correction.correction_callback(p, timestep, kwargs)
-    if prompt_parser_diffusers.embedder is not None:
-        try:
-            if 'prompt_embeds' in kwargs:
-                kwargs["prompt_embeds"] = prompt_parser_diffusers.embedder("prompt_embeds", step + 1)
-            if 'negative_prompt_embeds' in kwargs:
-                kwargs["negative_prompt_embeds"] = prompt_parser_diffusers.embedder("negative_prompt_embeds", step + 1)
-        except Exception as e:
-            debug_callback(f"Callback: {e}")
+    kwargs = prompt_callback(step, kwargs)  # monkey patch for diffusers callback issues
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
         if "PAG" in shared.sd_model.__class__.__name__:
             pipe._guidance_scale = 1.001 if pipe._guidance_scale > 1 else pipe._guidance_scale  # pylint: disable=protected-access
