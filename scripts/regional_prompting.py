@@ -64,7 +64,7 @@ class Script(scripts.Script):
             shared.sd_model = orig_pipeline
             return
         sd_models.set_diffuser_options(shared.sd_model)
-        shared.opts.data['prompt_attention'] = 'Fixed attention' # this pipeline is not compatible with embeds
+        shared.opts.data['prompt_attention'] = 'fixed' # this pipeline is not compatible with embeds
         processing.fix_seed(p)
         # set pipeline specific params, note that standard params are applied when applicable
         rp_args = {

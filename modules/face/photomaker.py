@@ -49,7 +49,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, input_images, trigger, 
     shared.sd_model.to(dtype=devices.dtype)
 
     orig_prompt_attention = shared.opts.prompt_attention
-    shared.opts.data['prompt_attention'] = 'Fixed attention' # otherwise need to deal with class_tokens_mask
+    shared.opts.data['prompt_attention'] = 'fixed' # otherwise need to deal with class_tokens_mask
     p.task_args['input_id_images'] = input_images
     p.task_args['start_merge_step'] = int(start * p.steps)
     p.task_args['prompt'] = p.all_prompts[0] if p.all_prompts is not None else p.prompt

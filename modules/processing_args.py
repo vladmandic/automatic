@@ -107,56 +107,57 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     debug(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
-    parser = 'Fixed attention'
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
-    # prompt_parser_diffusers.fix_position_ids(model)
-    if shared.opts.prompt_attention != 'Fixed attention' and 'Onnx' not in model.__class__.__name__ and (
+    parser = 'fixed'
+    if shared.opts.prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
     ):
         try:
-            prompt_parser_diffusers.encode_prompts(model, p, prompts, negative_prompts, steps=steps, clip_skip=clip_skip)
+            prompt_parser_diffusers.embedder = prompt_parser_diffusers.PromptEmbedder(prompts, negative_prompts, steps, clip_skip, p)
             parser = shared.opts.prompt_attention
         except Exception as e:
             shared.log.error(f'Prompt parser encode: {e}')
             if os.environ.get('SD_PROMPT_DEBUG', None) is not None:
                 errors.display(e, 'Prompt parser encode')
         timer.process.record('encode', reset=False)
+    else:
+        prompt_parser_diffusers.embedder = None
 
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
-        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'prompt_embeds' in possible and len(p.prompt_embeds) > 0 and p.prompt_embeds[0] is not None:
-            args['prompt_embeds'] = p.prompt_embeds[0]
+        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'prompt_embeds' in possible and prompt_parser_diffusers.embedder is not None:
+            args['prompt_embeds'] = prompt_parser_diffusers.embedder('prompt_embeds')
             if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['prompt_embeds_pooled'] = p.positive_pooleds[0].unsqueeze(0)
-            elif 'XL' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
-            elif 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
-            elif 'Flux' in model.__class__.__name__ and len(getattr(p, 'positive_pooleds', [])) > 0:
-                args['pooled_prompt_embeds'] = p.positive_pooleds[0]
+                args['prompt_embeds_pooled'] = prompt_parser_diffusers.embedder('positive_pooleds').unsqueeze(0)
+            elif 'XL' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('positive_pooleds')
+            elif 'StableDiffusion3' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('positive_pooleds')
+            elif 'Flux' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('positive_pooleds')
         else:
             args['prompt'] = prompts
     if 'negative_prompt' in possible:
-        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'negative_prompt_embeds' in possible and len(p.negative_embeds) > 0 and p.negative_embeds[0] is not None:
-            args['negative_prompt_embeds'] = p.negative_embeds[0]
-            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_prompt_embeds_pooled'] = p.negative_pooleds[0].unsqueeze(0)
-            if 'XL' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
-            if 'StableDiffusion3' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
-                args['negative_pooled_prompt_embeds'] = p.negative_pooleds[0]
+        if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'negative_prompt_embeds' in possible and prompt_parser_diffusers.embedder is not None:
+            args['negative_prompt_embeds'] = prompt_parser_diffusers.embedder('negative_prompt_embeds')
+            if 'StableCascade' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['negative_prompt_embeds_pooled'] = prompt_parser_diffusers.embedder('negative_pooleds').unsqueeze(0)
+            if 'XL' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['negative_pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('negative_pooleds')
+            if 'StableDiffusion3' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
+                args['negative_pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('negative_pooleds')
         else:
             if 'PixArtSigmaPipeline' in model.__class__.__name__: # pixart-sigma pipeline throws list-of-list for negative prompt
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
 
-    if 'clip_skip' in possible and parser == 'Fixed attention':
+    if 'clip_skip' in possible and parser == 'fixed':
         if clip_skip == 1:
             pass # clip_skip = None
         else:

@@ -258,7 +258,7 @@ class Script(scripts.Script):
         shared.log.debug(f'AnimateDiff args: {p.task_args}')
         set_prompt(p)
         orig_prompt_attention = shared.opts.prompt_attention
-        shared.opts.data['prompt_attention'] = 'Fixed attention'
+        shared.opts.data['prompt_attention'] = 'fixed'
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
         shared.opts.data['prompt_attention'] = orig_prompt_attention
         devices.torch_gc()

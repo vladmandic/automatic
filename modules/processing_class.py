@@ -281,6 +281,46 @@ class StableDiffusionProcessing:
         self.s_max = shared.opts.s_max
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
+        self.task_args = {}
+        # a1111 compatibility items
+        self.batch_index = 0
+        self.refiner_switch_at = 0
+        self.hr_prompt = ''
+        self.all_hr_prompts = []
+        self.hr_negative_prompt = ''
+        self.all_hr_negative_prompts = []
+        self.comments = {}
+        self.is_api = False
+        self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
+        self.script_args_value: list = field(default=None, init=False)
+        self.scripts_setup_complete: bool = field(default=False, init=False)
+        # ip adapter
+        self.ip_adapter_names = []
+        self.ip_adapter_scales = [0.0]
+        self.ip_adapter_images = []
+        self.ip_adapter_starts = [0.0]
+        self.ip_adapter_ends = [1.0]
+        self.ip_adapter_crops = []
+        # hdr
+        self.hdr_mode=hdr_mode
+        self.hdr_brightness=hdr_brightness
+        self.hdr_color=hdr_color
+        self.hdr_sharpen=hdr_sharpen
+        self.hdr_clamp=hdr_clamp
+        self.hdr_boundary=hdr_boundary
+        self.hdr_threshold=hdr_threshold
+        self.hdr_maximize=hdr_maximize
+        self.hdr_max_center=hdr_max_center
+        self.hdr_max_boundry=hdr_max_boundry
+        self.hdr_color_picker=hdr_color_picker
+        self.hdr_tint_ratio=hdr_tint_ratio
+        # globals
+        self.embedder = None
+        self.scheduled_prompt: bool = False
+        self.prompt_embeds = []
+        self.positive_pooleds = []
+        self.negative_embeds = []
+        self.negative_pooleds = []
 
     @property
     def sd_model(self):

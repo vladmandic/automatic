@@ -1305,7 +1305,7 @@ def get_weighted_text_embeddings_sd3(
         # ---------------------- get neg t5 embeddings -------------------------
         neg_prompt_tokens_3 = torch.tensor([neg_prompt_tokens_3], dtype=torch.long)
 
-        t5_neg_prompt_embeds = pipe.text_encoder_3(neg_prompt_tokens_3.to(pipe.pipe.text_encoder_3.device))[0].squeeze(0)
+        t5_neg_prompt_embeds = pipe.text_encoder_3(neg_prompt_tokens_3.to(pipe.text_encoder_3.device))[0].squeeze(0)
         t5_neg_prompt_embeds = t5_neg_prompt_embeds.to(device=pipe.text_encoder_3.device)
 
         # add weight to neg t5 embeddings

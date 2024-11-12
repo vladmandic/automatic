@@ -49,7 +49,7 @@ class Script(scripts.Script):
         from modules.ctrlx.utils import get_self_recurrence_schedule
 
         orig_prompt_attention = shared.opts.prompt_attention
-        shared.opts.data['prompt_attention'] = 'Fixed attention'
+        shared.opts.data['prompt_attention'] = 'fixed'
         shared.sd_model = sd_models.switch_pipe(CtrlXStableDiffusionXLPipeline, shared.sd_model)
         shared.sd_model.restore_pipeline = self.restore
 
