@@ -83,6 +83,8 @@ console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8
+if os.environ.get("SD_HFCACHEDIR", None) is not None:
+    hfcache_dir = os.environ.get("SD_HFCACHEDIR")
 if os.environ.get("HF_HUB_CACHE", None) is not None:
     hfcache_dir = os.environ.get("HF_HUB_CACHE")
 elif os.environ.get("HF_HUB", None) is not None:

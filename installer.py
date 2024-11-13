@@ -459,6 +459,8 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
+    if args.skip_all or args.skip_requirements:
+        return
     sha = 'dac623b59f52c58383a39207d5147aa34e0047cd'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
@@ -474,6 +476,8 @@ def check_diffusers():
 
 # check onnx version
 def check_onnx():
+    if args.skip_all or args.skip_requirements:
+        return
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
     if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
@@ -481,6 +485,8 @@ def check_onnx():
 
 
 def check_torchao():
+    if args.skip_all or args.skip_requirements:
+        return
     if installed('torchao', quiet=True):
         ver = package_version('torchao')
         if ver != '0.5.0':
@@ -492,14 +498,16 @@ def check_torchao():
 
 def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
-    install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
+    if not (args.skip_all or args.skip_requirements):
+        install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
     return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
+    if args.skip_all or args.skip_requirements:
+        return
     from modules import rocm
-
     if not rocm.is_installed:
         log.warning('ROCm: could not find ROCm toolkit installed')
         log.info('Using CPU-only torch')

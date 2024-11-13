@@ -204,13 +204,13 @@ def main():
     installer.check_python()
     if args.reset:
         installer.git_reset()
-    if args.skip_git:
+    if args.skip_git or args.skip_all:
         installer.log.info('Skipping GIT operations')
     installer.check_version()
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
     installer.check_venv()
     installer.log.info(f'Args: {sys.argv[1:]}')
-    if not args.skip_env:
+    if not args.skip_env or args.skip_all:
         installer.set_environment()
     if args.uv:
         installer.install("uv", "uv")

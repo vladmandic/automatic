@@ -5,7 +5,7 @@
 const fs = require('fs'); // eslint-disable-line no-undef
 const process = require('process'); // eslint-disable-line no-undef
 
-const sd_url = process.env.SDAPI_URL || 'http://127.0.0.1:7860';
+const sd_url = process.env.SDAPI_URL || 'http://127.0.0.1:32769';
 const sd_username = process.env.SDAPI_USR;
 const sd_password = process.env.SDAPI_PWD;
 const sd_options = {

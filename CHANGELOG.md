@@ -15,6 +15,7 @@ First, a massive update to docs including new UI top-level **info** tab with acc
 - [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) VQA captioning
 
 **Workflow Improvements**:
+- Native Docker support
 - SD3x: ControlNets and all-in-one-safetensors
 - XYZ grid: benchmarking, video creation, etc.
 - Enhanced prompt parsing
@@ -74,6 +75,7 @@ And quite a few more improvements and fixes since the last update - for full det
     - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
 
 - Workflow improvements:  
+  - Native Docker support with pre-defined [Dockerfile](https://github.com/vladmandic/automatic/blob/dev/Dockerfile)
   - XYZ grid:  
     - optional time benchmark info to individual images  
     - optional add params to individual images  
