@@ -295,13 +295,7 @@ def read_metadata_from_safetensors(filename):
                 if k == 'format' and v == 'pt':
                     continue
                 large = True if len(v) > 2048 else False
-                if large and k == 'ss_datasets':
-                    continue
-                if large and k == 'workflow':
-                    continue
-                if large and k == 'prompt':
-                    continue
-                if large and k == 'ss_bucket_info':
+                if large and k in ['ss_datasets', 'workflow', 'prompt', 'ss_bucket_info', 'sd_metadata_file']:
                     continue
                 if v[0:1] == '{':
                     try:
