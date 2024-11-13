@@ -255,7 +255,7 @@ class StyleDatabase:
     def get_style_prompts(self, styles):
         if styles is None:
             return []
-        if styles is not isinstance(styles, list):
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).prompt for x in styles]
@@ -263,7 +263,7 @@ class StyleDatabase:
     def get_negative_style_prompts(self, styles):
         if styles is None:
             return []
-        if styles is not isinstance(styles, list):
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).negative_prompt for x in styles]
@@ -271,7 +271,7 @@ class StyleDatabase:
     def apply_styles_to_prompts(self, prompts, negatives, styles, seeds):
         if styles is None:
             return prompts, negatives
-        if styles is not isinstance(styles, list):
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid styles: {styles}')
             return prompts, negatives
         if prompts is None or not isinstance(prompts, list):
@@ -294,7 +294,9 @@ class StyleDatabase:
         return parsed_positive, parsed_negative
 
     def apply_styles_to_prompt(self, prompt, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return prompt
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
@@ -302,7 +304,9 @@ class StyleDatabase:
         return prompt
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return prompt
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])

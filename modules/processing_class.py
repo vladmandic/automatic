@@ -45,7 +45,7 @@ class StableDiffusionProcessing:
                  pag_scale: float = 0.0,
                  pag_adaptive: float = 0.5,
                  # styles
-                 styles: List[str] = None,
+                 styles: List[str] = [],
                  # vae
                  tiling: bool = False,
                  full_quality: bool = True,
@@ -119,7 +119,10 @@ class StableDiffusionProcessing:
                  # metadata
                  extra_generation_params: Dict[Any, Any] = {},
                 ):
+
+        # extra args set by processing loop
         self.task_args = {}
+
         # state items
         self.state: str = ''
         self.ops = []
@@ -136,6 +139,7 @@ class StableDiffusionProcessing:
         self.negative_pooleds = []
         self.disable_extra_networks = False
         self.iteration = 0
+
         # initializers
         self.prompt = prompt
         self.seed = seed
