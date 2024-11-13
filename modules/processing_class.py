@@ -72,7 +72,7 @@ class StableDiffusionProcessing:
                  resize_mode: int = 0,
                  resize_name: str = 'None',
                  resize_context: str = 'None',
-                 denoising_strength: float = 0.3,
+                 denoising_strength: float = 0.0,
                  image_cfg_scale: float = None,
                  initial_noise_multiplier: float = None, # pylint: disable=unused-argument # a1111 compatibility
                  scale_by: float = 1,
@@ -100,7 +100,7 @@ class StableDiffusionProcessing:
                  hr_second_pass_steps: int = 0,
                  hr_resize_x: int = 0,
                  hr_resize_y: int = 0,
-                 hr_denoising_strength: float = 0.50,
+                 hr_denoising_strength: float = 0.0,
                  refiner_steps: int = 5,
                  refiner_start: float = 0,
                  refiner_prompt: str = '',

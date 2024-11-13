@@ -177,7 +177,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
-        if (latent_upscale is not None or p.hr_force) and getattr(p, 'hr_denoising_strength', p.denoising_strength) > 0:
+        strength = p.hr_denoising_strength if p.hr_denoising_strength > 0 else p.denoising_strength
+        if (latent_upscale is not None or p.hr_force) and strength > 0:
             p.ops.append('hires')
             sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
             if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":
@@ -185,8 +186,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             p.hr_force = True
 
         # hires
-        p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
-        if p.hr_force and p.denoising_strength == 0:
+        if p.hr_force and strength == 0:
             shared.log.warning('HiRes skip: denoising=0')
             p.hr_force = False
         if p.hr_force:
@@ -204,9 +204,9 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 sd_models.move_model(shared.sd_model.unet, devices.device)
             if hasattr(shared.sd_model, 'transformer'):
                 sd_models.move_model(shared.sd_model.transformer, devices.device)
-            orig_denoise = p.denoising_strength
-            p.denoising_strength = getattr(p, 'hr_denoising_strength', p.denoising_strength)
             update_sampler(p, shared.sd_model, second_pass=True)
+            orig_denoise = p.denoising_strength
+            p.denoising_strength = strength
             hires_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_model,
@@ -221,7 +221,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 output_type='latent',
                 clip_skip=p.clip_skip,
                 image=output.images,
-                strength=p.denoising_strength,
+                strength=strength,
                 desc='Hires',
             )
             shared.state.job = 'HiRes'
