@@ -2,7 +2,7 @@
 
 ## Update for 2024-11-12
 
-### Highlights for 2024-11-12
+### Highlights for 2024-11-13
 
 *What's New?*
 

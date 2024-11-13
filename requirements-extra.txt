@@ -1,0 +1,14 @@
+# additional requirements that are not required for sdnext base operations
+basicsr
+gfpgan
+clean-fid
+insightface
+pydantic==1.10.15
+albumentations==1.4.3
+optimum-quanto
+nncf==2.7.0
+clip_interrogator==0.6.0
+bitsandbytes
+gguf
+pynvml
+ultralytics

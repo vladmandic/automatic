@@ -43,6 +43,8 @@ tunableop_results*.csv
 !webui.bat
 !webui.sh
 !package.json
+!requirements.txt
+!requirements-extra.txt
 
 # pyinstaller
 *.spec
