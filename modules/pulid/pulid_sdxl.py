@@ -4,6 +4,7 @@ import insightface
 import numpy as np
 import torch
 import torch.nn as nn
+from PIL import Image
 from diffusers import StableDiffusionXLPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 
@@ -353,6 +354,9 @@ class StableDiffusionXLPuLIDPipeline:
         debug(f'PulID call: width={width} height={height} cfg={guidance_scale} steps={num_inference_steps} seed={seed} strength={strength} id_scale={id_scale} output={output_type}')
         self.step = 0 # pylint: disable=attribute-defined-outside-init
         self.callback_on_step_end = callback_on_step_end # pylint: disable=attribute-defined-outside-init
+        if isinstance(image, list) and len(image) > 0 and isinstance(image[0], Image.Image):
+            if image[0].width != width or image[0].height != height: # override width/height if different
+                width, height = image[0].width, image[0].height
         size = (1, height, width)
         # sigmas
         sigmas = self.get_sigmas_karras(num_inference_steps).to(self.device)

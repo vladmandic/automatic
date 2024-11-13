@@ -35,6 +35,8 @@ def create_latents(image, p, dtype=None, device=None):
 
 def full_vae_decode(latents, model):
     t0 = time.time()
+    if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
+        model = model.pipe
     if model is None or not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
@@ -148,6 +150,8 @@ def taesd_vae_encode(image):
 def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
     t0 = time.time()
     model = model or shared.sd_model
+    if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
+        model = model.pipe
     if latents is None or not torch.is_tensor(latents): # already decoded
         return latents
     prev_job = shared.state.job
@@ -196,6 +200,8 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
 def vae_encode(image, model, full_quality=True): # pylint: disable=unused-variable
     if shared.state.interrupted or shared.state.skipped:
         return []
+    if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
+        model = model.pipe
     if not hasattr(model, 'vae'):
         shared.log.error('VAE not found in model')
         return []
