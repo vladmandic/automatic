@@ -5,7 +5,7 @@ from fastapi import FastAPI, APIRouter, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from modules import errors, shared, postprocessing
-from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery
+from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery, docs
 
 
 errors.install()
@@ -23,8 +23,10 @@ class Api:
                 for line in file.readlines():
                     user, password = line.split(":")
                     self.credentials[user.replace('"', '').strip()] = password.replace('"', '').strip()
-
         self.router = APIRouter()
+        if shared.cmd_opts.docs:
+            docs.create_docs(app)
+            docs.create_redocs(app)
         self.app = app
         self.queue_lock = queue_lock
         self.generate = generate.APIGenerate(queue_lock)

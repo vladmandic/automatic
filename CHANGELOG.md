@@ -36,12 +36,13 @@ And quite a few more improvements and fixes since the last update - for full det
   - UI built-in [wiki](https://github.com/vladmandic/automatic/wiki)  
     go to info -> wiki and search wiki pages directly in UI!  
   - major [Wiki](https://github.com/vladmandic/automatic/wiki) and [Home](https://github.com/vladmandic/automatic) updates  
+  - updated API swagger docs for at `/docs`  
 - Integrations:  
   - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment  
     - advanced method of face id transfer with better quality as well as control over identity and appearance  
       try it out, likely the best quality available for sdxl models  
     - select in *scripts -> pulid*  
-    - compatible with *sdxl* for text-to-image, image-to-image, inpaint and detailer workflows  
+    - compatible with *sdxl* for text-to-image, image-to-image, inpaint, refine, detailer workflows  
     - can be used in xyz grid  
     - *note*: this module contains several advanced features on top of original implementation  
   - [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference  

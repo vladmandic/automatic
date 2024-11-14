@@ -51,13 +51,10 @@ fastapi_args = {
     "version": f'0.0.{git_commit}',
     "title": "SD.Next",
     "description": "SD.Next",
-    "docs_url": "/docs" if cmd_opts.docs else None,
-    "redoc_url": "/redocs" if cmd_opts.docs else None,
-    "swagger_ui_parameters": {
-        "displayOperationId": True,
-        "showCommonExtensions": True,
-        "deepLinking": False,
-    }
+    "docs_url": None,
+    "redoc_url": None,
+    # "docs_url": "/docs" if cmd_opts.docs else None, # custom handler in api.py
+    # "redoc_url": "/redocs" if cmd_opts.docs else None,
 }
 
 import modules.sd_hijack
@@ -277,7 +274,6 @@ def start_ui():
             max_threads=64,
             show_api=False,
             quiet=True,
-            # favicon_path='html/logo.ico',
             favicon_path='html/favicon.svg',
             allowed_paths=allowed_paths,
             app_kwargs=fastapi_args,
