@@ -156,8 +156,8 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         task = question.split('>', 1)[0] + '>'
     else:
         task = '<MORE_DETAILED_CAPTION>'
-        question = task + question
-    inputs = processor(text=question, images=image, return_tensors="pt")
+        # question = task + question
+    inputs = processor(text=task, images=image, return_tensors="pt")
     input_ids = inputs['input_ids'].to(devices.device)
     pixel_values = inputs['pixel_values'].to(devices.device, devices.dtype)
     with devices.inference_context():

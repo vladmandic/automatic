@@ -9,12 +9,15 @@ from modules.errors import log
 def script_name_to_index(name, scripts_list):
     if name is None or len(name) == 0 or name == 'none':
         return None
-    try:
-        return [script.title().lower() for script in scripts_list].index(name.lower())
-    except Exception:
-        log.error(f'API: script={name} not found')
-        return None
-        # raise HTTPException(status_code=422, detail=f"Script '{name}' not found") from e
+    available = [script.title().lower() for script in scripts_list]
+    if name.lower() in available:
+        return available.index(name.lower())
+    short = [available.split(':')[0] for available in available]
+    if name.lower() in short:
+        return short.index(name.lower())
+    log.error(f'API: script={name} available={available} not found')
+    return None
+
 
 def get_selectable_script(script_name, script_runner):
     if script_name is None or script_name == "" or script_name == 'none':
@@ -25,11 +28,13 @@ def get_selectable_script(script_name, script_runner):
     script = script_runner.selectable_scripts[script_idx]
     return script, script_idx
 
+
 def get_scripts_list():
     t2ilist = [script.name for script in scripts.scripts_txt2img.scripts if script.name is not None]
     i2ilist = [script.name for script in scripts.scripts_img2img.scripts if script.name is not None]
     control = [script.name for script in scripts.scripts_control.scripts if script.name is not None]
     return models.ResScripts(txt2img = t2ilist, img2img = i2ilist, control = control)
+
 
 def get_script_info(script_name: Optional[str] = None):
     res = []
@@ -39,6 +44,7 @@ def get_script_info(script_name: Optional[str] = None):
                 res.append(script.api_info)
     return res
 
+
 def get_script(script_name, script_runner):
     if script_name is None or script_name == "" or script_name == 'none':
         return None, None
@@ -46,6 +52,7 @@ def get_script(script_name, script_runner):
     if script_idx is None:
         return None
     return script_runner.scripts[script_idx]
+
 
 def init_default_script_args(script_runner):
     # find max idx from the scripts in runner and generate a none array to init script_args
@@ -68,6 +75,7 @@ def init_default_script_args(script_runner):
                     ui_default_values.append(elem.value)
                 script_args[script.args_from:script.args_to] = ui_default_values
     return script_args
+
 
 def init_script_args(p, request, default_script_args, selectable_scripts, selectable_script_idx, script_runner):
     script_args = default_script_args.copy()

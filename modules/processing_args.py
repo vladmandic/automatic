@@ -20,8 +20,9 @@ def task_specific_kwargs(p, model):
     task_args = {}
     is_img2img_model = bool('Zero123' in shared.sd_model.__class__.__name__)
     if len(getattr(p, 'init_images', [])) > 0:
-        p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images if isinstance(i, str)]
-        p.init_images = [i.convert('RGB') for i in p.init_images if isinstance(i, Image.Image)]
+        if isinstance(p.init_images[0], str):
+            p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images]
+        p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images]
     if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0 and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):

@@ -29,6 +29,9 @@ class YoloResult:
         self.height = height
         self.args = args
 
+    def __str__(self):
+        return f'cls={self.cls} label={self.label} score={self.score} box={self.box} mask={self.mask} item={self.item} size={self.width}x{self.height} args={self.args}'
+
 
 class YoloRestorer(Detailer):
     def __init__(self):
@@ -76,11 +79,15 @@ class YoloRestorer(Detailer):
             offload: bool = shared.opts.detailer_unload,
         ) -> list[YoloResult]:
 
+        if model is None or (isinstance(model, str) and len(model) == 0):
+            model = 'yolo11m'
         result = []
         if isinstance(model, str):
-            model = self.models.get(model, None)
-            if model is None:
+            cached = self.models.get(model, None)
+            if cached is None:
                 _, model = self.load(model)
+            else:
+                model = cached
         if model is None:
             return result
         args = {
@@ -136,7 +143,8 @@ class YoloRestorer(Detailer):
                         draw = ImageDraw.Draw(mask_image)
                         draw.rectangle(box, fill="white", outline=None, width=0)
                         cropped = image.crop(box)
-                        result.append(YoloResult(cls=cls, label=label, score=round(score, 2), box=box, mask=mask_image, item=cropped, width=w, height=h, args=args))
+                        res = YoloResult(cls=cls, label=label, score=round(score, 2), box=box, mask=mask_image, item=cropped, width=w, height=h, args=args)
+                        result.append(res)
                 if len(result) >= shared.opts.detailer_max:
                     break
         return result

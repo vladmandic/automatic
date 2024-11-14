@@ -40,7 +40,7 @@ class APIGenerate():
             sanitize_str(request.script_args)
 
     def prepare_face_module(self, request):
-        if hasattr(request, "face") and request.face and not request.script_name and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
+        if getattr(request, "face", None) is not None and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
             request.script_name = "face"
             request.script_args = [
                 request.face.mode,
@@ -116,7 +116,10 @@ class APIGenerate():
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
+        if processed.images is None or len(processed.images) == 0:
+            b64images = []
+        else:
+            b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
         self.sanitize_b64(txt2imgreq)
         return models.ResTxt2Img(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
@@ -162,7 +165,10 @@ class APIGenerate():
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
+        if processed.images is None or len(processed.images) == 0:
+            b64images = []
+        else:
+            b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
         if not img2imgreq.include_init_images:
             img2imgreq.init_images = None
             img2imgreq.mask = None
