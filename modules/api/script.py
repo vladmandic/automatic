@@ -7,7 +7,7 @@ from modules.errors import log
 
 
 def script_name_to_index(name, scripts_list):
-    if name is None or len(name) == 0:
+    if name is None or len(name) == 0 or name == 'none':
         return None
     try:
         return [script.title().lower() for script in scripts_list].index(name.lower())
@@ -17,7 +17,7 @@ def script_name_to_index(name, scripts_list):
         # raise HTTPException(status_code=422, detail=f"Script '{name}' not found") from e
 
 def get_selectable_script(script_name, script_runner):
-    if script_name is None or script_name == "":
+    if script_name is None or script_name == "" or script_name == 'none':
         return None, None
     script_idx = script_name_to_index(script_name, script_runner.selectable_scripts)
     if script_idx is None:
@@ -40,7 +40,7 @@ def get_script_info(script_name: Optional[str] = None):
     return res
 
 def get_script(script_name, script_runner):
-    if script_name is None or script_name == "":
+    if script_name is None or script_name == "" or script_name == 'none':
         return None, None
     script_idx = script_name_to_index(script_name, script_runner.scripts)
     if script_idx is None:
