@@ -16,11 +16,13 @@
     "url": "git+https://github.com/vladmandic/automatic.git"
   },
   "scripts": {
+    "venv": "source venv/bin/activate",
     "start": "python launch.py --debug --experimental",
     "ruff": "ruff check",
     "eslint": "eslint javascript/ extensions-builtin/sdnext-modernui/javascript/",
     "pylint": "pylint *.py modules/ extensions-builtin/",
-    "lint": "npm run eslint; npm run ruff; npm run pylint"
+    "lint": "npm run eslint; npm run ruff; npm run pylint",
+    "test": "cli/test.sh"
   },
   "devDependencies": {
     "esbuild": "^0.18.15"

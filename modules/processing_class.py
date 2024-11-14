@@ -72,7 +72,7 @@ class StableDiffusionProcessing:
                  resize_mode: int = 0,
                  resize_name: str = 'None',
                  resize_context: str = 'None',
-                 denoising_strength: float = 0.0,
+                 denoising_strength: float = 0.3,
                  image_cfg_scale: float = None,
                  initial_noise_multiplier: float = None, # pylint: disable=unused-argument # a1111 compatibility
                  scale_by: float = 1,
@@ -161,18 +161,6 @@ class StableDiffusionProcessing:
         self.do_not_reload_embeddings = do_not_reload_embeddings
         self.detailer = detailer
         self.restore_faces = restore_faces
-        self.hdr_mode = hdr_mode
-        self.hdr_brightness = hdr_brightness
-        self.hdr_color = hdr_color
-        self.hdr_sharpen = hdr_sharpen
-        self.hdr_clamp = hdr_clamp
-        self.hdr_boundary = hdr_boundary
-        self.hdr_threshold = hdr_threshold
-        self.hdr_maximize = hdr_maximize
-        self.hdr_max_center = hdr_max_center
-        self.hdr_max_boundry = hdr_max_boundry
-        self.hdr_color_picker = hdr_color_picker
-        self.hdr_tint_ratio = hdr_tint_ratio
         self.init_images = init_images
         self.resize_mode = resize_mode
         self.resize_name = resize_name
@@ -242,14 +230,6 @@ class StableDiffusionProcessing:
         self.all_seeds = None
         self.all_subseeds = None
 
-        # ip adapter
-        self.ip_adapter_names = []
-        self.ip_adapter_scales = [0.0]
-        self.ip_adapter_images = []
-        self.ip_adapter_starts = [0.0]
-        self.ip_adapter_ends = [1.0]
-        self.ip_adapter_crops = []
-
         # a1111 compatibility items
         shared.opts.data['clip_skip'] = int(self.clip_skip) # for compatibility with a1111 sd_hijack_clip
         self.seed_enable_extras: bool = True,
@@ -286,18 +266,7 @@ class StableDiffusionProcessing:
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
         self.task_args = {}
-        # a1111 compatibility items
-        self.batch_index = 0
-        self.refiner_switch_at = 0
-        self.hr_prompt = ''
-        self.all_hr_prompts = []
-        self.hr_negative_prompt = ''
-        self.all_hr_negative_prompts = []
-        self.comments = {}
-        self.is_api = False
-        self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
-        self.script_args_value: list = field(default=None, init=False)
-        self.scripts_setup_complete: bool = field(default=False, init=False)
+
         # ip adapter
         self.ip_adapter_names = []
         self.ip_adapter_scales = [0.0]
@@ -305,6 +274,7 @@ class StableDiffusionProcessing:
         self.ip_adapter_starts = [0.0]
         self.ip_adapter_ends = [1.0]
         self.ip_adapter_crops = []
+
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness
@@ -318,8 +288,10 @@ class StableDiffusionProcessing:
         self.hdr_max_boundry=hdr_max_boundry
         self.hdr_color_picker=hdr_color_picker
         self.hdr_tint_ratio=hdr_tint_ratio
+
         # globals
         self.embedder = None
+        self.override = None
         self.scheduled_prompt: bool = False
         self.prompt_embeds = []
         self.positive_pooleds = []

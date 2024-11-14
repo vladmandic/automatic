@@ -251,6 +251,7 @@ class OptionInfo:
         self.comment_before = comment_before # HTML text that will be added after label in UI
         self.comment_after = comment_after # HTML text that will be added before label in UI
         self.submit = submit
+        self.exclude = ['sd_model_checkpoint', 'sd_model_refiner', 'sd_vae', 'sd_unet', 'sd_text_encoder', 'sd_model_dict']
 
     def needs_reload_ui(self):
         return self
@@ -276,6 +277,8 @@ class OptionInfo:
         return self
 
     def validate(self, opt, value):
+        if opt in self.exclude:
+            return True
         args = self.component_args if self.component_args is not None else {}
         if callable(args):
             try:
