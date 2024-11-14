@@ -178,6 +178,7 @@ class Script(scripts.Script):
                 sd_models.copy_diffuser_options(shared.sd_model, shared.sd_model.pipe)
                 sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
                 sd_models.set_diffuser_options(shared.sd_model, vae=None, op='model')
+                # shared.sd_model.hack_unet_attn_layers(shared.sd_model.pipe.unet) # reapply attention layers
                 devices.torch_gc()
             except Exception as e:
                 shared.log.error(f'PuLID: failed to create pipeline: {e}')

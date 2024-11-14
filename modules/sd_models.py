@@ -1188,8 +1188,8 @@ def set_diffusers_attention(pipe):
             else:
                 module.set_attn_processor(attention)
 
-    if hasattr(pipe, 'pipe'):
-        set_diffusers_attention(pipe.pipe)
+    # if hasattr(pipe, 'pipe'):
+    #    set_diffusers_attention(pipe.pipe)
 
     if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
         return
