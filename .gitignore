@@ -44,7 +44,6 @@ tunableop_results*.csv
 !webui.sh
 !package.json
 !requirements.txt
-!requirements-extra.txt
 
 # pyinstaller
 *.spec

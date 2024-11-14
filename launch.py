@@ -240,7 +240,7 @@ def main():
             installer.install_extensions()
             installer.install_requirements() # redo requirements since extensions may change them
             installer.update_wiki()
-            if installer.errors == 0:
+            if len(installer.errors) == 0:
                 installer.log.debug(f'Setup complete without errors: {round(time.time())}')
             else:
                 installer.log.warning(f'Setup complete with errors: {installer.errors}')

@@ -27,7 +27,7 @@ log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
 log_rolled = False
 first_call = True
 quick_allowed = True
-errors = 0
+errors = []
 opts = {}
 args = Dot({
     'debug': False,
@@ -280,8 +280,7 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     txt = txt.strip()
     debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
-        global errors # pylint: disable=global-statement
-        errors += 1
+        errors.append(f'pip: {package}')
         log.error(f'Install: {pipCmd}: {arg}')
         log.debug(f'Install: pip output {txt}')
     return txt
@@ -324,8 +323,7 @@ def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = Fal
     if result.returncode != 0 and not ignore:
         if "couldn't find remote ref" in txt: # not a git repo
             return txt
-        global errors # pylint: disable=global-statement
-        errors += 1
+        errors.append(f'git: {folder}')
         log.error(f'Git: {folder} / {arg}')
         if 'or stash them' in txt:
             log.error(f'Git local changes detected: check details log="{log_file}"')
@@ -668,7 +666,7 @@ def install_torch_addons():
     triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
     if 'xformers' in xformers_package:
         try:
-            install(f'--no-deps {xformers_package}', ignore=True)
+            install(xformers_package, ignore=True, no_deps=True)
             import torch # pylint: disable=unused-import
             import xformers # pylint: disable=unused-import
         except Exception as e:
@@ -855,8 +853,7 @@ def run_extension_installer(folder):
         txt = result.stdout.decode(encoding="utf8", errors="ignore")
         debug(f'Extension installer: file="{path_installer}" {txt}')
         if result.returncode != 0:
-            global errors # pylint: disable=global-statement
-            errors += 1
+            errors.append(f'ext: {os.path.basename(folder)}')
             if len(result.stderr) > 0:
                 txt = txt + '\n' + result.stderr.decode(encoding="utf8", errors="ignore")
             log.error(f'Extension installer error: {path_installer}')
@@ -997,6 +994,29 @@ def ensure_base_requirements():
     install('requests', 'requests', quiet=True)
 
 
+def install_optional():
+    log.info('Installing optional requirements...')
+    install('basicsr')
+    install('gfpgan')
+    install('clean-fid')
+    install('optimum-quanto', ignore=True)
+    install('bitsandbytes', ignore=True)
+    install('pynvml', ignore=True)
+    install('ultralytics', ignore=True)
+    install('Cython', ignore=True)
+    install('insightface', ignore=True) # problematic build
+    install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
+    # install('flash-attn', ignore=True) # requires cuda and nvcc to be installed
+    install('gguf', ignore=True)
+    try:
+        import gguf
+        scripts_dir = os.path.join(os.path.dirname(gguf.__file__), '..', 'scripts')
+        if os.path.exists(scripts_dir):
+            os.rename(scripts_dir, scripts_dir + '_gguf')
+    except Exception:
+        pass
+
+
 def install_requirements():
     if args.profile:
         pr = cProfile.Profile()
@@ -1006,10 +1026,13 @@ def install_requirements():
     if not installed('diffusers', quiet=True): # diffusers are not installed, so run initial installation
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-        log.info('Installing requirements: this may take a while...')
+        log.info('Install requirements: this may take a while...')
         pip('install -r requirements.txt')
+    if args.optional:
+        quick_allowed = False
+        install_optional()
     installed('torch', reload=True) # reload packages cache
-    log.info('Verifying requirements')
+    log.info('Install: verifying requirements')
     with open('requirements.txt', 'r', encoding='utf8') as f:
         lines = [line.strip() for line in f.readlines() if line.strip() != '' and not line.startswith('#') and line is not None]
         for line in lines:
@@ -1272,6 +1295,7 @@ def add_args(parser):
     group_setup.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     group_setup.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
     group_setup.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
+    group_setup.add_argument('--optional', default = os.environ.get("SD_OPTIONAL",False), action='store_true', help = "Force installation of optional requirements, default: %(default)s")
     group_setup.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
 
     group_startup = parser.add_argument_group('Startup')
