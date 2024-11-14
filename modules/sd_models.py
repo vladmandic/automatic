@@ -1081,9 +1081,10 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
+    cls = pipe.__class__.__name__
     if n in exclude:
         return pipe
-    if 'Onnx' in pipe.__class__.__name__:
+    if 'Onnx' in cls:
         return pipe
 
     new_pipe = None
@@ -1114,27 +1115,27 @@ def set_diffuser_pipe(pipe, new_pipe_type):
                 elif new_pipe_type == DiffusersTaskType.INPAINTING:
                     new_pipe = diffusers.AutoPipelineForInpainting.from_pipe(pipe)
                 else:
-                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__}')
+                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
-                shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__} {e}')
+                shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls} {e}')
                 return pipe
         else:
             try: # maybe a wrapper pipeline so just change the class
                 if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
-                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING, pipe.__class__.__name__) # pylint: disable=protected-access
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
                     new_pipe = pipe
                 elif new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
-                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING, pipe.__class__.__name__) # pylint: disable=protected-access
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
                     new_pipe = pipe
                 elif new_pipe_type == DiffusersTaskType.INPAINTING:
-                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING, pipe.__class__.__name__) # pylint: disable=protected-access
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
                     new_pipe = pipe
                 else:
-                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__}')
+                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
-                shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={pipe.__class__.__name__} {e}')
+                shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls} {e}')
                 return pipe
 
     # if pipe.__class__ == new_pipe.__class__:
@@ -1158,7 +1159,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         new_pipe.pipe = set_diffuser_pipe(new_pipe.pipe, new_pipe_type)
 
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
+    shared.log.debug(f"Pipeline class change: original={cls} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 
@@ -1186,6 +1187,9 @@ def set_diffusers_attention(pipe):
                 pass # unknown transformer so probably dont want to force attention processor
             else:
                 module.set_attn_processor(attention)
+
+    if hasattr(pipe, 'pipe'):
+        set_diffusers_attention(pipe.pipe)
 
     if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
         return

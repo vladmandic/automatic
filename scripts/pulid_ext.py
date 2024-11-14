@@ -18,7 +18,6 @@ class Script(scripts.Script):
     def __init__(self):
         self.pulid = None
         self.cache = None
-        self.mask_apply_overlay = shared.opts.mask_apply_overlay
         self.preprocess = 0
         super().__init__()
         self.register() # pulid is script with processing override so xyz doesnt execute
@@ -151,8 +150,6 @@ class Script(scripts.Script):
             shared.log.warning('PuLID: batch size not supported')
             p.batch_size = 1
 
-        self.mask_apply_overlay = shared.opts.mask_apply_overlay
-        shared.opts.data['mask_apply_overlay'] = False
         sdp = shared.opts.cross_attention_optimization == "Scaled-Dot-Product"
         strength = getattr(p, 'pulid_strength', strength)
         zero = getattr(p, 'pulid_zero', zero)
@@ -242,7 +239,6 @@ class Script(scripts.Script):
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
         _strength, _zero, _sampler, _ortho, _gallery, restore, _offload, _version = args
         if hasattr(shared.sd_model, 'pipe') and shared.sd_model_type == "sdxl":
-            shared.opts.data['mask_apply_overlay'] = self.mask_apply_overlay
             restore = getattr(p, 'pulid_restore', restore)
             if restore:
                 if hasattr(shared.sd_model, 'app'):

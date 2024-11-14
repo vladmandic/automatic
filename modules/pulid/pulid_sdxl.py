@@ -1,3 +1,4 @@
+from typing import Union
 import os
 import cv2
 import insightface
@@ -5,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from PIL import Image
-from diffusers import StableDiffusionXLPipeline
+from diffusers import StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
 from diffusers.pipelines.stable_diffusion_xl.pipeline_output import StableDiffusionXLPipelineOutput
 
 from huggingface_hub import hf_hub_download, snapshot_download
@@ -28,7 +29,17 @@ debug = log.trace if os.environ.get('SD_PULID_DEBUG', None) is not None else lam
 
 
 class StableDiffusionXLPuLIDPipeline:
-    def __init__(self, pipe: StableDiffusionXLPipeline, device: torch.device, dtype: torch.dtype=None, providers: list=None, offload: bool=True, sampler=None, cache_dir=None, sdp: bool=True, version: str='v1.1'):
+    def __init__(self,
+                 pipe: Union[StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline],
+                 device: torch.device,
+                 dtype: torch.dtype=None,
+                 providers: list=None,
+                 offload: bool=True,
+                 sampler=None,
+                 cache_dir=None,
+                 sdp: bool=True,
+                 version: str='v1.1',
+                ):
         super().__init__()
         self.device = device
         self.dtype = dtype or torch.float16
@@ -282,7 +293,7 @@ class StableDiffusionXLPuLIDPipeline:
         t = self.timestep(sigma)
         x_ddim_space = x / (sigma[:, None, None, None] ** 2 + self.sigma_data**2) ** 0.5
         cfg_scale = extra_args['cfg_scale']
-        debug(f'PulID sample start: step={self.step+1} x={x.shape} dtype={x.dtype} timestep={t.item()} sigma={sigma.shape} cfg={cfg_scale} args={extra_args.keys()}')
+        # debug(f'PulID sample start: step={self.step+1} x={x.shape} dtype={x.dtype} timestep={t.item()} sigma={sigma.shape} cfg={cfg_scale} args={extra_args.keys()}')
         eps_positive = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['positive'])[0]
         eps_negative = self.pipe.unet(x_ddim_space, t, return_dict=False, **extra_args['negative'])[0]
         noise_pred = eps_negative + cfg_scale * (eps_positive - eps_negative)
@@ -290,7 +301,7 @@ class StableDiffusionXLPuLIDPipeline:
         if self.callback_on_step_end is not None:
             self.step += 1
             self.callback_on_step_end(self.pipe, step=self.step, timestep=t, kwargs={ 'latents': latent })
-        debug(f'PulID sample end:   step={self.step} x={latent.shape} dtype={x.dtype} min={torch.amin(latent)} max={torch.amax(latent)}')
+        # debug(f'PulID sample end:   step={self.step} x={latent.shape} dtype={x.dtype} min={torch.amin(latent)} max={torch.amax(latent)}')
         return latent
 
     def init_latent(self, seed, size, image, mask_image, strength, width, height): # pylint: disable=unused-argument
