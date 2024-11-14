@@ -6,9 +6,11 @@ import time
 import inspect
 import torch
 import numpy as np
+from PIL import Image
 from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
+from modules.api import helpers
 
 
 debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -18,7 +20,8 @@ def task_specific_kwargs(p, model):
     task_args = {}
     is_img2img_model = bool('Zero123' in shared.sd_model.__class__.__name__)
     if len(getattr(p, 'init_images', [])) > 0:
-        p.init_images = [p.convert('RGB') for p in p.init_images]
+        p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images if isinstance(i, str)]
+        p.init_images = [i.convert('RGB') for i in p.init_images if isinstance(i, Image.Image)]
     if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0 and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):

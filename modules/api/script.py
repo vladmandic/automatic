@@ -3,18 +3,25 @@ from fastapi.exceptions import HTTPException
 import gradio as gr
 from modules.api import models
 from modules import scripts
+from modules.errors import log
 
 
 def script_name_to_index(name, scripts_list):
+    if name is None or len(name) == 0:
+        return None
     try:
         return [script.title().lower() for script in scripts_list].index(name.lower())
-    except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Script '{name}' not found") from e
+    except Exception:
+        log.error(f'API: script={name} not found')
+        return None
+        # raise HTTPException(status_code=422, detail=f"Script '{name}' not found") from e
 
 def get_selectable_script(script_name, script_runner):
     if script_name is None or script_name == "":
         return None, None
     script_idx = script_name_to_index(script_name, script_runner.selectable_scripts)
+    if script_idx is None:
+        return None, None
     script = script_runner.selectable_scripts[script_idx]
     return script, script_idx
 
@@ -36,6 +43,8 @@ def get_script(script_name, script_runner):
     if script_name is None or script_name == "":
         return None, None
     script_idx = script_name_to_index(script_name, script_runner.scripts)
+    if script_idx is None:
+        return None
     return script_runner.scripts[script_idx]
 
 def init_default_script_args(script_runner):

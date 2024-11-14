@@ -14,7 +14,7 @@ def validate_sampler_name(name):
     return name
 
 
-def decode_base64_to_image(encoding):
+def decode_base64_to_image(encoding, quiet=False):
     if encoding.startswith("data:image/"):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
@@ -22,7 +22,10 @@ def decode_base64_to_image(encoding):
         return image
     except Exception as e:
         shared.log.warning(f'API cannot decode image: {e}')
-        raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+        if not quiet:
+            raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+        else:
+            return None
 
 
 def encode_pil_to_base64(image):

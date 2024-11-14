@@ -90,7 +90,3 @@ def create_redocs(app: FastAPI):
             redoc_favicon_url='/file=html/favicon.svg',
         )
         return res
-
-"""
-https://github.com/Amoenus/SwaggerDark/blob/master/SwaggerDark.css
-"""

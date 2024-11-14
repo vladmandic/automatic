@@ -21,7 +21,7 @@ class StableDiffusionProcessing:
                  sd_model=None, # pylint: disable=unused-argument # local instance of sd_model
                  # base params
                  prompt: str = "",
-                 negative_prompt: str = None,
+                 negative_prompt: str = "",
                  seed: int = -1,
                  subseed: int = -1,
                  subseed_strength: float = 0,
