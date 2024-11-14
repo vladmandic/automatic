@@ -18,7 +18,7 @@ RUN ["apt-get", "-y", "install", "git"]
 # sdnext will run all necessary pip install ops and then exit
 RUN ["python", "launch.py", "--debug", "--uv", "--use-cuda", "--log", "sdnext.log", "--test"]
 # preinstall additional packages to avoid installation during runtime
-RUN ["uv", "pip", "install", "-r", "requirements-extra.txt"]
+RUN ["uv", "pip", "install", "-r", "requirements-extra.txt", "--system"]
 # actually run sdnext
 CMD ["python", "launch.py", "--debug", "--skip-all", "--listen", "--quick", "--api-log", "--log", "sdnext.log"]
 # expose port
