@@ -26,7 +26,9 @@ def get_stepwise(param, step, steps):
             return v
         else:
             return m
-    return calculate_weight(sorted_positions(param), step, steps)
+
+    stepwise = calculate_weight(sorted_positions(param), step, steps)
+    return stepwise
 
 
 class ExtraNetworkLora(extra_networks.ExtraNetwork):
