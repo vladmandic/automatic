@@ -62,6 +62,38 @@ class State:
         }
         return obj
 
+    def status(self):
+        from modules import progress
+        from modules.api import models
+        res = models.ResStatus(
+            task=self.job,
+            id=progress.current_task or '',
+            job=max(self.job_no, 0),
+            jobs=max(self.frame_count, self.job_count, self.job_no),
+            total=self.total_jobs,
+            timestamp=self.job_timestamp if self.job != '' else None,
+            step=self.sampling_step,
+            steps=self.sampling_steps,
+            queued=len(progress.pending_tasks),
+            status='unknown',
+            uptime = round(time.time() - self.server_start)
+        )
+        res.step = res.steps * res.job + res.step
+        res.steps = res.steps * res.jobs
+        res.progress = round(min(1, abs(res.step / res.steps) if res.steps > 0 else 0), 2)
+        res.elapsed = round(time.time() - self.time_start, 2) if self.time_start is not None else None
+        predicted = round(res.elapsed / res.progress, 2) if res.progress > 0 and res.elapsed is not None else None
+        res.eta = round(predicted - res.elapsed, 2) if predicted is not None else None
+        if self.paused:
+            res.status = 'paused'
+        elif self.interrupted:
+            res.status = 'interrupted'
+        elif self.skipped:
+            res.status = 'skipped'
+        else:
+            res.status = 'running' if self.job != '' else 'idle'
+        return res
+
     def begin(self, title="", api=None):
         import modules.devices
         self.total_jobs += 1

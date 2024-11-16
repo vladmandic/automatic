@@ -300,6 +300,23 @@ class ResProgress(BaseModel):
     current_image: str = Field(default=None, title="Current image", description="The current image in base64 format. opts.show_progress_every_n_steps is required for this to work.")
     textinfo: str = Field(default=None, title="Info text", description="Info text used by WebUI.")
 
+class ResStatus(BaseModel):
+    status: str = Field(title="Status", description="Current status")
+    task: str = Field(title="Task", description="Current task")
+    timestamp: Optional[str] = Field(title="Timestamp", description="Timestamp of the current job")
+    id: str = Field(title="ID", description="ID of the current task")
+    job: int = Field(title="Job", description="Current job")
+    jobs: int = Field(title="Jobs", description="Total jobs")
+    total: int = Field(title="Total Jobs", description="Total jobs")
+    step: int = Field(title="Step", description="Current step")
+    steps: int = Field(title="Steps", description="Total steps")
+    queued: int = Field(title="Queued", description="Number of queued tasks")
+    uptime: int = Field(title="Uptime", description="Uptime of the server")
+    elapsed: Optional[float] = Field(title="Elapsed time")
+    eta: Optional[float] = Field(title="ETA in secs")
+    progress: Optional[float] = Field(title="Progress", description="The progress with a range of 0 to 1")
+
+
 class ReqInterrogate(BaseModel):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")
     clip_model: str = Field(default="", title="CLiP Model", description="The interrogate model used.")

@@ -1,3 +1,4 @@
+from functools import lru_cache
 import io
 import os
 import sys
@@ -1271,6 +1272,7 @@ def html(filename):
     return ""
 
 
+@lru_cache(maxsize=1)
 def get_version():
     version = None
     if version is None:

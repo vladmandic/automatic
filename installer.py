@@ -412,14 +412,14 @@ def get_platform():
         else:
             release = platform.release()
         return {
-            # 'host': platform.node(),
             'arch': platform.machine(),
             'cpu': platform.processor(),
             'system': platform.system(),
             'release': release,
-            # 'platform': platform.platform(aliased = True, terse = False),
-            # 'version': platform.version(),
             'python': platform.python_version(),
+            'docker': os.environ.get('SD_INSTALL_DEBUG', None) is not None,
+            # 'host': platform.node(),
+            # 'version': platform.version(),
         }
     except Exception as e:
         return { 'error': e }
