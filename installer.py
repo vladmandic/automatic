@@ -504,7 +504,7 @@ def install_cuda():
 
 def install_rocm_zluda():
     if args.skip_all or args.skip_requirements:
-        return
+        return None
     from modules import rocm
     if not rocm.is_installed:
         log.warning('ROCm: could not find ROCm toolkit installed')

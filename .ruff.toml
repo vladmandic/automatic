@@ -28,6 +28,7 @@ exclude = [
     "modules/omnigen",
     "modules/instantir",
     "modules/consistory",
+    "modules/flowmatch",
     "modules/pulid/eva_clip",
     "repositories",
     "extensions-builtin/sd-extension-chainner/nodes",

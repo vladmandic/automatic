@@ -43,6 +43,9 @@ try:
         KDPM2DiscreteScheduler,
         KDPM2AncestralDiscreteScheduler,
     )
+
+    from modules.flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
+
 except Exception as e:
     import diffusers
     shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
@@ -70,7 +73,15 @@ config = {
     'DPM++ 2M SDE': { 'thresholding': False, 'sample_max_value': 1.0, 'algorithm_type': "sde-dpmsolver++", 'solver_type': "midpoint", 'lower_order_final': True, 'use_karras_sigmas': False, 'final_sigmas_type': 'zero', 'timestep_spacing': 'linspace', 'solver_order': 2 },
     'DPM++ 2M EDM': { 'solver_order': 2, 'solver_type': 'midpoint', 'final_sigmas_type': 'zero', 'algorithm_type': 'dpmsolver++' },
     'DPM++ Cosine': { 'solver_order': 2, 'sigma_schedule': "exponential", 'prediction_type': "v-prediction" },
-    'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
+    'DPM SDE': { 'use_karras_sigmas': False, 'noise_sampler_seed': None, 'timestep_spacing': 'linspace', 'steps_offset': 0,  },
+
+    'DPM2 FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver2', 'use_noise_sampler': True },
+    'DPM2a FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver2A', 'use_noise_sampler': True },
+    'DPM2++ 2M FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver++2M', 'use_noise_sampler': True },
+    'DPM2++ 2S FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver++2S', 'use_noise_sampler': True },
+    'DPM2++ SDE FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver++sde', 'use_noise_sampler': True },
+    'DPM2++ 2M SDE FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 2, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver++2Msde', 'use_noise_sampler': True },
+    'DPM2++ 3M SDE FlowMatch': { 'shift': 1, 'use_dynamic_shifting': False, 'solver_order': 3, 'sigma_schedule': None, 'use_SD35_sigmas': False, 'algorithm_type': 'dpmsolver++3Msde', 'use_noise_sampler': True },
 
     'Heun': { 'use_beta_sigmas': False, 'use_karras_sigmas': False, 'timestep_spacing': 'linspace' },
     'Heun FlowMatch': { 'timestep_spacing': "linspace", 'shift': 1 },
@@ -111,6 +122,14 @@ samplers_data_diffusers = [
     sd_samplers_common.SamplerData('DPM++ 2M EDM', lambda model: DiffusionSampler('DPM++ 2M EDM', EDMDPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM++ Cosine', lambda model: DiffusionSampler('DPM++ 2M EDM', CosineDPMSolverMultistepScheduler, model), [], {}),
     sd_samplers_common.SamplerData('DPM SDE', lambda model: DiffusionSampler('DPM SDE', DPMSolverSDEScheduler, model), [], {}),
+
+    sd_samplers_common.SamplerData('DPM2 FlowMatch', lambda model: DiffusionSampler('DPM2 FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2a FlowMatch', lambda model: DiffusionSampler('DPM2a FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2++ 2M FlowMatch', lambda model: DiffusionSampler('DPM2++ 2M FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2++ 2S FlowMatch', lambda model: DiffusionSampler('DPM2++ 2S FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2++ SDE FlowMatch', lambda model: DiffusionSampler('DPM2++ SDE FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2++ 2M SDE FlowMatch', lambda model: DiffusionSampler('DPM2++ 2M SDE FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
+    sd_samplers_common.SamplerData('DPM2++ 3M SDE FlowMatch', lambda model: DiffusionSampler('DPM2++ 3M SDE FlowMatch', FlowMatchDPMSolverMultistepScheduler, model), [], {}),
 
     sd_samplers_common.SamplerData('Heun', lambda model: DiffusionSampler('Heun', HeunDiscreteScheduler, model), [], {}),
     sd_samplers_common.SamplerData('Heun FlowMatch', lambda model: DiffusionSampler('Heun FlowMatch', FlowMatchHeunDiscreteScheduler, model), [], {}),
@@ -183,6 +202,12 @@ class DiffusionSampler:
                 self.config['use_karras_sigmas'] = shared.opts.schedulers_sigma == 'karras'
             if 'use_exponential_sigmas' in self.config:
                 self.config['use_exponential_sigmas'] = shared.opts.schedulers_sigma == 'exponential'
+            if 'sigma_schedule' in self.config and shared.opts.schedulers_sigma == 'beta':
+                self.config['sigma_schedule'] = 'beta'
+            if 'sigma_schedule' in self.config and shared.opts.schedulers_sigma == 'karras':
+                self.config['sigma_schedule'] = 'karras'
+            if 'sigma_schedule' in self.config and shared.opts.schedulers_sigma == 'exponential':
+                self.config['sigma_schedule'] = 'exponential'
         else:
             pass # timesteps are set using set_timesteps in set_pipeline_args
 
@@ -201,7 +226,10 @@ class DiffusionSampler:
         if 'shift' in self.config:
             self.config['shift'] = shared.opts.schedulers_shift
         if 'use_dynamic_shifting' in self.config:
-            self.config['use_dynamic_shifting'] = shared.opts.schedulers_dynamic_shift
+            if 'Flux' in model.__class__.__name__:
+                self.config['use_dynamic_shifting'] = shared.opts.schedulers_dynamic_shift
+        if 'use_SD35_sigmas' in self.config:
+            self.config['use_SD35_sigmas'] = 'StableDiffusion3' in model.__class__.__name__
         if 'rescale_betas_zero_snr' in self.config:
             self.config['rescale_betas_zero_snr'] = shared.opts.schedulers_rescale_betas
         if 'timestep_spacing' in self.config and shared.opts.schedulers_timestep_spacing != 'default' and shared.opts.schedulers_timestep_spacing is not None:

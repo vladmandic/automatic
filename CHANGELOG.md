@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-15
+## Update for 2024-11-17
 
-### Highlights for 2024-11-15
+### Highlights for 2024-11-17
 
 *What's New?*
 
@@ -16,7 +16,7 @@ First, a massive update to docs including new UI top-level **info** tab with acc
 
 **Workflow Improvements**:
 - Native Docker support
-- SD3x: ControlNets and all-in-one-safetensors
+- SD3x & Flux.1: more ControlNets, all-in-one-safetensors, DPM samplers, etc.
 - XYZ grid: benchmarking, video creation, etc.
 - Enhanced prompt parsing
 - UI improvements
@@ -26,7 +26,7 @@ And quite a few more improvements and fixes since the last update - for full det
 
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-### Details for 2024-11-15
+### Details for 2024-11-17
 
 - Docs:  
   - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  
@@ -74,6 +74,9 @@ And quite a few more improvements and fixes since the last update - for full det
   - SD3: all-in-one safetensors  
     - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
     - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
+  - FlowMatch samplers:
+    - Applicable to SD 3.x and Flux.1 models
+    - Complete family: 
 
 - Workflow improvements:  
   - Native Docker support with pre-defined [Dockerfile](https://github.com/vladmandic/automatic/blob/dev/Dockerfile)
