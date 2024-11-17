@@ -202,7 +202,6 @@ class YoloRestorer(Detailer):
                 shared.log.info(f'Detailer: model="{name}" no items detected')
                 continue
 
-            pp = None
             shared.opts.data['mask_apply_overlay'] = True
             resolution = 512 if shared.sd_model_type in ['none', 'sd', 'lcm', 'unknown'] else 1024
             orig_prompt: str = orig_p.get('all_prompts', [''])[0]

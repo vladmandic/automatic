@@ -419,6 +419,14 @@ class Script(scripts.Script):
 
 
     def process_images(self, p, *args): # pylint: disable=W0221, W0613
-        if p.iteration > 0 and cache is not None and len(cache.images) > 0:
-            cache.images = [] # avoid returning same images multiple items
-        return cache
+        if hasattr(cache, 'used'):
+            cache.images.clear()
+            cache.used = False
+        elif cache is not None and len(cache.images) > 0:
+            cache.used = True
+            p.restore_faces = False
+            p.detailer = False
+            p.color_corrections = None
+            p.scripts = None
+            return cache
+        return None
