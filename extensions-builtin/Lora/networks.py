@@ -227,6 +227,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     loaded_networks.clear()
     diffuser_loaded.clear()
     diffuser_scales.clear()
+
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
         net = None
         if network_on_disk is not None:
@@ -262,14 +263,22 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     while len(lora_cache) > shared.opts.lora_in_memory_limit:
         name = next(iter(lora_cache))
         lora_cache.pop(name, None)
+
     if len(diffuser_loaded) > 0:
-        shared.log.debug(f'Load network: type=LoRA loaded={diffuser_loaded} scales={diffuser_scales}')
-        shared.sd_model.set_adapters(adapter_names=diffuser_loaded, adapter_weights=diffuser_scales)
-        if shared.opts.lora_fuse_diffusers:
-            shared.sd_model.fuse_lora(adapter_names=diffuser_loaded, lora_scale=1.0, fuse_unet=True, fuse_text_encoder=True) # fuse uses fixed scale since later apply does the scaling
-            shared.sd_model.unload_lora_weights()
+        shared.log.debug(f'Load network: type=LoRA loaded={diffuser_loaded} available={shared.sd_model.get_list_adapters()} active={shared.sd_model.get_active_adapters()} scales={diffuser_scales}')
+        try:
+            shared.sd_model.set_adapters(adapter_names=diffuser_loaded, adapter_weights=diffuser_scales)
+            if shared.opts.lora_fuse_diffusers:
+                shared.sd_model.fuse_lora(adapter_names=diffuser_loaded, lora_scale=1.0, fuse_unet=True, fuse_text_encoder=True) # fuse uses fixed scale since later apply does the scaling
+                shared.sd_model.unload_lora_weights()
+        except Exception as e:
+            shared.log.error(f'Load network: type=LoRA {e}')
+            if debug:
+                errors.display(e, 'LoRA')
+
     if len(loaded_networks) > 0 and debug:
         shared.log.debug(f'Load network: type=LoRA loaded={len(loaded_networks)} cache={list(lora_cache)}')
+
     devices.torch_gc()
 
     if recompile_model:
