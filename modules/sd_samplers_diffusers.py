@@ -103,7 +103,7 @@ config = {
     'LMSD': { 'use_karras_sigmas': False, 'use_exponential_sigmas': False, 'use_beta_sigmas': False, 'timestep_spacing': 'linspace', 'steps_offset': 0 },
     'KDPM2': { 'use_karras_sigmas': False, 'use_exponential_sigmas': False, 'use_beta_sigmas': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
     'KDPM2 a': { 'use_karras_sigmas': False, 'use_exponential_sigmas': False, 'use_beta_sigmas': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
-    'CMSI': { }, #{ 'sigma_min':  0.002, 'sigma_max': 80.0, 'sigma_data': 0.5, 's_noise': 1.0, 'rho': 7.0, 'clip_denoised': True },
+    'CMSI': { },
 }
 
 samplers_data_diffusers = [
@@ -225,7 +225,13 @@ class DiffusionSampler:
         if 'beta_end' in self.config and shared.opts.schedulers_beta_end > 0:
             self.config['beta_end'] = shared.opts.schedulers_beta_end
         if 'shift' in self.config:
-            self.config['shift'] = shared.opts.schedulers_shift
+            if shared.opts.schedulers_shift == 0:
+                if 'StableDiffusion3' in model.__class__.__name__:
+                    self.config['shift'] = 3
+                if 'Flux' in model.__class__.__name__:
+                    self.config['shift'] = 1
+            else:
+                self.config['shift'] = shared.opts.schedulers_shift
         if 'use_dynamic_shifting' in self.config:
             if 'Flux' in model.__class__.__name__:
                 self.config['use_dynamic_shifting'] = shared.opts.schedulers_dynamic_shift
