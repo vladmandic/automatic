@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-17
+## Update for 2024-11-19
 
-### Highlights for 2024-11-17
+### Highlights for 2024-11-19
 
 *What's New?*
 
@@ -26,7 +26,7 @@ And quite a few more improvements and fixes since the last update - for full det
 
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-### Details for 2024-11-17
+### Details for 2024-11-19
 
 - Docs:  
   - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  

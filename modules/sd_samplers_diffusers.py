@@ -1,15 +1,15 @@
 import os
-import copy
 import re
+import copy
 import inspect
+import diffusers
 from modules import shared, errors
 from modules import sd_samplers_common
-from modules.tcd import TCDScheduler
-from modules.dcsolver import DCSolverMultistepScheduler
-from modules.vdm import VDMScheduler
+
 
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: SAMPLER')
+
 
 try:
     from diffusers import (
@@ -43,17 +43,19 @@ try:
         KDPM2DiscreteScheduler,
         KDPM2AncestralDiscreteScheduler,
     )
-
-    from modules.flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
-
 except Exception as e:
-    import diffusers
     shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
         errors.display(e, 'Samplers')
-
-"""
-"""
+try:
+    from modules.schedulers.scheduler_tcd import TCDScheduler # pylint: disable=ungrouped-imports
+    from modules.schedulers.scheduler_dc import DCSolverMultistepScheduler # pylint: disable=ungrouped-imports
+    from modules.schedulers.scheduler_vdm import VDMScheduler # pylint: disable=ungrouped-imports
+    from modules.schedulers.scheduler_dpm_flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
+except Exception as e:
+    shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+    if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
+        errors.display(e, 'Samplers')
 
 config = {
     # beta_start, beta_end are typically per-scheduler, but we don't want them as they should be taken from the model itself as those are values model was trained on
@@ -93,7 +95,6 @@ config = {
     'SA Solver': {'predictor_order': 2, 'corrector_order': 2, 'thresholding': False, 'lower_order_final': True, 'use_karras_sigmas': False, 'use_exponential_sigmas': False, 'use_beta_sigmas': False, 'timestep_spacing': 'linspace'},
     'DC Solver': { 'beta_start': 0.0001, 'beta_end': 0.02, 'solver_order': 2, 'prediction_type': "epsilon", 'thresholding': False, 'solver_type': 'bh2', 'lower_order_final': True, 'dc_order': 2, 'disable_corrector': [0] },
     'VDM Solver': { 'clip_sample_range': 2.0, },
-
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False, 'timestep_spacing': 'linspace' },
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
 
