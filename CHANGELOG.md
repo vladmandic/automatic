@@ -76,7 +76,8 @@ And quite a few more improvements and fixes since the last update - for full det
     - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
   - FlowMatch samplers:
     - Applicable to SD 3.x and Flux.1 models
-    - Complete family: 
+    - Complete family: *DPM2, DPM2a, DPM2++, DPM2++ 2M, DPM2++ 2S, DPM2++ SDE, DPM2++ 2M SDE, DPM2++ 3M SDE*
+  - [NoobAI XL ControlNets](https://huggingface.co/collections/Eugeoter/controlnext-673161eae023f413e0432799), thanks @lbeltrame
 
 - Workflow improvements:  
   - Native Docker support with pre-defined [Dockerfile](https://github.com/vladmandic/automatic/blob/dev/Dockerfile)
