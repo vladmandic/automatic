@@ -16,7 +16,7 @@ models = {
 
 class Script(scripts.Script):
     def title(self):
-        return 'Stable Video Diffusion'
+        return 'Video: SVD'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False

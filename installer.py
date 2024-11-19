@@ -27,7 +27,7 @@ log_file = os.path.join(os.path.dirname(__file__), 'sdnext.log')
 log_rolled = False
 first_call = True
 quick_allowed = True
-errors = 0
+errors = []
 opts = {}
 args = Dot({
     'debug': False,
@@ -110,6 +110,9 @@ def setup_logging():
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",
         "inspect.value.border": "black",
+        "logging.level.info": "blue_violet",
+        "logging.level.debug": "purple4",
+        "logging.level.trace": "dark_blue",
     }))
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
@@ -277,8 +280,7 @@ def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
     txt = txt.strip()
     debug(f'Install {pipCmd}: {txt}')
     if result.returncode != 0 and not ignore:
-        global errors # pylint: disable=global-statement
-        errors += 1
+        errors.append(f'pip: {package}')
         log.error(f'Install: {pipCmd}: {arg}')
         log.debug(f'Install: pip output {txt}')
     return txt
@@ -321,8 +323,7 @@ def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = Fal
     if result.returncode != 0 and not ignore:
         if "couldn't find remote ref" in txt: # not a git repo
             return txt
-        global errors # pylint: disable=global-statement
-        errors += 1
+        errors.append(f'git: {folder}')
         log.error(f'Git: {folder} / {arg}')
         if 'or stash them' in txt:
             log.error(f'Git local changes detected: check details log="{log_file}"')
@@ -377,10 +378,11 @@ def update(folder, keep_branch = False, rebase = True):
     else:
         res = git(f'pull origin {b} {arg}', folder)
         debug(f'Install update: folder={folder} branch={b} args={arg} {res}')
-    commit = extensions_commit.get(os.path.basename(folder), None)
-    if commit is not None:
-        res = git(f'checkout {commit}', folder)
-        debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
+    if not args.experimental:
+        commit = extensions_commit.get(os.path.basename(folder), None)
+        if commit is not None:
+            res = git(f'checkout {commit}', folder)
+            debug(f'Install update: folder={folder} branch={b} args={arg} commit={commit} {res}')
     return res
 
 
@@ -410,14 +412,14 @@ def get_platform():
         else:
             release = platform.release()
         return {
-            # 'host': platform.node(),
             'arch': platform.machine(),
             'cpu': platform.processor(),
             'system': platform.system(),
             'release': release,
-            # 'platform': platform.platform(aliased = True, terse = False),
-            # 'version': platform.version(),
             'python': platform.python_version(),
+            'docker': os.environ.get('SD_INSTALL_DEBUG', None) is not None,
+            # 'host': platform.node(),
+            # 'version': platform.version(),
         }
     except Exception as e:
         return { 'error': e }
@@ -455,12 +457,14 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    sha = '0d1d267b12e47b40b0e8f265339c76e0f45f8c49'
+    if args.skip_all or args.skip_requirements:
+        return
+    sha = '345907f32de71c8ca67f3d9d00e37127192da543'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
     if (minor == 0) or (cur != sha):
-        log.debug(f'Diffusers {"install" if minor == 0 else "upgrade"}: package={pkg} current={cur} target={sha}')
+        log.info(f'Diffusers {"install" if minor == 0 else "upgrade"}: package={pkg} current={cur} target={sha}')
         if minor > 0:
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
         pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
@@ -470,6 +474,8 @@ def check_diffusers():
 
 # check onnx version
 def check_onnx():
+    if args.skip_all or args.skip_requirements:
+        return
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
     if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
@@ -477,6 +483,8 @@ def check_onnx():
 
 
 def check_torchao():
+    if args.skip_all or args.skip_requirements:
+        return
     if installed('torchao', quiet=True):
         ver = package_version('torchao')
         if ver != '0.5.0':
@@ -488,14 +496,16 @@ def check_torchao():
 
 def install_cuda():
     log.info('CUDA: nVidia toolkit detected')
-    install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
+    if not (args.skip_all or args.skip_requirements):
+        install('onnxruntime-gpu', 'onnxruntime-gpu', ignore=True, quiet=True)
     # return os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/cu124')
     return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
 
 
 def install_rocm_zluda():
+    if args.skip_all or args.skip_requirements:
+        return None
     from modules import rocm
-
     if not rocm.is_installed:
         log.warning('ROCm: could not find ROCm toolkit installed')
         log.info('Using CPU-only torch')
@@ -547,7 +557,6 @@ def install_rocm_zluda():
             os.environ['HIP_VISIBLE_DEVICES'] = args.device_id
             del args.device_id
 
-        log.warning("ZLUDA support: experimental")
         error = None
         from modules import zluda_installer
         zluda_installer.set_default_agent(device)
@@ -595,11 +604,11 @@ def install_rocm_zluda():
             install(ort_package, 'onnxruntime-training')
 
         if installed("torch") and device is not None:
-            if 'Flash attention' in opts.get('sdp_options'):
+            if 'Flash attention' in opts.get('sdp_options', ''):
                 if not installed('flash-attn'):
                     install(rocm.get_flash_attention_command(device), reinstall=True)
-            elif not args.experimental:
-                uninstall('flash-attn')
+            #elif not args.experimental:
+            #    uninstall('flash-attn')
 
         if device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
@@ -657,7 +666,7 @@ def install_torch_addons():
     triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
     if 'xformers' in xformers_package:
         try:
-            install(f'--no-deps {xformers_package}', ignore=True)
+            install(xformers_package, ignore=True, no_deps=True)
             import torch # pylint: disable=unused-import
             import xformers # pylint: disable=unused-import
         except Exception as e:
@@ -844,8 +853,7 @@ def run_extension_installer(folder):
         txt = result.stdout.decode(encoding="utf8", errors="ignore")
         debug(f'Extension installer: file="{path_installer}" {txt}')
         if result.returncode != 0:
-            global errors # pylint: disable=global-statement
-            errors += 1
+            errors.append(f'ext: {os.path.basename(folder)}')
             if len(result.stderr) > 0:
                 txt = txt + '\n' + result.stderr.decode(encoding="utf8", errors="ignore")
             log.error(f'Extension installer error: {path_installer}')
@@ -986,6 +994,29 @@ def ensure_base_requirements():
     install('requests', 'requests', quiet=True)
 
 
+def install_optional():
+    log.info('Installing optional requirements...')
+    install('basicsr')
+    install('gfpgan')
+    install('clean-fid')
+    install('optimum-quanto', ignore=True)
+    install('bitsandbytes', ignore=True)
+    install('pynvml', ignore=True)
+    install('ultralytics', ignore=True)
+    install('Cython', ignore=True)
+    install('insightface', ignore=True) # problematic build
+    install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
+    # install('flash-attn', ignore=True) # requires cuda and nvcc to be installed
+    install('gguf', ignore=True)
+    try:
+        import gguf
+        scripts_dir = os.path.join(os.path.dirname(gguf.__file__), '..', 'scripts')
+        if os.path.exists(scripts_dir):
+            os.rename(scripts_dir, scripts_dir + '_gguf')
+    except Exception:
+        pass
+
+
 def install_requirements():
     if args.profile:
         pr = cProfile.Profile()
@@ -995,10 +1026,13 @@ def install_requirements():
     if not installed('diffusers', quiet=True): # diffusers are not installed, so run initial installation
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-        log.info('Installing requirements: this may take a while...')
+        log.info('Install requirements: this may take a while...')
         pip('install -r requirements.txt')
+    if args.optional:
+        quick_allowed = False
+        install_optional()
     installed('torch', reload=True) # reload packages cache
-    log.info('Verifying requirements')
+    log.info('Install: verifying requirements')
     with open('requirements.txt', 'r', encoding='utf8') as f:
         lines = [line.strip() for line in f.readlines() if line.strip() != '' and not line.startswith('#') and line is not None]
         for line in lines:
@@ -1139,6 +1173,28 @@ def check_ui(ver):
         os.chdir(cwd)
 
 
+def check_venv():
+    import site
+    pkg_path = [os.path.relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
+    log.debug(f'Packages: venv={os.path.relpath(sys.prefix)} site={pkg_path}')
+    for p in pkg_path:
+        invalid = []
+        for f in os.listdir(p):
+            if f.startswith('~'):
+                invalid.append(f)
+        if len(invalid) > 0:
+            log.warning(f'Packages: site="{p}" invalid={invalid} removing')
+        for f in invalid:
+            fn = os.path.join(p, f)
+            try:
+                if os.path.isdir(fn):
+                    shutil.rmtree(fn)
+                elif os.path.isfile(fn):
+                    os.unlink(fn)
+            except Exception as e:
+                log.error(f'Packages: site={p} invalid={f} error={e}')
+
+
 # check version of the main repo and optionally upgrade it
 def check_version(offline=False, reset=True): # pylint: disable=unused-argument
     if args.skip_all:
@@ -1239,6 +1295,7 @@ def add_args(parser):
     group_setup.add_argument('--upgrade', '--update', default = os.environ.get("SD_UPGRADE",False), action='store_true', help = "Upgrade main repository to latest version, default: %(default)s")
     group_setup.add_argument('--requirements', default = os.environ.get("SD_REQUIREMENTS",False), action='store_true', help = "Force re-check of requirements, default: %(default)s")
     group_setup.add_argument('--reinstall', default = os.environ.get("SD_REINSTALL",False), action='store_true', help = "Force reinstallation of all requirements, default: %(default)s")
+    group_setup.add_argument('--optional', default = os.environ.get("SD_OPTIONAL",False), action='store_true', help = "Force installation of optional requirements, default: %(default)s")
     group_setup.add_argument('--uv', default = os.environ.get("SD_UV",False), action='store_true', help = "Use uv instead of pip to install the packages")
 
     group_startup = parser.add_argument_group('Startup')

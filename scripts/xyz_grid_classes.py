@@ -1,4 +1,4 @@
-from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_detailer, apply_override, apply_processing, apply_options, apply_seed, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module
+from scripts.xyz_grid_shared import apply_field, apply_task_args, apply_setting, apply_prompt, apply_order, apply_sampler, apply_hr_sampler_name, confirm_samplers, apply_checkpoint, apply_refiner, apply_unet, apply_dict, apply_clip_skip, apply_vae, list_lora, apply_lora, apply_te, apply_styles, apply_upscaler, apply_context, apply_detailer, apply_override, apply_processing, apply_options, apply_seed, format_value_add_label, format_value, format_value_join_list, do_nothing, format_nothing, str_permutations # pylint: disable=no-name-in-module, unused-import
 from modules import shared, shared_items, sd_samplers, ipadapter, sd_models, sd_vae, sd_unet
 
 
@@ -37,6 +37,7 @@ class SharedSettingsStackHelper(object):
     sd_text_encoder = None
     extra_networks_default_multiplier = None
     disable_weights_auto_swap = None
+    prompt_attention = None
 
     def __enter__(self):
         #Save overridden settings so they can be restored later.
@@ -52,6 +53,7 @@ class SharedSettingsStackHelper(object):
         self.sd_text_encoder = shared.opts.sd_text_encoder
         self.extra_networks_default_multiplier = shared.opts.extra_networks_default_multiplier
         self.disable_weights_auto_swap = shared.opts.disable_weights_auto_swap
+        self.prompt_attention = shared.opts.prompt_attention
         shared.opts.data["disable_weights_auto_swap"] = False
 
     def __exit__(self, exc_type, exc_value, tb):
@@ -62,6 +64,7 @@ class SharedSettingsStackHelper(object):
         shared.opts.data["tome_ratio"] = self.tome_ratio
         shared.opts.data["todo_ratio"] = self.todo_ratio
         shared.opts.data["extra_networks_default_multiplier"] = self.extra_networks_default_multiplier
+        shared.opts.data["prompt_attention"] = self.prompt_attention
         if self.sd_model_checkpoint != shared.opts.sd_model_checkpoint:
             shared.opts.data["sd_model_checkpoint"] = self.sd_model_checkpoint
             sd_models.reload_model_weights(op='model')
@@ -92,6 +95,7 @@ axis_options = [
     AxisOption("[Model] Dictionary", str, apply_dict, fmt=format_value_add_label, cost=0.9, choices=lambda: ['None'] + list(sd_models.checkpoints_list)),
     AxisOption("[Prompt] Search & replace", str, apply_prompt, fmt=format_value_add_label),
     AxisOption("[Prompt] Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
+    AxisOption("[Prompt] Prompt parser", str, apply_setting("prompt_attention"), choices=lambda: ["native", "compel", "xhinker", "a1111", "fixed"]),
     AxisOption("[Network] LoRA", str, apply_lora, cost=0.5, choices=list_lora),
     AxisOption("[Network] LoRA strength", float, apply_setting('extra_networks_default_multiplier')),
     AxisOption("[Network] Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
@@ -111,7 +115,7 @@ axis_options = [
     AxisOption("[Process] Server options", str, apply_options),
     AxisOptionTxt2Img("[Sampler] Name", str, apply_sampler, fmt=format_value_add_label, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers]),
     AxisOptionImg2Img("[Sampler] Name", str, apply_sampler, fmt=format_value_add_label, confirm=confirm_samplers, choices=lambda: [x.name for x in sd_samplers.samplers_for_img2img]),
-    AxisOption("[Sampler] Sigma method", str, apply_setting("schedulers_sigma"), choices=lambda: ['default', 'karras', 'beta', 'exponential']),
+    AxisOption("[Sampler] Sigma method", str, apply_setting("schedulers_sigma"), choices=lambda: ['default', 'karras', 'beta', 'exponential', 'lambdas']),
     AxisOption("[Sampler] Timestep spacing", str, apply_setting("schedulers_timestep_spacing"), choices=lambda: ['default', 'linspace', 'leading', 'trailing']),
     AxisOption("[Sampler] Timestep range", int, apply_setting("schedulers_timesteps_range")),
     AxisOption("[Sampler] Solver order", int, apply_setting("schedulers_solver_order")),
@@ -132,6 +136,7 @@ axis_options = [
     AxisOption("[Postprocess] Upscaler", str, apply_upscaler, cost=0.4, choices=lambda: [x.name for x in shared.sd_upscalers][1:]),
     AxisOption("[Postprocess] Context", str, apply_context, choices=lambda: ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]),
     AxisOption("[Postprocess] Detailer", str, apply_detailer, fmt=format_value_add_label),
+    AxisOption("[Postprocess] Detailer strength", str, apply_field("detailer_strength")),
     AxisOption("[HDR] Mode", int, apply_field("hdr_mode")),
     AxisOption("[HDR] Brightness", float, apply_field("hdr_brightness")),
     AxisOption("[HDR] Color", float, apply_field("hdr_color")),

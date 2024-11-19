@@ -73,7 +73,8 @@ def upscale(args): # pylint: disable=redefined-outer-name
     if 'image' in data:
         b64 = data['image'].split(',',1)[0]
         image = Image.open(io.BytesIO(base64.b64decode(b64)))
-        image.save(args.output)
+        if args.output:
+            image.save(args.output)
         log.info(f'received: image={image} file={args.output} time={t1-t0:.2f}')
     else:
         log.warning(f'no images received: {data}')
@@ -82,7 +83,7 @@ def upscale(args): # pylint: disable=redefined-outer-name
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'api-upscale')
     parser.add_argument('--input', required=True, help='input image')
-    parser.add_argument('--output', required=True, help='output image')
+    parser.add_argument('--output', required=False, help='output image')
     parser.add_argument('--upscaler', required=False, default='Nearest', help='upscaler name')
     parser.add_argument('--scale', required=False, default=2, help='upscaler scale')
     args = parser.parse_args()

@@ -19,6 +19,11 @@ def fft_ifftn(input: torch.Tensor, *args, **kwargs) -> torch.Tensor: # pylint: d
     return _fft_ifftn(input.cpu(), *args, **kwargs).to(input.device)
 
 
+_fft_rfftn = torch.fft.rfftn
+def fft_rfftn(input: torch.Tensor, *args, **kwargs) -> torch.Tensor: # pylint: disable=redefined-builtin
+    return _fft_rfftn(input.cpu(), *args, **kwargs).to(input.device)
+
+
 def jit_script(f, *_, **__): # experiment / provide dummy graph
     f.graph = torch._C.Graph() # pylint: disable=protected-access
     return f
@@ -29,4 +34,5 @@ def do_hijack():
     torch.topk = topk
     torch.fft.fftn = fft_fftn
     torch.fft.ifftn = fft_ifftn
+    torch.fft.rfftn = fft_rfftn
     torch.jit.script = jit_script

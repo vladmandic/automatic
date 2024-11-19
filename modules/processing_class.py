@@ -17,53 +17,44 @@ debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None
 
 @dataclass(repr=False)
 class StableDiffusionProcessing:
-    """
-    The first set of paramaters: sd_models -> do_not_reload_embeddings represent the minimum required to create a StableDiffusionProcessing
-    """
     def __init__(self,
-                 sd_model=None,
-                 outpath_samples=None,
-                 outpath_grids=None,
+                 sd_model=None, # pylint: disable=unused-argument # local instance of sd_model
+                 # base params
                  prompt: str = "",
-                 styles: List[str] = None,
+                 negative_prompt: str = "",
                  seed: int = -1,
                  subseed: int = -1,
                  subseed_strength: float = 0,
                  seed_resize_from_h: int = -1,
                  seed_resize_from_w: int = -1,
-                 seed_enable_extras: bool = True,
-                 sampler_name: str = None,
-                 hr_sampler_name: str = None,
                  batch_size: int = 1,
                  n_iter: int = 1,
                  steps: int = 50,
-                 cfg_scale: float = 7.0,
-                 image_cfg_scale: float = None,
                  clip_skip: int = 1,
                  width: int = 512,
                  height: int = 512,
-                 full_quality: bool = True,
-                 detailer: bool = False,
-                 restore_faces: bool = False,
-                 tiling: bool = False,
-                 hidiffusion: bool = False,
-                 do_not_save_samples: bool = False,
-                 do_not_save_grid: bool = False,
-                 extra_generation_params: Dict[Any, Any] = None,
-                 overlay_images: Any = None,
-                 negative_prompt: str = None,
+                 # samplers
+                 sampler_index: int = None, # pylint: disable=unused-argument # used only to set sampler_name
+                 sampler_name: str = None,
+                 hr_sampler_name: str = None,
                  eta: float = None,
-                 do_not_reload_embeddings: bool = False,
-                 denoising_strength: float = 0,
+                 # guidance
+                 cfg_scale: float = 7.0,
+                 cfg_end: float = 1,
                  diffusers_guidance_rescale: float = 0.7,
                  pag_scale: float = 0.0,
                  pag_adaptive: float = 0.5,
-                 cfg_end: float = 1,
-                 resize_mode: int = 0,
-                 resize_name: str = 'None',
-                 resize_context: str = 'None',
-                 scale_by: float = 0,
-                 selected_scale_tab: int = 0,
+                 # styles
+                 styles: List[str] = [],
+                 # vae
+                 tiling: bool = False,
+                 full_quality: bool = True,
+                 # other
+                 hidiffusion: bool = False,
+                 do_not_reload_embeddings: bool = False,
+                 detailer: bool = False,
+                 restore_faces: bool = False,
+                 # hdr corrections
                  hdr_mode: int = 0,
                  hdr_brightness: float = 0,
                  hdr_color: float = 0,
@@ -76,92 +67,196 @@ class StableDiffusionProcessing:
                  hdr_max_boundry: float = 1.0,
                  hdr_color_picker: str = None,
                  hdr_tint_ratio: float = 0,
-                 override_settings: Dict[str, Any] = None,
+                 # img2img
+                 init_images: list = None,
+                 resize_mode: int = 0,
+                 resize_name: str = 'None',
+                 resize_context: str = 'None',
+                 denoising_strength: float = 0.3,
+                 image_cfg_scale: float = None,
+                 initial_noise_multiplier: float = None, # pylint: disable=unused-argument # a1111 compatibility
+                 scale_by: float = 1,
+                 selected_scale_tab: int = 0, # pylint: disable=unused-argument # a1111 compatibility
+                 # inpaint
+                 mask: Any = None,
+                 latent_mask: Any = None,
+                 mask_for_overlay: Any = None,
+                 mask_blur: int = 4,
+                 paste_to: Any = None,
+                 inpainting_fill: int = 0,
+                 inpaint_full_res: bool = False,
+                 inpaint_full_res_padding: int = 0,
+                 inpainting_mask_invert: int = 0,
+                 overlay_images: Any = None,
+                 # refiner
+                 enable_hr: bool = False,
+                 firstphase_width: int = 0,
+                 firstphase_height: int = 0,
+                 hr_scale: float = 2.0,
+                 hr_force: bool = False,
+                 hr_resize_mode: int = 0,
+                 hr_resize_context: str = 'None',
+                 hr_upscaler: str = None,
+                 hr_second_pass_steps: int = 0,
+                 hr_resize_x: int = 0,
+                 hr_resize_y: int = 0,
+                 hr_denoising_strength: float = 0.0,
+                 refiner_steps: int = 5,
+                 refiner_start: float = 0,
+                 refiner_prompt: str = '',
+                 refiner_negative: str = '',
+                 hr_refiner_start: float = 0,
+                 # save options
+                 outpath_samples=None,
+                 outpath_grids=None,
+                 do_not_save_samples: bool = False,
+                 do_not_save_grid: bool = False,
+                 # scripts
+                 script_args: list = [],
+                 # overrides
+                 override_settings: Dict[str, Any] = {},
                  override_settings_restore_afterwards: bool = True,
-                 sampler_index: int = None,
-                 script_args: list = None
-                ): # pylint: disable=unused-argument
+                 # metadata
+                 extra_generation_params: Dict[Any, Any] = {},
+                ):
 
+        # extra args set by processing loop
+        self.task_args = {}
+
+        # state items
         self.state: str = ''
+        self.ops = []
         self.skip = []
-        self.outpath_samples: str = outpath_samples
-        self.outpath_grids: str = outpath_grids
-        self.prompt: str = prompt
-        self.prompt_for_display: str = None
-        self.negative_prompt: str = (negative_prompt or "")
-        self.styles: list = styles or []
-        self.seed: int = seed
-        self.subseed: int = subseed
-        self.subseed_strength: float = subseed_strength
-        self.seed_resize_from_h: int = seed_resize_from_h
-        self.seed_resize_from_w: int = seed_resize_from_w
-        self.sampler_name: str = sampler_name
-        self.hr_sampler_name: str = hr_sampler_name if hr_sampler_name != 'Same as primary' else sampler_name
-        self.batch_size: int = batch_size
-        self.n_iter: int = n_iter
-        self.steps: int = steps
-        self.hr_second_pass_steps = 0
-        self.cfg_scale: float = cfg_scale
-        self.scale_by: float = scale_by
+        self.color_corrections = []
+        self.is_control = False
+        self.is_hr_pass = False
+        self.is_refiner_pass = False
+        self.is_api = False
+        self.scheduled_prompt = False
+        self.prompt_embeds = []
+        self.positive_pooleds = []
+        self.negative_embeds = []
+        self.negative_pooleds = []
+        self.disable_extra_networks = False
+        self.iteration = 0
+
+        # initializers
+        self.prompt = prompt
+        self.seed = seed
+        self.subseed = subseed
+        self.subseed_strength = subseed_strength
+        self.seed_resize_from_h = seed_resize_from_h
+        self.seed_resize_from_w = seed_resize_from_w
+        self.batch_size = batch_size
+        self.n_iter = n_iter
+        self.steps = steps
+        self.clip_skip = clip_skip
+        self.width = width
+        self.height = height
+        self.negative_prompt = negative_prompt
+        self.styles = styles
+        self.tiling = tiling
+        self.full_quality = full_quality
+        self.hidiffusion = hidiffusion
+        self.do_not_reload_embeddings = do_not_reload_embeddings
+        self.detailer = detailer
+        self.restore_faces = restore_faces
+        self.init_images = init_images
+        self.resize_mode = resize_mode
+        self.resize_name = resize_name
+        self.resize_context = resize_context
+        self.denoising_strength = denoising_strength
         self.image_cfg_scale = image_cfg_scale
+        self.scale_by = scale_by
+        self.mask = mask
+        self.image_mask = mask # TODO duplciate mask params
+        self.latent_mask = latent_mask
+        self.mask_blur = mask_blur
+        self.inpainting_fill = inpainting_fill
+        self.inpaint_full_res_padding = inpaint_full_res_padding
+        self.inpainting_mask_invert = inpainting_mask_invert
+        self.overlay_images = overlay_images
+        self.enable_hr = enable_hr
+        self.firstphase_width = firstphase_width
+        self.firstphase_height = firstphase_height
+        self.hr_scale = hr_scale
+        self.hr_force = hr_force
+        self.hr_resize_mode = hr_resize_mode
+        self.hr_resize_context = hr_resize_context
+        self.hr_upscaler = hr_upscaler
+        self.hr_second_pass_steps = hr_second_pass_steps
+        self.hr_resize_x = hr_resize_x
+        self.hr_resize_y = hr_resize_y
+        self.hr_upscale_to_x = hr_resize_x
+        self.hr_upscale_to_y = hr_resize_y
+        self.hr_denoising_strength = hr_denoising_strength
+        self.refiner_steps = refiner_steps
+        self.refiner_start = refiner_start
+        self.refiner_prompt = refiner_prompt
+        self.refiner_negative = refiner_negative
+        self.hr_refiner_start = hr_refiner_start
+        self.outpath_samples = outpath_samples
+        self.outpath_grids = outpath_grids
+        self.do_not_save_samples = do_not_save_samples
+        self.do_not_save_grid = do_not_save_grid
+        self.override_settings_restore_afterwards = override_settings_restore_afterwards
+        self.extra_generation_params = extra_generation_params
+        self.eta = eta
+        self.cfg_scale = cfg_scale
+        self.cfg_end = cfg_end
         self.diffusers_guidance_rescale = diffusers_guidance_rescale
         self.pag_scale = pag_scale
         self.pag_adaptive = pag_adaptive
-        self.cfg_end = cfg_end
-        self.width: int = width
-        self.height: int = height
-        self.full_quality: bool = full_quality
-        self.detailer: bool = detailer
-        self.restore_faces: bool = restore_faces
-        self.tiling: bool = tiling
-        self.hidiffusion: bool = hidiffusion
-        self.do_not_save_samples: bool = do_not_save_samples
-        self.do_not_save_grid: bool = do_not_save_grid
-        self.extra_generation_params: dict = extra_generation_params or {}
-        self.overlay_images = overlay_images
-        self.eta = eta
-        self.do_not_reload_embeddings = do_not_reload_embeddings
-        self.paste_to = None
-        self.color_corrections = None
-        self.denoising_strength: float = denoising_strength
+        self.selected_scale_tab = selected_scale_tab
+        self.mask_for_overlay = mask_for_overlay
+        self.paste_to = paste_to
+        self.init_latent = None
+
+        # special handled items
+        if firstphase_width != 0 or firstphase_height != 0:
+            self.hr_upscale_to_x = self.width
+            self.hr_upscale_to_y = self.height
+            self.width = firstphase_width
+            self.height = firstphase_height
+        self.sampler_name = sampler_name or processing_helpers.get_sampler_name(sampler_index, img=True)
+        self.hr_sampler_name: str = hr_sampler_name if hr_sampler_name != 'Same as primary' else self.sampler_name
         self.override_settings = {k: v for k, v in (override_settings or {}).items() if k not in shared.restricted_opts}
-        self.override_settings_restore_afterwards = override_settings_restore_afterwards
-        self.is_using_inpainting_conditioning = False # a111 compatibility
-        self.disable_extra_networks = False
-        # self.scripts = scripts.ScriptRunner() # set via property
-        # self.script_args = script_args or [] # set via property
-        self.per_script_args = {}
+        self.inpaint_full_res = inpaint_full_res if isinstance(inpaint_full_res, bool) else self.inpaint_full_res
+        self.inpaint_full_res = inpaint_full_res != 0 if isinstance(inpaint_full_res, int) else self.inpaint_full_res
+
+        # null items initialized later
         self.all_prompts = None
         self.all_negative_prompts = None
         self.all_seeds = None
         self.all_subseeds = None
-        self.clip_skip = clip_skip
+
+        # a1111 compatibility items
         shared.opts.data['clip_skip'] = int(self.clip_skip) # for compatibility with a1111 sd_hijack_clip
-        self.iteration = 0
-        self.is_control = False
-        self.is_hr_pass = False
-        self.is_refiner_pass = False
-        self.hr_force = False
-        self.enable_hr = None
-        self.hr_scale = None
-        self.hr_upscaler = None
-        self.hr_resize_mode = 0
-        self.hr_resize_context = 'None'
-        self.hr_resize_x = 0
-        self.hr_resize_y = 0
-        self.hr_upscale_to_x = 0
-        self.hr_upscale_to_y = 0
+        self.seed_enable_extras: bool = True
+        self.is_using_inpainting_conditioning = False # a111 compatibility
+        self.batch_index = 0
+        self.refiner_switch_at = 0
+        self.hr_prompt = ''
+        self.all_hr_prompts = []
+        self.hr_negative_prompt = ''
+        self.all_hr_negative_prompts = []
         self.truncate_x = 0
         self.truncate_y = 0
-        self.applied_old_hires_behavior_to = None
-        self.refiner_steps = 5
-        self.refiner_start = 0
-        self.refiner_prompt = ''
-        self.refiner_negative = ''
-        self.ops = []
-        self.resize_mode: int = resize_mode
-        self.resize_name: str = resize_name
-        self.resize_context: str = resize_context
+        self.comments = {}
+        self.sampler = None
+        self.nmask = None
+        self.initial_noise_multiplier = initial_noise_multiplier or shared.opts.initial_noise_multiplier
+        self.image_conditioning = None
+        self.prompt_for_display: str = None
+
+        # scripts
+        self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
+        self.script_args_value: list = field(default=None, init=False)
+        self.scripts_setup_complete: bool = field(default=False, init=False)
+        self.script_args = script_args
+        self.per_script_args = {}
+
+        # settings to processing
         self.ddim_discretize = shared.opts.ddim_discretize
         self.s_min_uncond = shared.opts.s_min_uncond
         self.s_churn = shared.opts.s_churn
@@ -171,18 +266,7 @@ class StableDiffusionProcessing:
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
         self.task_args = {}
-        # a1111 compatibility items
-        self.batch_index = 0
-        self.refiner_switch_at = 0
-        self.hr_prompt = ''
-        self.all_hr_prompts = []
-        self.hr_negative_prompt = ''
-        self.all_hr_negative_prompts = []
-        self.comments = {}
-        self.is_api = False
-        self.scripts_value: scripts.ScriptRunner = field(default=None, init=False)
-        self.script_args_value: list = field(default=None, init=False)
-        self.scripts_setup_complete: bool = field(default=False, init=False)
+
         # ip adapter
         self.ip_adapter_names = []
         self.ip_adapter_scales = [0.0]
@@ -190,6 +274,7 @@ class StableDiffusionProcessing:
         self.ip_adapter_starts = [0.0]
         self.ip_adapter_ends = [1.0]
         self.ip_adapter_crops = []
+
         # hdr
         self.hdr_mode=hdr_mode
         self.hdr_brightness=hdr_brightness
@@ -203,7 +288,10 @@ class StableDiffusionProcessing:
         self.hdr_max_boundry=hdr_max_boundry
         self.hdr_color_picker=hdr_color_picker
         self.hdr_tint_ratio=hdr_tint_ratio
+
         # globals
+        self.embedder = None
+        self.override = None
         self.scheduled_prompt: bool = False
         self.prompt_embeds = []
         self.positive_pooleds = []
@@ -252,57 +340,9 @@ class StableDiffusionProcessing:
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
-
-    def __init__(self,
-                 enable_hr: bool = False,
-                 denoising_strength: float = 0.75,
-                 firstphase_width: int = 0,
-                 firstphase_height: int = 0,
-                 hr_scale: float = 2.0,
-                 hr_force: bool = False,
-                 hr_resize_mode: int = 0,
-                 hr_resize_context: str = 'None',
-                 hr_upscaler: str = None,
-                 hr_second_pass_steps: int = 0,
-                 hr_resize_x: int = 0,
-                 hr_resize_y: int = 0,
-                 refiner_steps: int = 5,
-                 refiner_start: float = 0,
-                 refiner_prompt: str = '',
-                 refiner_negative: str = '',
-                 **kwargs
-                ):
-
+    def __init__(self, **kwargs):
+        debug(f'Process init: mode={self.__class__.__name__} kwargs={kwargs}') # pylint: disable=protected-access
         super().__init__(**kwargs)
-        self.reprocess = {}
-        self.enable_hr = enable_hr
-        self.denoising_strength = denoising_strength
-        self.hr_scale = hr_scale
-        self.hr_upscaler = hr_upscaler
-        self.hr_resize_mode = hr_resize_mode
-        self.hr_resize_context = hr_resize_context
-        self.hr_force = hr_force
-        self.hr_second_pass_steps = hr_second_pass_steps
-        self.hr_resize_x = hr_resize_x
-        self.hr_resize_y = hr_resize_y
-        self.hr_upscale_to_x = hr_resize_x
-        self.hr_upscale_to_y = hr_resize_y
-        if firstphase_width != 0 or firstphase_height != 0:
-            self.hr_upscale_to_x = self.width
-            self.hr_upscale_to_y = self.height
-            self.width = firstphase_width
-            self.height = firstphase_height
-        self.truncate_x = 0
-        self.truncate_y = 0
-        self.applied_old_hires_behavior_to = None
-        self.refiner_steps = refiner_steps
-        self.refiner_start = refiner_start
-        self.refiner_prompt = refiner_prompt
-        self.refiner_negative = refiner_negative
-        self.sampler = None
-        self.scripts = None
-        self.script_args = []
-
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.native:
@@ -360,41 +400,9 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
 
 class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
-
-    def __init__(self, init_images: list = None, resize_mode: int = 0, resize_name: str = 'None', resize_context: str = 'None', denoising_strength: float = 0.3, image_cfg_scale: float = None, mask: Any = None, mask_blur: int = 4, inpainting_fill: int = 0, inpaint_full_res: bool = False, inpaint_full_res_padding: int = 0, inpainting_mask_invert: int = 0, initial_noise_multiplier: float = None, scale_by: float = 1, refiner_steps: int = 5, refiner_start: float = 0, refiner_prompt: str = '', refiner_negative: str = '', **kwargs):
+    def __init__(self, **kwargs):
+        debug(f'Process init: mode={self.__class__.__name__} kwargs={kwargs}') # pylint: disable=protected-access
         super().__init__(**kwargs)
-        self.init_images = init_images
-        self.resize_mode: int = resize_mode
-        self.resize_name: str = resize_name
-        self.resize_context: str = resize_context
-        self.denoising_strength: float = denoising_strength
-        self.hr_denoising_strength: float = denoising_strength
-        self.image_cfg_scale: float = image_cfg_scale
-        self.init_latent = None
-        self.image_mask = mask
-        self.latent_mask = None
-        self.mask_for_overlay = None
-        self.mask_blur_x = mask_blur # a1111 compatibility item
-        self.mask_blur_y = mask_blur # a1111 compatibility item
-        self.mask_blur = mask_blur
-        self.inpainting_fill = inpainting_fill
-        self.inpaint_full_res = inpaint_full_res
-        self.inpaint_full_res_padding = inpaint_full_res_padding
-        self.inpainting_mask_invert = inpainting_mask_invert
-        self.initial_noise_multiplier = shared.opts.initial_noise_multiplier if initial_noise_multiplier is None else initial_noise_multiplier
-        self.mask = None
-        self.nmask = None
-        self.image_conditioning = None
-        self.refiner_steps = refiner_steps
-        self.refiner_start = refiner_start
-        self.refiner_prompt = refiner_prompt
-        self.refiner_negative = refiner_negative
-        self.enable_hr = None
-        self.is_batch = False
-        self.scale_by = scale_by
-        self.sampler = None
-        self.scripts = None
-        self.script_args = []
 
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if hasattr(self, 'init_images') and self.init_images is not None and len(self.init_images) > 0:
@@ -485,7 +493,7 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
                 image = images.resize_image(self.resize_mode, image, self.width, self.height, upscaler_name=self.resize_name, context=self.resize_context)
                 self.width = image.width
                 self.height = image.height
-            if self.image_mask is not None and shared.opts.mask_apply_overlay:
+            if self.image_mask is not None and shared.opts.mask_apply_overlay and not hasattr(self, 'xyz'):
                 image_masked = Image.new('RGBa', (image.width, image.height))
                 image_to_paste = image.convert("RGBA").convert("RGBa")
                 image_to_mask = ImageOps.invert(self.mask_for_overlay.convert('L')) if self.mask_for_overlay is not None else None
@@ -544,47 +552,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
 class StableDiffusionProcessingControl(StableDiffusionProcessingImg2Img):
     def __init__(self, **kwargs):
+        debug(f'Process init: mode={self.__class__.__name__} kwargs={kwargs}') # pylint: disable=protected-access
         super().__init__(**kwargs)
-        self.strength = None
-        self.adapter_conditioning_scale = None
-        self.adapter_conditioning_factor = None
-        self.guess_mode = None
-        self.controlnet_conditioning_scale = None
-        self.control_guidance_start = None
-        self.control_guidance_end = None
-        self.control_mode = None
-        self.reference_attn = None
-        self.reference_adain = None
-        self.attention_auto_machine_weight = None
-        self.gn_auto_machine_weight = None
-        self.style_fidelity = None
-        self.ref_image = None
-        self.image = None
-        self.query_weight = None
-        self.adain_weight = None
-        self.adapter_conditioning_factor = 1.0
-        self.attention = 'Attention'
-        self.fidelity = 0.5
-        self.mask_image = None
-        self.override = None
-        self.resize_mode_before = None
-        self.resize_name_before = None
-        self.width_before = None
-        self.height_before = None
-        self.scale_by_before = None
-        self.selected_scale_tab_before = None
-        self.resize_mode_after = None
-        self.resize_name_after = None
-        self.width_after = None
-        self.height_after = None
-        self.scale_by_after = None
-        self.selected_scale_tab_after = None
-        self.resize_mode_mask = None
-        self.resize_name_mask = None
-        self.width_mask = None
-        self.height_mask = None
-        self.scale_by_mask = None
-        self.selected_scale_tab_mask = None
 
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts): # abstract
         pass

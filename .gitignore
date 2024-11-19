@@ -43,6 +43,7 @@ tunableop_results*.csv
 !webui.bat
 !webui.sh
 !package.json
+!requirements.txt
 
 # pyinstaller
 *.spec
@@ -74,4 +75,3 @@ dist/
 !/models/VAE-approx/model.pt
 !/models/Reference
 !/models/Reference/**/*
-

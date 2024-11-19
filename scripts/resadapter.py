@@ -19,7 +19,7 @@ models = {
 
 class Script(scripts.Script):
     def title(self):
-        return 'ResAdapter'
+        return 'ResAdapter: Domain Consistent Resolution'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
@@ -27,7 +27,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/bytedance/res-adapter">&nbsp ResAdapter</a><br>')
+            gr.HTML('<a href="https://github.com/bytedance/res-adapter">&nbsp ResAdapter: Domain Consistent Resolution</a><br>')
         with gr.Row():
             model = gr.Dropdown(label="Model", choices=list(models), value="None")
             weight = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label="Weight", value=1.0)

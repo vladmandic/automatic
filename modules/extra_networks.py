@@ -102,8 +102,9 @@ def activate(p, extra_network_data, step=0):
             except Exception as e:
                 errors.display(e, f"Activating network: type={extra_network_name}")
 
+    p.extra_network_data = extra_network_data
     if stepwise:
-        p.extra_network_data = extra_network_data
+        p.stepwise_lora = True
         shared.opts.data['lora_functional'] = functional
 
 

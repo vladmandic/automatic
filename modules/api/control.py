@@ -31,6 +31,7 @@ ReqControl = models.create_model_from_signature(
         {"key": "ip_adapter", "type": Optional[List[models.ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[models.ItemFace], "default": None, "exclude": True},
         {"key": "control", "type": Optional[List[ItemControl]], "default": [], "exclude": True},
+        {"key": "extra", "type": Optional[dict], "default": {}, "exclude": True},
     ]
 )
 
@@ -103,7 +104,7 @@ class APIControl():
                 args['ip_adapter_scales'].append(ipadapter.scale)
                 args['ip_adapter_starts'].append(ipadapter.start)
                 args['ip_adapter_ends'].append(ipadapter.end)
-                args['ip_adapter_crops'].append(ipadapter.end)
+                args['ip_adapter_crops'].append(ipadapter.crop)
                 args['ip_adapter_images'].append([helpers.decode_base64_to_image(x) for x in ipadapter.images])
                 if ipadapter.masks:
                     args['ip_adapter_masks'].append([helpers.decode_base64_to_image(x) for x in ipadapter.masks])
@@ -159,6 +160,7 @@ class APIControl():
             output_processed = []
             output_info = ''
             run.control_set({ 'do_not_save_grid': not req.save_images, 'do_not_save_samples': not req.save_images, **self.prepare_ip_adapter(req) })
+            run.control_set(getattr(req, "extra", {}))
             res = run.control_run(**args)
             for item in res:
                 if len(item) > 0 and (isinstance(item[0], list) or item[0] is None): # output_images

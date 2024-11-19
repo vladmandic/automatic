@@ -112,6 +112,8 @@ def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
 
 
 def get_reference_style():
+    if getattr(shared.sd_model, 'sd_checkpoint_info', None) is None:
+        return None
     name = shared.sd_model.sd_checkpoint_info.name
     name = name.replace('\\', '/').replace('Diffusers/', '')
     for k, v in shared.reference_models.items():
@@ -251,27 +253,33 @@ class StyleDatabase:
         return found[0] if len(found) > 0 else self.no_style
 
     def get_style_prompts(self, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return []
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).prompt for x in styles]
 
     def get_negative_style_prompts(self, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return []
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return []
         return [self.find_style(x).negative_prompt for x in styles]
 
     def apply_styles_to_prompts(self, prompts, negatives, styles, seeds):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return prompts, negatives
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid styles: {styles}')
-            return prompts
+            return prompts, negatives
         if prompts is None or not isinstance(prompts, list):
             shared.log.error(f'Styles invalid prompts: {prompts}')
-            return prompts
+            return prompts, negatives
         if seeds is None or not isinstance(prompts, list):
             shared.log.error(f'Styles invalid seeds: {seeds}')
-            return prompts
+            return prompts, negatives
         parsed_positive = []
         parsed_negative = []
         for i in range(len(prompts)):
@@ -286,7 +294,9 @@ class StyleDatabase:
         return parsed_positive, parsed_negative
 
     def apply_styles_to_prompt(self, prompt, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return prompt
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
@@ -294,7 +304,9 @@ class StyleDatabase:
         return prompt
 
     def apply_negative_styles_to_prompt(self, prompt, styles):
-        if styles is None or not isinstance(styles, list):
+        if styles is None:
+            return prompt
+        if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
@@ -302,6 +314,8 @@ class StyleDatabase:
         return prompt
 
     def apply_styles_to_extra(self, p):
+        if p.styles is None:
+            return
         if p.styles is None or not isinstance(p.styles, list):
             shared.log.error(f'Styles invalid: {p.styles}')
             return

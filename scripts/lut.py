@@ -17,7 +17,7 @@ class Script(scripts.Script):
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML("<span>&nbsp Color grading</span><br>")
+            gr.HTML("<span>&nbsp LUT Color grading</span><br>")
         with gr.Row():
             original = gr.Checkbox(label='Include original image', value=True)
         with gr.Row():

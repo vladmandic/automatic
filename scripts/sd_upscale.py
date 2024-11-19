@@ -9,7 +9,7 @@ from modules.shared import opts, state, log
 
 class Script(scripts.Script):
     def title(self):
-        return "SD upscale"
+        return "SD Upscale"
 
     def show(self, is_img2img):
         return is_img2img

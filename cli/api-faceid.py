@@ -63,7 +63,7 @@ def generate(args): # pylint: disable=redefined-outer-name
     options['height'] = args.height
     options['face'] = {
         'mode': 'FaceID',
-        'ip_model': 'FaceID Base',
+        'ip_model': 'FaceID XL',
         'source_images': [encode(args.face)],
     }
     data = post('/sdapi/v1/txt2img', options)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'api-faceid')
     parser.add_argument('--width', required=False, default=512, help='image width')
     parser.add_argument('--height', required=False, default=512, help='image height')
-    parser.add_argument('--face', required=False, help='face image')
+    parser.add_argument('--face', required=True, help='face image')
     parser.add_argument('--prompt', required=False, default='', help='prompt text')
     parser.add_argument('--negative', required=False, default='', help='negative prompt text')
     parser.add_argument('--steps', required=False, default=20, help='number of steps')
@@ -97,20 +97,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     log.info(f'api-faceid: {args}')
     generate(args)
-
-"""
-request.face.mode,
-request.face.source_images,
-request.face.ip_model,
-request.face.ip_override_sampler,
-request.face.ip_cache_model,
-request.face.ip_strength,
-request.face.ip_structure,
-request.face.id_strength,
-request.face.id_conditioning,
-request.face.id_cache,
-request.face.pm_trigger,
-request.face.pm_strength,
-request.face.pm_start,
-request.face.fs_cache
-"""

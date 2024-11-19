@@ -1,3 +1,4 @@
+import time
 from typing import Any, Dict
 from fastapi import Depends
 from modules import shared
@@ -66,7 +67,6 @@ def get_cmd_flags():
     return vars(shared.cmd_opts)
 
 def get_progress(req: models.ReqProgress = Depends()):
-    import time
     if shared.state.job_count == 0:
         return models.ResProgress(progress=0, eta_relative=0, state=shared.state.dict(), textinfo=shared.state.textinfo)
     shared.state.do_set_current_image()
@@ -84,6 +84,9 @@ def get_progress(req: models.ReqProgress = Depends()):
     eta_relative = (time_since_start / progress) - time_since_start if progress > 0 else 0
     res = models.ResProgress(progress=progress, eta_relative=eta_relative, state=shared.state.dict(), current_image=current_image, textinfo=shared.state.textinfo)
     return res
+
+def get_status():
+    return shared.state.status()
 
 def post_interrupt():
     shared.state.interrupt()

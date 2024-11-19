@@ -5,7 +5,7 @@ from installer import install
 
 class Script(scripts.Script):
     def title(self):
-        return 'T-Gate'
+        return 'T-Gate: Accelerate via Gating Attention'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
@@ -13,7 +13,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://github.com/HaozheLiu-ST/T-GATE">&nbsp T-Gate</a><br>')
+            gr.HTML('<a href="https://github.com/HaozheLiu-ST/T-GATE">&nbsp T-Gate: Accelerate via Gating Attention</a><br>')
         with gr.Row():
             enabled = gr.Checkbox(label="Enabled", value=True)
         with gr.Row():

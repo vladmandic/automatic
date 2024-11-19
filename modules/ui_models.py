@@ -453,7 +453,7 @@ def create_ui():
                     if tag is not None and len(tag) > 0:
                         url += f'&tag={tag}'
                     r = req(url)
-                    log.debug(f'CivitAI search: name="{name}" tag={tag or "none"} url="{url}" status={r.status_code}')
+                    log.debug(f'CivitAI search: type={model_type} name="{name}" tag={tag or "none"} url="{url}" status={r.status_code}')
                     if r.status_code != 200:
                         log.warning(f'CivitAI search: name="{name}" tag={tag} status={r.status_code}')
                         return [], gr.update(visible=False, value=[]), gr.update(visible=False, value=None), gr.update(visible=False, value=None)

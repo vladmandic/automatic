@@ -246,7 +246,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
             # columns are for <576px, <768px, <992px, <1200px, <1400px, >1400px
             result_gallery = gr.Gallery(value=[],
                                         label='Output', show_label=False, show_download_button=True, allow_preview=True, container=False, preview=preview,
-                                        columns=5, object_fit='scale-down', height=height,
+                                        columns=4, object_fit='scale-down', height=height,
                                         elem_id=f"{tabname}_gallery",
                                         )
             if prompt is not None:

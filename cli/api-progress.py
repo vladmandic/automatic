@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+check progress of last job and shutdown system if timeout reached
+"""
+
 import os
 import time
 import datetime
@@ -16,7 +20,7 @@ opts = Dot({
     "timeout": 3600,
     "frequency": 60,
     "action": "sudo shutdown now",
-    "url": "https://127.0.0.1:7860",
+    "url": "http://127.0.0.1:7860",
     "user": "",
     "password": "",
 })

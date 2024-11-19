@@ -9,7 +9,7 @@ debug = shared.log.trace if os.environ.get('SD_FACE_DEBUG', None) is not None el
 
 class Script(scripts.Script):
     def title(self):
-        return 'Face'
+        return 'Face: Multiple ID Transfers'
 
     def show(self, is_img2img):
         return True if shared.native else False
@@ -28,10 +28,10 @@ class Script(scripts.Script):
                 elif hasattr(file, 'name'):
                     image = Image.open(file.name) # _TemporaryFileWrapper from gr.Files
                 else:
-                    raise ValueError(f'PhotoMaker unknown input: {file}')
+                    raise ValueError(f'Face: unknown input: {file}')
                 init_images.append(image)
             except Exception as e:
-                shared.log.warning(f'PhotoMaker failed to load image: {e}')
+                shared.log.warning(f'Face: failed to load image: {e}')
         return init_images
 
     def mode_change(self, mode):
@@ -45,7 +45,7 @@ class Script(scripts.Script):
     # return signature is array of gradio components
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML("<span>&nbsp Face module</span><br>")
+            gr.HTML("<span>&nbsp Face: Multiple ID Transfers</span><br>")
         with gr.Row():
             mode = gr.Dropdown(label='Mode', choices=['None', 'FaceID', 'FaceSwap', 'InstantID', 'PhotoMaker'], value='None')
         with gr.Group(visible=False) as cfg_faceid:

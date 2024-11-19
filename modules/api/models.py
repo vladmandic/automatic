@@ -11,14 +11,6 @@ API_NOT_ALLOWED = [
     "sd_model",
     "outpath_samples",
     "outpath_grids",
-    "sampler_index",
-    "extra_generation_params",
-    "overlay_images",
-    "do_not_reload_embeddings",
-    "seed_enable_extras",
-    "prompt_for_display",
-    "sampler_noise_scheduler_override",
-    "ddim_discretize"
 ]
 
 class ModelDef(BaseModel):
@@ -202,14 +194,17 @@ ReqTxt2Img = PydanticModelGenerator(
     "StableDiffusionProcessingTxt2Img",
     StableDiffusionProcessingTxt2Img,
     [
-        {"key": "sampler_index", "type": str, "default": "UniPC"},
-        {"key": "script_name", "type": str, "default": None},
+        {"key": "sampler_index", "type": int, "default": 0},
+        {"key": "sampler_name", "type": str, "default": "UniPC"},
+        {"key": "hr_sampler_name", "type": str, "default": "Same as primary"},
+        {"key": "script_name", "type": str, "default": "none"},
         {"key": "script_args", "type": list, "default": []},
         {"key": "send_images", "type": bool, "default": True},
         {"key": "save_images", "type": bool, "default": False},
         {"key": "alwayson_scripts", "type": dict, "default": {}},
         {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face", "type": Optional[ItemFace], "default": None, "exclude": True},
+        {"key": "extra", "type": Optional[dict], "default": {}, "exclude": True},
     ]
 ).generate_model()
 StableDiffusionTxt2ImgProcessingAPI = ReqTxt2Img
@@ -223,7 +218,11 @@ ReqImg2Img = PydanticModelGenerator(
     "StableDiffusionProcessingImg2Img",
     StableDiffusionProcessingImg2Img,
     [
-        {"key": "sampler_index", "type": str, "default": "UniPC"},
+        {"key": "sampler_index", "type": int, "default": 0},
+        {"key": "sampler_name", "type": str, "default": "UniPC"},
+        {"key": "hr_sampler_name", "type": str, "default": "Same as primary"},
+        {"key": "script_name", "type": str, "default": "none"},
+        {"key": "script_args", "type": list, "default": []},
         {"key": "init_images", "type": list, "default": None},
         {"key": "denoising_strength", "type": float, "default": 0.5},
         {"key": "mask", "type": str, "default": None},
@@ -235,6 +234,7 @@ ReqImg2Img = PydanticModelGenerator(
         {"key": "alwayson_scripts", "type": dict, "default": {}},
         {"key": "ip_adapter", "type": Optional[List[ItemIPAdapter]], "default": None, "exclude": True},
         {"key": "face_id", "type": Optional[ItemFace], "default": None, "exclude": True},
+        {"key": "extra", "type": Optional[dict], "default": {}, "exclude": True},
     ]
 ).generate_model()
 StableDiffusionImg2ImgProcessingAPI = ReqImg2Img
@@ -299,6 +299,23 @@ class ResProgress(BaseModel):
     state: dict = Field(title="State", description="The current state snapshot")
     current_image: str = Field(default=None, title="Current image", description="The current image in base64 format. opts.show_progress_every_n_steps is required for this to work.")
     textinfo: str = Field(default=None, title="Info text", description="Info text used by WebUI.")
+
+class ResStatus(BaseModel):
+    status: str = Field(title="Status", description="Current status")
+    task: str = Field(title="Task", description="Current task")
+    timestamp: Optional[str] = Field(title="Timestamp", description="Timestamp of the current job")
+    id: str = Field(title="ID", description="ID of the current task")
+    job: int = Field(title="Job", description="Current job")
+    jobs: int = Field(title="Jobs", description="Total jobs")
+    total: int = Field(title="Total Jobs", description="Total jobs")
+    step: int = Field(title="Step", description="Current step")
+    steps: int = Field(title="Steps", description="Total steps")
+    queued: int = Field(title="Queued", description="Number of queued tasks")
+    uptime: int = Field(title="Uptime", description="Uptime of the server")
+    elapsed: Optional[float] = Field(title="Elapsed time")
+    eta: Optional[float] = Field(title="ETA in secs")
+    progress: Optional[float] = Field(title="Progress", description="The progress with a range of 0 to 1")
+
 
 class ReqInterrogate(BaseModel):
     image: str = Field(default="", title="Image", description="Image to work on, must be a Base64 string containing the image's data.")

@@ -68,7 +68,7 @@ def instant_id(p: processing.StableDiffusionProcessing, app, source_images, stre
         processing.process_init(p)
         p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
     orig_prompt_attention = shared.opts.prompt_attention
-    shared.opts.data['prompt_attention'] = 'Fixed attention' # otherwise need to deal with class_tokens_mask
+    shared.opts.data['prompt_attention'] = 'fixed' # otherwise need to deal with class_tokens_mask
     p.task_args['image_embeds'] = face_embeds[0].shape # placeholder
     p.task_args['image'] = face_images[0]
     p.task_args['controlnet_conditioning_scale'] = float(conditioning)

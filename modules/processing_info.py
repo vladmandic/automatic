@@ -4,6 +4,7 @@ from modules import shared, sd_samplers_common, sd_vae, generation_parameters_co
 from modules.processing_class import StableDiffusionProcessing
 
 
+debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 if not shared.native:
     from modules import sd_hijack
 else:
@@ -39,30 +40,34 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
     ops.reverse()
     args = {
         # basic
+        "Size": f"{p.width}x{p.height}" if hasattr(p, 'width') and hasattr(p, 'height') else None,
+        "Sampler": p.sampler_name if p.sampler_name != 'Default' else None,
         "Steps": p.steps,
         "Seed": all_seeds[index],
-        "Sampler": p.sampler_name if p.sampler_name != 'Default' else None,
+        "Seed resize from": None if p.seed_resize_from_w == 0 or p.seed_resize_from_h == 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}",
         "CFG scale": p.cfg_scale if p.cfg_scale > 1.0 else None,
         "CFG end": p.cfg_end if p.cfg_end < 1.0 else None,
-        "Size": f"{p.width}x{p.height}" if hasattr(p, 'width') and hasattr(p, 'height') else None,
+        "Clip skip": p.clip_skip if p.clip_skip > 1 else None,
         "Batch": f'{p.n_iter}x{p.batch_size}' if p.n_iter > 1 or p.batch_size > 1 else None,
-        "Parser": shared.opts.prompt_attention.split()[0],
         "Model": None if (not shared.opts.add_model_name_to_info) or (not shared.sd_model.sd_checkpoint_info.model_name) else shared.sd_model.sd_checkpoint_info.model_name.replace(',', '').replace(':', ''),
         "Model hash": getattr(p, 'sd_model_hash', None if (not shared.opts.add_model_hash_to_info) or (not shared.sd_model.sd_model_hash) else shared.sd_model.sd_model_hash),
         "VAE": (None if not shared.opts.add_model_name_to_info or sd_vae.loaded_vae_file is None else os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0]) if p.full_quality else 'TAESD',
-        "Seed resize from": None if p.seed_resize_from_w == 0 or p.seed_resize_from_h == 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}",
-        "Clip skip": p.clip_skip if p.clip_skip > 1 else None,
         "Prompt2": p.refiner_prompt if len(p.refiner_prompt) > 0 else None,
         "Negative2": p.refiner_negative if len(p.refiner_negative) > 0 else None,
         "Styles": "; ".join(p.styles) if p.styles is not None and len(p.styles) > 0 else None,
-        "Tiling": p.tiling if p.tiling else None,
         # sdnext
-        "Backend": 'Diffusers' if shared.native else 'Original',
         "App": 'SD.Next',
         "Version": git_commit,
+        "Backend": 'Diffusers' if shared.native else 'Original',
+        "Pipeline": 'LDM',
+        "Parser": shared.opts.prompt_attention.split()[0],
         "Comment": comment,
         "Operations": '; '.join(ops).replace('"', '') if len(p.ops) > 0 else 'none',
     }
+    if shared.opts.add_model_name_to_info and getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None:
+        args["Model"] = shared.sd_model.sd_checkpoint_info.model_name.replace(',', '').replace(':', '')
+    if shared.opts.add_model_hash_to_info and getattr(shared.sd_model, 'sd_model_hash', None) is not None:
+        args["Model hash"] = shared.sd_model.sd_model_hash
     # native
     if grid is None and (p.n_iter > 1 or p.batch_size > 1) and index >= 0:
         args['Index'] = f'{p.iteration + 1}x{index + 1}'
@@ -165,7 +170,9 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         if isinstance(v, str):
             if len(v) == 0 or v == '0x0':
                 del args[k]
+    debug(f'Infotext: args={args}')
     params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in args.items()])
     negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index]}" if all_negative_prompts[index] else ""
     infotext = f"{all_prompts[index]}{negative_prompt_text}\n{params_text}".strip()
+    debug(f'Infotext: "{infotext}"')
     return infotext

@@ -2,19 +2,16 @@ import gradio as gr
 from modules import scripts, processing, shared, sd_models
 
 
-title = 'BLIP Diffusion'
-
-
 class Script(scripts.Script):
     def title(self):
-        return title
+        return 'BLIP Diffusion: Controllable Generation and Editing'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://huggingface.co/salesforce/blipdiffusion">&nbsp BLIP Diffusion</a><br>')
+            gr.HTML('<a href="https://huggingface.co/salesforce/blipdiffusion">&nbsp BLIP Diffusion: Controllable Generation and Editing</a><br>')
         with gr.Row():
             source_subject = gr.Textbox(value='', label='Source subject')
         with gr.Row():
@@ -26,7 +23,7 @@ class Script(scripts.Script):
     def run(self, p: processing.StableDiffusionProcessing, source_subject, target_subject, prompt_strength): # pylint: disable=arguments-differ, unused-argument
         c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
         if c != 'BlipDiffusionPipeline':
-            shared.log.error(f'{title}: model selected={c} required=BLIPDiffusion')
+            shared.log.error(f'BLIP: model selected={c} required=BLIPDiffusion')
             return None
         if hasattr(p, 'init_images') and len(p.init_images) > 0:
             p.task_args['reference_image'] = p.init_images[0]
@@ -41,5 +38,5 @@ class Script(scripts.Script):
             processed = processing.process_images(p)
             return processed
         else:
-            shared.log.error(f'{title}: no init_images')
+            shared.log.error('BLIP: no init_images')
             return None

@@ -5,13 +5,35 @@ import safetensors.torch
 from modules import shared, devices, model_quant
 
 
+def remove_entries_after_depth(d, depth, current_depth=0):
+    if current_depth >= depth:
+        return None
+    if isinstance(d, dict):
+        return {k: remove_entries_after_depth(v, depth, current_depth + 1) for k, v in d.items() if remove_entries_after_depth(v, depth, current_depth + 1) is not None}
+    return d
+
+
+def list_to_dict(flat_list):
+    result_dict = {}
+    try:
+        for item in flat_list:
+            keys = item.split('.')
+            d = result_dict
+            for key in keys[:-1]:
+                d = d.setdefault(key, {})
+            d[keys[-1]] = None
+    except Exception:
+        pass
+    return result_dict
+
+
 def get_safetensor_keys(filename):
     keys = []
     try:
         with safetensors.torch.safe_open(filename, framework="pt", device="cpu") as f:
             keys = f.keys()
-    except Exception as e:
-        shared.log.error(f'Load dict: path="{filename}" {e}')
+    except Exception:
+        pass
     return keys
 
 
