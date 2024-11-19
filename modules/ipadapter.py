@@ -35,8 +35,15 @@ ADAPTERS_SDXL = {
     'Plus Face ViT-H SDXL': { 'name': 'ip-adapter-plus-face_sdxl_vit-h.safetensors', 'repo': 'h94/IP-Adapter', 'subfolder': 'sdxl_models' },
     'Ostris Composition ViT-H SDXL': { 'name': 'ip_plus_composition_sdxl.safetensors', 'repo': 'ostris/ip-composition-adapter', 'subfolder': '' },
 }
-ADAPTERS = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
-ADAPTERS_ALL = { **ADAPTERS_SD15, **ADAPTERS_SDXL }
+ADAPTERS_SD3 = {
+    'InstantX Large': { 'name': 'ip-adapter.bin', 'repo': 'InstantX/SD3.5-Large-IP-Adapter' },
+}
+ADAPTERS_F1 = {
+    'XLabs AI v1': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter' },
+    'XLabs AI v2': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter-v2' },
+}
+ADAPTERS = { **ADAPTERS_SD15, **ADAPTERS_SDXL, **ADAPTERS_SD3, **ADAPTERS_F1 }
+ADAPTERS_ALL = { **ADAPTERS_SD15, **ADAPTERS_SDXL, **ADAPTERS_SD3, **ADAPTERS_F1 }
 
 
 def get_adapters():
@@ -45,6 +52,10 @@ def get_adapters():
         ADAPTERS = ADAPTERS_SD15
     elif shared.sd_model_type == 'sdxl':
         ADAPTERS = ADAPTERS_SDXL
+    elif shared.sd_model_type == 'sd3':
+        ADAPTERS = ADAPTERS_SD3
+    elif shared.sd_model_type == 'f1':
+        ADAPTERS = ADAPTERS_F1
     else:
         ADAPTERS = ADAPTERS_NONE
     return list(ADAPTERS)
@@ -55,7 +66,7 @@ def get_images(input_images):
     if input_images is None or len(input_images) == 0:
         shared.log.error('IP adapter: no init images')
         return None
-    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
+    if shared.sd_model_type not in ['sd', 'sdxl', 'sd3', 'f1']:
         shared.log.error('IP adapter: base model not supported')
         return None
     if isinstance(input_images, str):
@@ -147,7 +158,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         if hasattr(p, 'ip_adapter_images'):
             del p.ip_adapter_images
         return False
-    if shared.sd_model_type != 'sd' and shared.sd_model_type != 'sdxl':
+    if shared.sd_model_type not in ['sd', 'sdxl', 'sd3', 'f1']:
         shared.log.error(f'IP adapter: model={shared.sd_model_type} class={pipe.__class__.__name__} not supported')
         return False
     if hasattr(p, 'ip_adapter_scales'):
@@ -172,6 +183,9 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         for i in range(len(adapter_masks)):
             adapter_masks[i] = mask_processor.preprocess(adapter_masks[i], height=p.height, width=p.width)
         adapter_masks = mask_processor.preprocess(adapter_masks, height=p.height, width=p.width)
+    if adapter_images is None:
+        shared.log.error('IP adapter: no image provided')
+        return False
     if len(adapters) < len(adapter_images):
         adapter_images = adapter_images[:len(adapters)]
     if len(adapters) < len(adapter_masks):
@@ -212,13 +226,24 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
                 clip_subfolder = 'models/image_encoder'
             else:
                 clip_subfolder = 'sdxl_models/image_encoder'
-        elif 'ViT-H' in adapter_name:
+        if 'ViT-H' in adapter_name:
             clip_subfolder = 'models/image_encoder' # this is vit-h
         elif 'ViT-G' in adapter_name:
             clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
         else:
-            shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
-            return False
+            if shared.sd_model_type == 'sd':
+                clip_subfolder = 'models/image_encoder'
+            elif shared.sd_model_type == 'sdxl':
+                clip_subfolder = 'sdxl_models/image_encoder'
+            elif shared.sd_model_type == 'sd3':
+                shared.log.error(f'IP adapter: adapter={adapter_name} type={shared.sd_model_type} cls={shared.sd_model.__class__.__name__}: unsupported base model')
+                return False
+            elif shared.sd_model_type == 'f1':
+                shared.log.error(f'IP adapter: adapter={adapter_name} type={shared.sd_model_type} cls={shared.sd_model.__class__.__name__}: unsupported base model')
+                return False
+            else:
+                shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
+                return False
 
     # load feature extractor used by ip adapter
     if pipe.feature_extractor is None:

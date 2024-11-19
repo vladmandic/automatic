@@ -16,7 +16,7 @@ First, a massive update to docs including new UI top-level **info** tab with acc
 
 **Workflow Improvements**:
 - Native Docker support
-- SD3x & Flux.1: more ControlNets, all-in-one-safetensors, DPM samplers, etc.
+- SD3x & Flux.1: more ControlNets, all-in-one-safetensors, DPM samplers, skip-layer-guidance, etc.
 - XYZ grid: benchmarking, video creation, etc.
 - Enhanced prompt parsing
 - UI improvements
@@ -66,15 +66,18 @@ And quite a few more improvements and fixes since the last update - for full det
       `<MIXED_CAPTION>`, `<MIXED_CAPTION_PLUS>` detailed caption and tags with optional analyze  
 
 - Model improvements:  
-  - SD3: ControlNets:  
+  - SD35: **ControlNets**:  
     - *InstantX Canny, Pose, Depth, Tile*  
     - *Alimama Inpainting, SoftEdge*  
     - *note*: that just like with FLUX.1 or any large model, ControlNet are also large and can push your system over the limit  
       e.g. SD3 controlnets vary from 1GB to over 4GB in size  
-  - SD3: all-in-one safetensors  
+  - SD35: **All-in-one** safetensors  
     - *examples*: [large](https://civitai.com/models/882666/sd35-large-google-flan?modelVersionId=1003031), [medium](https://civitai.com/models/900327)  
     - *note*: enable *bnb* on-the-fly quantization for even bigger gains  
-  - FlowMatch samplers:
+  - SD35: **skip-layer-guidance**  
+    - enable in *scripts -> slg*
+    - allows for granular strength/start/stop control of guidance for each layer of the model  
+  - **FlowMatch samplers**:
     - Applicable to SD 3.x and Flux.1 models
     - Complete family: *DPM2, DPM2a, DPM2++, DPM2++ 2M, DPM2++ 2S, DPM2++ SDE, DPM2++ 2M SDE, DPM2++ 3M SDE*
   - [NoobAI XL ControlNets](https://huggingface.co/collections/Eugeoter/controlnext-673161eae023f413e0432799), thanks @lbeltrame
