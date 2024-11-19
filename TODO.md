@@ -4,9 +4,12 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Future Candidates
 
-- sd35 ip-adapter
-- flux.1 ip-adapter
-- flow-match scheudlers: <https://github.com/huggingface/diffusers/issues/9607>
-- ipadapter-negative: <https://github.com/huggingface/diffusers/discussions/7167>
-- include reference styles
-- control api scripts compatibility
+- Include reference styles
+- Control API scripts compatibility
+- IPA for SD35 <https://github.com/huggingface/diffusers/issues/9966>
+- IPA for FLUX <https://github.com/huggingface/diffusers/issues/9825>
+- IPA Negative: <https://github.com/huggingface/diffusers/discussions/7167>
+- LoRA for SD35 <https://github.com/huggingface/diffusers/issues/9950>
+- Beta/Exponential <https://github.com/huggingface/diffusers/pull/9954>
+- GGUF <https://github.com/huggingface/diffusers/issues/9487>
+- FlowMatch <https://github.com/huggingface/diffusers/issues/9607> <https://github.com/huggingface/diffusers/issues/9924>
