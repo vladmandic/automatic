@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-19
+## Update for 2024-11-20
 
-### Highlights for 2024-11-19
+### Highlights for 2024-11-20
 
 *What's New?*
 
@@ -26,7 +26,7 @@ And quite a few more improvements and fixes since the last update - for full det
 
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-### Details for 2024-11-19
+### Details for 2024-11-20
 
 - Docs:  
   - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  
@@ -77,24 +77,26 @@ And quite a few more improvements and fixes since the last update - for full det
   - SD35: **skip-layer-guidance**  
     - enable in *scripts -> slg*
     - allows for granular strength/start/stop control of guidance for each layer of the model  
-  - **FlowMatch samplers**:
-    - Applicable to SD 3.x and Flux.1 models
-    - Complete family: *DPM2, DPM2a, DPM2++, DPM2++ 2M, DPM2++ 2S, DPM2++ SDE, DPM2++ 2M SDE, DPM2++ 3M SDE*
   - [NoobAI XL ControlNets](https://huggingface.co/collections/Eugeoter/controlnext-673161eae023f413e0432799), thanks @lbeltrame
 
 - Workflow improvements:  
   - Native Docker support with pre-defined [Dockerfile](https://github.com/vladmandic/automatic/blob/dev/Dockerfile)
-  - XYZ grid:  
+  - Samplers:
+    - **FlowMatch samplers**:
+      - Applicable to SD 3.x and Flux.1 models
+      - Complete family: *DPM2, DPM2a, DPM2++, DPM2++ 2M, DPM2++ 2S, DPM2++ SDE, DPM2++ 2M SDE, DPM2++ 3M SDE*
+    - **Beta and Exponential** sigma method enabled for all samplers
+  - **XYZ grid**:  
     - optional time benchmark info to individual images  
     - optional add params to individual images  
     - create video from generated grid images  
       supports all standard video types and interpolation  
-  - Prompt parser:  
+  - **Prompt parser**:  
     - support for prompt scheduling  
     - renamed parser options: `native`, `xhinker`, `compel`, `a1111`, `fixed`  
     - parser options are available in xyz grid  
     - improved caching  
-  - UI:  
+  - **UI**:  
     - better gallery and networks sidebar sizing  
     - add additional [hotkeys](https://github.com/vladmandic/automatic/wiki/Hotkeys)  
     - add show networks on startup setting  
@@ -103,7 +105,7 @@ And quite a few more improvements and fixes since the last update - for full det
   - Image2image:  
     - integrated refine/upscale/hires workflow  
 - Other:  
-  - Installer:  
+  - **Installer**:  
     - Log `venv` and package search paths  
     - Auto-remove invalid packages from `venv/site-packages`  
       e.g. packages starting with `~` which are left-over due to windows access violation  
@@ -130,6 +132,7 @@ And quite a few more improvements and fixes since the last update - for full det
   - fix network height in standard vs modern ui  
   - fix k-diff enum on startup  
   - fix text2video scripts  
+  - multiple xyz-grid fixes  
   - dont uninstall flash-attn  
   - ui css fixes  
 
