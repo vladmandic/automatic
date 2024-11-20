@@ -417,8 +417,11 @@ def apply_balanced_offload(sd_model):
                 try:
                     module = module.to("cpu")
                     module.offload_dir = offload_dir
+                    network_layer_name = getattr(module, "network_layer_name", None)
                     module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                    if network_layer_name:
+                        module.network_layer_name = network_layer_name
                 except Exception as e:
                     if 'bitsandbytes' not in str(e):
                         shared.log.error(f'Balanced offload: module={module_name} {e}')
