@@ -61,7 +61,7 @@ predefined_sdxl = {
     'NoobAI Depth XL': 'Eugeoter/noob-sdxl-controlnet-depth',
     'NoobAI Normal XL': 'Eugeoter/noob-sdxl-controlnet-normal',
     'NoobAI SoftEdge XL': 'Eugeoter/noob-sdxl-controlnet-softedge_hed',
-    # 'NoobAI OpenPose XL': 'Laxhar/noob_openpose/openpose_pre.safetensors',
+    'NoobAI OpenPose XL': 'einar77/noob-openpose',
     # 'StabilityAI Canny R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-canny-rank128.safetensors',
     # 'StabilityAI Depth R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
     # 'StabilityAI Recolor R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors',
