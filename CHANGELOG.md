@@ -26,7 +26,8 @@ First, a massive update to docs including new UI top-level **info** tab with acc
 - **UI** improvements
 - **Installer** self-healing `venv`
 
-And quite a few more improvements and fixes since the last update - for full details see changelog...
+And quite a few more improvements and fixes since the last update!
+For full list and details see changelog...
 
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
