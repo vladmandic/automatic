@@ -13,6 +13,7 @@ class APIGenerate():
         self.queue_lock = queue_lock
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
+        self.default_script_arg_control = []
 
     def sanitize_args(self, args: dict):
         args = vars(args)
@@ -40,7 +41,7 @@ class APIGenerate():
             sanitize_str(request.script_args)
 
     def prepare_face_module(self, request):
-        if hasattr(request, "face") and request.face and not request.script_name and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
+        if getattr(request, "face", None) is not None and (not request.alwayson_scripts or "face" not in request.alwayson_scripts.keys()):
             request.script_name = "face"
             request.script_args = [
                 request.face.mode,
@@ -106,17 +107,23 @@ class APIGenerate():
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_grids or shared.opts.outdir_txt2img_grids
             p.outpath_samples = shared.opts.outdir_samples or shared.opts.outdir_txt2img_samples
+            for key, value in getattr(txt2imgreq, "extra", {}).items():
+                setattr(p, key, value)
             shared.state.begin('API TXT', api=True)
             script_args = script.init_script_args(p, txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner)
+            p.script_args = tuple(script_args) # Need to pass args as tuple here
             if selectable_scripts is not None:
                 processed = scripts.scripts_txt2img.run(p, *script_args) # Need to pass args as list here
             else:
-                p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
+        if processed is None or processed.images is None or len(processed.images) == 0:
+            b64images = []
+        else:
+            b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
         self.sanitize_b64(txt2imgreq)
-        return models.ResTxt2Img(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
+        info = processed.js() if processed else ''
+        return models.ResTxt2Img(images=b64images, parameters=vars(txt2imgreq), info=info)
 
     def post_img2img(self, img2imgreq: models.ReqImg2Img):
         self.prepare_face_module(img2imgreq)
@@ -150,17 +157,23 @@ class APIGenerate():
             p.scripts = script_runner
             p.outpath_grids = shared.opts.outdir_img2img_grids
             p.outpath_samples = shared.opts.outdir_img2img_samples
+            for key, value in getattr(img2imgreq, "extra", {}).items():
+                setattr(p, key, value)
             shared.state.begin('API-IMG', api=True)
             script_args = script.init_script_args(p, img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
+            p.script_args = tuple(script_args) # Need to pass args as tuple here
             if selectable_scripts is not None:
                 processed = scripts.scripts_img2img.run(p, *script_args) # Need to pass args as list here
             else:
-                p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
+        if processed is None or processed.images is None or len(processed.images) == 0:
+            b64images = []
+        else:
+            b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
         if not img2imgreq.include_init_images:
             img2imgreq.init_images = None
             img2imgreq.mask = None
         self.sanitize_b64(img2imgreq)
-        return models.ResImg2Img(images=b64images, parameters=vars(img2imgreq), info=processed.js())
+        info = processed.js() if processed else ''
+        return models.ResImg2Img(images=b64images, parameters=vars(img2imgreq), info=info)

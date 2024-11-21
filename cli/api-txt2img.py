@@ -48,7 +48,7 @@ def generate(args): # pylint: disable=redefined-outer-name
     options['sampler_name'] = args.sampler
     options['width'] = int(args.width)
     options['height'] = int(args.height)
-    if args.faces:
+    if args.detailer:
         options['detailer'] = args.detailer
         options['denoising_strength'] = 0.5
         options['hr_sampler_name'] = args.sampler

@@ -13,11 +13,12 @@ footer { display: none; margin-top: 0 !important;}
 table { overflow-x: auto !important; overflow-y: auto !important; }
 td { border-bottom: none !important; padding: 0 0.5em !important; }
 tr { border-bottom: none !important; padding: 0 0.5em !important; }
+td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
 textarea { overflow-y: auto !important; }
 span { font-size: var(--text-md) !important; }
 button { font-size: var(--text-lg) !important; }
 input[type='color'] { width: 64px; height: 32px; }
-td > div > span { overflow-y: auto; max-height: 3em; overflow-x: hidden; }
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: 4px; }
 
 /* gradio elements */
 .block .padded:not(.gradio-accordion) { padding: 4px 0 0 0 !important; margin-right: 0; min-width: 90px !important; }
@@ -325,6 +326,11 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
 .changelog_arrow { font-size: 2em; padding: 0.1em; cursor: pointer; height: 1em; background-color: var(--button-secondary-background-fill); }
 .changelog_arrow:hover { background-color: var(--button-primary-border-color-hover); }
 .changelog_highlight { background-color: var(--color-warning); }
+
+/* wiki */
+#wiki_result > div > div { padding: 0.5em; margin-right: 2em; }
+#wiki_result li { display: block; }
+#wiki_result h3 { background-color: var(--background-fill-primary); margin: 0; padding: 0.3em; margin-bottom: 0.2em; }
 
 /* loader */
 .splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; display: block; text-align: center; }

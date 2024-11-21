@@ -1,4 +1,7 @@
+# required for python 3.12
 setuptools==69.5.1
+
+# standard
 patch-ng
 anyio
 addict
@@ -27,6 +30,8 @@ ruff
 pylint
 invisible-watermark
 pi-heif
+
+# versioned
 safetensors==0.4.5
 tensordict==0.1.2
 peft==0.13.1
@@ -36,7 +41,7 @@ torchsde==0.2.6
 antlr4-python3-runtime==4.9.3
 requests==2.32.3
 tqdm==4.66.5
-accelerate==1.0.1
+accelerate==1.1.1
 opencv-contrib-python-headless==4.9.0.80
 einops==0.4.1
 gradio==3.43.2
@@ -44,19 +49,21 @@ huggingface_hub==0.26.2
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.1
-blendmodes
-scipy
-pandas
 protobuf==4.25.3
 pytorch_lightning==1.9.4
-tokenizers==0.20.1
-transformers==4.46.1
+tokenizers==0.20.3
+transformers==4.46.2
 urllib3==1.26.19
 Pillow==10.4.0
 timm==0.9.16
 pydantic==1.10.15
 pyparsing==3.1.4
 typing-extensions==4.12.2
+
+# additional
+blendmodes
+scipy
+pandas
 torchdiffeq
 dctorch
 scikit-image

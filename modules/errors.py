@@ -59,7 +59,7 @@ def exception(suppress=[]):
     console.print_exception(show_locals=False, max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
 
 
-def profile(profiler, msg: str):
+def profile(profiler, msg: str, n: int = 5):
     profiler.disable()
     import io
     import pstats
@@ -83,7 +83,7 @@ def profile(profiler, msg: str):
              and 'rich' not in x
              and x.strip() != ''
             ]
-    txt = '\n'.join(lines[:min(5, len(lines))])
+    txt = '\n'.join(lines[:min(n, len(lines))])
     log.debug(f'Profile {msg}: {txt}')
 
 

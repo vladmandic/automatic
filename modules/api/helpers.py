@@ -14,15 +14,21 @@ def validate_sampler_name(name):
     return name
 
 
-def decode_base64_to_image(encoding):
+def decode_base64_to_image(encoding, quiet=False):
     if encoding.startswith("data:image/"):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
-        image = Image.open(io.BytesIO(base64.b64decode(encoding)))
+        decoded = base64.b64decode(encoding)
+        data = io.BytesIO(decoded)
+        image = Image.open(data)
         return image
     except Exception as e:
         shared.log.warning(f'API cannot decode image: {e}')
-        raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+        from modules import errors
+        errors.display(e, 'API cannot decode image')
+        if not quiet:
+            raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+        return None
 
 
 def encode_pil_to_base64(image):

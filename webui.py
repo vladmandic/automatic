@@ -51,13 +51,10 @@ fastapi_args = {
     "version": f'0.0.{git_commit}',
     "title": "SD.Next",
     "description": "SD.Next",
-    "docs_url": "/docs" if cmd_opts.docs else None,
-    "redoc_url": "/redocs" if cmd_opts.docs else None,
-    "swagger_ui_parameters": {
-        "displayOperationId": True,
-        "showCommonExtensions": True,
-        "deepLinking": False,
-    }
+    "docs_url": None,
+    "redoc_url": None,
+    # "docs_url": "/docs" if cmd_opts.docs else None, # custom handler in api.py
+    # "redoc_url": "/redocs" if cmd_opts.docs else None,
 }
 
 import modules.sd_hijack
@@ -110,7 +107,7 @@ def initialize():
     yolo.initialize()
     timer.startup.record("detailer")
 
-    log.debug('Load extensions')
+    log.info('Load extensions')
     t_timer, t_total = modules.scripts.load_scripts()
     timer.startup.record("extensions")
     timer.startup.records["extensions"] = t_total # scripts can reset the time
@@ -179,7 +176,7 @@ def load_model():
 
 
 def create_api(app):
-    log.debug('Creating API')
+    log.debug('API initialize')
     from modules.api.api import Api
     api = Api(app, queue_lock)
     return api
@@ -231,7 +228,7 @@ def start_common():
 
 
 def start_ui():
-    log.debug('Creating UI')
+    log.info('UI start')
     modules.script_callbacks.before_ui_callback()
     timer.startup.record("before-ui")
     shared.demo = modules.ui.create_ui(timer.startup)
@@ -277,7 +274,6 @@ def start_ui():
             max_threads=64,
             show_api=False,
             quiet=True,
-            # favicon_path='html/logo.ico',
             favicon_path='html/favicon.svg',
             allowed_paths=allowed_paths,
             app_kwargs=fastapi_args,

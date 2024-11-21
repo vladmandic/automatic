@@ -1,7 +1,8 @@
 import os
+import time
 import torch
 import diffusers
-from modules import shared, shared_items, devices, errors
+from modules import shared, shared_items, devices, errors, model_tools
 
 
 debug_load = os.environ.get('SD_LOAD_DEBUG', None)
@@ -81,6 +82,9 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             if 'meissonic' in f.lower():
                 guess = 'Meissonic'
                 pipeline = 'custom'
+            if 'monetico' in f.lower():
+                guess = 'Monetico'
+                pipeline = 'custom'
             if 'omnigen' in f.lower():
                 guess = 'OmniGen'
                 pipeline = 'custom'
@@ -103,6 +107,13 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
             pipeline = shared_items.get_pipelines().get(guess, None) if pipeline is None else pipeline
             if not quiet:
                 shared.log.info(f'Autodetect {op}: detect="{guess}" class={getattr(pipeline, "__name__", None)} file="{f}" size={size}MB')
+                t0 = time.time()
+                keys = model_tools.get_safetensor_keys(f)
+                if keys is not None and len(keys) > 0:
+                    modules = model_tools.list_to_dict(keys)
+                    modules = model_tools.remove_entries_after_depth(modules, 3)
+                    t1 = time.time()
+                    shared.log.debug(f'Autodetect modules: {modules} time={t1-t0:.2f}')
         except Exception as e:
             shared.log.error(f'Autodetect {op}: file="{f}" {e}')
             if debug_load:

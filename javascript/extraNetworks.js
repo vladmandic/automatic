@@ -481,11 +481,13 @@ function setupExtraNetworksForTab(tabname) {
           en.style.position = 'absolute';
           en.style.height = 'auto';
           en.style.width = `${window.opts.extra_networks_sidebar_width}vw`;
+          en.style.maxWidth = '655px';
           en.style.right = '0';
           en.style.top = '13em';
           en.style.transition = 'width 0.3s ease';
           en.style.zIndex = 100;
-          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
+          // gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `${100 - 2 - window.opts.extra_networks_sidebar_width}vw`;
+          gradioApp().getElementById(`${tabname}_settings`).parentNode.style.width = `calc(100vw - 2em - min(${window.opts.extra_networks_sidebar_width}vw, 655px))`;
         } else {
           en.style.position = 'relative';
           en.style.height = 'unset';

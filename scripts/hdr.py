@@ -11,14 +11,14 @@ from modules.shared import opts, state
 
 class Script(scripts.Script):
     def title(self):
-        return "HDR"
+        return "HDR: High Dynamic Range"
 
     def show(self, is_img2img):
         return True
 
     def ui(self, is_img2img):
         with gr.Row():
-            gr.HTML("<span>&nbsp High Dynamic Range</span><br>")
+            gr.HTML("<span>&nbsp HDR: High Dynamic Range</span><br>")
         with gr.Row():
             save_hdr = gr.Checkbox(label="Save HDR image", value=True)
             hdr_range = gr.Slider(minimum=0, maximum=1, step=0.05, value=0.65, label='HDR range')

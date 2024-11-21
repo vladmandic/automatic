@@ -5,7 +5,7 @@ from fastapi import FastAPI, APIRouter, Depends, Request
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from modules import errors, shared, postprocessing
-from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery
+from modules.api import models, endpoints, script, helpers, server, nvml, generate, process, control, gallery, docs
 
 
 errors.install()
@@ -23,8 +23,10 @@ class Api:
                 for line in file.readlines():
                     user, password = line.split(":")
                     self.credentials[user.replace('"', '').strip()] = password.replace('"', '').strip()
-
         self.router = APIRouter()
+        if shared.cmd_opts.docs:
+            docs.create_docs(app)
+            docs.create_redocs(app)
         self.app = app
         self.queue_lock = queue_lock
         self.generate = generate.APIGenerate(queue_lock)
@@ -36,6 +38,7 @@ class Api:
         self.add_api_route("/sdapi/v1/log", server.get_log_buffer, methods=["GET"], response_model=List[str])
         self.add_api_route("/sdapi/v1/start", self.get_session_start, methods=["GET"])
         self.add_api_route("/sdapi/v1/version", server.get_version, methods=["GET"])
+        self.add_api_route("/sdapi/v1/status", server.get_status, methods=["GET"], response_model=models.ResStatus)
         self.add_api_route("/sdapi/v1/platform", server.get_platform, methods=["GET"])
         self.add_api_route("/sdapi/v1/progress", server.get_progress, methods=["GET"], response_model=models.ResProgress)
         self.add_api_route("/sdapi/v1/interrupt", server.post_interrupt, methods=["POST"])
@@ -55,7 +58,7 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ResProcessBatch)
         self.add_api_route("/sdapi/v1/preprocess", self.process.post_preprocess, methods=["POST"])
         self.add_api_route("/sdapi/v1/mask", self.process.post_mask, methods=["POST"])
-        self.add_api_route("/sdapi/v1/faces", self.process.post_face, methods=["POST"])
+        self.add_api_route("/sdapi/v1/detect", self.process.post_detect, methods=["POST"])
 
         # api dealing with optional scripts
         self.add_api_route("/sdapi/v1/scripts", script.get_scripts_list, methods=["GET"], response_model=models.ResScripts)

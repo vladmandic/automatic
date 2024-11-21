@@ -291,10 +291,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
 
 
 def set_accelerate_to_module(model):
-    for k in model._internal_dict.keys(): # pylint: disable=protected-access
-        component = getattr(model, k, None)
-        if isinstance(component, torch.nn.Module):
-            component.has_accelerate = True
+    if hasattr(model, "pipe"):
+        set_accelerate_to_module(model.pipe)
+    if hasattr(model, "_internal_dict"):
+        for k in model._internal_dict.keys(): # pylint: disable=protected-access
+            component = getattr(model, k, None)
+            if isinstance(component, torch.nn.Module):
+                component.has_accelerate = True
 
 
 def set_accelerate(sd_model):
@@ -397,7 +400,13 @@ def apply_balanced_offload(sd_model):
             return module
 
     def apply_balanced_offload_to_module(pipe):
-        for module_name in pipe._internal_dict.keys(): # pylint: disable=protected-access
+        if hasattr(pipe, "pipe"):
+            apply_balanced_offload_to_module(pipe.pipe)
+        if hasattr(pipe, "_internal_dict"):
+            keys = pipe._internal_dict.keys() # pylint: disable=protected-access
+        else:
+            keys = get_signature(shared.sd_model).keys()
+        for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):
                 checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
@@ -408,14 +417,19 @@ def apply_balanced_offload(sd_model):
                 try:
                     module = module.to("cpu")
                     module.offload_dir = offload_dir
+                    network_layer_name = getattr(module, "network_layer_name", None)
                     module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                    if network_layer_name:
+                        module.network_layer_name = network_layer_name
                 except Exception as e:
                     if 'bitsandbytes' not in str(e):
                         shared.log.error(f'Balanced offload: module={module_name} {e}')
                 devices.torch_gc(fast=True)
 
     apply_balanced_offload_to_module(sd_model)
+    if hasattr(sd_model, "pipe"):
+        apply_balanced_offload_to_module(sd_model.pipe)
     if hasattr(sd_model, "prior_pipe"):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
     if hasattr(sd_model, "decoder_pipe"):
@@ -439,6 +453,9 @@ def move_model(model, device=None, force=False):
                 model.cond_stage_model = model.cond_stage_model.to(device)
         devices.torch_gc()
         return
+
+    if hasattr(model, 'pipe'):
+        move_model(model.pipe, device, force)
 
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     if getattr(model, 'vae', None) is not None and get_diffusers_task(model) != DiffusersTaskType.TEXT_2_IMAGE:
@@ -467,7 +484,8 @@ def move_model(model, device=None, force=False):
     try:
         t0 = time.time()
         try:
-            model.to(device)
+            if hasattr(model, 'to'):
+                model.to(device)
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
@@ -477,7 +495,8 @@ def move_model(model, device=None, force=False):
                         if hasattr(component, 'modules'):
                             for module in component.modules():
                                 try:
-                                    module.to(device)
+                                    if hasattr(module, 'to'):
+                                        module.to(device)
                                 except Exception as e2:
                                     if 'Cannot copy out of meta tensor' in str(e2):
                                         if os.environ.get('SD_MOVE_DEBUG', None):
@@ -771,11 +790,11 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
     if shared.opts.data.get('sd_model_checkpoint', '') == 'model.safetensors' or shared.opts.data.get('sd_model_checkpoint', '') == '':
         shared.opts.data['sd_model_checkpoint'] = "stabilityai/stable-diffusion-xl-base-1.0"
 
-    if op == 'model' or op == 'dict':
-        if (model_data.sd_model is not None) and (checkpoint_info is not None) and (checkpoint_info.hash == model_data.sd_model.sd_checkpoint_info.hash): # trying to load the same model
+    if (op == 'model' or op == 'dict'):
+        if (model_data.sd_model is not None) and (checkpoint_info is not None) and (getattr(model_data.sd_model, 'sd_checkpoint_info', None) is not None) and (checkpoint_info.hash == model_data.sd_model.sd_checkpoint_info.hash): # trying to load the same model
             return
     else:
-        if (model_data.sd_refiner is not None) and (checkpoint_info is not None) and (checkpoint_info.hash == model_data.sd_refiner.sd_checkpoint_info.hash): # trying to load the same model
+        if (model_data.sd_refiner is not None) and (checkpoint_info is not None) and (getattr(model_data.sd_refiner, 'sd_checkpoint_info', None) is not None) and (checkpoint_info.hash == model_data.sd_refiner.sd_checkpoint_info.hash): # trying to load the same model
             return
 
     sd_model = None
@@ -797,6 +816,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         # preload vae so it can be used as param
         vae = None
         sd_vae.loaded_vae_file = None
+        if model_type is None:
+            shared.log.error(f'Load {op}: pipeline={shared.opts.diffusers_pipeline} not detected')
+            return
         if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
             vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename)
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)
@@ -862,8 +884,9 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         sd_model.embedding_db.load_textual_inversion_embeddings(force_reload=True)
         timer.record("embeddings")
 
-        from modules.prompt_parser_diffusers import insert_parser_highjack
-        insert_parser_highjack(sd_model.__class__.__name__)
+        from modules import prompt_parser_diffusers
+        prompt_parser_diffusers.insert_parser_highjack(sd_model.__class__.__name__)
+        prompt_parser_diffusers.cache.clear()
 
         set_diffuser_options(sd_model, vae, op, offload=False)
         if shared.opts.nncf_compress_weights and not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
@@ -874,7 +897,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         set_diffuser_offload(sd_model, op)
         if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
-            sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
+            if getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None:
+                sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
             move_model(sd_model, devices.cpu)
@@ -1049,6 +1073,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'AnimateDiffSDXLPipeline',
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
+        'InstantIRPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')
@@ -1059,12 +1084,15 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         return pipe
 
     # skip specific pipelines
+    cls = pipe.__class__.__name__
     if n in exclude:
         return pipe
-    if 'Onnx' in pipe.__class__.__name__:
+    if 'Onnx' in cls:
         return pipe
 
-    if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING: # in some cases we want to reset the pipeline as they dont have their own variants
+    new_pipe = None
+    # in some cases we want to reset the pipeline to parent as they dont have their own variants
+    if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING:
         if n == 'StableDiffusionPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
         if n == 'StableDiffusionXLPAGPipeline':
@@ -1080,19 +1108,38 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
 
-    try:
-        if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
-            new_pipe = diffusers.AutoPipelineForText2Image.from_pipe(pipe)
-        elif new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
-            new_pipe = diffusers.AutoPipelineForImage2Image.from_pipe(pipe)
-        elif new_pipe_type == DiffusersTaskType.INPAINTING:
-            new_pipe = diffusers.AutoPipelineForInpainting.from_pipe(pipe)
+    if new_pipe is None:
+        if hasattr(pipe, 'config'): # real pipeline which can be auto-switched
+            try:
+                if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
+                    new_pipe = diffusers.AutoPipelineForText2Image.from_pipe(pipe)
+                elif new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
+                    new_pipe = diffusers.AutoPipelineForImage2Image.from_pipe(pipe)
+                elif new_pipe_type == DiffusersTaskType.INPAINTING:
+                    new_pipe = diffusers.AutoPipelineForInpainting.from_pipe(pipe)
+                else:
+                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
+                    return pipe
+            except Exception as e: # pylint: disable=unused-variable
+                shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls} {e}')
+                return pipe
         else:
-            shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__}')
-            return pipe
-    except Exception as e: # pylint: disable=unused-variable
-        shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={pipe.__class__.__name__} {e}')
-        return pipe
+            try: # maybe a wrapper pipeline so just change the class
+                if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
+                    new_pipe = pipe
+                elif new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE:
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_IMAGE2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
+                    new_pipe = pipe
+                elif new_pipe_type == DiffusersTaskType.INPAINTING:
+                    pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
+                    new_pipe = pipe
+                else:
+                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
+                    return pipe
+            except Exception as e: # pylint: disable=unused-variable
+                shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls} {e}')
+                return pipe
 
     # if pipe.__class__ == new_pipe.__class__:
     #    return pipe
@@ -1108,10 +1155,14 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
-    if hasattr(new_pipe, "watermark"):
+    if hasattr(new_pipe, 'watermark'):
         new_pipe.watermark = NoWatermark()
+
+    if hasattr(new_pipe, 'pipe'): # also handle nested pipelines
+        new_pipe.pipe = set_diffuser_pipe(new_pipe.pipe, new_pipe_type)
+
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    shared.log.debug(f"Pipeline class change: original={pipe.__class__.__name__} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
+    shared.log.debug(f"Pipeline class change: original={cls} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
     pipe = new_pipe
     return pipe
 
@@ -1139,6 +1190,9 @@ def set_diffusers_attention(pipe):
                 pass # unknown transformer so probably dont want to force attention processor
             else:
                 module.set_attn_processor(attention)
+
+    # if hasattr(pipe, 'pipe'):
+    #    set_diffusers_attention(pipe.pipe)
 
     if 'ControlNet' in pipe.__class__.__name__: # do not replace attention in ControlNet pipelines
         return
@@ -1180,10 +1234,10 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     if checkpoint_info is None:
         return
     if op == 'model' or op == 'dict':
-        if model_data.sd_model is not None and (checkpoint_info.hash == model_data.sd_model.sd_checkpoint_info.hash): # trying to load the same model
+        if (model_data.sd_model is not None) and (getattr(model_data.sd_model, 'sd_checkpoint_info', None) is not None) and (checkpoint_info.hash == model_data.sd_model.sd_checkpoint_info.hash): # trying to load the same model
             return
     else:
-        if model_data.sd_refiner is not None and (checkpoint_info.hash == model_data.sd_refiner.sd_checkpoint_info.hash): # trying to load the same model
+        if (model_data.sd_refiner is not None) and (getattr(model_data.sd_refiner, 'sd_checkpoint_info', None) is not None) and (checkpoint_info.hash == model_data.sd_refiner.sd_checkpoint_info.hash): # trying to load the same model
             return
     shared.log.debug(f'Load {op}: name={checkpoint_info.filename} dict={already_loaded_state_dict is not None}')
     if timer is None:
@@ -1192,12 +1246,12 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
     if op == 'model' or op == 'dict':
         if model_data.sd_model is not None:
             sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
-            current_checkpoint_info = model_data.sd_model.sd_checkpoint_info
+            current_checkpoint_info = getattr(model_data.sd_model, 'sd_checkpoint_info', None)
             unload_model_weights(op=op)
     else:
         if model_data.sd_refiner is not None:
             sd_hijack.model_hijack.undo_hijack(model_data.sd_refiner)
-            current_checkpoint_info = model_data.sd_refiner.sd_checkpoint_info
+            current_checkpoint_info = getattr(model_data.sd_refiner, 'sd_checkpoint_info', None)
             unload_model_weights(op=op)
 
     if not shared.native:
@@ -1226,15 +1280,6 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None,
         sd_model = instantiate_from_config(sd_config.model)
     else:
         with contextlib.redirect_stdout(stdout):
-            """
-            try:
-                clip_is_included_into_sd = sd1_clip_weight in state_dict or sd2_clip_weight in state_dict
-                with sd_disable_initialization.DisableInitialization(disable_clip=clip_is_included_into_sd):
-                    sd_model = instantiate_from_config(sd_config.model)
-            except Exception as e:
-                shared.log.error(f'LDM: instantiate from config: {e}')
-                sd_model = instantiate_from_config(sd_config.model)
-            """
             sd_model = instantiate_from_config(sd_config.model)
         for line in stdout.getvalue().splitlines():
             if len(line) > 0:

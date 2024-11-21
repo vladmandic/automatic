@@ -1,0 +1,26 @@
+# defaults
+.history
+.vscode/
+/__pycache__
+/.ruff_cache
+/cache
+/cache.json
+/config.json
+/extensions/*
+/html/extensions.json
+/html/themes.json
+/metadata.json
+/node_modules
+/outputs/*
+/package-lock.json
+/params.txt
+/pnpm-lock.yaml
+/styles.csv
+/tmp
+/ui-config.json
+/user.css
+/venv
+/webui-user.bat
+/webui-user.sh
+/*.log.*
+/*.log

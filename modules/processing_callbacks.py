@@ -3,8 +3,7 @@ import os
 import time
 import torch
 import numpy as np
-from modules import shared, processing_correction, extra_networks, timer
-
+from modules import shared, processing_correction, extra_networks, timer, prompt_parser_diffusers
 
 p = None
 debug_callback = shared.log.trace if os.environ.get('SD_CALLBACK_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -14,6 +13,19 @@ def set_callbacks_p(processing):
     global p # pylint: disable=global-statement
     p = processing
 
+def prompt_callback(step, kwargs):
+    if prompt_parser_diffusers.embedder is None or 'prompt_embeds' not in kwargs:
+        return kwargs
+    try:
+        prompt_embeds = prompt_parser_diffusers.embedder('prompt_embeds', step + 1)
+        negative_prompt_embeds = prompt_parser_diffusers.embedder('negative_prompt_embeds', step + 1)
+        if p.cfg_scale > 1:  # Perform guidance
+            prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds], dim=0)  # Combined embeds
+        assert prompt_embeds.shape == kwargs['prompt_embeds'].shape, f"prompt_embed shape mismatch {kwargs['prompt_embeds'].shape} {prompt_embeds.shape}"
+        kwargs['prompt_embeds'] = prompt_embeds
+    except Exception as e:
+        debug_callback(f"Callback: {e}")
+    return kwargs
 
 def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[torch.FloatTensor, np.ndarray]):
     if p is None:
@@ -33,7 +45,7 @@ def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[to
             time.sleep(0.1)
 
 
-def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
+def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}):
     t0 = time.time()
     if p is None:
         return kwargs
@@ -49,7 +61,7 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             if shared.state.interrupted or shared.state.skipped:
                 raise AssertionError('Interrupted...')
             time.sleep(0.1)
-    if hasattr(p, "extra_network_data"):
+    if hasattr(p, "stepwise_lora"):
         extra_networks.activate(p, p.extra_network_data, step=step)
     if latents is None:
         return kwargs
@@ -67,14 +79,7 @@ def diffusers_callback(pipe, step: int, timestep: int, kwargs: dict):
             pipe.set_ip_adapter_scale(ip_adapter_scales)
     if step != getattr(pipe, 'num_timesteps', 0):
         kwargs = processing_correction.correction_callback(p, timestep, kwargs)
-    if p.scheduled_prompt and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
-        try:
-            i = (step + 1) % len(p.prompt_embeds)
-            kwargs["prompt_embeds"] = p.prompt_embeds[i][0:1].expand(kwargs["prompt_embeds"].shape)
-            j = (step + 1) % len(p.negative_embeds)
-            kwargs["negative_prompt_embeds"] = p.negative_embeds[j][0:1].expand(kwargs["negative_prompt_embeds"].shape)
-        except Exception as e:
-            shared.log.debug(f"Callback: {e}")
+    kwargs = prompt_callback(step, kwargs)  # monkey patch for diffusers callback issues
     if step == int(getattr(pipe, 'num_timesteps', 100) * p.cfg_end) and 'prompt_embeds' in kwargs and 'negative_prompt_embeds' in kwargs:
         if "PAG" in shared.sd_model.__class__.__name__:
             pipe._guidance_scale = 1.001 if pipe._guidance_scale > 1 else pipe._guidance_scale  # pylint: disable=protected-access

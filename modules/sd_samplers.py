@@ -47,6 +47,10 @@ def visible_sampler_names():
 
 
 def create_sampler(name, model):
+    try:
+        current = model.scheduler.__class__.__name__
+    except Exception:
+        current = None
     if name == 'Default' and hasattr(model, 'scheduler'):
         if getattr(model, "default_scheduler", None) is not None:
             model.scheduler = copy.deepcopy(model.default_scheduler)
@@ -54,12 +58,13 @@ def create_sampler(name, model):
                 model.prior_pipe.scheduler = copy.deepcopy(model.default_scheduler)
                 model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
-        shared.log.debug(f'Sampler: sampler=default class={model.scheduler.__class__.__name__}: {config}')
+        shared.log.debug(f'Sampler: sampler=default class={current}: {config}')
         return model.scheduler
     config = find_sampler_config(name)
     if config is None or config.constructor is None:
         # shared.log.warning(f'Sampler: sampler="{name}" not found')
         return None
+    sampler = None
     if not shared.native:
         sampler = config.constructor(model)
         sampler.config = config
@@ -68,24 +73,18 @@ def create_sampler(name, model):
         shared.log.debug(f'Sampler: sampler="{name}" config={config.options}')
         return sampler
     elif shared.native:
-        sampler = config.constructor(model)
-        if 'Flux' in model.__class__.__name__:
-            if 'base_image_seq_len' not in sampler.sampler.config or 'max_image_seq_len' not in sampler.sampler.config or 'base_shift' not in sampler.sampler.config or 'max_shift' not in sampler.sampler.config:
-                shared.log.warning(f'FLUX: sampler="{name}" unsupported')
-                # sampler.sampler.register_to_config(base_image_seq_len=256, max_image_seq_len=4096, base_shift=0.5, max_shift=1.15)
-                return None
-        if 'Lumina' in model.__class__.__name__:
-            shared.log.warning(f'AlphaVLLM-Lumina: sampler="{name}" unsupported')
-            return None
-        if 'StableDiffusion3' in model.__class__.__name__:
-            if sampler.name != 'Heun FlowMatch':
-                return None
-            return None
-        if 'AuraFlow' in model.__class__.__name__:
-            shared.log.warning(f'AuraFlow: sampler="{name}" unsupported')
-            return None
+        FlowModels = ['Flux', 'StableDiffusion3', 'Lumina', 'AuraFlow']
         if 'KDiffusion' in model.__class__.__name__:
             return None
+        if any(x in model.__class__.__name__ for x in FlowModels) and 'FlowMatch' not in name:
+            shared.log.warning(f'Sampler: default={current} target="{name}" class={model.__class__.__name__} linear scheduler unsupported')
+            return None
+        if not any(x in model.__class__.__name__ for x in FlowModels) and 'FlowMatch' in name:
+            shared.log.warning(f'Sampler: default={current} target="{name}" class={model.__class__.__name__} flow-match scheduler unsupported')
+            return None
+        sampler = config.constructor(model)
+        if sampler is None:
+            sampler = config.constructor(model)
         if not hasattr(model, 'scheduler_config'):
             model.scheduler_config = sampler.sampler.config.copy() if hasattr(sampler.sampler, 'config') else {}
         model.scheduler = sampler.sampler

@@ -44,16 +44,15 @@ def encode(f):
 
 
 def detect(args): # pylint: disable=redefined-outer-name
-    data = post('/sdapi/v1/faces', { 'image': encode(args.image) })
-    for face in zip(data['images'], data['scores']):
-        log.info(f'Face: score={face[1]}')
-        image = Image.open(io.BytesIO(base64.b64decode(face[0])))
-        image.save(f'/tmp/face_{face[1]}.jpg')
+    data = post('/sdapi/v1/detect', { 'image': encode(args.image), 'model': args.model })
+    for i in range(len(data['images'])):
+        log.info(f"Item {i}: score={data['scores'][i]} cls={data['classes'][i]} box={data['boxes'][i]} label={data['labels'][i]}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'api-faces')
     parser.add_argument('--image', required=True, help='input image')
+    parser.add_argument('--model', required=False, default='', help='model')
     args = parser.parse_args()
-    log.info(f'api-faces: {args}')
+    log.info(f'api-detect: {args}')
     detect(args)

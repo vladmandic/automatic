@@ -47,16 +47,23 @@ def apply_overlay(image: Image, paste_loc, index, overlays):
         return image
     debug(f'Apply overlay: image={image} loc={paste_loc} index={index} overlays={overlays}')
     overlay = overlays[index]
-    if paste_loc is not None:
-        x, y, w, h = paste_loc
-        if image.width != w or image.height != h or x != 0 or y != 0:
-            base_image = Image.new('RGBA', (overlay.width, overlay.height))
-            image = images.resize_image(2, image, w, h)
-            base_image.paste(image, (x, y))
-            image = base_image
-    image = image.convert('RGBA')
-    image.alpha_composite(overlay)
-    image = image.convert('RGB')
+    if not isinstance(image, Image.Image) or not isinstance(overlay, Image.Image):
+        return image
+    try:
+        if paste_loc is not None and (isinstance(paste_loc, tuple) or isinstance(paste_loc, list)):
+            x, y, w, h = paste_loc
+            if x is None or y is None or w is None or h is None:
+                return image
+            if image.width != w or image.height != h or x != 0 or y != 0:
+                base_image = Image.new('RGBA', (overlay.width, overlay.height))
+                image = images.resize_image(2, image, w, h)
+                base_image.paste(image, (x, y))
+                image = base_image
+        image = image.convert('RGBA')
+        image.alpha_composite(overlay)
+        image = image.convert('RGB')
+    except Exception as e:
+        shared.log.error(f'Apply overlay: {e}')
     return image
 
 

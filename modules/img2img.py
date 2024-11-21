@@ -137,6 +137,7 @@ def img2img(id_task: str, state: str, mode: int,
             inpaint_full_res, inpaint_full_res_padding, inpainting_mask_invert,
             img2img_batch_files, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir,
             hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
+            enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, hr_refiner_start, refiner_prompt, refiner_negative,
             override_settings_texts,
             *args): # pylint: disable=unused-argument
 
@@ -214,7 +215,6 @@ def img2img(id_task: str, state: str, mode: int,
         subseed_strength=subseed_strength,
         seed_resize_from_h=seed_resize_from_h,
         seed_resize_from_w=seed_resize_from_w,
-        seed_enable_extras=True,
         sampler_name = processing.get_sampler_name(sampler_index, img=True),
         batch_size=batch_size,
         n_iter=n_iter,
@@ -247,6 +247,23 @@ def img2img(id_task: str, state: str, mode: int,
         inpainting_mask_invert=inpainting_mask_invert,
         hdr_mode=hdr_mode, hdr_brightness=hdr_brightness, hdr_color=hdr_color, hdr_sharpen=hdr_sharpen, hdr_clamp=hdr_clamp,
         hdr_boundary=hdr_boundary, hdr_threshold=hdr_threshold, hdr_maximize=hdr_maximize, hdr_max_center=hdr_max_center, hdr_max_boundry=hdr_max_boundry, hdr_color_picker=hdr_color_picker, hdr_tint_ratio=hdr_tint_ratio,
+        # refiner
+        enable_hr=enable_hr,
+        hr_denoising_strength=hr_denoising_strength,
+        hr_scale=hr_scale,
+        hr_resize_mode=hr_resize_mode,
+        hr_resize_context=hr_resize_context,
+        hr_upscaler=hr_upscaler,
+        hr_force=hr_force,
+        hr_second_pass_steps=hr_second_pass_steps,
+        hr_resize_x=hr_resize_x,
+        hr_resize_y=hr_resize_y,
+        hr_sampler_name = processing.get_sampler_name(hr_sampler_index),
+        refiner_steps=refiner_steps,
+        hr_refiner_start=hr_refiner_start,
+        refiner_prompt=refiner_prompt,
+        refiner_negative=refiner_negative,
+        # override
         override_settings=override_settings,
     )
     p.scripts = modules.scripts.scripts_img2img
@@ -267,6 +284,7 @@ def img2img(id_task: str, state: str, mode: int,
         processed = modules.scripts.scripts_img2img.run(p, *args)
         if processed is None:
             processed = processing.process_images(p)
+        processed = modules.scripts.scripts_img2img.after(p, processed, *args)
     p.close()
     generation_info_js = processed.js() if processed is not None else ''
     if processed is None:

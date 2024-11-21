@@ -352,7 +352,9 @@ class ScriptRunner:
         self.selectable_scripts.clear()
         auto_processing_scripts = scripts_auto_postprocessing.create_auto_preprocessing_script_data()
 
-        for script_class, path, _basedir, _script_module in auto_processing_scripts + scripts_data:
+        all_scripts = auto_processing_scripts + scripts_data
+        sorted_scripts = sorted(all_scripts, key=lambda x: x.script_class().title().lower())
+        for script_class, path, _basedir, _script_module in sorted_scripts:
             try:
                 script = script_class()
                 script.filename = path

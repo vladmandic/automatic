@@ -26,14 +26,14 @@ def check_dependencies():
 
 class Script(scripts.Script):
     def title(self):
-        return 'Mixture tiling'
+        return 'Mixture Tiling: Scene Composition'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
 
     def ui(self, _is_img2img):
         with gr.Row():
-            gr.HTML('<a href="https://arxiv.org/abs/2302.02412">&nbsp Mixture tiling</a><br>')
+            gr.HTML('<a href="https://arxiv.org/abs/2302.02412">&nbsp Mixture Tiling: Scene Composition</a><br>')
         with gr.Row():
             gr.HTML('<span>&nbsp Separated prompts using new lines<br>&nbsp Number of prompts must matcxh X*Y</span>')
         with gr.Row():
@@ -66,7 +66,7 @@ class Script(scripts.Script):
             shared.sd_model = orig_pipeline
             return
         sd_models.set_diffuser_options(shared.sd_model)
-        shared.opts.data['prompt_attention'] = 'Fixed attention' # this pipeline is not compatible with embeds
+        shared.opts.data['prompt_attention'] = 'fixed' # this pipeline is not compatible with embeds
         shared.sd_model.to(torch.float32) # this pipeline unet is not compatible with fp16
         processing.fix_seed(p)
         # set pipeline specific params, note that standard params are applied when applicable

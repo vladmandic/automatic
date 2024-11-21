@@ -28,8 +28,12 @@ class ReqMask(BaseModel):
 
 class ReqFace(BaseModel):
     image: str = Field(title="Image", description="The base64 encoded image")
+    model: Optional[str] = Field(title="Model", description="The model to use for detection")
 
 class ResFace(BaseModel):
+    classes: List[int] = Field(title="Class", description="The class of detected item")
+    labels: List[str] = Field(title="Label", description="The label of detected item")
+    boxes: List[List[int]] = Field(title="Box", description="The bounding box of detected item")
     images: List[str] = Field(title="Image", description="The base64 encoded images of detected faces")
     scores: List[float] = Field(title="Scores", description="The scores of the detected faces")
 
@@ -106,16 +110,22 @@ class APIProcess():
         image = encode_pil_to_base64(processed)
         return ResMask(mask=image)
 
-    def post_face(self, req: ReqFace):
-        from shared import yolo # pylint: disable=no-name-in-module
+    def post_detect(self, req: ReqFace):
+        from modules.shared import yolo # pylint: disable=no-name-in-module
         image = decode_base64_to_image(req.image)
         shared.state.begin('API-FACE', api=True)
         images = []
         scores = []
+        classes = []
+        boxes = []
+        labels = []
         with self.queue_lock:
-            faces = yolo.predict('face-yolo8n', image)
-            for face in faces:
-                images.append(encode_pil_to_base64(face.item))
-                scores.append(face.score)
+            items = yolo.predict(req.model, image)
+            for item in items:
+                images.append(encode_pil_to_base64(item.item))
+                scores.append(item.score)
+                classes.append(item.cls)
+                labels.append(item.label)
+                boxes.append(item.box)
         shared.state.end(api=False)
-        return ResFace(images=images, scores=scores)
+        return ResFace(classes=classes, labels=labels, scores=scores, boxes=boxes, images=images)

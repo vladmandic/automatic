@@ -56,6 +56,12 @@ predefined_sdxl = {
     'Xinsir Depth XL': 'xinsir/controlnet-depth-sdxl-1.0',
     'Xinsir Scribble XL': 'xinsir/controlnet-scribble-sdxl-1.0',
     'Xinsir Anime Painter XL': 'xinsir/anime-painter',
+    'NoobAI Canny XL': 'Eugeoter/noob-sdxl-controlnet-canny',
+    'NoobAI Lineart Anime XL': 'Eugeoter/noob-sdxl-controlnet-lineart_anime',
+    'NoobAI Depth XL': 'Eugeoter/noob-sdxl-controlnet-depth',
+    'NoobAI Normal XL': 'Eugeoter/noob-sdxl-controlnet-normal',
+    'NoobAI SoftEdge XL': 'Eugeoter/noob-sdxl-controlnet-softedge_hed',
+    'NoobAI OpenPose XL': 'einar77/noob-openpose',
     # 'StabilityAI Canny R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-canny-rank128.safetensors',
     # 'StabilityAI Depth R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
     # 'StabilityAI Recolor R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors',
@@ -156,17 +162,21 @@ class ControlNet():
     def get_class(self):
         import modules.shared
         if modules.shared.sd_model_type == 'sd':
-            from diffusers import ControlNetModel as model_class # pylint: disable=reimported
+            from diffusers import ControlNetModel as cls # pylint: disable=reimported
+            config = 'lllyasviel/control_v11p_sd15_canny'
         elif modules.shared.sd_model_type == 'sdxl':
-            from diffusers import ControlNetModel as model_class # pylint: disable=reimported # sdxl shares same model class
+            from diffusers import ControlNetModel as cls # pylint: disable=reimported # sdxl shares same model class
+            config = 'Eugeoter/noob-sdxl-controlnet-canny'
         elif modules.shared.sd_model_type == 'f1':
-            from diffusers import FluxControlNetModel as model_class
+            from diffusers import FluxControlNetModel as cls
+            config = 'InstantX/FLUX.1-dev-Controlnet-Union'
         elif modules.shared.sd_model_type == 'sd3':
-            from diffusers import SD3ControlNetModel as model_class
+            from diffusers import SD3ControlNetModel as cls
+            config = 'InstantX/SD3-Controlnet-Canny'
         else:
             log.error(f'Control {what}: type={modules.shared.sd_model_type} unsupported model')
-            return None
-        return model_class
+            return None, None
+        return cls, config
 
     def load_safetensors(self, model_path):
         name = os.path.splitext(model_path)[0]
@@ -193,8 +203,11 @@ class ControlNet():
             config_path = f'{name}.json'
         if config_path is not None:
             self.load_config['original_config_file '] = config_path
-        cls = self.get_class()
-        self.model = cls.from_single_file(model_path, **self.load_config)
+        cls, config = self.get_class()
+        if cls is None:
+            log.error(f'Control {what} model load failed: unknown base model')
+        else:
+            self.model = cls.from_single_file(model_path, config=config, **self.load_config)
 
     def load(self, model_id: str = None, force: bool = True) -> str:
         try:
@@ -219,14 +232,19 @@ class ControlNet():
             if model_path.endswith('.safetensors'):
                 self.load_safetensors(model_path)
             else:
+                kwargs = {}
                 if '/bin' in model_path:
                     model_path = model_path.replace('/bin', '')
                     self.load_config['use_safetensors'] = False
-                cls = self.get_class()
+                cls, _config = self.get_class()
                 if cls is None:
                     log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
                     return
-                self.model = cls.from_pretrained(model_path, **self.load_config)
+                if 'Eugeoter' in model_path:
+                    kwargs['variant'] = 'fp16'
+                self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
+            if self.model is None:
+                return
             if self.dtype is not None:
                 self.model.to(self.dtype)
             if "ControlNet" in opts.nncf_compress_weights:

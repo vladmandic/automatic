@@ -2,6 +2,9 @@ import gradio as gr
 from modules import scripts, processing, shared, sd_models
 
 
+registered = False
+
+
 class Script(scripts.Script):
     def __init__(self):
         super().__init__()
@@ -9,14 +12,14 @@ class Script(scripts.Script):
         self.register()
 
     def title(self):
-        return 'APG'
+        return 'APG: Adaptive Projected Guidance'
 
     def show(self, is_img2img):
         return not is_img2img if shared.native else False
 
     def ui(self, _is_img2img): # ui elements
         with gr.Row():
-            gr.HTML('<a href="https://arxiv.org/abs/2410.02416">&nbsp APG: Adaptive projected guidance</a><br>')
+            gr.HTML('<a href="https://arxiv.org/abs/2410.02416">&nbsp APG: Adaptive Projected Guidance</a><br>')
         with gr.Row():
             eta = gr.Slider(label="ETA", value=1.0, minimum=0, maximum=2.0, step=0.05)
             momentum = gr.Slider(label="Momentum", value=-0.50, minimum=-1.0, maximum=1.0, step=0.05)
@@ -24,6 +27,10 @@ class Script(scripts.Script):
         return [eta, momentum, threshold]
 
     def register(self): # register xyz grid elements
+        global registered # pylint: disable=global-statement
+        if registered:
+            return
+        registered = True
         def apply_field(field):
             def fun(p, x, xs): # pylint: disable=unused-argument
                 setattr(p, field, x)
@@ -32,9 +39,14 @@ class Script(scripts.Script):
 
         import sys
         xyz_classes = [v for k, v in sys.modules.items() if 'xyz_grid_classes' in k][0]
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] ETA", float, apply_field("apg_eta")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Momentum", float, apply_field("apg_momentum")))
-        xyz_classes.axis_options.append(xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")))
+        options = [
+            xyz_classes.AxisOption("[APG] ETA", float, apply_field("apg_eta")),
+            xyz_classes.AxisOption("[APG] Momentum", float, apply_field("apg_momentum")),
+            xyz_classes.AxisOption("[APG] Threshold", float, apply_field("apg_threshold")),
+        ]
+        for option in options:
+            if option not in xyz_classes.axis_options:
+                xyz_classes.axis_options.append(option)
 
     def run(self, p: processing.StableDiffusionProcessing, eta = 0.0, momentum = 0.0, threshold = 0.0): # pylint: disable=arguments-differ
         supported_model_list = ['sd', 'sdxl', 'sc']

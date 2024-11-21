@@ -4,11 +4,18 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Future Candidates
 
-- async lowvram: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14855>
-- fp8: <https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/14031>
-- ipadapter-negative: <https://github.com/huggingface/diffusers/discussions/7167>
-- include reference styles
+- SD35 IPAdapter: <https://github.com/huggingface/diffusers/issues/9966>
+- SD35 LoRA: <https://github.com/huggingface/diffusers/issues/9950>
+- Flux IPAdapter: <https://github.com/huggingface/diffusers/issues/9825>
+- Flux Fill/ControlNet/Redux: <https://github.com/huggingface/diffusers/pull/9985>
+- SANA: <https://github.com/huggingface/diffusers/pull/9982>
 
-### Missing
+## Other
 
-- control api scripts compatibility
+- IPAdapter negative: <https://github.com/huggingface/diffusers/discussions/7167>
+- Control API enhance scripts compatibility
+
+## Workaround in place
+
+- GGUF <https://github.com/huggingface/diffusers/issues/9487>
+- FlowMatch <https://github.com/huggingface/diffusers/issues/9607> <https://github.com/huggingface/diffusers/issues/9924>

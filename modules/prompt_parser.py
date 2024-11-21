@@ -308,11 +308,11 @@ def parse_prompt_attention(text):
     res = []
     round_brackets = []
     square_brackets = []
-    if opts.prompt_attention == 'Fixed attention':
+    if opts.prompt_attention == 'fixed':
         res = [[text, 1.0]]
         debug(f'Prompt: parser="{opts.prompt_attention}" {res}')
         return res
-    elif opts.prompt_attention == 'Compel parser':
+    elif opts.prompt_attention == 'compel':
         conjunction = Compel.parse_prompt_string(text)
         if conjunction is None or conjunction.prompts is None or conjunction.prompts is None or len(conjunction.prompts[0].children) == 0:
             return [["", 1.0]]
@@ -321,7 +321,7 @@ def parse_prompt_attention(text):
             res.append([frag.text, frag.weight])
         debug(f'Prompt: parser="{opts.prompt_attention}" {res}')
         return res
-    elif opts.prompt_attention == 'A1111 parser':
+    elif opts.prompt_attention == 'a1111':
         re_attention = re_attention_v1
         whitespace = ''
     else:
@@ -360,7 +360,7 @@ def parse_prompt_attention(text):
                 for i, part in enumerate(parts):
                     if i > 0:
                         res.append(["BREAK", -1])
-                    if opts.prompt_attention == 'Full parser':
+                    if opts.prompt_attention == 'native':
                         part = re_clean.sub("", part)
                         part = re_whitespace.sub(" ", part).strip()
                         if len(part) == 0:
@@ -392,15 +392,15 @@ if __name__ == "__main__":
     log.info(f'Schedules: {all_schedules}')
     for schedule in all_schedules:
         log.info(f'Schedule: {schedule[0]}')
-        opts.data['prompt_attention'] = 'Fixed attention'
+        opts.data['prompt_attention'] = 'fixed'
         output_list = parse_prompt_attention(schedule[1])
         log.info(f'  Fixed: {output_list}')
-        opts.data['prompt_attention'] = 'Compel parser'
+        opts.data['prompt_attention'] = 'compel'
         output_list = parse_prompt_attention(schedule[1])
         log.info(f'  Compel: {output_list}')
-        opts.data['prompt_attention'] = 'A1111 parser'
+        opts.data['prompt_attention'] = 'a1111'
         output_list = parse_prompt_attention(schedule[1])
         log.info(f'  A1111: {output_list}')
-        opts.data['prompt_attention'] = 'Full parser'
+        opts.data['prompt_attention'] = 'native'
         log.info = parse_prompt_attention(schedule[1])
         log.info(f'  Full:  {output_list}')

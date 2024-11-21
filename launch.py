@@ -204,12 +204,13 @@ def main():
     installer.check_python()
     if args.reset:
         installer.git_reset()
-    if args.skip_git:
+    if args.skip_git or args.skip_all:
         installer.log.info('Skipping GIT operations')
     installer.check_version()
     installer.log.info(f'Platform: {installer.print_dict(installer.get_platform())}')
+    installer.check_venv()
     installer.log.info(f'Args: {sys.argv[1:]}')
-    if not args.skip_env:
+    if not args.skip_env or args.skip_all:
         installer.set_environment()
     if args.uv:
         installer.install("uv", "uv")
@@ -239,7 +240,7 @@ def main():
             installer.install_extensions()
             installer.install_requirements() # redo requirements since extensions may change them
             installer.update_wiki()
-            if installer.errors == 0:
+            if len(installer.errors) == 0:
                 installer.log.debug(f'Setup complete without errors: {round(time.time())}')
             else:
                 installer.log.warning(f'Setup complete with errors: {installer.errors}')
@@ -257,9 +258,7 @@ def main():
             alive = False
             requests = 0
         if round(time.time()) % 120 == 0:
-            state = f'job="{instance.state.job}" {instance.state.job_no}/{instance.state.job_count}' if instance.state.job != '' or instance.state.job_no != 0 or instance.state.job_count != 0 else 'idle'
-            uptime = round(time.time() - instance.state.server_start)
-            installer.log.debug(f'Server: alive={alive} jobs={instance.state.total_jobs} requests={requests} uptime={uptime} memory={get_memory_stats()} backend={instance.backend} state={state}')
+            installer.log.debug(f'Server: alive={alive} requests={requests} memory={get_memory_stats()} {instance.state.status()}')
         if not alive:
             if uv is not None and uv.wants_restart:
                 installer.log.info('Server restarting...')

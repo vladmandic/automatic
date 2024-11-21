@@ -13,7 +13,7 @@ MODELS = [
 
 class Script(scripts.Script):
     def title(self):
-        return 'Image-to-Video'
+        return 'Video VGen Image-to-Video'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False
@@ -102,6 +102,7 @@ class Script(scripts.Script):
             processed = processing.process_images(p)
             shared.sd_model.motion_adapter = None
 
+        processed = None
         if model_name == 'VGen':
             if not isinstance(shared.sd_model, diffusers.I2VGenXLPipeline):
                 shared.log.info(f'Image2Video VGen load: model={repo_id}')
