@@ -5,6 +5,7 @@
   "plugins": ["html", "json"],
   "extends": [
     "plugin:json/recommended",
+    "plugin:node/recommended",
     "eslint:recommended",
     "airbnb-base"
   ],

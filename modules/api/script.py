@@ -81,7 +81,8 @@ def init_script_args(p, request, default_script_args, selectable_scripts, select
     script_args = default_script_args.copy()
     # position 0 in script_arg is the idx+1 of the selectable script that is going to be run when using scripts.scripts_*2img.run()
     if selectable_scripts:
-        script_args[selectable_scripts.args_from:selectable_scripts.args_to] = request.script_args
+        for idx in range(len(request.script_args)):
+            script_args[selectable_scripts.args_from + idx] = request.script_args[idx]
         script_args[0] = selectable_script_idx + 1
     # Now check for always on scripts
     if request.alwayson_scripts and (len(request.alwayson_scripts) > 0):

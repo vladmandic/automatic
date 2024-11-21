@@ -86,7 +86,11 @@ def load_prompt_file(file):
     if file is None:
         return None, gr.update(), gr.update(lines=7)
     else:
-        lines = [x.strip() for x in file.decode('utf8', errors='ignore').split("\n")]
+        try:
+            lines = [x.strip() for x in file.decode('utf8', errors='ignore').split("\n")]
+        except Exception as e:
+            log.error(f"Prompt file: {e}")
+            lines = ''
         return None, "\n".join(lines), gr.update(lines=7)
 
 
@@ -100,7 +104,7 @@ class Script(scripts.Script):
         with gr.Row():
             checkbox_iterate = gr.Checkbox(label="Iterate seed per line", value=False, elem_id=self.elem_id("checkbox_iterate"))
             checkbox_iterate_batch = gr.Checkbox(label="Use same seed", value=False, elem_id=self.elem_id("checkbox_iterate_batch"))
-        prompt_txt = gr.Textbox(label="Prompts", lines=2, elem_id=self.elem_id("prompt_txt"))
+        prompt_txt = gr.Textbox(label="Prompts", lines=2, elem_id=self.elem_id("prompt_txt"), value='')
         file = gr.File(label="Upload prompts", type='binary', elem_id=self.elem_id("file"))
         file.change(fn=load_prompt_file, inputs=[file], outputs=[file, prompt_txt, prompt_txt], show_progress=False)
         prompt_txt.change(lambda tb: gr.update(lines=7) if ("\n" in tb) else gr.update(lines=2), inputs=[prompt_txt], outputs=[prompt_txt], show_progress=False)

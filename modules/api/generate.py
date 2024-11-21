@@ -116,12 +116,13 @@ class APIGenerate():
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        if processed.images is None or len(processed.images) == 0:
+        if processed is None or processed.images is None or len(processed.images) == 0:
             b64images = []
         else:
             b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
         self.sanitize_b64(txt2imgreq)
-        return models.ResTxt2Img(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
+        info = processed.js() if processed else ''
+        return models.ResTxt2Img(images=b64images, parameters=vars(txt2imgreq), info=info)
 
     def post_img2img(self, img2imgreq: models.ReqImg2Img):
         self.prepare_face_module(img2imgreq)
@@ -165,7 +166,7 @@ class APIGenerate():
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
-        if processed.images is None or len(processed.images) == 0:
+        if processed is None or processed.images is None or len(processed.images) == 0:
             b64images = []
         else:
             b64images = list(map(helpers.encode_pil_to_base64, processed.images)) if send_images else []
@@ -173,4 +174,5 @@ class APIGenerate():
             img2imgreq.init_images = None
             img2imgreq.mask = None
         self.sanitize_b64(img2imgreq)
-        return models.ResImg2Img(images=b64images, parameters=vars(img2imgreq), info=processed.js())
+        info = processed.js() if processed else ''
+        return models.ResImg2Img(images=b64images, parameters=vars(img2imgreq), info=info)

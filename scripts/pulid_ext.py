@@ -114,7 +114,7 @@ class Script(scripts.Script):
         ): # pylint: disable=arguments-differ, unused-argument
         images = []
         try:
-            if len(gallery) == 0:
+            if gallery is None or isinstance(gallery, str) or len(gallery) == 0:
                 from modules.api.api import decode_base64_to_image
                 images = getattr(p, 'pulid_images', uploaded_images)
                 images = [decode_base64_to_image(image) if isinstance(image, str) else image for image in images]
@@ -127,6 +127,12 @@ class Script(scripts.Script):
         if len(images) == 0:
             shared.log.error('PuLID: no images')
             return None
+        try:
+            images = [self.pulid.resize(image, 1024) for image in images]
+        except Exception as e:
+            shared.log.error(f'PuLID: failed to resize images: {e}')
+            return None
+
         supported_model_list = ['sdxl']
         if shared.sd_model_type not in supported_model_list:
             shared.log.error(f'PuLID: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={supported_model_list}')
@@ -190,7 +196,6 @@ class Script(scripts.Script):
         self.pulid.attention.NUM_ZERO = zero
         self.pulid.attention.ORTHO = ortho == 'v1'
         self.pulid.attention.ORTHO_v2 = ortho == 'v2'
-        images = [self.pulid.resize(image, 1024) for image in images]
         shared.sd_model.debug_img_list = []
 
         # get id embedding used for attention
