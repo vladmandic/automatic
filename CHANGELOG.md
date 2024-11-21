@@ -1,32 +1,36 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-20
+## Update for 2024-11-21
 
-### Highlights for 2024-11-20
+### Highlights for 2024-11-21
+
+Three weeks is a long time in Generative AI world - and we're back with ~140 commits worth of updates!
 
 *What's New?*
 
 First, a massive update to docs including new UI top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki), many updates and new articles AND full **built-in documentation search** capabilities
 
-**New integrations**:
+#### New integrations
+
 - [PuLID](https://github.com/ToTheBeginning/PuLID): Pure and Lightning ID Customization via Contrastive Alignment
-- [InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
-- [ConsiStory](https://github.com/NVlabs/consistory): Consistent Image Generation
+- [InstantX InstantIR](https://github.com/instantX-research/InstantIR): Blind Image Restoration with Instant Generative Reference
+- [nVidia Labs ConsiStory](https://github.com/NVlabs/consistory): Consistent Image Generation
 - [MiaoshouAI PromptGen v2.0](https://huggingface.co/MiaoshouAI/Florence-2-base-PromptGen-v2.0) VQA captioning
 
-**Workflow Improvements**:
-- Native Docker support
-- SD3x & Flux.1: more ControlNets, all-in-one-safetensors, DPM samplers, skip-layer-guidance, etc.
-- XYZ grid: benchmarking, video creation, etc.
-- Enhanced prompt parsing
-- UI improvements
-- Installer self-healing `venv`
+#### Workflow Improvements
+
+- Native **Docker** support
+- **SD3x & Flux.1**: more ControlNets, all-in-one-safetensors, DPM samplers, skip-layer-guidance, etc.
+- **XYZ grid**: benchmarking, video creation, etc.
+- Enhanced **prompt** parsing
+- **UI** improvements
+- **Installer** self-healing `venv`
 
 And quite a few more improvements and fixes since the last update - for full details see changelog...
 
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-### Details for 2024-11-20
+### Details for 2024-11-21
 
 - Docs:  
   - new top-level **info** tab with access to [changelog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) and [wiki](https://github.com/vladmandic/automatic/wiki)  
