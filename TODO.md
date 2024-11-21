@@ -4,10 +4,15 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Future Candidates
 
-- IPAdapter for SD35: <https://github.com/huggingface/diffusers/issues/9966>
-- IPAdapter for FLUX: <https://github.com/huggingface/diffusers/issues/9825>
+- SD35 IPAdapter: <https://github.com/huggingface/diffusers/issues/9966>
+- SD35 LoRA: <https://github.com/huggingface/diffusers/issues/9950>
+- Flux IPAdapter: <https://github.com/huggingface/diffusers/issues/9825>
+- Flux Fill/ControlNet/Redux: <https://github.com/huggingface/diffusers/pull/9985>
+- SANA: <https://github.com/huggingface/diffusers/pull/9982>
+
+## Other
+
 - IPAdapter negative: <https://github.com/huggingface/diffusers/discussions/7167>
-- LoRA for SD35: <https://github.com/huggingface/diffusers/issues/9950>
 - Control API enhance scripts compatibility
 
 ## Workaround in place
