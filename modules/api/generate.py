@@ -13,6 +13,7 @@ class APIGenerate():
         self.queue_lock = queue_lock
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
+        self.default_script_arg_control = []
 
     def sanitize_args(self, args: dict):
         args = vars(args)
