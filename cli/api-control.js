@@ -3,32 +3,65 @@
 // simple nodejs script to test sdnext api
 
 const fs = require('fs');
+const path = require('path');
 const process = require('process');
+const argparse = require('argparse');
 
 const sd_url = process.env.SDAPI_URL || 'http://127.0.0.1:7860';
 const sd_username = process.env.SDAPI_USR;
 const sd_password = process.env.SDAPI_PWD;
-const sd_options = {
-  // first pass
-  prompt: 'beautiful lady, in the steampunk style',
-  negative_prompt: 'foggy, blurry',
-  seed: -1,
-  steps: 20,
-  batch_size: 1,
-  n_iter: 1,
-  cfg_scale: 6,
-  width: 1280,
-  height: 800,
-  // api return options
-  save_images: false,
-  send_images: true,
-  script_name: 'pulid',
-};
+
+function b64(file) {
+  const data = fs.readFileSync(file);
+  const b64 = Buffer.from(data).toString('base64');
+  const ext = path.extname(file).replace('.', '');
+  str = `data:image/${ext};base64,${b64}`;
+  // console.log('b64:', ext, b64.length);
+  return str;
+}
+
+function options() {
+  const opt = {
+    // first pass
+    prompt: args.prompt || 'beautiful lady, in the steampunk style',
+    negative_prompt: args.negative || 'foggy, blurry',
+    seed: -1,
+    steps: 20,
+    batch_size: 1,
+    n_iter: 1,
+    cfg_scale: 6,
+    width: args.width || 1024,
+    height: args.height || 1024,
+    // api return options
+    save_images: false,
+    send_images: true,
+  };
+  if (args.pulid) {
+    const b64image = b64(args.pulid);
+    opt.script_name = 'pulid';
+    opt.script_args = [b64image, 0.9];
+  }
+  // console.log('options:', opt);
+  return opt;
+}
+
+function init() {
+  const parser = new argparse.ArgumentParser({ description: 'SD.Next API' });
+  parser.add_argument('--prompt', { type: 'str', help: 'prompt' });
+  parser.add_argument('--negative', { type: 'str', help: 'negative' });
+  parser.add_argument('--width', { type: 'int', help: 'width' });
+  parser.add_argument('--height', { type: 'int', help: 'height' });
+  parser.add_argument('--pulid', { type: 'str', help: 'pulid init image' });
+  parser.add_argument('--output', { type: 'str', help: 'output path' });
+  const args = parser.parse_args();
+  return args
+}
 
 async function main() {
   const method = 'POST';
   const headers = new Headers();
-  const body = JSON.stringify(sd_options);
+  const opt = options();
+  const body = JSON.stringify(opt);
   headers.set('Content-Type', 'application/json');
   if (sd_username && sd_password) headers.set({ Authorization: `Basic ${btoa('sd_username:sd_password')}` });
   const res = await fetch(`${sd_url}/sdapi/v1/txt2img`, { method, headers, body });
@@ -39,7 +72,7 @@ async function main() {
     const json = await res.json();
     console.log('result:', json.info);
     for (const i in json.images) { // eslint-disable-line guard-for-in
-      const file = `/tmp/test-${i}.jpg`;
+      const file = args.output || `/tmp/test-${i}.jpg`;
       const data = atob(json.images[i])
       fs.writeFileSync(file, data, 'binary');
       console.log('image saved:', file);
@@ -47,4 +80,5 @@ async function main() {
   }
 }
 
+const args = init();
 main();

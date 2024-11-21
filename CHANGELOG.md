@@ -123,6 +123,7 @@ And quite a few more improvements and fixes since the last update - for full det
     - Auto pipeline switching coveres wrapper classes and nested pipelines  
     - Full settings validation on load of `config.json`  
     - Refactor of all params in main processing classes  
+    - Improve API scripts usage resiliency  
 
 - Fixes:  
   - custom watermark add alphablending  

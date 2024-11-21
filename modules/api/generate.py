@@ -110,10 +110,10 @@ class APIGenerate():
                 setattr(p, key, value)
             shared.state.begin('API TXT', api=True)
             script_args = script.init_script_args(p, txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner)
+            p.script_args = tuple(script_args) # Need to pass args as tuple here
             if selectable_scripts is not None:
                 processed = scripts.scripts_txt2img.run(p, *script_args) # Need to pass args as list here
             else:
-                p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
         if processed is None or processed.images is None or len(processed.images) == 0:
@@ -160,10 +160,10 @@ class APIGenerate():
                 setattr(p, key, value)
             shared.state.begin('API-IMG', api=True)
             script_args = script.init_script_args(p, img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
+            p.script_args = tuple(script_args) # Need to pass args as tuple here
             if selectable_scripts is not None:
                 processed = scripts.scripts_img2img.run(p, *script_args) # Need to pass args as list here
             else:
-                p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
             shared.state.end(api=False)
         if processed is None or processed.images is None or len(processed.images) == 0:

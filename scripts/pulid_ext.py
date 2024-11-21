@@ -6,6 +6,7 @@ import gradio as gr
 import numpy as np
 from PIL import Image
 from modules import shared, devices, errors, scripts, processing, processing_helpers, sd_models
+from modules.api.api import decode_base64_to_image
 
 
 debug = os.environ.get('SD_PULID_DEBUG', None) is not None
@@ -63,7 +64,6 @@ class Script(scripts.Script):
         for file in files or []:
             try:
                 if isinstance(file, str):
-                    from modules.api.api import decode_base64_to_image
                     image = decode_base64_to_image(file)
                 elif isinstance(file, Image.Image):
                     image = file
@@ -98,39 +98,39 @@ class Script(scripts.Script):
         with gr.Row():
             gallery = gr.Gallery(show_label=False, value=[], visible=False, container=False, rows=1)
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
-        return [strength, zero, sampler, ortho, gallery, restore, offload, version]
+        return [gallery, strength, zero, sampler, ortho, restore, offload, version]
 
     def run(
             self,
             p: processing.StableDiffusionProcessing,
+            gallery: list = [],
             strength: float = 0.8,
             zero: int = 20,
             sampler: str = 'dpmpp_sde',
             ortho: str = 'v2',
-            gallery: list = [],
             restore: bool = False,
             offload: bool = True,
             version: str = 'v1.1'
         ): # pylint: disable=arguments-differ, unused-argument
         images = []
         try:
-            if gallery is None or isinstance(gallery, str) or len(gallery) == 0:
-                from modules.api.api import decode_base64_to_image
+            if gallery is None or (isinstance(gallery, list) and len(gallery) == 0):
                 images = getattr(p, 'pulid_images', uploaded_images)
                 images = [decode_base64_to_image(image) if isinstance(image, str) else image for image in images]
+            elif isinstance(gallery[0], dict):
+                images = [Image.open(f['name']) for f in gallery]
+            elif isinstance(gallery, str):
+                images = [decode_base64_to_image(gallery)]
+            elif isinstance(gallery[0], str):
+                images = [decode_base64_to_image(f) for f in gallery]
             else:
-                images = [Image.open(f['name']) if isinstance(f, dict) else f for f in gallery]
+                images = gallery
             images = [np.array(image) for image in images]
         except Exception as e:
             shared.log.error(f'PuLID: failed to load images: {e}')
             return None
         if len(images) == 0:
             shared.log.error('PuLID: no images')
-            return None
-        try:
-            images = [self.pulid.resize(image, 1024) for image in images]
-        except Exception as e:
-            shared.log.error(f'PuLID: failed to resize images: {e}')
             return None
 
         supported_model_list = ['sdxl']
@@ -152,6 +152,13 @@ class Script(scripts.Script):
             if self.pulid is None:
                 shared.log.error('PuLID: failed to load PuLID library')
                 return None
+
+        try:
+            images = [self.pulid.resize(image, 1024) for image in images]
+        except Exception as e:
+            shared.log.error(f'PuLID: failed to resize images: {e}')
+            return None
+
         if p.batch_size > 1:
             shared.log.warning('PuLID: batch size not supported')
             p.batch_size = 1
