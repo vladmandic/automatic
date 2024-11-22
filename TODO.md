@@ -8,6 +8,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - SD35 LoRA: <https://github.com/huggingface/diffusers/issues/9950>
 - Flux IPAdapter: <https://github.com/huggingface/diffusers/issues/9825>
 - Flux Fill/ControlNet/Redux: <https://github.com/huggingface/diffusers/pull/9985>
+- Flux NF4: <https://github.com/huggingface/diffusers/issues/9996>
 - SANA: <https://github.com/huggingface/diffusers/pull/9982>
 
 ## Other

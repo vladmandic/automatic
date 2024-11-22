@@ -92,7 +92,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Diffusion 3'
             if 'flux' in f.lower():
                 guess = 'FLUX'
-                if size > 11000 and size < 20000:
+                if size > 11000 and size < 16000:
                     warn(f'Model detected as FLUX UNET model, but attempting to load a base model: {op}={f} size={size} MB')
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
@@ -112,8 +112,9 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 if keys is not None and len(keys) > 0:
                     modules = model_tools.list_to_dict(keys)
                     modules = model_tools.remove_entries_after_depth(modules, 3)
+                    lst = model_tools.list_compact(keys)
                     t1 = time.time()
-                    shared.log.debug(f'Autodetect modules: {modules} time={t1-t0:.2f}')
+                    shared.log.debug(f'Autodetect: modules={modules} list={lst} time={t1-t0:.2f}')
         except Exception as e:
             shared.log.error(f'Autodetect {op}: file="{f}" {e}')
             if debug_load:

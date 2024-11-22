@@ -1,5 +1,22 @@
 # Change Log for SD.Next
 
+## Update for 2024-11-22
+
+- Model loader improvements:  
+  - detect model components on model load fail  
+  - Flux, SD35: force unload model  
+  - Flux: apply `bnb` quant when loading *unet/transformer*  
+  - Flux: all-in-one safetensors  
+    example: <https://civitai.com/models/646328?modelVersionId=1040235>  
+  - Flux: do not recast quants  
+- Sampler improvements  
+  - update DPM FlowMatch samplers  
+- Fixes:  
+  - update `diffusers`  
+  - fix README links  
+  - fix sdxl controlnet single-file loader  
+  - relax settings validator  
+
 ## Update for 2024-11-21
 
 ### Highlights for 2024-11-21

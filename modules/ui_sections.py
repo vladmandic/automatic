@@ -276,7 +276,7 @@ def create_sampler_options(tabname):
 
     else: # shared.native
         with gr.Row(elem_classes=['flex-break']):
-            sampler_sigma = gr.Dropdown(label='Sigma method', elem_id=f"{tabname}_sampler_sigma", choices=['default', 'karras', 'beta', 'exponential', 'lambdas'], value=shared.opts.schedulers_sigma, type='value')
+            sampler_sigma = gr.Dropdown(label='Sigma method', elem_id=f"{tabname}_sampler_sigma", choices=['default', 'karras', 'betas', 'exponential', 'lambdas'], value=shared.opts.schedulers_sigma, type='value')
             sampler_spacing = gr.Dropdown(label='Timestep spacing', elem_id=f"{tabname}_sampler_spacing", choices=['default', 'linspace', 'leading', 'trailing'], value=shared.opts.schedulers_timestep_spacing, type='value')
         with gr.Row(elem_classes=['flex-break']):
             sampler_beta = gr.Dropdown(label='Beta schedule', elem_id=f"{tabname}_sampler_beta", choices=['default', 'linear', 'scaled', 'cosine'], value=shared.opts.schedulers_beta_schedule, type='value')

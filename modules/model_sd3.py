@@ -120,6 +120,11 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
     repo_id = sd_models.path_to_repo(checkpoint_info.name)
     fn = checkpoint_info.path
 
+    # unload current model
+    sd_models.unload_model_weights()
+    shared.sd_model = None
+    devices.torch_gc(force=True)
+
     kwargs = {}
     kwargs = load_overrides(kwargs, cache_dir)
     if fn is None or not os.path.exists(fn):
@@ -152,5 +157,5 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
         config=config,
         **kwargs,
     )
-    devices.torch_gc(force=True)
+    devices.torch_gc()
     return pipe

@@ -38,6 +38,16 @@ def list_to_dict(flat_list):
     return result_dict
 
 
+def list_compact(flat_list):
+    result_list = []
+    for item in flat_list:
+        keys = item.split('.')
+        keys = '.'.join(keys[:2])
+        if keys not in result_list:
+            result_list.append(keys)
+    return result_list
+
+
 def guess_dct(dct: dict):
     # if has(dct, 'model.diffusion_model.input_blocks') and has(dct, 'model.diffusion_model.label_emb'):
     #    return 'sdxl'
@@ -65,7 +75,9 @@ def read_keys(fn):
     except Exception as e:
         pprint(e)
     dct = list_to_dict(keys)
+    lst = list_compact(keys)
     pprint(f'file: {fn}')
+    pprint(lst)
     pprint(remove_entries_after_depth(dct, 3))
     pprint(remove_entries_after_depth(dct, 6))
     guess = guess_dct(dct)

@@ -504,6 +504,8 @@ def move_model(model, device=None, force=False):
                                         module.to_empty(device=device)
             elif 'enable_sequential_cpu_offload' in str(e0):
                 pass # ignore model move if sequential offload is enabled
+            elif 'Params4bit' in str(e0) or 'Params8bit' in str(e0):
+                pass # ignore model move if quantization is enabled
             else:
                 raise e0
         t1 = time.time()
@@ -819,6 +821,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if model_type is None:
             shared.log.error(f'Load {op}: pipeline={shared.opts.diffusers_pipeline} not detected')
             return
+        vae_file = None
         if model_type.startswith('Stable Diffusion') and (op == 'model' or op == 'refiner'): # preload vae for sd models
             vae_file, vae_source = sd_vae.resolve_vae(checkpoint_info.filename)
             vae = sd_vae.load_vae_diffusers(checkpoint_info.path, vae_file, vae_source)
@@ -897,7 +900,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         set_diffuser_offload(sd_model, op)
         if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
-            if getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None:
+            if getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None and vae_file is not None:
                 sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
         if op == 'refiner' and shared.opts.diffusers_move_refiner:
             shared.log.debug('Moving refiner model to CPU')
