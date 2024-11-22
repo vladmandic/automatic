@@ -297,8 +297,8 @@ class OptionInfo:
                 value = [value]
             for v in value:
                 if v not in choices:
-                    log.warning(f'Setting validation: "{opt}"="{v}" default="{self.default}" choices={choices}')
-                    return False
+                    log.debug(f'Setting validation: "{opt}"="{v}" default="{self.default}" choices={choices}')
+                    # return False
         minimum = args.get("minimum", None)
         maximum = args.get("maximum", None)
         if (minimum is not None and value < minimum) or (maximum is not None and value > maximum):
