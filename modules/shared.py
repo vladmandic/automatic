@@ -722,7 +722,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "image_watermark_image": OptionInfo('', "Image watermark file"),
 }))
 
-options_templates.update(options_section(('saving-paths', "Image Naming & Paths"), {
+options_templates.update(options_section(('saving-paths', "Image Paths"), {
     "saving_sep_images": OptionInfo("<h2>Save options</h2>", "", gr.HTML),
     "save_images_add_number": OptionInfo(True, "Numbered filenames", component_args=hide_dirs),
     "use_original_name_batch": OptionInfo(True, "Batch uses original name"),

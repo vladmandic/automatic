@@ -13,6 +13,16 @@ def remove_entries_after_depth(d, depth, current_depth=0):
     return d
 
 
+def list_compact(flat_list):
+    result_list = []
+    for item in flat_list:
+        keys = item.split('.')
+        keys = '.'.join(keys[:2])
+        if keys not in result_list:
+            result_list.append(keys)
+    return result_list
+
+
 def list_to_dict(flat_list):
     result_dict = {}
     try:

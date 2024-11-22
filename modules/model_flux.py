@@ -194,6 +194,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         if _transformer is not None:
             transformer = _transformer
     else:
+        diffusers_load_config = model_quant.create_bnb_config(diffusers_load_config)
         transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
@@ -212,6 +213,11 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     text_encoder_1 = None
     text_encoder_2 = None
     vae = None
+
+    # unload current model
+    sd_models.unload_model_weights()
+    shared.sd_model = None
+    devices.torch_gc(force=True)
 
     # load overrides if any
     if shared.opts.sd_unet != 'None':
@@ -305,8 +311,21 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
         repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
     for c in kwargs:
         if kwargs[c].dtype == torch.float32 and devices.dtype != torch.float32:
-            shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype}')
+            shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype} recast')
             kwargs[c] = kwargs[c].to(dtype=devices.dtype)
-    kwargs = model_quant.create_bnb_config(kwargs)
-    pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
+
+    allow_bnb = 'gguf' not in (sd_unet.loaded_unet or '')
+    kwargs = model_quant.create_bnb_config(kwargs, allow_bnb)
+    if checkpoint_info.path.endswith('.safetensors') and os.path.isfile(checkpoint_info.path):
+        pipe = diffusers.FluxPipeline.from_single_file(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
+    else:
+        pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
+
+    # release memory
+    transformer = None
+    text_encoder_1 = None
+    text_encoder_2 = None
+    vae = None
+    devices.torch_gc()
+
     return pipe

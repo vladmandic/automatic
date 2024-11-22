@@ -9,11 +9,11 @@ import torch
 import torchsde
 
 from diffusers.configuration_utils import ConfigMixin, register_to_config
-from diffusers.utils import BaseOutput, logging
+from diffusers.utils import BaseOutput
 from diffusers.utils.torch_utils import randn_tensor
 from diffusers.schedulers.scheduling_utils import SchedulerMixin
+import scipy.stats
 
-logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 class BatchedBrownianTree:
     """A wrapper around torchsde.BrownianTree that enables batches of entropy."""
@@ -101,39 +101,42 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
     Args:
         num_train_timesteps (`int`, defaults to 1000):
             The number of diffusion steps to train the model.
+        beta_start (`float`, defaults to 0.0001):
+            The starting `beta` value of inference.
+        beta_end (`float`, defaults to 0.02):
+            The final `beta` value.
+        beta_schedule (`str`, defaults to `"scaled linear"`):
+            The beta schedule, a mapping from a beta range to a sequence of betas for stepping the model. Choose from `linear` or `scaled_linear`.
+        trained_betas (`np.ndarray`, *optional*):
+            Pass an array of betas directly to the constructor to bypass `beta_start` and `beta_end`.
         solver_order (`int`, defaults to 2):
             The DPMSolver order which can be `2` or `3`. It is recommended to use `solver_order=2` for guided
             sampling, and `solver_order=3` for unconditional sampling.
-        thresholding (`bool`, defaults to `False`):
-            Whether to use the "dynamic thresholding" method. This is unsuitable for latent-space diffusion models such
-            as Stable Diffusion.
-        dynamic_thresholding_ratio (`float`, defaults to 0.995):
-            The ratio for the dynamic thresholding method. Valid only when `thresholding=True`.
-        sample_max_value (`float`, defaults to 1.0):
-            The threshold value for dynamic thresholding. Valid only when `thresholding=True`.
         algorithm_type (`str`, defaults to `dpmsolver++2M`):
             Algorithm type for the solver; can be `dpmsolver2`, `dpmsolver2A`, `dpmsolver++2M`, `dpmsolver++2S`, `dpmsolver++sde`, `dpmsolver++2Msde`, 
             or `dpmsolver++3Msde`.
         solver_type (`str`, defaults to `midpoint`):
             Solver type for the second-order solver; can be `midpoint` or `heun`. The solver type slightly affects the
             sample quality, especially for a small number of steps. It is recommended to use `midpoint` solvers.
-        sigma_schedule (`str`, *optional*, defaults to None): Sigma schedule to compute the `sigmas`. Optionally, we use 
+        sigma_schedule (`str`, *optional*, defaults to None (beta)): Sigma schedule to compute the `sigmas`. Optionally, we use 
             the schedule "karras" introduced in the EDM paper (https://arxiv.org/abs/2206.00364). Other acceptable values are 
             "exponential". The exponential schedule was incorporated in this model: https://huggingface.co/stabilityai/cosxl. 
             Other acceptable values are "lambdas". The uniform-logSNR for step sizes proposed by Lu's DPM-Solver in the 
             noise schedule during the sampling process. The sigmas and time steps are determined according to a sequence of `lambda(t)`.
-        use_noise_sampler for BrownianTreeNoiseSampler (only valid for `dpmsolver++2S`, `dpmsolver++sde`, `dpmsolver++2Msde`, 
-            or `dpmsolver++3Msde`): A noise sampler backed by a torchsde increasing the stability of convergence. Default strategy 
+            "betas" for step sizes in the noise schedule during the sampling process. Refer to [Beta
+            Sampling is All You Need](https://huggingface.co/papers/2407.12173) for more information.
+        use_noise_sampler for BrownianTreeNoiseSampler (only valid for `dpmsolver++2S`, `dpmsolver++sde`, `dpmsolver++2Msde`, or `dpmsolver++3Msde`.
+            A noise sampler backed by a torchsde increasing the stability of convergence. Default strategy 
             (random noise) has it jumping all over the place, but Brownian sampling is more stable. Utilizes the model generation seed provided.
         midpoint_ratio (`float`, *optional*, range: 0.4 to 0.6, default=0.5): Only valid for (`dpmsolver++sde`, `dpmsolver++2S`).
             Higher values may result in smoothing, more vivid colors and less noise at the expense of more detail and effect.
         s_noise (`float`, *optional*, defaults to 1.0): Sigma noise strength: range 0 - 1.1 (only valid for `dpmsolver++2S`, `dpmsolver++sde`, 
             `dpmsolver++2Msde`, or `dpmsolver++3Msde`). The amount of additional noise to counteract loss of detail during sampling. A 
             reasonable range is [1.000, 1.011]. Defaults to 1.0 from the original implementation.
-        use_SD35_sigmas: (`bool` defaults to False for FLUX and True for SD3). Based on original interpretation of using beta values for determining sigmas.
+        use_beta_sigmas: (`bool` defaults to False for FLUX and True for SD3). Based on original interpretation of using beta values for determining sigmas.
         use_dynamic_shifting (`bool` defaults to False for SD3 and True for FLUX). When `True`, shift is ignored.
-        shift (`float`, defaults to 3.0): The shift value for the timestep schedule for SD3 when not using dynamic shifting
-        The remaining args are specific to Flux's dynamic shifting based on resolution
+        shift (`float`, defaults to 3.0): The shift value for the timestep schedule for SD3 when not using dynamic shifting.
+        The remaining args are specific to Flux's dynamic shifting based on resolution.
     """
 
     _compatibles = []
@@ -143,10 +146,11 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
     def __init__(
         self,
         num_train_timesteps: int = 1000,
+        beta_start: float = 0.00085,
+        beta_end: float = 0.012,
+        beta_schedule: str = "scaled linear",
+        trained_betas: Optional[Union[np.ndarray, List[float]]] = None,
         solver_order: int = 2,
-        thresholding: Optional[bool] = False,
-        dynamic_thresholding_ratio: float = 0.995,
-        sample_max_value: Optional[float] = 1.0,
         algorithm_type: str = "dpmsolver++2M",
         solver_type: str = "midpoint",
         sigma_schedule: Optional[str] = None,
@@ -154,7 +158,7 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
         midpoint_ratio: Optional[float] = 0.5,
         s_noise: Optional[float] = 1.0,
         use_noise_sampler: Optional[bool] = True,
-        use_SD35_sigmas: Optional[bool] = False,
+        use_beta_sigmas: Optional[bool] = False,
         use_dynamic_shifting=False,
         base_shift: Optional[float] = 0.5,
         max_shift: Optional[float] = 1.15,
@@ -167,6 +171,12 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
 
         if solver_type not in ["midpoint", "heun"]:
             raise NotImplementedError(f"{solver_type} is not implemented for {self.__class__}")
+
+        if sigma_schedule not in [None, "karras", "exponential", "lambdas", "betas"]:
+            raise NotImplementedError(f"{sigma_schedule} is not implemented for {self.__class__}")
+
+        if beta_schedule not in ["linear", "scaled linear"]:
+            raise NotImplementedError(f"{beta_schedule} is not implemented for {self.__class__}")
 
         # setable values
         timesteps = np.linspace(1, num_train_timesteps, num_train_timesteps, dtype=np.float32)[::-1].copy()
@@ -186,8 +196,6 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
         self._begin_index = None
         self.sigmas = sigmas.to("cpu")  # to avoid too much CPU/GPU communication
         self.model_outputs = [None] * solver_order
-        self.sigma_min = self.sigmas[-1].item()
-        self.sigma_max = self.sigmas[0].item()
 
     @property
     def step_index(self):
@@ -213,7 +221,7 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
         """
         self._begin_index = begin_index
 
-    def time_shift(self, mu: float, sigma: float, t: torch.Tensor):
+    def time_shift(self, mu: float, sigma: float, t: torch.FloatTensor):
         return math.exp(mu) / (math.exp(mu) + (1 / t - 1) ** sigma)
 
     def set_timesteps(self,
@@ -235,25 +243,39 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
             raise ValueError(" you have a pass a value for `mu` when `use_dynamic_shifting` is set to be `True`")
 
         if sigmas is None:
-            self.use_SD35_sigmas = True
+            self.use_beta_sigmas = True
             self.num_inference_steps = num_inference_steps
-            sigmas1 = np.linspace(1.0, 1 / num_inference_steps, num_inference_steps, dtype=np.float64)
-            beta_start = 0.00085
-            beta_end = 0.012
-            betas = torch.linspace(beta_start**0.5, beta_end**0.5, self.config.num_train_timesteps, dtype=torch.float64) ** 2
+            beta_start = self.config.beta_start
+            beta_end = self.config.beta_end
+            if self.config.trained_betas is not None:
+                betas = torch.tensor(self.config.trained_betas, dtype=torch.float64)
+            elif self.config.beta_schedule == "linear":
+                betas = torch.linspace(beta_start, beta_end, self.config.num_train_timesteps, dtype=torch.float64)
+            elif self.config.beta_schedule == "scaled linear":
+                # this schedule is very specific to the latent diffusion model.
+                betas = torch.linspace(beta_start**0.5, beta_end**0.5, self.config.num_train_timesteps, dtype=torch.float64) ** 2
+            else:
+                raise NotImplementedError(f"{self.config.beta_schedule} is not implemented for {self.__class__}")
             alphas = 1.0 - betas
             alphas_cumprod = torch.cumprod(alphas, dim=0)
             sigmas = np.array(((1 - alphas_cumprod) / alphas_cumprod) ** 0.5)
             del alphas_cumprod
             del alphas
             del betas
-        elif self.use_SD35_sigmas:
+        elif self.use_beta_sigmas:
             num_inference_steps = len(sigmas)
             self.num_inference_steps = num_inference_steps
-            sigmas1 = np.linspace(1.0, 1 / num_inference_steps, num_inference_steps, dtype=np.float64)
-            beta_start = 0.00085
-            beta_end = 0.012
-            betas = torch.linspace(beta_start**0.5, beta_end**0.5, self.config.num_train_timesteps, dtype=torch.float64) ** 2
+            beta_start = self.config.beta_start
+            beta_end = self.config.beta_end
+            if self.config.trained_betas is not None:
+                betas = torch.tensor(self.config.trained_betas, dtype=torch.float64)
+            elif self.config.beta_schedule == "linear":
+                betas = torch.linspace(beta_start, beta_end, self.config.num_train_timesteps, dtype=torch.float64)
+            elif self.config.beta_schedule == "scaled linear":
+                # this schedule is very specific to the latent diffusion model.
+                betas = torch.linspace(beta_start**0.5, beta_end**0.5, self.config.num_train_timesteps, dtype=torch.float64) ** 2
+            else:
+                raise NotImplementedError(f"{self.config.beta_schedule} is not implemented for {self.__class__}")
             alphas = 1.0 - betas
             alphas_cumprod = torch.cumprod(alphas, dim=0)
             sigmas = np.array(((1 - alphas_cumprod) / alphas_cumprod) ** 0.5)
@@ -265,7 +287,7 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
             self.num_inference_steps = num_inference_steps
 
         if self.config.sigma_schedule == "exponential":
-            if self.use_SD35_sigmas:
+            if self.use_beta_sigmas:
                 sigmas = np.flip(sigmas).copy()
                 sigma_min = sigmas[-1]
                 sigma_max = sigmas[0]
@@ -273,13 +295,12 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
                 OldRange = sigma_max - sigma_min
                 NewRange = 1.0 - sigma_min
                 sigmas = (((sigmas - sigma_min) * NewRange) / OldRange) + sigma_min
-                del sigmas1
             else:
                 sigma_min = sigmas[-1]
                 sigma_max = sigmas[0]
                 sigmas = self._convert_to_exponential(sigma_min, sigma_max, num_inference_steps=num_inference_steps)
         elif self.config.sigma_schedule == "karras":
-            if self.use_SD35_sigmas:
+            if self.use_beta_sigmas:
                 sigmas = np.flip(sigmas).copy()
                 sigma_min = sigmas[-1]
                 sigma_max = sigmas[0]
@@ -287,14 +308,13 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
                 OldRange = sigma_max - sigma_min
                 NewRange = 1.0 - sigma_min
                 sigmas = (((sigmas - sigma_min) * NewRange) / OldRange) + sigma_min
-                del sigmas1
             else:
                 sigma_min = sigmas[-1]
                 sigma_max = sigmas[0]
                 sigmas = self._convert_to_karras(sigma_min, sigma_max, num_inference_steps=num_inference_steps)
             sigmas = torch.from_numpy(sigmas).to(dtype=torch.float64, device=device)
         elif self.config.sigma_schedule == "lambdas":
-            if self.use_SD35_sigmas:
+            if self.use_beta_sigmas:
                 log_sigmas = np.log(sigmas)
                 lambdas = np.flip(log_sigmas.copy())
                 lambdas = self._convert_to_lu(in_lambdas=lambdas, num_inference_steps=num_inference_steps)
@@ -304,7 +324,6 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
                 OldRange = sigma_max - sigma_min
                 NewRange = 1.0 - sigma_min
                 sigmas = (((sigmas - sigma_min) * NewRange) / OldRange) + sigma_min
-                del sigmas1
                 del lambdas
                 del log_sigmas
             else:
@@ -315,12 +334,25 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
                 del lambdas
                 del log_sigmas
             sigmas = torch.from_numpy(sigmas).to(dtype=torch.float64, device=device)
-        else:
-            if self.use_SD35_sigmas:
+        elif self.config.sigma_schedule == "betas":
+            if self.use_beta_sigmas:
+                sigmas = np.flip(sigmas).copy()
+                sigma_min = sigmas[-1]
+                sigma_max = sigmas[0]
+                sigmas = self._convert_to_beta(sigma_min, sigma_max, num_inference_steps=num_inference_steps, device=device)
+                OldRange = sigma_max - sigma_min
+                NewRange = 1.0 - sigma_min
+                sigmas = (((sigmas - sigma_min) * NewRange) / OldRange) + sigma_min
+            else:
                 sigmas = np.flip(sigmas).copy()
                 sigma_min = sigmas[-1]
                 sigmas = np.linspace(1.0, sigma_min, num_inference_steps)
-                del sigmas1
+                sigmas = torch.from_numpy(sigmas).to(dtype=torch.float64, device=device)
+        else:
+            if self.use_beta_sigmas:
+                sigmas = np.flip(sigmas).copy()
+                sigma_min = sigmas[-1]
+                sigmas = np.linspace(1.0, sigma_min, num_inference_steps)
             sigmas = torch.from_numpy(sigmas).to(dtype=torch.float64, device=device)
         
         if self.config.use_dynamic_shifting:
@@ -339,39 +371,19 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
         self._step_index = None
         self._begin_index = None
 
-    # Copied from diffusers.schedulers.scheduling_ddpm.DDPMScheduler._threshold_sample
-    def _threshold_sample(self, sample: torch.Tensor) -> torch.Tensor:
-        """
-        "Dynamic thresholding: At each sampling step we set s to a certain percentile absolute pixel value in xt0 (the
-        prediction of x_0 at timestep t), and if s > 1, then we threshold xt0 to the range [-s, s] and then divide by
-        s. Dynamic thresholding pushes saturated pixels (those near -1 and 1) inwards, thereby actively preventing
-        pixels from saturation at each step. We find that dynamic thresholding results in significantly better
-        photorealism as well as better image-text alignment, especially when using very large guidance weights."
-
-        https://arxiv.org/abs/2205.11487
-        """
-        dtype = sample.dtype
-        batch_size, channels, *remaining_dims = sample.shape
-
-        if dtype not in (torch.float32, torch.float64):
-            sample = sample.float()  # upcast for quantile calculation, and clamp not implemented for cpu half
-
-        # Flatten sample for doing quantile calculation along each image
-        sample = sample.reshape(batch_size, channels * np.prod(remaining_dims))
-
-        abs_sample = sample.abs()  # "a certain percentile absolute pixel value"
-
-        s = torch.quantile(abs_sample, self.config.dynamic_thresholding_ratio, dim=1)
-        s = torch.clamp(
-            s, min=1, max=self.config.sample_max_value
-        )  # When clamped to min=1, equivalent to standard clipping to [-1, 1]
-        s = s.unsqueeze(1)  # (batch_size, 1) because clamp will broadcast along dim=0
-        sample = torch.clamp(sample, -s, s) / s  # "we threshold xt0 to the range [-s, s] and then divide by s"
-
-        sample = sample.reshape(batch_size, channels, *remaining_dims)
-        sample = sample.to(dtype)
-
-        return sample
+    # Copied from diffusers.schedulers.scheduling_euler_discrete.EulerDiscreteScheduler._convert_to_beta
+    def _convert_to_beta(self, sigma_min, sigma_max, num_inference_steps, device: Union[str, torch.device] = None, alpha: float = 0.6, beta: float = 0.6) -> torch.Tensor:
+        """From "Beta Sampling is All You Need" [arXiv:2407.12173] (Lee et. al, 2024)"""
+        sigmas = torch.Tensor(
+            [
+                sigma_min + (ppf * (sigma_max - sigma_min))
+                for ppf in [
+                    scipy.stats.beta.ppf(timestep, alpha, beta)
+                    for timestep in 1 - np.linspace(0, 1, num_inference_steps).astype(np.float64)
+                ]
+            ]
+        ).to(dtype=torch.float64, device=device)
+        return sigmas
 
     def _convert_to_lu(self, in_lambdas: torch.Tensor, num_inference_steps) -> torch.Tensor:
         """Constructs the noise schedule of Lu et al. (2022)."""
@@ -398,51 +410,6 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
     def _convert_to_exponential(self, sigma_min, sigma_max, num_inference_steps) -> torch.Tensor:
         sigmas = torch.linspace(math.log(sigma_max), math.log(sigma_min), num_inference_steps).exp()
         return sigmas
-
-    def convert_model_output(
-        self,
-        model_output: torch.Tensor,
-        sample: torch.Tensor = None,
-        *args,
-        **kwargs,
-    ) -> torch.Tensor:
-        """
-        Convert the model output to the corresponding type the DPMSolver/DPMSolver++ algorithm needs. DPM-Solver is
-        designed to discretize an integral of the noise prediction model, and DPM-Solver++ is designed to discretize an
-        integral of the data prediction model.
-
-        <Tip>
-
-        The algorithm and model type are decoupled. You can use either DPMSolver or DPMSolver++ for both noise
-        prediction and data prediction models.
-
-        </Tip>
-
-        Args:
-            model_output (`torch.Tensor`):
-                The direct output from the learned diffusion model.
-            sample (`torch.Tensor`):
-                A current instance of a sample created by the diffusion process.
-
-        Returns:
-            `torch.Tensor`:
-                The converted model output.
-        """
-        timestep = args[0] if len(args) > 0 else kwargs.pop("timestep", None)
-        if sample is None:
-            if len(args) > 1:
-                sample = args[1]
-            else:
-                raise ValueError("missing `sample` as a required keyward argument")
-
-        # Flow Match needs to solve an integral of the data prediction model.
-        sigma = self.sigmas[self.step_index]
-        x0_pred = sample - sigma * model_output
-
-        if self.config.thresholding:
-            x0_pred = self._threshold_sample(x0_pred)
-
-        return x0_pred
 
     def index_for_timestep(self, timestep, schedule_timesteps=None):
         if schedule_timesteps is None:
@@ -511,7 +478,9 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
         if self.config.algorithm_type in ["dpmsolver2", "dpmsolver2A"]:
             pass
         else:
-            model_output = self.convert_model_output(model_output, sample=sample)
+            # Flow Match needs to solve an integral of the data prediction model.
+            sigma = self.sigmas[self.step_index]
+            model_output = sample - sigma * model_output
             for i in range(self.config.solver_order - 1):
                 self.model_outputs[i] = self.model_outputs[i + 1]
             self.model_outputs[-1] = model_output
@@ -830,7 +799,7 @@ class FlowMatchDPMSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
 
         return FlowMatchDPMSolverMultistepSchedulerOutput(prev_sample=prev_sample)
 
-    def scale_model_input(self, sample: torch.Tensor, *args, **kwargs) -> torch.Tensor:
+    def scale_model_input(self, sample: torch.FloatTensor, *args, **kwargs) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.

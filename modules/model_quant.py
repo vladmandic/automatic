@@ -7,10 +7,10 @@ bnb = None
 quanto = None
 
 
-def create_bnb_config(kwargs = None):
+def create_bnb_config(kwargs = None, allow_bnb: bool = True):
     from modules import shared, devices
-    if len(shared.opts.bnb_quantization) > 0:
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in (kwargs or {}):
+    if len(shared.opts.bnb_quantization) > 0 and allow_bnb:
+        if 'Model' in shared.opts.bnb_quantization:
             load_bnb()
             bnb_config = diffusers.BitsAndBytesConfig(
                 load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],

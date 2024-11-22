@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import datetime
 from modules.errors import log
@@ -120,8 +119,8 @@ class State:
     def end(self, api=None):
         import modules.devices
         if self.time_start is None: # someone called end before being
-            fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-            log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
+            # fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+            # log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
             self.time_start = time.time()
         if self.debug_output:
             log.debug(f'State end: {self.job} time={time.time() - self.time_start:.2f}')

@@ -56,7 +56,7 @@ For screenshots and informations on other available themes, see [Themes Wiki](ht
 ## Model support
 
 Additional models will be added as they become available and there is public interest in them  
-See [models overview](wiki/Models) for details on each model, including their architecture, complexity and other info  
+See [models overview](https://github.com/vladmandic/automatic/wiki/Models) for details on each model, including their architecture, complexity and other info  
 
 - [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*
 - [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models), [StabilityAI Stable Diffusion 3.0](https://stability.ai/news/stable-diffusion-3-medium) Medium, [StabilityAI Stable Diffusion 3.5](https://huggingface.co/stabilityai/stable-diffusion-3.5-large) Medium, Large, Large Turbo
@@ -101,17 +101,17 @@ See [models overview](wiki/Models) for details on each model, including their ar
 
 ## Getting started
 
-- Get started with **SD.Next** by following the [installation instructions](wiki/Installation)  
-- For more details, check out [advanced installation](wiki/Advanced-Install) guide  
-- List and explanation of [command line arguments](wiki/CLI-Arguments)
+- Get started with **SD.Next** by following the [installation instructions](https://github.com/vladmandic/automatic/wiki/Installation)  
+- For more details, check out [advanced installation](https://github.com/vladmandic/automatic/wiki/Advanced-Install) guide  
+- List and explanation of [command line arguments](https://github.com/vladmandic/automatic/wiki/CLI-Arguments)
 - Install walkthrough [video](https://www.youtube.com/watch?v=nWTnTyFTuAs)
 
 > [!TIP]
 > And for platform specific information, check out  
-> [WSL](wiki/WSL) | [Intel Arc](wiki/Intel-ARC) | [DirectML](wiki/DirectML) | [OpenVINO](wiki/OpenVINO) | [ONNX & Olive](wiki/ONNX-Runtime) | [ZLUDA](wiki/ZLUDA) | [AMD ROCm](wiki/AMD-ROCm) | [MacOS](wiki/MacOS-Python.md) | [nVidia](wiki/nVidia)
+> [WSL](https://github.com/vladmandic/automatic/wiki/WSL) | [Intel Arc](https://github.com/vladmandic/automatic/wiki/Intel-ARC) | [DirectML](https://github.com/vladmandic/automatic/wiki/DirectML) | [OpenVINO](https://github.com/vladmandic/automatic/wiki/OpenVINO) | [ONNX & Olive](https://github.com/vladmandic/automatic/wiki/ONNX-Runtime) | [ZLUDA](https://github.com/vladmandic/automatic/wiki/ZLUDA) | [AMD ROCm](https://github.com/vladmandic/automatic/wiki/AMD-ROCm) | [MacOS](https://github.com/vladmandic/automatic/wiki/MacOS-Python.md) | [nVidia](https://github.com/vladmandic/automatic/wiki/nVidia)
 
 > [!WARNING]
-> If you run into issues, check out [troubleshooting](wiki/Troubleshooting) and [debugging](wiki/Debug) guides  
+> If you run into issues, check out [troubleshooting](https://github.com/vladmandic/automatic/wiki/Troubleshooting) and [debugging](https://github.com/vladmandic/automatic/wiki/Debug) guides  
 
 > [!TIP]
 > All command line options can also be set via env variable
