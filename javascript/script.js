@@ -1,17 +1,3 @@
-const log = (...msg) => {
-  const dt = new Date();
-  const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
-  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
-  console.log(ts, ...msg); // eslint-disable-line no-console
-};
-
-const debug = (...msg) => {
-  const dt = new Date();
-  const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
-  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
-  console.debug(ts, ...msg); // eslint-disable-line no-console
-};
-
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms)); // eslint-disable-line no-promise-executor-return
 }
@@ -82,7 +68,7 @@ function executeCallbacks(queue, arg) {
     try {
       callback(arg);
     } catch (e) {
-      console.error('error running callback', callback, ':', e);
+      error(`executeCallbacks: ${callback} ${e}`);
     }
   }
 }

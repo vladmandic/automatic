@@ -1,42 +1,5 @@
 let lastState = {};
 
-function request(url, data, handler, errorHandler) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', url, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.timeout = 5000;
-  xhr.ontimeout = () => {
-    console.error('xhr.ontimeout', xhr);
-    errorHandler();
-  };
-  xhr.onerror = () => {
-    console.error('xhr.onerror', xhr);
-    errorHandler();
-  };
-  xhr.onabort = () => {
-    console.error('xhr.onabort', xhr);
-    errorHandler();
-  };
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        try {
-          const json = JSON.parse(xhr.responseText);
-          handler(json);
-        } catch (err) {
-          console.error('xhr.onreadystatechange', xhr, err);
-          errorHandler();
-        }
-      } else {
-        console.error('xhr.onreadystatechange', xhr);
-        errorHandler();
-      }
-    }
-  };
-  const req = JSON.stringify(data);
-  xhr.send(req);
-}
-
 function pad2(x) {
   return x < 10 ? `0${x}` : x;
 }
@@ -151,11 +114,11 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     };
 
     const onProgressErrorHandler = (err) => {
-      console.error('onProgressError', err);
+      error(`onProgressError: ${err}`);
       done();
     };
 
-    request('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler);
+    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler);
   };
   start(id_task, 0);
 }

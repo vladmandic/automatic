@@ -28,7 +28,7 @@ function clip_gallery_urls(gallery) {
   const files = gallery.map((v) => v.data);
   navigator.clipboard.writeText(JSON.stringify(files)).then(
     () => log('clipboard:', files),
-    (err) => console.error('clipboard:', files, err),
+    (err) => error(`clipboard: ${files} ${err}`),
   );
 }
 
@@ -493,9 +493,9 @@ function previewTheme() {
             el.src = `/file=html/${name}.jpg`;
           }
         })
-        .catch((e) => console.error('previewTheme:', e));
+        .catch((e) => error(`previewTheme: ${e}`));
     })
-    .catch((e) => console.error('previewTheme:', e));
+    .catch((e) => error(`previewTheme: ${e}`));
 }
 
 async function browseFolder() {

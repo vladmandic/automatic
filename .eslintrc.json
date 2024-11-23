@@ -42,9 +42,13 @@
   "globals": {
     // asssets
     "panzoom": "readonly",
-    // script.js
+    // logger.js
     "log": "readonly",
     "debug": "readonly",
+    "error": "readonly",
+    "xhrGet": "readonly",
+    "xhrPost": "readonly",
+    // script.js
     "gradioApp": "readonly",
     "executeCallbacks": "readonly",
     "onAfterUiUpdate": "readonly",
@@ -87,7 +91,6 @@
     // settings.js
     "registerDragDrop": "readonly",
     // extraNetworks.js
-    "requestGet": "readonly",
     "getENActiveTab": "readonly",
     "quickApplyStyle": "readonly",
     "quickSaveStyle": "readonly",

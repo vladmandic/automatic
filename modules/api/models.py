@@ -286,9 +286,15 @@ class ResImageInfo(BaseModel):
     items: dict = Field(title="Items", description="A dictionary containing all the other fields the image had")
     parameters: dict = Field(title="Parameters", description="A dictionary with parsed generation info fields")
 
-class ReqLog(BaseModel):
+class ReqGetLog(BaseModel):
     lines: int = Field(default=100, title="Lines", description="How many lines to return")
     clear: bool = Field(default=False, title="Clear", description="Should the log be cleared after returning the lines?")
+
+
+class ReqPostLog(BaseModel):
+    message: Optional[str] = Field(title="Message", description="The info message to log")
+    debug: Optional[str] = Field(title="Debug message", description="The debug message to log")
+    error: Optional[str] = Field(title="Error message", description="The error message to log")
 
 class ReqProgress(BaseModel):
     skip_current_image: bool = Field(default=False, title="Skip current image", description="Skip current image serialization")

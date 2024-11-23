@@ -3,19 +3,6 @@ let sortVal = -1;
 
 // helpers
 
-const requestGet = (url, data, handler) => {
-  const xhr = new XMLHttpRequest();
-  const args = Object.keys(data).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`).join('&');
-  xhr.open('GET', `${url}?${args}`, true);
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) handler(JSON.parse(xhr.responseText));
-      else console.error(`Request: url=${url} status=${xhr.status} err`);
-    }
-  };
-  xhr.send(JSON.stringify(data));
-};
-
 const getENActiveTab = () => {
   let tabName = '';
   if (gradioApp().getElementById('tab_txt2img').style.display === 'block') tabName = 'txt2img';
@@ -98,7 +85,7 @@ function readCardTags(el, tags) {
 }
 
 function readCardDescription(page, item) {
-  requestGet('/sd_extra_networks/description', { page, item }, (data) => {
+  xhrGet('/sd_extra_networks/description', { page, item }, (data) => {
     const tabname = getENActiveTab();
     const description = gradioApp().querySelector(`#${tabname}_description > label > textarea`);
     description.value = data?.description?.trim() || '';

@@ -11,6 +11,8 @@
   - Flux: do not recast quants  
 - Sampler improvements  
   - update DPM FlowMatch samplers  
+- UI:
+  - browser->server logging  
 - Fixes:  
   - update `diffusers`  
   - fix README links  
