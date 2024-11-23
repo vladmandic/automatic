@@ -25,10 +25,12 @@ class Script(scripts.Script):
             gr.HTML('<a href="https://blackforestlabs.ai/flux-1-tools/">&nbsp Flux.1 Redux</a><br>')
         with gr.Row():
             tool = gr.Dropdown(label='Tool', choices=['None', 'Redux', 'Fill', 'Canny', 'Depth'], value='None')
+        with gr.Row():
+            process = gr.Checkbox(label='Preprocess input images', value=True)
             strength = gr.Checkbox(label='Override denoise strength', value=True)
-        return [tool, strength]
+        return [tool, strength, process]
 
-    def run(self, p: processing.StableDiffusionProcessing, tool: str = 'None', strength: bool = True): # pylint: disable=arguments-differ
+    def run(self, p: processing.StableDiffusionProcessing, tool: str = 'None', strength: bool = True, process: bool = True): # pylint: disable=arguments-differ
         global redux_pipe, processor_canny, processor_depth # pylint: disable=global-statement
         if tool is None or tool == 'None':
             return
@@ -84,8 +86,11 @@ class Script(scripts.Script):
             if processor_canny is None:
                 from controlnet_aux import CannyDetector
                 processor_canny = CannyDetector()
-            control_image = processor_canny(image, low_threshold=50, high_threshold=200, detect_resolution=1024, image_resolution=1024)
-            p.task_args['control_image'] = control_image
+            if process:
+                control_image = processor_canny(image, low_threshold=50, high_threshold=200, detect_resolution=1024, image_resolution=1024)
+                p.task_args['control_image'] = control_image
+            else:
+                p.task_args['control_image'] = image
             if strength:
                 p.task_args['strength'] = None
         else:
@@ -102,8 +107,11 @@ class Script(scripts.Script):
             if processor_depth is None:
                 from image_gen_aux import DepthPreprocessor
                 processor_depth = DepthPreprocessor.from_pretrained("LiheYoung/depth-anything-large-hf")
-            control_image = processor_depth(control_image)[0].convert("RGB")
-            p.task_args['control_image'] = control_image
+            if process:
+                control_image = processor_depth(image)[0].convert("RGB")
+                p.task_args['control_image'] = control_image
+            else:
+                p.task_args['control_image'] = image
             if strength:
                 p.task_args['strength'] = None
         else:
