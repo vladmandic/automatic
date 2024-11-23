@@ -231,7 +231,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 output = shared.sd_model(**hires_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
                     output = SimpleNamespace(**output)
-                shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
+                if hasattr(output, 'images'):
+                    shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
                 sd_models_compile.check_deepcache(enable=False)
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
@@ -313,7 +314,8 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
                     output = SimpleNamespace(**output)
-                shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
+                if hasattr(output, 'images'):
+                    shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
                 sd_models_compile.openvino_post_compile(op="refiner")
             except AssertionError as e:
                 shared.log.info(e)

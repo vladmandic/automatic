@@ -2,6 +2,23 @@
 
 ## Update for 2024-11-23
 
+- [Flux Tools](https://blackforestlabs.ai/flux-1-tools/):  
+  **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
+  **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
+  To use, go to image or control interface and select *Flux Tools* in scripts  
+  All models are auto-downloaded on first use  
+  *note*: All models are [gated](https://github.com/vladmandic/automatic/wiki/Gated) and require acceptance of terms and conditions via web page  
+  *recommended*: Enable on-the-fly [quantization](https://github.com/vladmandic/automatic/wiki/Quantization) or [compression](https://github.com/vladmandic/automatic/wiki/NNCF-Compression) to reduce resource usage  
+  *todo*: support for Canny/Depth LoRAs  
+  - [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev): ~0.1GB  
+    works together with existing model and basically uses input image to analyze it and use that instead of prompt  
+    *recommended*: low denoise strength levels result in more variety  
+  - [Fill](https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev): ~23.8GB, replaces currently loaded model  
+    *note*: can be used in inpaint/outpaint mode only  
+  - [Canny](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 30  
+  - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 10  
 - Model loader improvements:  
   - detect model components on model load fail  
   - Flux, SD35: force unload model  
@@ -11,14 +28,15 @@
   - Flux: do not recast quants  
 - Sampler improvements  
   - update DPM FlowMatch samplers  
-- UI:
+- UI:  
   - browser->server logging  
 - Fixes:  
   - update `diffusers`  
   - fix README links  
   - fix sdxl controlnet single-file loader  
   - relax settings validator  
-  - improve js progress calls resiliency
+  - improve js progress calls resiliency  
+  - fix text-to-video pipeline  
 
 ## Update for 2024-11-21
 

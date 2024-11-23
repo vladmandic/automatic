@@ -771,7 +771,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
     return sd_model
 
 
-def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
+def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model', revision=None): # pylint: disable=unused-argument
     if timer is None:
         timer = Timer()
     logging.getLogger("diffusers").setLevel(logging.ERROR)
@@ -784,6 +784,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "requires_safety_checker": False, # sd15 specific but we cant know ahead of time
         # "use_safetensors": True,
     }
+    if revision is not None:
+        diffusers_load_config['revision'] = revision
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
@@ -1077,6 +1079,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
         'InstantIRPipeline',
+        'FluxFillPipeline',
+        'FluxControlPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')
@@ -1345,7 +1349,7 @@ def reload_text_encoder(initial=False):
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
-def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
+def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False, revision=None):
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary
@@ -1390,7 +1394,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             load_model(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
             model_data.sd_dict = shared.opts.sd_model_dict
         else:
-            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
+            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op, revision=revision)
         if load_dict and next_checkpoint_info is not None:
             model_data.sd_dict = shared.opts.sd_model_dict
             shared.opts.data["sd_model_checkpoint"] = next_checkpoint_info.title

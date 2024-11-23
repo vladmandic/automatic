@@ -13,7 +13,7 @@ MODELS = [
 
 class Script(scripts.Script):
     def title(self):
-        return 'Video VGen Image-to-Video'
+        return 'Video: VGen Image-to-Video'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False

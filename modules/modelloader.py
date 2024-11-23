@@ -326,6 +326,9 @@ def find_diffuser(name: str, full=False):
         return [repo[0]['name']]
     hf_api = hf.HfApi()
     models = list(hf_api.list_models(model_name=name, library=['diffusers'], full=True, limit=20, sort="downloads", direction=-1))
+    if len(models) == 0:
+        models = list(hf_api.list_models(model_name=name, full=True, limit=20, sort="downloads", direction=-1)) # widen search
+    models = [m for m in models if m.id.startswith(name)] # filter exact
     shared.log.debug(f'Searching diffusers models: {name} {len(models) > 0}')
     if len(models) > 0:
         if not full:

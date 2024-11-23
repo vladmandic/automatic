@@ -198,8 +198,9 @@ def get_closet_checkpoint_match(s: str):
     if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
         modelloader.hf_login()
         found = modelloader.find_diffuser(s, full=True)
+        found = [f for f in found if f == s]
         shared.log.info(f'HF search: model="{s}" results={found}')
-        if found is not None and len(found) == 1 and found[0] == s:
+        if found is not None and len(found) == 1:
             checkpoint_info = CheckpointInfo(s)
             checkpoint_info.type = 'huggingface'
             return checkpoint_info
