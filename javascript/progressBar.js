@@ -4,23 +4,37 @@ function request(url, data, handler, errorHandler) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.timeout = 5000;
+  xhr.ontimeout = () => {
+    console.error('xhr.ontimeout', xhr);
+    errorHandler();
+  };
+  xhr.onerror = () => {
+    console.error('xhr.onerror', xhr);
+    errorHandler();
+  };
+  xhr.onabort = () => {
+    console.error('xhr.onabort', xhr);
+    errorHandler();
+  };
   xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         try {
-          const js = JSON.parse(xhr.responseText);
-          handler(js);
-        } catch (error) {
-          console.error(error);
+          const json = JSON.parse(xhr.responseText);
+          handler(json);
+        } catch (err) {
+          console.error('xhr.onreadystatechange', xhr, err);
           errorHandler();
         }
       } else {
+        console.error('xhr.onreadystatechange', xhr);
         errorHandler();
       }
     }
   };
-  const js = JSON.stringify(data);
-  xhr.send(js);
+  const req = JSON.stringify(data);
+  xhr.send(req);
 }
 
 function pad2(x) {
@@ -118,11 +132,14 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
 
   const start = (id_task, id_live_preview) => { // eslint-disable-line no-shadow
     if (!opts.live_previews_enable || opts.live_preview_refresh_period === 0 || opts.show_progress_every_n_steps === 0) return;
-    request('./internal/progress', { id_task, id_live_preview }, (res) => {
+
+    const onProgressHandler = (res) => {
+      // debug('onProgress', res);
       lastState = res;
       const elapsedFromStart = (new Date() - dateStart) / 1000;
       hasStarted |= res.active;
       if (res.completed || (!res.active && (hasStarted || once)) || (elapsedFromStart > 30 && !res.queued && res.progress === prevProgress)) {
+        debug('onProgressEnd', res);
         done();
         return;
       }
@@ -131,7 +148,14 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
       if (res.live_preview && galleryEl) img.src = res.live_preview;
       if (onProgress) onProgress(res);
       setTimeout(() => start(id_task, id_live_preview), opts.live_preview_refresh_period || 500);
-    }, done);
+    };
+
+    const onProgressErrorHandler = (err) => {
+      console.error('onProgressError', err);
+      done();
+    };
+
+    request('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler);
   };
   start(id_task, 0);
 }

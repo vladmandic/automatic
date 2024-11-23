@@ -319,12 +319,12 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, 'maybe_free_model_hooks') and shared.opts.diffusers_offload_mode == "none":
-        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
         sd_model.maybe_free_model_hooks()
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload") and shared.opts.diffusers_offload_mode == "model":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -339,7 +339,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -359,7 +359,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} threshold={shared.opts.diffusers_offload_max_gpu_memory} limit={shared.opts.cuda_mem_fraction}')
             sd_model = apply_balanced_offload(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')

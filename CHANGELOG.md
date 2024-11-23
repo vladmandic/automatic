@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-22
+## Update for 2024-11-23
 
 - Model loader improvements:  
   - detect model components on model load fail  
@@ -16,6 +16,7 @@
   - fix README links  
   - fix sdxl controlnet single-file loader  
   - relax settings validator  
+  - improve js progress calls resiliency
 
 ## Update for 2024-11-21
 
