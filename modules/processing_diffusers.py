@@ -8,6 +8,8 @@ from modules import shared, devices, processing, sd_models, errors, sd_hijack_hy
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
+from modules.lora.networks import network_load
+from modules.lora.networks import timer as network_timer
 
 
 debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -425,6 +427,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         p.prompts = p.all_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
     if p.negative_prompts is None or len(p.negative_prompts) == 0:
         p.negative_prompts = p.all_negative_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
+    network_timer['apply'] = 0
+    network_timer['restore'] = 0
+    network_load()
 
     sd_models.move_model(shared.sd_model, devices.device)
     sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False) # recompile if a parameter changes

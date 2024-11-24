@@ -909,6 +909,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_quant": OptionInfo("NF4","LoRA precision in quantized models", gr.Radio, {"choices": ["NF4", "FP4"]}),
     "lora_load_gpu": OptionInfo(True if not cmd_opts.lowvram else False, "Load LoRA directly to GPU"),
+    "lora_offload_backup": OptionInfo(True, "Offload LoRA Backup Weights"),
 }))
 
 options_templates.update(options_section((None, "Internal options"), {
