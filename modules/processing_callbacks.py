@@ -4,6 +4,7 @@ import time
 import torch
 import numpy as np
 from modules import shared, processing_correction, extra_networks, timer, prompt_parser_diffusers
+from modules.lora.networks import network_load
 
 p = None
 debug = os.environ.get('SD_CALLBACK_DEBUG', None) is not None
@@ -65,6 +66,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
             time.sleep(0.1)
     if hasattr(p, "stepwise_lora"):
         extra_networks.activate(p, p.extra_network_data, step=step)
+        network_load()
     if latents is None:
         return kwargs
     elif shared.opts.nan_skip:
