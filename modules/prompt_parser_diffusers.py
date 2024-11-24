@@ -583,13 +583,13 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
     te1_device, te2_device, te3_device = None, None, None
     if hasattr(pipe, "text_encoder") and pipe.text_encoder.device != devices.device:
         te1_device = pipe.text_encoder.device
-        sd_models.move_model(pipe.text_encoder, devices.device)
+        sd_models.move_model(pipe.text_encoder, devices.device, force=True)
     if hasattr(pipe, "text_encoder_2") and pipe.text_encoder_2.device != devices.device:
         te2_device = pipe.text_encoder_2.device
-        sd_models.move_model(pipe.text_encoder_2, devices.device)
+        sd_models.move_model(pipe.text_encoder_2, devices.device, force=True)
     if hasattr(pipe, "text_encoder_3") and pipe.text_encoder_3.device != devices.device:
         te3_device = pipe.text_encoder_3.device
-        sd_models.move_model(pipe.text_encoder_3, devices.device)
+        sd_models.move_model(pipe.text_encoder_3, devices.device, force=True)
 
     if is_sd3:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
@@ -601,10 +601,10 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
         prompt_embed, negative_embed = get_weighted_text_embeddings_sd15(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, clip_skip=clip_skip)
 
     if te1_device is not None:
-        sd_models.move_model(pipe.text_encoder, te1_device)
+        sd_models.move_model(pipe.text_encoder, te1_device, force=True)
     if te2_device is not None:
-        sd_models.move_model(pipe.text_encoder_2, te1_device)
+        sd_models.move_model(pipe.text_encoder_2, te1_device, force=True)
     if te3_device is not None:
-        sd_models.move_model(pipe.text_encoder_3, te1_device)
+        sd_models.move_model(pipe.text_encoder_3, te1_device, force=True)
 
     return prompt_embed, positive_pooled, negative_embed, negative_pooled
