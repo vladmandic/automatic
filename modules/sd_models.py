@@ -16,7 +16,7 @@ import safetensors.torch
 from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
-from modules.timer import Timer
+from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
@@ -512,7 +512,10 @@ def move_model(model, device=None, force=False):
     except Exception as e1:
         t1 = time.time()
         shared.log.error(f'Model move: device={device} {e1}')
-    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 0.1:
+    if 'move' not in process_timer.records:
+        process_timer.records['move'] = 0
+    process_timer.records['move'] += t1 - t0
+    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 1:
         shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access
     devices.torch_gc()
 

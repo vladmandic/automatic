@@ -162,7 +162,7 @@ class PromptEmbedder:
 
     def encode(self, pipe, positive_prompt, negative_prompt, batchidx):
         self.attention = shared.opts.prompt_attention
-        if self.attention == "xhinker" or 'Flux' in pipe.__class__.__name__:
+        if self.attention == "xhinker":
             prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
         else:
             prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
@@ -591,7 +591,7 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
         te3_device = pipe.text_encoder_3.device
         sd_models.move_model(pipe.text_encoder_3, devices.device, force=True)
 
-    if is_sd3:
+    if 'StableDiffusion3' in pipe.__class__.__name__:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
     elif 'Flux' in pipe.__class__.__name__:
         prompt_embed, positive_pooled = get_weighted_text_embeddings_flux1(pipe=pipe, prompt=prompt, prompt2=prompt_2, device=devices.device)

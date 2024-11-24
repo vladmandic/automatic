@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-23
+## Update for 2024-11-24
 
 - [Flux Tools](https://blackforestlabs.ai/flux-1-tools/):  
   **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
