@@ -354,6 +354,8 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     if any([net.modules.get(network_layer_name, None) for net in loaded_networks]): # noqa: C419 # pylint: disable=R1729
         maybe_backup_weights(self, wanted_names)
     if current_names != wanted_names:
+        batch_updown = None
+        batch_ex_bias = None
         for net in loaded_networks:
             # default workflow where module is known and has weights
             module = net.modules.get(network_layer_name, None)
@@ -362,7 +364,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                     with devices.inference_context():
                         weight = self.weight # calculate quant weights once
                         updown, ex_bias = module.calc_updown(weight)
-                        set_weights(self, updown, ex_bias)
+                        if batch_updown is not None and updown is not None:
+                            batch_updown += updown
+                        else:
+                            batch_updown = updown
+                        if batch_ex_bias is not None and ex_bias is not None:
+                            batch_ex_bias += ex_bias
+                        else:
+                            batch_ex_bias = ex_bias
                 except RuntimeError as e:
                     extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
                     if debug:
@@ -375,9 +384,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                 continue
             shared.log.warning(f'LoRA network="{net.name}" layer="{network_layer_name}" unsupported operation')
             extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
-        if not loaded_networks:  # restore from backup
-            t5 = time.time()
-            set_weights(self, None, None)
+        set_weights(self, batch_updown, batch_ex_bias)  # Set or restore weights from backup
         self.network_current_names = wanted_names
     t1 = time.time()
     timer['apply'] += t1 - t0
