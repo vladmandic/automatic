@@ -135,6 +135,7 @@ class ExtraNetworksPage:
         return text.replace('~tabname', tabname)
 
     def create_xyz_grid(self):
+        """
         xyz_grid = [x for x in scripts.scripts_data if x.script_class.__module__ == "xyz_grid.py"][0].module
 
         def add_prompt(p, opt, x):
@@ -150,6 +151,7 @@ class ExtraNetworksPage:
             opt = xyz_grid.AxisOption(f"[Network] {self.title}", str, add_prompt, choices=lambda: [x["name"] for x in self.items])
             if opt not in xyz_grid.axis_options:
                 xyz_grid.axis_options.append(opt)
+        """
 
     def link_preview(self, filename):
         quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
