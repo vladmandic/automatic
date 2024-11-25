@@ -12,8 +12,10 @@ function formatTime(secs) {
 
 function checkPaused(state) {
   lastState.paused = state ? !state : !lastState.paused;
-  document.getElementById('txt2img_pause').innerText = lastState.paused ? 'Resume' : 'Pause';
-  document.getElementById('img2img_pause').innerText = lastState.paused ? 'Resume' : 'Pause';
+  const t_el = document.getElementById('txt2img_pause');
+  const i_el = document.getElementById('img2img_pause');
+  if (t_el) t_el.innerText = lastState.paused ? 'Resume' : 'Pause';
+  if (i_el) i_el.innerText = lastState.paused ? 'Resume' : 'Pause';
 }
 
 function setProgress(res) {
@@ -87,7 +89,9 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     debug('taskEnd:', id_task);
     localStorage.removeItem('task');
     setProgress();
-    if (parentGallery && livePreview) parentGallery.removeChild(livePreview);
+    try {
+      if (parentGallery && livePreview) parentGallery.removeChild(livePreview);
+    } catch { /* ignore */ }
     checkPaused(true);
     sendNotification();
     if (atEnd) atEnd();
@@ -118,7 +122,7 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
       done();
     };
 
-    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler);
+    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler, false, 5000);
   };
   start(id_task, 0);
 }

@@ -1,5 +1,3 @@
-const serverTimeout = 5000;
-
 const log = async (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
@@ -19,15 +17,15 @@ const error = async (...msg) => {
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
   if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
   console.error(ts, ...msg); // eslint-disable-line no-console
-  const txt = msg.join(' ');
-  if (!txt.includes('asctime') && !txt.includes('xhr.')) xhrPost('/sdapi/v1/log', { error: txt }); // eslint-disable-line no-use-before-define
+  // const txt = msg.join(' ');
+  // if (!txt.includes('asctime') && !txt.includes('xhr.')) xhrPost('/sdapi/v1/log', { error: txt }); // eslint-disable-line no-use-before-define
 };
 
-const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false) => {
+const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) => {
   const err = (msg) => {
     if (!ignore) {
       error(`${msg}: state=${xhrObj.readyState} status=${xhrObj.status} response=${xhrObj.responseText}`);
-      if (errorHandler) errorHandler();
+      if (errorHandler) errorHandler(xhrObj);
     }
   };
 
@@ -54,15 +52,15 @@ const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined
   xhrObj.send(req);
 };
 
-const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false) => {
+const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) => {
   const xhr = new XMLHttpRequest();
   const args = Object.keys(data).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`).join('&');
   xhr.open('GET', `${url}?${args}`, true);
-  xhrInternal(xhr, data, handler, errorHandler, ignore);
+  xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);
 };
 
-function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false) {
+function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
-  xhrInternal(xhr, data, handler, errorHandler, ignore);
+  xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);
 }
