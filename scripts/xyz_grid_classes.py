@@ -97,7 +97,7 @@ axis_options = [
     AxisOption("[Prompt] Prompt order", str_permutations, apply_order, fmt=format_value_join_list),
     AxisOption("[Prompt] Prompt parser", str, apply_setting("prompt_attention"), choices=lambda: ["native", "compel", "xhinker", "a1111", "fixed"]),
     AxisOption("[Network] LoRA", str, apply_lora, cost=0.5, choices=list_lora),
-    AxisOption("[Network] LoRA strength", float, apply_lora_strength),
+    AxisOption("[Network] LoRA strength", float, apply_lora_strength, cost=0.6),
     AxisOption("[Network] Styles", str, apply_styles, choices=lambda: [s.name for s in shared.prompt_styles.styles.values()]),
     AxisOption("[Param] Width", int, apply_field("width")),
     AxisOption("[Param] Height", int, apply_field("height")),
