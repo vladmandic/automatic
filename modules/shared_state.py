@@ -2,6 +2,7 @@ import os
 import time
 import datetime
 from modules.errors import log
+from modules import timer
 
 
 class State:
@@ -150,6 +151,7 @@ class State:
     def do_set_current_image(self):
         if self.current_latent is None:
             return
+        t0 = time.time()
         from modules.shared import opts
         import modules.sd_samplers # pylint: disable=W0621
         try:
@@ -159,6 +161,8 @@ class State:
         except Exception:
             # log.error(f'Error setting current image: step={self.sampling_step} {e}')
             pass
+        t1 = time.time()
+        timer.process.add('preview', t1 - t0)
 
     def assign_current_image(self, image):
         self.current_image = image

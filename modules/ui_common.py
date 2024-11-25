@@ -245,10 +245,17 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                 gr.HTML(value="", elem_id="main_info", visible=False, elem_classes=["main-info"])
             # columns are for <576px, <768px, <992px, <1200px, <1400px, >1400px
             result_gallery = gr.Gallery(value=[],
-                                        label='Output', show_label=False, show_download_button=True, allow_preview=True, container=False, preview=preview,
-                                        columns=4, object_fit='scale-down', height=height,
+                                        label='Output',
+                                        show_label=False,
+                                        show_download_button=True,
+                                        allow_preview=True,
+                                        container=False,
+                                        preview=preview,
+                                        columns=4,
+                                        object_fit='scale-down',
+                                        height=height,
                                         elem_id=f"{tabname}_gallery",
-                                        )
+                                       )
             if prompt is not None:
                 interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons('control')
                 interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])

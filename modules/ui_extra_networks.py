@@ -16,7 +16,7 @@ from collections import OrderedDict
 import gradio as gr
 from PIL import Image
 from starlette.responses import FileResponse, JSONResponse
-from modules import paths, shared, scripts, files_cache, errors, infotext
+from modules import paths, shared, files_cache, errors, infotext
 from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 

@@ -68,29 +68,33 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
   let img;
 
   const initLivePreview = () => {
+    if (!parentGallery) return;
+    const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
+    for (const footer of footers) footer.style.display = 'none'; // remove all footers
+
+    livePreview = document.createElement('div');
+    livePreview.className = 'livePreview';
+    parentGallery.insertBefore(livePreview, galleryEl);
     img = new Image();
-    if (parentGallery) {
-      livePreview = document.createElement('div');
-      livePreview.className = 'livePreview';
-      parentGallery.insertBefore(livePreview, galleryEl);
-      const rect = galleryEl.getBoundingClientRect();
-      if (rect.width) {
-        livePreview.style.width = `${rect.width}px`;
-        livePreview.style.height = `${rect.height}px`;
-      }
-      img.onload = () => {
-        livePreview.appendChild(img);
-        if (livePreview.childElementCount > 2) livePreview.removeChild(livePreview.firstElementChild);
-      };
-    }
+    img.id = 'livePreviewImage';
+    livePreview.appendChild(img);
+    img.onload = () => {
+      img.style.width = `min(100%, max(${img.naturalWidth}px, 512px))`;
+      parentGallery.style.minHeight = `${img.height}px`;
+    };
   };
 
   const done = () => {
     debug('taskEnd:', id_task);
     localStorage.removeItem('task');
     setProgress();
+    const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
+    for (const footer of footers) footer.style.display = 'flex'; // remove all footers
     try {
-      if (parentGallery && livePreview) parentGallery.removeChild(livePreview);
+      if (parentGallery && livePreview) {
+        parentGallery.removeChild(livePreview);
+        parentGallery.style.minHeight = 'unset';
+      }
     } catch { /* ignore */ }
     checkPaused(true);
     sendNotification();
@@ -112,7 +116,9 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
       }
       setProgress(res);
       if (res.live_preview && !livePreview) initLivePreview();
-      if (res.live_preview && galleryEl) img.src = res.live_preview;
+      if (res.live_preview && galleryEl) {
+        if (img.src !== res.live_preview) img.src = res.live_preview;
+      }
       if (onProgress) onProgress(res);
       setTimeout(() => start(id_task, id_live_preview), opts.live_preview_refresh_period || 500);
     };

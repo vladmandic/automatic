@@ -29,6 +29,10 @@
 - Sampler improvements  
   - update DPM FlowMatch samplers  
 - UI:  
+  - improved stats on generate completion  
+  - improved live preview display and performance  
+  - improved accordion behavior  
+  - auto-size networks height for sidebar  
   - browser->server logging framework  
 - Fixes:  
   - update `diffusers`  

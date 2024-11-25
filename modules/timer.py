@@ -15,6 +15,12 @@ class Timer:
             self.start = end
         return res
 
+    def add(self, name, t):
+        if name not in self.records:
+            self.records[name] = t
+        else:
+            self.records[name] += t
+
     def record(self, category=None, extra_time=0, reset=True):
         e = self.elapsed(reset)
         if category is None:

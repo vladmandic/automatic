@@ -323,7 +323,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 processed = p.scripts.process_images(p)
                 if processed is not None:
                     samples = processed.images
-                    infotexts = processed.infotexts
+                    infotexts += processed.infotexts
             if samples is None:
                 if not shared.native:
                     from modules.processing_original import process_original
@@ -393,11 +393,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 if shared.opts.mask_apply_overlay:
                     image = apply_overlay(image, p.paste_to, i, p.overlay_images)
 
-                if len(infotexts) > i:
-                    info = infotexts[i]
-                else:
-                    info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
-                    infotexts.append(info)
+                info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
+                infotexts.append(info)
                 image.info["parameters"] = info
                 output_images.append(image)
                 if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:

@@ -434,6 +434,22 @@ function setupExtraNetworksForTab(tabname) {
     };
   }
 
+  // auto-resize networks sidebar
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      for (const el of Array.from(gradioApp().getElementById(`${tabname}_extra_tabs`).querySelectorAll('.extra-networks-page'))) {
+        const h = Math.trunc(entry.contentRect.height);
+        if (h <= 0) return;
+        if (window.opts.extra_networks_card_cover === 'sidebar' && window.opts.theme_type === 'Standard') el.style.height = `max(55vh, ${h - 90}px)`;
+        // log(`${tabname} height: ${entry.target.id}=${h} ${el.id}=${el.clientHeight}`);
+      }
+    }
+  });
+  const settingsEl = gradioApp().getElementById(`${tabname}_settings`);
+  const interfaceEl = gradioApp().getElementById(`${tabname}_interface`);
+  if (settingsEl) resizeObserver.observe(settingsEl);
+  if (interfaceEl) resizeObserver.observe(interfaceEl);
+
   // en style
   if (!en) return;
   let lastView;
