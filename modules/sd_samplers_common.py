@@ -1,9 +1,10 @@
+import time
 import threading
 from collections import namedtuple
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_vae_stablecascade, sd_samplers
+from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_vae_stablecascade, sd_samplers, timer
 
 
 SamplerData = namedtuple('SamplerData', ['name', 'constructor', 'aliases', 'options'])
@@ -33,6 +34,7 @@ def setup_img2img_steps(p, steps=None):
 
 def single_sample_to_image(sample, approximation=None):
     with queue_lock:
+        t0 = time.time()
         sd_cascade = False
         if approximation is None:
             approximation = approximation_indexes.get(shared.opts.show_progress_type, None)
@@ -84,6 +86,8 @@ def single_sample_to_image(sample, approximation=None):
         except Exception as e:
             warn_once(f'Preview: {e}')
             image = Image.new(mode="RGB", size=(512, 512))
+        t1 = time.time()
+        timer.process.add('preview', t1 - t0)
         return image
 
 
