@@ -33,6 +33,9 @@
   - improved live preview display and performance  
   - improved accordion behavior  
   - auto-size networks height for sidebar  
+  - control: hide preview column by default
+  - control: optionn to hide input column
+  - control: add stats
   - browser->server logging framework  
 - Fixes:  
   - update `diffusers`  

@@ -255,6 +255,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                                         object_fit='scale-down',
                                         height=height,
                                         elem_id=f"{tabname}_gallery",
+                                        elem_classes=["gallery_main"],
                                        )
             if prompt is not None:
                 interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons('control')

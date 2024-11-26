@@ -71,6 +71,8 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     if (!parentGallery) return;
     const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
     for (const footer of footers) footer.style.display = 'none'; // remove all footers
+    const galleries = Array.from(gradioApp().querySelectorAll('.gallery_main'));
+    for (const gallery of galleries) gallery.style.display = 'none'; // remove all footers
 
     livePreview = document.createElement('div');
     livePreview.className = 'livePreview';
@@ -89,7 +91,9 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     localStorage.removeItem('task');
     setProgress();
     const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
-    for (const footer of footers) footer.style.display = 'flex'; // remove all footers
+    for (const footer of footers) footer.style.display = 'flex'; // restore all footers
+    const galleries = Array.from(gradioApp().querySelectorAll('.gallery_main'));
+    for (const gallery of galleries) gallery.style.display = 'flex'; // remove all galleries
     try {
       if (parentGallery && livePreview) {
         parentGallery.removeChild(livePreview);
