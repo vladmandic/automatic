@@ -31,8 +31,8 @@ class StableDiffusionProcessing:
                  n_iter: int = 1,
                  steps: int = 50,
                  clip_skip: int = 1,
-                 width: int = 512,
-                 height: int = 512,
+                 width: int = 1024,
+                 height: int = 1024,
                  # samplers
                  sampler_index: int = None, # pylint: disable=unused-argument # used only to set sampler_name
                  sampler_name: str = None,

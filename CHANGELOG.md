@@ -2,11 +2,13 @@
 
 ## Update for 2024-11-26
 
-- [Flux Tools](https://blackforestlabs.ai/flux-1-tools/):  
+### New models and integrations
+
+- [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
   **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
   **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
-  To use, go to image or control interface and select *Flux Tools* in scripts  
-  All models are auto-downloaded on first use  
+  to use, go to image or control interface and select *Flux Tools* in scripts  
+  all models are auto-downloaded on first use  
   *note*: All models are [gated](https://github.com/vladmandic/automatic/wiki/Gated) and require acceptance of terms and conditions via web page  
   *recommended*: Enable on-the-fly [quantization](https://github.com/vladmandic/automatic/wiki/Quantization) or [compression](https://github.com/vladmandic/automatic/wiki/NNCF-Compression) to reduce resource usage  
   *todo*: support for Canny/Depth LoRAs  
@@ -19,16 +21,23 @@
     *recommended*: guidance scale 30  
   - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
     *recommended*: guidance scale 10  
-- Model loader improvements:  
+- [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
+  enable in scripts, compatible with sd-xl  
+  enter multiple prompts in prompt field separated by new line  
+  style-aligned applies selected attention layers uniformly to all images to achive consistency  
+  can be used with or without input image in which case first prompt is used to establish baseline  
+  *note:* all prompts are processes as a single batch, so vram is limiting factor
+
+### UI and workflow improvements
+
+- **Model loader** improvements:  
   - detect model components on model load fail  
   - Flux, SD35: force unload model  
   - Flux: apply `bnb` quant when loading *unet/transformer*  
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
-- Sampler improvements  
-  - update DPM FlowMatch samplers  
-- UI:  
+- **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
   - improved accordion behavior  
@@ -37,16 +46,20 @@
   - control: optionn to hide input column
   - control: add stats
   - browser->server logging framework  
-- Fixes:  
-  - update `diffusers`  
-  - fix README links  
-  - fix sdxl controlnet single-file loader  
-  - relax settings validator  
-  - improve js progress calls resiliency  
-  - fix text-to-video pipeline  
-  - avoid live-preview if vae-decode is running  
-  - allow xyz-grid with multi-axis s&r  
-  - fix xyz-grid with lora  
+- **Sampler** improvements  
+  - update DPM FlowMatch samplers  
+
+### Fixes:  
+
+- update `diffusers`  
+- fix README links  
+- fix sdxl controlnet single-file loader  
+- relax settings validator  
+- improve js progress calls resiliency  
+- fix text-to-video pipeline  
+- avoid live-preview if vae-decode is running  
+- allow xyz-grid with multi-axis s&r  
+- fix xyz-grid with lora  
 
 ## Update for 2024-11-21
 

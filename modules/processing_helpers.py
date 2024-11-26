@@ -561,7 +561,9 @@ def save_intermediate(p, latents, suffix):
 def update_sampler(p, sd_model, second_pass=False):
     sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
     if hasattr(sd_model, 'scheduler'):
-        if sampler_selection is None or sampler_selection == 'None':
+        if sampler_selection == 'None':
+            return
+        if sampler_selection is None:
             sampler = sd_samplers.all_samplers_map.get("UniPC")
         else:
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)
