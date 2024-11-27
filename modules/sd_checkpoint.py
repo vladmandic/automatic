@@ -188,6 +188,11 @@ def get_closet_checkpoint_match(s: str):
     if found and len(found) == 1:
         return found[0]
 
+    # absolute path
+    if s.endswith('.safetensors') and os.path.isfile(s):
+        checkpoint_info = CheckpointInfo(s)
+        return checkpoint_info
+
     # reference search
     """
     found = sorted([info for info in shared.reference_models.values() if os.path.basename(info['path']).lower().startswith(s.lower())], key=lambda x: len(x['path']))

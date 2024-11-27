@@ -32,6 +32,7 @@
 
 - **Model loader** improvements:  
   - detect model components on model load fail  
+  - allow passing absolute path to model loader  
   - Flux, SD35: force unload model  
   - Flux: apply `bnb` quant when loading *unet/transformer*  
   - Flux: all-in-one safetensors  
