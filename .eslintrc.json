@@ -37,7 +37,8 @@
     "object-curly-newline":"off",
     "prefer-rest-params":"off",
     "prefer-destructuring":"off",
-    "radix":"off"
+    "radix":"off",
+    "node/shebang": "off"
   },
   "globals": {
     // asssets

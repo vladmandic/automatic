@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-26
+## Update for 2024-11-27
 
 ### New models and integrations
 
@@ -49,7 +49,7 @@
 - **Sampler** improvements  
   - update DPM FlowMatch samplers  
 
-### Fixes:  
+### Fixes  
 
 - update `diffusers`  
 - fix README links  
@@ -60,6 +60,7 @@
 - avoid live-preview if vae-decode is running  
 - allow xyz-grid with multi-axis s&r  
 - fix xyz-grid with lora  
+- fix api script callbacks  
 
 ## Update for 2024-11-21
 

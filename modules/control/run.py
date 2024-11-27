@@ -87,7 +87,6 @@ def control_run(state: str = '',
             u.process.override = u.override
 
     global instance, pipe, original_pipeline # pylint: disable=global-statement
-    t_start = time.time()
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
     if inputs is None or (type(inputs) is list and len(inputs) == 0):
         inputs = [None]
