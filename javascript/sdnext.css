@@ -30,6 +30,19 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 .hidden { display: none; }
 .tabitem { padding: 0 !important; }
 
+/* gradio image/canvas elements */
+.image-container { overflow: auto; }
+/*
+.gradio-image { min-height: fit-content; }
+.gradio-image img { object-fit: contain; }
+*/
+/*
+.gradio-image { min-height: 200px !important; }
+.image-container { height: unset !important; }
+.control-image { height: unset !important; }
+#img2img_sketch, #img2maskimg, #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
+*/
+
 /* color elements */
 .gradio-dropdown, .block.gradio-slider, .block.gradio-checkbox, .block.gradio-textbox, .block.gradio-radio, .block.gradio-checkboxgroup, .block.gradio-number, .block.gradio-colorpicker { border-width: 0 !important; box-shadow: none !important;}
 .gradio-accordion { padding-top: var(--spacing-md) !important; padding-right: 0 !important; padding-bottom: 0 !important; color: var(--body-text-color); }
@@ -87,8 +100,6 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 .performance .time { margin-right: 0; }
 .thumbnails { background: var(--body-background-fill); }
 .prompt textarea { resize: vertical; }
-.image-container { height: unset !important; }
-.control-image { height: unset !important; }
 .grid-wrap { overflow-y: auto !important; }
 #control_results { margin: 0; padding: 0; }
 #txt2img_gallery, #img2img_gallery { height: 50vh; }
@@ -106,7 +117,6 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 #txt2img_prompt, #txt2img_neg_prompt, #img2img_prompt, #img2img_neg_prompt, #control_prompt, #control_neg_prompt { display: contents; }
 #txt2img_actions_column, #img2img_actions_column, #control_actions { flex-flow: wrap; justify-content: space-between; }
 
-
 .interrogate-clip { position: absolute; right: 6em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-blip { position: absolute; right: 4em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-col { min-width: 0 !important; max-width: fit-content; margin-right: var(--spacing-xxl); }
@@ -119,8 +129,6 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
 #img2img_unused_scale_by_slider { visibility: hidden; width: 0.5em; max-width: 0.5em; min-width: 0.5em; }
 .inactive{ opacity: 0.5; }
 div#extras_scale_to_tab div.form { flex-direction: row; }
-#mode_img2img .gradio-image>div.fixed-height, #mode_img2img .gradio-image>div.fixed-height img{ height: 480px !important; max-height: 480px !important; min-height: 480px !important; }
-#img2img_sketch, #img2maskimg, #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
 .image-buttons button { min-width: auto; }
 .infotext { overflow-wrap: break-word; line-height: 1.5em; font-size: 0.95em !important; }
 .infotext > p { white-space: pre-wrap; color: var(--block-info-text-color) !important; }
@@ -380,8 +388,6 @@ div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(
     #img2img_actions_column { display: flex; min-width: fit-content !important; flex-direction: row;justify-content: space-evenly; align-items: center;}
     #txt2img_generate_box, #img2img_generate_box, #txt2img_enqueue_wrapper,#img2img_enqueue_wrapper {display: flex;flex-direction: column;height: 4em !important;align-items: stretch;justify-content: space-evenly;}
     #img2img_interface, #img2img_results, #img2img_footer p { text-wrap: wrap; min-width: 100% !important; max-width: 100% !important;} /* maintain single column for from image operations on larger mobile devices */
-    #img2img_sketch, #img2maskimg, #inpaint_sketch {display: flex; overflow: auto !important; resize: none !important; } /* fix inpaint image display being too large for mobile displays */
-    #img2maskimg canvas { width: auto !important; max-height: 100% !important; height: auto !important; }
     #txt2img_sampler, #txt2img_batch, #txt2img_seed_group, #txt2img_advanced, #txt2img_second_pass, #img2img_sampling_group, #img2img_resize_group, #img2img_batch_group, #img2img_seed_group, #img2img_denoise_group, #img2img_advanced_group { width: 100% !important; } /* fix from text/image UI elements to prevent them from moving around within the UI */
     #img2img_resize_group .gradio-radio>div { display: flex; flex-direction: column; width: unset !important; }
     #inpaint_controls div { display:flex;flex-direction: row;}

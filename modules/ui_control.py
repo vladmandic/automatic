@@ -13,7 +13,7 @@ from modules import errors, shared, progress, ui_components, ui_symbols, ui_comm
 from modules import ui_control_helpers as helpers
 
 
-gr_height = None
+gr_height = 512
 max_units = shared.opts.control_max_units
 units: list[unit.Unit] = [] # main state variable
 controls: list[gr.component] = [] # list of gr controls
@@ -135,7 +135,7 @@ def create_ui(_blocks: gr.Blocks=None):
                     with gr.Row():
                         input_type = gr.Radio(label="Input type", choices=['Control only', 'Init image same as control', 'Separate init image'], value='Control only', type='index', elem_id='control_input_type')
                     with gr.Row():
-                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.50, elem_id="control_input_denoising_strength")
+                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.30, elem_id="control_input_denoising_strength")
 
                 with gr.Accordion(open=False, label="Size", elem_id="control_size", elem_classes=["small-accordion"]):
                     with gr.Tabs():

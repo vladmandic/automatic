@@ -48,7 +48,8 @@
   - control: hide preview column by default
   - control: optionn to hide input column
   - control: add stats
-  - browser->server logging framework  
+  - browser -> server logging framework  
+  - add addtional themes: `black-reimagined`  
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - DPM FlowMatch: update all and add sigma methods  
@@ -65,6 +66,8 @@
 - allow xyz-grid with multi-axis s&r  
 - fix xyz-grid with lora  
 - fix api script callbacks  
+- fix gpu memory monitoring  
+- simplify img2img/inpaint/sketch canvas handling
 
 ## Update for 2024-11-21
 
