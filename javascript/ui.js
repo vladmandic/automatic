@@ -139,7 +139,7 @@ function switch_to_inpaint(...args) {
   return Array.from(arguments);
 }
 
-function switch_to_inpaint_sketch(...args) {
+function switch_to_composite(...args) {
   switchToTab('Image');
   switch_to_img2img_tab(3);
   return Array.from(arguments);

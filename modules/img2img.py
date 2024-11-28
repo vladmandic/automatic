@@ -164,12 +164,7 @@ def img2img(id_task: str, state: str, mode: int,
             return [], '', '', 'Error: init image not provided'
         image = init_img.convert("RGB")
         mask = None
-    elif mode == 1:  # img2img sketch
-        if sketch is None:
-            return [], '', '', 'Error: sketch image not provided'
-        image = sketch.convert("RGB")
-        mask = None
-    elif mode == 2:  # inpaint
+    elif mode == 1:  # inpaint
         if init_img_with_mask is None:
             return [], '', '', 'Error: init image with mask not provided'
         image = init_img_with_mask["image"]
@@ -177,7 +172,12 @@ def img2img(id_task: str, state: str, mode: int,
         alpha_mask = ImageOps.invert(image.split()[-1]).convert('L').point(lambda x: 255 if x > 0 else 0, mode='1')
         mask = ImageChops.lighter(alpha_mask, mask.convert('L')).convert('L')
         image = image.convert("RGB")
-    elif mode == 3:  # inpaint sketch
+    elif mode == 2:  # sketch
+        if sketch is None:
+            return [], '', '', 'Error: sketch image not provided'
+        image = sketch.convert("RGB")
+        mask = None
+    elif mode == 3:  # composite
         if inpaint_color_sketch is None:
             return [], '', '', 'Error: color sketch image not provided'
         image = inpaint_color_sketch

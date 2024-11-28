@@ -1,7 +1,6 @@
 import os
 from PIL import Image
 import gradio as gr
-import numpy as np
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
 from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 
@@ -56,7 +55,7 @@ def create_ui():
 
                 def add_copy_image_controls(tab_name, elem):
                     with gr.Row(variant="compact", elem_id=f"img2img_copy_to_{tab_name}"):
-                        for title, name in zip(['➠ Image', '➠ Sketch', '➠ Inpaint', '➠ Composite'], ['img2img', 'sketch', 'inpaint', 'inpaint_sketch']):
+                        for title, name in zip(['➠ Image', '➠ Inpaint', '➠ Sketch', '➠ Composite'], ['img2img', 'sketch', 'inpaint', 'composite']):
                             if name == tab_name:
                                 gr.Button(title, elem_id=f'copy_to_{name}', interactive=False)
                                 copy_image_destinations[name] = elem
@@ -67,33 +66,36 @@ def create_ui():
                 with gr.Tabs(elem_id="mode_img2img"):
                     img2img_selected_tab = gr.State(0) # pylint: disable=abstract-class-instantiated
                     state = gr.Textbox(value='', visible=False)
-                    with gr.TabItem('Image', id='img2img', elem_id="img2img_img2img_tab") as tab_img2img:
-                        init_img = gr.Image(label="Image for img2img", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA")
+                    with gr.TabItem('Image', id='img2img_image', elem_id="img2img_image_tab") as tab_img2img:
+                        img_init = gr.Image(label="", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=512)
                         interrogate_clip, interrogate_booru = ui_sections.create_interrogate_buttons('img2img')
-                        add_copy_image_controls('img2img', init_img)
+                        add_copy_image_controls('img2img', img_init)
 
-                    with gr.TabItem('Sketch', id='img2img_sketch', elem_id="img2img_img2img_sketch_tab") as tab_sketch:
-                        sketch = gr.Image(label="Image for img2img", elem_id="img2img_sketch", show_label=False, source="upload", interactive=True, type="pil", tool="color-sketch", image_mode="RGBA")
-                        add_copy_image_controls('sketch', sketch)
+                    with gr.TabItem('Inpaint', id='img2img_inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
+                        img_inpaint = gr.Image(label="", elem_id="img2img_inpaint", show_label=False, source="upload", interactive=True, type="pil", tool="sketch", image_mode="RGBA", height=512)
+                        add_copy_image_controls('inpaint', img_inpaint)
 
-                    with gr.TabItem('Inpaint', id='inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
-                        init_img_with_mask = gr.Image(label="Image for inpainting with mask", show_label=False, elem_id="img2maskimg", source="upload", interactive=True, type="pil", tool="sketch", image_mode="RGBA")
-                        add_copy_image_controls('inpaint', init_img_with_mask)
+                    with gr.TabItem('Sketch', id='img2img_sketch', elem_id="img2img_sketch_tab") as tab_sketch:
+                        img_sketch = gr.Image(label="", elem_id="img2img_sketch", show_label=False, source="upload", interactive=True, type="pil", tool="color-sketch", image_mode="RGBA", height=512)
+                        add_copy_image_controls('sketch', img_sketch)
 
-                    with gr.TabItem('Composite', id='inpaint_sketch', elem_id="img2img_inpaint_sketch_tab") as tab_inpaint_color:
-                        inpaint_color_sketch = gr.Image(label="Color sketch inpainting", show_label=False, elem_id="inpaint_sketch", source="upload", interactive=True, type="pil", tool="color-sketch", image_mode="RGBA")
-                        inpaint_color_sketch_orig = gr.State(None) # pylint: disable=abstract-class-instantiated
-                        add_copy_image_controls('inpaint_sketch', inpaint_color_sketch)
+                    with gr.TabItem('Composite', id='img2img_composite', elem_id="img2img_composite_tab") as tab_inpaint_color:
+                        img_composite = gr.Image(label="", show_label=False, elem_id="img2img_composite", source="upload", interactive=True, type="pil", tool="color-sketch", image_mode="RGBA", height=512)
+                        img_composite_orig = gr.State(None) # pylint: disable=abstract-class-instantiated
+                        img_composite_orig_update = False
 
-                        def update_orig(image, state):
-                            if image is not None:
-                                same_size = state is not None and state.size == image.size
-                                has_exact_match = np.any(np.all(np.array(image) == np.array(state), axis=-1))
-                                edited = same_size and has_exact_match
-                                return image if not edited or state is None else state
-                            return state
+                        def fn_img_composite_upload():
+                            nonlocal img_composite_orig_update
+                            img_composite_orig_update = True
+                        def fn_img_composite_change(img, img_composite):
+                            nonlocal img_composite_orig_update
+                            res = img if img_composite_orig_update else img_composite
+                            img_composite_orig_update = False
+                            return res
 
-                        inpaint_color_sketch.change(update_orig, [inpaint_color_sketch, inpaint_color_sketch_orig], inpaint_color_sketch_orig)
+                        img_composite.upload(fn=fn_img_composite_upload, inputs=[], outputs=[])
+                        img_composite.change(fn=fn_img_composite_change, inputs=[img_composite, img_composite_orig], outputs=[img_composite_orig])
+                        add_copy_image_controls('composite', img_composite)
 
                     with gr.TabItem('Upload', id='inpaint_upload', elem_id="img2img_inpaint_upload_tab") as tab_inpaint_upload:
                         init_img_inpaint = gr.Image(label="Image for img2img", show_label=False, source="upload", interactive=True, type="pil", elem_id="img_inpaint_base")
@@ -120,13 +122,13 @@ def create_ui():
                     with gr.Accordion(open=False, label="Sampler", elem_classes=["small-accordion"], elem_id="img2img_sampler_group"):
                         steps, sampler_index = ui_sections.create_sampler_and_steps_selection(None, "img2img")
                         ui_sections.create_sampler_options('img2img')
-                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [init_img, sketch], latent=True, non_zero=False)
+                    resize_mode, resize_name, resize_context, width, height, scale_by, selected_scale_tab = ui_sections.create_resize_inputs('img2img', [img_init, img_sketch], latent=True, non_zero=False)
                     batch_count, batch_size = ui_sections.create_batch_inputs('img2img', accordion=True)
                     seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w = ui_sections.create_seed_inputs('img2img')
 
                     with gr.Accordion(open=False, label="Denoise", elem_classes=["small-accordion"], elem_id="img2img_denoise_group"):
                         with gr.Row():
-                            denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.50, elem_id="img2img_denoising_strength")
+                            denoising_strength = gr.Slider(minimum=0.0, maximum=0.99, step=0.01, label='Denoising strength', value=0.30, elem_id="img2img_denoising_strength")
                             refiner_start = gr.Slider(minimum=0.0, maximum=1.0, step=0.05, label='Denoise start', value=0.0, elem_id="img2img_refiner_start")
 
                     full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
@@ -167,13 +169,8 @@ def create_ui():
             img2img_args = [
                 dummy_component1, state, dummy_component2,
                 img2img_prompt, img2img_negative_prompt, img2img_prompt_styles,
-                init_img,
-                sketch,
-                init_img_with_mask,
-                inpaint_color_sketch,
-                inpaint_color_sketch_orig,
-                init_img_inpaint,
-                init_mask_inpaint,
+                img_init, img_sketch, img_inpaint, img_composite, img_composite_orig,
+                init_img_inpaint, init_mask_inpaint,
                 steps,
                 sampler_index,
                 mask_blur, mask_alpha,
@@ -225,10 +222,7 @@ def create_ui():
                     img2img_batch_files,
                     img2img_batch_input_dir,
                     img2img_batch_output_dir,
-                    init_img,
-                    sketch,
-                    init_img_with_mask,
-                    inpaint_color_sketch,
+                    img_init, img_sketch, img_inpaint, img_composite,
                     init_img_inpaint,
                 ],
                 outputs=[img2img_prompt, dummy_component],
@@ -285,7 +279,8 @@ def create_ui():
                 (seed_resize_from_h, "Seed resize from-2"),
                 *modules.scripts.scripts_img2img.infotext_fields
             ]
-            generation_parameters_copypaste.add_paste_fields("img2img", init_img, img2img_paste_fields, override_settings)
-            generation_parameters_copypaste.add_paste_fields("inpaint", init_img_with_mask, img2img_paste_fields, override_settings)
+            generation_parameters_copypaste.add_paste_fields("img2img", img_init, img2img_paste_fields, override_settings)
+            generation_parameters_copypaste.add_paste_fields("sketch", img_sketch, img2img_paste_fields, override_settings)
+            generation_parameters_copypaste.add_paste_fields("inpaint", img_inpaint, img2img_paste_fields, override_settings)
             img2img_bindings = generation_parameters_copypaste.ParamBinding(paste_button=img2img_paste, tabname="img2img", source_text_component=img2img_prompt, source_image_component=None)
             generation_parameters_copypaste.register_paste_params_button(img2img_bindings)
