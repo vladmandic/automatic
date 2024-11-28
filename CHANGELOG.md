@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-27
+## Update for 2024-11-28
 
 ### New models and integrations
 
@@ -21,6 +21,8 @@
     *recommended*: guidance scale 30  
   - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
     *recommended*: guidance scale 10  
+- [StabilityAI SD35 ControlNets]([sd3_medium](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets))
+  - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
 - [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
   enable in scripts, compatible with sd-xl  
   enter multiple prompts in prompt field separated by new line  

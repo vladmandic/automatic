@@ -535,7 +535,6 @@ def torchao_quantization(sd_model):
         if hasattr(sd_model, 'transformer') and 'Model' in shared.opts.torchao_quantization:
             modules.append('transformer')
             q.quantize_(sd_model.transformer, fn(), device=devices.device)
-            # sd_model.transformer = q.autoquant(sd_model.transformer, error_on_unseen=False)
         if hasattr(sd_model, 'vae') and 'VAE' in shared.opts.torchao_quantization:
             modules.append('vae')
             q.quantize_(sd_model.vae, fn(), device=devices.device)
