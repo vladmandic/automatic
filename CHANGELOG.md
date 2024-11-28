@@ -50,7 +50,8 @@
   - control: add stats
   - browser->server logging framework  
 - **Sampler** improvements  
-  - update DPM FlowMatch samplers  
+  - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
+  - DPM FlowMatch: update all and add sigma methods  
 
 ### Fixes  
 
