@@ -331,7 +331,7 @@ class ExtraNetworksPage:
             return 'html/card-no-preview.png'
         if os.path.join('models', 'Reference') in path:
             return path
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
+        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
         reference_path = os.path.abspath(os.path.join('models', 'Reference'))
         files = list(files_cache.list_files(reference_path, ext_filter=exts, recursive=False))
         if shared.opts.diffusers_dir in path:
@@ -360,7 +360,7 @@ class ExtraNetworksPage:
         t0 = time.time()
         reference_path = os.path.abspath(os.path.join('models', 'Reference'))
         possible_paths = list(set([os.path.dirname(item['filename']) for item in items] + [reference_path]))
-        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
+        exts = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
         all_previews = list(files_cache.list_files(*possible_paths, ext_filter=exts, recursive=False))
         all_previews_fn = [os.path.basename(x) for x in all_previews]
         for item in items:
@@ -680,7 +680,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         return image
 
     def fn_delete_img(_image):
-        preview_extensions = ["jpg", "jpeg", "png", "webp", "tiff", "jp2"]
+        preview_extensions = ["jpg", "jpeg", "png", "webp", "tiff", "jp2", "jxl"]
         fn = os.path.splitext(ui.last_item.filename)[0]
         for file in [f'{fn}{mid}{ext}' for ext in preview_extensions for mid in ['.thumb.', '.preview.', '.']]:
             if os.path.exists(file):

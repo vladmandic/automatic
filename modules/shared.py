@@ -679,7 +679,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
 options_templates.update(options_section(('saving-images', "Image Options"), {
     "keep_incomplete": OptionInfo(True, "Keep incomplete images"),
     "samples_save": OptionInfo(True, "Save all generated images"),
-    "samples_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
+    "samples_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2", "jxl"]}),
     "jpeg_quality": OptionInfo(90, "Image quality", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "img_max_size_mp": OptionInfo(1000, "Maximum image size (MP)", gr.Slider, {"minimum": 100, "maximum": 2000, "step": 1}),
     "webp_lossless": OptionInfo(False, "WebP lossless compression"),
@@ -694,7 +694,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_log_fn": OptionInfo("", "Append image info JSON file", component_args=hide_dirs),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
-    "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
+    "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2", "jxl"]}),
     "n_rows": OptionInfo(-1, "Row count", gr.Slider, {"minimum": -1, "maximum": 16, "step": 1}),
     "grid_background": OptionInfo("#000000", "Grid background color", gr.ColorPicker, {}),
     "font": OptionInfo("", "Font file"),

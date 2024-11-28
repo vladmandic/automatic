@@ -16,6 +16,7 @@ modules.errors.install()
 mimetypes.init()
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('image/webp', '.webp')
+mimetypes.add_type('image/jxl', '.jxl')
 log = shared.log
 opts = shared.opts
 cmd_opts = shared.cmd_opts

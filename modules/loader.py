@@ -72,6 +72,9 @@ import huggingface_hub # pylint: disable=W0611,C0411
 logging.getLogger("diffusers.loaders.single_file").setLevel(logging.ERROR)
 timer.startup.record("diffusers")
 
+import pillow_jxl # pylint: disable=W0611,C0411
+from PIL import Image # pylint: disable=W0611,C0411
+timer.startup.record("pillow")
 
 # patch different progress bars
 import tqdm as tqdm_lib # pylint: disable=C0411

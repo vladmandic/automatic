@@ -75,6 +75,13 @@ def save_image(image, fn, ext):
             image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
         exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(parameters or "", encoding="unicode") } })
         image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, lossless=shared.opts.webp_lossless, exif=exif_bytes)
+    elif image_format == 'JXL':
+        if image.mode == 'I;16':
+            image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
+        elif image.mode not in {"RGB", "RGBA"}:
+            image = image.convert("RGBA")
+        exif_bytes = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(parameters or "", encoding="unicode") } })
+        image.save(fn, format=image_format, quality=shared.opts.jpeg_quality, lossless=shared.opts.webp_lossless, exif=exif_bytes)
     else:
         # shared.log.warning(f'Unrecognized image format: {extension} attempting save as {image_format}')
         image.save(fn, format=image_format, quality=shared.opts.jpeg_quality)
