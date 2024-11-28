@@ -135,7 +135,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'prompt_embeds' in possible and prompt_parser_diffusers.embedder is not None:
             args['prompt_embeds'] = prompt_parser_diffusers.embedder('prompt_embeds')
-            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
+            if 'StableCascade' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
                 args['prompt_embeds_pooled'] = prompt_parser_diffusers.embedder('positive_pooleds').unsqueeze(0)
             elif 'XL' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
                 args['pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('positive_pooleds')
