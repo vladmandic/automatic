@@ -33,6 +33,62 @@ def create_latents(image, p, dtype=None, device=None):
     return latents
 
 
+def full_vqgan_decode(latents, model):
+    t0 = time.time()
+    if model is None or not hasattr(model, 'vqgan'):
+        shared.log.error('VQGAN not found in model')
+        return []
+    if debug:
+        devices.torch_gc(force=True)
+        shared.mem_mon.reset()
+
+    base_device = None
+    if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
+        base_device = sd_models.move_base(model, devices.cpu)
+
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    elif shared.opts.diffusers_offload_mode != "sequential":
+        sd_models.move_model(model.vqgan, devices.device)
+
+    latents = latents.to(devices.device, dtype=model.vqgan.dtype)
+
+    #normalize latents
+    scaling_factor = model.vqgan.config.get("scale_factor", None)
+    if scaling_factor:
+        latents = latents * scaling_factor
+
+    vae_name = os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0] if sd_vae.loaded_vae_file is not None else "default"
+    vae_stats = f'name="{vae_name}" dtype={model.vqgan.dtype} device={model.vqgan.device}'
+    latents_stats = f'shape={latents.shape} dtype={latents.dtype} device={latents.device}'
+    stats = f'vae {vae_stats} latents {latents_stats}'
+
+    log_debug(f'VAE config: {model.vqgan.config}')
+    try:
+        decoded = model.vqgan.decode(latents).sample.clamp(0, 1)
+    except Exception as e:
+        shared.log.error(f'VAE decode: {stats} {e}')
+        errors.display(e, 'VAE decode')
+        decoded = []
+
+    # delete vae after OpenVINO compile
+    if 'VAE' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx" and shared.compiled_model_state.first_pass_vae:
+        shared.compiled_model_state.first_pass_vae = False
+        if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "vqgan"):
+            model.vqgan.apply(sd_models.convert_to_faketensors)
+            devices.torch_gc(force=True)
+
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    elif shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
+        sd_models.move_base(model, base_device)
+    t1 = time.time()
+    if debug:
+        log_debug(f'VAE memory: {shared.mem_mon.read()}')
+    shared.log.debug(f'VAE decode: {stats} time={round(t1-t0, 3)}')
+    return decoded
+
+
 def full_vae_decode(latents, model):
     t0 = time.time()
     if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
@@ -161,7 +217,7 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         return []
     if shared.state.interrupted or shared.state.skipped:
         return []
-    if not hasattr(model, 'vae'):
+    if not hasattr(model, 'vae') and not hasattr(model, 'vqgan'):
         shared.log.error('VAE not found in model')
         return []
 
@@ -176,12 +232,18 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         decoded = latents.float().cpu().numpy()
     elif full_quality and hasattr(model, "vae"):
         decoded = full_vae_decode(latents=latents, model=model)
+    elif hasattr(model, "vqgan"):
+        decoded = full_vqgan_decode(latents=latents, model=model)
     else:
         decoded = taesd_vae_decode(latents=latents)
 
     if torch.is_tensor(decoded):
         if hasattr(model, 'image_processor'):
             imgs = model.image_processor.postprocess(decoded, output_type=output_type)
+        elif hasattr(model, "vqgan"):
+            imgs = decoded.permute(0, 2, 3, 1).cpu().float().numpy()
+            if output_type == "pil":
+                imgs = model.numpy_to_pil(imgs)
         else:
             import diffusers
             model.image_processor = diffusers.image_processor.VaeImageProcessor()
