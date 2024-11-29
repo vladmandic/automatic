@@ -96,9 +96,6 @@ def initialize():
     modules.model_te.refresh_te_list()
     timer.startup.record("te")
 
-    extensions.list_extensions()
-    timer.startup.record("extensions")
-
     modelloader.cleanup_models()
     modules.sd_models.setup_model()
     timer.startup.record("models")
@@ -119,6 +116,9 @@ def initialize():
     import modules.postprocess.yolo as yolo
     yolo.initialize()
     timer.startup.record("detailer")
+
+    extensions.list_extensions()
+    timer.startup.record("extensions")
 
     log.info('Load extensions')
     t_timer, t_total = modules.scripts.load_scripts()

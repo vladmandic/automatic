@@ -267,7 +267,7 @@ def download_diffusers_model(hub_id: str, cache_dir: str = None, download_config
 
 def load_diffusers_models(clear=True):
     excluded_models = []
-    t0 = time.time()
+    # t0 = time.time()
     place = shared.opts.diffusers_dir
     if place is None or len(place) == 0 or not os.path.isdir(place):
         place = os.path.join(models_path, 'Diffusers')
@@ -316,7 +316,7 @@ def load_diffusers_models(clear=True):
                 debug(f'Error analyzing diffusers model: "{folder}" {e}')
     except Exception as e:
         shared.log.error(f"Error listing diffusers: {place} {e}")
-    shared.log.debug(f'Scanning diffusers cache: folder="{place}" items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
+    # shared.log.debug(f'Scanning diffusers cache: folder="{place}" items={len(list(diffuser_repos))} time={time.time()-t0:.2f}')
     return diffuser_repos
 
 
