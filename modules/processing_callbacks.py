@@ -6,6 +6,7 @@ import numpy as np
 from modules import shared, processing_correction, extra_networks, timer, prompt_parser_diffusers
 from modules.lora.networks import network_load
 
+
 p = None
 debug = os.environ.get('SD_CALLBACK_DEBUG', None) is not None
 debug_callback = shared.log.trace if debug else lambda *args, **kwargs: None
@@ -14,6 +15,7 @@ debug_callback = shared.log.trace if debug else lambda *args, **kwargs: None
 def set_callbacks_p(processing):
     global p # pylint: disable=global-statement
     p = processing
+
 
 def prompt_callback(step, kwargs):
     if prompt_parser_diffusers.embedder is None or 'prompt_embeds' not in kwargs:
@@ -28,6 +30,7 @@ def prompt_callback(step, kwargs):
     except Exception as e:
         debug_callback(f"Callback: {e}")
     return kwargs
+
 
 def diffusers_callback_legacy(step: int, timestep: int, latents: typing.Union[torch.FloatTensor, np.ndarray]):
     if p is None:
@@ -64,7 +67,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
             if shared.state.interrupted or shared.state.skipped:
                 raise AssertionError('Interrupted...')
             time.sleep(0.1)
-    if hasattr(p, "stepwise_lora"):
+    if hasattr(p, "stepwise_lora") and shared.native:
         extra_networks.activate(p, p.extra_network_data, step=step)
         network_load()
     if latents is None:
