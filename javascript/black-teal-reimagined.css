@@ -216,6 +216,7 @@ input[type='range']::-moz-range-track {
 
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-bg);
+  border-radius: var(--radius-lg);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -228,16 +229,20 @@ input[type='range']::-moz-range-track {
 .tab-nav {
   display: flex;
   /* Use flexbox for layout */
-  justify-content: space-around;
+  justify-content: space-evenly;
   /* Space out the tabs evenly */
   align-items: center;
   /* Center items vertically */
   background: var(--background-color);
   /* Background color */
-  border-bottom: 1px solid var(--highlight-color) !important;
+  border-bottom: 1px dashed var(--highlight-color) !important;
   /* Bottom border for separation */
   box-shadow: var(--shadow-md);
   /* Shadow for depth */
+  margin-bottom: 5px;
+  /* Add some space between the tab nav and the content */
+  padding-bottom: 5px;
+  /* Add space between buttons and border */
 }
 
 /* Individual Tab Styles */
@@ -246,19 +251,24 @@ input[type='range']::-moz-range-track {
   /* No background for default state */
   color: var(--text-color);
   /* Text color */
-  border: none;
+  border: 1px solid var(--highlight-color);
   /* No border */
-  border-radius: var(--radius-xxxl);
+  border-radius: var(--radius-xxl);
   /* Rounded corners */
   cursor: pointer;
   /* Pointer cursor */
   transition: background 0.3s ease, color 0.3s ease;
   /* Smooth transition */
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-bottom: 3px;
 }
 
 /* Active Tab Style */
-.tab-nav>button.active {
-  background: var(--highlight-color);
+.tab-nav>button.selected {
+  background: var(--primary-100);
   /* Highlight active tab */
   color: var(--background-color);
   /* Change text color for active tab */
@@ -386,8 +396,10 @@ div.form {
   border-width: 0;
   box-shadow: var(--shadow-md);
   background: var(--background-fill-primary);
-  padding: 16px;
+  border-bottom: 3px solid var(--highlight-color);
+  padding: 3px;
   border-radius: var(--radius-md);
+  margin: 1px;
 }
 
 /* Gradio Style Classes */
@@ -619,11 +631,6 @@ svg.feather.feather-image,
   color: #888;
 }
 
-.extra-networks {
-  border-left: 2px solid var(--highlight-color) !important;
-  padding-left: 4px;
-}
-
 .image-buttons {
   justify-content: center;
   gap: 0 !important;
@@ -653,27 +660,6 @@ svg.feather.feather-image,
 
 #img2img_label_copy_to_img2img {
   font-weight: normal;
-}
-
-#txt2img_prompt,
-#txt2img_neg_prompt,
-#img2img_prompt,
-#img2img _neg_prompt,
-#control_prompt,
-#control_neg_prompt {
-  background-color: var(--background-color);
-  box-shadow: none !important;
-}
-
-#txt2img_prompt>label>textarea,
-#txt2img_neg_prompt>label>textarea,
-#img2img_prompt>label>textarea,
-#img2img_neg_prompt>label>textarea,
-#control_prompt>label>textarea,
-#control_neg_prompt>label>textarea {
-  font-size: 1.0em;
-  line-height: 1.4em;
-  border-radius: var(--radius-md);
 }
 
 #txt2img_styles,
@@ -741,16 +727,6 @@ svg.feather.feather-image,
   width: 15em;
 }
 
-#settings_search {
-  margin-top: 1em;
-  margin-left: 1em;
-}
-
-#settings_search textarea {
-  padding: 0.5em;
-  height: 2.2em !important;
-}
-
 #txt2img_cfg_scale {
   min-width: 200px;
 }
@@ -760,12 +736,6 @@ svg.feather.feather-image,
 #control_checkboxes {
   background-color: transparent;
   margin-bottom: 0.2em;
-}
-
-textarea[rows="1"] {
-  height: 33px !important;
-  width: 99% !important;
-  padding: 8px !important;
 }
 
 #extras_upscale {
@@ -781,7 +751,6 @@ textarea[rows="1"] {
   min-width: var(--left-column);
   max-width: var(--left-column);
   background-color: var(--neutral-950);
-  padding-top: 16px;
 }
 
 #pnginfo_html2_info {
@@ -803,32 +772,26 @@ textarea[rows="1"] {
 
 /* Extra Networks Container */
 #extra_networks_root {
-  width: 300px;
-  /* Set a fixed width for the sidebar */
-  position: absolute;
-  height: auto;
-  right: 0;
-  top: 13em;
   z-index: 100;
   background: var(--background-color);
   box-shadow: var(--shadow-md);
   border-radius: var(--radius-lg);
+  transform: translateX(100%);
+  animation: slideIn 0.5s forwards;
   overflow: hidden;
   /* Prevents overflow of content */
 }
 
-/* Extra Networks Styles */
-.extra-networks {
-  background: var(--background-color);
-  padding: var(--block-label-padding);
-  border-radius: var(--radius-lg);
+@keyframes slideIn {
+  to {
+    transform: translateX(0);
+  }
 }
 
-/* Extra Networks Div Styles */
-.extra-networks>div {
-  margin: 0;
-  border-bottom: none !important;
-  gap: 0.3em 0;
+/* Extra Networks Styles */
+.extra-networks {
+  border-left: 2px solid var(--highlight-color) !important;
+  padding-left: 4px;
 }
 
 .extra-networks .tab-nav>button:hover {
@@ -845,40 +808,8 @@ textarea[rows="1"] {
   margin-top: 50px;
 }
 
-/* Individual Buttons */
-.extra-networks .buttons>button {
-  margin-left: -0.2em;
-  height: 1.4em;
-  color: var(--primary-300) !important;
-  font-size: 20px !important;
-  background: var(--button-primary-background-fill);
-  border: none;
-  border-radius: var(--radius-sm);
-  transition: var(--transition);
-}
-
 .extra-networks .buttons>button:hover {
   background: var(--highlight-color);
-}
-
-/* Extra Networks Tab */
-.extra-networks-tab {
-  padding: 0 !important;
-}
-
-/* Subdirectories Styles */
-.extra-network-subdirs {
-  background: var(--input-background-fill);
-  overflow-x: hidden;
-  overflow-y: auto;
-  min-width: 120px;
-  padding-top: 0.5em;
-  margin-top: -4px !important;
-}
-
-/* Extra Networks Page */
-.extra-networks-page {
-  display: flex;
 }
 
 /* Network Cards Container */
@@ -888,6 +819,8 @@ textarea[rows="1"] {
   overflow-y: auto;
   overflow-x: hidden;
   align-content: flex-start;
+  padding-top: 20px;
+  justify-content: center;
   width: 100%;
   /* Ensures it takes full width */
 }
@@ -932,16 +865,23 @@ textarea[rows="1"] {
   box-shadow: var(--button-shadow);
   min-height: 30px;
   border-radius: var(--radius-md);
+  z-index: 9999;
 }
 
 /* Hover Effects */
+.extra-network-cards .card:hover {
+  transform: scale(1.3);
+  z-index: 9999; /* Use a high value to ensure it appears on top */
+  transition: transform 0.3s ease, z-index 0s; /* Smooth transition */
+}
+
 .extra-network-cards .card:hover .overlay {
-  background: rgba(0, 0, 0, 0.70);
+  z-index: 10000; /* Ensure overlay is also on top */
 }
 
 .extra-network-cards .card:hover .preview {
   box-shadow: none;
-  filter: grayscale(100%);
+  filter: grayscale(0%);
 }
 
 /* Tags Styles */
@@ -971,6 +911,15 @@ textarea[rows="1"] {
 .extra-network-cards .card .actions>span {
   padding: 4px;
   font-size: 34px !important;
+}
+
+.extra-network-cards .card .actions {
+  background: none;
+}
+
+.extra-network-cards .card .actions .details {
+  bottom: 50px;
+  background-color: var(--neutral-800);
 }
 
 .extra-network-cards .card .actions>span:hover {
@@ -1030,6 +979,24 @@ textarea[rows="1"] {
 #txt2img_hdr_color_picker label input {
   width: 100%;
   height: 100%;
+}
+
+/* Token counters styling */
+
+#txt2img_token_counter, #txt2img_negative_token_counter {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 5px;
+}
+
+#txt2img_prompt_container {
+  margin: 5px;
+  padding: 0px;
+}
+
+#text2img_prompt label, #text2img_neg_prompt label {
+  margin: 0px;
 }
 
 /* Based on Gradio Built-in Dark Theme */
