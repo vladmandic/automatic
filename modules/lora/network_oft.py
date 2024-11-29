@@ -1,7 +1,7 @@
 import torch
+from einops import rearrange
 import modules.lora.network as network
 from modules.lora.lyco_helpers import factorization
-from einops import rearrange
 
 
 class ModuleTypeOFT(network.ModuleType):
@@ -9,6 +9,7 @@ class ModuleTypeOFT(network.ModuleType):
         if all(x in weights.w for x in ["oft_blocks"]) or all(x in weights.w for x in ["oft_diag"]):
             return NetworkModuleOFT(net, weights)
         return None
+
 
 # Supports both kohya-ss' implementation of COFT  https://github.com/kohya-ss/sd-scripts/blob/main/networks/oft.py
 # and KohakuBlueleaf's implementation of OFT/COFT https://github.com/KohakuBlueleaf/LyCORIS/blob/dev/lycoris/modules/diag_oft.py

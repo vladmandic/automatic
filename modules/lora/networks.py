@@ -3,6 +3,9 @@ import os
 import re
 import time
 import concurrent
+import torch
+import diffusers.models.lora
+
 import modules.lora.network as network
 import modules.lora.network_lora as network_lora
 import modules.lora.network_hada as network_hada
@@ -14,8 +17,6 @@ import modules.lora.network_norm as network_norm
 import modules.lora.network_glora as network_glora
 import modules.lora.network_overrides as network_overrides
 import modules.lora.lora_convert as lora_convert
-import torch
-import diffusers.models.lora
 from modules import shared, devices, sd_models, sd_models_compile, errors, scripts, files_cache, model_quant
 
 
@@ -74,7 +75,7 @@ def assign_network_names_to_compvis_modules(sd_model):
     shared.sd_model.network_layer_mapping = network_layer_mapping
 
 
-def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_default_multiplier) -> network.Network | None:
+def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_default_multiplier) -> Union[network.Network, None]:
     name = name.replace(".", "_")
     shared.log.debug(f'Load network: type=LoRA name="{name}" file="{network_on_disk.filename}" detected={network_on_disk.sd_version} method=diffusers scale={lora_scale} fuse={shared.opts.lora_fuse_diffusers}')
     if not shared.native:
@@ -103,7 +104,7 @@ def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_
     return net
 
 
-def load_network(name, network_on_disk) -> network.Network | None:
+def load_network(name, network_on_disk) -> Union[network.Network, None]:
     if not shared.sd_loaded:
         return None
 
@@ -173,6 +174,7 @@ def load_network(name, network_on_disk) -> network.Network | None:
     net.bundle_embeddings = bundle_embeddings
     return net
 
+
 def maybe_recompile_model(names, te_multipliers):
     recompile_model = False
     if shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled:
@@ -186,7 +188,7 @@ def maybe_recompile_model(names, te_multipliers):
             if not recompile_model:
                 if len(loaded_networks) > 0 and debug:
                     shared.log.debug('Model Compile: Skipping LoRa loading')
-                return
+                return recompile_model
         else:
             recompile_model = True
             shared.compiled_model_state.lora_model = []
@@ -276,6 +278,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         sd_models.apply_balanced_offload(shared.sd_model)
     t1 = time.time()
     timer['load'] += t1 - t0
+
 
 def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], updown, ex_bias):
     weights_backup = getattr(self, "network_weights_backup", None)
@@ -388,6 +391,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         self.network_current_names = wanted_names
     t1 = time.time()
     timer['apply'] += t1 - t0
+
 
 def network_load():
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility

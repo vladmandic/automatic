@@ -107,14 +107,14 @@ def make_unet_conversion_map() -> Dict[str, str]:
 
 class KeyConvert:
     def __init__(self):
-            self.is_sdxl = True if shared.sd_model_type == "sdxl" else False
-            self.UNET_CONVERSION_MAP = make_unet_conversion_map() if self.is_sdxl else None
-            self.LORA_PREFIX_UNET = "lora_unet_"
-            self.LORA_PREFIX_TEXT_ENCODER = "lora_te_"
-            self.OFT_PREFIX_UNET = "oft_unet_"
-            # SDXL: must starts with LORA_PREFIX_TEXT_ENCODER
-            self.LORA_PREFIX_TEXT_ENCODER1 = "lora_te1_"
-            self.LORA_PREFIX_TEXT_ENCODER2 = "lora_te2_"
+        self.is_sdxl = True if shared.sd_model_type == "sdxl" else False
+        self.UNET_CONVERSION_MAP = make_unet_conversion_map() if self.is_sdxl else None
+        self.LORA_PREFIX_UNET = "lora_unet_"
+        self.LORA_PREFIX_TEXT_ENCODER = "lora_te_"
+        self.OFT_PREFIX_UNET = "oft_unet_"
+        # SDXL: must starts with LORA_PREFIX_TEXT_ENCODER
+        self.LORA_PREFIX_TEXT_ENCODER1 = "lora_te1_"
+        self.LORA_PREFIX_TEXT_ENCODER2 = "lora_te2_"
 
     def __call__(self, key):
         if self.is_sdxl:
@@ -446,6 +446,7 @@ def _convert_kohya_sd3_lora_to_diffusers(state_dict):
                 lora_name_alpha = f"{lora_name}.alpha"
                 diffusers_name = _convert_text_encoder_lora_key(key, lora_name)
 
+                sd_lora_rank = 1
                 if lora_name.startswith(("lora_te_", "lora_te1_")):
                     down_weight = sds_sd.pop(key)
                     sd_lora_rank = down_weight.shape[0]
