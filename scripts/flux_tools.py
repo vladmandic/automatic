@@ -100,7 +100,7 @@ class Script(scripts.Script):
 
         if tool == 'Depth':
             # pipe = FluxControlPipeline.from_pretrained("black-forest-labs/FLUX.1-Depth-dev", torch_dtype=torch.bfloat16, revision="refs/pr/1").to("cuda")
-            install('git+https://github.com/asomoza/image_gen_aux.git', 'image_gen_aux')
+            install('git+https://github.com/huggingface/image_gen_aux.git', 'image_gen_aux')
             if shared.sd_model.__class__.__name__ != 'FluxControlPipeline' or 'Depth' not in shared.opts.sd_model_checkpoint:
                 shared.opts.data["sd_model_checkpoint"] = "black-forest-labs/FLUX.1-Depth-dev"
                 sd_models.reload_model_weights(op='model', revision="refs/pr/1")
