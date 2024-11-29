@@ -449,16 +449,16 @@ def get_default_modes():
         default_cross_attention = "Scaled-Dot-Product" if native else "Doggettx's"
     elif devices.backend == "mps":
         default_cross_attention = "Scaled-Dot-Product" if native else "Doggettx's"
-    else: # cuda, rocm, ipex, openvino
-        default_cross_attention ="Scaled-Dot-Product"
+    else: # cuda, rocm, zluda, ipex, openvino
+        default_cross_attention = "Scaled-Dot-Product"
 
     if devices.backend == "rocm":
         default_sdp_options =  ['Memory attention', 'Math attention']
     elif devices.backend == "zluda":
-        default_sdp_options =  ['Math attention']
+        default_sdp_options =  ['Math attention', 'Dynamic attention']
     else:
         default_sdp_options = ['Flash attention', 'Memory attention', 'Math attention']
-    if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options):
+    if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options and 'Dynamic attention' not in default_sdp_options):
         default_sdp_options.append('Dynamic attention')
 
     return default_offload_mode, default_cross_attention, default_sdp_options
