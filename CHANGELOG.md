@@ -1,21 +1,73 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-22
+## Update for 2024-11-28
 
-- Model loader improvements:  
+### New models and integrations
+
+- [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
+  **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
+  **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
+  to use, go to image or control interface and select *Flux Tools* in scripts  
+  all models are auto-downloaded on first use  
+  *note*: All models are [gated](https://github.com/vladmandic/automatic/wiki/Gated) and require acceptance of terms and conditions via web page  
+  *recommended*: Enable on-the-fly [quantization](https://github.com/vladmandic/automatic/wiki/Quantization) or [compression](https://github.com/vladmandic/automatic/wiki/NNCF-Compression) to reduce resource usage  
+  *todo*: support for Canny/Depth LoRAs  
+  - [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev): ~0.1GB  
+    works together with existing model and basically uses input image to analyze it and use that instead of prompt  
+    *recommended*: low denoise strength levels result in more variety  
+  - [Fill](https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev): ~23.8GB, replaces currently loaded model  
+    *note*: can be used in inpaint/outpaint mode only  
+  - [Canny](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 30  
+  - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 10  
+- [StabilityAI SD35 ControlNets]([sd3_medium](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets))
+  - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
+- [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
+  enable in scripts, compatible with sd-xl  
+  enter multiple prompts in prompt field separated by new line  
+  style-aligned applies selected attention layers uniformly to all images to achive consistency  
+  can be used with or without input image in which case first prompt is used to establish baseline  
+  *note:* all prompts are processes as a single batch, so vram is limiting factor
+
+### UI and workflow improvements
+
+- **Model loader** improvements:  
   - detect model components on model load fail  
+  - allow passing absolute path to model loader  
   - Flux, SD35: force unload model  
   - Flux: apply `bnb` quant when loading *unet/transformer*  
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
-- Sampler improvements  
-  - update DPM FlowMatch samplers  
-- Fixes:  
-  - update `diffusers`  
-  - fix README links  
-  - fix sdxl controlnet single-file loader  
-  - relax settings validator  
+- **UI**:  
+  - improved stats on generate completion  
+  - improved live preview display and performance  
+  - improved accordion behavior  
+  - auto-size networks height for sidebar  
+  - control: hide preview column by default
+  - control: optionn to hide input column
+  - control: add stats
+  - browser -> server logging framework  
+  - add addtional themes: `black-reimagined`  
+- **Sampler** improvements  
+  - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
+  - DPM FlowMatch: update all and add sigma methods  
+
+### Fixes  
+
+- update `diffusers`  
+- fix README links  
+- fix sdxl controlnet single-file loader  
+- relax settings validator  
+- improve js progress calls resiliency  
+- fix text-to-video pipeline  
+- avoid live-preview if vae-decode is running  
+- allow xyz-grid with multi-axis s&r  
+- fix xyz-grid with lora  
+- fix api script callbacks  
+- fix gpu memory monitoring  
+- simplify img2img/inpaint/sketch canvas handling
 
 ## Update for 2024-11-21
 

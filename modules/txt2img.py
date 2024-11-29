@@ -88,7 +88,7 @@ def txt2img(id_task, state,
     p.scripts = scripts.scripts_txt2img
     p.script_args = args
     p.state = state
-    processed = scripts.scripts_txt2img.run(p, *args)
+    processed: processing.Processed = scripts.scripts_txt2img.run(p, *args)
     if processed is None:
         processed = processing.process_images(p)
     processed = scripts.scripts_txt2img.after(p, processed, *args)

@@ -212,7 +212,7 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
         if friendly:
             pkgs = friendly.split()
         else:
-            pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=')]
+            pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=') and not p.startswith('git+')]
             pkgs = [p.split('/')[-1] for p in pkgs] # get only package name if installing from url
         for pkg in pkgs:
             if '!=' in pkg:
@@ -295,7 +295,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv")
+        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv" and not package.startswith('git+'))
         try:
             import importlib # pylint: disable=deprecated-module
             importlib.reload(pkg_resources)
@@ -459,7 +459,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 def check_diffusers():
     if args.skip_all or args.skip_requirements:
         return
-    sha = 'b5fd6f13f5434d69d919cc8cedf0b11db664cf06'
+    sha = '069186fac510d6f6f88a5e435523b235c823a8a0'
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''

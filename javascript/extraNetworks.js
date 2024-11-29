@@ -3,19 +3,6 @@ let sortVal = -1;
 
 // helpers
 
-const requestGet = (url, data, handler) => {
-  const xhr = new XMLHttpRequest();
-  const args = Object.keys(data).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`).join('&');
-  xhr.open('GET', `${url}?${args}`, true);
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) handler(JSON.parse(xhr.responseText));
-      else console.error(`Request: url=${url} status=${xhr.status} err`);
-    }
-  };
-  xhr.send(JSON.stringify(data));
-};
-
 const getENActiveTab = () => {
   let tabName = '';
   if (gradioApp().getElementById('tab_txt2img').style.display === 'block') tabName = 'txt2img';
@@ -98,7 +85,7 @@ function readCardTags(el, tags) {
 }
 
 function readCardDescription(page, item) {
-  requestGet('/sd_extra_networks/description', { page, item }, (data) => {
+  xhrGet('/sd_extra_networks/description', { page, item }, (data) => {
     const tabname = getENActiveTab();
     const description = gradioApp().querySelector(`#${tabname}_description > label > textarea`);
     description.value = data?.description?.trim() || '';
@@ -446,6 +433,22 @@ function setupExtraNetworksForTab(tabname) {
       };
     };
   }
+
+  // auto-resize networks sidebar
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      for (const el of Array.from(gradioApp().getElementById(`${tabname}_extra_tabs`).querySelectorAll('.extra-networks-page'))) {
+        const h = Math.trunc(entry.contentRect.height);
+        if (h <= 0) return;
+        if (window.opts.extra_networks_card_cover === 'sidebar' && window.opts.theme_type === 'Standard') el.style.height = `max(55vh, ${h - 90}px)`;
+        // log(`${tabname} height: ${entry.target.id}=${h} ${el.id}=${el.clientHeight}`);
+      }
+    }
+  });
+  const settingsEl = gradioApp().getElementById(`${tabname}_settings`);
+  const interfaceEl = gradioApp().getElementById(`${tabname}_interface`);
+  if (settingsEl) resizeObserver.observe(settingsEl);
+  if (interfaceEl) resizeObserver.observe(interfaceEl);
 
   // en style
   if (!en) return;

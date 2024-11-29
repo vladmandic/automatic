@@ -47,6 +47,8 @@ def visible_sampler_names():
 
 
 def create_sampler(name, model):
+    if name is None or name == 'None':
+        return model.scheduler
     try:
         current = model.scheduler.__class__.__name__
     except Exception:

@@ -77,7 +77,6 @@ def process_base(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
-    timer.process.record('args')
     shared.state.sampling_steps = base_args.get('prior_num_inference_steps', None) or p.steps or base_args.get('num_inference_steps', None)
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
@@ -233,7 +232,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 output = shared.sd_model(**hires_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
                     output = SimpleNamespace(**output)
-                shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
+                if hasattr(output, 'images'):
+                    shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
                 sd_models_compile.check_deepcache(enable=False)
                 sd_models_compile.openvino_post_compile(op="base")
             except AssertionError as e:
@@ -315,7 +315,8 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 output = shared.sd_refiner(**refiner_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
                     output = SimpleNamespace(**output)
-                shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
+                if hasattr(output, 'images'):
+                    shared.history.add(output.images, info=processing.create_infotext(p), ops=p.ops)
                 sd_models_compile.openvino_post_compile(op="refiner")
             except AssertionError as e:
                 shared.log.info(e)
@@ -353,7 +354,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
         if not hasattr(model, 'vae'):
             if hasattr(model, 'pipe') and hasattr(model.pipe, 'vae'):
                 model = model.pipe
-        if hasattr(model, "vae") and output.images is not None and len(output.images) > 0:
+        if (hasattr(model, "vae") or hasattr(model, "vqgan")) and output.images is not None and len(output.images) > 0:
             if p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5):
                 width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
                 height = max(getattr(p, 'height', 0), getattr(p, 'hr_upscale_to_y', 0))

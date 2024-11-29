@@ -306,9 +306,17 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
         model_te.loaded_te = shared.opts.sd_text_encoder
     if vae is not None:
         kwargs['vae'] = vae
-    shared.log.debug(f'Load model: type=FLUX preloaded={list(kwargs)}')
     if repo_id == 'sayakpaul/flux.1-dev-nf4':
         repo_id = 'black-forest-labs/FLUX.1-dev' # workaround since sayakpaul model is missing model_index.json
+    if 'Fill' in repo_id:
+        cls = diffusers.FluxFillPipeline
+    elif 'Canny' in repo_id:
+        cls = diffusers.FluxControlPipeline
+    elif 'Depth' in repo_id:
+        cls = diffusers.FluxControlPipeline
+    else:
+        cls = diffusers.FluxPipeline
+    shared.log.debug(f'Load model: type=FLUX cls={cls.__name__} preloaded={list(kwargs)} revision={diffusers_load_config.get("revision", None)}')
     for c in kwargs:
         if kwargs[c].dtype == torch.float32 and devices.dtype != torch.float32:
             shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype} recast')
@@ -319,7 +327,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if checkpoint_info.path.endswith('.safetensors') and os.path.isfile(checkpoint_info.path):
         pipe = diffusers.FluxPipeline.from_single_file(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
     else:
-        pipe = diffusers.FluxPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
+        pipe = cls.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
 
     # release memory
     transformer = None

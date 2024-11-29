@@ -1,28 +1,5 @@
 let lastState = {};
 
-function request(url, data, handler, errorHandler) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', url, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        try {
-          const js = JSON.parse(xhr.responseText);
-          handler(js);
-        } catch (error) {
-          console.error(error);
-          errorHandler();
-        }
-      } else {
-        errorHandler();
-      }
-    }
-  };
-  const js = JSON.stringify(data);
-  xhr.send(js);
-}
-
 function pad2(x) {
   return x < 10 ? `0${x}` : x;
 }
@@ -35,8 +12,10 @@ function formatTime(secs) {
 
 function checkPaused(state) {
   lastState.paused = state ? !state : !lastState.paused;
-  document.getElementById('txt2img_pause').innerText = lastState.paused ? 'Resume' : 'Pause';
-  document.getElementById('img2img_pause').innerText = lastState.paused ? 'Resume' : 'Pause';
+  const t_el = document.getElementById('txt2img_pause');
+  const i_el = document.getElementById('img2img_pause');
+  if (t_el) t_el.innerText = lastState.paused ? 'Resume' : 'Pause';
+  if (i_el) i_el.innerText = lastState.paused ? 'Resume' : 'Pause';
 }
 
 function setProgress(res) {
@@ -89,28 +68,38 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
   let img;
 
   const initLivePreview = () => {
+    if (!parentGallery) return;
+    const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
+    for (const footer of footers) footer.style.display = 'none'; // remove all footers
+    const galleries = Array.from(gradioApp().querySelectorAll('.gallery_main'));
+    for (const gallery of galleries) gallery.style.display = 'none'; // remove all footers
+
+    livePreview = document.createElement('div');
+    livePreview.className = 'livePreview';
+    parentGallery.insertBefore(livePreview, galleryEl);
     img = new Image();
-    if (parentGallery) {
-      livePreview = document.createElement('div');
-      livePreview.className = 'livePreview';
-      parentGallery.insertBefore(livePreview, galleryEl);
-      const rect = galleryEl.getBoundingClientRect();
-      if (rect.width) {
-        livePreview.style.width = `${rect.width}px`;
-        livePreview.style.height = `${rect.height}px`;
-      }
-      img.onload = () => {
-        livePreview.appendChild(img);
-        if (livePreview.childElementCount > 2) livePreview.removeChild(livePreview.firstElementChild);
-      };
-    }
+    img.id = 'livePreviewImage';
+    livePreview.appendChild(img);
+    img.onload = () => {
+      img.style.width = `min(100%, max(${img.naturalWidth}px, 512px))`;
+      parentGallery.style.minHeight = `${img.height}px`;
+    };
   };
 
   const done = () => {
     debug('taskEnd:', id_task);
     localStorage.removeItem('task');
     setProgress();
-    if (parentGallery && livePreview) parentGallery.removeChild(livePreview);
+    const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
+    for (const footer of footers) footer.style.display = 'flex'; // restore all footers
+    const galleries = Array.from(gradioApp().querySelectorAll('.gallery_main'));
+    for (const gallery of galleries) gallery.style.display = 'flex'; // remove all galleries
+    try {
+      if (parentGallery && livePreview) {
+        parentGallery.removeChild(livePreview);
+        parentGallery.style.minHeight = 'unset';
+      }
+    } catch { /* ignore */ }
     checkPaused(true);
     sendNotification();
     if (atEnd) atEnd();
@@ -118,20 +107,32 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
 
   const start = (id_task, id_live_preview) => { // eslint-disable-line no-shadow
     if (!opts.live_previews_enable || opts.live_preview_refresh_period === 0 || opts.show_progress_every_n_steps === 0) return;
-    request('./internal/progress', { id_task, id_live_preview }, (res) => {
+
+    const onProgressHandler = (res) => {
+      // debug('onProgress', res);
       lastState = res;
       const elapsedFromStart = (new Date() - dateStart) / 1000;
       hasStarted |= res.active;
       if (res.completed || (!res.active && (hasStarted || once)) || (elapsedFromStart > 30 && !res.queued && res.progress === prevProgress)) {
+        debug('onProgressEnd', res);
         done();
         return;
       }
       setProgress(res);
       if (res.live_preview && !livePreview) initLivePreview();
-      if (res.live_preview && galleryEl) img.src = res.live_preview;
+      if (res.live_preview && galleryEl) {
+        if (img.src !== res.live_preview) img.src = res.live_preview;
+      }
       if (onProgress) onProgress(res);
       setTimeout(() => start(id_task, id_live_preview), opts.live_preview_refresh_period || 500);
-    }, done);
+    };
+
+    const onProgressErrorHandler = (err) => {
+      error(`onProgressError: ${err}`);
+      done();
+    };
+
+    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler, false, 5000);
   };
   start(id_task, 0);
 }

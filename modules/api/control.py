@@ -159,6 +159,8 @@ class APIControl():
             output_images = []
             output_processed = []
             output_info = ''
+            # TODO control script process
+            # init script args, call scripts.script_control.run, call scripts.script_control.after
             run.control_set({ 'do_not_save_grid': not req.save_images, 'do_not_save_samples': not req.save_images, **self.prepare_ip_adapter(req) })
             run.control_set(getattr(req, "extra", {}))
             res = run.control_run(**args)

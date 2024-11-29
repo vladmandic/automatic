@@ -2,6 +2,7 @@ let logMonitorEl = null;
 let logMonitorStatus = true;
 let logWarnings = 0;
 let logErrors = 0;
+let logConnected = false;
 
 function dateToStr(ts) {
   const dt = new Date(1000 * ts);
@@ -29,8 +30,7 @@ async function logMonitor() {
       row.innerHTML = `<td>${dateToStr(l.created)}</td>${level}<td>${l.facility}</td>${module}<td>${l.msg}</td>`;
       logMonitorEl.appendChild(row);
     } catch (e) {
-      // console.log('logMonitor', e);
-      console.error('logMonitor line', line);
+      error(`logMonitor: ${line}`);
     }
   };
 
@@ -46,6 +46,7 @@ async function logMonitor() {
 
   if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
   else setTimeout(logMonitor, 10 * 1000); // on failure try to reconnect every 10sec
+
   if (!opts.logmonitor_show) return;
   logMonitorStatus = false;
   if (!logMonitorEl) {
@@ -64,14 +65,20 @@ async function logMonitor() {
       const lines = await res.json();
       if (logMonitorEl && lines?.length > 0) logMonitorEl.parentElement.parentElement.style.display = opts.logmonitor_show ? 'block' : 'none';
       for (const line of lines) addLogLine(line);
+      if (!logConnected) {
+        logConnected = true;
+        xhrPost('/sdapi/v1/log', { debug: 'connected' });
+      }
     } else {
-      addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: ${res?.status} ${res?.statusText}" }`);
+      logConnected = false;
       logErrors++;
+      addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: ${res?.status} ${res?.statusText}" }`);
     }
     cleanupLog(atBottom);
   } catch (err) {
-    addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: server unreachable" }`);
+    logConnected = false;
     logErrors++;
+    addLogLine(`{ "created": ${Date.now()}, "level":"ERROR", "module":"logMonitor", "facility":"ui", "msg":"Failed to fetch log: server unreachable" }`);
     cleanupLog(atBottom);
   }
 }

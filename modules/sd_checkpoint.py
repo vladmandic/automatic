@@ -168,7 +168,10 @@ def update_model_hashes():
 
 def get_closet_checkpoint_match(s: str):
     if s.startswith('https://huggingface.co/'):
-        s = s.replace('https://huggingface.co/', '')
+        model_name = s.replace('https://huggingface.co/', '')
+        checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
+        checkpoint_info.type = 'huggingface'
+        return checkpoint_info
     if s.startswith('huggingface/'):
         model_name = s.replace('huggingface/', '')
         checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
@@ -185,6 +188,11 @@ def get_closet_checkpoint_match(s: str):
     if found and len(found) == 1:
         return found[0]
 
+    # absolute path
+    if s.endswith('.safetensors') and os.path.isfile(s):
+        checkpoint_info = CheckpointInfo(s)
+        return checkpoint_info
+
     # reference search
     """
     found = sorted([info for info in shared.reference_models.values() if os.path.basename(info['path']).lower().startswith(s.lower())], key=lambda x: len(x['path']))
@@ -198,8 +206,9 @@ def get_closet_checkpoint_match(s: str):
     if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
         modelloader.hf_login()
         found = modelloader.find_diffuser(s, full=True)
+        found = [f for f in found if f == s]
         shared.log.info(f'HF search: model="{s}" results={found}')
-        if found is not None and len(found) == 1 and found[0] == s:
+        if found is not None and len(found) == 1:
             checkpoint_info = CheckpointInfo(s)
             checkpoint_info.type = 'huggingface'
             return checkpoint_info

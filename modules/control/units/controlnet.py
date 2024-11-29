@@ -85,6 +85,9 @@ predefined_f1 = {
     "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
 predefined_sd3 = {
+    "StabilityAI Canny": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
+    "StabilityAI Depth": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
+    "StabilityAI Blur": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
     "InstantX Canny": 'InstantX/SD3-Controlnet-Canny',
     "InstantX Pose": 'InstantX/SD3-Controlnet-Pose',
     "InstantX Depth": 'InstantX/SD3-Controlnet-Depth',

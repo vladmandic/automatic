@@ -16,7 +16,7 @@ import safetensors.torch
 from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
-from modules.timer import Timer
+from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
@@ -279,7 +279,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if len(shared.opts.torchao_quantization) > 0:
+    if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode != 'post':
         sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
@@ -319,12 +319,12 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
     if hasattr(sd_model, 'maybe_free_model_hooks') and shared.opts.diffusers_offload_mode == "none":
-        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
         sd_model.maybe_free_model_hooks()
         sd_model.has_accelerate = False
     if hasattr(sd_model, "enable_model_cpu_offload") and shared.opts.diffusers_offload_mode == "model":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -339,7 +339,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -359,7 +359,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} threshold={shared.opts.diffusers_offload_max_gpu_memory} limit={shared.opts.cuda_mem_fraction}')
             sd_model = apply_balanced_offload(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
@@ -512,7 +512,10 @@ def move_model(model, device=None, force=False):
     except Exception as e1:
         t1 = time.time()
         shared.log.error(f'Model move: device={device} {e1}')
-    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 0.1:
+    if 'move' not in process_timer.records:
+        process_timer.records['move'] = 0
+    process_timer.records['move'] += t1 - t0
+    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 1:
         shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access
     devices.torch_gc()
 
@@ -771,7 +774,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
     return sd_model
 
 
-def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
+def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model', revision=None): # pylint: disable=unused-argument
     if timer is None:
         timer = Timer()
     logging.getLogger("diffusers").setLevel(logging.ERROR)
@@ -784,6 +787,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "requires_safety_checker": False, # sd15 specific but we cant know ahead of time
         # "use_safetensors": True,
     }
+    if revision is not None:
+        diffusers_load_config['revision'] = revision
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
@@ -1077,6 +1082,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
         'InstantIRPipeline',
+        'FluxFillPipeline',
+        'FluxControlPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')
@@ -1345,7 +1352,7 @@ def reload_text_encoder(initial=False):
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
-def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
+def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False, revision=None):
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary
@@ -1390,7 +1397,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             load_model(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
             model_data.sd_dict = shared.opts.sd_model_dict
         else:
-            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
+            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op, revision=revision)
         if load_dict and next_checkpoint_info is not None:
             model_data.sd_dict = shared.opts.sd_model_dict
             shared.opts.data["sd_model_checkpoint"] = next_checkpoint_info.title
