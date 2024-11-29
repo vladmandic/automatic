@@ -34,7 +34,6 @@ import modules.img2img
 import modules.upscaler
 import modules.textual_inversion.textual_inversion
 import modules.hypernetworks.hypernetwork
-import modules.lora.networks
 import modules.script_callbacks
 from modules.api.middleware import setup_middleware
 from modules.shared import cmd_opts, opts # pylint: disable=unused-import
@@ -104,8 +103,10 @@ def initialize():
     modules.sd_models.setup_model()
     timer.startup.record("models")
 
-    modules.lora.networks.list_available_networks()
-    timer.startup.record("lora")
+    if shared.native:
+        import modules.lora.networks as lora_networks
+        lora_networks.list_available_networks()
+        timer.startup.record("lora")
 
     shared.prompt_styles.reload()
     timer.startup.record("styles")

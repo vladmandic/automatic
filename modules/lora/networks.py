@@ -17,7 +17,7 @@ import modules.lora.network_norm as network_norm
 import modules.lora.network_glora as network_glora
 import modules.lora.network_overrides as network_overrides
 import modules.lora.lora_convert as lora_convert
-from modules import shared, devices, sd_models, sd_models_compile, errors, scripts, files_cache, model_quant
+from modules import shared, devices, sd_models, sd_models_compile, errors, files_cache, model_quant
 
 
 debug = os.environ.get('SD_LORA_DEBUG', None) is not None
@@ -42,6 +42,10 @@ module_types = [
     network_norm.ModuleTypeNorm(),
     network_glora.ModuleTypeGLora(),
 ]
+
+
+def total_time():
+    return sum(timer.values())
 
 
 def assign_network_names_to_compvis_modules(sd_model):
@@ -394,6 +398,8 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
 
 
 def network_load():
+    for k in timer.keys():
+        timer[k] = 0
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
     for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
         component = getattr(sd_model, component_name, None)

@@ -28,6 +28,7 @@ def unquote(text):
         return text
 
 
+# disabled by default can be enabled if needed
 def check_lora(params):
     try:
         import modules.lora.networks as networks
