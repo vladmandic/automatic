@@ -405,7 +405,7 @@ def apply_balanced_offload(sd_model):
         if hasattr(pipe, "_internal_dict"):
             keys = pipe._internal_dict.keys() # pylint: disable=protected-access
         else:
-            keys = get_signature(shared.sd_model).keys()
+            keys = get_signature(pipe).keys()
         for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
             if isinstance(module, torch.nn.Module):
@@ -1448,10 +1448,14 @@ def disable_offload(sd_model):
     from accelerate.hooks import remove_hook_from_module
     if not getattr(sd_model, 'has_accelerate', False):
         return
-    if hasattr(sd_model, 'components'):
-        for _name, model in sd_model.components.items():
-            if isinstance(model, torch.nn.Module):
-                remove_hook_from_module(model, recurse=True)
+    if hasattr(sd_model, "_internal_dict"):
+        keys = sd_model._internal_dict.keys() # pylint: disable=protected-access
+    else:
+        keys = get_signature(sd_model).keys()
+    for module_name in keys: # pylint: disable=protected-access
+        module = getattr(sd_model, module_name, None)
+        if isinstance(module, torch.nn.Module):
+            module = remove_hook_from_module(module, recurse=True)
     sd_model.has_accelerate = False
 
 
