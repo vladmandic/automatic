@@ -278,6 +278,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model
+    if shared.opts.diffusers_offload_mode == "balanced":
+        sd_models.apply_balanced_offload(shared.sd_model)
     t1 = time.time()
     timer['load'] += t1 - t0
 
@@ -399,16 +401,12 @@ def network_load():
     for k in timer.keys():
         timer[k] = 0
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
-    if shared.opts.diffusers_offload_mode == "sequential":
-        sd_models.disable_offload(sd_model)
-        sd_models.move_model(sd_model, device=devices.cpu)
     for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
         component = getattr(sd_model, component_name, None)
         if component is not None:
             for _, module in component.named_modules():
                 network_apply_weights(module)
-    if shared.opts.diffusers_offload_mode == "sequential":
-        sd_models.set_diffuser_offload(sd_model, op="model")
+
 
 def list_available_networks():
     t0 = time.time()
