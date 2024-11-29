@@ -72,7 +72,7 @@ class YoloRestorer(Detailer):
             imgsz: int = 640,
             half: bool = True,
             device = devices.device,
-            augment: bool = True,
+            augment: bool = shared.opts.detailer_augment,
             agnostic: bool = False,
             retina: bool = False,
             mask: bool = True,

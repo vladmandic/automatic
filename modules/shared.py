@@ -824,7 +824,7 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     'postprocessing_enable_in_main_ui': OptionInfo([], "Additional postprocessing operations", gr.Dropdown, lambda: {"multiselect":True, "choices": [x.name for x in shared_items.postprocessing_scripts()]}),
     'postprocessing_operation_order': OptionInfo([], "Postprocessing operation order", gr.Dropdown, lambda: {"multiselect":True, "choices": [x.name for x in shared_items.postprocessing_scripts()]}),
 
-    "postprocessing_sep_img2img": OptionInfo("<h2>Img2Img & Inpainting</h2>", "", gr.HTML),
+    "postprocessing_sep_img2img": OptionInfo("<h2>Inpaint</h2>", "", gr.HTML),
     "img2img_color_correction": OptionInfo(False, "Apply color correction"),
     "mask_apply_overlay": OptionInfo(True, "Apply mask as overlay"),
     "img2img_background_color": OptionInfo("#ffffff", "Image transparent color fill", gr.ColorPicker, {}),
@@ -832,7 +832,7 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "initial_noise_multiplier": OptionInfo(1.0, "Noise multiplier for image processing", gr.Slider, {"minimum": 0.1, "maximum": 1.5, "step": 0.01, "visible": not native}),
     "img2img_extra_noise": OptionInfo(0.0, "Extra noise multiplier for img2img", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01, "visible": not native}),
 
-    # "postprocessing_sep_detailer": OptionInfo("<h2>Detailer</h2>", "", gr.HTML),
+    "postprocessing_sep_detailer": OptionInfo("<h2>Detailer</h2>", "", gr.HTML),
     "detailer_model": OptionInfo("Detailer", "Detailer model", gr.Radio, lambda: {"choices": [x.name() for x in detailers], "visible": False}),
     "detailer_classes": OptionInfo("", "Detailer classes", gr.Textbox, { "visible": False}),
     "detailer_conf": OptionInfo(0.6, "Min confidence", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05, "visible": False}),
@@ -844,11 +844,12 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "detailer_blur": OptionInfo(10, "Item edge blur", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": False}),
     "detailer_strength": OptionInfo(0.5, "Detailer strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False}),
     "detailer_models": OptionInfo(['face-yolo8n'], "Detailer models", gr.Dropdown, lambda: {"multiselect":True, "choices": list(yolo.list), "visible": False}),
-    "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False}),
     "detailer_unload": OptionInfo(False, "Move detailer model to CPU when complete"),
+    "detailer_augment": OptionInfo(True, "Detailer use model augment"),
 
     "postprocessing_sep_face_restore": OptionInfo("<h2>Face restore</h2>", "", gr.HTML),
-    "face_restoration_model": OptionInfo("Face restorer", "Face restoration", gr.Radio, lambda: {"choices": ['None'] + [x.name() for x in face_restorers]}),
+    "face_restoration_model": OptionInfo("None", "Face restoration", gr.Radio, lambda: {"choices": ['None'] + [x.name() for x in face_restorers]}),
+    "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
 
     "postprocessing_sep_upscalers": OptionInfo("<h2>Upscaling</h2>", "", gr.HTML),
     "upscaler_unload": OptionInfo(False, "Unload upscaler after processing"),
