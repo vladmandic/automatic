@@ -223,10 +223,8 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     if shared.opts.sd_unet != 'None':
         try:
             debug(f'Load model: type=FLUX unet="{shared.opts.sd_unet}"')
-            _transformer = load_transformer(sd_unet.unet_dict[shared.opts.sd_unet])
-            if _transformer is not None:
-                transformer = _transformer
-            else:
+            transformer = load_transformer(sd_unet.unet_dict[shared.opts.sd_unet])
+            if transformer is None:
                 shared.opts.sd_unet = 'None'
                 sd_unet.failed_unet.append(shared.opts.sd_unet)
         except Exception as e:
@@ -334,6 +332,8 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     text_encoder_1 = None
     text_encoder_2 = None
     vae = None
+    for k in kwargs.keys():
+        kwargs[k] = None
     devices.torch_gc()
 
     return pipe
