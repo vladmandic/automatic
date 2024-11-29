@@ -8,7 +8,7 @@ from modules import sd_models, sd_vae, extras
 from modules.ui_components import ToolButton
 from modules.ui_common import create_refresh_button
 from modules.call_queue import wrap_gradio_gpu_call
-from modules.shared import opts, log, req, readfile, max_workers
+from modules.shared import opts, log, req, readfile, max_workers, native
 import modules.ui_symbols
 import modules.errors
 import modules.hashes
@@ -793,6 +793,10 @@ def create_ui():
                 civit_update_btn.click(fn=civit_update_metadata, inputs=[], outputs=[civit_results4, models_outcome])
                 civit_results4.select(fn=civit_update_select, inputs=[civit_results4], outputs=[models_outcome, civit_update_download_btn])
                 civit_update_download_btn.click(fn=civit_update_download, inputs=[], outputs=[models_outcome])
+
+            if native:
+                from modules.lora.lora_extract import create_ui as lora_extract_ui
+                lora_extract_ui()
 
             for ui in extra_ui:
                 if callable(ui):

@@ -8,6 +8,7 @@ import logging
 import importlib
 import contextlib
 from threading import Thread
+import modules.hashes
 import modules.loader
 import torch # pylint: disable=wrong-import-order
 from modules import timer, errors, paths # pylint: disable=unused-import
@@ -18,6 +19,7 @@ from modules import extra_networks, ui_extra_networks # pylint: disable=ungroupe
 from modules.paths import create_paths
 from modules.call_queue import queue_lock, wrap_queued_call, wrap_gradio_gpu_call # pylint: disable=unused-import
 import modules.devices
+import modules.sd_checkpoint
 import modules.sd_samplers
 import modules.lowvram
 import modules.scripts
@@ -32,6 +34,7 @@ import modules.img2img
 import modules.upscaler
 import modules.textual_inversion.textual_inversion
 import modules.hypernetworks.hypernetwork
+import modules.lora.networks
 import modules.script_callbacks
 from modules.api.middleware import setup_middleware
 from modules.shared import cmd_opts, opts # pylint: disable=unused-import
@@ -77,6 +80,9 @@ def check_rollback_vae():
 
 def initialize():
     log.debug('Initializing')
+
+    modules.sd_checkpoint.init_metadata()
+    modules.hashes.init_cache()
     check_rollback_vae()
 
     modules.sd_samplers.list_samplers()
@@ -89,7 +95,7 @@ def initialize():
     timer.startup.record("unet")
 
     modules.model_te.refresh_te_list()
-    timer.startup.record("unet")
+    timer.startup.record("te")
 
     extensions.list_extensions()
     timer.startup.record("extensions")
@@ -97,6 +103,12 @@ def initialize():
     modelloader.cleanup_models()
     modules.sd_models.setup_model()
     timer.startup.record("models")
+
+    modules.lora.networks.list_available_networks()
+    timer.startup.record("lora")
+
+    shared.prompt_styles.reload()
+    timer.startup.record("styles")
 
     import modules.postprocess.codeformer_model as codeformer
     codeformer.setup_model(shared.opts.codeformer_models_path)
@@ -116,8 +128,9 @@ def initialize():
     modelloader.load_upscalers()
     timer.startup.record("upscalers")
 
-    shared.reload_hypernetworks()
-    shared.prompt_styles.reload()
+    if shared.opts.hypernetwork_enabled:
+        shared.reload_hypernetworks()
+        timer.startup.record("hypernetworks")
 
     ui_extra_networks.initialize()
     ui_extra_networks.register_pages()
