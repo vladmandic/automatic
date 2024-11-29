@@ -120,4 +120,4 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
         return items
 
     def allowed_directories_for_previews(self):
-        return [shared.cmd_opts.lora_dir, shared.cmd_opts.lyco_dir]
+        return [shared.cmd_opts.lora_dir]
