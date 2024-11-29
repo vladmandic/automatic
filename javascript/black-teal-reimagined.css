@@ -228,16 +228,17 @@ input[type='range']::-moz-range-track {
 .tab-nav {
   display: flex;
   /* Use flexbox for layout */
-  justify-content: space-around;
+  justify-content: space-evenly;
   /* Space out the tabs evenly */
   align-items: center;
   /* Center items vertically */
   background: var(--background-color);
   /* Background color */
-  border-bottom: 1px solid var(--highlight-color) !important;
+  border-bottom: 3px solid var(--highlight-color) !important;
   /* Bottom border for separation */
   box-shadow: var(--shadow-md);
   /* Shadow for depth */
+  margin-bottom: 5px;
 }
 
 /* Individual Tab Styles */
@@ -246,19 +247,24 @@ input[type='range']::-moz-range-track {
   /* No background for default state */
   color: var(--text-color);
   /* Text color */
-  border: none;
+  border: 1px solid var(--highlight-color);
   /* No border */
-  border-radius: var(--radius-xxxl);
+  border-radius: var(--radius-xxl);
   /* Rounded corners */
   cursor: pointer;
   /* Pointer cursor */
   transition: background 0.3s ease, color 0.3s ease;
   /* Smooth transition */
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-bottom: 3px;
 }
 
 /* Active Tab Style */
-.tab-nav>button.active {
-  background: var(--highlight-color);
+.tab-nav>button.selected {
+  background: var(--primary-100);
   /* Highlight active tab */
   color: var(--background-color);
   /* Change text color for active tab */
@@ -386,7 +392,8 @@ div.form {
   border-width: 0;
   box-shadow: var(--shadow-md);
   background: var(--background-fill-primary);
-  padding: 16px;
+  border-bottom: 3px solid var(--highlight-color);
+  padding: 3px;
   border-radius: var(--radius-md);
 }
 
@@ -720,11 +727,6 @@ svg.feather.feather-image,
   width: 15em;
 }
 
-#settings_search {
-  margin-top: 1em;
-  margin-left: 1em;
-}
-
 #txt2img_cfg_scale {
   min-width: 200px;
 }
@@ -749,7 +751,6 @@ svg.feather.feather-image,
   min-width: var(--left-column);
   max-width: var(--left-column);
   background-color: var(--neutral-950);
-  padding-top: 16px;
 }
 
 #pnginfo_html2_info {
@@ -835,11 +836,6 @@ svg.feather.feather-image,
 
 .extra-networks .buttons>button:hover {
   background: var(--highlight-color);
-}
-
-/* Extra Networks Tab */
-.extra-networks-tab {
-  padding: 0 !important;
 }
 
 /* Subdirectories Styles */
@@ -1014,7 +1010,7 @@ svg.feather.feather-image,
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  padding: 10px;
+  padding: 5px;
 }
 
 #txt2img_prompt_container {
