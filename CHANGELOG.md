@@ -29,6 +29,7 @@
   style-aligned applies selected attention layers uniformly to all images to achive consistency  
   can be used with or without input image in which case first prompt is used to establish baseline  
   *note:* all prompts are processes as a single batch, so vram is limiting factor
+- **OpenVINO**: update to 2024.5.0  
 
 ### UI and workflow improvements
 
