@@ -5,6 +5,7 @@ import time
 import concurrent
 import torch
 import diffusers.models.lora
+import rich.progress as p
 
 import modules.lora.network as network
 import modules.lora.network_lora as network_lora
@@ -21,11 +22,12 @@ from modules import shared, devices, sd_models, sd_models_compile, errors, files
 
 
 debug = os.environ.get('SD_LORA_DEBUG', None) is not None
+pbar = p.Progress(p.TextColumn('[cyan]LoRA apply'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TextColumn('[cyan]{task.description}'), console=shared.console)
 extra_network_lora = None
 available_networks = {}
 available_network_aliases = {}
 loaded_networks: List[network.Network] = []
-timer = { 'load': 0, 'apply': 0, 'restore': 0, 'deactivate': 0 }
+timer = { 'list': 0, 'load': 0, 'backup': 0, 'calc': 0, 'apply': 0, 'restore': 0, 'deactivate': 0 }
 lora_cache = {}
 diffuser_loaded = []
 diffuser_scales = []
@@ -216,7 +218,6 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     loaded_networks.clear()
     diffuser_loaded.clear()
     diffuser_scales.clear()
-    timer['load'] = 0
     t0 = time.time()
 
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
@@ -269,8 +270,6 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if len(loaded_networks) > 0 and debug:
         shared.log.debug(f'Load network: type=LoRA loaded={len(loaded_networks)} cache={list(lora_cache)}')
 
-    devices.torch_gc()
-
     if recompile_model:
         shared.log.info("Load network: type=LoRA recompiling model")
         backup_lora_model = shared.compiled_model_state.lora_model
@@ -278,13 +277,18 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
 
         shared.compiled_model_state.lora_model = backup_lora_model
-    if shared.opts.diffusers_offload_mode == "balanced":
-        sd_models.apply_balanced_offload(shared.sd_model)
+
+    if len(loaded_networks) > 0:
+        devices.torch_gc()
+        if shared.opts.diffusers_offload_mode == "balanced":
+            sd_models.apply_balanced_offload(shared.sd_model)
+
     t1 = time.time()
-    timer['load'] += t1 - t0
+    timer['load'] = t1 - t0
 
 
 def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], updown, ex_bias):
+    t0 = time.time()
     weights_backup = getattr(self, "network_weights_backup", None)
     bias_backup = getattr(self, "network_bias_backup", None)
     if weights_backup is None and bias_backup is None:
@@ -315,9 +319,12 @@ def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
         else:
             self.bias = None
         self.to(device)
+    t1 = time.time()
+    timer['apply'] += t1 - t0
 
 
 def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], wanted_names): # pylint: disable=W0613
+    t0 = time.time()
     weights_backup = getattr(self, "network_weights_backup", None)
     if weights_backup is None and wanted_names != (): # pylint: disable=C1803
         if getattr(self.weight, "quant_type", None) in ['nf4', 'fp4']:
@@ -344,6 +351,8 @@ def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if shared.opts.lora_offload_backup and bias_backup is not None:
             bias_backup = bias_backup.to(devices.cpu)
         self.network_bias_backup = bias_backup
+    t1 = time.time()
+    timer['backup'] += t1 - t0
 
 
 def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv]):
@@ -353,16 +362,13 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     If not, restores orginal weights from backup and alters weights according to networks.
     """
     network_layer_name = getattr(self, 'network_layer_name', None)
-    if network_layer_name is None:
-        return
-    t0 = time.time()
     current_names = getattr(self, "network_current_names", ())
     wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
-    if any([net.modules.get(network_layer_name, None) for net in loaded_networks]): # noqa: C419 # pylint: disable=R1729
-        maybe_backup_weights(self, wanted_names)
+    maybe_backup_weights(self, wanted_names)
     if current_names != wanted_names:
         batch_updown = None
         batch_ex_bias = None
+        t0 = time.time()
         for net in loaded_networks:
             # default workflow where module is known and has weights
             module = net.modules.get(network_layer_name, None)
@@ -391,21 +397,39 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                 continue
             shared.log.warning(f'LoRA network="{net.name}" layer="{network_layer_name}" unsupported operation')
             extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
+        t1 = time.time()
+        timer['calc'] += t1 - t0
         set_weights(self, batch_updown, batch_ex_bias)  # Set or restore weights from backup
         self.network_current_names = wanted_names
-    t1 = time.time()
-    timer['apply'] += t1 - t0
 
 
-def network_load():
-    for k in timer.keys():
-        timer[k] = 0
+def network_load(): # called from processing
+    timer['backup'] = 0
+    timer['calc'] = 0
+    timer['apply'] = 0
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
-    for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
-        component = getattr(sd_model, component_name, None)
-        if component is not None:
-            for _, module in component.named_modules():
-                network_apply_weights(module)
+    with pbar:
+        for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
+            component = getattr(sd_model, component_name, None)
+            if component is not None:
+                applied = 0
+                modules = list(component.named_modules())
+                task_start = time.time()
+                task = pbar.add_task(description=component_name , total=len(modules), visible=False)
+                for _, module in modules:
+                    layer_name = getattr(module, 'network_layer_name', None)
+                    if layer_name is None:
+                        continue
+                    present = any([net.modules.get(layer_name, None) for net in loaded_networks]) # noqa: C419
+                    if present:
+                        network_apply_weights(module)
+                        applied += 1
+                    pbar.update(task, advance=1, visible=(time.time() - task_start) > 1) # progress bar becomes visible if operation takes more than 1sec
+                pbar.remove_task(task)
+                if debug:
+                    shared.log.debug(f'Load network: type=LoRA component={component_name} modules={len(modules)} applied={applied}')
+    if debug:
+        shared.log.debug(f'Load network: type=LoRA total={total_time():.2f} timers={timer}')
 
 
 def list_available_networks():
@@ -442,4 +466,5 @@ def list_available_networks():
         for fn in candidates:
             executor.submit(add_network, fn)
     t1 = time.time()
+    timer['list'] = t1 - t0
     shared.log.info(f'Available LoRAs: path="{shared.cmd_opts.lora_dir}" items={len(available_networks)} folders={len(forbidden_network_aliases)} time={t1 - t0:.2f}')
