@@ -655,27 +655,6 @@ svg.feather.feather-image,
   font-weight: normal;
 }
 
-#txt2img_prompt,
-#txt2img_neg_prompt,
-#img2img_prompt,
-#img2img _neg_prompt,
-#control_prompt,
-#control_neg_prompt {
-  background-color: var(--background-color);
-  box-shadow: none !important;
-}
-
-#txt2img_prompt>label>textarea,
-#txt2img_neg_prompt>label>textarea,
-#img2img_prompt>label>textarea,
-#img2img_neg_prompt>label>textarea,
-#control_prompt>label>textarea,
-#control_neg_prompt>label>textarea {
-  font-size: 1.0em;
-  line-height: 1.4em;
-  border-radius: var(--radius-md);
-}
-
 #txt2img_styles,
 #img2img_styles,
 #control_styles {
@@ -746,11 +725,6 @@ svg.feather.feather-image,
   margin-left: 1em;
 }
 
-#settings_search textarea {
-  padding: 0.5em;
-  height: 2.2em !important;
-}
-
 #txt2img_cfg_scale {
   min-width: 200px;
 }
@@ -760,12 +734,6 @@ svg.feather.feather-image,
 #control_checkboxes {
   background-color: transparent;
   margin-bottom: 0.2em;
-}
-
-textarea[rows="1"] {
-  height: 33px !important;
-  width: 99% !important;
-  padding: 8px !important;
 }
 
 #extras_upscale {
@@ -1052,6 +1020,10 @@ textarea[rows="1"] {
 #txt2img_prompt_container {
   margin: 5px;
   padding: 0px;
+}
+
+#text2img_prompt label, #text2img_neg_prompt label {
+  margin: 0px;
 }
 
 /* Based on Gradio Built-in Dark Theme */
