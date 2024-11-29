@@ -280,8 +280,6 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
 
     if len(loaded_networks) > 0:
         devices.torch_gc()
-        if shared.opts.diffusers_offload_mode == "balanced":
-            sd_models.apply_balanced_offload(shared.sd_model)
 
     t1 = time.time()
     timer['load'] = t1 - t0
@@ -375,7 +373,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if module is not None and hasattr(self, 'weight'):
                 try:
                     with devices.inference_context():
-                        weight = self.weight # calculate quant weights once
+                        weight = self.weight.to(devices.device) # calculate quant weights once
                         updown, ex_bias = module.calc_updown(weight)
                         if batch_updown is not None and updown is not None:
                             batch_updown += updown
@@ -385,6 +383,11 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                             batch_ex_bias += ex_bias
                         else:
                             batch_ex_bias = ex_bias
+                        if shared.opts.diffusers_offload_mode != "none":
+                            if batch_updown is not None:
+                                batch_updown = batch_updown.to(devices.cpu)
+                            if batch_ex_bias is not None:
+                                batch_ex_bias = batch_ex_bias.to(devices.cpu)
                 except RuntimeError as e:
                     extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
                     if debug:
@@ -408,6 +411,9 @@ def network_load(): # called from processing
     timer['calc'] = 0
     timer['apply'] = 0
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
+    if shared.opts.diffusers_offload_mode != "none":
+        sd_models.disable_offload(sd_model)
+        sd_models.move_model(sd_model, device=devices.cpu)
     with pbar:
         for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
             component = getattr(sd_model, component_name, None)
@@ -428,6 +434,8 @@ def network_load(): # called from processing
                 pbar.remove_task(task)
                 if debug:
                     shared.log.debug(f'Load network: type=LoRA component={component_name} modules={len(modules)} applied={applied}')
+    if shared.opts.diffusers_offload_mode != "none":
+        sd_models.set_diffuser_offload(sd_model, op="model")
     if debug:
         shared.log.debug(f'Load network: type=LoRA total={total_time():.2f} timers={timer}')
 
