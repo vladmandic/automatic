@@ -631,11 +631,6 @@ svg.feather.feather-image,
   color: #888;
 }
 
-.extra-networks {
-  border-left: 2px solid var(--highlight-color) !important;
-  padding-left: 4px;
-}
-
 .image-buttons {
   justify-content: center;
   gap: 0 !important;
@@ -795,7 +790,8 @@ svg.feather.feather-image,
 
 /* Extra Networks Styles */
 .extra-networks {
-  background: var(--background-color);
+  border-left: 2px solid var(--highlight-color) !important;
+  padding-left: 4px;
 }
 
 .extra-networks .tab-nav>button:hover {
