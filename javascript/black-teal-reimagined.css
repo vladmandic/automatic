@@ -816,11 +816,6 @@ svg.feather.feather-image,
   background: var(--highlight-color);
 }
 
-/* Extra Networks Page */
-.extra-networks-page {
-  display: flex;
-}
-
 /* Network Cards Container */
 .extra-network-cards {
   display: flex;
@@ -828,6 +823,8 @@ svg.feather.feather-image,
   overflow-y: auto;
   overflow-x: hidden;
   align-content: flex-start;
+  padding-top: 20px;
+  justify-content: center;
   width: 100%;
   /* Ensures it takes full width */
 }
@@ -872,16 +869,23 @@ svg.feather.feather-image,
   box-shadow: var(--button-shadow);
   min-height: 30px;
   border-radius: var(--radius-md);
+  z-index: 9999;
 }
 
 /* Hover Effects */
+.extra-network-cards .card:hover {
+  transform: scale(1.3);
+  z-index: 9999; /* Use a high value to ensure it appears on top */
+  transition: transform 0.3s ease, z-index 0s; /* Smooth transition */
+}
+
 .extra-network-cards .card:hover .overlay {
-  background: rgba(0, 0, 0, 0.70);
+  z-index: 10000; /* Ensure overlay is also on top */
 }
 
 .extra-network-cards .card:hover .preview {
   box-shadow: none;
-  filter: grayscale(100%);
+  filter: grayscale(0%);
 }
 
 /* Tags Styles */
@@ -911,6 +915,15 @@ svg.feather.feather-image,
 .extra-network-cards .card .actions>span {
   padding: 4px;
   font-size: 34px !important;
+}
+
+.extra-network-cards .card .actions {
+  background: none;
+}
+
+.extra-network-cards .card .actions .details {
+  bottom: 50px;
+  background-color: var(--neutral-800);
 }
 
 .extra-network-cards .card .actions>span:hover {
