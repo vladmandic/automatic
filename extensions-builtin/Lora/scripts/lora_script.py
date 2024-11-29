@@ -56,6 +56,7 @@ def infotext_pasted(infotext, d): # pylint: disable=unused-argument
     hashes = {x[0].strip().replace(",", ""): x[1].strip() for x in hashes}
     d["Prompt"] = re.sub(re_lora, network_replacement, d["Prompt"])
 
+
 if not shared.native:
     script_callbacks.on_app_started(api_networks)
     script_callbacks.on_before_ui(before_ui)

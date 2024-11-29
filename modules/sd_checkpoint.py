@@ -275,6 +275,12 @@ def select_checkpoint(op='model'):
     return checkpoint_info
 
 
+def init_metadata():
+    global sd_metadata # pylint: disable=global-statement
+    if sd_metadata is None:
+        sd_metadata = shared.readfile(sd_metadata_file, lock=True) if os.path.isfile(sd_metadata_file) else {}
+
+
 def read_metadata_from_safetensors(filename):
     global sd_metadata # pylint: disable=global-statement
     if sd_metadata is None:
