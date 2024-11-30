@@ -1,4 +1,5 @@
 import os
+import time
 import math
 import random
 import warnings
@@ -9,7 +10,7 @@ import cv2
 from PIL import Image
 from skimage import exposure
 from blendmodes.blend import blendLayers, BlendType
-from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae
+from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae, timer
 
 
 debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -352,6 +353,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 
 
 def validate_sample(tensor):
+    t0 = time.time()
     if not isinstance(tensor, np.ndarray) and not isinstance(tensor, torch.Tensor):
         return tensor
     dtype = tensor.dtype
@@ -377,6 +379,8 @@ def validate_sample(tensor):
         if upcast is not None and not upcast:
             setattr(shared.sd_model.vae.config, 'force_upcast', True) # noqa: B010
             shared.log.warning('Decode: upcast=True set, retry operation')
+    t1 = time.time()
+    timer.process.add('validate', t1 - t0)
     return cast
 
 

@@ -22,7 +22,7 @@ from modules import shared, devices, sd_models, sd_models_compile, errors, files
 
 
 debug = os.environ.get('SD_LORA_DEBUG', None) is not None
-pbar = p.Progress(p.TextColumn('[cyan]LoRA apply'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), p.TextColumn('[cyan]{task.description}'), console=shared.console)
+pbar = p.Progress(p.TextColumn('[cyan]{task.description}'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), console=shared.console)
 extra_network_lora = None
 available_networks = {}
 available_network_aliases = {}
@@ -48,6 +48,13 @@ module_types = [
 
 def total_time():
     return sum(timer.values())
+
+
+def get_timers():
+    t = { 'total': round(sum(timer.values()), 2) }
+    for k, v in timer.items():
+        t[k] = round(v, 2)
+    return t
 
 
 def assign_network_names_to_compvis_modules(sd_model):
@@ -362,7 +369,8 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     network_layer_name = getattr(self, 'network_layer_name', None)
     current_names = getattr(self, "network_current_names", ())
     wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks)
-    maybe_backup_weights(self, wanted_names)
+    if network_layer_name is not None and any([net.modules.get(network_layer_name, None) for net in loaded_networks]): # noqa: C419
+        maybe_backup_weights(self, wanted_names)
     if current_names != wanted_names:
         batch_updown = None
         batch_ex_bias = None
@@ -414,30 +422,23 @@ def network_load(): # called from processing
     if shared.opts.diffusers_offload_mode != "none":
         sd_models.disable_offload(sd_model)
         sd_models.move_model(sd_model, device=devices.cpu)
+    modules = []
+    for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
+        component = getattr(sd_model, component_name, None)
+        if component is not None and hasattr(component, 'named_modules'):
+            modules += list(component.named_modules())
     with pbar:
-        for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
-            component = getattr(sd_model, component_name, None)
-            if component is not None:
-                applied = 0
-                modules = list(component.named_modules())
-                task_start = time.time()
-                task = pbar.add_task(description=component_name , total=len(modules), visible=False)
-                for _, module in modules:
-                    layer_name = getattr(module, 'network_layer_name', None)
-                    if layer_name is None:
-                        continue
-                    present = any([net.modules.get(layer_name, None) for net in loaded_networks]) # noqa: C419
-                    if present:
-                        network_apply_weights(module)
-                        applied += 1
-                    pbar.update(task, advance=1, visible=(time.time() - task_start) > 1) # progress bar becomes visible if operation takes more than 1sec
-                pbar.remove_task(task)
-                if debug:
-                    shared.log.debug(f'Load network: type=LoRA component={component_name} modules={len(modules)} applied={applied}')
+        task = pbar.add_task(description='Apply network: type=LoRA' , total=len(modules), visible=len(loaded_networks) > 0)
+        for _, module in modules:
+            network_apply_weights(module)
+            # pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
+        pbar.remove_task(task)
+    if debug:
+        shared.log.debug(f'Load network: type=LoRA modules={len(modules)}')
     if shared.opts.diffusers_offload_mode != "none":
         sd_models.set_diffuser_offload(sd_model, op="model")
     if debug:
-        shared.log.debug(f'Load network: type=LoRA total={total_time():.2f} timers={timer}')
+        shared.log.debug(f'Load network: type=LoRA timers{get_timers()}')
 
 
 def list_available_networks():
