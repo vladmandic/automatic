@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-28
+## Update for 2024-11-30
 
 ### New models and integrations
 
@@ -67,7 +67,8 @@
 - fix xyz-grid with lora  
 - fix api script callbacks  
 - fix gpu memory monitoring  
-- simplify img2img/inpaint/sketch canvas handling
+- simplify img2img/inpaint/sketch canvas handling  
+- fix prompt caching  
 
 ## Update for 2024-11-21
 

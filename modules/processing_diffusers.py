@@ -199,11 +199,6 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                     output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
                     p.task_args['image'] = output.images # replace so hires uses new output
-            sd_models.move_model(shared.sd_model, devices.device)
-            if hasattr(shared.sd_model, 'unet'):
-                sd_models.move_model(shared.sd_model.unet, devices.device)
-            if hasattr(shared.sd_model, 'transformer'):
-                sd_models.move_model(shared.sd_model.transformer, devices.device)
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
@@ -227,6 +222,11 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             shared.state.job = 'HiRes'
             shared.state.sampling_steps = hires_args.get('prior_num_inference_steps', None) or p.steps or hires_args.get('num_inference_steps', None)
             try:
+                sd_models.move_model(shared.sd_model, devices.device)
+                if hasattr(shared.sd_model, 'unet'):
+                    sd_models.move_model(shared.sd_model.unet, devices.device)
+                if hasattr(shared.sd_model, 'transformer'):
+                    sd_models.move_model(shared.sd_model.transformer, devices.device)
                 sd_models_compile.check_deepcache(enable=True)
                 output = shared.sd_model(**hires_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
@@ -405,6 +405,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+
     # sanitize init_images
     if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
         del p.init_images
@@ -427,10 +430,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     if p.negative_prompts is None or len(p.negative_prompts) == 0:
         p.negative_prompts = p.all_negative_prompts[p.iteration * p.batch_size:(p.iteration+1) * p.batch_size]
 
-    # load loras
-    networks.network_load()
-
-    sd_models.move_model(shared.sd_model, devices.device)
     sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False) # recompile if a parameter changes
 
     if 'base' not in p.skip:
@@ -461,6 +460,10 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     timer.process.add('lora', networks.total_time())
 
     shared.sd_model = orig_pipeline
+
+    if shared.opts.diffusers_offload_mode == "balanced":
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+
     if p.state == '':
         global last_p # pylint: disable=global-statement
         last_p = p
