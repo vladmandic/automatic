@@ -3,9 +3,10 @@ import os
 import re
 import time
 import concurrent
+from contextlib import nullcontext
 import torch
 import diffusers.models.lora
-import rich.progress as p
+import rich.progress as rp
 
 import modules.lora.network as network
 import modules.lora.network_lora as network_lora
@@ -22,7 +23,6 @@ from modules import shared, devices, sd_models, sd_models_compile, errors, files
 
 
 debug = os.environ.get('SD_LORA_DEBUG', None) is not None
-pbar = p.Progress(p.TextColumn('[cyan]{task.description}'), p.BarColumn(), p.TaskProgressColumn(), p.TimeRemainingColumn(), p.TimeElapsedColumn(), console=shared.console)
 extra_network_lora = None
 available_networks = {}
 available_network_aliases = {}
@@ -307,7 +307,7 @@ def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
         if updown is not None and len(weights_backup.shape) == 4 and weights_backup.shape[1] == 9: # inpainting model. zero pad updown to make channel[1]  4 to 9
             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))  # pylint: disable=not-callable
         if updown is not None:
-            new_weight = updown.to(devices.device) + weights_backup.to(devices.device)
+            new_weight = updown.to(devices.device, non_blocking=True) + weights_backup.to(devices.device, non_blocking=True)
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
                 self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
             else:
@@ -319,7 +319,7 @@ def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
             self.freeze()
     if bias_backup is not None:
         if ex_bias is not None:
-            new_weight = ex_bias.to(self.bias.device) + bias_backup.to(self.device)
+            new_weight = ex_bias.to(devices.device, non_blocking=True) + bias_backup.to(devices.device, non_blocking=True)
             self.bias.copy_(new_weight, non_blocking=True)
             del new_weight
         else:
@@ -351,7 +351,6 @@ def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if shared.opts.lora_offload_backup and weights_backup is not None:
             weights_backup = weights_backup.to(devices.cpu)
         self.network_weights_backup = weights_backup
-        backup_size += weights_backup.numel() * weights_backup.element_size()
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
         if getattr(self, 'bias', None) is not None:
@@ -361,8 +360,10 @@ def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if shared.opts.lora_offload_backup and bias_backup is not None:
             bias_backup = bias_backup.to(devices.cpu)
         self.network_bias_backup = bias_backup
-        if bias_backup is not None:
-            backup_size += bias_backup.numel() * bias_backup.element_size()
+    if getattr(self, 'network_weights_backup', None) is not None:
+        backup_size += self.network_weights_backup.numel() * self.network_weights_backup.element_size()
+    if getattr(self, 'network_bias_backup', None) is not None:
+        backup_size += self.network_bias_backup.numel() * self.network_bias_backup.element_size()
     t1 = time.time()
     timer['backup'] += t1 - t0
 
@@ -424,9 +425,11 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                     continue
                 shared.log.warning(f'LoRA network="{net.name}" layer="{network_layer_name}" unsupported operation')
                 extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
-            set_weights(self, batch_updown, batch_ex_bias)  # Set or restore weights from backup
             self.network_current_names = wanted_names
-            # self.to(devices.cpu)
+            set_weights(self, batch_updown, batch_ex_bias)  # Set or restore weights from backup
+            if batch_updown is not None or batch_ex_bias is not None:
+                return self.weight.device
+    return None
 
 
 def network_load():
@@ -443,15 +446,24 @@ def network_load():
         component = getattr(sd_model, component_name, None)
         if component is not None and hasattr(component, 'named_modules'):
             modules += list(component.named_modules())
+    devices_used = []
+    if len(loaded_networks) > 0:
+        pbar = rp.Progress(rp.TextColumn('[cyan]{task.description}'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), console=shared.console)
+        task = pbar.add_task(description='Apply network: type=LoRA' , total=len(modules))
+    else:
+        task = None
+        pbar = nullcontext()
     with pbar:
-        task = pbar.add_task(description='Apply network: type=LoRA' , total=len(modules), visible=len(loaded_networks) > 0)
         for _, module in modules:
-            network_apply_weights(module)
-            pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
-        pbar.remove_task(task)
-    modules.clear()
+            devices_used.append(network_apply_weights(module))
+            if task is not None:
+                pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
+        # pbar.remove_task(task)
     if debug:
-        shared.log.debug(f'Load network: type=LoRA modules={len(modules)} backup={backup_size} time={get_timers()}')
+        devices_used = [d for d in devices_used if d is not None]
+        devices_set = list(set(devices_used))
+        shared.log.debug(f'Load network: type=LoRA modules={len(modules)} apply={len(devices_used)} device={devices_set} backup={backup_size} time={get_timers()}')
+    modules.clear()
     if shared.opts.diffusers_offload_mode == "sequential":
         sd_models.set_diffuser_offload(sd_model, op="model")
 

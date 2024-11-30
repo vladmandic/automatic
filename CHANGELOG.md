@@ -40,6 +40,8 @@
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
+- **Offload** improvements:  
+  - faster and more compatible *balanced* mode  
 - **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
@@ -69,6 +71,7 @@
 - fix gpu memory monitoring  
 - simplify img2img/inpaint/sketch canvas handling  
 - fix prompt caching  
+- fix xyz grid skip final pass  
 
 ## Update for 2024-11-21
 
