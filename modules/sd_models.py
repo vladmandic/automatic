@@ -413,11 +413,11 @@ def apply_balanced_offload(sd_model):
                 if checkpoint_name is None:
                     checkpoint_name = pipe.__class__.__name__
                 offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
+                network_layer_name = getattr(module, "network_layer_name", None)
                 module = remove_hook_from_module(module, recurse=True)
                 try:
                     module = module.to("cpu")
                     module.offload_dir = offload_dir
-                    network_layer_name = getattr(module, "network_layer_name", None)
                     module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
                     if network_layer_name:
@@ -1455,7 +1455,10 @@ def disable_offload(sd_model):
     for module_name in keys: # pylint: disable=protected-access
         module = getattr(sd_model, module_name, None)
         if isinstance(module, torch.nn.Module):
+            network_layer_name = getattr(module, "network_layer_name", None)
             module = remove_hook_from_module(module, recurse=True)
+            if network_layer_name:
+                module.network_layer_name = network_layer_name
     sd_model.has_accelerate = False
 
 
