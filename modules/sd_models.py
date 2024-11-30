@@ -389,6 +389,7 @@ class OffloadHook(accelerate.hooks.ModelHook):
             module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
             module.balanced_offload_device_map = device_map
             module.balanced_offload_max_memory = max_memory
+            module.balanced_offload_active = True
         return args, kwargs
 
     def post_forward(self, module, output):
@@ -421,7 +422,8 @@ def apply_balanced_offload(sd_model):
             keys = get_signature(pipe).keys()
         for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
-            if isinstance(module, torch.nn.Module):
+            balanced_offload_active = getattr(module, "balanced_offload_active", None)
+            if isinstance(module, torch.nn.Module) and (balanced_offload_active is None or balanced_offload_active):
                 network_layer_name = getattr(module, "network_layer_name", None)
                 device_map = getattr(module, "balanced_offload_device_map", None)
                 max_memory = getattr(module, "balanced_offload_max_memory", None)
@@ -431,6 +433,7 @@ def apply_balanced_offload(sd_model):
                     module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
                     module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                    module.balanced_offload_active = False
                     if network_layer_name:
                         module.network_layer_name = network_layer_name
                     if device_map and max_memory:
@@ -1471,6 +1474,8 @@ def disable_offload(sd_model):
         module = getattr(sd_model, module_name, None)
         if isinstance(module, torch.nn.Module):
             network_layer_name = getattr(module, "network_layer_name", None)
+            if getattr(module, "balanced_offload_active", None) is not None:
+                module.balanced_offload_active = None
             module = remove_hook_from_module(module, recurse=True)
             if network_layer_name:
                 module.network_layer_name = network_layer_name
