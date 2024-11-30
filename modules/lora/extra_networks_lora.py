@@ -113,22 +113,21 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         self.errors = {}
 
     def activate(self, p, params_list, step=0):
-        t0 = time.time()
         self.errors.clear()
         if self.active:
             if self.model != shared.opts.sd_model_checkpoint: # reset if model changed
                 self.active = False
         if len(params_list) > 0 and not self.active: # activate patches once
-            shared.log.debug(f'Activate network: type=LoRA model="{shared.opts.sd_model_checkpoint}"')
+            # shared.log.debug(f'Activate network: type=LoRA model="{shared.opts.sd_model_checkpoint}"')
             self.active = True
             self.model = shared.opts.sd_model_checkpoint
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
-        networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
-        t1 = time.time()
+        networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims) # load
+        networks.network_load() # backup/apply
         if len(networks.loaded_networks) > 0 and step == 0:
             infotext(p)
             prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t1-t0:.2f}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} time={networks.get_timers()}')
 
     def deactivate(self, p):
         t0 = time.time()

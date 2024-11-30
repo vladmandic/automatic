@@ -16,6 +16,7 @@ orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_em
 token_dict = None # used by helper get_tokens
 token_type = None # used by helper get_tokens
 cache = OrderedDict()
+last_attention = None
 embedder = None
 
 
@@ -52,7 +53,7 @@ class PromptEmbedder:
         self.prompts = prompts
         self.negative_prompts = negative_prompts
         self.batchsize = len(self.prompts)
-        self.attention = None
+        self.attention = last_attention
         self.allsame = self.compare_prompts()  # collapses batched prompts to single prompt if possible
         self.steps = steps
         self.clip_skip = clip_skip
@@ -78,6 +79,8 @@ class PromptEmbedder:
                 self.scheduled_encode(pipe, batchidx)
             else:
                 self.encode(pipe, prompt, negative_prompt, batchidx)
+        if shared.opts.diffusers_offload_mode == "balanced":
+            pipe = sd_models.apply_balanced_offload(pipe)
         self.checkcache(p)
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
 
@@ -113,6 +116,7 @@ class PromptEmbedder:
                 debug(f"Prompt cache: add={key}")
                 while len(cache) > int(shared.opts.sd_textencoder_cache_size):
                     cache.popitem(last=False)
+                return True
         if item:
             self.__dict__.update(cache[key])
             cache.move_to_end(key)
@@ -161,7 +165,9 @@ class PromptEmbedder:
             self.negative_pooleds[batchidx].append(self.negative_pooleds[batchidx][idx])
 
     def encode(self, pipe, positive_prompt, negative_prompt, batchidx):
+        global last_attention # pylint: disable=global-statement
         self.attention = shared.opts.prompt_attention
+        last_attention = self.attention
         if self.attention == "xhinker":
             prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
         else:
@@ -178,7 +184,6 @@ class PromptEmbedder:
         if debug_enabled:
             get_tokens(pipe, 'positive', positive_prompt)
             get_tokens(pipe, 'negative', negative_prompt)
-        pipe = prepare_model()
 
     def __call__(self, key, step=0):
         batch = getattr(self, key)
