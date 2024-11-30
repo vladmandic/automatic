@@ -28,6 +28,7 @@ available_networks = {}
 available_network_aliases = {}
 loaded_networks: List[network.Network] = []
 timer = { 'list': 0, 'load': 0, 'backup': 0, 'calc': 0, 'apply': 0, 'restore': 0, 'deactivate': 0 }
+backup_size = 0
 lora_cache = {}
 diffuser_loaded = []
 diffuser_scales = []
@@ -289,6 +290,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         devices.torch_gc()
 
     t1 = time.time()
+    backup_size = 0
     timer['load'] = t1 - t0
 
 
@@ -329,6 +331,7 @@ def set_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
 
 
 def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], wanted_names): # pylint: disable=W0613
+    global backup_size # pylint: disable=W0603
     t0 = time.time()
     weights_backup = getattr(self, "network_weights_backup", None)
     if weights_backup is None and wanted_names != (): # pylint: disable=C1803
@@ -347,6 +350,7 @@ def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if shared.opts.lora_offload_backup and weights_backup is not None:
             weights_backup = weights_backup.to(devices.cpu)
         self.network_weights_backup = weights_backup
+        backup_size += weights_backup.numel() * weights_backup.element_size()
     bias_backup = getattr(self, "network_bias_backup", None)
     if bias_backup is None:
         if getattr(self, 'bias', None) is not None:
@@ -356,6 +360,8 @@ def maybe_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if shared.opts.lora_offload_backup and bias_backup is not None:
             bias_backup = bias_backup.to(devices.cpu)
         self.network_bias_backup = bias_backup
+        if bias_backup is not None:
+            backup_size += bias_backup.numel() * bias_backup.element_size()
     t1 = time.time()
     timer['backup'] += t1 - t0
 
@@ -431,14 +437,15 @@ def network_load(): # called from processing
         task = pbar.add_task(description='Apply network: type=LoRA' , total=len(modules), visible=len(loaded_networks) > 0)
         for _, module in modules:
             network_apply_weights(module)
-            # pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
+            pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
         pbar.remove_task(task)
+    modules.clear()
     if debug:
         shared.log.debug(f'Load network: type=LoRA modules={len(modules)}')
     if shared.opts.diffusers_offload_mode != "none":
         sd_models.set_diffuser_offload(sd_model, op="model")
     if debug:
-        shared.log.debug(f'Load network: type=LoRA timers{get_timers()}')
+        shared.log.debug(f'Load network: type=LoRA time={get_timers()} backup={backup_size}')
 
 
 def list_available_networks():
