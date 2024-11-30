@@ -413,6 +413,7 @@ class Script(scripts.Script):
 
         p.do_not_save_grid = True
         p.do_not_save_samples = True
+        p.disable_extra_networks = True
         active = False
         cache = processed
         return processed
