@@ -192,6 +192,9 @@ def main():
     global args # pylint: disable=global-statement
     installer.ensure_base_requirements()
     init_args() # setup argparser and default folders
+    if args.malloc:
+        import tracemalloc
+        tracemalloc.start()
     installer.args = args
     installer.setup_logging()
     installer.log.info('Starting SD.Next')
