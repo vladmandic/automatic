@@ -54,8 +54,8 @@ html {
 
   /* Background Colors */
   --background-color: var(--neutral-950);
-  --background-fill-primary: var(--neutral-700);
-  --input-background-fill: var(--neutral-800);
+  --background-fill-primary: var(--neutral-800);
+  --input-background-fill: var(--neutral-900);
 
   /* Padding and Borders */
   --input-padding: 4px;
@@ -400,6 +400,30 @@ div.form, #txt2img_seed_row, #txt2img_subseed_row {
   padding: 3px;
   border-radius: var(--radius-lg);
   margin: 1px;
+}
+
+/* Image preview styling*/
+#txt2img_gallery {
+  background: var(--background-fill-primary);
+  padding: 5px;
+  margin: 0px;
+}
+
+@keyframes colorChange {
+  0% {
+    background-color: var(--neutral-800);
+  }
+  50% {
+    background-color: var(--neutral-700);
+  }
+  100% {
+    background-color: var(--neutral-800);
+  }
+}
+
+.livePreview {
+  animation: colorChange 3s ease-in-out infinite; /* Adjust the duration as needed */
+  padding: 5px;
 }
 
 /* Gradio Style Classes */
