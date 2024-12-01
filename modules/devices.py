@@ -224,7 +224,7 @@ def torch_gc(force=False, fast=False):
         timer.process.records['gc'] = 0
     timer.process.records['gc'] += t1 - t0
     if not force or collected == 0:
-        return
+        return used_gpu
     mem = memstats.memory_stats()
     saved = round(gpu.get('used', 0) - mem.get('gpu', {}).get('used', 0), 2)
     before = { 'gpu': gpu.get('used', 0), 'ram': ram.get('used', 0) }
@@ -233,6 +233,7 @@ def torch_gc(force=False, fast=False):
     results = { 'collected': collected, 'saved': saved }
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={fn} time={round(t1 - t0, 2)}') # pylint: disable=protected-access
+    return used_gpu
 
 
 def set_cuda_sync_mode(mode):

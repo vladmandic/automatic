@@ -218,6 +218,7 @@ def maybe_recompile_model(names, te_multipliers):
 
 
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
+    timer['list'] = 0
     global backup_size # pylint: disable=global-statement
     networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
