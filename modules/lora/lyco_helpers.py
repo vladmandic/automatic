@@ -12,13 +12,13 @@ def rebuild_conventional(up, down, shape, dyn_dim=None):
     if dyn_dim is not None:
         up = up[:, :dyn_dim]
         down = down[:dyn_dim, :]
-    return (up @ down).reshape(shape)
+    return (up @ down).reshape(shape).to(up.dtype)
 
 
 def rebuild_cp_decomposition(up, down, mid):
     up = up.reshape(up.size(0), -1)
     down = down.reshape(down.size(0), -1)
-    return torch.einsum('n m k l, i n, m j -> i j k l', mid, up, down)
+    return torch.einsum('n m k l, i n, m j -> i j k l', mid, up, down).to(up.dtype)
 
 
 # copied from https://github.com/KohakuBlueleaf/LyCORIS/blob/dev/lycoris/modules/lokr.py

@@ -4,6 +4,7 @@ import numpy as np
 import modules.lora.networks as networks
 from modules import extra_networks, shared
 
+
 # from https://github.com/cheald/sd-webui-loractl/blob/master/loractl/lib/utils.py
 def get_stepwise(param, step, steps):
     def sorted_positions(raw_steps):
@@ -122,8 +123,8 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.active = True
             self.model = shared.opts.sd_model_checkpoint
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
-        networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims) # load
-        networks.network_load() # backup/apply
+        networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
+        networks.network_process()
         if len(networks.loaded_networks) > 0 and step == 0:
             infotext(p)
             prompt(p)

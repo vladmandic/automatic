@@ -17,8 +17,9 @@ def register_extra_network(extra_network):
 def register_default_extra_networks():
     from modules.ui_extra_networks_styles import ExtraNetworkStyles
     register_extra_network(ExtraNetworkStyles())
-    from modules.lora.extra_networks_lora import ExtraNetworkLora
-    register_extra_network(ExtraNetworkLora())
+    if shared.native:
+        from modules.lora.networks import extra_network_lora
+        register_extra_network(extra_network_lora)
     if shared.opts.hypernetwork_enabled:
         from modules.ui_extra_networks_hypernet import ExtraNetworkHypernet
         register_extra_network(ExtraNetworkHypernet())
