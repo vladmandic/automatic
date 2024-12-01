@@ -985,9 +985,10 @@ svg.feather.feather-image,
 
 #txt2img_token_counter, #txt2img_negative_token_counter {
   display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  padding: 5px;
+  flex-direction: row;
+  padding-top: 1px;
+  opacity: 0.6;
+  z-index: 99;
 }
 
 #txt2img_prompt_container {
