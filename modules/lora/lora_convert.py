@@ -476,3 +476,34 @@ def _convert_kohya_sd3_lora_to_diffusers(state_dict):
         return new_state_dict
 
     return _convert_sd_scripts_to_ai_toolkit(state_dict)
+
+
+def assign_network_names_to_compvis_modules(sd_model):
+    if sd_model is None:
+        return
+    sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
+    network_layer_mapping = {}
+    if hasattr(sd_model, 'text_encoder') and sd_model.text_encoder is not None:
+        for name, module in sd_model.text_encoder.named_modules():
+            prefix = "lora_te1_" if hasattr(sd_model, 'text_encoder_2') else "lora_te_"
+            network_name = prefix + name.replace(".", "_")
+            network_layer_mapping[network_name] = module
+            module.network_layer_name = network_name
+    if hasattr(sd_model, 'text_encoder_2'):
+        for name, module in sd_model.text_encoder_2.named_modules():
+            network_name = "lora_te2_" + name.replace(".", "_")
+            network_layer_mapping[network_name] = module
+            module.network_layer_name = network_name
+    if hasattr(sd_model, 'unet'):
+        for name, module in sd_model.unet.named_modules():
+            network_name = "lora_unet_" + name.replace(".", "_")
+            network_layer_mapping[network_name] = module
+            module.network_layer_name = network_name
+    if hasattr(sd_model, 'transformer'):
+        for name, module in sd_model.transformer.named_modules():
+            network_name = "lora_transformer_" + name.replace(".", "_")
+            network_layer_mapping[network_name] = module
+            if "norm" in network_name and "linear" not in network_name and shared.sd_model_type != "sd3":
+                continue
+            module.network_layer_name = network_name
+    shared.sd_model.network_layer_mapping = network_layer_mapping
