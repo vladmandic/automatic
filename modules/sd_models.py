@@ -361,7 +361,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} threshold={shared.opts.diffusers_offload_max_gpu_memory} limit={shared.opts.cuda_mem_fraction}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} watermarks low={shared.opts.diffusers_offload_min_gpu_memory} high={shared.opts.diffusers_offload_max_gpu_memory} limit={shared.opts.cuda_mem_fraction:.2f}')
             sd_model = apply_balanced_offload(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
@@ -369,6 +369,16 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
 
 
 class OffloadHook(accelerate.hooks.ModelHook):
+    def __init__(self):
+        if shared.opts.diffusers_offload_max_gpu_memory > 1:
+            shared.opts.diffusers_offload_max_gpu_memory = 0.75
+        if shared.opts.diffusers_offload_max_cpu_memory > 1:
+            shared.opts.diffusers_offload_max_cpu_memory = 0.75
+        self.gpu = int(shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory * 1024*1024*1024)
+        self.cpu = int(shared.cpu_memory * shared.opts.diffusers_offload_max_cpu_memory * 1024*1024*1024)
+        shared.log.info(f'Init offload: type=balanced gpu={self.gpu} cpu={self.cpu}')
+        super().__init__()
+
     def init_hook(self, module):
         return module
 
@@ -377,10 +387,7 @@ class OffloadHook(accelerate.hooks.ModelHook):
             device_index = torch.device(devices.device).index
             if device_index is None:
                 device_index = 0
-            max_memory = {
-                device_index: int(shared.opts.diffusers_offload_max_gpu_memory * 1024*1024*1024),
-                "cpu": int(shared.opts.diffusers_offload_max_cpu_memory * 1024*1024*1024),
-            }
+            max_memory = { device_index: self.gpu, "cpu": self.cpu }
             device_map = getattr(module, "balanced_offload_device_map", None)
             if device_map is None or max_memory != getattr(module, "balanced_offload_max_memory", None):
                 device_map = accelerate.infer_auto_device_map(module, max_memory=max_memory)
@@ -399,10 +406,13 @@ class OffloadHook(accelerate.hooks.ModelHook):
         return module
 
 
-offload_hook_instance = OffloadHook()
+offload_hook_instance = None
 
 
 def apply_balanced_offload(sd_model):
+    global offload_hook_instance # pylint: disable=global-statement
+    if offload_hook_instance is None:
+        offload_hook_instance = OffloadHook()
     t0 = time.time()
     excluded = ['OmniGenPipeline']
     if sd_model.__class__.__name__ in excluded:
@@ -414,6 +424,7 @@ def apply_balanced_offload(sd_model):
         checkpoint_name = sd_model.__class__.__name__
 
     def apply_balanced_offload_to_module(pipe):
+        used_gpu = devices.torch_gc(fast=True)
         if hasattr(pipe, "pipe"):
             apply_balanced_offload_to_module(pipe.pipe)
         if hasattr(pipe, "_internal_dict"):
@@ -429,7 +440,9 @@ def apply_balanced_offload(sd_model):
                 max_memory = getattr(module, "balanced_offload_max_memory", None)
                 module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
                 try:
-                    module = module.to(devices.cpu, non_blocking=True)
+                    if used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory:
+                        module = module.to(devices.cpu, non_blocking=True)
+                        used_gpu = devices.torch_gc(fast=True)
                     module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
                     module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access

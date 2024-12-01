@@ -42,6 +42,8 @@
   - Flux: do not recast quants  
 - **Offload** improvements:  
   - faster and more compatible *balanced* mode  
+  - balanced offload: units are now in percentage instead of bytes  
+  - balanced offload: add both high and low watermark  
 - **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
