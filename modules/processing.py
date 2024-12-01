@@ -483,4 +483,5 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         for stat in stats[:20]:
             frame = stat.traceback[0]
             shared.log.debug(f'  file="{frame.filename}":{frame.lineno} size={stat.size}')
+    devices.torch_gc(force=True)
     return processed
