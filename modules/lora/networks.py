@@ -412,6 +412,9 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
                                 batch_updown = batch_updown.to(devices.cpu, non_blocking=True)
                             if batch_ex_bias is not None:
                                 batch_ex_bias = batch_ex_bias.to(devices.cpu, non_blocking=True)
+                            if devices.backend == "ipex":
+                                # using non_blocking=True here causes NaNs on Intel
+                                torch.xpu.synchronize(devices.device)
                             t1 = time.time()
                             timer['move'] += t1 - t0
                     except RuntimeError as e:
