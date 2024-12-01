@@ -459,6 +459,8 @@ def network_load():
         pbar = nullcontext()
     with pbar:
         for _, module in modules:
+            if shared.state.interrupted:
+                continue
             devices_used.append(network_apply_weights(module))
             if task is not None:
                 pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
