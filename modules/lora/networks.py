@@ -447,8 +447,8 @@ def network_process():
         if component is not None and hasattr(component, 'named_modules'):
             modules += list(component.named_modules())
     if len(loaded_networks) > 0:
-        pbar = rp.Progress(rp.TextColumn('[cyan]{task.description}'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), console=shared.console)
-        task = pbar.add_task(description='Apply network: type=LoRA' , total=len(modules))
+        pbar = rp.Progress(rp.TextColumn('[cyan]Apply network: type=LoRA'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
+        task = pbar.add_task(description='' , total=len(modules))
     else:
         task = None
         pbar = nullcontext()
@@ -463,7 +463,8 @@ def network_process():
             current_names = getattr(module, "network_current_names", ())
             if shared.state.interrupted or network_layer_name is None or current_names == wanted_names:
                 continue
-            weight = module.weight.to(devices.device, non_blocking=True) if hasattr(module, 'weight') else None
+            weight = getattr(module, 'weight', None)
+            weight = weight.to(devices.device, non_blocking=True) if weight is not None else None
             backup_size += network_backup_weights(module, weight, network_layer_name, wanted_names)
             batch_updown, batch_ex_bias = network_calc_weights(module, weight, network_layer_name)
             del weight
@@ -472,13 +473,13 @@ def network_process():
             weights_dtypes.append(weights_dtype)
             module.network_current_names = wanted_names
             if task is not None:
-                pbar.update(task, advance=1) # progress bar becomes visible if operation takes more than 1sec
+                pbar.update(task, advance=1, description=f'networks={len(loaded_networks)} modules={len(modules)} apply={applied} backup={backup_size}')
             if batch_updown is not None or batch_ex_bias is not None:
                 applied += 1
         # pbar.remove_task(task)
     weights_devices, weights_dtypes = list(set([x for x in weights_devices if x is not None])), list(set([x for x in weights_dtypes if x is not None])) # noqa: C403
     if debug and len(loaded_networks) > 0:
-        shared.log.debug(f'Load network: type=LoRA modules={len(modules)} networks={len(loaded_networks)} apply={applied} device={weights_devices} dtype={weights_dtypes} backup={backup_size} time={get_timers()}')
+        shared.log.debug(f'Load network: type=LoRA networks={len(loaded_networks)} modules={len(modules)} apply={applied} device={weights_devices} dtype={weights_dtypes} backup={backup_size} time={get_timers()}')
     modules.clear()
     if shared.opts.diffusers_offload_mode == "sequential":
         sd_models.set_diffuser_offload(sd_model, op="model")

@@ -39,8 +39,8 @@ def prepare_model(pipe = None):
         pipe = pipe.pipe
     if not hasattr(pipe, "text_encoder"):
         return None
-    if shared.opts.diffusers_offload_mode == "balanced":
-        pipe = sd_models.apply_balanced_offload(pipe)
+    # if shared.opts.diffusers_offload_mode == "balanced":
+    #    pipe = sd_models.apply_balanced_offload(pipe)
     elif hasattr(pipe, "maybe_free_model_hooks"):
         pipe.maybe_free_model_hooks()
         devices.torch_gc()
@@ -79,8 +79,8 @@ class PromptEmbedder:
                 self.scheduled_encode(pipe, batchidx)
             else:
                 self.encode(pipe, prompt, negative_prompt, batchidx)
-        if shared.opts.diffusers_offload_mode == "balanced":
-            pipe = sd_models.apply_balanced_offload(pipe)
+        # if shared.opts.diffusers_offload_mode == "balanced":
+        #    pipe = sd_models.apply_balanced_offload(pipe)
         self.checkcache(p)
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
 
@@ -199,8 +199,6 @@ class PromptEmbedder:
 
 
 def compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
-    if not devices.same_device(self.text_encoder.device, devices.device):
-        sd_models.move_model(self.text_encoder, devices.device)
     needs_hidden_states = self.returned_embeddings_type != 1
     text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
 
@@ -377,25 +375,31 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
+    embedding_args = {
+        'truncate': False,
+        'returned_embeddings_type': embedding_type,
+        'device': device,
+        'dtype_for_device_getter': lambda device: devices.dtype,
+    }
     if getattr(pipe, "prior_pipe", None) is not None and getattr(pipe.prior_pipe, "tokenizer", None) is not None and getattr(pipe.prior_pipe, "text_encoder", None) is not None:
-        provider = EmbeddingsProvider(padding_attention_mask_value=0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        provider = EmbeddingsProvider(padding_attention_mask_value=0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, **embedding_args)
         embeddings_providers.append(provider)
-        no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, **embedding_args)
         embeddings_providers.append(no_mask_provider)
     elif getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
-        if not devices.same_device(pipe.text_encoder.device, devices.device):
-            sd_models.move_model(pipe.text_encoder, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, **embedding_args)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
-        if not devices.same_device(pipe.text_encoder_2.device, devices.device):
-            sd_models.move_model(pipe.text_encoder_2, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder_2.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder_2, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, **embedding_args)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_3", None) is not None and getattr(pipe, "text_encoder_3", None) is not None:
-        if not devices.same_device(pipe.text_encoder_3.device, devices.device):
-            sd_models.move_model(pipe.text_encoder_3, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_3, text_encoder=pipe.text_encoder_3, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder_3.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder_3, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_3, text_encoder=pipe.text_encoder_3, **embedding_args)
         embeddings_providers.append(provider)
     return embeddings_providers
 
