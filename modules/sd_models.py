@@ -443,23 +443,24 @@ def apply_balanced_offload(sd_model):
                 max_memory = getattr(module, "balanced_offload_max_memory", None)
                 module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
                 try:
-                    if used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory:
-                        debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} target={devices.cpu} component={module.__class__.__name__}')
-                        module = module.to(devices.cpu, non_blocking=True)
-                        used_gpu, used_ram = devices.torch_gc(fast=True)
-                    else:
-                        debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} target={devices.cpu} component={module.__class__.__name__}')
-                    module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
-                    module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
-                    module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
-                    if network_layer_name:
-                        module.network_layer_name = network_layer_name
-                    if device_map and max_memory:
-                        module.balanced_offload_device_map = device_map
-                        module.balanced_offload_max_memory = max_memory
+                    do_offload = used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory
+                    debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} dtype={module.dtype} op={"move" if do_offload else "skip"} component={module.__class__.__name__}')
+                    if do_offload:
+                        module = module.to(devices.cpu)
+                        used_gpu, used_ram = devices.torch_gc(fast=True, force=True)
                 except Exception as e:
                     if 'bitsandbytes' not in str(e):
                         shared.log.error(f'Balanced offload: module={module_name} {e}')
+                    if os.environ.get('SD_MOVE_DEBUG', None):
+                        errors.display(e, f'Balanced offload: module={module_name}')
+                module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
+                module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
+                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+                if network_layer_name:
+                    module.network_layer_name = network_layer_name
+                if device_map and max_memory:
+                    module.balanced_offload_device_map = device_map
+                    module.balanced_offload_max_memory = max_memory
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "pipe"):
