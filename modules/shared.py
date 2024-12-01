@@ -561,7 +561,7 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
     "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_offload_max_gpu_memory": OptionInfo(0.75, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_cpu_memory": OptionInfo(0.75, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
