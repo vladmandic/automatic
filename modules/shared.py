@@ -20,7 +20,7 @@ from modules import errors, devices, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
-from modules.memstats import memory_stats
+from modules.memstats import memory_stats, ram_stats
 from modules.ui_components import DropdownEditable
 import modules.interrogate
 import modules.memmon

@@ -83,6 +83,8 @@ def process_base(p: processing.StableDiffusionProcessing):
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
+        if shared.opts.diffusers_offload_mode == "balanced":
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         sd_models.move_model(shared.sd_model, devices.device)
         if hasattr(shared.sd_model, 'unet'):
             sd_models.move_model(shared.sd_model.unet, devices.device)

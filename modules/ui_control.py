@@ -29,15 +29,20 @@ def return_stats(t: float = None):
         elapsed_m = int(elapsed // 60)
         elapsed_s = elapsed % 60
         elapsed_text = f"Time: {elapsed_m}m {elapsed_s:.2f}s |" if elapsed_m > 0 else f"Time: {elapsed_s:.2f}s |"
-    summary = timer.process.summary(min_time=0.1, total=False).replace('=', ' ')
-    vram_html = ''
+    summary = timer.process.summary(min_time=0.25, total=False).replace('=', ' ')
+    gpu = ''
+    cpu = ''
     if not shared.mem_mon.disabled:
         vram = {k: -(v//-(1024*1024)) for k, v in shared.mem_mon.read().items()}
-        used = round(100 * vram['used'] / (vram['total'] + 0.001))
-        if vram.get('active_peak', 0) > 0:
-            vram_html += f"| GPU {max(vram['active_peak'], vram['reserved_peak'])} MB {used}%"
-            vram_html += f" | retries {vram['retries']} oom {vram['oom']}" if vram.get('retries', 0) > 0 or vram.get('oom', 0) > 0 else ''
-    return f"<div class='performance'><p>{elapsed_text} {summary} {vram_html}</p></div>"
+        peak = max(vram['active_peak'], vram['reserved_peak'], vram['used'])
+        used = round(100.0 * peak / vram['total']) if vram['total'] > 0 else 0
+        if used > 0:
+            gpu += f"| GPU {peak} MB {used}%"
+            gpu += f" | retries {vram['retries']} oom {vram['oom']}" if vram.get('retries', 0) > 0 or vram.get('oom', 0) > 0 else ''
+        ram = shared.ram_stats()
+        if ram['used'] > 0:
+            cpu += f"| RAM {ram['used']} GB {round(100.0 * ram['used'] / ram['total'])}%"
+    return f"<div class='performance'><p>Time: {elapsed_text} | {summary} {gpu} {cpu}</p></div>"
 
 
 def return_controls(res, t: float = None):

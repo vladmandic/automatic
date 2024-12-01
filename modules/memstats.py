@@ -5,11 +5,12 @@ from modules import shared, errors
 
 fail_once = False
 
+def gb(val: float):
+    return round(val / 1024 / 1024 / 1024, 2)
+
+
 def memory_stats():
     global fail_once # pylint: disable=global-statement
-    def gb(val: float):
-        return round(val / 1024 / 1024 / 1024, 2)
-
     mem = {}
     try:
         process = psutil.Process(os.getpid())
@@ -38,3 +39,14 @@ def memory_stats():
     except Exception:
         pass
     return mem
+
+
+def ram_stats():
+    try:
+        process = psutil.Process(os.getpid())
+        res = process.memory_info()
+        ram_total = 100 * res.rss / process.memory_percent()
+        ram = { 'used': gb(res.rss), 'total': gb(ram_total) }
+        return ram
+    except Exception:
+        return { 'used': 0, 'total': 0 }

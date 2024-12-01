@@ -401,7 +401,6 @@ class OffloadHook(accelerate.hooks.ModelHook):
             module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
             module.balanced_offload_device_map = device_map
             module.balanced_offload_max_memory = max_memory
-            module.balanced_offload_active = True
         return args, kwargs
 
     def post_forward(self, module, output):
@@ -429,7 +428,7 @@ def apply_balanced_offload(sd_model):
         checkpoint_name = sd_model.__class__.__name__
 
     def apply_balanced_offload_to_module(pipe):
-        used_gpu = devices.torch_gc(fast=True)
+        used_gpu, used_ram = devices.torch_gc(fast=True)
         if hasattr(pipe, "pipe"):
             apply_balanced_offload_to_module(pipe.pipe)
         if hasattr(pipe, "_internal_dict"):
@@ -438,20 +437,21 @@ def apply_balanced_offload(sd_model):
             keys = get_signature(pipe).keys()
         for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
-            balanced_offload_active = getattr(module, "balanced_offload_active", None)
-            if isinstance(module, torch.nn.Module) and (balanced_offload_active is None or balanced_offload_active):
+            if isinstance(module, torch.nn.Module):
                 network_layer_name = getattr(module, "network_layer_name", None)
                 device_map = getattr(module, "balanced_offload_device_map", None)
                 max_memory = getattr(module, "balanced_offload_max_memory", None)
                 module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
                 try:
                     if used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory:
+                        debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} target={devices.cpu} component={module.__class__.__name__}')
                         module = module.to(devices.cpu, non_blocking=True)
-                        used_gpu = devices.torch_gc(fast=True)
+                        used_gpu, used_ram = devices.torch_gc(fast=True)
+                    else:
+                        debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} target={devices.cpu} component={module.__class__.__name__}')
                     module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
                     module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
                     module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
-                    module.balanced_offload_active = False
                     if network_layer_name:
                         module.network_layer_name = network_layer_name
                     if device_map and max_memory:
@@ -515,13 +515,13 @@ def move_model(model, device=None, force=False):
                             shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
-    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device):
+    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device) and not force:
         return
     try:
         t0 = time.time()
         try:
             if hasattr(model, 'to'):
-                model.to(device)
+                model.to(device, non_blocking=True)
             if hasattr(model, "prior_pipe"):
                 model.prior_pipe.to(device)
         except Exception as e0:
@@ -551,7 +551,7 @@ def move_model(model, device=None, force=False):
     if 'move' not in process_timer.records:
         process_timer.records['move'] = 0
     process_timer.records['move'] += t1 - t0
-    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 1:
+    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 2:
         shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access
     devices.torch_gc()
 
@@ -1492,8 +1492,6 @@ def disable_offload(sd_model):
         module = getattr(sd_model, module_name, None)
         if isinstance(module, torch.nn.Module):
             network_layer_name = getattr(module, "network_layer_name", None)
-            if getattr(module, "balanced_offload_active", None) is not None:
-                module.balanced_offload_active = None
             module = remove_hook_from_module(module, recurse=True)
             if network_layer_name:
                 module.network_layer_name = network_layer_name
