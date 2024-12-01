@@ -374,9 +374,14 @@ class OffloadHook(accelerate.hooks.ModelHook):
             shared.opts.diffusers_offload_max_gpu_memory = 0.75
         if shared.opts.diffusers_offload_max_cpu_memory > 1:
             shared.opts.diffusers_offload_max_cpu_memory = 0.75
+        self.min_watermark = shared.opts.diffusers_offload_min_gpu_memory
+        self.max_watermark = shared.opts.diffusers_offload_max_gpu_memory
+        self.cpu_watermark = shared.opts.diffusers_offload_max_cpu_memory
         self.gpu = int(shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory * 1024*1024*1024)
         self.cpu = int(shared.cpu_memory * shared.opts.diffusers_offload_max_cpu_memory * 1024*1024*1024)
-        shared.log.info(f'Init offload: type=balanced gpu={self.gpu} cpu={self.cpu}')
+        gpu_dict = { "min": self.min_watermark, "max": self.max_watermark, "bytes": self.gpu }
+        cpu_dict = { "max": self.cpu_watermark, "bytes": self.cpu }
+        shared.log.info(f'Init offload: type=balanced gpu={gpu_dict} cpu={cpu_dict}')
         super().__init__()
 
     def init_hook(self, module):
@@ -411,7 +416,7 @@ offload_hook_instance = None
 
 def apply_balanced_offload(sd_model):
     global offload_hook_instance # pylint: disable=global-statement
-    if offload_hook_instance is None:
+    if offload_hook_instance is None or offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory or offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory:
         offload_hook_instance = OffloadHook()
     t0 = time.time()
     excluded = ['OmniGenPipeline']
