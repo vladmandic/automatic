@@ -1,4 +1,5 @@
 import os
+import time
 import math
 import random
 import warnings
@@ -9,7 +10,7 @@ import cv2
 from PIL import Image
 from skimage import exposure
 from blendmodes.blend import blendLayers, BlendType
-from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae
+from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae, timer
 
 
 debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -352,6 +353,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 
 
 def validate_sample(tensor):
+    t0 = time.time()
     if not isinstance(tensor, np.ndarray) and not isinstance(tensor, torch.Tensor):
         return tensor
     dtype = tensor.dtype
@@ -366,17 +368,18 @@ def validate_sample(tensor):
     sample = 255.0 * np.moveaxis(sample, 0, 2) if not shared.native else 255.0 * sample
     with warnings.catch_warnings(record=True) as w:
         cast = sample.astype(np.uint8)
-    minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
-    if len(w) > 0 or minimum == maximum:
+    if len(w) > 0:
         nans = np.isnan(sample).sum()
         cast = np.nan_to_num(sample)
         cast = cast.astype(np.uint8)
         vae = shared.sd_model.vae.dtype if hasattr(shared.sd_model, 'vae') else None
         upcast = getattr(shared.sd_model.vae.config, 'force_upcast', None) if hasattr(shared.sd_model, 'vae') and hasattr(shared.sd_model.vae, 'config') else None
-        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} mean={mean} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
+        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
         if upcast is not None and not upcast:
             setattr(shared.sd_model.vae.config, 'force_upcast', True) # noqa: B010
             shared.log.warning('Decode: upcast=True set, retry operation')
+    t1 = time.time()
+    timer.process.add('validate', t1 - t0)
     return cast
 
 

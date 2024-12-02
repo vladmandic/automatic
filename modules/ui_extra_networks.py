@@ -460,17 +460,20 @@ def register_page(page: ExtraNetworksPage):
 
 
 def register_pages():
-    from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
-    from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
-    from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
-    from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
-    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
     debug('EN register-pages')
+    from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
+    from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
+    from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
+    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
+    from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
     register_page(ExtraNetworksPageCheckpoints())
-    register_page(ExtraNetworksPageStyles())
-    register_page(ExtraNetworksPageTextualInversion())
     register_page(ExtraNetworksPageVAEs())
+    register_page(ExtraNetworksPageStyles())
     register_page(ExtraNetworksPageHistory())
+    register_page(ExtraNetworksPageTextualInversion())
+    if shared.native:
+        from modules.ui_extra_networks_lora import ExtraNetworksPageLora
+        register_page(ExtraNetworksPageLora())
     if shared.opts.hypernetwork_enabled:
         from modules.ui_extra_networks_hypernets import ExtraNetworksPageHypernetworks
         register_page(ExtraNetworksPageHypernetworks())

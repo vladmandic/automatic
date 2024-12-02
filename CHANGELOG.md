@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-28
+## Update for 2024-12-02
 
 ### New models and integrations
 
@@ -33,6 +33,12 @@
 
 ### UI and workflow improvements
 
+- **LoRA** handler rewrite:  
+  - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
+    this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
+  - *note*: LoRA weights backups are required so LoRA can be unapplied, but can take quite a lot of system memory  
+    if you know you will not need to unapply LoRA, you can disable backups in *settings -> networks -> lora fuse*  
+    in which case, you need to reload model to unapply LoRA  
 - **Model loader** improvements:  
   - detect model components on model load fail  
   - allow passing absolute path to model loader  
@@ -41,6 +47,10 @@
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
+- **Offload** improvements:  
+  - faster and more compatible *balanced* mode  
+  - balanced offload: units are now in percentage instead of bytes  
+  - balanced offload: add both high and low watermark  
 - **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
@@ -54,6 +64,7 @@
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - DPM FlowMatch: update all and add sigma methods  
+  - BDIA-DDIM: *experimental*  
 
 ### Fixes  
 
@@ -68,7 +79,9 @@
 - fix xyz-grid with lora  
 - fix api script callbacks  
 - fix gpu memory monitoring  
-- simplify img2img/inpaint/sketch canvas handling
+- simplify img2img/inpaint/sketch canvas handling  
+- fix prompt caching  
+- fix xyz grid skip final pass  
 
 ## Update for 2024-11-21
 

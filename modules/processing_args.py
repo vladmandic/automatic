@@ -12,7 +12,8 @@ from modules.processing_helpers import resize_hires, fix_prompts, calculate_base
 from modules.api import helpers
 
 
-debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug_enabled = os.environ.get('SD_DIFFUSERS_DEBUG', None)
+debug_log = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 def task_specific_kwargs(p, model):
@@ -93,7 +94,8 @@ def task_specific_kwargs(p, model):
             'target_subject_category': getattr(p, 'prompt', '').split()[-1],
             'output_type': 'pil',
         }
-    debug(f'Diffusers task specific args: {task_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers task specific args: {task_args}')
     return task_args
 
 
@@ -108,7 +110,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     signature = inspect.signature(type(model).__call__, follow_wrapped=True)
     possible = list(signature.parameters)
 
-    debug(f'Diffusers pipeline possible: {possible}')
+    if debug_enabled:
+        debug_log(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
@@ -159,6 +162,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
+    if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
+        prompt_parser_diffusers.embedder = None
 
     if 'clip_skip' in possible and parser == 'fixed':
         if clip_skip == 1:
@@ -248,14 +253,16 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if arg in possible:
             args[arg] = task_kwargs[arg]
     task_args = getattr(p, 'task_args', {})
-    debug(f'Diffusers task args: {task_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers task args: {task_args}')
     for k, v in task_args.items():
         if k in possible:
             args[k] = v
         else:
-            debug(f'Diffusers unknown task args: {k}={v}')
+            debug_log(f'Diffusers unknown task args: {k}={v}')
     cross_attention_args = getattr(p, 'cross_attention_kwargs', {})
-    debug(f'Diffusers cross-attention args: {cross_attention_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers cross-attention args: {cross_attention_args}')
     for k, v in cross_attention_args.items():
         if args.get('cross_attention_kwargs', None) is None:
             args['cross_attention_kwargs'] = {}
@@ -273,7 +280,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:
-        debug('Diffusers: set control image')
+        debug_log('Diffusers: set control image')
         args['control_image'] = args['image']
 
     sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
@@ -309,5 +316,6 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if shared.cmd_opts.profile:
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
-    debug(f'Diffusers pipeline args: {args}')
+    if debug_enabled:
+        debug_log(f'Diffusers pipeline args: {args}')
     return args

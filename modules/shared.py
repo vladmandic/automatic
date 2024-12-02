@@ -20,7 +20,7 @@ from modules import errors, devices, shared_items, shared_state, cmd_args, theme
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
-from modules.memstats import memory_stats
+from modules.memstats import memory_stats, ram_stats # pylint: disable=unused-import
 from modules.ui_components import DropdownEditable
 import modules.interrogate
 import modules.memmon
@@ -132,7 +132,8 @@ def readfile(filename, silent=False, lock=False):
         #    data = json.loads(data)
         t1 = time.time()
         if not silent:
-            log.debug(f'Read: file="{filename}" json={len(data)} bytes={os.path.getsize(filename)} time={t1-t0:.3f}')
+            fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+            log.debug(f'Read: file="{filename}" json={len(data)} bytes={os.path.getsize(filename)} time={t1-t0:.3f} fn={fn}')
     except FileNotFoundError as err:
         log.debug(f'Reading failed: {filename} {err}')
     except Exception as err:
@@ -363,7 +364,7 @@ def list_samplers():
 
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
-    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
+    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff', 'Lora']
     disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
     disabled = []
@@ -559,8 +560,9 @@ options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
     "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
     "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_max_gpu_memory": OptionInfo(round(gpu_memory * 0.75, 1), "Max GPU memory before balanced offload", gr.Slider, {"minimum": 0, "maximum": gpu_memory, "step": 0.01, "visible": True }),
-    "diffusers_offload_max_cpu_memory": OptionInfo(round(cpu_memory * 0.75, 1), "Max CPU memory before balanced offload", gr.Slider, {"minimum": 0, "maximum": cpu_memory, "step": 0.01, "visible": False }),
+    "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_cpu_memory": OptionInfo(0.75, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
@@ -901,15 +903,16 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "wildcards_enabled": OptionInfo(True, "Enable file wildcards support"),
     "extra_networks_lora_sep": OptionInfo("<h2>LoRA</h2>", "", gr.HTML),
     "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
-    "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"]}),
+    "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"], "visible": False}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info"),
+    "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA fuse directly to model"),
+    "lora_load_gpu": OptionInfo(True if not (cmd_opts.lowvram or cmd_opts.medvram) else False, "LoRA load directly to GPU"),
+    "lora_offload_backup": OptionInfo(True, "LoRA offload backup weights"),
     "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
     "lora_maybe_diffusers": OptionInfo(False, "LoRA force loading of specific models using Diffusers"),
-    "lora_fuse_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA use fuse when possible"),
     "lora_apply_tags": OptionInfo(0, "LoRA auto-apply tags", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
     "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_quant": OptionInfo("NF4","LoRA precision in quantized models", gr.Radio, {"choices": ["NF4", "FP4"]}),
-    "lora_load_gpu": OptionInfo(True if not cmd_opts.lowvram else False, "Load LoRA directly to GPU"),
 }))
 
 options_templates.update(options_section((None, "Internal options"), {

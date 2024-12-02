@@ -26,6 +26,7 @@ force_diffusers = [ # forced always
 
 force_models = [ # forced always
     'sc',
+    # 'sd3',
     'kandinsky',
     'hunyuandit',
     'auraflow',

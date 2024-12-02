@@ -91,6 +91,11 @@ class Api:
         self.add_api_route("/sdapi/v1/history", endpoints.get_history, methods=["GET"], response_model=List[str])
         self.add_api_route("/sdapi/v1/history", endpoints.post_history, methods=["POST"], response_model=int)
 
+        # lora api
+        if shared.native:
+            self.add_api_route("/sdapi/v1/loras", endpoints.get_loras, methods=["GET"], response_model=List[dict])
+            self.add_api_route("/sdapi/v1/refresh-loras", endpoints.post_refresh_loras, methods=["POST"])
+
         # gallery api
         gallery.register_api(app)
 
