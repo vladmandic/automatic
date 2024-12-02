@@ -32,9 +32,12 @@
 
 ### UI and workflow improvements
 
-- **LoRA** handler rewrite  
+- **LoRA** handler rewrite:  
   - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
     this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
+  - *note*: LoRA weights backups are required so LoRA can be unapplied, but can take quite a lot of system memory  
+    if you know you will not need to unapply LoRA, you can disable backups in *settings -> networks -> lora fuse*  
+    in which case, you need to reload model to unapply LoRA  
 - **Model loader** improvements:  
   - detect model components on model load fail  
   - allow passing absolute path to model loader  
@@ -60,6 +63,7 @@
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - DPM FlowMatch: update all and add sigma methods  
+  - BDIA-DDIM: *experimental*  
 
 ### Fixes  
 

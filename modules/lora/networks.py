@@ -403,7 +403,7 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
     return batch_updown, batch_ex_bias
 
 
-def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], updown, ex_bias, apply: bool = True):
+def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], updown, ex_bias):
     t0 = time.time()
     weights_backup = getattr(self, "network_weights_backup", None)
     bias_backup = getattr(self, "network_bias_backup", None)
@@ -417,10 +417,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if updown is not None and len(weights_backup.shape) == 4 and weights_backup.shape[1] == 9: # inpainting model. zero pad updown to make channel[1]  4 to 9
             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))  # pylint: disable=not-callable
         if updown is not None:
-            if apply:
-                new_weight = weights_backup.to(devices.device, non_blocking=True) + updown.to(devices.device, non_blocking=True)
-            else:
-                new_weight = weights_backup.to(devices.device, non_blocking=True) - updown.to(devices.device, non_blocking=True)
+            new_weight = weights_backup.to(devices.device, non_blocking=True) + updown.to(devices.device, non_blocking=True)
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
                 self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
             else:
@@ -436,10 +433,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         else:
             self.bias = None
         if ex_bias is not None:
-            if apply:
-                new_weight = bias_backup.to(devices.device, non_blocking=True) + ex_bias.to(devices.device, non_blocking=True)
-            else:
-                new_weight = bias_backup.to(devices.device, non_blocking=True) - ex_bias.to(devices.device, non_blocking=True)
+            new_weight = bias_backup.to(devices.device, non_blocking=True) + ex_bias.to(devices.device, non_blocking=True)
             self.bias = torch.nn.Parameter(new_weight, requires_grad=False)
             del new_weight
         else:
