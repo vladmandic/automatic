@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-30
+## Update for 2024-12-02
 
 ### New models and integrations
 
@@ -32,6 +32,9 @@
 
 ### UI and workflow improvements
 
+- **LoRA** handler rewrite  
+  - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
+    this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
 - **Model loader** improvements:  
   - detect model components on model load fail  
   - allow passing absolute path to model loader  
