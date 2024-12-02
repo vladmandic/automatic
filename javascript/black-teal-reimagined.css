@@ -54,8 +54,8 @@ html {
 
   /* Background Colors */
   --background-color: var(--neutral-950);
-  --background-fill-primary: var(--neutral-700);
-  --input-background-fill: var(--neutral-800);
+  --background-fill-primary: var(--neutral-800);
+  --input-background-fill: var(--neutral-900);
 
   /* Padding and Borders */
   --input-padding: 4px;
@@ -392,14 +392,38 @@ input[type='range']::-moz-range-track {
 }
 
 /* Form Styles */
-div.form {
+div.form, #txt2img_seed_row, #txt2img_subseed_row {
   border-width: 0;
   box-shadow: var(--shadow-md);
   background: var(--background-fill-primary);
   border-bottom: 3px solid var(--highlight-color);
   padding: 3px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   margin: 1px;
+}
+
+/* Image preview styling*/
+#txt2img_gallery {
+  background: var(--background-fill-primary);
+  padding: 5px;
+  margin: 0px;
+}
+
+@keyframes colorChange {
+  0% {
+    background-color: var(--neutral-800);
+  }
+  50% {
+    background-color: var(--neutral-700);
+  }
+  100% {
+    background-color: var(--neutral-800);
+  }
+}
+
+.livePreview {
+  animation: colorChange 3s ease-in-out infinite; /* Adjust the duration as needed */
+  padding: 5px;
 }
 
 /* Gradio Style Classes */
@@ -700,17 +724,6 @@ svg.feather.feather-image,
   height: 2.4em;
 }
 
-#footer,
-#style_pos_col,
-#style_neg_col,
-#roll_col,
-#extras_upscaler_2,
-#extras_upscaler_2_visibility,
-#txt2img_seed_resize_from_w,
-#txt2img_seed_resize_from_h {
-  display: none;
-}
-
 #save-animation {
   border-radius: var(--radius-sm) !important;
   margin-bottom: 16px;
@@ -981,13 +994,122 @@ svg.feather.feather-image,
   height: 100%;
 }
 
-/* Token counters styling */
-
-#txt2img_token_counter, #txt2img_negative_token_counter {
+/* loader */
+.splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  padding: 5px;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.motd {
+  margin-top: 1em;
+  color: var(--body-text-color-subdued);
+  font-family: monospace;
+  font-variant: all-petite-caps;
+  font-size: 1.2em;
+}
+
+.splash-img {
+  margin: 0;
+  width: 512px;
+  height: 512px;
+  background-repeat: no-repeat;
+  animation: color 8s infinite alternate, move 3s infinite alternate;
+}
+
+.loading {
+  color: white;
+  position: border-box;
+  top: 85%;
+  font-size: 1.5em;
+}
+
+.loader {
+  width: 100px;
+  height: 100px;
+  border: var(--spacing-md) solid transparent;
+  border-radius: 50%;
+  border-top: var(--spacing-md) solid var(--primary-600);
+  animation: spin 2s linear infinite, pulse 1.5s ease-in-out infinite;
+  position: border-box;
+}
+
+.loader::before,
+.loader::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  border-radius: 50%;
+  border: var(--spacing-md) solid transparent;
+}
+
+.loader::before {
+  border-top-color: var(--primary-900);
+  animation: spin 3s linear infinite;
+}
+
+.loader::after {
+  border-top-color: var(--primary-300);
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes move {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes color {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* Token counters styling */
+#txt2img_token_counter, #txt2img_negative_token_counter {
+  display: flex;
+  flex-direction: row;
+  padding-top: 1px;
+  opacity: 0.6;
+  z-index: 99;
 }
 
 #txt2img_prompt_container {
@@ -1049,7 +1171,6 @@ svg.feather.feather-image,
   --input-radius: var(--radius-lg);
   --input-text-size: var(--text-md);
   --input-text-weight: 400;
-  --loader-color: var(--color-accent);
   --prose-text-size: var(--text-md);
   --prose-text-weight: 400;
   --prose-header-text-weight: 400;
