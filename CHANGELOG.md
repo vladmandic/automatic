@@ -29,13 +29,13 @@
   style-aligned applies selected attention layers uniformly to all images to achive consistency  
   can be used with or without input image in which case first prompt is used to establish baseline  
   *note:* all prompts are processes as a single batch, so vram is limiting factor
-- **OpenVINO**: update to 2024.5.0  
 
 ### UI and workflow improvements
 
 - **LoRA** handler rewrite:  
   - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
     this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
+    thanks @AI-Casanova  
   - *note*: LoRA weights backups are required so LoRA can be unapplied, but can take quite a lot of system memory  
     if you know you will not need to unapply LoRA, you can disable backups in *settings -> networks -> lora fuse*  
     in which case, you need to reload model to unapply LoRA  
@@ -51,6 +51,7 @@
   - faster and more compatible *balanced* mode  
   - balanced offload: units are now in percentage instead of bytes  
   - balanced offload: add both high and low watermark  
+    *note*: balanced offload is recommended method for offload when using any large models such as sd35 or flux
 - **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
@@ -60,7 +61,11 @@
   - control: optionn to hide input column
   - control: add stats
   - browser -> server logging framework  
-  - add addtional themes: `black-reimagined`  
+  - add addtional themes: `black-reimagined`, thanks @Artheriax  
+
+### Updates
+
+- **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - DPM FlowMatch: update all and add sigma methods  

@@ -9,7 +9,8 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 - Flux IPAdapter: <https://github.com/huggingface/diffusers/issues/9825>
 - Flux NF4: <https://github.com/huggingface/diffusers/issues/9996>
 - SANA: <https://github.com/huggingface/diffusers/pull/9982>
-- LTX-Video: <https://huggingface.co/Lightricks/LTX-Video> <https://huggingface.co/spaces/Lightricks/LTX-Video-Playground/tree/main>
+- LTX-Video: <https://github.com/huggingface/diffusers/pull/10021> <https://huggingface.co/Lightricks/LTX-Video> <https://huggingface.co/spaces/Lightricks/LTX-Video-Playground/tree/main>
+- TorchAO: <https://github.com/huggingface/diffusers/pull/10009>
 
 ## Other
 
