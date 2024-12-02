@@ -475,13 +475,5 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if not p.disable_extra_networks:
         shared.log.info(f'Processed: images={len(output_images)} its={(p.steps * len(output_images)) / (t1 - t0):.2f} time={t1-t0:.2f} timers={timer.process.dct(min_time=0.02)} memory={memstats.memory_stats()}')
 
-    if shared.cmd_opts.malloc:
-        import tracemalloc
-        snapshot = tracemalloc.take_snapshot()
-        stats = snapshot.statistics('lineno')
-        shared.log.debug('Profile malloc:')
-        for stat in stats[:20]:
-            frame = stat.traceback[0]
-            shared.log.debug(f'  file="{frame.filename}":{frame.lineno} size={stat.size}')
     devices.torch_gc(force=True)
     return processed
