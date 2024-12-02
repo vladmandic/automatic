@@ -20,9 +20,9 @@
   --body-text-color: var(--neutral-800);
   --body-text-color-subdued: var(--neutral-600);
   --background-color: #FFFFFF;
-  --background-fill-primary: var(--neutral-400);
+  --background-fill-primary: var(--neutral-300);
   --input-padding: 4px;
-  --input-background-fill: var(--neutral-300);
+  --input-background-fill: var(--neutral-200);
   --input-shadow: 2px 2px 2px 2px var(--neutral-500);
   --button-secondary-text-color: black;
   --button-secondary-background-fill: linear-gradient(to bottom right, var(--neutral-200), var(--neutral-500));
@@ -291,8 +291,8 @@ svg.feather.feather-image, .feather .feather-image { display: none }
   --slider-color: ;
   --stat-background-fill: linear-gradient(to right, var(--primary-400), var(--primary-600));
   --table-border-color: var(--neutral-700);
-  --table-even-background-fill: #222222;
-  --table-odd-background-fill: #333333;
+  --table-even-background-fill: #FFFFFF;
+  --table-odd-background-fill: #CCCCCC;
   --table-radius: var(--radius-lg);
   --table-row-focus: var(--color-accent-soft);
 }
