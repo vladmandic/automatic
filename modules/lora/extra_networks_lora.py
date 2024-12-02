@@ -124,7 +124,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.model = shared.opts.sd_model_checkpoint
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
         networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
-        networks.network_process()
+        networks.network_activate()
         if len(networks.loaded_networks) > 0 and step == 0:
             infotext(p)
             prompt(p)
@@ -141,6 +141,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                         shared.sd_model.unload_lora_weights() # fails for non-CLIP models
                     except Exception:
                         pass
+        networks.network_deactivate()
         t1 = time.time()
         networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
