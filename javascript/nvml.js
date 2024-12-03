@@ -5,7 +5,7 @@ const chartData = { mem: [], load: [] };
 
 async function updateNVMLChart(mem, load) {
   const maxLen = 120;
-  const colorRangeMap = $.range_map({
+  const colorRangeMap = $.range_map({ // eslint-disable-line no-undef
     '0:5': '#fffafa',
     '6:10': '#fff7ed',
     '11:20': '#fed7aa',
@@ -24,8 +24,8 @@ async function updateNVMLChart(mem, load) {
   chartData.load.push(load);
   if (chartData.mem.length > maxLen) chartData.mem.shift();
   chartData.mem.push(mem);
-  $('#nvmlChart').sparkline(chartData.load, sparklineConfigLOAD);
-  $('#nvmlChart').sparkline(chartData.mem, sparklineConfigMEM);
+  $('#nvmlChart').sparkline(chartData.load, sparklineConfigLOAD); // eslint-disable-line no-undef
+  $('#nvmlChart').sparkline(chartData.mem, sparklineConfigMEM); // eslint-disable-line no-undef
 }
 
 async function updateNVML() {
@@ -61,9 +61,7 @@ async function updateNVML() {
         <tr><td>State</td><td>${gpu.state}</td></tr>
       `;
       nvmlTbody.innerHTML = rows;
-      const mem = 100 * (gpu.memory?.used || 0) / (gpu.memory?.total || 1);
-      const load = 100 * (gpu.clock?.gpu?.[0] || 0) / (gpu.clock?.gpu?.[1] || 1);
-      updateNVMLChart(mem, load);
+      updateNVMLChart(gpu.load.memory, gpu.load.gpu);
     }
     nvmlEl.style.display = 'block';
   } catch (e) {
