@@ -68,6 +68,7 @@
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
+  - Euler FlowMatch: allow using timestep presets to set sigmas  
   - DPM FlowMatch: update all and add sigma methods  
   - BDIA-DDIM: *experimental*  
 
