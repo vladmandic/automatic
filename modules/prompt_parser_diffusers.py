@@ -39,8 +39,6 @@ def prepare_model(pipe = None):
         pipe = pipe.pipe
     if not hasattr(pipe, "text_encoder"):
         return None
-    # if shared.opts.diffusers_offload_mode == "balanced":
-    #    pipe = sd_models.apply_balanced_offload(pipe)
     elif hasattr(pipe, "maybe_free_model_hooks"):
         pipe.maybe_free_model_hooks()
         devices.torch_gc()
@@ -79,8 +77,6 @@ class PromptEmbedder:
                 self.scheduled_encode(pipe, batchidx)
             else:
                 self.encode(pipe, prompt, negative_prompt, batchidx)
-        # if shared.opts.diffusers_offload_mode == "balanced":
-        #    pipe = sd_models.apply_balanced_offload(pipe)
         self.checkcache(p)
         debug(f"Prompt encode: time={(time.time() - t0):.3f}")
 
