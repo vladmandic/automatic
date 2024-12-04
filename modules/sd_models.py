@@ -34,6 +34,7 @@ debug_load = os.environ.get('SD_LOAD_DEBUG', None)
 debug_process = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 diffusers_version = int(diffusers.__version__.split('.')[1])
 checkpoint_tiles = checkpoint_titles # legacy compatibility
+should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen']
 
 
 class NoWatermark:
@@ -320,11 +321,15 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         return
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
-    if hasattr(sd_model, 'maybe_free_model_hooks') and shared.opts.diffusers_offload_mode == "none":
-        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
-        sd_model.maybe_free_model_hooks()
-        sd_model.has_accelerate = False
-    if hasattr(sd_model, "enable_model_cpu_offload") and shared.opts.diffusers_offload_mode == "model":
+    if shared.opts.diffusers_offload_mode == "none":
+        if shared.sd_model_type in should_offload:
+            shared.log.warning(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} type={shared.sd_model.__class__.__name__} large model')
+        else:
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
+        if hasattr(sd_model, 'maybe_free_model_hooks'):
+            sd_model.maybe_free_model_hooks()
+            sd_model.has_accelerate = False
+    if shared.opts.diffusers_offload_mode == "model" and hasattr(sd_model, "enable_model_cpu_offload"):
         try:
             shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
@@ -339,7 +344,7 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             set_accelerate(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
-    if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
+    if shared.opts.diffusers_offload_mode == "sequential" and hasattr(sd_model, "enable_sequential_cpu_offload"):
         try:
             shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
