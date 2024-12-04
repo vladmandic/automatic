@@ -83,8 +83,7 @@ def process_base(p: processing.StableDiffusionProcessing):
     try:
         t0 = time.time()
         sd_models_compile.check_deepcache(enable=True)
-        if shared.opts.diffusers_offload_mode == "balanced":
-            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         sd_models.move_model(shared.sd_model, devices.device)
         if hasattr(shared.sd_model, 'unet'):
             sd_models.move_model(shared.sd_model.unet, devices.device)
@@ -266,8 +265,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
         if shared.state.interrupted or shared.state.skipped:
             shared.sd_model = orig_pipeline
             return output
-        if shared.opts.diffusers_offload_mode == "balanced":
-            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         if shared.opts.diffusers_move_refiner:
             sd_models.move_model(shared.sd_refiner, devices.device)
             if hasattr(shared.sd_refiner, 'unet'):
@@ -407,8 +405,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
-    if shared.opts.diffusers_offload_mode == "balanced":
-        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     # sanitize init_images
     if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
@@ -463,8 +460,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     shared.sd_model = orig_pipeline
 
-    if shared.opts.diffusers_offload_mode == "balanced":
-        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     if p.state == '':
         global last_p # pylint: disable=global-statement
