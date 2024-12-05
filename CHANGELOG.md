@@ -14,6 +14,7 @@
   *todo*: support for Canny/Depth LoRAs  
   - [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev): ~0.1GB  
     works together with existing model and basically uses input image to analyze it and use that instead of prompt  
+    *optional* can use prompt to combine guidance with input image  
     *recommended*: low denoise strength levels result in more variety  
   - [Fill](https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev): ~23.8GB, replaces currently loaded model  
     *note*: can be used in inpaint/outpaint mode only  

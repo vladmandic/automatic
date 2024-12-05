@@ -26,11 +26,21 @@ class Script(scripts.Script):
         with gr.Row():
             tool = gr.Dropdown(label='Tool', choices=['None', 'Redux', 'Fill', 'Canny', 'Depth'], value='None')
         with gr.Row():
-            process = gr.Checkbox(label='Preprocess input images', value=True)
-            strength = gr.Checkbox(label='Override denoise strength', value=True)
-        return [tool, strength, process]
+            prompt = gr.Slider(label='Redux prompt strength', minimum=0, maximum=2, step=0.01, value=0, visible=False)
+            process = gr.Checkbox(label='Control preprocess input images', value=True, visible=False)
+            strength = gr.Checkbox(label='Control override denoise strength', value=True, visible=False)
 
-    def run(self, p: processing.StableDiffusionProcessing, tool: str = 'None', strength: bool = True, process: bool = True): # pylint: disable=arguments-differ
+        def display(tool):
+            return [
+                gr.update(visible=tool in ['Redux']),
+                gr.update(visible=tool in ['Canny', 'Depth']),
+                gr.update(visible=tool in ['Canny', 'Depth']),
+            ]
+
+        tool.change(fn=display, inputs=[tool], outputs=[prompt, process, strength])
+        return [tool, prompt, strength, process]
+
+    def run(self, p: processing.StableDiffusionProcessing, tool: str = 'None', prompt: float = 1.0, strength: bool = True, process: bool = True): # pylint: disable=arguments-differ
         global redux_pipe, processor_canny, processor_depth # pylint: disable=global-statement
         if tool is None or tool == 'None':
             return
@@ -50,6 +60,7 @@ class Script(scripts.Script):
         t0 = time.time()
         if tool == 'Redux':
             # pipe_prior_redux = FluxPriorReduxPipeline.from_pretrained("black-forest-labs/FLUX.1-Redux-dev", revision="refs/pr/8", torch_dtype=torch.bfloat16).to("cuda")
+            shared.log.debug(f'{title}: tool={tool} prompt={prompt}')
             if redux_pipe is None:
                 redux_pipe = diffusers.FluxPriorReduxPipeline.from_pretrained(
                     "black-forest-labs/FLUX.1-Redux-dev",
@@ -57,7 +68,21 @@ class Script(scripts.Script):
                     torch_dtype=devices.dtype,
                     cache_dir=shared.opts.hfcache_dir
                 ).to(devices.device)
-            redux_output = redux_pipe(image)
+            if prompt > 0:
+                shared.log.info(f'{title}: tool={tool} load text encoder')
+                redux_pipe.tokenizer, redux_pipe.tokenizer_2 = shared.sd_model.tokenizer, shared.sd_model.tokenizer_2
+                redux_pipe.text_encoder, redux_pipe.text_encoder_2 = shared.sd_model.text_encoder, shared.sd_model.text_encoder_2
+            sd_models.apply_balanced_offload(redux_pipe)
+            redux_output = redux_pipe(
+                image=image,
+                prompt=p.prompt if prompt > 0 else None,
+                prompt_embeds_scale=[prompt],
+                pooled_prompt_embeds_scale=[prompt],
+            )
+            if prompt > 0:
+                redux_pipe.tokenizer, redux_pipe.tokenizer_2 = None, None
+                redux_pipe.text_encoder, redux_pipe.text_encoder_2 = None, None
+                devices.torch_gc()
             for k, v in redux_output.items():
                 p.task_args[k] = v
         else:
@@ -77,7 +102,7 @@ class Script(scripts.Script):
             p.task_args['mask_image'] = p.image_mask
 
         if tool == 'Canny':
-            # pipe = FluxControlPipeline.from_pretrained("black-forest-labs/FLUX.1-Canny-dev", torch_dtype=torch.bfloat16, revision="refs/pr/1").to("cuda")
+            # pipe = diffusers.FluxControlPipeline.from_pretrained("black-forest-labs/FLUX.1-Canny-dev", torch_dtype=torch.bfloat16, revision="refs/pr/1").to("cuda")
             install('controlnet-aux')
             install('timm==0.9.16')
             if shared.sd_model.__class__.__name__ != 'FluxControlPipeline' or 'Canny' not in shared.opts.sd_model_checkpoint:
@@ -99,7 +124,7 @@ class Script(scripts.Script):
                 processor_canny = None
 
         if tool == 'Depth':
-            # pipe = FluxControlPipeline.from_pretrained("black-forest-labs/FLUX.1-Depth-dev", torch_dtype=torch.bfloat16, revision="refs/pr/1").to("cuda")
+            # pipe = diffusers.FluxControlPipeline.from_pretrained("black-forest-labs/FLUX.1-Depth-dev", torch_dtype=torch.bfloat16, revision="refs/pr/1").to("cuda")
             install('git+https://github.com/huggingface/image_gen_aux.git', 'image_gen_aux')
             if shared.sd_model.__class__.__name__ != 'FluxControlPipeline' or 'Depth' not in shared.opts.sd_model_checkpoint:
                 shared.opts.data["sd_model_checkpoint"] = "black-forest-labs/FLUX.1-Depth-dev"

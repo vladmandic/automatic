@@ -459,7 +459,7 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 def check_diffusers():
     if args.skip_all or args.skip_requirements:
         return
-    sha = '63b631f38336f56755fb5cf15d9b0fb70bbf6323' # diffusers commit hash
+    sha = '3335e2262d47e7d7e311a44dea7f454b5f01b643' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
