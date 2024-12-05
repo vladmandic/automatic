@@ -1002,7 +1002,7 @@ def install_optional():
     install('optimum-quanto', ignore=True)
     install('bitsandbytes', ignore=True)
     install('pynvml', ignore=True)
-    install('ultralytics', ignore=True)
+    install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
     install('insightface', ignore=True) # problematic build
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
