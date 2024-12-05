@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-02
+## Update for 2024-12-05
 
 ### New models and integrations
 
@@ -53,7 +53,7 @@
   - balanced offload: add both high and low watermark  
     default is 25% for low-watermark (skip offload if memory usage is below 25%) and 70% high-watermark (must offload if memory usage is above 70%)  
   - change-in-behavior:  
-    `lowvrwam` triggers *sequential offload*, also automatically triggered on systems with <=4GB vram  
+    low-end systems, triggered by either `lowvrwam` or by detection of <=4GB will use *sequential offload*  
     all other systems use *balanced offload* by default (can be changed in settings)  
     previous behavior was to use *model offload* on systems with <=8GB and `medvram` and no offload by default  
   - VAE upcase is now disabled by default on all systems  
