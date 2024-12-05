@@ -47,11 +47,17 @@
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
-- **Offload** improvements:  
-  - faster and more compatible *balanced* mode  
+- **Memory** improvements:  
+  - faster and more compatible *balanced offload* mode  
   - balanced offload: units are now in percentage instead of bytes  
   - balanced offload: add both high and low watermark  
-    *note*: balanced offload is recommended method for offload when using any large models such as sd35 or flux
+    default is 25% for low-watermark (skip offload if memory usage is below 25%) and 70% high-watermark (must offload if memory usage is above 70%)  
+  - change-in-behavior:  
+    `lowvrwam` triggers *sequential offload*, also automatically triggered on systems with <=4GB vram  
+    all other systems use *balanced offload* by default (can be changed in settings)  
+    previous behavior was to use *model offload* on systems with <=8GB and `medvram` and no offload by default  
+  - VAE upcase is now disabled by default on all systems  
+    if you have issues with image decode, you'll need to enable it manually  
 - **UI**:  
   - improved stats on generate completion  
   - improved live preview display and performance  
