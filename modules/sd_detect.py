@@ -105,7 +105,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Diffusion XL Instruct'
             # get actual pipeline
             pipeline = shared_items.get_pipelines().get(guess, None) if pipeline is None else pipeline
-            if not quiet:
+            if debug_load is not None:
                 shared.log.info(f'Autodetect {op}: detect="{guess}" class={getattr(pipeline, "__name__", None)} file="{f}" size={size}MB')
                 t0 = time.time()
                 keys = model_tools.get_safetensor_keys(f)

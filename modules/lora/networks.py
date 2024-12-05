@@ -369,11 +369,11 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
                 updown, ex_bias = module.calc_updown(weight)
                 t1 = time.time()
                 if batch_updown is not None and updown is not None:
-                    batch_updown += updown
+                    batch_updown += updown.to(batch_updown.device, non_blocking=True)
                 else:
                     batch_updown = updown
                 if batch_ex_bias is not None and ex_bias is not None:
-                    batch_ex_bias += ex_bias
+                    batch_ex_bias += ex_bias.to(batch_ex_bias.device, non_blocking=True)
                 else:
                     batch_ex_bias = ex_bias
                 timer['calc'] += t1 - t0
@@ -396,10 +396,6 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
                     errors.display(e, 'LoRA')
                     raise RuntimeError('LoRA apply weight') from e
             continue
-        if module is None:
-            continue
-        shared.log.warning(f'LoRA network="{net.name}" layer="{network_layer_name}" unsupported operation')
-        extra_network_lora.errors[net.name] = extra_network_lora.errors.get(net.name, 0) + 1
     return batch_updown, batch_ex_bias
 
 
