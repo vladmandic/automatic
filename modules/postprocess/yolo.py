@@ -63,7 +63,7 @@ class YoloRestorer(Detailer):
 
     def dependencies(self):
         import installer
-        installer.install('ultralytics', ignore=True, quiet=True)
+        installer.install('ultralytics==8.3.40', ignore=True, quiet=True)
 
     def predict(
             self,
