@@ -72,6 +72,7 @@
 
 ### Updates
 
+- Additional Wiki content: Styles, Wildcards, etc.
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
