@@ -33,13 +33,13 @@ def set_module_tensor(
             stats.dtypes[value.dtype] = 0
         stats.dtypes[value.dtype] += 1
         if name in module._buffers: # pylint: disable=protected-access
-            module._buffers[name] = value.to(device=device, dtype=dtype, non_blocking=True) # pylint: disable=protected-access
+            module._buffers[name] = value.to(device=device, dtype=dtype) # pylint: disable=protected-access
             if 'buffers' not in stats.weights:
                 stats.weights['buffers'] = 0
             stats.weights['buffers'] += 1
         elif value is not None:
             param_cls = type(module._parameters[name]) # pylint: disable=protected-access
-            module._parameters[name] = param_cls(value, requires_grad=old_value.requires_grad).to(device, dtype=dtype, non_blocking=True) # pylint: disable=protected-access
+            module._parameters[name] = param_cls(value, requires_grad=old_value.requires_grad).to(device, dtype=dtype) # pylint: disable=protected-access
             if 'parameters' not in stats.weights:
                 stats.weights['parameters'] = 0
             stats.weights['parameters'] += 1

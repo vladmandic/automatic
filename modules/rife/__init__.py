@@ -82,13 +82,13 @@ def interpolate(images: list, count: int = 2, scale: float = 1.0, pad: int = 1, 
     for _i in range(pad): # fill starting frames
         buffer.put(frame)
 
-    I1 = f_pad(torch.from_numpy(np.transpose(frame, (2,0,1))).to(devices.device, non_blocking=True).unsqueeze(0).float() / 255.)
+    I1 = f_pad(torch.from_numpy(np.transpose(frame, (2,0,1))).to(devices.device).unsqueeze(0).float() / 255.)
     with torch.no_grad():
         with tqdm(total=len(images), desc='Interpolate', unit='frame') as pbar:
             for image in images:
                 frame = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
                 I0 = I1
-                I1 = f_pad(torch.from_numpy(np.transpose(frame, (2,0,1))).to(devices.device, non_blocking=True).unsqueeze(0).float() / 255.)
+                I1 = f_pad(torch.from_numpy(np.transpose(frame, (2,0,1))).to(devices.device).unsqueeze(0).float() / 255.)
                 I0_small = F.interpolate(I0, (32, 32), mode='bilinear', align_corners=False).to(torch.float32)
                 I1_small = F.interpolate(I1, (32, 32), mode='bilinear', align_corners=False).to(torch.float32)
                 ssim = ssim_matlab(I0_small[:, :3], I1_small[:, :3])
