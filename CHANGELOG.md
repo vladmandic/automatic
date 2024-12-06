@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-05
+## Update for 2024-12-06
 
 ### New models and integrations
 
