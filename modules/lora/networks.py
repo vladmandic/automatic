@@ -359,7 +359,7 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
 
 def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], weight: torch.Tensor, network_layer_name: str):
     if shared.opts.diffusers_offload_mode == "none":
-        self.to(devices.device, non_blocking=True)
+        self.to(devices.device)
     batch_updown = None
     batch_ex_bias = None
     for net in loaded_networks:
@@ -370,11 +370,11 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
                 updown, ex_bias = module.calc_updown(weight)
                 t1 = time.time()
                 if batch_updown is not None and updown is not None:
-                    batch_updown += updown.to(batch_updown.device, non_blocking=True)
+                    batch_updown += updown.to(batch_updown.device)
                 else:
                     batch_updown = updown
                 if batch_ex_bias is not None and ex_bias is not None:
-                    batch_ex_bias += ex_bias.to(batch_ex_bias.device, non_blocking=True)
+                    batch_ex_bias += ex_bias.to(batch_ex_bias.device)
                 else:
                     batch_ex_bias = ex_bias
                 timer['calc'] += t1 - t0
@@ -412,7 +412,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if updown is not None and len(weights_backup.shape) == 4 and weights_backup.shape[1] == 9: # inpainting model. zero pad updown to make channel[1]  4 to 9
             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))  # pylint: disable=not-callable
         if updown is not None:
-            new_weight = weights_backup.to(devices.device, non_blocking=True) + updown.to(devices.device, non_blocking=True)
+            new_weight = weights_backup.to(devices.device) + updown.to(devices.device)
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
                 self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
             else:
@@ -429,7 +429,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         else:
             self.bias = None
         if ex_bias is not None:
-            new_weight = bias_backup.to(devices.device, non_blocking=True) + ex_bias.to(devices.device, non_blocking=True)
+            new_weight = bias_backup.to(devices.device) + ex_bias.to(devices.device)
             self.bias = torch.nn.Parameter(new_weight.to(device=orig_device), requires_grad=False)
             del new_weight
         else:
@@ -482,7 +482,7 @@ def network_activate():
                         pbar.update(task, advance=1, description=f'networks={len(loaded_networks)} skip')
                     continue
                 weight = getattr(module, 'weight', None)
-                weight = weight.to(devices.device, non_blocking=True) if weight is not None else None
+                weight = weight.to(devices.device) if weight is not None else None
                 backup_size += network_backup_weights(module, weight, network_layer_name, wanted_names)
                 batch_updown, batch_ex_bias = network_calc_weights(module, weight, network_layer_name)
                 weights_device, weights_dtype = network_apply_weights(module, batch_updown, batch_ex_bias, orig_device)
