@@ -20,10 +20,10 @@ def memory_stats():
         mem.update({ 'ram': ram })
     except Exception as e:
         if not fail_once:
-            shared.log.error('Memory stats: {e}')
+            shared.log.error(f'Memory stats: {e}')
             errors.display(e, 'Memory stats')
             fail_once = True
-        mem.update({ 'ram': str(e) })
+        mem.update({ 'ram': { 'error': str(e) } })
     try:
         s = torch.cuda.mem_get_info()
         gpu = { 'used': gb(s[1] - s[0]), 'total': gb(s[1]) }
