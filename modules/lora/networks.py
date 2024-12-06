@@ -334,6 +334,7 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
             if shared.opts.lora_offload_backup and weights_backup is not None and isinstance(weights_backup, torch.Tensor):
                 weights_backup = weights_backup.to(devices.cpu)
             self.network_weights_backup = weights_backup
+
         bias_backup = getattr(self, "network_bias_backup", None)
         if bias_backup is None:
             if getattr(self, 'bias', None) is not None:
@@ -380,12 +381,9 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
                 if shared.opts.diffusers_offload_mode != "none":
                     t0 = time.time()
                     if batch_updown is not None:
-                        batch_updown = batch_updown.to(devices.cpu, non_blocking=True)
+                        batch_updown = batch_updown.to(devices.cpu)
                     if batch_ex_bias is not None:
-                        batch_ex_bias = batch_ex_bias.to(devices.cpu, non_blocking=True)
-                    if devices.backend == "ipex":
-                        # using non_blocking=True here causes NaNs on Intel
-                        torch.xpu.synchronize(devices.device)
+                        batch_ex_bias = batch_ex_bias.to(devices.cpu)
                     t1 = time.time()
                     timer['move'] += t1 - t0
             except RuntimeError as e:
@@ -405,6 +403,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     bias_backup = getattr(self, "network_bias_backup", None)
     if weights_backup is None and bias_backup is None:
         return None, None
+
     if weights_backup is not None:
         if isinstance(weights_backup, bool):
             weights_backup = self.weight
@@ -417,12 +416,13 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
                 self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
             else:
-                self.weight = torch.nn.Parameter(new_weight.to(device=orig_device, non_blocking=True), requires_grad=False)
+                self.weight = torch.nn.Parameter(new_weight.to(device=orig_device), requires_grad=False)
             del new_weight
         else:
-            self.weight = torch.nn.Parameter(weights_backup.to(device=orig_device, non_blocking=True), requires_grad=False)
+            self.weight = torch.nn.Parameter(weights_backup.to(device=orig_device), requires_grad=False)
         if hasattr(self, "qweight") and hasattr(self, "freeze"):
             self.freeze()
+
     if bias_backup is not None:
         if isinstance(bias_backup, bool):
             bias_backup = self.bias
@@ -430,12 +430,13 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
             self.bias = None
         if ex_bias is not None:
             new_weight = bias_backup.to(devices.device, non_blocking=True) + ex_bias.to(devices.device, non_blocking=True)
-            self.bias = torch.nn.Parameter(new_weight.to(device=orig_device, non_blocking=True), requires_grad=False)
+            self.bias = torch.nn.Parameter(new_weight.to(device=orig_device), requires_grad=False)
             del new_weight
         else:
-            self.bias = torch.nn.Parameter(bias_backup.to(device=orig_device, non_blocking=True), requires_grad=False)
+            self.bias = torch.nn.Parameter(bias_backup.to(device=orig_device), requires_grad=False)
     else:
         self.bias = None
+
     t1 = time.time()
     timer['apply'] += t1 - t0
     return self.weight.device, self.weight.dtype
