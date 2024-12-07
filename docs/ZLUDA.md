@@ -121,14 +121,3 @@ Note: There will be no progress bar, as this is done by ZLUDA and not SD.Next. E
 | BF8   | ❌          |
 
 *: Not tested.
-
-## Experimental Settings
-
-#### Sections below are _optional_ and _highly experimental_, and aren't required to start generating images. Ensure you can generate images first _before_ trying these.
-
-### Experimental Speed Increase Using deepcache (optional)
-
-Start SD.Next, head on over to System Tab > Compute Settings.  
-Scroll down to "Model Compile" and tick the 'Model', 'VAE', and 'Text Encoder' boxes.  
-Select "deep-cache" as your Model compile backend.  
-Apply and Shutdown, and restart SD.Next.
