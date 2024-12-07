@@ -913,6 +913,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_apply_tags": OptionInfo(0, "LoRA auto-apply tags", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
     "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_quant": OptionInfo("NF4","LoRA precision in quantized models", gr.Radio, {"choices": ["NF4", "FP4"]}),
+    "lora_low_memory": OptionInfo(False, "LoRA low memory mode"),
 }))
 
 options_templates.update(options_section((None, "Internal options"), {
