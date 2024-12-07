@@ -1,0 +1,77 @@
+# Models Tab
+
+[Current](#current) | [Convert](#convert) | [Merge](#merge) | [Validate](#validate) | [Huggingface](#huggingface) | [CivitAI](#civitai) | [Update](#update) | [Extract LoRa](#extract-lora)
+
+## Current
+
+### Analyze current model
+
+Analyze the current model to understand its characteristics, training data and details, so you can understand the model on a more technological level.
+
+## Convert
+
+### Convert current model
+
+Convert the current model to make it have a different name, a different precision, a different format, make it pruned or non pruned and etc.
+
+## Merge
+
+### Simple merge
+
+Simple merge allows you to merge 2 models with each other in a non advanced way, so there are basic options are available.  
+
+**Alpha Ratio**: The alpha ratio standard value is 0.5 that means the merged model will be 50% primary model and 50% secondary model. 0.2 would be 80% primary and 20% secondary model.  
+
+**Overwrite model**: If you check this the merged model will overwrite the primary model.  
+
+**Save Metadata**: Saves the metadata of both the primary and secondary model into merged one.  
+
+**Weights clip**: Forces merged weights to be no heavier than the original model, preventing burn in and overly saturated models.  
+
+**ReBasin**: Performs multiple merges with permutations in order to keep more features from both models.  
+
+**Model precision**: lets you choose what precision you want the merged model to have.  
+
+**Merge device**: Which device to use for the merge.  
+
+**Replace VAE**: Allows you to replace the VAE of the merged model with your preferred VAE.
+
+### Preset Block Merge
+
+Similar to the simple merge tab, only here you can check the SDXL checkbox if your models are SDXL models and no need to change the alpha ratio by yourself, instead you can select one of the many presets available.
+
+## Validate
+
+### List model details
+
+Lists all the details(not as much as in current) of all the checkpoint models.
+
+### Calculate hash for all models
+
+Calculates hash for each checkpoint model. The hash makes it easier to identify the model or model used(even if its renamed).
+
+## Huggingface
+
+Search models on Huggingface and download them into SD.NEXT with this sub tab.
+
+## CivitAI
+
+### Fetch information
+
+Fetches preview and metadata information for all models with missing information. Models with existing previews and information are not updated.
+
+### Search for models
+
+Allows you to search for models on CivitAI. Just select the type of model you want, a keyword and optionally some tags. After that click on search and you results will show below.
+
+### Download model
+
+To download a model you need to click on the desired model in searched models then the model version and lastly the variant.
+
+## Update
+
+Checks for updates for all checkpoint models.
+
+## Extract LoRa
+
+Allows you to tweak a lora to the preferred strength.

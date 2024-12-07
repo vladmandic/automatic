@@ -2,7 +2,7 @@ site_name: SD.Next Documentation
 site_url: https://vladmandic.github.io/automatic
 repo_url: https://github.com/vladmandic/automatic
 repo_name: vladmandic/automatic
-docs_dir: wiki
+docs_dir: docs
 
 theme:
   name: material
