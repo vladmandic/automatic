@@ -67,6 +67,8 @@ def image_from_url_text(filedata):
         filedata = filedata[len("data:image/webp;base64,"):]
     if filedata.startswith("data:image/jpeg;base64,"):
         filedata = filedata[len("data:image/jpeg;base64,"):]
+    if filedata.startswith("data:image/jxl;base64,"):
+        filedata = filedata[len("data:image/jxl;base64,"):]
     filedata = base64.decodebytes(filedata.encode('utf-8'))
     image = Image.open(io.BytesIO(filedata))
     images.read_info_from_image(image)
