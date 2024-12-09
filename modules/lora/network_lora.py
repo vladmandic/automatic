@@ -22,7 +22,6 @@ class NetworkModuleLora(network.NetworkModule):
         self.dim = weights.w["lora_down.weight"].shape[0]
 
     def create_module(self, weights, key, none_ok=False):
-        from modules.shared import opts
         weight = weights.get(key)
         if weight is None and none_ok:
             return None
@@ -49,8 +48,6 @@ class NetworkModuleLora(network.NetworkModule):
             if weight.shape != module.weight.shape:
                 weight = weight.reshape(module.weight.shape)
             module.weight.copy_(weight)
-        if opts.lora_load_gpu:
-            module = module.to(device=devices.device, dtype=devices.dtype)
         module.weight.requires_grad_(False)
         return module
 

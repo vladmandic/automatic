@@ -92,7 +92,7 @@ class PromptEmbedder:
             return [x for xs in xss for x in xs]
 
         # unpack EN data in case of TE LoRA
-        en_data = p.extra_network_data
+        en_data = p.network_data
         en_data = [idx.items for item in en_data.values() for idx in item]
         effective_batch = 1 if self.allsame else self.batchsize
         key = str([self.prompts, self.negative_prompts, effective_batch, self.clip_skip, self.steps, en_data])

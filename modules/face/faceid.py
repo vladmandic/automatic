@@ -204,7 +204,6 @@ def face_id(
                 ip_model_dict["face_image"] = face_images
             ip_model_dict["faceid_embeds"] = face_embeds # overwrite placeholder
             faceid_model.set_scale(scale)
-            extra_network_data = None
 
             if p.all_prompts is None or len(p.all_prompts) == 0:
                 processing.process_init(p)
@@ -215,11 +214,9 @@ def face_id(
                 p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
                 p.seeds = p.all_seeds[n * p.batch_size:(n+1) * p.batch_size]
                 p.subseeds = p.all_subseeds[n * p.batch_size:(n+1) * p.batch_size]
-                p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
+                p.prompts, p.network_data = extra_networks.parse_prompts(p.prompts)
 
-                if not p.disable_extra_networks:
-                    with devices.autocast():
-                        extra_networks.activate(p, extra_network_data)
+                extra_networks.activate(p, p.network_data)
                 ip_model_dict.update({
                         "prompt": p.prompts[0],
                         "negative_prompt": p.negative_prompts[0],
@@ -239,8 +236,7 @@ def face_id(
             devices.torch_gc()
 
         ipadapter.unapply(p.sd_model)
-        if not p.disable_extra_networks:
-            extra_networks.deactivate(p, extra_network_data)
+        extra_networks.deactivate(p, p.network_data)
 
         p.extra_generation_params["IP Adapter"] = f"{basename}:{scale}"
     finally:

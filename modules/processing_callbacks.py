@@ -67,7 +67,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
                 raise AssertionError('Interrupted...')
             time.sleep(0.1)
     if hasattr(p, "stepwise_lora") and shared.native:
-        extra_networks.activate(p, p.extra_network_data, step=step)
+        extra_networks.activate(p, step=step)
     if latents is None:
         return kwargs
     elif shared.opts.nan_skip:

@@ -1,5 +1,4 @@
 import re
-import time
 import numpy as np
 import modules.lora.networks as networks
 from modules import extra_networks, shared
@@ -128,10 +127,9 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         if len(networks.loaded_networks) > 0 and step == 0:
             infotext(p)
             prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} time={networks.get_timers()}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
 
     def deactivate(self, p):
-        t0 = time.time()
         if shared.native and len(networks.diffuser_loaded) > 0:
             if hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
                 if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
@@ -142,10 +140,8 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                     except Exception:
                         pass
         networks.network_deactivate()
-        t1 = time.time()
-        networks.timer['restore'] += t1 - t0
         if self.active and networks.debug:
-            shared.log.debug(f"Network end: type=LoRA load={networks.timer['load']:.2f} apply={networks.timer['apply']:.2f} restore={networks.timer['restore']:.2f}")
+            shared.log.debug(f"Network end: type=LoRA time={networks.timer.summary}")
         if self.errors:
             for k, v in self.errors.items():
                 shared.log.error(f'LoRA: name="{k}" errors={v}')
