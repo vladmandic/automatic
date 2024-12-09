@@ -4,7 +4,7 @@ import time
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
-from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats
+from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats, extra_networks
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
@@ -89,6 +89,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.unet, devices.device)
         if hasattr(shared.sd_model, 'transformer'):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
+        extra_networks.activate(p)
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
@@ -223,11 +224,14 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             shared.state.job = 'HiRes'
             shared.state.sampling_steps = hires_args.get('prior_num_inference_steps', None) or p.steps or hires_args.get('num_inference_steps', None)
             try:
+                shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
                 sd_models.move_model(shared.sd_model, devices.device)
                 if hasattr(shared.sd_model, 'unet'):
                     sd_models.move_model(shared.sd_model.unet, devices.device)
                 if hasattr(shared.sd_model, 'transformer'):
                     sd_models.move_model(shared.sd_model.transformer, devices.device)
+                if 'base' in p.skip:
+                    extra_networks.activate(p)
                 sd_models_compile.check_deepcache(enable=True)
                 output = shared.sd_model(**hires_args) # pylint: disable=not-callable
                 if isinstance(output, dict):
@@ -345,6 +349,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
 
 
 def process_decode(p: processing.StableDiffusionProcessing, output):
+    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     if output is not None:
         if not hasattr(output, 'images') and hasattr(output, 'frames'):
             shared.log.debug(f'Generated: frames={len(output.frames[0])}')
@@ -405,8 +410,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
         shared.sd_model = orig_pipeline
         return results
 
-    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
-
     # sanitize init_images
     if hasattr(p, 'init_images') and getattr(p, 'init_images', None) is None:
         del p.init_images
@@ -453,13 +456,13 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
             shared.sd_model = orig_pipeline
             return results
 
-    results = process_decode(p, output)
+    extra_networks.deactivate(p)
+    timer.process.add('lora', networks.timer.total)
 
+    results = process_decode(p, output)
     timer.process.record('decode')
-    timer.process.add('lora', networks.total_time())
 
     shared.sd_model = orig_pipeline
-
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     if p.state == '':

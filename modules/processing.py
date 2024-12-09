@@ -286,7 +286,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         t0 = time.time()
         if not hasattr(p, 'skip_init'):
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
-        extra_network_data = None
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
             pag.apply(p)
@@ -311,9 +310,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 p.scripts.before_process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
             if len(p.prompts) == 0:
                 break
-            p.prompts, extra_network_data = extra_networks.parse_prompts(p.prompts)
-            if not p.disable_extra_networks:
-                extra_networks.activate(p, extra_network_data)
+            p.prompts, p.network_data = extra_networks.parse_prompts(p.prompts)
+            if not shared.native:
+                extra_networks.activate(p, p.network_data)
             if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
@@ -417,6 +416,10 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             timer.process.record('post')
             del samples
+
+            if not shared.native:
+                extra_networks.deactivate(p, p.network_data)
+
             devices.torch_gc()
 
         if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
@@ -444,9 +447,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     if shared.native:
         from modules import ipadapter
         ipadapter.unapply(shared.sd_model)
-
-    if not p.disable_extra_networks:
-        extra_networks.deactivate(p, extra_network_data)
 
     if shared.opts.include_mask:
         if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images):

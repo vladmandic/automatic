@@ -139,6 +139,7 @@ class StableDiffusionProcessing:
         self.negative_pooleds = []
         self.disable_extra_networks = False
         self.iteration = 0
+        self.network_data = {}
 
         # initializers
         self.prompt = prompt
