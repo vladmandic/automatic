@@ -19,6 +19,7 @@ extra_network_lora = ExtraNetworkLora()
 available_networks = {}
 available_network_aliases = {}
 loaded_networks: List[network.Network] = []
+applied_layers: list[str] = []
 bnb = None
 lora_cache = {}
 diffuser_loaded = []
@@ -465,7 +466,7 @@ def network_deactivate():
         task = None
         pbar = nullcontext()
     with devices.inference_context(), pbar:
-        applied_layers = []
+        applied_layers.clear()
         weights_devices = []
         weights_dtypes = []
         for component in modules.keys():
@@ -498,7 +499,7 @@ def network_deactivate():
         sd_models.set_diffuser_offload(sd_model, op="model")
 
 
-def network_activate():
+def network_activate(include=[], exclude=[]):
     t0 = time.time()
     timer.clear(complete=True)
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
@@ -506,10 +507,12 @@ def network_activate():
         sd_models.disable_offload(sd_model)
         sd_models.move_model(sd_model, device=devices.cpu)
     modules = {}
-    for component_name in ['text_encoder','text_encoder_2', 'unet', 'transformer']:
-        component = getattr(sd_model, component_name, None)
+    components = include if len(include) > 0 else ['text_encoder', 'text_encoder_2', 'text_encoder_3', 'unet', 'transformer']
+    components = [x for x in components if x not in exclude]
+    for name in components:
+        component = getattr(sd_model, name, None)
         if component is not None and hasattr(component, 'named_modules'):
-            modules[component_name] = list(component.named_modules())
+            modules[name] = list(component.named_modules())
     total = sum(len(x) for x in modules.values())
     if len(loaded_networks) > 0:
         pbar = rp.Progress(rp.TextColumn('[cyan]Network: type=LoRA action=activate'), rp.BarColumn(), rp.TaskProgressColumn(), rp.TimeRemainingColumn(), rp.TimeElapsedColumn(), rp.TextColumn('[cyan]{task.description}'), console=shared.console)
@@ -519,7 +522,7 @@ def network_activate():
         pbar = nullcontext()
     with devices.inference_context(), pbar:
         wanted_names = tuple((x.name, x.te_multiplier, x.unet_multiplier, x.dyn_dim) for x in loaded_networks) if len(loaded_networks) > 0 else ()
-        applied_layers = []
+        applied_layers.clear()
         backup_size = 0
         weights_devices = []
         weights_dtypes = []
@@ -546,10 +549,12 @@ def network_activate():
                 module.network_current_names = wanted_names
                 if task is not None:
                     pbar.update(task, advance=1, description=f'networks={len(loaded_networks)} modules={total} apply={len(applied_layers)} backup={backup_size}')
+        if task is not None and len(applied_layers) == 0:
+            pbar.remove_task(task) # hide progress bar for no action
     weights_devices, weights_dtypes = list(set([x for x in weights_devices if x is not None])), list(set([x for x in weights_dtypes if x is not None])) # noqa: C403 # pylint: disable=R1718
     timer.activate = time.time() - t0
     if debug and len(loaded_networks) > 0:
-        shared.log.debug(f'Load network: type=LoRA networks={len(loaded_networks)} modules={total} apply={len(applied_layers)} device={weights_devices} dtype={weights_dtypes} backup={backup_size} fuse={shared.opts.lora_fuse_diffusers} time={timer.summary}')
+        shared.log.debug(f'Load network: type=LoRA networks={len(loaded_networks)} components={components} modules={total} apply={len(applied_layers)} device={weights_devices} dtype={weights_dtypes} backup={backup_size} fuse={shared.opts.lora_fuse_diffusers} time={timer.summary}')
     modules.clear()
     if shared.opts.diffusers_offload_mode == "sequential":
         sd_models.set_diffuser_offload(sd_model, op="model")
