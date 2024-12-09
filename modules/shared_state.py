@@ -141,7 +141,6 @@ class State:
         if self.job == 'VAE': # avoid generating preview while vae is running
             return
         from modules.shared import opts, cmd_opts
-        """sets self.current_image from self.current_latent if enough sampling steps have been made after the last call to this"""
         if cmd_opts.lowvram or self.api:
             return
         if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps and opts.live_previews_enable and opts.show_progress_every_n_steps > 0:
