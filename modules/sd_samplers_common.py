@@ -35,7 +35,6 @@ def setup_img2img_steps(p, steps=None):
 def single_sample_to_image(sample, approximation=None):
     with queue_lock:
         t0 = time.time()
-        sd_cascade = False
         if approximation is None:
             approximation = approximation_indexes.get(shared.opts.show_progress_type, None)
             if approximation is None:
@@ -50,10 +49,9 @@ def single_sample_to_image(sample, approximation=None):
 
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
-        if len(sample) == 16: # sd_cascade
-            sd_cascade = True
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
+        # TODO remove
         if shared.native: # [-x,x] to [-5,5]
             sample_max = torch.max(sample)
             if sample_max > 5:
@@ -65,7 +63,7 @@ def single_sample_to_image(sample, approximation=None):
         if approximation == 2: # TAESD
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
-        elif sd_cascade and approximation != 3:
+        elif shared.sd_model_type == 'sc' and approximation != 3:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
