@@ -6,7 +6,7 @@ import time
 import inspect
 import torch
 import numpy as np
-from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer
+from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer, extra_networks
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
 from modules.api import helpers
@@ -134,6 +134,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     else:
         prompt_parser_diffusers.embedder = None
 
+    extra_networks.activate(p, include=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]

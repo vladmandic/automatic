@@ -112,7 +112,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         self.model = None
         self.errors = {}
 
-    def activate(self, p, params_list, step=0):
+    def activate(self, p, params_list, step=0, include=[], exclude=[]):
         self.errors.clear()
         if self.active:
             if self.model != shared.opts.sd_model_checkpoint: # reset if model changed
@@ -123,8 +123,8 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             self.model = shared.opts.sd_model_checkpoint
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
         networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
-        networks.network_activate()
-        if len(networks.loaded_networks) > 0 and step == 0:
+        networks.network_activate(include, exclude)
+        if len(networks.loaded_networks) > 0 and len(networks.applied_layers) > 0 and step == 0:
             infotext(p)
             prompt(p)
             shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')

@@ -89,7 +89,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.unet, devices.device)
         if hasattr(shared.sd_model, 'transformer'):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
-        extra_networks.activate(p)
+        extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2'])
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
