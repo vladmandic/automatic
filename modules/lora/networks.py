@@ -42,6 +42,7 @@ module_types = [
 # section: load networks from disk
 
 def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_default_multiplier) -> Union[network.Network, None]:
+    t0 = time.time()
     name = name.replace(".", "_")
     shared.log.debug(f'Load network: type=LoRA name="{name}" file="{network_on_disk.filename}" detected={network_on_disk.sd_version} method=diffusers scale={lora_scale} fuse={shared.opts.lora_fuse_diffusers}')
     if not shared.native:
@@ -67,6 +68,7 @@ def load_diffusers(name, network_on_disk, lora_scale=shared.opts.extra_networks_
         diffuser_scales.append(lora_scale)
     net = network.Network(name, network_on_disk)
     net.mtime = os.path.getmtime(network_on_disk.filename)
+    timer.activate += time.time() - t0
     return net
 
 
@@ -256,10 +258,12 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
     if len(diffuser_loaded) > 0:
         shared.log.debug(f'Load network: type=LoRA loaded={diffuser_loaded} available={shared.sd_model.get_list_adapters()} active={shared.sd_model.get_active_adapters()} scales={diffuser_scales}')
         try:
+            t0 = time.time()
             shared.sd_model.set_adapters(adapter_names=diffuser_loaded, adapter_weights=diffuser_scales)
             if shared.opts.lora_fuse_diffusers:
                 shared.sd_model.fuse_lora(adapter_names=diffuser_loaded, lora_scale=1.0, fuse_unet=True, fuse_text_encoder=True) # fuse uses fixed scale since later apply does the scaling
                 shared.sd_model.unload_lora_weights()
+            timer.activate += time.time() - t0
         except Exception as e:
             shared.log.error(f'Load network: type=LoRA {e}')
             if debug:
@@ -301,16 +305,15 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
                     bnb = model_quant.load_bnb('Load network: type=LoRA', silent=True)
                 if bnb is not None:
                     with devices.inference_context():
-                        weights_backup = bnb.functional.dequantize_4bit(weight, quant_state=weight.quant_state, quant_type=weight.quant_type, blocksize=weight.blocksize,)
+                        self.network_weights_backup = bnb.functional.dequantize_4bit(weight, quant_state=weight.quant_state, quant_type=weight.quant_type, blocksize=weight.blocksize,)
                         self.quant_state = weight.quant_state
                         self.quant_type = weight.quant_type
                         self.blocksize = weight.blocksize
                 else:
                     weights_backup = weight.clone()
-                weights_backup = weights_backup.to(devices.cpu)
+                self.network_weights_backup = weights_backup.to(devices.cpu)
             else:
-                weights_backup = weight.clone()
-                weights_backup = weights_backup.to(devices.cpu)
+                self.network_weights_backup = weight.clone().to(devices.cpu)
 
         bias_backup = getattr(self, "network_bias_backup", None)
         if bias_backup is None:
@@ -331,7 +334,10 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
 
 def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], network_layer_name: str):
     if shared.opts.diffusers_offload_mode == "none":
-        self.to(devices.device)
+        try:
+            self.to(devices.device)
+        except Exception:
+            pass
     batch_updown = None
     batch_ex_bias = None
     for net in loaded_networks:
@@ -501,7 +507,6 @@ def network_deactivate():
 
 def network_activate(include=[], exclude=[]):
     t0 = time.time()
-    timer.clear(complete=True)
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
     if shared.opts.diffusers_offload_mode == "sequential":
         sd_models.disable_offload(sd_model)
@@ -552,7 +557,7 @@ def network_activate(include=[], exclude=[]):
         if task is not None and len(applied_layers) == 0:
             pbar.remove_task(task) # hide progress bar for no action
     weights_devices, weights_dtypes = list(set([x for x in weights_devices if x is not None])), list(set([x for x in weights_dtypes if x is not None])) # noqa: C403 # pylint: disable=R1718
-    timer.activate = time.time() - t0
+    timer.activate += time.time() - t0
     if debug and len(loaded_networks) > 0:
         shared.log.debug(f'Load network: type=LoRA networks={len(loaded_networks)} components={components} modules={total} apply={len(applied_layers)} device={weights_devices} dtype={weights_dtypes} backup={backup_size} fuse={shared.opts.lora_fuse_diffusers} time={timer.summary}')
     modules.clear()

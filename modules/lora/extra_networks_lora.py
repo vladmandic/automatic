@@ -44,6 +44,8 @@ def prompt(p):
             loaded.tags = loaded.tags[:shared.opts.lora_apply_tags]
         all_tags.extend(loaded.tags)
     if len(all_tags) > 0:
+        all_tags = list(set(all_tags))
+        all_tags = [t for t in all_tags if t not in p.prompt]
         shared.log.debug(f"Load network: type=LoRA tags={all_tags} max={shared.opts.lora_apply_tags} apply")
         all_tags = ', '.join(all_tags)
         p.extra_generation_params["LoRA tags"] = all_tags
@@ -121,13 +123,15 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             # shared.log.debug(f'Activate network: type=LoRA model="{shared.opts.sd_model_checkpoint}"')
             self.active = True
             self.model = shared.opts.sd_model_checkpoint
+        if 'text_encoder' in include:
+            networks.timer.clear(complete=True)
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
         networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
         networks.network_activate(include, exclude)
         if len(networks.loaded_networks) > 0 and len(networks.applied_layers) > 0 and step == 0:
             infotext(p)
             prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} mode={"fuse" if shared.opts.lora_fuse_diffusers else "backup"} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
 
     def deactivate(self, p):
         if shared.native and len(networks.diffuser_loaded) > 0:

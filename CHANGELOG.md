@@ -37,9 +37,8 @@
   - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
     this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
     thanks @AI-Casanova  
-  - *note*: LoRA weights backups are required so LoRA can be unapplied, but can take quite a lot of system memory  
-    if you know you will not need to unapply LoRA, you can disable backups in *settings -> networks -> lora fuse*  
-    in which case, you need to reload model to unapply LoRA  
+  - LoRA weights can be applied/unapplied as on each generate or they can store weights backups for later use  
+    this setting has large performance and resource implications, see [Offload](https://github.com/vladmandic/automatic/wiki/Offload) wiki for details  
 - **Model loader** improvements:  
   - detect model components on model load fail  
   - allow passing absolute path to model loader  
@@ -98,6 +97,8 @@
 - fix prompt caching  
 - fix xyz grid skip final pass  
 - fix sd upscale script
+- fix cogvideox-i2v
+- lora auto-apply tags remove duplicates
 
 ## Update for 2024-11-21
 
