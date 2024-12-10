@@ -58,11 +58,11 @@ def load_torchao(msg='', silent=False):
         import torchao
         ao = torchao
         fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-        log.debug(f'Quantization: type=quanto version={ao.__version__} fn={fn}') # pylint: disable=protected-access
+        log.debug(f'Quantization: type=torchao version={ao.__version__} fn={fn}') # pylint: disable=protected-access
         return ao
     except Exception as e:
         if len(msg) > 0:
-            log.error(f"{msg} failed to import optimum.quanto: {e}")
+            log.error(f"{msg} failed to import torchao: {e}")
         ao = None
         if not silent:
             raise
@@ -92,6 +92,7 @@ def load_bnb(msg='', silent=False):
 
 
 def load_quanto(msg='', silent=False):
+    from modules import shared
     global quanto # pylint: disable=global-statement
     if quanto is not None:
         return quanto
@@ -101,6 +102,8 @@ def load_quanto(msg='', silent=False):
         quanto = optimum_quanto
         fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
         log.debug(f'Quantization: type=quanto version={quanto.__version__} fn={fn}') # pylint: disable=protected-access
+        if shared.opts.diffusers_offload_mode != 'none':
+            shared.log.error(f'Quantization: type=quanto offload={shared.opts.diffusers_offload_mode} not supported')
         return quanto
     except Exception as e:
         if len(msg) > 0:
