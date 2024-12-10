@@ -51,7 +51,7 @@ class Script(scripts.Script):
         with gr.Row():
             video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
             duration = gr.Slider(label='Duration', minimum=0.25, maximum=30, step=0.25, value=8, visible=False)
-        with gr.Accordion('Optional init video', open=False):
+        with gr.Accordion('Optional init image or video', open=False):
             with gr.Row():
                 image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256)
                 video = gr.Video(value=None, label='Video', source='upload', width=256, height=256)
@@ -169,25 +169,18 @@ class Script(scripts.Script):
                 callback_on_step_end=diffusers_callback,
                 callback_on_step_end_tensor_inputs=['latents'],
             )
-            if getattr(p, 'image', False):
-                if 'I2V' not in model:
-                    shared.log.error(f'CogVideoX: model={model} image input not supported')
-                    return []
-                args['image'] = self.image(p, p.image)
-                args['num_frames'] = p.frames # only txt2vid has num_frames
-                shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXImageToVideoPipeline, shared.sd_model)
-            elif getattr(p, 'video', False):
-                if 'I2V' in model:
-                    shared.log.error(f'CogVideoX: model={model} image input not supported')
-                    return []
-                args['video'] = self.video(p, p.video)
-                shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXVideoToVideoPipeline, shared.sd_model)
+            if 'I2V' in model:
+                if hasattr(p, 'video') and p.video is not None:
+                    args['video'] = self.video(p, p.video)
+                    shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXVideoToVideoPipeline, shared.sd_model)
+                elif (hasattr(p, 'image') and p.image is not None) or (hasattr(p, 'init_images') and len(p.init_images) > 0):
+                    p.init_images = [p.image] if hasattr(p, 'image') and p.image is not None else p.init_images
+                    args['image'] = self.image(p, p.init_images[0])
+                    shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXImageToVideoPipeline, shared.sd_model)
             else:
-                if 'I2V' in model:
-                    shared.log.error(f'CogVideoX: model={model} image input not supported')
-                    return []
-                args['num_frames'] = p.frames # only txt2vid has num_frames
                 shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXPipeline, shared.sd_model)
+            args['num_frames'] = p.frames # only txt2vid has num_frames
+            shared.log.info(f'CogVideoX: class={shared.sd_model.__class__.__name__} frames={p.frames} input={args.get('video', None) or args.get('image', None)}')
             if debug:
                 shared.log.debug(f'CogVideoX args: {args}')
             frames = shared.sd_model(**args).frames[0]
@@ -199,7 +192,7 @@ class Script(scripts.Script):
                 errors.display(e, 'CogVideoX')
         t1 = time.time()
         its = (len(frames) * p.steps) / (t1 - t0)
-        shared.log.info(f'CogVideoX: frames={len(frames)} its={its:.2f} time={t1 - t0:.2f}')
+        shared.log.info(f'CogVideoX: frame={frames[0] if len(frames) > 0 else None} frames={len(frames)} its={its:.2f} time={t1 - t0:.2f}')
         return frames
 
     # auto-executed by the script-callback
