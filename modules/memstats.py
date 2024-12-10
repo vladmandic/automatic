@@ -4,6 +4,8 @@ import torch
 from modules import shared, errors
 
 fail_once = False
+mem = {}
+
 
 def gb(val: float):
     return round(val / 1024 / 1024 / 1024, 2)
@@ -11,7 +13,7 @@ def gb(val: float):
 
 def memory_stats():
     global fail_once # pylint: disable=global-statement
-    mem = {}
+    mem.clear()
     try:
         process = psutil.Process(os.getpid())
         res = process.memory_info()
@@ -38,6 +40,10 @@ def memory_stats():
         return mem
     except Exception:
         pass
+    return mem
+
+
+def memory_cache():
     return mem
 
 

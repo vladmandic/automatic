@@ -180,7 +180,7 @@ class Script(scripts.Script):
             else:
                 shared.sd_model = sd_models.switch_pipe(diffusers.CogVideoXPipeline, shared.sd_model)
             args['num_frames'] = p.frames # only txt2vid has num_frames
-            shared.log.info(f'CogVideoX: class={shared.sd_model.__class__.__name__} frames={p.frames} input={args.get('video', None) or args.get('image', None)}')
+            shared.log.info(f"CogVideoX: class={shared.sd_model.__class__.__name__} frames={p.frames} input={args.get('video', None) or args.get('image', None)}")
             if debug:
                 shared.log.debug(f'CogVideoX args: {args}')
             frames = shared.sd_model(**args).frames[0]
