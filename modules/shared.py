@@ -467,69 +467,103 @@ def get_default_modes():
 
 startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
 
-options_templates.update(options_section(('sd', "Execution & Models"), {
+options_templates.update(options_section(('sd', "Models & Loading"), {
     "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
+    "diffusers_pipeline": OptionInfo('Autodetect', 'Model pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()), "visible": native}),
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
-    "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
-    "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": shared_items.sd_te_items()}, refresh=shared_items.refresh_te_list),
-    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
+    "latent_history": OptionInfo(16, "Latent history size", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
+
+    "offload_sep": OptionInfo("<h2>Model Offloading</h2>", "", gr.HTML),
+    "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner", gr.Checkbox, {"visible": False }),
+    "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE", gr.Checkbox, {"visible": False }),
+    "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use", gr.Checkbox, {"visible": False }),
+    "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible", gr.Checkbox, {"visible": False }),
+    "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
+    "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_cpu_memory": OptionInfo(0.90, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+
+    "advanced_sep": OptionInfo("<h2>Advanced Options</h2>", "", gr.HTML),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
     "sd_checkpoint_autodownload": OptionInfo(True, "Model auto-download on demand"),
-    "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results", gr.Checkbox, {"visible": False}),
-    "sd_textencoder_cache_size": OptionInfo(4, "Text encoder cache size", gr.Slider, {"minimum": 0, "maximum": 16, "step": 1}),
     "stream_load": OptionInfo(False, "Load models using stream loading method", gr.Checkbox, {"visible": not native }),
-    "prompt_mean_norm": OptionInfo(False, "Prompt attention normalization", gr.Checkbox),
-    "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
-    "prompt_attention": OptionInfo("native", "Prompt attention parser", gr.Radio, {"choices": ["native", "compel", "xhinker", "a1111", "fixed"] }),
-    "latent_history": OptionInfo(16, "Latent history size", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
+    "diffusers_eval": OptionInfo(True, "Force model eval", gr.Checkbox, {"visible": False }),
+    "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
+    "disable_accelerate": OptionInfo(False, "Disable accelerate", gr.Checkbox, {"visible": False }),
+    "sd_model_dict": OptionInfo('None', "Use separate base dict", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_cache": OptionInfo(0, "Cached models", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1, "visible": not native }),
 }))
 
-options_templates.update(options_section(('cuda', "Compute Settings"), {
-    "math_sep": OptionInfo("<h2>Execution precision</h2>", "", gr.HTML),
-    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
-    "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
-
-    "model_sep": OptionInfo("<h2>Model options</h2>", "", gr.HTML),
-    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for model (--no-half)", None, None, None),
-    "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision for VAE (--no-half-vae)"),
-    "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling"),
-    "upcast_attn": OptionInfo(False, "Upcast attention layer"),
-    "cuda_cast_unet": OptionInfo(False, "Fixed UNet precision"),
+options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"), {
+    "sd_vae": OptionInfo("Automatic", "VAE model", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
+    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
+    "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half-vae)"),
+    "diffusers_vae_slicing": OptionInfo(True, "VAE slicing", gr.Checkbox, {"visible": native}),
+    "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling", gr.Checkbox, {"visible": native}),
+    "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
+}))
+
+options_templates.update(options_section(('text_encoder', "Text Encoder"), {
+    "sd_text_encoder": OptionInfo('None', "Text encoder model", gr.Dropdown, lambda: {"choices": shared_items.sd_te_items()}, refresh=shared_items.refresh_te_list),
+    "prompt_attention": OptionInfo("native", "Prompt attention parser", gr.Radio, {"choices": ["native", "compel", "xhinker", "a1111", "fixed"] }),
+    "prompt_mean_norm": OptionInfo(False, "Prompt attention normalization", gr.Checkbox),
+    "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results", gr.Checkbox, {"visible": False}),
+    "sd_textencoder_cache_size": OptionInfo(4, "Text encoder cache size", gr.Slider, {"minimum": 0, "maximum": 16, "step": 1}),
+    "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
+    "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
+    "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
+}))
+
+options_templates.update(options_section(('cuda', "Compute Settings"), {
+    "math_sep": OptionInfo("<h2>Execution Precision</h2>", "", gr.HTML),
+    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
+    "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
+    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half)", None, None, None),
+    "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling", gr.Checkbox, {"visible": not native}),
+    "upcast_attn": OptionInfo(False, "Upcast attention layer", gr.Checkbox, {"visible": not native}),
+    "cuda_cast_unet": OptionInfo(False, "Fixed UNet precision", gr.Checkbox, {"visible": not native}),
+
+    "generator_sep": OptionInfo("<h2>Noise Options</h2>", "", gr.HTML),
+    "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
 
     "cross_attention_sep": OptionInfo("<h2>Cross Attention</h2>", "", gr.HTML),
-    "cross_attention_optimization": OptionInfo(startup_cross_attention, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native) }),
-    "sdp_options": OptionInfo(startup_sdp_options, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention', 'Sage attention'] }),
+    "cross_attention_optimization": OptionInfo(startup_cross_attention, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native)}),
+    "sdp_options": OptionInfo(startup_sdp_options, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention', 'Sage attention'], "visible": native}),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
     "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_chunk_threshold": OptionInfo(80, "Attention chunking threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": not native}),
+}))
 
-    "other_sep": OptionInfo("<h2>Execution options</h2>", "", gr.HTML),
-    "opt_channelslast": OptionInfo(False, "Use channels last "),
-    "cudnn_deterministic": OptionInfo(False, "Use deterministic mode"),
-    "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark feature"),
+options_templates.update(options_section(('backends', "Backend Settings"), {
+    "other_sep": OptionInfo("<h2>Torch Options</h2>", "", gr.HTML),
+    "opt_channelslast": OptionInfo(False, "Channels last "),
+    "cudnn_deterministic": OptionInfo(False, "Deterministic mode"),
+    "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
-    "torch_expandable_segments": OptionInfo(False, "Torch expandable segments"),
-    "cuda_mem_fraction": OptionInfo(0.0, "Torch memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
-    "torch_gc_threshold": OptionInfo(80, "Torch memory threshold for GC", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
-    "torch_malloc": OptionInfo("native", "Torch memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
+    "torch_expandable_segments": OptionInfo(False, "Expandable segments"),
+    "cuda_mem_fraction": OptionInfo(0.0, "Memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
+    "torch_gc_threshold": OptionInfo(80, "GC threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
+    "inference_mode": OptionInfo("no-grad", "Inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
+    "torch_malloc": OptionInfo("native", "Memory allocator", gr.Radio, {"choices": ['native', 'cudaMallocAsync'] }),
 
-    "cuda_compile_sep": OptionInfo("<h2>Model Compile</h2>", "", gr.HTML),
-    "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
-    "cuda_compile_backend": OptionInfo("none" if not cmd_opts.use_openvino else "openvino_fx", "Model compile backend", gr.Radio, {"choices": ['none', 'inductor', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'migraphx', 'ipex', 'onediff', 'stable-fast', 'deep-cache', 'olive-ai', 'openvino_fx']}),
-    "cuda_compile_mode": OptionInfo("default", "Model compile mode", gr.Radio, {"choices": ['default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs']}),
-    "cuda_compile_fullgraph": OptionInfo(True if not cmd_opts.use_openvino else False, "Model compile fullgraph"),
-    "cuda_compile_precompile": OptionInfo(False, "Model compile precompile"),
-    "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
-    "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
-    "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "onnx_sep": OptionInfo("<h2>ONNX</h2>", "", gr.HTML),
+    "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'ONNX Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),
+    "onnx_cpu_fallback": OptionInfo(True, 'ONNX allow fallback to CPU'),
+    "onnx_cache_converted": OptionInfo(True, 'ONNX cache converted models'),
+    "onnx_unload_base": OptionInfo(False, 'ONNX unload base model when processing refiner'),
+
+    "olive_sep": OptionInfo("<h2>Olive</h2>", "", gr.HTML),
+    "olive_float16": OptionInfo(True, 'Olive use FP16 on optimization'),
+    "olive_vae_encoder_float32": OptionInfo(False, 'Olive force FP32 for VAE Encoder'),
+    "olive_static_dims": OptionInfo(True, 'Olive use static dimensions'),
+    "olive_cache_optimized": OptionInfo(True, 'Olive cache optimized models'),
 
     "ipex_sep": OptionInfo("<h2>IPEX</h2>", "", gr.HTML, {"visible": devices.backend == "ipex"}),
     "ipex_optimize": OptionInfo([], "IPEX Optimize for Intel GPUs", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"], "visible": devices.backend == "ipex"}),
@@ -543,91 +577,55 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "directml_sep": OptionInfo("<h2>DirectML</h2>", "", gr.HTML, {"visible": devices.backend == "directml"}),
     "directml_memory_provider": OptionInfo(default_memory_provider, 'DirectML memory stats provider', gr.Radio, {"choices": memory_providers, "visible": devices.backend == "directml"}),
     "directml_catch_nan": OptionInfo(False, "DirectML retry ops for NaN", gr.Checkbox, {"visible": devices.backend == "directml"}),
-
-    "olive_sep": OptionInfo("<h2>Olive</h2>", "", gr.HTML),
-    "olive_float16": OptionInfo(True, 'Olive use FP16 on optimization'),
-    "olive_vae_encoder_float32": OptionInfo(False, 'Olive force FP32 for VAE Encoder'),
-    "olive_static_dims": OptionInfo(True, 'Olive use static dimensions'),
-    "olive_cache_optimized": OptionInfo(True, 'Olive cache optimized models'),
-}))
-
-options_templates.update(options_section(('diffusers', "Diffusers Settings"), {
-    "diffusers_pipeline": OptionInfo('Autodetect', 'Diffusers pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()) }),
-    "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
-    "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner"),
-    "diffusers_move_unet": OptionInfo(False, "Move base model to CPU when using VAE"),
-    "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use"),
-    "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible"),
-    "diffusers_generator_device": OptionInfo("GPU", "Generator device", gr.Radio, {"choices": ["GPU", "CPU", "Unset"]}),
-    "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_offload_max_cpu_memory": OptionInfo(0.75, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_vae_upcast": OptionInfo("default", "VAE upcasting", gr.Radio, {"choices": ['default', 'true', 'false']}),
-    "diffusers_vae_slicing": OptionInfo(True, "VAE slicing"),
-    "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling"),
-    "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
-    "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
-    "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),
-    "diffusers_eval": OptionInfo(True, "Force model eval"),
-    "diffusers_to_gpu": OptionInfo(False, "Load model directly to GPU"),
-    "disable_accelerate": OptionInfo(False, "Disable accelerate"),
-    "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
-    "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
-    "huggingface_token": OptionInfo('', 'HuggingFace token'),
-    "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
-
-    "onnx_sep": OptionInfo("<h2>ONNX Runtime</h2>", "", gr.HTML),
-    "onnx_execution_provider": OptionInfo(execution_providers.get_default_execution_provider().value, 'Execution Provider', gr.Dropdown, lambda: {"choices": execution_providers.available_execution_providers }),
-    "onnx_cpu_fallback": OptionInfo(True, 'ONNX allow fallback to CPU'),
-    "onnx_cache_converted": OptionInfo(True, 'ONNX cache converted models'),
-    "onnx_unload_base": OptionInfo(False, 'ONNX unload base model when processing refiner'),
 }))
 
 options_templates.update(options_section(('quantization', "Quantization Settings"), {
-    "bnb_quantization": OptionInfo([], "BnB quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
-    "bnb_quantization_type": OptionInfo("nf4", "BnB quantization type", gr.Radio, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
-    "bnb_quantization_storage": OptionInfo("uint8", "BnB quantization storage", gr.Radio, {"choices": ["float16", "float32", "int8", "uint8", "float64", "bfloat16"], "visible": native}),
-    "optimum_quanto_weights": OptionInfo([], "Optimum.quanto quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
-    "optimum_quanto_weights_type": OptionInfo("qint8", "Optimum.quanto quantization type", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
-    "optimum_quanto_activations_type": OptionInfo("none", "Optimum.quanto quantization activations ", gr.Radio, {"choices": ['none', 'qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2'], "visible": native}),
-    "torchao_quantization": OptionInfo([], "TorchAO quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
-    "torchao_quantization_mode": OptionInfo("pre", "TorchAO quantization mode", gr.Radio, {"choices": ['pre', 'post'], "visible": native}),
-    "torchao_quantization_type": OptionInfo("int8", "TorchAO quantization type", gr.Radio, {"choices": ["int8+act", "int8", "int4", "fp8+act", "fp8", "fpx"], "visible": native}),
-    "nncf_compress_weights": OptionInfo([], "NNCF compression enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
-    "nncf_compress_weights_mode": OptionInfo("INT8", "NNCF compress mode", gr.Radio, {"choices": ['INT8', 'INT8_SYM', 'INT4_ASYM', 'INT4_SYM', 'NF4'] if cmd_opts.use_openvino else ['INT8']}),
-    "nncf_compress_weights_raito": OptionInfo(1.0, "NNCF compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
-    "nncf_quantize": OptionInfo([], "NNCF OpenVINO quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": cmd_opts.use_openvino}),
-    "nncf_quant_mode": OptionInfo("INT8", "NNCF OpenVINO quantization mode", gr.Radio, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
-
-    "quant_shuffle_weights": OptionInfo(False, "Shuffle the weights between GPU and CPU when quantizing", gr.Checkbox, {"visible": native}),
+    "bnb_sep": OptionInfo("<h2>BitsAndBytes</h2>", "", gr.HTML),
+    "bnb_quantization": OptionInfo([], "Enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
+    "bnb_quantization_type": OptionInfo("nf4", "Type", gr.Radio, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
+    "bnb_quantization_storage": OptionInfo("uint8", "Backend storage", gr.Radio, {"choices": ["float16", "float32", "int8", "uint8", "float64", "bfloat16"], "visible": native}),
+    "optimum_quanto_sep": OptionInfo("<h2>Optimum Quanto</h2>", "", gr.HTML),
+    "optimum_quanto_weights": OptionInfo([], "Enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "optimum_quanto_weights_type": OptionInfo("qint8", "Type", gr.Radio, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
+    "optimum_quanto_activations_type": OptionInfo("none", "Activations ", gr.Radio, {"choices": ['none', 'qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2'], "visible": native}),
+    "torchao_sep": OptionInfo("<h2>TorchAO</h2>", "", gr.HTML),
+    "torchao_quantization": OptionInfo([], "Enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
+    "torchao_quantization_mode": OptionInfo("pre", "Mode", gr.Radio, {"choices": ['pre', 'post'], "visible": native}),
+    "torchao_quantization_type": OptionInfo("int8", "Type", gr.Radio, {"choices": ["int8+act", "int8", "int4", "fp8+act", "fp8", "fpx"], "visible": native}),
+    "nncf_sep": OptionInfo("<h2>NNCF</h2>", "", gr.HTML),
+    "nncf_compress_weights": OptionInfo([], "Enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
+    "nncf_compress_weights_mode": OptionInfo("INT8", "Mode", gr.Radio, {"choices": ['INT8', 'INT8_SYM', 'INT4_ASYM', 'INT4_SYM', 'NF4'] if cmd_opts.use_openvino else ['INT8']}),
+    "nncf_compress_weights_raito": OptionInfo(1.0, "Compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
+    "nncf_quantize": OptionInfo([], "OpenVINO enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": cmd_opts.use_openvino}),
+    "nncf_quant_mode": OptionInfo("INT8", "OpenVINO mode", gr.Radio, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
+    "quant_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
 }))
 
-options_templates.update(options_section(('advanced', "Inference Settings"), {
-    "token_merging_sep": OptionInfo("<h2>Token merging</h2>", "", gr.HTML),
+options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
+    "token_merging_sep": OptionInfo("<h2>Token Merging</h2>", "", gr.HTML),
     "token_merging_method": OptionInfo("None", "Token merging method", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
     "tome_ratio": OptionInfo(0.0, "ToMe token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
     "todo_ratio": OptionInfo(0.0, "ToDo token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
 
     "freeu_sep": OptionInfo("<h2>FreeU</h2>", "", gr.HTML),
     "freeu_enabled": OptionInfo(False, "FreeU"),
-    "freeu_b1": OptionInfo(1.2, "1st stage backbone factor", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
-    "freeu_b2": OptionInfo(1.4, "2nd stage backbone factor", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
-    "freeu_s1": OptionInfo(0.9, "1st stage skip factor", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
-    "freeu_s2": OptionInfo(0.2, "2nd stage skip factor", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
+    "freeu_b1": OptionInfo(1.2, "1st stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
+    "freeu_b2": OptionInfo(1.4, "2nd stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
+    "freeu_s1": OptionInfo(0.9, "1st stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
+    "freeu_s2": OptionInfo(0.2, "2nd stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
     "pag_sep": OptionInfo("<h2>Perturbed-Attention Guidance</h2>", "", gr.HTML),
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
-    "hypertile_hires_only": OptionInfo(False, "HyperTile hires pass only"),
-    "hypertile_unet_enabled": OptionInfo(False, "HyperTile UNet"),
-    "hypertile_unet_tile": OptionInfo(0, "HyperTile UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
-    "hypertile_unet_swap_size": OptionInfo(1, "HyperTile UNet swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
-    "hypertile_unet_depth": OptionInfo(0, "HyperTile UNet depth", gr.Slider, {"minimum": 0, "maximum": 4, "step": 1}),
-    "hypertile_vae_enabled": OptionInfo(False, "HyperTile VAE", gr.Checkbox),
-    "hypertile_vae_tile": OptionInfo(128, "HyperTile VAE tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
-    "hypertile_vae_swap_size": OptionInfo(1, "HyperTile VAE swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),
+    "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
+    "hypertile_unet_tile": OptionInfo(0, "UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_unet_swap_size": OptionInfo(1, "UNet swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
+    "hypertile_unet_depth": OptionInfo(0, "UNet depth", gr.Slider, {"minimum": 0, "maximum": 4, "step": 1}),
+    "hypertile_vae_enabled": OptionInfo(False, "VAE Enabled", gr.Checkbox),
+    "hypertile_vae_tile": OptionInfo(128, "VAE tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_vae_swap_size": OptionInfo(1, "VAE swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 
     "hidiffusion_sep": OptionInfo("<h2>HiDiffusion</h2>", "", gr.HTML),
     "hidiffusion_raunet": OptionInfo(True, "Apply RAU-Net"),
@@ -636,16 +634,28 @@ options_templates.update(options_section(('advanced', "Inference Settings"), {
     "hidiffusion_t1": OptionInfo(-1, "Override T1 ratio", gr.Slider, {"minimum": -1, "maximum": 1.0, "step": 0.05}),
     "hidiffusion_t2": OptionInfo(-1, "Override T2 ratio", gr.Slider, {"minimum": -1, "maximum": 1.0, "step": 0.05}),
 
+    "linfusion_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
+    "enable_linfusion": OptionInfo(False, "Apply LinFusion distillation on load"),
+
     "inference_batch_sep": OptionInfo("<h2>Batch</h2>", "", gr.HTML),
     "sequential_seed": OptionInfo(True, "Batch mode uses sequential seeds"),
     "batch_frame_mode": OptionInfo(False, "Parallel process images in batch"),
-    "inference_other_sep": OptionInfo("<h2>Other</h2>", "", gr.HTML),
-    "inference_mode": OptionInfo("no-grad", "Torch inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
-    "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
+}))
+
+options_templates.update(options_section(('compile', "Model Compile"), {
+    "cuda_compile_sep": OptionInfo("<h2>Model Compile</h2>", "", gr.HTML),
+    "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
+    "cuda_compile_backend": OptionInfo("none" if not cmd_opts.use_openvino else "openvino_fx", "Model compile backend", gr.Radio, {"choices": ['none', 'inductor', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'migraphx', 'ipex', 'onediff', 'stable-fast', 'deep-cache', 'olive-ai', 'openvino_fx']}),
+    "cuda_compile_mode": OptionInfo("default", "Model compile mode", gr.Radio, {"choices": ['default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs']}),
+    "cuda_compile_fullgraph": OptionInfo(True if not cmd_opts.use_openvino else False, "Model compile fullgraph"),
+    "cuda_compile_precompile": OptionInfo(False, "Model compile precompile"),
+    "cuda_compile_verbose": OptionInfo(False, "Model compile verbose mode"),
+    "cuda_compile_errors": OptionInfo(True, "Model compile suppress errors"),
+    "deep_cache_interval": OptionInfo(3, "DeepCache cache interval", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
 }))
 
 options_templates.update(options_section(('system-paths', "System Paths"), {
-    "models_paths_sep_options": OptionInfo("<h2>Models paths</h2>", "", gr.HTML),
+    "models_paths_sep_options": OptionInfo("<h2>Models Paths</h2>", "", gr.HTML),
     "models_dir": OptionInfo('models', "Base path where all models are stored", folder=True),
     "ckpt_dir": OptionInfo(os.path.join(paths.models_path, 'Stable-diffusion'), "Folder with stable diffusion models", folder=True),
     "diffusers_dir": OptionInfo(os.path.join(paths.models_path, 'Diffusers'), "Folder with Huggingface models", folder=True),
@@ -726,13 +736,13 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
 }))
 
 options_templates.update(options_section(('saving-paths', "Image Paths"), {
-    "saving_sep_images": OptionInfo("<h2>Save options</h2>", "", gr.HTML),
+    "saving_sep_images": OptionInfo("<h2>Save Options</h2>", "", gr.HTML),
     "save_images_add_number": OptionInfo(True, "Numbered filenames", component_args=hide_dirs),
     "use_original_name_batch": OptionInfo(True, "Batch uses original name"),
     "save_to_dirs": OptionInfo(False, "Save images to a subdirectory"),
     "directories_filename_pattern": OptionInfo("[date]", "Directory name pattern", component_args=hide_dirs),
     "samples_filename_pattern": OptionInfo("[seq]-[model_name]-[prompt_words]", "Images filename pattern", component_args=hide_dirs),
-    "directories_max_prompt_words": OptionInfo(8, "Max words per pattern", gr.Slider, {"minimum": 1, "maximum": 99, "step": 1, **hide_dirs}),
+    "directories_max_prompt_words": OptionInfo(8, "Max words", gr.Slider, {"minimum": 1, "maximum": 99, "step": 1, **hide_dirs}),
 
     "outdir_sep_dirs": OptionInfo("<h2>Folders</h2>", "", gr.HTML),
     "outdir_samples": OptionInfo("", "Images folder", component_args=hide_dirs, folder=True),
@@ -751,14 +761,14 @@ options_templates.update(options_section(('saving-paths', "Image Paths"), {
     "outdir_control_grids": OptionInfo("outputs/grids", 'Folder for control grids', component_args=hide_dirs, folder=True),
 }))
 
-options_templates.update(options_section(('ui', "User Interface Options"), {
+options_templates.update(options_section(('ui', "User Interface"), {
     "theme_type": OptionInfo("Standard", "Theme type", gr.Radio, {"choices": ["Modern", "Standard", "None"]}),
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "gradio_theme": OptionInfo("black-teal", "UI theme", gr.Dropdown, lambda: {"choices": theme.list_themes()}, refresh=theme.refresh_themes),
     "autolaunch": OptionInfo(False, "Autolaunch browser upon startup"),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "aspect_ratios": OptionInfo("1:1, 4:3, 3:2, 16:9, 16:10, 21:9, 2:3, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
-    "motd": OptionInfo(True, "Show MOTD"),
+    "motd": OptionInfo(False, "Show MOTD"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),
@@ -770,14 +780,14 @@ options_templates.update(options_section(('ui', "User Interface Options"), {
 }))
 
 options_templates.update(options_section(('live-preview', "Live Previews"), {
-    "notification_audio_enable": OptionInfo(False, "Play a notification upon completion"),
-    "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound", component_args=hide_dirs, folder=True),
     "show_progress_every_n_steps": OptionInfo(1, "Live preview display period", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
     "show_progress_type": OptionInfo("Approximate", "Live preview method", gr.Radio, {"choices": ["Simple", "Approximate", "TAESD", "Full VAE"]}),
     "live_preview_refresh_period": OptionInfo(500, "Progress update period", gr.Slider, {"minimum": 0, "maximum": 5000, "step": 25}),
     "live_preview_taesd_layers": OptionInfo(3, "TAESD decode layers", gr.Slider, {"minimum": 1, "maximum": 3, "step": 1}),
     "logmonitor_show": OptionInfo(True, "Show log view"),
     "logmonitor_refresh_period": OptionInfo(5000, "Log view update period", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
+    "notification_audio_enable": OptionInfo(False, "Play a notification upon completion"),
+    "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound", component_args=hide_dirs, folder=True),
 }))
 
 options_templates.update(options_section(('sampler-params', "Sampler Settings"), {
@@ -816,7 +826,7 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     's_noise': OptionInfo(1.0, "Sigma noise", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01, "visible": not native}),
     's_min':  OptionInfo(0.0, "Sigma min",  gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01, "visible": not native}),
     's_max':  OptionInfo(0.0, "Sigma max",  gr.Slider, {"minimum": 0.0, "maximum": 100.0, "step": 1.0, "visible": not native}),
-    "schedulers_sep_compvis": OptionInfo("<h2>CompVis specific config</h2>", "", gr.HTML, {"visible": not native}),
+    "schedulers_sep_compvis": OptionInfo("<h2>CompVis Config</h2>", "", gr.HTML, {"visible": not native}),
     'uni_pc_variant': OptionInfo("bh2", "UniPC variant", gr.Radio, {"choices": ["bh1", "bh2", "vary_coeff"], "visible": not native}),
     'uni_pc_skip_type': OptionInfo("time_uniform", "UniPC skip type", gr.Radio, {"choices": ["time_uniform", "time_quadratic", "logSNR"], "visible": not native}),
     "ddim_discretize": OptionInfo('uniform', "DDIM discretize img2img", gr.Radio, {"choices": ['uniform', 'quad'], "visible": not native}),
@@ -849,7 +859,7 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "detailer_unload": OptionInfo(False, "Move detailer model to CPU when complete"),
     "detailer_augment": OptionInfo(True, "Detailer use model augment"),
 
-    "postprocessing_sep_face_restore": OptionInfo("<h2>Face restore</h2>", "", gr.HTML),
+    "postprocessing_sep_face_restore": OptionInfo("<h2>Face Restore</h2>", "", gr.HTML),
     "face_restoration_model": OptionInfo("None", "Face restoration", gr.Radio, lambda: {"choices": ['None'] + [x.name() for x in face_restorers]}),
     "code_former_weight": OptionInfo(0.2, "CodeFormer weight parameter", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
 
@@ -877,6 +887,15 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
     "deepbooru_use_spaces": OptionInfo(False, "Use spaces for tags in deepbooru"),
     "deepbooru_escape": OptionInfo(True, "Escape brackets in deepbooru"),
     "deepbooru_filter_tags": OptionInfo("", "Filter out tags from deepbooru output"),
+}))
+
+options_templates.update(options_section(('huggingface', "Huggingface"), {
+    "huggingface_sep": OptionInfo("<h2>Huggingface</h2>", "", gr.HTML),
+    "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
+    "huggingface_token": OptionInfo('', 'HuggingFace token'),
+    "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
+    "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
+    "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),
 }))
 
 options_templates.update(options_section(('extra_networks', "Networks"), {

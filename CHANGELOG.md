@@ -67,6 +67,7 @@
   - control: hide preview column by default
   - control: optionn to hide input column
   - control: add stats
+  - settings: reorganized and simplified  
   - browser -> server logging framework  
   - add addtional themes: `black-reimagined`, thanks @Artheriax  
 

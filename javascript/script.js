@@ -125,7 +125,7 @@ document.addEventListener('keydown', (e) => {
   let elem;
   if (e.key === 'Escape') elem = getUICurrentTabContent().querySelector('button[id$=_interrupt]');
   if (e.key === 'Enter' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_generate]');
-  if (e.key === 'r' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_reprocess]');
+  if (e.key === 'i' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_reprocess]');
   if (e.key === ' ' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_extra_networks_btn]');
   if (e.key === 'n' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id$=_extra_networks_btn]');
   if (e.key === 's' && e.ctrlKey) elem = getUICurrentTabContent().querySelector('button[id^=save_]');

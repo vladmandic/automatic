@@ -339,6 +339,9 @@ class StableDiffusionProcessing:
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
 
+    def __str__(self):
+        return f'{self.__class__.__name__}: {self.__dict__}'
+
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     def __init__(self, **kwargs):
