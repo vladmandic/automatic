@@ -18,7 +18,7 @@ from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
 from modules.timer import Timer, process as process_timer
-from modules.memstats import memory_stats
+from modules.memstats import memory_stats, memory_cache
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
 
@@ -416,9 +416,10 @@ class OffloadHook(accelerate.hooks.ModelHook):
 
 
 offload_hook_instance = None
+offload_component_map = {}
 
 
-def apply_balanced_offload(sd_model):
+def apply_balanced_offload(sd_model, exclude=[]):
     global offload_hook_instance # pylint: disable=global-statement
     if shared.opts.diffusers_offload_mode != "balanced":
         return sd_model
@@ -428,8 +429,6 @@ def apply_balanced_offload(sd_model):
     excluded = ['OmniGenPipeline']
     if sd_model.__class__.__name__ in excluded:
         return sd_model
-    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    debug_move(f'Apply offload: type=balanced fn={fn}')
     checkpoint_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
     if checkpoint_name is None:
         checkpoint_name = sd_model.__class__.__name__
@@ -442,32 +441,38 @@ def apply_balanced_offload(sd_model):
             keys = pipe._internal_dict.keys() # pylint: disable=protected-access
         else:
             keys = get_signature(pipe).keys()
+        keys = [k for k in keys if k not in exclude and not k.startswith('_')]
         for module_name in keys: # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
-            if isinstance(module, torch.nn.Module):
-                network_layer_name = getattr(module, "network_layer_name", None)
-                device_map = getattr(module, "balanced_offload_device_map", None)
-                max_memory = getattr(module, "balanced_offload_max_memory", None)
-                module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
-                try:
-                    do_offload = used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory
-                    debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} dtype={module.dtype} op={"move" if do_offload else "skip"} component={module.__class__.__name__}')
-                    if do_offload:
-                        module = module.to(devices.cpu)
-                        used_gpu, used_ram = devices.torch_gc(fast=True, force=True)
-                except Exception as e:
-                    if 'bitsandbytes' not in str(e):
-                        shared.log.error(f'Balanced offload: module={module_name} {e}')
-                    if os.environ.get('SD_MOVE_DEBUG', None):
-                        errors.display(e, f'Balanced offload: module={module_name}')
-                module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
-                module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
-                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
-                if network_layer_name:
-                    module.network_layer_name = network_layer_name
-                if device_map and max_memory:
-                    module.balanced_offload_device_map = device_map
-                    module.balanced_offload_max_memory = max_memory
+            if not isinstance(module, torch.nn.Module):
+                continue
+            network_layer_name = getattr(module, "network_layer_name", None)
+            device_map = getattr(module, "balanced_offload_device_map", None)
+            max_memory = getattr(module, "balanced_offload_max_memory", None)
+            module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
+            module_size = offload_component_map.get(module_name, None)
+            if module_size is None:
+                module_size = sum(p.numel()*p.element_size() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
+                offload_component_map[module_name] = module_size
+            do_offload = (used_gpu > 100 * shared.opts.diffusers_offload_min_gpu_memory) and (module_size > shared.gpu_memory * shared.opts.diffusers_offload_pin_gpu_memory)
+            try:
+                debug_move(f'Balanced offload: gpu={used_gpu} ram={used_ram} current={module.device} dtype={module.dtype} op={"move" if do_offload else "skip"} component={module.__class__.__name__} size={module_size:.3f}')
+                if do_offload and module.device != devices.cpu:
+                    module = module.to(devices.cpu)
+                    used_gpu, used_ram = devices.torch_gc(fast=True, force=True)
+            except Exception as e:
+                if 'bitsandbytes' not in str(e):
+                    shared.log.error(f'Balanced offload: module={module_name} {e}')
+                if os.environ.get('SD_MOVE_DEBUG', None):
+                    errors.display(e, f'Balanced offload: module={module_name}')
+            module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
+            module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
+            module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+            if network_layer_name:
+                module.network_layer_name = network_layer_name
+            if device_map and max_memory:
+                module.balanced_offload_device_map = device_map
+                module.balanced_offload_max_memory = max_memory
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "pipe"):
@@ -478,7 +483,10 @@ def apply_balanced_offload(sd_model):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
     set_accelerate(sd_model)
     devices.torch_gc(fast=True)
-    process_timer.add('offload', time.time() - t0)
+    t = time.time() - t0
+    process_timer.add('offload', t)
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    debug_move(f'Apply offload: time={t:.2f} type=balanced fn={fn}')
     return sd_model
 
 

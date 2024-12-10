@@ -349,7 +349,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
 
 
 def process_decode(p: processing.StableDiffusionProcessing, output):
-    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model, exclude=['vae'])
     if output is not None:
         if not hasattr(output, 'images') and hasattr(output, 'frames'):
             shared.log.debug(f'Generated: frames={len(output.frames[0])}')
@@ -463,7 +463,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     timer.process.record('decode')
 
     shared.sd_model = orig_pipeline
-    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    # shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     if p.state == '':
         global last_p # pylint: disable=global-statement

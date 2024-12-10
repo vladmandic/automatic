@@ -104,8 +104,6 @@ def full_vae_decode(latents, model):
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False):
         base_device = sd_models.move_base(model, devices.cpu)
 
-    if shared.opts.diffusers_offload_mode == "balanced":
-        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     elif shared.opts.diffusers_offload_mode != "sequential":
         sd_models.move_model(model.vae, devices.device)
 
@@ -159,8 +157,8 @@ def full_vae_decode(latents, model):
             model.vae.apply(sd_models.convert_to_faketensors)
             devices.torch_gc(force=True)
 
-    if shared.opts.diffusers_offload_mode == "balanced":
-        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+    # if shared.opts.diffusers_offload_mode == "balanced":
+    #    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     elif shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
         sd_models.move_base(model, base_device)
     t1 = time.time()
