@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-06
+## Update for 2024-12-10
 
 ### New models and integrations
 
@@ -96,6 +96,7 @@
 - simplify img2img/inpaint/sketch canvas handling  
 - fix prompt caching  
 - fix xyz grid skip final pass  
+- fix sd upscale script
 
 ## Update for 2024-11-21
 
