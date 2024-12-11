@@ -16,7 +16,7 @@ import fasteners
 import orjson
 import diffusers
 from rich.console import Console
-from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history
+from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history, files_cache
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
@@ -238,6 +238,8 @@ cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 mem_stat = memory_stats()
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
 native = backend == Backend.DIFFUSERS
+if not files_cache.do_cache_folders:
+    log.warning('File cache disabled: ')
 
 
 class OptionInfo:
