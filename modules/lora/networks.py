@@ -346,7 +346,10 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
             continue
         try:
             t0 = time.time()
-            weight = self.weight.to(devices.device)
+            try:
+                weight = self.weight.to(devices.device)
+            except Exception:
+                weight = self.weight
             updown, ex_bias = module.calc_updown(weight)
             if batch_updown is not None and updown is not None:
                 batch_updown += updown.to(batch_updown.device)
@@ -389,7 +392,10 @@ def network_apply_direct(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if updown is not None:
             if deactivate:
                 updown *= -1
-            new_weight = self.weight.to(devices.device) + updown.to(devices.device)
+            try:
+                new_weight = self.weight.to(devices.device) + updown.to(devices.device)
+            except Exception:
+                new_weight = self.weight + updown
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
                 self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
             else:
