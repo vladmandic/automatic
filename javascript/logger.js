@@ -1,3 +1,5 @@
+const timeout = 10000;
+
 const log = async (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
@@ -21,7 +23,7 @@ const error = async (...msg) => {
   // if (!txt.includes('asctime') && !txt.includes('xhr.')) xhrPost('/sdapi/v1/log', { error: txt }); // eslint-disable-line no-use-before-define
 };
 
-const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) => {
+const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) => {
   const err = (msg) => {
     if (!ignore) {
       error(`${msg}: state=${xhrObj.readyState} status=${xhrObj.status} response=${xhrObj.responseText}`);
@@ -30,7 +32,7 @@ const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined
   };
 
   xhrObj.setRequestHeader('Content-Type', 'application/json');
-  xhrObj.timeout = serverTimeout;
+  xhrObj.timeout = timeout;
   xhrObj.ontimeout = () => err('xhr.ontimeout');
   xhrObj.onerror = () => err('xhr.onerror');
   xhrObj.onabort = () => err('xhr.onabort');
@@ -52,14 +54,14 @@ const xhrInternal = (xhrObj, data, handler = undefined, errorHandler = undefined
   xhrObj.send(req);
 };
 
-const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) => {
+const xhrGet = (url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) => {
   const xhr = new XMLHttpRequest();
   const args = Object.keys(data).map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`).join('&');
   xhr.open('GET', `${url}?${args}`, true);
   xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);
 };
 
-function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = 5000) {
+function xhrPost(url, data, handler = undefined, errorHandler = undefined, ignore = false, serverTimeout = timeout) {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', url, true);
   xhrInternal(xhr, data, handler, errorHandler, ignore, serverTimeout);

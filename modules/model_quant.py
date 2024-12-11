@@ -73,7 +73,7 @@ def load_bnb(msg='', silent=False):
     global bnb # pylint: disable=global-statement
     if bnb is not None:
         return bnb
-    install('bitsandbytes', quiet=True)
+    install('bitsandbytes==0.45.0', quiet=True)
     try:
         import bitsandbytes
         bnb = bitsandbytes
@@ -96,7 +96,7 @@ def load_quanto(msg='', silent=False):
     global quanto # pylint: disable=global-statement
     if quanto is not None:
         return quanto
-    install('optimum-quanto', quiet=True)
+    install('optimum-quanto==0.2.6', quiet=True)
     try:
         from optimum import quanto as optimum_quanto # pylint: disable=no-name-in-module
         quanto = optimum_quanto

@@ -682,7 +682,7 @@ def install_torch_addons():
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
     if opts.get('optimum_quanto_weights', False):
-        install('optimum-quanto', 'optimum-quanto')
+        install('optimum-quanto==0.2.6', 'optimum-quanto')
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
 
@@ -999,8 +999,8 @@ def install_optional():
     install('basicsr')
     install('gfpgan')
     install('clean-fid')
-    install('optimum-quanto', ignore=True)
-    install('bitsandbytes', ignore=True)
+    install('optimum-quanto=0.2.6', ignore=True)
+    install('bitsandbytes==0.45.0', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
