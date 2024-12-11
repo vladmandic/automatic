@@ -83,6 +83,7 @@
 
 ### Fixes  
 
+- add `SD_NO_CACHE=true` env variable to disable file/folder caching  
 - update `diffusers`  
 - fix README links  
 - fix sdxl controlnet single-file loader  
