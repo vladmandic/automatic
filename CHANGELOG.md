@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-10
+## Update for 2024-12-11
 
 ### New models and integrations
 
@@ -22,6 +22,9 @@
     *recommended*: guidance scale 30  
   - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
     *recommended*: guidance scale 10  
+- [Flux ControlNet LoRA](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev-lora)  
+  alternative to standard ControlNets, FLUX.1 also allows LoRA to help guide the generation process  
+  both **Depth** and **Canny** LoRAs are available in standard control menus  
 - [StabilityAI SD35 ControlNets]([sd3_medium](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets))
   - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
 - [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
@@ -39,6 +42,10 @@
     thanks @AI-Casanova  
   - LoRA weights can be applied/unapplied as on each generate or they can store weights backups for later use  
     this setting has large performance and resource implications, see [Offload](https://github.com/vladmandic/automatic/wiki/Offload) wiki for details  
+  - LoRA name in prompt can now also be an absolute path to a LoRA file, even if LoRA is not indexed  
+    example: `<lora:/test/folder/my-lora.safetensors:1.0>`
+  - LoRA name in prompt can now also be path to a LoRA file op `huggingface`  
+    example: `<lora:/huggingface.co/vendor/repo/my-lora.safetensors:1.0>`
 - **Model loader** improvements:  
   - detect model components on model load fail  
   - allow passing absolute path to model loader  
