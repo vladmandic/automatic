@@ -207,11 +207,27 @@ def list_available_networks():
     shared.log.info(f'Available LoRAs: path="{shared.cmd_opts.lora_dir}" items={len(available_networks)} folders={len(forbidden_network_aliases)} time={t1 - t0:.2f}')
 
 
+def network_download(name):
+    from huggingface_hub import hf_hub_download
+    if os.path.exists(name):
+        return network.NetworkOnDisk(name, name)
+    parts = name.split('/')
+    if len(parts) >= 5 and parts[1] == 'huggingface.co':
+        repo_id = f'{parts[2]}/{parts[3]}'
+        filename = '/'.join(parts[4:])
+        fn = hf_hub_download(repo_id=repo_id, filename=filename, cache_dir=shared.opts.hfcache_dir)
+        return network.NetworkOnDisk(name, fn)
+    return None
+
+
 def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
     networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
         networks_on_disk: list[network.NetworkOnDisk] = [available_network_aliases.get(name, None) for name in names]
+    for i in range(len(names)):
+        if names[i].startswith('/'):
+            networks_on_disk[i] = network_download(names[i])
     failed_to_load_networks = []
     recompile_model = maybe_recompile_model(names, te_multipliers)
 

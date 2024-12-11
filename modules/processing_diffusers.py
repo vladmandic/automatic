@@ -375,10 +375,10 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
         elif hasattr(output, 'images'):
             results = output.images
         else:
-            shared.log.warning('Processing returned no results')
+            shared.log.warning('Processing: no results')
             results = []
     else:
-        shared.log.warning('Processing returned no results')
+        shared.log.warning('Processing: no results')
         results = []
     return results
 

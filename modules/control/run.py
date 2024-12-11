@@ -332,7 +332,7 @@ def control_run(state: str = '',
             p.task_args['control_guidance_start'] = control_guidance_start
             p.task_args['control_guidance_end'] = control_guidance_end
             p.task_args['guess_mode'] = p.guess_mode
-            instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model)
+            instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model, p=p)
             pipe = instance.pipeline
         elif unit_type == 'xs' and has_models:
             p.extra_generation_params["Control mode"] = 'ControlNet-XS'
@@ -369,7 +369,6 @@ def control_run(state: str = '',
             instance = None
         debug(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
         return pipe
-
 
     pipe = set_pipe()
     debug(f'Control pipeline: class={pipe.__class__.__name__} args={vars(p)}')
