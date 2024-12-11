@@ -2,6 +2,11 @@
 
 Main ToDo list can be found at [GitHub projects](https://github.com/users/vladmandic/projects)
 
+## Pending
+
+- LoRA direct with caching
+- Previewer issues
+
 ## Future Candidates
 
 - SD35 IPAdapter: <https://github.com/huggingface/diffusers/issues/9966>
