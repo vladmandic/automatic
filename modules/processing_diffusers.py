@@ -458,6 +458,7 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     extra_networks.deactivate(p)
     timer.process.add('lora', networks.timer.total)
+    networks.timer.clear(complete=True)
 
     results = process_decode(p, output)
     timer.process.record('decode')

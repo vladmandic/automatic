@@ -231,6 +231,8 @@ def torch_gc(force=False, fast=False):
         return gpu, ram
     t1 = time.time()
     timer.process.add('gc', t1 - t0)
+    if fast:
+        return gpu, ram
 
     new_gpu, new_used_gpu, new_ram, new_used_ram, oom = get_stats()
     before = { 'gpu': gpu, 'ram': ram }
