@@ -483,8 +483,7 @@ options_templates.update(options_section(('sd', "Models & Loading"), {
     "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
     "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_offload_pin_gpu_memory": OptionInfo(0.15, "Balanced offload GPU pin watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
-    "diffusers_offload_max_cpu_memory": OptionInfo(0.90, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_max_cpu_memory": OptionInfo(0.90, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False }),
 
     "advanced_sep": OptionInfo("<h2>Advanced Options</h2>", "", gr.HTML),
     "sd_checkpoint_autoload": OptionInfo(True, "Model autoload on start"),
