@@ -187,27 +187,34 @@ def get_device_for(task): # pylint: disable=unused-argument
 
 
 def torch_gc(force=False, fast=False):
+    def get_stats():
+        mem_dict = memstats.memory_stats()
+        gpu_dict = mem_dict.get('gpu', {})
+        ram_dict = mem_dict.get('ram', {})
+        oom = gpu_dict.get('oom', 0)
+        ram = ram_dict.get('used', 0)
+        if backend == "directml":
+            gpu = torch.cuda.memory_allocated() / (1 << 30)
+        else:
+            gpu = gpu_dict.get('used', 0)
+        used_gpu = round(100 * gpu / gpu_dict.get('total', 1)) if gpu_dict.get('total', 1) > 1 else 0
+        used_ram = round(100 * ram / ram_dict.get('total', 1)) if ram_dict.get('total', 1) > 1 else 0
+        return gpu, used_gpu, ram, used_ram, oom
+
+    global previous_oom # pylint: disable=global-statement
     import gc
     from modules import timer, memstats
     from modules.shared import cmd_opts
+
     t0 = time.time()
-    mem = memstats.memory_stats()
-    gpu = mem.get('gpu', {})
-    ram = mem.get('ram', {})
-    oom = gpu.get('oom', 0)
-    if backend == "directml":
-        used_gpu = round(100 * torch.cuda.memory_allocated() / (1 << 30) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
-    else:
-        used_gpu = round(100 * gpu.get('used', 0) / gpu.get('total', 1)) if gpu.get('total', 1) > 1 else 0
-    used_ram = round(100 * ram.get('used', 0) / ram.get('total', 1)) if ram.get('total', 1) > 1 else 0
-    global previous_oom # pylint: disable=global-statement
+    gpu, used_gpu, ram, used_ram, oom = get_stats()
     threshold = 0 if (cmd_opts.lowvram and not cmd_opts.use_zluda) else opts.torch_gc_threshold
     collected = 0
     if force or threshold == 0 or used_gpu >= threshold or used_ram >= threshold:
         force = True
     if oom > previous_oom:
         previous_oom = oom
-        log.warning(f'Torch GPU out-of-memory error: {mem}')
+        log.warning(f'Torch GPU out-of-memory error: {memstats.memory_stats()}')
         force = True
     if force:
         # actual gc
@@ -215,25 +222,24 @@ def torch_gc(force=False, fast=False):
         if cuda_ok:
             try:
                 with torch.cuda.device(get_cuda_device_string()):
+                    torch.cuda.synchronize()
                     torch.cuda.empty_cache() # cuda gc
                     torch.cuda.ipc_collect()
             except Exception:
                 pass
+    else:
+        return gpu, ram
     t1 = time.time()
-    if 'gc' not in timer.process.records:
-        timer.process.records['gc'] = 0
-    timer.process.records['gc'] += t1 - t0
-    if not force or collected == 0:
-        return used_gpu, used_ram
-    mem = memstats.memory_stats()
-    saved = round(gpu.get('used', 0) - mem.get('gpu', {}).get('used', 0), 2)
-    before = { 'gpu': gpu.get('used', 0), 'ram': ram.get('used', 0) }
-    after = { 'gpu': mem.get('gpu', {}).get('used', 0), 'ram': mem.get('ram', {}).get('used', 0), 'retries': mem.get('retries', 0), 'oom': mem.get('oom', 0) }
-    utilization = { 'gpu': used_gpu, 'ram': used_ram, 'threshold': threshold }
-    results = { 'collected': collected, 'saved': saved }
+    timer.process.add('gc', t1 - t0)
+
+    new_gpu, new_used_gpu, new_ram, new_used_ram, oom = get_stats()
+    before = { 'gpu': gpu, 'ram': ram }
+    after = { 'gpu': new_gpu, 'ram': new_ram, 'oom': oom }
+    utilization = { 'gpu': new_used_gpu, 'ram': new_used_ram, 'threshold': threshold }
+    results = { 'saved': round(gpu - new_gpu, 2), 'collected': collected }
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={fn} time={round(t1 - t0, 2)}') # pylint: disable=protected-access
-    return used_gpu, used_ram
+    log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={fn} time={round(t1 - t0, 2)}')
+    return new_gpu, new_ram
 
 
 def set_cuda_sync_mode(mode):

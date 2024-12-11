@@ -50,10 +50,9 @@
 - **Memory** improvements:  
   - faster and more compatible *balanced offload* mode  
   - balanced offload: units are now in percentage instead of bytes  
-  - balanced offload: add both high and low watermark and pinned threshold, defaults as below  
-    25% for low-watermark: skip offload if memory usage is below 25%  
-    70% high-watermark: must offload if memory usage is above 70%  
-    15% pin-watermark: any model component smaller than 15% of total memory is pinned and not offloaded  
+  - balanced offload: add both high and low watermark, defaults as below  
+    `0.25` for low-watermark: skip offload if memory usage is below 25%  
+    `0.70` high-watermark: must offload if memory usage is above 70%  
   - change-in-behavior:  
     low-end systems, triggered by either `lowvrwam` or by detection of <=4GB will use *sequential offload*  
     all other systems use *balanced offload* by default (can be changed in settings)  
