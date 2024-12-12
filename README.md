@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://github.com/vladmandic/automatic/blob/master/html/logo-transparent.png" width=200 alt="SD.Next">
+<img src="https://github.com/vladmandic/automatic/raw/master/html/logo-transparent.png" width=200 alt="SD.Next">
 
 **Image Diffusion implementation with advanced features**
 
@@ -8,13 +8,14 @@
 [![Discord](https://img.shields.io/discord/1101998836328697867?logo=Discord&svg=true)](https://discord.gg/VjvR2tabEX)
 [![Sponsors](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/vladmandic)
 
-[Wiki](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
+[Docs](https://vladmandic.github.io/sdnext-docs/) | [Wiki](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
 
 </div>
 </br>
 
 ## Table of contents
 
+- [Documentation](https://vladmandic.github.io/sdnext-docs/)
 - [SD.Next Features](#sdnext-features)
 - [Model support](#model-support)
 - [Platform support](#platform-support)
@@ -137,7 +138,7 @@ This should be fully cross-platform, but we'd really love to have additional con
 
 ### Credits
 
-- Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for original codebase  
+- Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for the original codebase  
 - Additional credits are listed in [Credits](https://github.com/AUTOMATIC1111/stable-diffusion-webui/#credits)  
 - Licenses for modules are listed in [Licenses](html/licenses.html)  
 
@@ -154,7 +155,7 @@ This should be fully cross-platform, but we'd really love to have additional con
 
 ### Docs
 
-If you're unsure how to use a feature, best place to start is [Wiki](https://github.com/vladmandic/automatic/wiki) and if its not there,  
+If you're unsure how to use a feature, best place to start is [Docs](https://vladmandic.github.io/sdnext-docs/) or [Wiki](https://github.com/vladmandic/automatic/wiki) and if its not there,  
 check [ChangeLog](CHANGELOG.md) for when feature was first introduced as it will always have a short note on how to use it  
 
 ### Sponsors

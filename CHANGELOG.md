@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-11
+## Update for 2024-12-12
 
 ### New models and integrations
 
@@ -36,6 +36,8 @@
 
 ### UI and workflow improvements
 
+- **Docs**:
+  - New documentation site! <https://vladmandic.github.io/sdnext-docs/>
 - **LoRA** handler rewrite:  
   - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
     this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
