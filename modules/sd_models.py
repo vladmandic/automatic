@@ -481,6 +481,8 @@ def apply_balanced_offload(sd_model, exclude=[]):
         keys = [k for k in keys if k not in exclude and not k.startswith('_')]
         for module_name, module_size in get_pipe_modules(pipe): # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
+            if module is None:
+                continue
             network_layer_name = getattr(module, "network_layer_name", None)
             device_map = getattr(module, "balanced_offload_device_map", None)
             max_memory = getattr(module, "balanced_offload_max_memory", None)
