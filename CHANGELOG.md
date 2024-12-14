@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-12
+## Update for 2024-12-13
 
 ### New models and integrations
 
@@ -33,11 +33,18 @@
   style-aligned applies selected attention layers uniformly to all images to achive consistency  
   can be used with or without input image in which case first prompt is used to establish baseline  
   *note:* all prompts are processes as a single batch, so vram is limiting factor
+- **ControlNet**
+  - improved support for `Union` controlnets with granular control mode type
+  - added support for latest [Xinsir ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) all-in-one controlnet  
+  - added support for multiple **Tiling** controlnets, for example [Xinsir Tile](https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0)  
+    *note*: when selecting tiles in control settings, you can also specify non-square ratios  
+    in which case it will use context-aware image resize to maintain overall composition
 
 ### UI and workflow improvements
 
 - **Docs**:
   - New documentation site! <https://vladmandic.github.io/sdnext-docs/>
+  - Additional Wiki content: Styles, Wildcards, etc.
 - **LoRA** handler rewrite:  
   - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
     this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
@@ -82,7 +89,6 @@
 
 ### Updates
 
-- Additional Wiki content: Styles, Wildcards, etc.
 - **IPEX**: update to IPEX 2.5.10+xpu  
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
@@ -108,9 +114,10 @@
 - simplify img2img/inpaint/sketch canvas handling  
 - fix prompt caching  
 - fix xyz grid skip final pass  
-- fix sd upscale script
-- fix cogvideox-i2v
-- lora auto-apply tags remove duplicates
+- fix sd upscale script  
+- fix cogvideox-i2v  
+- lora auto-apply tags remove duplicates  
+- control load model on-demand if not already loaded  
 
 ## Update for 2024-11-21
 

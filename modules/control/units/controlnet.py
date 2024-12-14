@@ -52,17 +52,20 @@ predefined_sdxl = {
     'Depth Mid XL': 'diffusers/controlnet-depth-sdxl-1.0-mid',
     'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/bin',
     'Xinsir Union XL': 'xinsir/controlnet-union-sdxl-1.0',
+    'Xinsir ProMax XL': 'brad-twinkl/controlnet-union-sdxl-1.0-promax',
     'Xinsir OpenPose XL': 'xinsir/controlnet-openpose-sdxl-1.0',
     'Xinsir Canny XL': 'xinsir/controlnet-canny-sdxl-1.0',
     'Xinsir Depth XL': 'xinsir/controlnet-depth-sdxl-1.0',
     'Xinsir Scribble XL': 'xinsir/controlnet-scribble-sdxl-1.0',
     'Xinsir Anime Painter XL': 'xinsir/anime-painter',
+    'Xinsir Tile XL': 'xinsir/controlnet-tile-sdxl-1.0',
     'NoobAI Canny XL': 'Eugeoter/noob-sdxl-controlnet-canny',
     'NoobAI Lineart Anime XL': 'Eugeoter/noob-sdxl-controlnet-lineart_anime',
     'NoobAI Depth XL': 'Eugeoter/noob-sdxl-controlnet-depth',
     'NoobAI Normal XL': 'Eugeoter/noob-sdxl-controlnet-normal',
     'NoobAI SoftEdge XL': 'Eugeoter/noob-sdxl-controlnet-softedge_hed',
     'NoobAI OpenPose XL': 'einar77/noob-openpose',
+    'TTPlanet Tile Realistic XL': 'Yakonrus/SDXL_Controlnet_Tile_Realistic_v2',
     # 'StabilityAI Canny R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-canny-rank128.safetensors',
     # 'StabilityAI Depth R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
     # 'StabilityAI Recolor R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors',
@@ -166,30 +169,30 @@ class ControlNet():
         self.model_id = None
 
     def get_class(self, model_id:str=''):
-        import modules.shared
-        if modules.shared.sd_model_type == 'sd':
+        from modules import shared
+        if shared.sd_model_type == 'none':
+            _load = shared.sd_model # trigger a load
+        if shared.sd_model_type == 'sd':
             from diffusers import ControlNetModel as cls # pylint: disable=reimported
             config = 'lllyasviel/control_v11p_sd15_canny'
-        elif modules.shared.sd_model_type == 'sdxl':
-            # TODO ControlNetUnion
-            """
+        elif shared.sd_model_type == 'sdxl':
             if 'union' in model_id.lower():
                 from diffusers import ControlNetUnionModel as cls
                 config = 'xinsir/controlnet-union-sdxl-1.0'
+            elif 'promax' in model_id.lower():
+                from diffusers import ControlNetUnionModel as cls
+                config = 'brad-twinkl/controlnet-union-sdxl-1.0-promax'
             else:
                 from diffusers import ControlNetModel as cls # pylint: disable=reimported # sdxl shares same model class
                 config = 'Eugeoter/noob-sdxl-controlnet-canny'
-            """
-            from diffusers import ControlNetModel as cls # pylint: disable=reimported # sdxl shares same model class
-            config = 'Eugeoter/noob-sdxl-controlnet-canny'
-        elif modules.shared.sd_model_type == 'f1':
+        elif shared.sd_model_type == 'f1':
             from diffusers import FluxControlNetModel as cls
             config = 'InstantX/FLUX.1-dev-Controlnet-Union'
-        elif modules.shared.sd_model_type == 'sd3':
+        elif shared.sd_model_type == 'sd3':
             from diffusers import SD3ControlNetModel as cls
             config = 'InstantX/SD3-Controlnet-Canny'
         else:
-            log.error(f'Control {what}: type={modules.shared.sd_model_type} unsupported model')
+            log.error(f'Control {what}: type={shared.sd_model_type} unsupported model')
             return None, None
         return cls, config
 
@@ -299,7 +302,7 @@ class ControlNetPipeline():
                  controlnet: Union[ControlNetModel, list[ControlNetModel]],
                  pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline, FluxPipeline, StableDiffusion3Pipeline],
                  dtype = None,
-                 p: StableDiffusionProcessingControl = None,
+                 p: StableDiffusionProcessingControl = None, # pylint: disable=unused-argument
                 ):
         t0 = time.time()
         self.orig_pipeline = pipeline
@@ -314,14 +317,11 @@ class ControlNetPipeline():
             return
         elif detect.is_sdxl(pipeline) and len(controlnets) > 0:
             from diffusers import StableDiffusionXLControlNetPipeline, StableDiffusionXLControlNetUnionPipeline
-            # TODO ControlNetUnion
-            """
             if controlnet.__class__.__name__ == 'ControlNetUnionModel':
                 cls = StableDiffusionXLControlNetUnionPipeline
+                controlnets = controlnets[0] # using only first one
             else:
                 cls = StableDiffusionXLControlNetPipeline
-            """
-            cls = StableDiffusionXLControlNetPipeline
             self.pipeline = cls(
                 vae=pipeline.vae,
                 text_encoder=pipeline.text_encoder,
