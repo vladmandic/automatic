@@ -16,6 +16,22 @@ unit_types = ['t2i adapter', 'controlnet', 'xs', 'lite', 'reference', 'ip']
 
 
 class Unit(): # mashup of gradio controls and mapping to actual implementation classes
+    def update_choices(self, model_id=None):
+        name = model_id or self.model_name
+        if name == 'InstantX Union':
+            self.choices = ['canny', 'tile', 'depth', 'blur', 'pose', 'gray', 'lq']
+        elif name == 'Shakker-Labs Union':
+            self.choices = ['canny', 'tile', 'depth', 'blur', 'pose', 'gray', 'lq']
+        elif name == 'Xinsir Union XL':
+            self.choices = ['openpose', 'depth', 'scribble', 'canny', 'normal']
+        elif name == 'Xinsir ProMax XL':
+            self.choices = ['openpose', 'depth', 'scribble', 'canny', 'normal', 'segment', 'tile', 'repaint']
+        else:
+            self.choices = ['default']
+
+    def __str__(self):
+        return f'Unit: type={self.type} enabled={self.enabled} strength={self.strength} start={self.start} end={self.end} mode={self.mode} tile={self.tile}'
+
     def __init__(self,
                  # values
                  index: int = None,
@@ -38,6 +54,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                  control_start = None,
                  control_end = None,
                  control_mode = None,
+                 control_tile = None,
                  result_txt = None,
                  extra_controls: list = [],
         ):
@@ -70,6 +87,10 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
         self.fidelity = 0.5
         self.query_weight = 1.0
         self.adain_weight = 1.0
+        # control mode
+        self.choices = ['default']
+        # control tile
+        self.tile = '1x1'
 
         def reset():
             if self.process is not None:
@@ -92,10 +113,16 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
             self.end = max(start, end)
 
         def control_mode_change(mode):
-            self.mode = mode - 1 if mode > 0 else None
+            self.mode = self.choices.index(mode) if mode is not None and mode in self.choices else 0
 
-        def control_mode_show(model_id):
-            return gr.update(visible='union' in model_id.lower())
+        def control_tile_change(tile):
+            self.tile = tile
+
+        def control_choices(model_id):
+            self.update_choices(model_id)
+            mode_visible = 'union' in model_id.lower() or 'promax' in model_id.lower()
+            tile_visible = 'union' in model_id.lower() or 'promax' in model_id.lower() or 'tile' in model_id.lower()
+            return [gr.update(visible=mode_visible, choices=self.choices), gr.update(visible=tile_visible)]
 
         def adapter_extra(c1):
             self.factor = c1
@@ -172,7 +199,7 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
                 else:
                     self.controls.append(model_id)
                     model_id.change(fn=self.controlnet.load, inputs=[model_id], outputs=[result_txt], show_progress=True)
-                    model_id.change(fn=control_mode_show, inputs=[model_id], outputs=[control_mode], show_progress=False)
+                    model_id.change(fn=control_choices, inputs=[model_id], outputs=[control_mode, control_tile], show_progress=False)
             if extra_controls is not None and len(extra_controls) > 0:
                 extra_controls[0].change(fn=controlnet_extra, inputs=extra_controls)
         elif self.type == 'xs':
@@ -231,3 +258,6 @@ class Unit(): # mashup of gradio controls and mapping to actual implementation c
         if control_mode is not None:
             self.controls.append(control_mode)
             control_mode.change(fn=control_mode_change, inputs=[control_mode])
+        if control_tile is not None:
+            self.controls.append(control_tile)
+            control_tile.change(fn=control_tile_change, inputs=[control_tile])

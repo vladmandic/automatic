@@ -1057,6 +1057,11 @@ def get_signature(cls):
     return signature.parameters
 
 
+def get_call(cls):
+    signature = inspect.signature(cls.__call__, follow_wrapped=True, eval_str=True)
+    return signature.parameters
+
+
 def switch_pipe(cls: diffusers.DiffusionPipeline, pipeline: diffusers.DiffusionPipeline = None, force = False, args = {}):
     """
     args:

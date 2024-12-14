@@ -82,6 +82,7 @@ class Script(scripts.Script):
         }
         # run pipeline
         shared.log.debug(f'Regional: args={p.task_args}')
+        p.task_args['prompt'] = p.prompt
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
 
         # restore pipeline and params
