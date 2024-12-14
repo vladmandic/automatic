@@ -93,7 +93,7 @@ def cleanup_tmpdr():
     for root, _dirs, files in os.walk(temp_dir, topdown=False):
         for name in files:
             _, extension = os.path.splitext(name)
-            if extension != ".png" and extension != ".jpg" and extension != ".webp":
+            if extension not in {".png", ".jpg", ".webp", ".jxl"}:
                 continue
             filename = os.path.join(root, name)
             os.remove(filename)

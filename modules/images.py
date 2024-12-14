@@ -70,6 +70,14 @@ def atomically_save_image():
             save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'lossless': shared.opts.webp_lossless }
             if shared.opts.image_metadata:
                 save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
+        elif image_format == 'JXL':
+            if image.mode == 'I;16':
+                image = image.point(lambda p: p * 0.0038910505836576).convert("RGB")
+            elif image.mode not in {"RGB", "RGBA"}:
+                image = image.convert("RGBA")
+            save_args = { 'optimize': True, 'quality': shared.opts.jpeg_quality, 'lossless': shared.opts.webp_lossless }
+            if shared.opts.image_metadata:
+                save_args['exif'] = piexif.dump({ "Exif": { piexif.ExifIFD.UserComment: piexif.helper.UserComment.dump(exifinfo, encoding="unicode") } })
         else:
             save_args = { 'quality': shared.opts.jpeg_quality }
         try:
