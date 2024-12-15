@@ -365,13 +365,26 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
             else:
                 width = getattr(p, 'width', 0)
                 height = getattr(p, 'height', 0)
-            results = processing_vae.vae_decode(
-                latents = output.images,
-                model = model,
-                full_quality = p.full_quality,
-                width = width,
-                height = height,
-            )
+            if isinstance(output.images, list):
+                results = []
+                for i in range(len(output.images)):
+                    result_batch = processing_vae.vae_decode(
+                        latents = output.images[i],
+                        model = model,
+                        full_quality = p.full_quality,
+                        width = width,
+                        height = height,
+                    )
+                    for result in list(result_batch):
+                        results.append(result)
+            else:
+                results = processing_vae.vae_decode(
+                    latents = output.images,
+                    model = model,
+                    full_quality = p.full_quality,
+                    width = width,
+                    height = height,
+                )
         elif hasattr(output, 'images'):
             results = output.images
         else:

@@ -40,7 +40,6 @@ def single_sample_to_image(sample, approximation=None):
             if approximation is None:
                 warn_once('Unknown decode type')
                 approximation = 0
-        # normal sample is [4,64,64]
         try:
             if sample.dtype == torch.bfloat16 and (approximation == 0 or approximation == 1):
                 sample = sample.to(torch.float16)
@@ -62,6 +61,9 @@ def single_sample_to_image(sample, approximation=None):
                 sample = sample * (5 / abs(sample_min))
         """
         if approximation == 2: # TAESD
+            if sample.shape[-1] > 128 or sample.shape[-2] > 128:
+                scale = 128 / max(sample.shape[-1], sample.shape[-2])
+                sample = torch.nn.functional.interpolate(sample.unsqueeze(0), scale_factor=[scale, scale], mode='bilinear', align_corners=False)[0]
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
         elif shared.sd_model_type == 'sc' and approximation != 3:

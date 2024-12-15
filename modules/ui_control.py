@@ -254,7 +254,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                     control_start = gr.Slider(label="CN Start", minimum=0.0, maximum=1.0, step=0.05, value=0, elem_id=f'control_unit-{i}-start')
                                     control_end = gr.Slider(label="CN End", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id=f'control_unit-{i}-end')
                                     control_mode = gr.Dropdown(label="CN Mode", choices=['default'], value='default', visible=False, elem_id=f'control_unit-{i}-mode')
-                                    control_tile = gr.Dropdown(label="CN Tiles", choices=['1x1', '1x2', '1x3', '1x4', '2x1', '2x1', '2x2', '2x3', '2x4', '3x1', '3x2', '3x3', '3x4', '4x1', '4x2', '4x3', '4x4'], value='1x1', visible=False, elem_id=f'control_unit-{i}-tile')
+                                    control_tile = gr.Dropdown(label="CN Tiles", choices=[x.strip() for x in shared.opts.control_tiles.split(',') if 'x' in x], value='1x1', visible=False, elem_id=f'control_unit-{i}-tile')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)

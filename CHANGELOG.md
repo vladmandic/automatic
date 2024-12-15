@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-13
+## Update for 2024-12-15
 
 ### New models and integrations
 
@@ -32,13 +32,19 @@
   enter multiple prompts in prompt field separated by new line  
   style-aligned applies selected attention layers uniformly to all images to achive consistency  
   can be used with or without input image in which case first prompt is used to establish baseline  
-  *note:* all prompts are processes as a single batch, so vram is limiting factor
+  *note:* all prompts are processes as a single batch, so vram is limiting factor  
+- [FreeScale](https://github.com/ali-vilab/FreeScale)  
+  enable in scripts, compatible with sd-xl for text and img2img  
+  run iterative generation of images at different scales to achieve better results  
+  can render 4k sdxl images  
+  *note*: disable live preview to avoid memory issues when generating large images  
 - **ControlNet**
-  - improved support for `Union` controlnets with granular control mode type
+  - improved support for **Union** controlnets with granular control mode type
   - added support for latest [Xinsir ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) all-in-one controlnet  
   - added support for multiple **Tiling** controlnets, for example [Xinsir Tile](https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0)  
     *note*: when selecting tiles in control settings, you can also specify non-square ratios  
-    in which case it will use context-aware image resize to maintain overall composition
+    in which case it will use context-aware image resize to maintain overall composition  
+    *note*: available tiling options can be set in settings -> control  
 
 ### UI and workflow improvements
 
@@ -118,6 +124,8 @@
 - fix cogvideox-i2v  
 - lora auto-apply tags remove duplicates  
 - control load model on-demand if not already loaded  
+- taesd limit render to 2024px  
+- taesd downscale preview to 1024px max  
 
 ## Update for 2024-11-21
 

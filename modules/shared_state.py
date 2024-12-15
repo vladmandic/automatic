@@ -141,9 +141,9 @@ class State:
         if self.job == 'VAE': # avoid generating preview while vae is running
             return
         from modules.shared import opts, cmd_opts
-        if cmd_opts.lowvram or self.api:
+        if cmd_opts.lowvram or self.api or not opts.live_previews_enable or opts.show_progress_every_n_steps <= 0:
             return
-        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps and opts.live_previews_enable and opts.show_progress_every_n_steps > 0:
+        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps:
             self.do_set_current_image()
 
     def do_set_current_image(self):

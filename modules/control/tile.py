@@ -1,3 +1,4 @@
+import time
 from PIL import Image
 from modules import shared, processing, images, sd_models
 
@@ -17,30 +18,25 @@ def set_tile(image: Image.Image, x: int, y: int, tiled: Image.Image):
 
 
 def run_tiling(p: processing.StableDiffusionProcessing, input_image: Image.Image) -> processing.Processed:
+    t0 = time.time()
     # prepare images
     sx, sy = p.control_tile.split('x')
     sx = int(sx)
     sy = int(sy)
     if sx <= 0 or sy <= 0:
-        raise ValueError('Control: invalid tile size')
+        raise ValueError('Control Tile: invalid tile size')
     control_image = p.task_args.get('control_image', None) or p.task_args.get('image', None)
     control_upscaled = None
     if isinstance(control_image, list) and len(control_image) > 0:
-        control_upscaled = images.resize_image(resize_mode=1 if sx==sy else 5,
-                                               im=control_image[0],
-                                               width=8 * int(sx * control_image[0].width) // 8,
-                                               height=8 * int(sy * control_image[0].height) // 8,
-                                               context='add with forward'
-                                              )
+        w, h = 8 * int(sx * control_image[0].width) // 8, 8 * int(sy * control_image[0].height) // 8
+        control_upscaled = images.resize_image(resize_mode=1 if sx==sy else 5, im=control_image[0], width=w, height=h, context='add with forward')
     init_image = p.override or input_image
     init_upscaled = None
     if init_image is not None:
-        init_upscaled = images.resize_image(resize_mode=1 if sx==sy else 5,
-                                            im=init_image,
-                                            width=8 * int(sx * init_image.width) // 8,
-                                            height=8 * int(sy * init_image.height) // 8,
-                                            context='add with forward'
-                                           )
+        w, h = 8 * int(sx * init_image.width) // 8, 8 * int(sy * init_image.height) // 8
+        init_upscaled = images.resize_image(resize_mode=1 if sx==sy else 5, im=init_image, width=w, height=h, context='add with forward')
+    t1 = time.time()
+    shared.log.debug(f'Control Tile: scale={sx}x{sy} resize={"fixed" if sx==sy else "context"} control={control_upscaled} init={init_upscaled} time={t1-t0:.3f}')
 
     # stop processing from restoring pipeline on each iteration
     orig_restore_pipeline = getattr(shared.sd_model, 'restore_pipeline', None)
@@ -72,4 +68,6 @@ def run_tiling(p: processing.StableDiffusionProcessing, input_image: Image.Image
     shared.sd_model.restore_pipeline = orig_restore_pipeline
     if hasattr(shared.sd_model, 'restore_pipeline') and shared.sd_model.restore_pipeline is not None:
         shared.sd_model.restore_pipeline()
+    t2 = time.time()
+    shared.log.debug(f'Control Tile: image={control_upscaled} time={t2-t0:.3f}')
     return processed
