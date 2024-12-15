@@ -7,6 +7,7 @@ exclude = [
     "modules/consistory",
     "modules/control/proc",
     "modules/control/units",
+    "modules/freescale",
     "modules/ggml",
     "modules/hidiffusion",
     "modules/hijack",

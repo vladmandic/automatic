@@ -2,7 +2,6 @@ import os
 import enum
 from typing import Union
 from collections import namedtuple
-
 from modules import sd_models, hashes, shared
 
 
