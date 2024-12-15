@@ -101,6 +101,14 @@ predefined_sd3 = {
     "Alimama Inpainting": 'alimama-creative/SD3-Controlnet-Inpainting',
     "Alimama SoftEdge": 'alimama-creative/SD3-Controlnet-Softedge',
 }
+variants = {
+    'NoobAI Canny XL': 'fp16',
+    'NoobAI Lineart Anime XL': 'fp16',
+    'NoobAI Depth XL': 'fp16',
+    'NoobAI Normal XL': 'fp16',
+    'NoobAI SoftEdge XL': 'fp16',
+    'TTPlanet Tile Realistic XL': 'fp16',
+}
 models = {}
 all_models = {}
 all_models.update(predefined_sd15)
@@ -261,8 +269,8 @@ class ControlNet():
                 if cls is None:
                     log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
                     return
-                if 'Eugeoter' in model_path:
-                    kwargs['variant'] = 'fp16'
+                if variants.get(model_id, None) is not None:
+                    kwargs['variant'] = variants[model_id]
                 self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
             if self.model is None:
                 return
