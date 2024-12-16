@@ -1,9 +1,19 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-15
+## Update for 2024-12-16
+
+- Sana: both 1.6B and 0.6B  
+- ControlNet: better Union results, support for ProMax and Tile  
+- FreeScale: run optimized iterative generation of images at different scales  
+- Samplers: UniPC, DEIS, SA, DPM-Multistep: add FlowMatch sigma method and prediction type  
 
 ### New models and integrations
 
+- [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)
+  **Sana** can synthesize high-resolution images with strong text-image alignment by using **Gemma2** as text-encoder  
+  support for both 1.6B and 0.6B models  
+  to use, select from *networks -> models -> reference* and models will be auto-downloaded on first use  
+  *reference values*: sampler: default, width/height: 1024, guidance scale: 4.5, attention guidance: 3.0, adaptive scaling: 0.0
 - [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
   **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
   **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
@@ -98,6 +108,7 @@
 - **IPEX**: update to IPEX 2.5.10+xpu  
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
+  - UniPC, DEIS, SA, DPM-Multistep: allow FlowMatch method  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - Euler FlowMatch: allow using timestep presets to set sigmas  
   - DPM FlowMatch: update all and add sigma methods  

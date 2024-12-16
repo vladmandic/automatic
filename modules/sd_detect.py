@@ -71,6 +71,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Cascade'
             if 'pixart-sigma' in f.lower():
                 guess = 'PixArt-Sigma'
+            if 'sana' in f.lower():
+                guess = 'Sana'
             if 'lumina-next' in f.lower():
                 guess = 'Lumina-Next'
             if 'kolors' in f.lower():
