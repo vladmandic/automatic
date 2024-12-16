@@ -11,12 +11,11 @@ def load_sana(checkpoint_info, diffusers_load_config={}):
     diffusers_load_config['variant'] = 'fp16'
     diffusers_load_config['torch_dtype'] = devices.dtype
     diffusers_load_config = model_quant.create_bnb_config(diffusers_load_config)
-    pipe = diffusers.SanaPAGPipeline.from_pretrained(
+    pipe = diffusers.SanaPipeline.from_pretrained( # SanaPAGPipeline
         repo_id,
-        # pag_applied_layers=["transformer_blocks.8"],
         cache_dir = shared.opts.diffusers_dir,
         **diffusers_load_config,
-    ).to(devices.dtype)
+    )
     if shared.opts.diffusers_eval:
         pipe.text_encoder.eval()
         pipe.transformer.eval()
