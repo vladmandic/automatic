@@ -3,9 +3,14 @@
 ## Update for 2024-12-16
 
 - Sana: both 1.6B and 0.6B  
-- ControlNet: better Union results, support for ProMax and Tile  
+- ControlNet:  
+  - better Union results  
+  - support for new ProMax model  
+  - support for Tile models  
 - FreeScale: run optimized iterative generation of images at different scales  
-- Samplers: UniPC, DEIS, SA, DPM-Multistep: add FlowMatch sigma method and prediction type  
+- Samplers:  
+  - UniPC, DEIS, SA, DPM-Multistep: add FlowMatch sigma method and prediction type  
+  - UFOGen: new fast scheduler for use with distilled models and low step counts  
 
 ### New models and integrations
 
@@ -108,11 +113,12 @@
 - **IPEX**: update to IPEX 2.5.10+xpu  
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
-  - UniPC, DEIS, SA, DPM-Multistep: allow FlowMatch method  
+  - UniPC, DEIS, SA, DPM-Multistep: allow FlowMatch sigma method and prediction type  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
   - Euler FlowMatch: allow using timestep presets to set sigmas  
   - DPM FlowMatch: update all and add sigma methods  
-  - BDIA-DDIM: *experimental*  
+  - BDIA-DDIM: *experimental* new scheduler  
+  - UFOGen: *experimental* new scheduler  
 
 ### Fixes  
 
