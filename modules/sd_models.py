@@ -705,6 +705,9 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
         elif model_type in ['PixArt-Sigma']: # forced pipeline
             from modules.model_pixart import load_pixart
             sd_model = load_pixart(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Sana']: # forced pipeline
+            from modules.model_sana import load_sana
+            sd_model = load_sana(checkpoint_info, diffusers_load_config)
         elif model_type in ['Lumina-Next']: # forced pipeline
             from modules.model_lumina import load_lumina
             sd_model = load_lumina(checkpoint_info, diffusers_load_config)

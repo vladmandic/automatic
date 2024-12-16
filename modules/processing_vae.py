@@ -114,10 +114,11 @@ def full_vae_decode(latents, model):
         else: # manual upcast and we restore it later
             model.vae.orig_dtype = model.vae.dtype
             model.vae = model.vae.to(dtype=torch.float32)
-        latents = latents.to(torch.float32)
     latents = latents.to(devices.device)
     if getattr(model.vae, "post_quant_conv", None) is not None:
         latents = latents.to(next(iter(model.vae.post_quant_conv.parameters())).dtype)
+    else:
+        latents = latents.to(model.vae.dtype)
 
     # normalize latents
     latents_mean = model.vae.config.get("latents_mean", None)
