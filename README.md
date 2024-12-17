@@ -49,13 +49,13 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 
 ![screenshot-modernui](https://github.com/user-attachments/assets/39e3bc9a-a9f7-4cda-ba33-7da8def08032)
 
-For screenshots and informations on other available themes, see [Themes Wiki](wiki/Themes.md)
+For screenshots and informations on other available themes, see [Themes](https://vladmandic.github.io/sdnext-docs/Themes/)
 
 <br>
 
 ## Model support
 
-SD.Next supports broad range of models: [supported models](wiki/Model-Support.md) and [model specs](wiki/Models.md)  
+SD.Next supports broad range of models: [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) and [model specs](https://vladmandic.github.io/sdnext-docs/Models/)  
 
 ## Platform support
 
@@ -72,27 +72,21 @@ SD.Next supports broad range of models: [supported models](wiki/Model-Support.md
 
 ## Getting started
 
-- Get started with **SD.Next** by following the [installation instructions](https://github.com/vladmandic/automatic/wiki/Installation)  
-- For more details, check out [advanced installation](https://github.com/vladmandic/automatic/wiki/Advanced-Install) guide  
-- List and explanation of [command line arguments](https://github.com/vladmandic/automatic/wiki/CLI-Arguments)
+- Get started with **SD.Next** by following the [installation instructions](https://vladmandic.github.io/sdnext-docs/Installation/)  
+- For more details, check out [advanced installation](https://vladmandic.github.io/sdnext-docs/Advanced-Install/) guide  
+- List and explanation of [command line arguments](https://vladmandic.github.io/sdnext-docs/CLI-Arguments/)
 - Install walkthrough [video](https://www.youtube.com/watch?v=nWTnTyFTuAs)
 
 > [!TIP]
 > And for platform specific information, check out  
-> [WSL](https://github.com/vladmandic/automatic/wiki/WSL) | [Intel Arc](https://github.com/vladmandic/automatic/wiki/Intel-ARC) | [DirectML](https://github.com/vladmandic/automatic/wiki/DirectML) | [OpenVINO](https://github.com/vladmandic/automatic/wiki/OpenVINO) | [ONNX & Olive](https://github.com/vladmandic/automatic/wiki/ONNX-Runtime) | [ZLUDA](https://github.com/vladmandic/automatic/wiki/ZLUDA) | [AMD ROCm](https://github.com/vladmandic/automatic/wiki/AMD-ROCm) | [MacOS](https://github.com/vladmandic/automatic/wiki/MacOS-Python.md) | [nVidia](https://github.com/vladmandic/automatic/wiki/nVidia)
+> [WSL](https://vladmandic.github.io/sdnext-docs/WSL/) | [Intel Arc](https://vladmandic.github.io/sdnext-docs/Intel-ARC/) | [DirectML](https://vladmandic.github.io/sdnext-docs/DirectML/) | [OpenVINO](https://vladmandic.github.io/sdnext-docs/OpenVINO/) | [ONNX & Olive](https://vladmandic.github.io/sdnext-docs/ONNX-Runtime/) | [ZLUDA](https://vladmandic.github.io/sdnext-docs/ZLUDA/) | [AMD ROCm](https://vladmandic.github.io/sdnext-docs/AMD-ROCm/) | [MacOS](https://vladmandic.github.io/sdnext-docs/MacOS-Python/) | [nVidia](https://vladmandic.github.io/sdnext-docs/nVidia/) | [Docker](https://vladmandic.github.io/sdnext-docs/Docker/)
 
 > [!WARNING]
-> If you run into issues, check out [troubleshooting](https://github.com/vladmandic/automatic/wiki/Troubleshooting) and [debugging](https://github.com/vladmandic/automatic/wiki/Debug) guides  
+> If you run into issues, check out [troubleshooting](https://vladmandic.github.io/sdnext-docs/Troubleshooting/) and [debugging](https://vladmandic.github.io/sdnext-docs/Debug/) guides  
 
 > [!TIP]
 > All command line options can also be set via env variable  
 > For example `--debug` is same as `set SD_DEBUG=true`  
-
-### Collab
-
-- We'd love to have additional maintainers (with comes with full repo rights). If you're interested, ping us!  
-- In addition to general cross-platform code, desire is to have a lead for each of the main platforms  
-This should be fully cross-platform, but we'd really love to have additional contributors and/or maintainers to join and help lead the efforts on different platforms  
 
 ### Credits
 
@@ -113,8 +107,8 @@ This should be fully cross-platform, but we'd really love to have additional con
 
 ### Docs
 
-If you're unsure how to use a feature, best place to start is [Docs](https://vladmandic.github.io/sdnext-docs/) or [Wiki](https://github.com/vladmandic/automatic/wiki) and if its not there,  
-check [ChangeLog](CHANGELOG.md) for when feature was first introduced as it will always have a short note on how to use it  
+If you're unsure how to use a feature, best place to start is [Docs](https://vladmandic.github.io/sdnext-docs/) and if its not there,  
+check [ChangeLog](https://vladmandic.github.io/sdnext-docs/CHANGELOG/) for when feature was first introduced as it will always have a short note on how to use it  
 
 ### Sponsors
 
