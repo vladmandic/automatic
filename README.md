@@ -17,7 +17,7 @@
 
 - [Documentation](https://vladmandic.github.io/sdnext-docs/)
 - [SD.Next Features](#sdnext-features)
-- [Model support](#model-support)
+- [Model support](#model-support) and [Specifications]()
 - [Platform support](#platform-support)
 - [Getting started](#getting-started)
 
@@ -35,7 +35,6 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Platform specific autodetection and tuning performed on install  
 - Optimized processing with latest `torch` developments with built-in support for `torch.compile`  
   and multiple compile backends: *Triton, ZLUDA, StableFast, DeepCache, OpenVINO, NNCF, IPEX, OneDiff*  
-- Improved prompt parser  
 - Built-in queue management  
 - Enterprise level logging and hardened API  
 - Built in installer with automatic updates and dependency management  
@@ -50,43 +49,13 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 
 ![screenshot-modernui](https://github.com/user-attachments/assets/39e3bc9a-a9f7-4cda-ba33-7da8def08032)
 
-For screenshots and informations on other available themes, see [Themes Wiki](https://github.com/vladmandic/automatic/wiki/Themes)
+For screenshots and informations on other available themes, see [Themes Wiki](wiki/Themes.md)
 
 <br>
 
 ## Model support
 
-Additional models will be added as they become available and there is public interest in them  
-See [models overview](https://github.com/vladmandic/automatic/wiki/Models) for details on each model, including their architecture, complexity and other info  
-
-- [RunwayML Stable Diffusion](https://github.com/Stability-AI/stablediffusion/) 1.x and 2.x *(all variants)*
-- [StabilityAI Stable Diffusion XL](https://github.com/Stability-AI/generative-models), [StabilityAI Stable Diffusion 3.0](https://stability.ai/news/stable-diffusion-3-medium) Medium, [StabilityAI Stable Diffusion 3.5](https://huggingface.co/stabilityai/stable-diffusion-3.5-large) Medium, Large, Large Turbo
-- [StabilityAI Stable Video Diffusion](https://huggingface.co/stabilityai/stable-video-diffusion-img2vid) Base, XT 1.0, XT 1.1
-- [StabilityAI Stable Cascade](https://github.com/Stability-AI/StableCascade) *Full* and *Lite*
-- [Black Forest Labs FLUX.1](https://blackforestlabs.ai/announcing-black-forest-labs/) Dev, Schnell  
-- [NVLabs Sana](https://nvlabs.github.io/Sana/)
-- [AuraFlow](https://huggingface.co/fal/AuraFlow)
-- [AlphaVLLM Lumina-Next-SFT](https://huggingface.co/Alpha-VLLM/Lumina-Next-SFT-diffusers)  
-- [Playground AI](https://huggingface.co/playgroundai/playground-v2-256px-base) *v1, v2 256, v2 512, v2 1024 and latest v2.5*
-- [Tencent HunyuanDiT](https://github.com/Tencent/HunyuanDiT)
-- [OmniGen](https://arxiv.org/pdf/2409.11340)  
-- [Meissonic](https://github.com/viiika/Meissonic)  
-- [Kwai Kolors](https://huggingface.co/Kwai-Kolors/Kolors)  
-- [CogView 3+](https://huggingface.co/THUDM/CogView3-Plus-3B)
-- [LCM: Latent Consistency Models](https://github.com/openai/consistency_models)
-- [aMUSEd](https://huggingface.co/amused/amused-256) 256 and 512
-- [Segmind Vega](https://huggingface.co/segmind/Segmind-Vega), [Segmind SSD-1B](https://huggingface.co/segmind/SSD-1B), [Segmind SegMoE](https://github.com/segmind/segmoe) *SD and SD-XL*, [Segmind SD Distilled](https://huggingface.co/blog/sd_distillation) *(all variants)*
-- [Kandinsky](https://github.com/ai-forever/Kandinsky-2) *2.1 and 2.2 and latest 3.0*
-- [PixArt-α XL 2](https://github.com/PixArt-alpha/PixArt-alpha) *Medium and Large*, [PixArt-Σ](https://github.com/PixArt-alpha/PixArt-sigma)
-- [Warp Wuerstchen](https://huggingface.co/blog/wuertschen)
-- [Tsinghua UniDiffusion](https://github.com/thu-ml/unidiffuser)
-- [DeepFloyd IF](https://github.com/deep-floyd/IF) *Medium and Large*
-- [ModelScope T2V](https://huggingface.co/damo-vilab/text-to-video-ms-1.7b)
-- [BLIP-Diffusion](https://dxli94.github.io/BLIP-Diffusion-website/)
-- [KOALA 700M](https://github.com/youngwanLEE/sdxl-koala)
-- [VGen](https://huggingface.co/ali-vilab/i2vgen-xl)
-- [SDXS](https://github.com/IDKiro/sdxs)
-- [Hyper-SD](https://huggingface.co/ByteDance/Hyper-SD)
+SD.Next supports broad range of models: [supported models](wiki/Model-Support.md) and [model specs](wiki/Models.md)  
 
 ## Platform support
 
@@ -116,20 +85,8 @@ See [models overview](https://github.com/vladmandic/automatic/wiki/Models) for d
 > If you run into issues, check out [troubleshooting](https://github.com/vladmandic/automatic/wiki/Troubleshooting) and [debugging](https://github.com/vladmandic/automatic/wiki/Debug) guides  
 
 > [!TIP]
-> All command line options can also be set via env variable
+> All command line options can also be set via env variable  
 > For example `--debug` is same as `set SD_DEBUG=true`  
-
-## Backend support
-
-**SD.Next** supports two main backends: *Diffusers* and *Original*:
-
-- **Diffusers**: Based on new [Huggingface Diffusers](https://huggingface.co/docs/diffusers/index) implementation  
-  Supports *all* models listed below  
-  This backend is set as default for new installations  
-- **Original**: Based on [LDM](https://github.com/Stability-AI/stablediffusion) reference implementation and significantly expanded on by [A1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui)  
-  This backend and is fully compatible with most existing functionality and extensions written for *A1111 SDWebUI*  
-  Supports **SD 1.x** and **SD 2.x** models  
-  All other model types such as *SD-XL, LCM, Stable Cascade, PixArt, Playground, Segmind, Kandinsky, etc.* require backend **Diffusers**  
 
 ### Collab
 
