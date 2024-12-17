@@ -38,6 +38,7 @@ def load_sana(checkpoint_info, kwargs={}):
         kwargs['variant'] = 'fp16'
 
     kwargs = model_quant.create_bnb_config(kwargs)
+    kwargs = model_quant.create_ao_config(kwargs)
     shared.log.debug(f'Load model: type=Sana repo="{repo_id}" args={kwargs}')
     t0 = time.time()
     pipe = diffusers.SanaPipeline.from_pretrained(repo_id, cache_dir = shared.opts.diffusers_dir, **kwargs)

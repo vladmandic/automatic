@@ -282,7 +282,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode != 'post':
+    if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode == 'post':
         sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):

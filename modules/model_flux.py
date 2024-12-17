@@ -197,6 +197,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
             transformer = _transformer
     else:
         diffusers_load_config = model_quant.create_bnb_config(diffusers_load_config)
+        diffusers_load_config = model_quant.create_ao_config(diffusers_load_config)
         transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
@@ -322,8 +323,9 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype} recast')
             kwargs[c] = kwargs[c].to(dtype=devices.dtype)
 
-    allow_bnb = 'gguf' not in (sd_unet.loaded_unet or '')
-    kwargs = model_quant.create_bnb_config(kwargs, allow_bnb)
+    allow_quant = 'gguf' not in (sd_unet.loaded_unet or '')
+    kwargs = model_quant.create_bnb_config(kwargs, allow_quant)
+    kwargs = model_quant.create_ao_config(kwargs, allow_quant)
     if checkpoint_info.path.endswith('.safetensors') and os.path.isfile(checkpoint_info.path):
         pipe = diffusers.FluxPipeline.from_single_file(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
     else:

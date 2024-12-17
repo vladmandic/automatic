@@ -38,9 +38,9 @@ def create_ao_config(kwargs = None, allow_ao: bool = True):
             load_torchao()
             if ao is None:
                 return kwargs
-            ao_config = {}
-            # ao_config = diffusers.TorchAoConfig("int8wo") # TODO torchao
-            shared.log.debug(f'Quantization: module=all type=bnb dtype={shared.opts.torchao_quantization_type}')
+            diffusers.utils.import_utils.is_torchao_available = lambda: True
+            ao_config = diffusers.TorchAoConfig(shared.opts.torchao_quantization_type)
+            shared.log.debug(f'Quantization: module=all type=torchao dtype={shared.opts.torchao_quantization_type}')
             if kwargs is None:
                 return ao_config
             else:
@@ -53,7 +53,7 @@ def load_torchao(msg='', silent=False):
     global ao # pylint: disable=global-statement
     if ao is not None:
         return ao
-    install('torchao', quiet=True)
+    install('torchao==0.7.0', quiet=True)
     try:
         import torchao
         ao = torchao
