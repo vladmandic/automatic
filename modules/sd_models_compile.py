@@ -47,7 +47,7 @@ def apply_compile_to_model(sd_model, function, options, op=None):
                 sd_model.prior_pipe.prior.clip_txt_pooled_mapper = backup_clip_txt_pooled_mapper
     if "Text Encoder" in options:
         if hasattr(sd_model, 'text_encoder') and hasattr(sd_model.text_encoder, 'config'):
-            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'text_encoder'):
+            if hasattr(sd_model, 'decoder_pipe') and hasattr(sd_model.decoder_pipe, 'text_encoder') and hasattr(sd_model.decoder_pipe.text_encoder, 'config'):
                 sd_model.decoder_pipe.text_encoder = function(sd_model.decoder_pipe.text_encoder, op="decoder_pipe.text_encoder", sd_model=sd_model)
             else:
                 if op == "nncf" and sd_model.text_encoder.__class__.__name__ in {"T5EncoderModel", "UMT5EncoderModel"}:
@@ -76,7 +76,7 @@ def apply_compile_to_model(sd_model, function, options, op=None):
                         dtype=torch.float32 if devices.dtype != torch.bfloat16 else torch.bfloat16
                     )
             sd_model.text_encoder_3 = function(sd_model.text_encoder_3, op="text_encoder_3", sd_model=sd_model)
-        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model.prior_pipe, 'text_encoder'):
+        if hasattr(sd_model, 'prior_pipe') and hasattr(sd_model.prior_pipe, 'text_encoder') and hasattr(sd_model.prior_pipe.text_encoder, 'config'):
             sd_model.prior_pipe.text_encoder = function(sd_model.prior_pipe.text_encoder, op="prior_pipe.text_encoder", sd_model=sd_model)
     if "VAE" in options:
         if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'decode'):
@@ -510,34 +510,21 @@ def torchao_quantization(sd_model):
     except Exception as e:
         shared.log.error(f"Quantization: type=TorchAO quantization not supported: {e}")
         return sd_model
+
     fn = getattr(q, shared.opts.torchao_quantization_type, None)
     if fn is None:
         shared.log.error(f"Quantization: type=TorchAO type={shared.opts.torchao_quantization_type} not supported")
         return sd_model
+    def torchao_model(model, op=None, sd_model=None):
+        q.quantize_(model, fn(), device=devices.device)
+        return model
+
     shared.log.info(f"Quantization: type=TorchAO pipe={sd_model.__class__.__name__} quant={shared.opts.torchao_quantization_type} fn={fn} targets={shared.opts.torchao_quantization}")
     try:
         t0 = time.time()
-        modules = []
-        if hasattr(sd_model, 'unet') and 'Model' in shared.opts.torchao_quantization:
-            modules.append('unet')
-            q.quantize_(sd_model.unet, fn(), device=devices.device)
-        if hasattr(sd_model, 'transformer') and 'Model' in shared.opts.torchao_quantization:
-            modules.append('transformer')
-            q.quantize_(sd_model.transformer, fn(), device=devices.device)
-        if hasattr(sd_model, 'vae') and 'VAE' in shared.opts.torchao_quantization:
-            modules.append('vae')
-            q.quantize_(sd_model.vae, fn(), device=devices.device)
-        if hasattr(sd_model, 'text_encoder') and 'Text Encoder' in shared.opts.torchao_quantization:
-            modules.append('te1')
-            q.quantize_(sd_model.text_encoder, fn(), device=devices.device)
-        if hasattr(sd_model, 'text_encoder_2') and 'Text Encoder' in shared.opts.torchao_quantization:
-            modules.append('te2')
-            q.quantize_(sd_model.text_encoder_2, fn(), device=devices.device)
-        if hasattr(sd_model, 'text_encoder_3') and 'Text Encoder' in shared.opts.torchao_quantization:
-            modules.append('te3')
-            q.quantize_(sd_model.text_encoder_3, fn(), device=devices.device)
+        apply_compile_to_model(sd_model, torchao_model, shared.opts.torchao_quantization, op="torchao")
         t1 = time.time()
-        shared.log.info(f"Quantization: type=TorchAO modules={modules} time={t1-t0:.2f}")
+        shared.log.info(f"Quantization: type=TorchAO time={t1-t0:.2f}")
     except Exception as e:
         shared.log.error(f"Quantization: type=TorchAO {e}")
     setup_logging() # torchao uses dynamo which messes with logging so reset is needed
