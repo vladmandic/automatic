@@ -505,24 +505,13 @@ def compile_diffusers(sd_model):
 
 def torchao_quantization(sd_model):
     try:
-        install('torchao', quiet=True)
+        install('torchao==0.7.0', quiet=True)
         from torchao import quantization as q
     except Exception as e:
         shared.log.error(f"Quantization: type=TorchAO quantization not supported: {e}")
         return sd_model
-    if shared.opts.torchao_quantization_type == "int8+act":
-        fn = q.int8_dynamic_activation_int8_weight
-    elif shared.opts.torchao_quantization_type == "int8":
-        fn = q.int8_weight_only
-    elif shared.opts.torchao_quantization_type == "int4":
-        fn = q.int4_weight_only
-    elif shared.opts.torchao_quantization_type == "fp8+act":
-        fn = q.float8_dynamic_activation_float8_weight
-    elif shared.opts.torchao_quantization_type == "fp8":
-        fn = q.float8_weight_only
-    elif shared.opts.torchao_quantization_type == "fpx":
-        fn = q.fpx_weight_only
-    else:
+    fn = getattr(q, shared.opts.torchao_quantization_type, None)
+    if fn is None:
         shared.log.error(f"Quantization: type=TorchAO type={shared.opts.torchao_quantization_type} not supported")
         return sd_model
     shared.log.info(f"Quantization: type=TorchAO pipe={sd_model.__class__.__name__} quant={shared.opts.torchao_quantization_type} fn={fn} targets={shared.opts.torchao_quantization}")

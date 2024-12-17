@@ -101,6 +101,13 @@
 
 ### Updates
 
+- **Quantization**
+  - Add `TorchAO` *pre* (during load) and *post* (during execution) quantization
+    **torchao** supports 4 different int-based and 3 float-based quantization schemes  
+  This is in addition to existing support for:  
+  - `BitsAndBytes` with 3 float-based quantization schemes  
+  - `Optimium.Quanto` with 3 int-based and 2 float-based quantizations schemes  
+  - `GGUF` with pre-quantized weights  
 - **IPEX**: update to IPEX 2.5.10+xpu  
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
