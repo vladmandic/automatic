@@ -31,7 +31,7 @@
 - [Flux ControlNet LoRA](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev-lora)  
   alternative to standard ControlNets, FLUX.1 also allows LoRA to help guide the generation process  
   both **Depth** and **Canny** LoRAs are available in standard control menus  
-- [StabilityAI SD35 ControlNets]([sd3_medium](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets))
+- [StabilityAI SD35 ControlNets](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets)
   - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
 - [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
   enable in scripts, compatible with sd-xl  
@@ -102,7 +102,7 @@
 ### Updates
 
 - **Quantization**
-  - Add `TorchAO` *pre* (during load) and *post* (during execution) quantization
+  - Add `TorchAO` *pre* (during load) and *post* (during execution) quantization  
     **torchao** supports 4 different int-based and 3 float-based quantization schemes  
   This is in addition to existing support for:  
   - `BitsAndBytes` with 3 float-based quantization schemes  
@@ -395,7 +395,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 
 #### New models for 2024-10-23
 
-- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
+- New fine-tuned [CLiP-ViT-L](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
 - New models:  
   [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
   [OmniGen](https://arxiv.org/pdf/2409.11340)  
@@ -727,7 +727,7 @@ Examples:
   - vae is list of manually downloaded safetensors  
   - text-encoder is list of predefined and manually downloaded text-encoders  
 - **controlnet** support:
-  support for **InstantX/Shakker-Labs** models including [Union-Pro](InstantX/FLUX.1-dev-Controlnet-Union)  
+  support for **InstantX/Shakker-Labs** models including [Union-Pro](https://huggingface.co/InstantX/FLUX.1-dev-Controlnet-Union)
   note that flux controlnet models are large, up to 6.6GB on top of already large base model!  
   as such, you may need to use offloading:sequential which is not as fast, but uses far less memory  
   when using union model, you must also select control mode in the control unit  
