@@ -2242,7 +2242,7 @@ Also new is support for **SDXL-Turbo** as well as new **Kandinsky 3** models and
     - in *Advanced* params
     - allows control of *latent clamping*, *color centering* and *range maximization*  
     - supported by *XYZ grid*  
-  - [SD21 Turbo](https://huggingface.co/stabilityai/sd-turbo) and [SDXL Turbo](<https://huggingface.co/stabilityai/sdxl-turbo>) support  
+  - [SD21 Turbo](https://huggingface.co/stabilityai/sd-turbo) and [SDXL Turbo](https://huggingface.co/stabilityai/sdxl-turbo) support  
     - just set CFG scale (0.0-1.0) and steps (1-3) to a very low value  
     - compatible with original StabilityAI SDXL-Turbo or any of the newer merges
     - download safetensors or select from networks -> reference

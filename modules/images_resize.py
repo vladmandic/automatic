@@ -122,7 +122,7 @@ def resize_image(resize_mode: int, im: Image.Image, width: int, height: int, ups
         from modules import masking
         res = fill(im, color=0)
         res, _mask = masking.outpaint(res)
-    elif resize_mode == 5:  # context-aware
+    elif resize_mode == 5: # context-aware
         res = context_aware(im, width, height, context)
     else:
         res = im.copy()
