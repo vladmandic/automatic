@@ -1177,9 +1177,15 @@ def check_ui(ver):
 
 
 def check_venv():
+    def try_relpath(p):
+        try:
+            return os.path.relpath(p)
+        except ValueError:
+            return p
+
     import site
-    pkg_path = [os.path.relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
-    log.debug(f'Packages: venv={os.path.relpath(sys.prefix)} site={pkg_path}')
+    pkg_path = [try_relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
+    log.debug(f'Packages: venv={try_relpath(sys.prefix)} site={pkg_path}')
     for p in pkg_path:
         invalid = []
         for f in os.listdir(p):
