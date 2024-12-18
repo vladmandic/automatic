@@ -1,15 +1,18 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-17
+## Update for 2024-12-18
 
 ### New models and integrations
 
 - [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)
-  **Sana** can synthesize high-resolution images with strong text-image alignment by using **Gemma2** as text-encoder  
-  and its *fast* - typically at least **2x** faster than sd-xl even for 1.6B variant  
   support for both 1.6B and 0.6B models  
+  **Sana** can synthesize high-resolution images with strong text-image alignment by using **Gemma2** as text-encoder  
+  and its *fast* - typically at least **2x** faster than sd-xl even for 1.6B variant and maintains performance regardless of resolution  
+  e.g., rendering at 4k is possible in less than 8GB vram  
   to use, select from *networks -> models -> reference* and models will be auto-downloaded on first use  
   *reference values*: sampler: default (or any flow-match variant), width/height: 1024, guidance scale: 4.5  
+  *note* like other LLM-based text-encoders, sana prefers long and descriptive prompts  
+  any short prompt below 300 characters will be auto-expanded using built in Gemma LLM before encoding while long prompts will be passed as-is  
 - [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
   **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
   **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  

@@ -164,6 +164,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
+    if 'complex_human_instruction' in possible:
+        chi = any(len(p) < 300 for p in prompts)
+        p.extra_generation_params["CHI"] = chi
+        if not chi:
+            args['complex_human_instruction'] = None
     if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
         prompt_parser_diffusers.embedder = None
 
