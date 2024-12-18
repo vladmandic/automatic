@@ -124,6 +124,7 @@
 ### Fixes  
 
 - add `SD_NO_CACHE=true` env variable to disable file/folder caching  
+- add settings -> networks -> embeddings -> enable/disable
 - update `diffusers`  
 - fix README links  
 - fix sdxl controlnet single-file loader  

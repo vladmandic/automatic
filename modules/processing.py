@@ -179,6 +179,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         timer.process.record('pre')
 
         if shared.cmd_opts.profile:
+            timer.startup.profile = True
+            timer.process.profile = True
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 import torch.profiler # pylint: disable=redefined-outer-name
                 activities=[torch.profiler.ProfilerActivity.CPU]
@@ -476,7 +478,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         p.scripts.postprocess(p, processed)
     timer.process.record('post')
     if not p.disable_extra_networks:
-        shared.log.info(f'Processed: images={len(output_images)} its={(p.steps * len(output_images)) / (t1 - t0):.2f} time={t1-t0:.2f} timers={timer.process.dct(min_time=0.02)} memory={memstats.memory_stats()}')
+        shared.log.info(f'Processed: images={len(output_images)} its={(p.steps * len(output_images)) / (t1 - t0):.2f} time={t1-t0:.2f} timers={timer.process.dct()} memory={memstats.memory_stats()}')
 
     devices.torch_gc(force=True)
     return processed

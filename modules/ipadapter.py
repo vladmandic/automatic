@@ -14,6 +14,7 @@ from modules import processing, shared, devices, sd_models
 
 clip_repo = "h94/IP-Adapter"
 clip_loaded = None
+adapters_loaded = []
 ADAPTERS_NONE = {
     'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
 }
@@ -129,9 +130,12 @@ def crop_images(images, crops):
 
 
 def unapply(pipe): # pylint: disable=arguments-differ
+    if len(adapters_loaded) == 0:
+        return
     try:
         if hasattr(pipe, 'set_ip_adapter_scale'):
             pipe.set_ip_adapter_scale(0)
+            pipe.unload_ip_adapter()
         if hasattr(pipe, 'unet') and hasattr(pipe.unet, 'config') and pipe.unet.config.encoder_hid_dim_type == 'ip_image_proj':
             pipe.unet.encoder_hid_proj = None
             pipe.config.encoder_hid_dim_type = None
@@ -141,7 +145,7 @@ def unapply(pipe): # pylint: disable=arguments-differ
 
 
 def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_crops=[False], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
-    global clip_loaded # pylint: disable=global-statement
+    global clip_loaded, adapters_loaded # pylint: disable=global-statement
     # overrides
     if hasattr(p, 'ip_adapter_names'):
         if isinstance(p.ip_adapter_names, str):
@@ -274,6 +278,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         subfolders = [adapter['subfolder'] for adapter in adapters]
         names = [adapter['name'] for adapter in adapters]
         pipe.load_ip_adapter(repos, subfolder=subfolders, weight_name=names)
+        adapters_loaded = names
         if hasattr(p, 'ip_adapter_layers'):
             pipe.set_ip_adapter_scale(p.ip_adapter_layers)
             ip_str = ';'.join(adapter_names) + ':' + json.dumps(p.ip_adapter_layers)

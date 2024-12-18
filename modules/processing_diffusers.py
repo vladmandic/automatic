@@ -4,6 +4,7 @@ import time
 import numpy as np
 import torch
 import torchvision.transforms.functional as TF
+from PIL import Image
 from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats, extra_networks
 from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled
 from modules.processing_args import set_pipeline_args
@@ -447,6 +448,9 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
 
     sd_models_compile.openvino_recompile_model(p, hires=False, refiner=False) # recompile if a parameter changes
 
+    if hasattr(p, 'dummy'):
+        images = [Image.new(mode='RGB', size=(p.width, p.height))]
+        return images
     if 'base' not in p.skip:
         output = process_base(p)
     else:
