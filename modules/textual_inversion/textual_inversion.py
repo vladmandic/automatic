@@ -274,6 +274,8 @@ class EmbeddingDatabase:
         overwrite = bool(data)
         if not shared.sd_loaded:
             return
+        if not shared.opts.diffusers_enable_embed:
+            return
         embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
         for skip in skipped:
             self.skipped_embeddings[skip.name] = skipped

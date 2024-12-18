@@ -63,6 +63,8 @@ class PromptEmbedder:
         self.positive_schedule = None
         self.negative_schedule = None
         self.scheduled_prompt = False
+        if hasattr(p, 'dummy'):
+            return
         earlyout = self.checkcache(p)
         if earlyout:
             return

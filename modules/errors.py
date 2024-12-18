@@ -59,14 +59,14 @@ def exception(suppress=[]):
     console.print_exception(show_locals=False, max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
 
 
-def profile(profiler, msg: str, n: int = 5):
+def profile(profiler, msg: str, n: int = 16):
     profiler.disable()
     import io
     import pstats
     stream = io.StringIO() # pylint: disable=abstract-class-instantiated
     p = pstats.Stats(profiler, stream=stream)
     p.sort_stats(pstats.SortKey.CUMULATIVE)
-    p.print_stats(100)
+    p.print_stats(200)
     # p.print_title()
     # p.print_call_heading(10, 'time')
     # p.print_callees(10)
@@ -81,6 +81,7 @@ def profile(profiler, msg: str, n: int = 5):
              and '_lsprof' not in x
              and '/profiler' not in x
              and 'rich' not in x
+             and 'profile_torch' not in x
              and x.strip() != ''
             ]
     txt = '\n'.join(lines[:min(n, len(lines))])
