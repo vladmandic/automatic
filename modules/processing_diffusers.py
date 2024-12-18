@@ -355,6 +355,8 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
         if not hasattr(output, 'images') and hasattr(output, 'frames'):
             shared.log.debug(f'Generated: frames={len(output.frames[0])}')
             output.images = output.frames[0]
+        if output.images is not None and len(output.images) > 0 and isinstance(output.images[0], Image.Image):
+            return output.images
         model = shared.sd_model if not is_refiner_enabled(p) else shared.sd_refiner
         if not hasattr(model, 'vae'):
             if hasattr(model, 'pipe') and hasattr(model.pipe, 'vae'):
