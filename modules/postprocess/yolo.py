@@ -300,7 +300,8 @@ class YoloRestorer(Detailer):
                 # combined.save('/tmp/item.png')
                 p.image_mask = Image.fromarray(p.image_mask)
 
-        shared.log.debug(f'Detailer processed: models={models_used}')
+        if len(models_used) > 0:
+            shared.log.debug(f'Detailer processed: models={models_used}')
         return np_image
 
     def ui(self, tab: str):

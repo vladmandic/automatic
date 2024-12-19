@@ -62,7 +62,7 @@ def single_sample_to_image(sample, approximation=None):
                 sample = sample * (5 / abs(sample_min))
         """
         if approximation == 2: # TAESD
-            if sample.shape[-1] > 128 or sample.shape[-2] > 128:
+            if shared.opts.live_preview_downscale and (sample.shape[-1] > 128 or sample.shape[-2] > 128):
                 scale = 128 / max(sample.shape[-1], sample.shape[-2])
                 sample = torch.nn.functional.interpolate(sample.unsqueeze(0), scale_factor=[scale, scale], mode='bilinear', align_corners=False)[0]
             x_sample = sd_vae_taesd.decode(sample)
