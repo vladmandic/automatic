@@ -177,6 +177,7 @@ And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*
 - control load model on-demand if not already loaded  
 - taesd limit render to 2024px  
 - taesd downscale preview to 1024px max: configurable in settings -> live preview  
+- uninstall conflicting `wandb` package  
 
 ## Update for 2024-11-21
 
