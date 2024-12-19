@@ -202,7 +202,7 @@ class Script(scripts.Script):
         p.extra_generation_params['CogVideoX'] = model
         p.do_not_save_grid = True
         if 'animatediff' not in p.ops:
-            p.ops.append('cogvideox')
+            p.ops.append('video')
         if override:
             p.width = 720
             p.height = 480

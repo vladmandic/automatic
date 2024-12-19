@@ -81,7 +81,7 @@ class Script(scripts.Script):
             p.width = 1024
             p.height = 576
             image = images.resize_image(resize_mode=2, im=image, width=p.width, height=p.height, upscaler_name=None, output_type='pil')
-        p.ops.append('svd')
+        p.ops.append('video')
         p.do_not_save_grid = True
         p.init_images = [image]
         p.sampler_name = 'Default' # svd does not support non-default sampler
