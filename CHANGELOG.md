@@ -14,7 +14,8 @@ While we have several new supported models, workflows and tools, this release is
   with full search and tons of new documentation  
 - New settings panel with simplified and streamlined configuration  
 
-We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px) and [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)  
+We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)  
+And several new video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)
 
 And a lot of Control and IPAdapter goodies  
 - for SDXL there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling*  
@@ -70,11 +71,6 @@ And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*
   both **Depth** and **Canny** LoRAs are available in standard control menus  
 - [StabilityAI SD35 ControlNets](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets)
   - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
-- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)
-  basic support for LTX-Video for text-to-video and image-to-video  
-  to use, select in *scripts -> ltx-video*  
-  *note* you may need to enable sequential offload for maximum gpu memory savings  
-  *note* ltx-video requires very long and descriptive prompt, see original link for examples  
 - [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
   enable in scripts, compatible with sd-xl  
   enter multiple prompts in prompt field separated by new line  
@@ -86,6 +82,30 @@ And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*
   run iterative generation of images at different scales to achieve better results  
   can render 4k sdxl images  
   *note*: disable live preview to avoid memory issues when generating large images  
+
+### Video models
+
+- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)
+  model size: 27.75gb
+  support for text-to-video and image-to-video, to use, select in *scripts -> ltx-video*  
+  *refrence values*: steps 50, width 704, height 512, frames 161, guidance scale 3.0
+- [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo)  
+  model size: 40.92gb
+  support for text-to-video, to use, select in *scripts -> hunyuan video*  
+  *refrence values*: steps 50, width 1280, height 720, frames 129, guidance scale 6.0
+- [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)
+  support for text-to-video, to use, select in *scripts -> mochi.1 video*  
+  *refrence values*: steps 64, width 848, height 480, frames 19, guidance scale 4.5
+
+*Notes*:
+- all video models are very large and resource intensive!  
+  any use on gpus below 16gb and systems below 48gb ram is experimental at best  
+- sdnext support for video models is relatively basic with further optimizations pending community interest  
+  any future optimizations would likely have to go into partial loading and excecution instead of offloading inactive parts of the model  
+- new video models use generic llms for prompting and due to that requires very long and descriptive prompt  
+- you may need to enable sequential offload for maximum gpu memory savings  
+- optionally enable pre-quantization using bnb for additional memory savings  
+- reduce number of frames and/or resolution to reduce memory usage  
 
 ### UI and workflow improvements
 

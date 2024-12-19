@@ -250,7 +250,7 @@ class Script(scripts.Script):
         processing.fix_seed(p)
         p.extra_generation_params['AnimateDiff'] = loaded_adapter
         p.do_not_save_grid = True
-        p.ops.append('animatediff')
+        p.ops.append('video')
         p.task_args['generator'] = None
         p.task_args['num_frames'] = frames
         p.task_args['num_inference_steps'] = p.steps

@@ -73,7 +73,7 @@ class Script(scripts.Script):
         model = [m for m in MODELS if m['name'] == model_name][0]
         repo_id = model['url']
         shared.log.debug(f'Image2Video: model={model_name} frames={num_frames}, video={video_type} duration={duration} loop={gif_loop} pad={mp4_pad} interpolate={mp4_interpolate}')
-        p.ops.append('image2video')
+        p.ops.append('video')
         p.do_not_save_grid = True
         orig_pipeline = shared.sd_model
 

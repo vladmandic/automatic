@@ -5,15 +5,15 @@ import diffusers
 from modules import scripts, processing, shared, images, devices, sd_models, sd_checkpoint, model_quant
 
 
-repo_id = 'a-r-r-o-w/LTX-Video-diffusers'
+repo_id = 'genmo/mochi-1-preview'
 
 
 class Script(scripts.Script):
     def title(self):
-        return 'Video: LTX Video'
+        return 'Video: Mochi.1 Video'
 
     def show(self, is_img2img):
-        return shared.native
+        return not is_img2img if shared.native else False
 
     # return signature is array of gradio components
     def ui(self, _is_img2img):
@@ -26,9 +26,9 @@ class Script(scripts.Script):
             ]
 
         with gr.Row():
-            gr.HTML('<a href="https://www.ltxvideo.org/">&nbsp LTX Video</a><br>')
+            gr.HTML('<a href="https://huggingface.co/genmo/mochi-1-preview">&nbsp Mochi.1 Video</a><br>')
         with gr.Row():
-            num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=41)
+            num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=45)
         with gr.Row():
             video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
             duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
@@ -41,17 +41,9 @@ class Script(scripts.Script):
 
     def run(self, p: processing.StableDiffusionProcessing, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
         # set params
-        image = getattr(p, 'init_images', None)
-        image = None if image is None or len(image) == 0 else image[0]
-        if p.width == 0 or p.height == 0 and image is not None:
-            p.width = image.width
-            p.height = image.height
-        num_frames = 8 * int(num_frames // 8) + 1
+        num_frames = int(num_frames // 8)
         p.width = 32 * int(p.width // 32)
         p.height = 32 * int(p.height // 32)
-        if image:
-            image = images.resize_image(resize_mode=2, im=image, width=p.width, height=p.height, upscaler_name=None, output_type='pil')
-            p.task_args['image'] = image
         p.task_args['output_type'] = 'pil'
         p.task_args['generator'] = torch.manual_seed(p.seed)
         p.task_args['num_frames'] = num_frames
@@ -60,9 +52,7 @@ class Script(scripts.Script):
         p.ops.append('video')
 
         # load model
-        cls = diffusers.LTXPipeline if image is None else diffusers.LTXImageToVideoPipeline
-        diffusers.LTXTransformer3DModel = diffusers.LTXVideoTransformer3DModel
-        diffusers.AutoencoderKLLTX = diffusers.AutoencoderKLLTXVideo
+        cls = diffusers.MochiPipeline
         if shared.sd_model.__class__ != cls:
             sd_models.unload_model_weights()
             kwargs = {}
@@ -74,6 +64,7 @@ class Script(scripts.Script):
                 torch_dtype=devices.dtype,
                 **kwargs
             )
+            shared.sd_model.scheduler._shift = 7.0 # pylint: disable=protected-access
             sd_models.set_diffuser_options(shared.sd_model)
             shared.sd_model.sd_checkpoint_info = sd_checkpoint.CheckpointInfo(repo_id)
             shared.sd_model.sd_model_hash = None
