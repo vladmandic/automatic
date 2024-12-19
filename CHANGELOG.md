@@ -1,31 +1,33 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-18
+## Update for 2024-12-19
 
-### Highlights
+### Highlights for 2024-12-19
 
-*What's new?*
+### SD.Next X-mass edition: *What's new?*
 
 While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
-- New memory management engine: list of changes that went into this one is too long for here,  
+- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, LoRA loader, system memory management, etc.  
   but main goal is enabling modern large models to run on standard consumer GPUs  
   without performance hits typically associated with aggressive memory swapping and needs for constant manual tweaks  
 - New [documentation website](https://vladmandic.github.io/sdnext-docs/)  
   with full search and tons of new documentation  
 - New settings panel with simplified and streamlined configuration  
 
-We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list):  
-- [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)  
-- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)  
+We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px) and [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)  
 
-And a lot of Control goodies and related goodies  
+And a lot of Control and IPAdapter goodies  
 - for SDXL there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling*  
 - for FLUX.1 there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models and a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model  
 - for SD 3.5 there are official *Canny*, *Blur* and *Depth* in addition to existing 3rd party models  
 
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
+And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*  
+
 [README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+## Details for 2024-12-19
 
 ### New models and integrations
 
@@ -174,7 +176,7 @@ Plus couple of new integrated workflows such as [FreeScale](https://github.com/a
 - lora auto-apply tags remove duplicates  
 - control load model on-demand if not already loaded  
 - taesd limit render to 2024px  
-- taesd downscale preview to 1024px max  
+- taesd downscale preview to 1024px max: configurable in settings -> live preview  
 
 ## Update for 2024-11-21
 
