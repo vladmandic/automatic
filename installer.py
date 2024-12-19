@@ -686,6 +686,8 @@ def install_torch_addons():
         install('nncf==2.7.0', 'nncf')
     if opts.get('optimum_quanto_weights', False):
         install('optimum-quanto==0.2.6', 'optimum-quanto')
+    if not args.experimental:
+        uninstall('wandb', quiet=True)
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
 
