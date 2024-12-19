@@ -250,7 +250,7 @@ def uninstall(package, quiet = False):
         if installed(p, p, quiet=True):
             if not quiet:
                 log.warning(f'Package: {p} uninstall')
-            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True)
+            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True, uv=False)
     return res
 
 
