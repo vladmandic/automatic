@@ -9,7 +9,7 @@ from modules import shared, devices, scripts, processing, sd_models, prompt_pars
 def hijack_register_modules(self, **kwargs):
     for name, module in kwargs.items():
         register_dict = None
-        if module is None or isinstance(module, (tuple, list)) and module[0] is None:
+        if module is None or (isinstance(module, (tuple, list)) and module[0] is None):
             register_dict = {name: (None, None)}
         elif isinstance(module, bool):
             pass

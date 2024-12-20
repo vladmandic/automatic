@@ -43,7 +43,7 @@ class Script(scripts.Script):
         # set params
         image = getattr(p, 'init_images', None)
         image = None if image is None or len(image) == 0 else image[0]
-        if p.width == 0 or p.height == 0 and image is not None:
+        if (p.width == 0 or p.height == 0) and image is not None:
             p.width = image.width
             p.height = image.height
         num_frames = 8 * int(num_frames // 8) + 1
