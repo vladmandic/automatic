@@ -186,7 +186,7 @@ def get_device_for(task): # pylint: disable=unused-argument
     return get_optimal_device()
 
 
-def torch_gc(force=False, fast=False):
+def torch_gc(force:bool=False, fast:bool=False, reason:str=None):
     def get_stats():
         mem_dict = memstats.memory_stats()
         gpu_dict = mem_dict.get('gpu', {})
@@ -207,15 +207,21 @@ def torch_gc(force=False, fast=False):
     from modules.shared import cmd_opts
 
     t0 = time.time()
-    gpu, used_gpu, ram, used_ram, oom = get_stats()
+    gpu, used_gpu, ram, _used_ram, oom = get_stats()
     threshold = 0 if (cmd_opts.lowvram and not cmd_opts.use_zluda) else opts.torch_gc_threshold
     collected = 0
-    if force or threshold == 0 or used_gpu >= threshold or used_ram >= threshold:
+    if reason is None and force:
+        reason='force'
+    if threshold == 0 or used_gpu >= threshold:
         force = True
+        if reason is None:
+            reason = 'threshold'
     if oom > previous_oom:
         previous_oom = oom
         log.warning(f'Torch GPU out-of-memory error: {memstats.memory_stats()}')
         force = True
+        if reason is None:
+            reason = 'oom'
     if force:
         # actual gc
         collected = gc.collect() if not fast else 0 # python gc
@@ -237,10 +243,10 @@ def torch_gc(force=False, fast=False):
     new_gpu, new_used_gpu, new_ram, new_used_ram, oom = get_stats()
     before = { 'gpu': gpu, 'ram': ram }
     after = { 'gpu': new_gpu, 'ram': new_ram, 'oom': oom }
-    utilization = { 'gpu': new_used_gpu, 'ram': new_used_ram, 'threshold': threshold }
-    results = { 'saved': round(gpu - new_gpu, 2), 'collected': collected }
+    utilization = { 'gpu': new_used_gpu, 'ram': new_used_ram }
+    results = { 'gpu': round(gpu - new_gpu, 2), 'py': collected }
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    log.debug(f'GC: utilization={utilization} gc={results} before={before} after={after} device={torch.device(get_optimal_device_name())} fn={fn} time={round(t1 - t0, 2)}')
+    log.debug(f'GC: current={after} prev={before} load={utilization} gc={results} fn={fn} why={reason} time={t1-t0:.2f}')
     return new_gpu, new_ram
 
 

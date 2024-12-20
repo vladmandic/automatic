@@ -7,7 +7,8 @@ from modules import scripts, processing, shared, devices, sd_models
 from installer import install
 
 
-redux_pipe: diffusers.FluxPriorReduxPipeline = None
+# redux_pipe: diffusers.FluxPriorReduxPipeline = None
+redux_pipe = None
 processor_canny = None
 processor_depth = None
 title = 'Flux Tools'

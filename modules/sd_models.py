@@ -496,7 +496,11 @@ def apply_balanced_offload(sd_model, exclude=[]):
                     used_gpu -= module_size
                 debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} component={module.__class__.__name__} size={module_size:.3f}')
             except Exception as e:
-                if 'bitsandbytes' not in str(e):
+                if 'out of memory' in str(e):
+                    devices.torch_gc(fast=True, force=True, reason='oom')
+                elif 'bitsandbytes' in str(e):
+                    pass
+                else:
                     shared.log.error(f'Offload: type=balanced op=apply module={module_name} {e}')
                 if os.environ.get('SD_MOVE_DEBUG', None):
                     errors.display(e, f'Offload: type=balanced op=apply module={module_name}')
@@ -508,7 +512,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
             if device_map and max_memory:
                 module.balanced_offload_device_map = device_map
                 module.balanced_offload_max_memory = max_memory
-        devices.torch_gc(fast=True, force=True)
+        devices.torch_gc(fast=True, force=True, reason='offload')
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "pipe"):
@@ -518,7 +522,6 @@ def apply_balanced_offload(sd_model, exclude=[]):
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
     set_accelerate(sd_model)
-    devices.torch_gc(fast=True)
     t = time.time() - t0
     process_timer.add('offload', t)
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
