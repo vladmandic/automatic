@@ -314,22 +314,29 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
         if weights_backup is None and wanted_names != (): # pylint: disable=C1803
             weight = getattr(self, 'weight', None)
             self.network_weights_backup = None
-            if shared.opts.lora_fuse_diffusers:
-                self.network_weights_backup = True
-            elif getattr(weight, "quant_type", None) in ['nf4', 'fp4']:
+            if getattr(weight, "quant_type", None) in ['nf4', 'fp4']:
                 if bnb is None:
                     bnb = model_quant.load_bnb('Load network: type=LoRA', silent=True)
                 if bnb is not None:
                     with devices.inference_context():
-                        self.network_weights_backup = bnb.functional.dequantize_4bit(weight, quant_state=weight.quant_state, quant_type=weight.quant_type, blocksize=weight.blocksize,)
+                        if shared.opts.lora_fuse_diffusers:
+                            self.network_weights_backup = True
+                        else:
+                            self.network_weights_backup = bnb.functional.dequantize_4bit(weight, quant_state=weight.quant_state, quant_type=weight.quant_type, blocksize=weight.blocksize,)
                         self.quant_state = weight.quant_state
                         self.quant_type = weight.quant_type
                         self.blocksize = weight.blocksize
                 else:
-                    weights_backup = weight.clone()
-                self.network_weights_backup = weights_backup.to(devices.cpu)
+                    if shared.opts.lora_fuse_diffusers:
+                        self.network_weights_backup = True
+                    else:
+                        weights_backup = weight.clone()
+                        self.network_weights_backup = weights_backup.to(devices.cpu)
             else:
-                self.network_weights_backup = weight.clone().to(devices.cpu)
+                if shared.opts.lora_fuse_diffusers:
+                    self.network_weights_backup = True
+                else:
+                    self.network_weights_backup = weight.clone().to(devices.cpu)
 
         bias_backup = getattr(self, "network_bias_backup", None)
         if bias_backup is None:
@@ -408,13 +415,20 @@ def network_apply_direct(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if updown is not None:
             if deactivate:
                 updown *= -1
-            try:
-                new_weight = self.weight.to(devices.device) + updown.to(devices.device)
-            except Exception:
-                new_weight = self.weight + updown
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
-                self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
+                try: # TODO lora-direct with bnb
+                    weight = bnb.functional.dequantize_4bit(self.weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
+                    new_weight = weight.to(devices.device) + updown.to(devices.device)
+                    self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
+                except Exception:
+                    # shared.log.error(f'Load network: type=LoRA quant=bnb type={self.quant_type} state={self.quant_state} blocksize={self.blocksize} {e}')
+                    extra_network_lora.errors['bnb'] = extra_network_lora.errors.get('bnb', 0) + 1
+                    new_weight = None
             else:
+                try:
+                    new_weight = self.weight.to(devices.device) + updown.to(devices.device)
+                except Exception:
+                    new_weight = self.weight + updown
                 self.weight = torch.nn.Parameter(new_weight, requires_grad=False)
             del new_weight
         if hasattr(self, "qweight") and hasattr(self, "freeze"):
