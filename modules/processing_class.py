@@ -170,7 +170,7 @@ class StableDiffusionProcessing:
         self.image_cfg_scale = image_cfg_scale
         self.scale_by = scale_by
         self.mask = mask
-        self.image_mask = mask # TODO duplciate mask params
+        self.image_mask = mask # TODO remove duplicate mask params
         self.latent_mask = latent_mask
         self.mask_blur = mask_blur
         self.inpainting_fill = inpainting_fill

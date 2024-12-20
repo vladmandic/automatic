@@ -1495,7 +1495,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             unload_model_weights(op=op)
             sd_model = None
     timer = Timer()
-    # TODO implement caching after diffusers implement state_dict loading
+    # TODO implement model in-memory caching
     state_dict = get_checkpoint_state_dict(checkpoint_info, timer) if not shared.native else None
     checkpoint_config = sd_models_config.find_checkpoint_config(state_dict, checkpoint_info)
     timer.record("config")

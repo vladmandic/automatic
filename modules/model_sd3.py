@@ -55,7 +55,7 @@ def load_quants(kwargs, repo_id, cache_dir):
         quant_args = model_quant.create_bnb_config(quant_args)
         quant_args = model_quant.create_ao_config(quant_args)
         if not quant_args:
-            return
+            return kwargs
         model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args}')
         if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
             kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)

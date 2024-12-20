@@ -13,7 +13,7 @@ def load_quants(kwargs, repo_id, cache_dir):
         quant_args = model_quant.create_ao_config(quant_args)
         load_args = kwargs.copy()
         if not quant_args:
-            return
+            return kwargs
         model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args} args={load_args}')
         if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
             kwargs['transformer'] = diffusers.models.SanaTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, **load_args, **quant_args)

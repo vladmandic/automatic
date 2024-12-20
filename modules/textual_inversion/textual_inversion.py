@@ -4,7 +4,7 @@ import time
 import torch
 import safetensors.torch
 from PIL import Image
-from modules import shared, devices, sd_models, errors
+from modules import shared, devices, errors
 from modules.textual_inversion.image_embedding import embedding_from_b64, extract_image_data_embed
 from modules.files_cache import directory_files, directory_mtime, extension_filter
 
