@@ -515,7 +515,7 @@ def torchao_quantization(sd_model):
     if fn is None:
         shared.log.error(f"Quantization: type=TorchAO type={shared.opts.torchao_quantization_type} not supported")
         return sd_model
-    def torchao_model(model, op=None, sd_model=None):
+    def torchao_model(model, op=None, sd_model=None): # pylint: disable=unused-argument
         q.quantize_(model, fn(), device=devices.device)
         return model
 

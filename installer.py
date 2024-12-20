@@ -552,7 +552,7 @@ def install_rocm_zluda():
     log.info(msg)
     torch_command = ''
     if sys.platform == "win32":
-        # TODO after ROCm for Windows is released
+        # TODO enable ROCm for windows when available
 
         if args.device_id is not None:
             if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:

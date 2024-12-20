@@ -149,7 +149,7 @@ def load_quants(kwargs, repo_id, cache_dir):
         quant_args = model_quant.create_bnb_config(quant_args)
         quant_args = model_quant.create_ao_config(quant_args)
         if not quant_args:
-            return
+            return kwargs
         model_quant.load_bnb(f'Load model: type=FLUX quant={quant_args}')
         if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
             kwargs['transformer'] = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
@@ -208,7 +208,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
-    elif 'nf4' in quant: # TODO right now this is not working for civitai published nf4 models
+    elif 'nf4' in quant: # TODO fix flux loader for civitai nf4 models
         from modules.model_flux_nf4 import load_flux_nf4
         _transformer, _text_encoder_2 = load_flux_nf4(file_path)
         if _transformer is not None:
