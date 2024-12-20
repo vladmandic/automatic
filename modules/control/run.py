@@ -698,7 +698,7 @@ def control_run(state: str = '',
                         # actual processing
                         if p.is_tile:
                             processed: processing.Processed = tile.run_tiling(p, input_image)
-                        if processed is None:
+                        if processed is None and p.scripts is not None:
                             processed = p.scripts.run(p, *p.script_args)
                         if processed is None:
                             processed: processing.Processed = processing.process_images(p) # run actual pipeline
@@ -706,7 +706,8 @@ def control_run(state: str = '',
                             script_run = True
 
                         # postprocessing
-                        processed = p.scripts.after(p, processed, *p.script_args)
+                        if p.scripts is not None:
+                            processed = p.scripts.after(p, processed, *p.script_args)
                         output = None
                         if processed is not None:
                             output = processed.images
