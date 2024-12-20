@@ -371,17 +371,19 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
 
 
 class OffloadHook(accelerate.hooks.ModelHook):
-    def __init__(self):
+    def __init__(self, checkpoint_name):
         if shared.opts.diffusers_offload_max_gpu_memory > 1:
             shared.opts.diffusers_offload_max_gpu_memory = 0.75
         if shared.opts.diffusers_offload_max_cpu_memory > 1:
             shared.opts.diffusers_offload_max_cpu_memory = 0.75
+        self.checkpoint_name = checkpoint_name
         self.min_watermark = shared.opts.diffusers_offload_min_gpu_memory
         self.max_watermark = shared.opts.diffusers_offload_max_gpu_memory
         self.cpu_watermark = shared.opts.diffusers_offload_max_cpu_memory
         self.gpu = int(shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory * 1024*1024*1024)
         self.cpu = int(shared.cpu_memory * shared.opts.diffusers_offload_max_cpu_memory * 1024*1024*1024)
         self.offload_map = {}
+        self.param_map = {}
         gpu = f'{shared.gpu_memory * shared.opts.diffusers_offload_min_gpu_memory:.3f}-{shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory}:{shared.gpu_memory}'
         shared.log.info(f'Offload: type=balanced op=init watermark={self.min_watermark}-{self.max_watermark} gpu={gpu} cpu={shared.cpu_memory:.3f} limit={shared.opts.cuda_mem_fraction:.2f}')
         self.validate()
@@ -440,12 +442,12 @@ def apply_balanced_offload(sd_model, exclude=[]):
     if sd_model.__class__.__name__ in excluded:
         return sd_model
     cached = True
-    if offload_hook_instance is None or offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory or offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory:
-        cached = False
-        offload_hook_instance = OffloadHook()
     checkpoint_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
     if checkpoint_name is None:
         checkpoint_name = sd_model.__class__.__name__
+    if offload_hook_instance is None or offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory or offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory or checkpoint_name != offload_hook_instance.checkpoint_name:
+        cached = False
+        offload_hook_instance = OffloadHook(checkpoint_name)
 
     def get_pipe_modules(pipe):
         if hasattr(pipe, "_internal_dict"):
@@ -461,11 +463,13 @@ def apply_balanced_offload(sd_model, exclude=[]):
                 if not isinstance(module, torch.nn.Module):
                     continue
                 try:
-                    module_size = sum(p.numel()*p.element_size() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
+                    module_size = sum(p.numel() * p.element_size() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
+                    param_num = sum(p.numel() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
                 except Exception as e:
                     shared.log.error(f'Offload: type=balanced op=calc module={module_name} {e}')
                     module_size = 0
                 offload_hook_instance.offload_map[module_name] = module_size
+                offload_hook_instance.param_map[module_name] = param_num
             modules[module_name] = module_size
         modules = sorted(modules.items(), key=lambda x: x[1], reverse=True)
         return modules
@@ -494,7 +498,9 @@ def apply_balanced_offload(sd_model, exclude=[]):
                 if do_offload:
                     module = module.to(devices.cpu, non_blocking=True)
                     used_gpu -= module_size
-                debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} component={module.__class__.__name__} size={module_size:.3f}')
+                if not cached:
+                    shared.log.debug(f'Offload: type=balanced module={module_name} cls={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
+                debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} module={module.__class__.__name__} size={module_size:.3f}')
             except Exception as e:
                 if 'out of memory' in str(e):
                     devices.torch_gc(fast=True, force=True, reason='oom')

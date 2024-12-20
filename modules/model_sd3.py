@@ -51,19 +51,17 @@ def load_overrides(kwargs, cache_dir):
 
 def load_quants(kwargs, repo_id, cache_dir):
     if len(shared.opts.bnb_quantization) > 0:
-        model_quant.load_bnb('Load model: type=SD3')
-        bnb_config = diffusers.BitsAndBytesConfig(
-            load_in_8bit=shared.opts.bnb_quantization_type in ['fp8'],
-            load_in_4bit=shared.opts.bnb_quantization_type in ['nf4', 'fp4'],
-            bnb_4bit_quant_storage=shared.opts.bnb_quantization_storage,
-            bnb_4bit_quant_type=shared.opts.bnb_quantization_type,
-            bnb_4bit_compute_dtype=devices.dtype
-        )
+        quant_args = {}
+        quant_args = model_quant.create_bnb_config(quant_args)
+        quant_args = model_quant.create_ao_config(quant_args)
+        if not quant_args:
+            return
+        model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args}')
         if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
-            kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+            kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
             shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
         if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-            kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, quantization_config=bnb_config, torch_dtype=devices.dtype)
+            kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
             shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
@@ -127,7 +125,7 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
 
     kwargs = {}
     kwargs = load_overrides(kwargs, cache_dir)
-    if fn is None or not os.path.exists(fn):
+    if (fn is None) or (not os.path.exists(fn) or os.path.isdir(fn)):
         kwargs = load_quants(kwargs, repo_id, cache_dir)
 
     loader = diffusers.StableDiffusion3Pipeline.from_pretrained

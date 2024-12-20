@@ -110,6 +110,7 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
     return transformer, text_encoder_2
 
 
+"""
 def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
     repo_id = sd_models.path_to_repo(checkpoint_info.name)
     cache_dir=shared.opts.diffusers_dir
@@ -139,6 +140,24 @@ def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
                 from modules import errors
                 errors.display(e, 'FLUX:')
     return transformer, text_encoder_2
+"""
+
+
+def load_quants(kwargs, repo_id, cache_dir):
+    if len(shared.opts.bnb_quantization) > 0:
+        quant_args = {}
+        quant_args = model_quant.create_bnb_config(quant_args)
+        quant_args = model_quant.create_ao_config(quant_args)
+        if not quant_args:
+            return
+        model_quant.load_bnb(f'Load model: type=FLUX quant={quant_args}')
+        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+            kwargs['transformer'] = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+        if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
+            kwargs['text_encoder_2'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    return kwargs
 
 
 def load_flux_gguf(file_path):
@@ -148,9 +167,8 @@ def load_flux_gguf(file_path):
     from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
     from modules import ggml, sd_hijack_accelerate
     with init_empty_weights():
-        from diffusers import FluxTransformer2DModel
-        config = FluxTransformer2DModel.load_config(os.path.join('configs', 'flux'), subfolder="transformer")
-        transformer = FluxTransformer2DModel.from_config(config).to(devices.dtype)
+        config = diffusers.FluxTransformer2DModel.load_config(os.path.join('configs', 'flux'), subfolder="transformer")
+        transformer = diffusers.FluxTransformer2DModel.from_config(config).to(devices.dtype)
         expected_state_dict_keys = list(transformer.state_dict().keys())
     state_dict, stats = ggml.load_gguf_state_dict(file_path, devices.dtype)
     state_dict = convert_flux_transformer_checkpoint_to_diffusers(state_dict)
@@ -295,7 +313,6 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
 
     # initialize pipeline with pre-loaded components
     kwargs = {}
-    # transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
     if transformer is not None:
         kwargs['transformer'] = transformer
         sd_unet.loaded_unet = shared.opts.sd_unet
@@ -324,10 +341,14 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             kwargs[c] = kwargs[c].to(dtype=devices.dtype)
 
     allow_quant = 'gguf' not in (sd_unet.loaded_unet or '')
+    fn = checkpoint_info.path
+    if (fn is None) or (not os.path.exists(fn) or os.path.isdir(fn)):
+        # transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
+        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir)
     kwargs = model_quant.create_bnb_config(kwargs, allow_quant)
     kwargs = model_quant.create_ao_config(kwargs, allow_quant)
-    if checkpoint_info.path.endswith('.safetensors') and os.path.isfile(checkpoint_info.path):
-        pipe = diffusers.FluxPipeline.from_single_file(checkpoint_info.path, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
+    if fn.endswith('.safetensors') and os.path.isfile(fn):
+        pipe = diffusers.FluxPipeline.from_single_file(fn, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
     else:
         pipe = cls.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs, **diffusers_load_config)
 

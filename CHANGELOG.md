@@ -1,13 +1,13 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-19
+## Update for 2024-12-20
 
-### Highlights for 2024-12-19
+### Highlights for 2024-12-20
 
 ### SD.Next Xmass edition: *What's new?*
 
 While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
-- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, LoRA loader, system memory management, etc.  
+- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, LoRA loader, system memory management, on-the-fly quantization, etc.  
   but main goal is enabling modern large models to run on standard consumer GPUs  
   without performance hits typically associated with aggressive memory swapping and needs for constant manual tweaks  
 - New [documentation website](https://vladmandic.github.io/sdnext-docs/)  
@@ -17,28 +17,28 @@ While we have several new supported models, workflows and tools, this release is
 We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)  
 And several new SOTA video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
 
-And a lot of Control and IPAdapter goodies  
+And a lot of **Control** and **IPAdapter** goodies  
 - for **SDXL** there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling* models 
 - for **FLUX.1** there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models and a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model  
 - for **SD3.5** there are official *Canny*, *Blur* and *Depth* models in addition to existing 3rd party models as well as [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
 
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
-And it wouldn't be a Xmass edition without couple of custom themes: *Snowflake* and *Elf-Green*!  
+And it wouldn't be a *Xmass edition* without couple of custom themes: *Snowflake* and *Elf-Green*!  
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-## Details for 2024-12-19
+## Details for 2024-12-20
 
 ### New models and integrations
 
 - [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)
-  support for both 1.6B and 0.6B models  
+  support for 1.6B 2048px, 1.6B 1024px and 0.6B 512px models  
   **Sana** can synthesize high-resolution images with strong text-image alignment by using **Gemma2** as text-encoder  
   and its *fast* - typically at least **2x** faster than sd-xl even for 1.6B variant and maintains performance regardless of resolution  
   e.g., rendering at 4k is possible in less than 8GB vram  
   to use, select from *networks -> models -> reference* and models will be auto-downloaded on first use  
-  *reference values*: sampler: default (or any flow-match variant), width/height: 1024, guidance scale: 4.5  
+  *reference values*: sampler: default (or any flow-match variant), steps: 20, width/height: 1024, guidance scale: 4.5  
   *note* like other LLM-based text-encoders, sana prefers long and descriptive prompts  
   any short prompt below 300 characters will be auto-expanded using built in Gemma LLM before encoding while long prompts will be passed as-is  
 - **ControlNet**
