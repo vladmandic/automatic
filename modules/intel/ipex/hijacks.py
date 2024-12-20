@@ -149,6 +149,15 @@ def functional_linear(input, weight, bias=None):
         bias.data = bias.data.to(dtype=weight.data.dtype)
     return original_functional_linear(input, weight, bias=bias)
 
+original_functional_conv1d = torch.nn.functional.conv1d
+@wraps(torch.nn.functional.conv1d)
+def functional_conv1d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+    if input.dtype != weight.data.dtype:
+        input = input.to(dtype=weight.data.dtype)
+    if bias is not None and bias.data.dtype != weight.data.dtype:
+        bias.data = bias.data.to(dtype=weight.data.dtype)
+    return original_functional_conv1d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
+
 original_functional_conv2d = torch.nn.functional.conv2d
 @wraps(torch.nn.functional.conv2d)
 def functional_conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
@@ -157,6 +166,16 @@ def functional_conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1,
     if bias is not None and bias.data.dtype != weight.data.dtype:
         bias.data = bias.data.to(dtype=weight.data.dtype)
     return original_functional_conv2d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
+
+# LTX Video
+original_functional_conv3d = torch.nn.functional.conv3d
+@wraps(torch.nn.functional.conv3d)
+def functional_conv3d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1):
+    if input.dtype != weight.data.dtype:
+        input = input.to(dtype=weight.data.dtype)
+    if bias is not None and bias.data.dtype != weight.data.dtype:
+        bias.data = bias.data.to(dtype=weight.data.dtype)
+    return original_functional_conv3d(input, weight, bias=bias, stride=stride, padding=padding, dilation=dilation, groups=groups)
 
 # SwinIR BF16:
 original_functional_pad = torch.nn.functional.pad
@@ -320,7 +339,9 @@ def ipex_hijacks(legacy=True):
     torch.nn.functional.group_norm = functional_group_norm
     torch.nn.functional.layer_norm = functional_layer_norm
     torch.nn.functional.linear = functional_linear
+    torch.nn.functional.conv1d = functional_conv1d
     torch.nn.functional.conv2d = functional_conv2d
+    torch.nn.functional.conv3d = functional_conv3d
     torch.nn.functional.pad = functional_pad
 
     torch.bmm = torch_bmm
