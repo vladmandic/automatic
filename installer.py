@@ -751,6 +751,8 @@ def check_torch():
                 log.warning('Torch: CPU-only version installed')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
+        if not installed('torch'):
+            log.info(f'Torch: download and install in progress... cmd="{torch_command}"')
         install(torch_command, 'torch torchvision', quiet=True)
     else:
         try:

@@ -200,6 +200,7 @@ And it wouldn't be a Xmass edition without couple of custom themes: *Snowflake* 
 - taesd downscale preview to 1024px max: configurable in settings -> live preview  
 - uninstall conflicting `wandb` package  
 - dont skip diffusers version check if quick is specified  
+- notify on torch install  
 
 ## Update for 2024-11-21
 
