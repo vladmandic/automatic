@@ -4,7 +4,7 @@
 
 ### Highlights for 2024-12-19
 
-### SD.Next X-mass edition: *What's new?*
+### SD.Next Xmass edition: *What's new?*
 
 While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
 - New memory management engine: list of changes that went into this one is long: changes to GPU offloading, LoRA loader, system memory management, etc.  
@@ -15,18 +15,18 @@ While we have several new supported models, workflows and tools, this release is
 - New settings panel with simplified and streamlined configuration  
 
 We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)  
-And several new video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)
+And several new SOTA video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
 
 And a lot of Control and IPAdapter goodies  
-- for SDXL there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling*  
-- for FLUX.1 there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models and a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model  
-- for SD 3.5 there are official *Canny*, *Blur* and *Depth* in addition to existing 3rd party models  
+- for **SDXL** there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling* models 
+- for **FLUX.1** there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models and a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model  
+- for **SD3.5** there are official *Canny*, *Blur* and *Depth* models in addition to existing 3rd party models as well as [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
 
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
-And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*  
+And it wouldn't be a Xmass edition without couple of custom themes: *Snowflake* and *Elf-Green*!  
 
-[README](https://github.com/vladmandic/automatic/blob/master/README.md) | [CHANGELOG](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+[ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
 ## Details for 2024-12-19
 
@@ -136,6 +136,7 @@ And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*
   - balanced offload: add both high and low watermark, defaults as below  
     `0.25` for low-watermark: skip offload if memory usage is below 25%  
     `0.70` high-watermark: must offload if memory usage is above 70%  
+  - balanced offload will attempt to run offload as non-blocking and force gc at the end  
   - change-in-behavior:  
     low-end systems, triggered by either `lowvrwam` or by detection of <=4GB will use *sequential offload*  
     all other systems use *balanced offload* by default (can be changed in settings)  
@@ -198,6 +199,7 @@ And it wouldn't be a X-mass edition custom themes: *Snowflake* and *Elf-Green*
 - taesd limit render to 2024px  
 - taesd downscale preview to 1024px max: configurable in settings -> live preview  
 - uninstall conflicting `wandb` package  
+- dont skip diffusers version check if quick is specified  
 
 ## Update for 2024-11-21
 
