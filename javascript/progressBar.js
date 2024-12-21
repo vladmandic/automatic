@@ -70,9 +70,13 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
   const initLivePreview = () => {
     if (!parentGallery) return;
     const footers = Array.from(gradioApp().querySelectorAll('.gallery_footer'));
-    for (const footer of footers) footer.style.display = 'none'; // remove all footers
+    for (const footer of footers) {
+      if (footer.id !== 'gallery_footer') footer.style.display = 'none'; // remove all footers
+    }
     const galleries = Array.from(gradioApp().querySelectorAll('.gallery_main'));
-    for (const gallery of galleries) gallery.style.display = 'none'; // remove all footers
+    for (const gallery of galleries) {
+      if (gallery.id !== 'gallery_gallery') gallery.style.display = 'none'; // remove all footers
+    }
 
     livePreview = document.createElement('div');
     livePreview.className = 'livePreview';

@@ -209,6 +209,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 - do not recast flux quants  
 - fix xyz-grid with lora none  
 - fix svd image2video  
+- fix gallery display during generate  
 
 ## Update for 2024-11-21
 
