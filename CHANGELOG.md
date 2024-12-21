@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-20
+## Update for 2024-12-21
 
-### Highlights for 2024-12-20
+### Highlights for 2024-12-21
 
 ### SD.Next Xmass edition: *What's new?*
 
@@ -29,7 +29,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-## Details for 2024-12-20
+## Details for 2024-12-21
 
 ### New models and integrations
 
@@ -155,6 +155,8 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
   - settings: reorganized and simplified  
   - browser -> server logging framework  
   - add addtional themes: `black-reimagined`, thanks @Artheriax  
+- **Batch**
+  - image batch processing will use caption files if they exist instead of default prompt  
 
 ### Updates
 
