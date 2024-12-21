@@ -451,7 +451,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     if shared.native:
         from modules import ipadapter
-        ipadapter.unapply(shared.sd_model)
+        ipadapter.unapply(shared.sd_model, unload=getattr(p, 'ip_adapter_unload', False))
 
     if shared.opts.include_mask:
         if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images):

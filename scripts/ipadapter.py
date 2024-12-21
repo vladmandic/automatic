@@ -57,6 +57,7 @@ class Script(scripts.Script):
             mask_galleries = []
             with gr.Row():
                 num_adapters = gr.Slider(label="Active IP adapters", minimum=1, maximum=MAX_ADAPTERS, step=1, value=1, scale=1)
+                unload_adapter = gr.Checkbox(label='Unload adapter', value=False, interactive=True)
             for i in range(MAX_ADAPTERS):
                 with gr.Accordion(f'Adapter {i+1}', visible=i==0) as unit:
                     with gr.Row():
@@ -85,7 +86,7 @@ class Script(scripts.Script):
             layers_label = gr.HTML('<a href="https://huggingface.co/docs/diffusers/main/en/using-diffusers/ip_adapter#style--layout-control" target="_blank">InstantStyle: advanced layer activation</a>', visible=False)
             layers = gr.Text(label='Layer scales', placeholder='{\n"down": {"block_2": [0.0, 1.0]},\n"up": {"block_0": [0.0, 1.0, 0.0]}\n}', rows=1, type='text', interactive=True, lines=5, visible=False, show_label=False)
             layers_active.change(fn=self.display_advanced, inputs=[layers_active], outputs=[layers_label, layers])
-        return [num_adapters] + adapters + scales + files + crops + starts + ends + masks + [layers_active] + [layers]
+        return [num_adapters] + [unload_adapter] + adapters + scales + files + crops + starts + ends + masks + [layers_active] + [layers]
 
     def process(self, p: processing.StableDiffusionProcessing, *args): # pylint: disable=arguments-differ
         if not shared.native:
@@ -94,6 +95,7 @@ class Script(scripts.Script):
         if len(args) == 0:
             return
         units = args.pop(0)
+        unload = args.pop(0)
         if getattr(p, 'ip_adapter_names', []) == []:
             p.ip_adapter_names = args[:MAX_ADAPTERS][:units]
         if getattr(p, 'ip_adapter_scales', [0.0]) == [0.0]:
@@ -110,6 +112,7 @@ class Script(scripts.Script):
             p.ip_adapter_masks = args[MAX_ADAPTERS*6:MAX_ADAPTERS*7][:units]
             p.ip_adapter_masks = [x for x in p.ip_adapter_masks if x]
         layers_active, layers = args[MAX_ADAPTERS*7:MAX_ADAPTERS*8]
+        p.ip_adapter_unload = unload
         if layers_active and len(layers) > 0:
             try:
                 layers = json.loads(layers)

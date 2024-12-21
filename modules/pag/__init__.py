@@ -17,17 +17,22 @@ def apply(p: processing.StableDiffusionProcessing): # pylint: disable=arguments-
         unapply()
     if p.pag_scale == 0:
         return
-    if sd_models.get_diffusers_task(shared.sd_model) != sd_models.DiffusersTaskType.TEXT_2_IMAGE:
-        shared.log.warning(f'PAG: pipeline={c} not implemented')
-        return None
     if 'PAG' in shared.sd_model.__class__.__name__:
         pass
     elif detect.is_sd15(c):
+        if sd_models.get_diffusers_task(shared.sd_model) != sd_models.DiffusersTaskType.TEXT_2_IMAGE:
+            shared.log.warning(f'PAG: pipeline={c} not implemented')
+            return None
         orig_pipeline = shared.sd_model
         shared.sd_model = sd_models.switch_pipe(StableDiffusionPAGPipeline, shared.sd_model)
     elif detect.is_sdxl(c):
+        if sd_models.get_diffusers_task(shared.sd_model) != sd_models.DiffusersTaskType.TEXT_2_IMAGE:
+            shared.log.warning(f'PAG: pipeline={c} not implemented')
+            return None
         orig_pipeline = shared.sd_model
         shared.sd_model = sd_models.switch_pipe(StableDiffusionXLPAGPipeline, shared.sd_model)
+    elif detect.is_f1(c):
+        p.task_args['true_cfg_scale'] = p.pag_scale
     else:
         shared.log.warning(f'PAG: pipeline={c} required={StableDiffusionPipeline.__name__}')
         return None
