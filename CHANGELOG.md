@@ -7,20 +7,23 @@
 ### SD.Next Xmass edition: *What's new?*
 
 While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
-- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, brand new LoRA loader, system memory management, on-the-fly quantization, improved gguf loader, etc.  
+- New memory management engine  
+  list of changes that went into this one is long: changes to GPU offloading, brand new LoRA loader, system memory management, on-the-fly quantization, improved gguf loader, etc.  
   but main goal is enabling modern large models to run on standard consumer GPUs  
   without performance hits typically associated with aggressive memory swapping and needs for constant manual tweaks  
 - New [documentation website](https://vladmandic.github.io/sdnext-docs/)  
   with full search and tons of new documentation  
 - New settings panel with simplified and streamlined configuration  
 
-We've also added support for several new models (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list) such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)  
+We've also added support for several new models such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px) (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list)  
 And several new SOTA video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
 
 And a lot of **Control** and **IPAdapter** goodies  
 - for **SDXL** there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling* models 
-- for **FLUX.1** there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models and a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model  
-- for **SD3.5** there are official *Canny*, *Blur* and *Depth* models in addition to existing 3rd party models as well as [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
+- for **FLUX.1** there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models,  
+  a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model as well as [XLabs](https://huggingface.co/XLabs-AI/flux-ip-adapter-v2) IP-adapter
+- for **SD3.5** there are official *Canny*, *Blur* and *Depth* models in addition to existing 3rd party models  
+  as well as [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
 
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
@@ -49,6 +52,10 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
     *note*: when selecting tiles in control settings, you can also specify non-square ratios  
     in which case it will use context-aware image resize to maintain overall composition  
     *note*: available tiling options can be set in settings -> control  
+- **IP-Adapter**  
+  - FLUX.1 [XLabs](https://huggingface.co/XLabs-AI/flux-ip-adapter-v2) v1 and v2 IP-adapter  
+  - FLUX.1 secondary guidance, enabled using *Attention guidance* in advanced menu  
+  - SD 3.5 [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
 - [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
   **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
   **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
