@@ -320,11 +320,14 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         clean['negative_prompt'] = len(clean['negative_prompt'])
     clean.pop('generator', None)
     clean['parser'] = parser
-    for k, v in clean.items():
+    for k, v in clean.copy().items():
         if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray):
             clean[k] = v.shape
         if isinstance(v, list) and len(v) > 0 and (isinstance(v[0], torch.Tensor) or isinstance(v[0], np.ndarray)):
             clean[k] = [x.shape for x in v]
+        if not debug_enabled and k.endswith('_embeds'):
+            del clean[k]
+            clean['prompt'] = 'embeds'
     shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
 
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:

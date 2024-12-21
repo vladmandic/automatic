@@ -198,12 +198,12 @@ def list_lora():
 
 
 def apply_lora(p, x, xs):
+    p.all_prompts = None
+    p.all_negative_prompts = None
     if x == 'None':
         return
     x = os.path.basename(x)
     p.prompt = p.prompt + f" <lora:{x}:{shared.opts.extra_networks_default_multiplier}>"
-    p.all_prompts = None
-    p.all_negative_prompts = None
     shared.log.debug(f'XYZ grid apply LoRA: "{x}"')
 
 

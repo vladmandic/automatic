@@ -94,7 +94,8 @@ def create_sampler(name, model):
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
             model.prior_pipe.scheduler.config.clip_sample = False
-        shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={sampler.config}')
+        clean_config = {k: v for k, v in sampler.config.items() if v is not None and v is not False}
+        shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={clean_config}')
         return sampler.sampler
     else:
         return None

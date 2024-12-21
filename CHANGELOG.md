@@ -207,6 +207,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 - notify on torch install  
 - detect pipeline fro diffusers folder-style model  
 - do not recast flux quants  
+- fix xyz-grid with lora none  
 
 ## Update for 2024-11-21
 
