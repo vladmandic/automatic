@@ -13,7 +13,9 @@ def load_overrides(kwargs, cache_dir):
                 sd_unet.loaded_unet = shared.opts.sd_unet
                 shared.log.debug(f'Load model: type=SD3 unet="{shared.opts.sd_unet}" fmt=safetensors')
             elif fn.endswith('.gguf'):
-                kwargs = load_gguf(kwargs, fn)
+                from modules import ggml
+                # kwargs = load_gguf(kwargs, fn)
+                kwargs['transformer'] = ggml.load_gguf(fn, cls=diffusers.SD3Transformer2DModel, compute_dtype=devices.dtype)
                 sd_unet.loaded_unet = shared.opts.sd_unet
                 shared.log.debug(f'Load model: type=SD3 unet="{shared.opts.sd_unet}" fmt=gguf')
         except Exception as e:
@@ -90,8 +92,9 @@ def load_missing(kwargs, fn, cache_dir):
     return kwargs
 
 
+"""
 def load_gguf(kwargs, fn):
-    model_te.install_gguf()
+    ggml.install_gguf()
     from accelerate import init_empty_weights
     from diffusers.loaders.single_file_utils import convert_sd3_transformer_checkpoint_to_diffusers
     from modules import ggml, sd_hijack_accelerate
@@ -108,10 +111,12 @@ def load_gguf(kwargs, fn):
             continue
         applied += 1
         sd_hijack_accelerate.hijack_set_module_tensor_simple(transformer, tensor_name=param_name, value=param, device=0)
+        transformer.gguf = 'gguf'
         state_dict[param_name] = None
     shared.log.debug(f'Load model: type=Unet/Transformer applied={applied} skipped={skipped} stats={stats} compute={devices.dtype}')
     kwargs['transformer'] = transformer
     return kwargs
+"""
 
 
 def load_sd3(checkpoint_info, cache_dir=None, config=None):
@@ -139,7 +144,9 @@ def load_sd3(checkpoint_info, cache_dir=None, config=None):
             # kwargs = load_missing(kwargs, fn, cache_dir)
             repo_id = fn
         elif fn.endswith('.gguf'):
-            kwargs = load_gguf(kwargs, fn)
+            from modules import ggml
+            kwargs['transformer'] = ggml.load_gguf(fn, cls=diffusers.SD3Transformer2DModel, compute_dtype=devices.dtype)
+            # kwargs = load_gguf(kwargs, fn)
             kwargs = load_missing(kwargs, fn, cache_dir)
             kwargs['variant'] = 'fp16'
     else:

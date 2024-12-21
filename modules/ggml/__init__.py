@@ -1,11 +1,35 @@
-from pathlib import Path
+import os
+import time
 import torch
-import gguf
-from .gguf_utils import TORCH_COMPATIBLE_QTYPES
-from .gguf_tensor import GGMLTensor
+import diffusers
+import transformers
 
 
-def load_gguf_state_dict(path: str, compute_dtype: torch.dtype) -> dict[str, GGMLTensor]:
+def install_gguf():
+    # pip install git+https://github.com/junejae/transformers@feature/t5-gguf
+    # https://github.com/ggerganov/llama.cpp/issues/9566
+    from installer import install
+    install('gguf', quiet=True)
+    import importlib
+    import gguf
+    from modules import shared
+    scripts_dir = os.path.join(os.path.dirname(gguf.__file__), '..', 'scripts')
+    if os.path.exists(scripts_dir):
+        os.rename(scripts_dir, scripts_dir + str(time.time()))
+    # monkey patch transformers/diffusers so they detect newly installed gguf pacakge correctly
+    ver = importlib.metadata.version('gguf')
+    transformers.utils.import_utils._is_gguf_available = True # pylint: disable=protected-access
+    transformers.utils.import_utils._gguf_version = ver # pylint: disable=protected-access
+    diffusers.utils.import_utils._is_gguf_available = True # pylint: disable=protected-access
+    diffusers.utils.import_utils._gguf_version = ver # pylint: disable=protected-access
+    shared.log.debug(f'Load GGUF: version={ver}')
+    return gguf
+
+
+def load_gguf_state_dict(path: str, compute_dtype: torch.dtype) -> dict:
+    gguf = install_gguf()
+    from .gguf_utils import TORCH_COMPATIBLE_QTYPES
+    from .gguf_tensor import GGMLTensor
     sd: dict[str, GGMLTensor] = {}
     stats = {}
     reader = gguf.GGUFReader(path)
@@ -19,3 +43,14 @@ def load_gguf_state_dict(path: str, compute_dtype: torch.dtype) -> dict[str, GGM
             stats[tensor.tensor_type.name] = 0
         stats[tensor.tensor_type.name] += 1
     return sd, stats
+
+
+def load_gguf(path, cls, compute_dtype: torch.dtype):
+    _gguf = install_gguf()
+    module = cls.from_single_file(
+        path,
+        quantization_config = diffusers.GGUFQuantizationConfig(compute_dtype=compute_dtype),
+        torch_dtype=compute_dtype,
+    )
+    module.gguf = 'gguf'
+    return module

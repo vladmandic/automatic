@@ -96,6 +96,17 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'FLUX'
                 if size > 11000 and size < 16000:
                     warn(f'Model detected as FLUX UNET model, but attempting to load a base model: {op}={f} size={size} MB')
+            # guess for diffusers
+            index = os.path.join(f, 'model_index.json')
+            if os.path.exists(index) and os.path.isfile(index):
+                index = shared.readfile(index, silent=True)
+                cls = index.get('_class_name', None)
+                if cls is not None:
+                    pipeline = getattr(diffusers, cls)
+                if 'Flux' in pipeline.__name__:
+                    guess = 'FLUX'
+                if 'StableDiffusion3' in pipeline.__name__:
+                    guess = 'Stable Diffusion 3'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'

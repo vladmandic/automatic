@@ -7,7 +7,7 @@
 ### SD.Next Xmass edition: *What's new?*
 
 While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
-- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, LoRA loader, system memory management, on-the-fly quantization, etc.  
+- New memory management engine: list of changes that went into this one is long: changes to GPU offloading, brand new LoRA loader, system memory management, on-the-fly quantization, improved gguf loader, etc.  
   but main goal is enabling modern large models to run on standard consumer GPUs  
   without performance hits typically associated with aggressive memory swapping and needs for constant manual tweaks  
 - New [documentation website](https://vladmandic.github.io/sdnext-docs/)  
@@ -165,6 +165,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
   - `BitsAndBytes` with 3 float-based quantization schemes  
   - `Optimium.Quanto` with 3 int-based and 2 float-based quantizations schemes  
   - `GGUF` with pre-quantized weights  
+  - Switch `GGUF` loader from custom to diffuser native
 - **IPEX**: update to IPEX 2.5.10+xpu  
 - **OpenVINO**: update to 2024.5.0  
 - **Sampler** improvements  
@@ -202,6 +203,8 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 - uninstall conflicting `wandb` package  
 - dont skip diffusers version check if quick is specified  
 - notify on torch install  
+- detect pipeline fro diffusers folder-style model  
+- do not recast flux quants  
 
 ## Update for 2024-11-21
 

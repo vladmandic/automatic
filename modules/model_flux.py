@@ -160,9 +160,10 @@ def load_quants(kwargs, repo_id, cache_dir):
     return kwargs
 
 
+"""
 def load_flux_gguf(file_path):
     transformer = None
-    model_te.install_gguf()
+    ggml.install_gguf()
     from accelerate import init_empty_weights
     from diffusers.loaders.single_file_utils import convert_flux_transformer_checkpoint_to_diffusers
     from modules import ggml, sd_hijack_accelerate
@@ -180,9 +181,11 @@ def load_flux_gguf(file_path):
             continue
         applied += 1
         sd_hijack_accelerate.hijack_set_module_tensor_simple(transformer, tensor_name=param_name, value=param, device=0)
+        transformer.gguf = 'gguf'
         state_dict[param_name] = None
     shared.log.debug(f'Load model: type=Unet/Transformer applied={applied} skipped={skipped} stats={stats}')
     return transformer, None
+"""
 
 
 def load_transformer(file_path): # triggered by opts.sd_unet change
@@ -197,7 +200,9 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
     }
     shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
     if 'gguf' in file_path.lower():
-        _transformer, _text_encoder_2 = load_flux_gguf(file_path)
+        # _transformer, _text_encoder_2 = load_flux_gguf(file_path)
+        from modules import ggml
+        _transformer = ggml.load_gguf(file_path, cls=diffusers.FluxTransformer2DModel, compute_dtype=devices.dtype)
         if _transformer is not None:
             transformer = _transformer
     elif quant == 'qint8' or quant == 'qint4':
@@ -336,9 +341,14 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
         cls = diffusers.FluxPipeline
     shared.log.debug(f'Load model: type=FLUX cls={cls.__name__} preloaded={list(kwargs)} revision={diffusers_load_config.get("revision", None)}')
     for c in kwargs:
+        if getattr(kwargs[c], 'quantization_method', None) is not None or getattr(kwargs[c], 'gguf', None) is not None:
+            shared.log.debug(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} quant={getattr(kwargs[c], 'quantization_method', None) or getattr(kwargs[c], 'gguf', None)}')
         if kwargs[c].dtype == torch.float32 and devices.dtype != torch.float32:
-            shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype} recast')
-            kwargs[c] = kwargs[c].to(dtype=devices.dtype)
+            try:
+                kwargs[c] = kwargs[c].to(dtype=devices.dtype)
+                shared.log.warning(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} cast dtype={devices.dtype} recast')
+            except Exception:
+                pass
 
     allow_quant = 'gguf' not in (sd_unet.loaded_unet or '')
     fn = checkpoint_info.path
