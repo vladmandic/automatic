@@ -1192,6 +1192,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'InstantIRPipeline',
         'FluxFillPipeline',
         'FluxControlPipeline',
+        'StableVideoDiffusionPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')
