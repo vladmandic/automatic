@@ -25,6 +25,7 @@ And a lot of **Control** and **IPAdapter** goodies
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
 And it wouldn't be a *Xmass edition* without couple of custom themes: *Snowflake* and *Elf-Green*!  
+All-in-all, we're around ~160 commits worth of updates, check changelog for full list  
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
@@ -555,7 +556,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - xyz grid support for sampler options  
   - metadata updates for sampler options  
   - modernui updates for sampler options  
-  - *note* sampler options defaults are not save in ui settings, they are saved in server settings  
+  - *note* sampler options defaults are not saved in ui settings, they are saved in server settings  
     to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
 
   *sampler options*:  
