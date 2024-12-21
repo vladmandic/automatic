@@ -16,7 +16,7 @@ models = {
 
 class Script(scripts.Script):
     def title(self):
-        return 'Video: SVD'
+        return 'Video: Stable Video Diffusion'
 
     def show(self, is_img2img):
         return is_img2img if shared.native else False
@@ -75,12 +75,16 @@ class Script(scripts.Script):
         if model_name != model_loaded or c != 'StableVideoDiffusionPipeline':
             shared.opts.sd_model_checkpoint = model_path
             sd_models.reload_model_weights()
+            shared.sd_model = shared.sd_model.to(torch.float32) # TODO svd runs in fp32
 
         # set params
         if override_resolution:
             p.width = 1024
             p.height = 576
             image = images.resize_image(resize_mode=2, im=image, width=p.width, height=p.height, upscaler_name=None, output_type='pil')
+        else:
+            p.width = image.width
+            p.height = image.height
         p.ops.append('video')
         p.do_not_save_grid = True
         p.init_images = [image]
