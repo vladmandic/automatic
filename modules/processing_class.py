@@ -348,15 +348,13 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
         debug(f'Process init: mode={self.__class__.__name__} kwargs={kwargs}') # pylint: disable=protected-access
         super().__init__(**kwargs)
 
-    def init(self, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None):
+    def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.native:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
         self.width = self.width or 1024
         self.height = self.height or 1024
         if all_prompts is not None:
             self.all_prompts = all_prompts
-        if all_negative_prompts is not None:
-            self.all_negative_prompts = all_negative_prompts
         if all_seeds is not None:
             self.all_seeds = all_seeds
         if all_subseeds is not None:
