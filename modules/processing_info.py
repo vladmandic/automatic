@@ -140,6 +140,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
     if sd_hijack is not None and hasattr(sd_hijack.model_hijack, 'embedding_db') and len(sd_hijack.model_hijack.embedding_db.embeddings_used) > 0: # this is for original hijaacked models only, diffusers are handled separately
         args["Embeddings"] = ', '.join(sd_hijack.model_hijack.embedding_db.embeddings_used)
     # samplers
+
     if getattr(p, 'sampler_name', None) is not None:
         args["Sampler eta delta"] = shared.opts.eta_noise_seed_delta if shared.opts.eta_noise_seed_delta != 0 and sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p) else None
         args["Sampler eta multiplier"] = p.initial_noise_multiplier if getattr(p, 'initial_noise_multiplier', 1.0) != 1.0 else None

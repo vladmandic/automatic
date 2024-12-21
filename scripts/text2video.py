@@ -87,7 +87,7 @@ class Script(scripts.Script):
             shared.opts.sd_model_checkpoint = checkpoint.name
             sd_models.reload_model_weights(op='model')
 
-        p.ops.append('text2video')
+        p.ops.append('video')
         p.do_not_save_grid = True
         if use_default:
             p.task_args['num_frames'] = model['params'][0]

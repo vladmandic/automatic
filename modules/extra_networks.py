@@ -1,6 +1,7 @@
 import re
+import inspect
 from collections import defaultdict
-from modules import errors, shared, devices
+from modules import errors, shared
 
 
 extra_network_registry = {}
@@ -15,10 +16,14 @@ def register_extra_network(extra_network):
 
 
 def register_default_extra_networks():
-    from modules.ui_extra_networks_hypernet import ExtraNetworkHypernet
-    register_extra_network(ExtraNetworkHypernet())
     from modules.ui_extra_networks_styles import ExtraNetworkStyles
     register_extra_network(ExtraNetworkStyles())
+    if shared.native:
+        from modules.lora.networks import extra_network_lora
+        register_extra_network(extra_network_lora)
+    if shared.opts.hypernetwork_enabled:
+        from modules.ui_extra_networks_hypernet import ExtraNetworkHypernet
+        register_extra_network(ExtraNetworkHypernet())
 
 
 class ExtraNetworkParams:
@@ -70,9 +75,12 @@ def is_stepwise(en_obj):
     return any([len(str(x).split("@")) > 1 for x in all_args]) # noqa C419 # pylint: disable=use-a-generator
 
 
-def activate(p, extra_network_data, step=0):
+def activate(p, extra_network_data=None, step=0, include=[], exclude=[]):
     """call activate for extra networks in extra_network_data in specified order, then call activate for all remaining registered networks with an empty argument list"""
-    if extra_network_data is None:
+    if p.disable_extra_networks:
+        return
+    extra_network_data = extra_network_data or p.network_data
+    if extra_network_data is None or len(extra_network_data) == 0:
         return
     stepwise = False
     for extra_network_args in extra_network_data.values():
@@ -82,35 +90,42 @@ def activate(p, extra_network_data, step=0):
         shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
         stepwise = False
     shared.opts.data['lora_functional'] = stepwise or functional
-    with devices.autocast():
-        for extra_network_name, extra_network_args in extra_network_data.items():
-            extra_network = extra_network_registry.get(extra_network_name, None)
-            if extra_network is None:
-                errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
-                continue
-            try:
+
+    for extra_network_name, extra_network_args in extra_network_data.items():
+        extra_network = extra_network_registry.get(extra_network_name, None)
+        if extra_network is None:
+            errors.log.warning(f"Skipping unknown extra network: {extra_network_name}")
+            continue
+        try:
+            signature = list(inspect.signature(extra_network.activate).parameters)
+            if 'include' in signature and 'exclude' in signature:
+                extra_network.activate(p, extra_network_args, step=step, include=include, exclude=exclude)
+            else:
                 extra_network.activate(p, extra_network_args, step=step)
-            except Exception as e:
-                errors.display(e, f"Activating network: type={extra_network_name} args:{extra_network_args}")
+        except Exception as e:
+            errors.display(e, f"Activating network: type={extra_network_name} args:{extra_network_args}")
 
-        for extra_network_name, extra_network in extra_network_registry.items():
-            args = extra_network_data.get(extra_network_name, None)
-            if args is not None:
-                continue
-            try:
-                extra_network.activate(p, [])
-            except Exception as e:
-                errors.display(e, f"Activating network: type={extra_network_name}")
+    for extra_network_name, extra_network in extra_network_registry.items():
+        args = extra_network_data.get(extra_network_name, None)
+        if args is not None:
+            continue
+        try:
+            extra_network.activate(p, [])
+        except Exception as e:
+            errors.display(e, f"Activating network: type={extra_network_name}")
 
-    p.extra_network_data = extra_network_data
+    p.network_data = extra_network_data
     if stepwise:
         p.stepwise_lora = True
         shared.opts.data['lora_functional'] = functional
 
 
-def deactivate(p, extra_network_data):
+def deactivate(p, extra_network_data=None):
     """call deactivate for extra networks in extra_network_data in specified order, then call deactivate for all remaining registered networks"""
-    if extra_network_data is None:
+    if p.disable_extra_networks:
+        return
+    extra_network_data = extra_network_data or p.network_data
+    if extra_network_data is None or len(extra_network_data) == 0:
         return
     for extra_network_name in extra_network_data:
         extra_network = extra_network_registry.get(extra_network_name, None)

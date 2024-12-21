@@ -189,7 +189,7 @@ def set_free_noise(frames):
 
 class Script(scripts.Script):
     def title(self):
-        return 'Video AnimateDiff'
+        return 'Video: AnimateDiff'
 
     def show(self, is_img2img):
         # return scripts.AlwaysVisible if shared.native else False
@@ -250,7 +250,7 @@ class Script(scripts.Script):
         processing.fix_seed(p)
         p.extra_generation_params['AnimateDiff'] = loaded_adapter
         p.do_not_save_grid = True
-        p.ops.append('animatediff')
+        p.ops.append('video')
         p.task_args['generator'] = None
         p.task_args['num_frames'] = frames
         p.task_args['num_inference_steps'] = p.steps

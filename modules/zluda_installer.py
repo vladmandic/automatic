@@ -31,7 +31,10 @@ def install(zluda_path: os.PathLike) -> None:
     if os.path.exists(zluda_path):
         return
 
-    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{os.environ.get("ZLUDA_HASH", "c0804ca624963aab420cb418412b1c7fbae3454b")}/ZLUDA-windows-rocm{rocm.version[0]}-amd64.zip', '_zluda')
+    commit = os.environ.get("ZLUDA_HASH", "1b6e012d8f2404840b524e2abae12cb91e1ac01d")
+    if rocm.version == "6.1":
+        commit = "c0804ca624963aab420cb418412b1c7fbae3454b"
+    urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{commit}/ZLUDA-windows-rocm{rocm.version[0]}-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
         infos = archive.infolist()
         for info in infos:

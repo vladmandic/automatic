@@ -16,7 +16,7 @@ from collections import OrderedDict
 import gradio as gr
 from PIL import Image
 from starlette.responses import FileResponse, JSONResponse
-from modules import paths, shared, scripts, files_cache, errors, infotext
+from modules import paths, shared, files_cache, errors, infotext
 from modules.ui_components import ToolButton
 import modules.ui_symbols as symbols
 
@@ -135,6 +135,7 @@ class ExtraNetworksPage:
         return text.replace('~tabname', tabname)
 
     def create_xyz_grid(self):
+        """
         xyz_grid = [x for x in scripts.scripts_data if x.script_class.__module__ == "xyz_grid.py"][0].module
 
         def add_prompt(p, opt, x):
@@ -150,6 +151,7 @@ class ExtraNetworksPage:
             opt = xyz_grid.AxisOption(f"[Network] {self.title}", str, add_prompt, choices=lambda: [x["name"] for x in self.items])
             if opt not in xyz_grid.axis_options:
                 xyz_grid.axis_options.append(opt)
+        """
 
     def link_preview(self, filename):
         quoted_filename = urllib.parse.quote(filename.replace('\\', '/'))
@@ -458,17 +460,20 @@ def register_page(page: ExtraNetworksPage):
 
 
 def register_pages():
-    from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
-    from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
-    from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
-    from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
-    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
     debug('EN register-pages')
+    from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
+    from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
+    from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
+    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
+    from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
     register_page(ExtraNetworksPageCheckpoints())
-    register_page(ExtraNetworksPageStyles())
-    register_page(ExtraNetworksPageTextualInversion())
     register_page(ExtraNetworksPageVAEs())
+    register_page(ExtraNetworksPageStyles())
     register_page(ExtraNetworksPageHistory())
+    register_page(ExtraNetworksPageTextualInversion())
+    if shared.native:
+        from modules.ui_extra_networks_lora import ExtraNetworksPageLora
+        register_page(ExtraNetworksPageLora())
     if shared.opts.hypernetwork_enabled:
         from modules.ui_extra_networks_hypernets import ExtraNetworksPageHypernetworks
         register_page(ExtraNetworksPageHypernetworks())

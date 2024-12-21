@@ -223,7 +223,7 @@
   {"id":"","label":"System Paths","localized":"","hint":"Settings related to location of various model directories"},
   {"id":"","label":"Image Options","localized":"","hint":"Settings related to image format, metadata, and image grids"},
   {"id":"","label":"image naming & paths","localized":"","hint":"Settings related to image filenames, and output directories"},
-  {"id":"","label":"User Interface Options","localized":"","hint":"Settings related to user interface themes, and Quicksettings list"},
+  {"id":"","label":"User Interface","localized":"","hint":"Settings related to user interface themes, and Quicksettings list"},
   {"id":"","label":"Live Previews","localized":"","hint":"Settings related to live previews, audio notification, and log view"},
   {"id":"","label":"Sampler Settings","localized":"","hint":"Settings related to sampler selection and configuration, and diffuser specific sampler configuration"},
   {"id":"","label":"Postprocessing","localized":"","hint":"Settings related to post image generation processing, face restoration, and upscaling"},

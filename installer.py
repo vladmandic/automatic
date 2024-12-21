@@ -212,7 +212,7 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
         if friendly:
             pkgs = friendly.split()
         else:
-            pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=')]
+            pkgs = [p for p in package.split() if not p.startswith('-') and not p.startswith('=') and not p.startswith('git+')]
             pkgs = [p.split('/')[-1] for p in pkgs] # get only package name if installing from url
         for pkg in pkgs:
             if '!=' in pkg:
@@ -250,7 +250,7 @@ def uninstall(package, quiet = False):
         if installed(p, p, quiet=True):
             if not quiet:
                 log.warning(f'Package: {p} uninstall')
-            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True)
+            res += pip(f"uninstall {p} --yes --quiet", ignore=True, quiet=True, uv=False)
     return res
 
 
@@ -295,7 +295,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
         quick_allowed = False
     if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv")
+        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv" and not package.startswith('git+'))
         try:
             import importlib # pylint: disable=deprecated-module
             importlib.reload(pkg_resources)
@@ -457,9 +457,9 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 
 # check diffusers version
 def check_diffusers():
-    if args.skip_all or args.skip_requirements:
+    if args.skip_all or args.skip_git:
         return
-    sha = 'b5fd6f13f5434d69d919cc8cedf0b11db664cf06'
+    sha = 'b64ca6c11cbc1644c22f1dae441c8124d588bb14' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -483,6 +483,7 @@ def check_onnx():
 
 
 def check_torchao():
+    """
     if args.skip_all or args.skip_requirements:
         return
     if installed('torchao', quiet=True):
@@ -492,6 +493,8 @@ def check_torchao():
             pip('uninstall --yes torchao', ignore=True, quiet=True, uv=False)
             for m in [m for m in sys.modules if m.startswith('torchao')]:
                 del sys.modules[m]
+    """
+    return
 
 
 def install_cuda():
@@ -549,7 +552,7 @@ def install_rocm_zluda():
     log.info(msg)
     torch_command = ''
     if sys.platform == "win32":
-        # TODO after ROCm for Windows is released
+        # TODO enable ROCm for windows when available
 
         if args.device_id is not None:
             if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:
@@ -635,13 +638,13 @@ def install_ipex(torch_command):
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if "linux" in sys.platform:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/')
         # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu') # torchvision doesn't exist on test/stable branch for windows
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino', ignore=True)
-    install('nncf==2.7.0', 'nncf', ignore=True)
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.5.0'), 'openvino', ignore=True)
+    install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     return torch_command
 
@@ -650,7 +653,7 @@ def install_openvino(torch_command):
     check_python(supported_minors=[8, 9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('OpenVINO: selected')
     torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.3.0'), 'openvino')
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.5.0'), 'openvino')
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     install('nncf==2.12.0', 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
@@ -682,7 +685,9 @@ def install_torch_addons():
     if opts.get('nncf_compress_weights', False) and not args.use_openvino:
         install('nncf==2.7.0', 'nncf')
     if opts.get('optimum_quanto_weights', False):
-        install('optimum-quanto', 'optimum-quanto')
+        install('optimum-quanto==0.2.6', 'optimum-quanto')
+    if not args.experimental:
+        uninstall('wandb', quiet=True)
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
 
@@ -746,6 +751,8 @@ def check_torch():
                 log.warning('Torch: CPU-only version installed')
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     if 'torch' in torch_command and not args.version:
+        if not installed('torch'):
+            log.info(f'Torch: download and install in progress... cmd="{torch_command}"')
         install(torch_command, 'torch torchvision', quiet=True)
     else:
         try:
@@ -999,8 +1006,8 @@ def install_optional():
     install('basicsr')
     install('gfpgan')
     install('clean-fid')
-    install('optimum-quanto', ignore=True)
-    install('bitsandbytes', ignore=True)
+    install('optimum-quanto=0.2.6', ignore=True)
+    install('bitsandbytes==0.45.0', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
@@ -1174,9 +1181,15 @@ def check_ui(ver):
 
 
 def check_venv():
+    def try_relpath(p):
+        try:
+            return os.path.relpath(p)
+        except ValueError:
+            return p
+
     import site
-    pkg_path = [os.path.relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
-    log.debug(f'Packages: venv={os.path.relpath(sys.prefix)} site={pkg_path}')
+    pkg_path = [try_relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
+    log.debug(f'Packages: venv={try_relpath(sys.prefix)} site={pkg_path}')
     for p in pkg_path:
         invalid = []
         for f in os.listdir(p):

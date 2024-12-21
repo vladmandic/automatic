@@ -2,7 +2,7 @@ import html
 import threading
 import time
 import cProfile
-from modules import shared, progress, errors
+from modules import shared, progress, errors, timer
 
 queue_lock = threading.Lock()
 
@@ -73,15 +73,20 @@ def wrap_gradio_call(func, extra_outputs=None, add_stats=False, name=None):
         elapsed_m = int(elapsed // 60)
         elapsed_s = elapsed % 60
         elapsed_text = f"{elapsed_m}m {elapsed_s:.2f}s" if elapsed_m > 0 else f"{elapsed_s:.2f}s"
-        vram_html = ''
+        summary = timer.process.summary(min_time=0.25, total=False).replace('=', ' ')
+        gpu = ''
+        cpu = ''
         if not shared.mem_mon.disabled:
             vram = {k: -(v//-(1024*1024)) for k, v in shared.mem_mon.read().items()}
-            if vram.get('active_peak', 0) > 0:
-                vram_html = " | <p class='vram'>"
-                vram_html += f"GPU active {max(vram['active_peak'], vram['reserved_peak'])} MB reserved {vram['reserved']} | used {vram['used']} MB free {vram['free']} MB total {vram['total']} MB"
-                vram_html += f" | retries {vram['retries']} oom {vram['oom']}" if vram.get('retries', 0) > 0 or vram.get('oom', 0) > 0 else ''
-                vram_html += "</p>"
+            peak = max(vram['active_peak'], vram['reserved_peak'], vram['used'])
+            used = round(100.0 * peak / vram['total']) if vram['total'] > 0 else 0
+            if used > 0:
+                gpu += f"| GPU {peak} MB {used}%"
+                gpu += f" | retries {vram['retries']} oom {vram['oom']}" if vram.get('retries', 0) > 0 or vram.get('oom', 0) > 0 else ''
+            ram = shared.ram_stats()
+            if ram['used'] > 0:
+                cpu += f"| RAM {ram['used']} GB {round(100.0 * ram['used'] / ram['total'])}%"
         if isinstance(res, list):
-            res[-1] += f"<div class='performance'><p class='time'>Time: {elapsed_text}</p>{vram_html}</div>"
+            res[-1] += f"<div class='performance'><p>Time: {elapsed_text} | {summary} {gpu} {cpu}</p></div>"
         return tuple(res)
     return f

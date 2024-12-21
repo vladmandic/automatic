@@ -1,4 +1,5 @@
 import os
+import time
 import math
 import random
 import warnings
@@ -9,7 +10,7 @@ import cv2
 from PIL import Image
 from skimage import exposure
 from blendmodes.blend import blendLayers, BlendType
-from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae
+from modules import shared, devices, images, sd_models, sd_samplers, sd_hijack_hypertile, processing_vae, timer
 
 
 debug = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
@@ -158,7 +159,7 @@ def create_random_tensors(shape, seeds, subseeds=None, subseed_strength=0.0, see
     # enables the generation of additional tensors with noise that the sampler will use during its processing.
     # Using those pre-generated tensors instead of simple torch.randn allows a batch with seeds [100, 101] to
     # produce the same images as with two batches [100], [101].
-    if p is not None and p.sampler is not None and (len(seeds) > 1 and shared.opts.enable_batch_seeds or eta_noise_seed_delta > 0):
+    if p is not None and p.sampler is not None and ((len(seeds) > 1 and shared.opts.enable_batch_seeds) or (eta_noise_seed_delta > 0)):
         sampler_noises = [[] for _ in range(p.sampler.number_of_needed_noises(p))]
     else:
         sampler_noises = None
@@ -352,6 +353,7 @@ def img2img_image_conditioning(p, source_image, latent_image, image_mask=None):
 
 
 def validate_sample(tensor):
+    t0 = time.time()
     if not isinstance(tensor, np.ndarray) and not isinstance(tensor, torch.Tensor):
         return tensor
     dtype = tensor.dtype
@@ -366,17 +368,18 @@ def validate_sample(tensor):
     sample = 255.0 * np.moveaxis(sample, 0, 2) if not shared.native else 255.0 * sample
     with warnings.catch_warnings(record=True) as w:
         cast = sample.astype(np.uint8)
-    minimum, maximum, mean = np.min(cast), np.max(cast), np.mean(cast)
-    if len(w) > 0 or minimum == maximum:
+    if len(w) > 0:
         nans = np.isnan(sample).sum()
         cast = np.nan_to_num(sample)
         cast = cast.astype(np.uint8)
         vae = shared.sd_model.vae.dtype if hasattr(shared.sd_model, 'vae') else None
         upcast = getattr(shared.sd_model.vae.config, 'force_upcast', None) if hasattr(shared.sd_model, 'vae') and hasattr(shared.sd_model.vae, 'config') else None
-        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} mean={mean} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
+        shared.log.error(f'Decode: sample={sample.shape} invalid={nans} dtype={dtype} vae={vae} upcast={upcast} failed to validate')
         if upcast is not None and not upcast:
             setattr(shared.sd_model.vae.config, 'force_upcast', True) # noqa: B010
             shared.log.warning('Decode: upcast=True set, retry operation')
+    t1 = time.time()
+    timer.process.add('validate', t1 - t0)
     return cast
 
 
@@ -411,7 +414,7 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
     if latent_upscaler is not None:
         return torch.nn.functional.interpolate(latents, size=(p.hr_upscale_to_y // 8, p.hr_upscale_to_x // 8), mode=latent_upscaler["mode"], antialias=latent_upscaler["antialias"])
     first_pass_images = processing_vae.vae_decode(latents=latents, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
-    if p.hr_upscale_to_x == 0 or p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr'):
+    if p.hr_upscale_to_x == 0 or (p.hr_upscale_to_y == 0 and hasattr(p, 'init_hr')):
         shared.log.error('Hires: missing upscaling dimensions')
         return first_pass_images
     resized_images = []
@@ -561,7 +564,9 @@ def save_intermediate(p, latents, suffix):
 def update_sampler(p, sd_model, second_pass=False):
     sampler_selection = p.hr_sampler_name if second_pass else p.sampler_name
     if hasattr(sd_model, 'scheduler'):
-        if sampler_selection is None or sampler_selection == 'None':
+        if sampler_selection == 'None':
+            return
+        if sampler_selection is None:
             sampler = sd_samplers.all_samplers_map.get("UniPC")
         else:
             sampler = sd_samplers.all_samplers_map.get(sampler_selection, None)

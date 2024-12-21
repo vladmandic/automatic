@@ -55,9 +55,11 @@ def get_custom_args():
         if 'PS1' in env:
             del env['PS1']
         installer.log.trace(f'Environment: {installer.print_dict(env)}')
-    else:
-        env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
-        installer.log.debug(f'Env flags: {env}')
+    env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
+    installer.log.debug(f'Env flags: {env}')
+    ldd = os.environ.get('LD_PRELOAD', None)
+    if ldd is not None:
+        installer.log.debug(f'Linker flags: "{ldd}"')
 
 
 @lru_cache()

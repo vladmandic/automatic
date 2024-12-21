@@ -14,7 +14,7 @@ errors.install()
 logging.getLogger("DeepSpeed").disabled = True
 
 
-os.environ.setdefault('TORCH_LOGS', '-all')
+# os.environ.setdefault('TORCH_LOGS', '-all')
 import torch # pylint: disable=C0411
 if torch.__version__.startswith('2.5.0'):
     errors.log.warning(f'Disabling cuDNN for SDP on torch={torch.__version__}')

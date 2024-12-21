@@ -37,11 +37,21 @@ def get_platform():
     from modules.loader import get_packages as loader_get_packages
     return { **installer_get_platform(), **loader_get_packages() }
 
-def get_log_buffer(req: models.ReqLog = Depends()):
+def get_log(req: models.ReqGetLog = Depends()):
     lines = shared.log.buffer[:req.lines] if req.lines > 0 else shared.log.buffer.copy()
     if req.clear:
         shared.log.buffer.clear()
     return lines
+
+def post_log(req: models.ReqPostLog):
+    if req.message is not None:
+        shared.log.info(f'UI: {req.message}')
+    if req.debug is not None:
+        shared.log.debug(f'UI: {req.debug}')
+    if req.error is not None:
+        shared.log.error(f'UI: {req.error}')
+    return {}
+
 
 def get_config():
     options = {}

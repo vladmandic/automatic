@@ -9,6 +9,13 @@ cache_filename = os.path.join(data_path, "cache.json")
 cache_data = None
 progress_ok = True
 
+
+def init_cache():
+    global cache_data # pylint: disable=global-statement
+    if cache_data is None:
+        cache_data = {} if not os.path.isfile(cache_filename) else shared.readfile(cache_filename, lock=True)
+
+
 def dump_cache():
     shared.writefile(cache_data, cache_filename)
 

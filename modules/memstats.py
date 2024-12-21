@@ -4,13 +4,16 @@ import torch
 from modules import shared, errors
 
 fail_once = False
+mem = {}
+
+
+def gb(val: float):
+    return round(val / 1024 / 1024 / 1024, 2)
+
 
 def memory_stats():
     global fail_once # pylint: disable=global-statement
-    def gb(val: float):
-        return round(val / 1024 / 1024 / 1024, 2)
-
-    mem = {}
+    mem.clear()
     try:
         process = psutil.Process(os.getpid())
         res = process.memory_info()
@@ -19,10 +22,10 @@ def memory_stats():
         mem.update({ 'ram': ram })
     except Exception as e:
         if not fail_once:
-            shared.log.error('Memory stats: {e}')
+            shared.log.error(f'Memory stats: {e}')
             errors.display(e, 'Memory stats')
             fail_once = True
-        mem.update({ 'ram': str(e) })
+        mem.update({ 'ram': { 'error': str(e) } })
     try:
         s = torch.cuda.mem_get_info()
         gpu = { 'used': gb(s[1] - s[0]), 'total': gb(s[1]) }
@@ -38,3 +41,18 @@ def memory_stats():
     except Exception:
         pass
     return mem
+
+
+def memory_cache():
+    return mem
+
+
+def ram_stats():
+    try:
+        process = psutil.Process(os.getpid())
+        res = process.memory_info()
+        ram_total = 100 * res.rss / process.memory_percent()
+        ram = { 'used': gb(res.rss), 'total': gb(ram_total) }
+        return ram
+    except Exception:
+        return { 'used': 0, 'total': 0 }

@@ -169,6 +169,9 @@ def decode(latents):
     if vae is None:
         return latents
     try:
+        size = max(latents.shape[-1], latents.shape[-2])
+        if size > 256:
+            return latents
         with devices.inference_context():
             latents = latents.detach().clone().to(devices.device, dtype)
             if len(latents.shape) == 3:

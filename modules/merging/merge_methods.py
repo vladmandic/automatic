@@ -4,7 +4,7 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-__all__ = [
+__all__ = [ # noqa: RUF022
     "weighted_sum",
     "weighted_subtraction",
     "tensor_sum",

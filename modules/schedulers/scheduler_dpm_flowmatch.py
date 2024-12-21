@@ -22,7 +22,8 @@ class BatchedBrownianTree:
         t0, t1, self.sign = self.sort(t0, t1)
         w0 = kwargs.get("w0", torch.zeros_like(x))
         if seed is None:
-            seed = torch.randint(0, 2**63 - 1, []).item()
+            seed = [torch.randint(0, 2**63 - 1, []).item()]
+        seed = [s.initial_seed() if isinstance(s, torch.Generator) else s for s in seed]
         self.batched = True
         try:
             assert len(seed) == x.shape[0]

@@ -48,7 +48,7 @@ class Script(scripts.Script):
         else:
             img = init_img
         devices.torch_gc()
-        grid = images.split_grid(img, tile_w=p.width, tile_h=p.height, overlap=overlap)
+        grid = images.split_grid(img, tile_w=init_img.width, tile_h=init_img.height, overlap=overlap)
         batch_size = p.batch_size
         upscale_count = p.n_iter
         p.n_iter = 1
@@ -61,7 +61,7 @@ class Script(scripts.Script):
 
         batch_count = math.ceil(len(work) / batch_size)
         state.job_count = batch_count * upscale_count
-        log.info(f"SD upscale: images={len(work)} tile={len(grid.tiles[0][2])}x{len(grid.tiles)} batches={state.job_count}")
+        log.info(f"SD upscale: images={len(work)} tiles={len(grid.tiles)} batches={state.job_count}")
 
         result_images = []
         for n in range(upscale_count):
@@ -91,4 +91,5 @@ class Script(scripts.Script):
                 images.save_image(combined_image, p.outpath_samples, "", start_seed, p.prompt, opts.samples_format, info=initial_info, p=p)
 
         processed = Processed(p, result_images, seed, initial_info)
+        log.info(f"SD upscale: images={result_images}")
         return processed

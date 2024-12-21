@@ -4,13 +4,14 @@ import time
 import torch
 import safetensors.torch
 from PIL import Image
-from modules import shared, devices, sd_models, errors
+from modules import shared, devices, errors
 from modules.textual_inversion.image_embedding import embedding_from_b64, extract_image_data_embed
 from modules.files_cache import directory_files, directory_mtime, extension_filter
 
 
 debug = shared.log.trace if os.environ.get('SD_TI_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: TEXTUAL INVERSION')
+supported_models = ['ldm', 'sd', 'sdxl']
 
 
 def list_embeddings(*dirs):
@@ -274,6 +275,8 @@ class EmbeddingDatabase:
         overwrite = bool(data)
         if not shared.sd_loaded:
             return
+        if not shared.opts.diffusers_enable_embed:
+            return
         embeddings, skipped = open_embeddings(filename) or convert_bundled(data)
         for skip in skipped:
             self.skipped_embeddings[skip.name] = skipped
@@ -368,7 +371,7 @@ class EmbeddingDatabase:
             self.skipped_embeddings[name] = embedding
 
     def load_from_dir(self, embdir):
-        if sd_models.model_data.sd_model is None:
+        if not shared.sd_loaded:
             shared.log.info('Skipping embeddings load: model not loaded')
             return
         if not os.path.isdir(embdir.path):
@@ -387,6 +390,8 @@ class EmbeddingDatabase:
 
     def load_textual_inversion_embeddings(self, force_reload=False):
         if not shared.sd_loaded:
+            return
+        if shared.sd_model_type not in supported_models:
             return
         t0 = time.time()
         if not force_reload:

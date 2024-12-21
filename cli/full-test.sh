@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+node cli/api-txt2img.js
+node cli/api-pulid.js
+
 source venv/bin/activate
 echo image-exif
 python cli/api-info.py --input html/logo-bg-0.jpg

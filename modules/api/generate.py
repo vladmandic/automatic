@@ -116,6 +116,8 @@ class APIGenerate():
                 processed = scripts.scripts_txt2img.run(p, *script_args) # Need to pass args as list here
             else:
                 processed = process_images(p)
+            processed = scripts.scripts_txt2img.after(p, processed, *script_args)
+            p.close()
             shared.state.end(api=False)
         if processed is None or processed.images is None or len(processed.images) == 0:
             b64images = []
@@ -166,6 +168,8 @@ class APIGenerate():
                 processed = scripts.scripts_img2img.run(p, *script_args) # Need to pass args as list here
             else:
                 processed = process_images(p)
+            processed = scripts.scripts_img2img.after(p, processed, *script_args)
+            p.close()
             shared.state.end(api=False)
         if processed is None or processed.images is None or len(processed.images) == 0:
             b64images = []

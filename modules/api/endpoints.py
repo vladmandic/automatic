@@ -40,6 +40,12 @@ def get_embeddings():
 
     return {"loaded": convert_embeddings(db.word_embeddings), "skipped": convert_embeddings(db.skipped_embeddings)}
 
+def get_loras():
+    from modules.lora import network, networks
+    def create_lora_json(obj: network.NetworkOnDisk):
+        return { "name": obj.name, "alias": obj.alias, "path": obj.filename, "metadata": obj.metadata }
+    return [create_lora_json(obj) for obj in networks.available_networks.values()]
+
 def get_extra_networks(page: Optional[str] = None, name: Optional[str] = None, filename: Optional[str] = None, title: Optional[str] = None, fullname: Optional[str] = None, hash: Optional[str] = None): # pylint: disable=redefined-builtin
     res = []
     for pg in shared.extra_networks:
@@ -125,6 +131,10 @@ def post_refresh_checkpoints():
 
 def post_refresh_vae():
     return shared.refresh_vaes()
+
+def post_refresh_loras():
+    from modules.lora import networks
+    return networks.list_available_networks()
 
 def get_extensions_list():
     from modules import extensions

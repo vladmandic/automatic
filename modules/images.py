@@ -267,6 +267,8 @@ def safe_decode_string(s: bytes):
 
 
 def read_info_from_image(image: Image, watermark: bool = False):
+    if image is None:
+        return '', {}
     items = image.info or {}
     geninfo = items.pop('parameters', None) or items.pop('UserComment', None)
     if geninfo is not None and len(geninfo) > 0:

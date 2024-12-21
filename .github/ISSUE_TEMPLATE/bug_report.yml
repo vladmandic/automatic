@@ -106,10 +106,14 @@ body:
         - StableDiffusion 1.5
         - StableDiffusion 2.1
         - StableDiffusion XL
-        - StableDiffusion 3
-        - PixArt
+        - StableDiffusion 3.x
         - StableCascade
+        - FLUX.1
+        - PixArt
         - Kandinsky
+        - Playground
+        - AuraFlow
+        - Any Video Model
         - Other
       default: 0
     validations:

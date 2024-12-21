@@ -72,7 +72,7 @@ class YoloRestorer(Detailer):
             imgsz: int = 640,
             half: bool = True,
             device = devices.device,
-            augment: bool = True,
+            augment: bool = shared.opts.detailer_augment,
             agnostic: bool = False,
             retina: bool = False,
             mask: bool = True,
@@ -300,7 +300,8 @@ class YoloRestorer(Detailer):
                 # combined.save('/tmp/item.png')
                 p.image_mask = Image.fromarray(p.image_mask)
 
-        shared.log.debug(f'Detailer processed: models={models_used}')
+        if len(models_used) > 0:
+            shared.log.debug(f'Detailer processed: models={models_used}')
         return np_image
 
     def ui(self, tab: str):

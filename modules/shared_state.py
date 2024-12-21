@@ -28,6 +28,9 @@ class State:
     oom = False
     debug_output = os.environ.get('SD_STATE_DEBUG', None)
 
+    def __str__(self) -> str:
+        return f'State: job={self.job} {self.job_no}/{self.job_count} step={self.sampling_step}/{self.sampling_steps} skipped={self.skipped} interrupted={self.interrupted} paused={self.paused} info={self.textinfo}'
+
     def skip(self):
         log.debug('Requested skip')
         self.skipped = True
@@ -135,11 +138,12 @@ class State:
         modules.devices.torch_gc()
 
     def set_current_image(self):
-        from modules.shared import opts, cmd_opts
-        """sets self.current_image from self.current_latent if enough sampling steps have been made after the last call to this"""
-        if cmd_opts.lowvram or self.api:
+        if self.job == 'VAE': # avoid generating preview while vae is running
             return
-        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps and opts.live_previews_enable and opts.show_progress_every_n_steps > 0:
+        from modules.shared import opts, cmd_opts
+        if cmd_opts.lowvram or self.api or not opts.live_previews_enable or opts.show_progress_every_n_steps <= 0:
+            return
+        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps:
             self.do_set_current_image()
 
     def do_set_current_image(self):

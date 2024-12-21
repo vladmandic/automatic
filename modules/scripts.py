@@ -288,6 +288,7 @@ def load_scripts():
             current_basedir = paths.script_path
             t.record(os.path.basename(scriptfile.basedir) if scriptfile.basedir != paths.script_path else scriptfile.filename)
             sys.path = syspath
+
     global scripts_txt2img, scripts_img2img, scripts_control, scripts_postproc # pylint: disable=global-statement
     scripts_txt2img = ScriptRunner()
     scripts_img2img = ScriptRunner()

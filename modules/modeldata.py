@@ -3,6 +3,45 @@ import threading
 from modules import shared, errors
 
 
+def get_model_type(pipe):
+    name = pipe.__class__.__name__
+    if not shared.native:
+        model_type = 'ldm'
+    elif "StableDiffusion3" in name:
+        model_type = 'sd3'
+    elif "StableDiffusionXL" in name:
+        model_type = 'sdxl'
+    elif "StableDiffusion" in name:
+        model_type = 'sd'
+    elif "LatentConsistencyModel" in name:
+        model_type = 'sd' # lcm is compatible with sd
+    elif "InstaFlowPipeline" in name:
+        model_type = 'sd' # instaflow is compatible with sd
+    elif "AnimateDiffPipeline" in name:
+        model_type = 'sd' # animatediff is compatible with sd
+    elif "Kandinsky" in name:
+        model_type = 'kandinsky'
+    elif "HunyuanDiT" in name:
+        model_type = 'hunyuandit'
+    elif "Cascade" in name:
+        model_type = 'sc'
+    elif "AuraFlow" in name:
+        model_type = 'auraflow'
+    elif "Flux" in name:
+        model_type = 'f1'
+    elif "Lumina" in name:
+        model_type = 'lumina'
+    elif "OmniGen" in name:
+        model_type = 'omnigen'
+    elif "CogVideo" in name:
+        model_type = 'cogvideox'
+    elif "Sana" in name:
+        model_type = 'sana'
+    else:
+        model_type = name
+    return model_type
+
+
 class ModelData:
     def __init__(self):
         self.sd_model = None
@@ -82,36 +121,7 @@ class Shared(sys.modules[__name__].__class__):
             if modules.sd_models.model_data.sd_model is None:
                 model_type = 'none'
                 return model_type
-            if not shared.native:
-                model_type = 'ldm'
-            elif "StableDiffusion3" in self.sd_model.__class__.__name__:
-                model_type = 'sd3'
-            elif "StableDiffusionXL" in self.sd_model.__class__.__name__:
-                model_type = 'sdxl'
-            elif "StableDiffusion" in self.sd_model.__class__.__name__:
-                model_type = 'sd'
-            elif "LatentConsistencyModel" in self.sd_model.__class__.__name__:
-                model_type = 'sd' # lcm is compatible with sd
-            elif "InstaFlowPipeline" in self.sd_model.__class__.__name__:
-                model_type = 'sd' # instaflow is compatible with sd
-            elif "AnimateDiffPipeline" in self.sd_model.__class__.__name__:
-                model_type = 'sd' # animatediff is compatible with sd
-            elif "Kandinsky" in self.sd_model.__class__.__name__:
-                model_type = 'kandinsky'
-            elif "HunyuanDiT" in self.sd_model.__class__.__name__:
-                model_type = 'hunyuandit'
-            elif "Cascade" in self.sd_model.__class__.__name__:
-                model_type = 'sc'
-            elif "AuraFlow" in self.sd_model.__class__.__name__:
-                model_type = 'auraflow'
-            elif "Flux" in self.sd_model.__class__.__name__:
-                model_type = 'f1'
-            elif "OmniGen" in self.sd_model.__class__.__name__:
-                model_type = 'omnigen'
-            elif "CogVideo" in self.sd_model.__class__.__name__:
-                model_type = 'cogvideox'
-            else:
-                model_type = self.sd_model.__class__.__name__
+            model_type = get_model_type(self.sd_model)
         except Exception:
             model_type = 'unknown'
         return model_type
@@ -123,18 +133,7 @@ class Shared(sys.modules[__name__].__class__):
             if modules.sd_models.model_data.sd_refiner is None:
                 model_type = 'none'
                 return model_type
-            if not shared.native:
-                model_type = 'ldm'
-            elif "StableDiffusion3" in self.sd_refiner.__class__.__name__:
-                model_type = 'sd3'
-            elif "StableDiffusionXL" in self.sd_refiner.__class__.__name__:
-                model_type = 'sdxl'
-            elif "StableDiffusion" in self.sd_refiner.__class__.__name__:
-                model_type = 'sd'
-            elif "Kandinsky" in self.sd_refiner.__class__.__name__:
-                model_type = 'kandinsky'
-            else:
-                model_type = self.sd_refiner.__class__.__name__
+            model_type = get_model_type(self.sd_refiner)
         except Exception:
             model_type = 'unknown'
         return model_type

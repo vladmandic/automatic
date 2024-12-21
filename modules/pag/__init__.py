@@ -20,7 +20,9 @@ def apply(p: processing.StableDiffusionProcessing): # pylint: disable=arguments-
     if sd_models.get_diffusers_task(shared.sd_model) != sd_models.DiffusersTaskType.TEXT_2_IMAGE:
         shared.log.warning(f'PAG: pipeline={c} not implemented')
         return None
-    if detect.is_sd15(c):
+    if 'PAG' in shared.sd_model.__class__.__name__:
+        pass
+    elif detect.is_sd15(c):
         orig_pipeline = shared.sd_model
         shared.sd_model = sd_models.switch_pipe(StableDiffusionPAGPipeline, shared.sd_model)
     elif detect.is_sdxl(c):
@@ -32,13 +34,14 @@ def apply(p: processing.StableDiffusionProcessing): # pylint: disable=arguments-
 
     p.task_args['pag_scale'] = p.pag_scale
     p.task_args['pag_adaptive_scaling'] = p.pag_adaptive
+    p.task_args['pag_adaptive_scale'] = p.pag_adaptive
     pag_applied_layers = shared.opts.pag_apply_layers
     pag_applied_layers_index = pag_applied_layers.split() if len(pag_applied_layers) > 0 else []
     pag_applied_layers_index = [p.strip() for p in pag_applied_layers_index]
     p.task_args['pag_applied_layers_index'] = pag_applied_layers_index if len(pag_applied_layers_index) > 0 else ['m0'] # Available layers: d[0-5], m[0], u[0-8]
     p.extra_generation_params["PAG scale"] = p.pag_scale
     p.extra_generation_params["PAG adaptive"] = p.pag_adaptive
-    shared.log.debug(f'{c}: args={p.task_args}')
+    # shared.log.debug(f'{c}: args={p.task_args}')
 
 
 def unapply():

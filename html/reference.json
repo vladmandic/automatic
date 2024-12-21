@@ -180,6 +180,25 @@
     "extras": "sampler: Default, cfg_scale: 3.5"
   },
 
+  "NVLabs Sana 1.6B 2048px": {
+    "path": "Efficient-Large-Model/Sana_1600M_2Kpx_BF16_diffusers",
+    "desc": "Sana is a text-to-image framework that can efficiently generate images up to 4096 × 4096 resolution. Sana can synthesize high-resolution, high-quality images with strong text-image alignment at a remarkably fast speed, deployable on laptop GPU.",
+    "preview": "Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+    "skip": true
+  }, 
+  "NVLabs Sana 1.6B 1024px": {
+    "path": "Efficient-Large-Model/Sana_1600M_1024px_diffusers",
+    "desc": "Sana is a text-to-image framework that can efficiently generate images up to 4096 × 4096 resolution. Sana can synthesize high-resolution, high-quality images with strong text-image alignment at a remarkably fast speed, deployable on laptop GPU.",
+    "preview": "Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+    "skip": true
+  }, 
+  "NVLabs Sana 0.6B 512px": {
+    "path": "Efficient-Large-Model/Sana_600M_512px_diffusers",
+    "desc": "Sana is a text-to-image framework that can efficiently generate images up to 4096 × 4096 resolution. Sana can synthesize high-resolution, high-quality images with strong text-image alignment at a remarkably fast speed, deployable on laptop GPU.",
+    "preview": "Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+    "skip": true
+  }, 
+
   "VectorSpaceLab OmniGen v1": {
     "path": "Shitao/OmniGen-v1",
     "desc": "OmniGen is a unified image generation model that can generate a wide range of images from multi-modal prompts. It is designed to be simple, flexible and easy to use.",

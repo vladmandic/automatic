@@ -86,6 +86,14 @@ def get_pipelines():
         'Kolors': getattr(diffusers, 'KolorsPipeline', None),
         'AuraFlow': getattr(diffusers, 'AuraFlowPipeline', None),
         'CogView': getattr(diffusers, 'CogView3PlusPipeline', None),
+        'Stable Cascade': getattr(diffusers, 'StableCascadeCombinedPipeline', None),
+        'PixArt-Sigma': getattr(diffusers, 'PixArtSigmaPipeline', None),
+        'HunyuanDiT': getattr(diffusers, 'HunyuanDiTPipeline', None),
+        'Stable Diffusion 3': getattr(diffusers, 'StableDiffusion3Pipeline', None),
+        'Stable Diffusion 3 Img2Img': getattr(diffusers, 'StableDiffusion3Img2ImgPipeline', None),
+        'Lumina-Next': getattr(diffusers, 'LuminaText2ImgPipeline', None),
+        'FLUX': getattr(diffusers, 'FluxPipeline', None),
+        'Sana': getattr(diffusers, 'SanaPAGPipeline', None),
     }
     if hasattr(diffusers, 'OnnxStableDiffusionPipeline'):
         onnx_pipelines = {
@@ -103,19 +111,10 @@ def get_pipelines():
         pipelines.update(onnx_pipelines)
 
     # items that may rely on diffusers dev version
-    if hasattr(diffusers, 'StableCascadeCombinedPipeline'):
-        pipelines['Stable Cascade'] = getattr(diffusers, 'StableCascadeCombinedPipeline', None)
-    if hasattr(diffusers, 'PixArtSigmaPipeline'):
-        pipelines['PixArt-Sigma'] = getattr(diffusers, 'PixArtSigmaPipeline', None)
-    if hasattr(diffusers, 'HunyuanDiTPipeline'):
-        pipelines['HunyuanDiT'] = getattr(diffusers, 'HunyuanDiTPipeline', None)
-    if hasattr(diffusers, 'StableDiffusion3Pipeline'):
-        pipelines['Stable Diffusion 3'] = getattr(diffusers, 'StableDiffusion3Pipeline', None)
-        pipelines['Stable Diffusion 3 Img2Img'] = getattr(diffusers, 'StableDiffusion3Img2ImgPipeline', None)
-    if hasattr(diffusers, 'LuminaText2ImgPipeline'):
-        pipelines['Lumina-Next'] = getattr(diffusers, 'LuminaText2ImgPipeline', None)
+    """
     if hasattr(diffusers, 'FluxPipeline'):
         pipelines['FLUX'] = getattr(diffusers, 'FluxPipeline', None)
+    """
 
     for k, v in pipelines.items():
         if k != 'Autodetect' and v is None:
