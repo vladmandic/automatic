@@ -144,7 +144,8 @@ def full_vae_decode(latents, model):
         decoded = model.vae.decode(latents, return_dict=False)[0]
     except Exception as e:
         shared.log.error(f'VAE decode: {stats} {e}')
-        errors.display(e, 'VAE decode')
+        if 'out of memory' not in str(e):
+            errors.display(e, 'VAE decode')
         decoded = []
 
     if hasattr(model.vae, "orig_dtype"):

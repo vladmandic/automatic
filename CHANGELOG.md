@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-21
+## Update for 2024-12-22
 
-### Highlights for 2024-12-21
+### Highlights for 2024-12-22
 
 ### SD.Next Xmass edition: *What's new?*
 
@@ -32,7 +32,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-## Details for 2024-12-21
+## Details for 2024-12-22
 
 ### New models and integrations
 
@@ -217,6 +217,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 - fix xyz-grid with lora none  
 - fix svd image2video  
 - fix gallery display during generate  
+- fix wildcards replacement to be unique  
 
 ## Update for 2024-11-21
 
