@@ -131,7 +131,6 @@ class GGMLTensor(torch.Tensor):
         if self._ggml_quantization_type in TORCH_COMPATIBLE_QTYPES:
             return self.quantized_data.to(self.compute_dtype)
         elif self._ggml_quantization_type in DEQUANTIZE_FUNCTIONS:
-            # TODO(ryand): Look into how the dtype param is intended to be used.
             return dequantize(
                 data=self.quantized_data, qtype=self._ggml_quantization_type, oshape=self.tensor_shape, dtype=None
             ).to(self.compute_dtype)

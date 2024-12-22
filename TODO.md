@@ -10,9 +10,7 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Future Candidates
 
-- Flux IPAdapter: <https://github.com/huggingface/diffusers/pull/10261>
-- Flux NF4: <https://github.com/huggingface/diffusers/issues/9996>
-- GGUF: <https://github.com/huggingface/diffusers/pull/9964>
+- Flux NF4 loader: <https://github.com/huggingface/diffusers/issues/9996>
 
 ## Other
 
@@ -22,15 +20,15 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Code TODO
 
-- python 3.12.4 or higher cause a mess with pydantic
-- enable ROCm for windows when available
-- enable full VAE mode for resize-latent
-- remove duplicate mask params
-- fix flux loader for civitai nf4 models
-- implement model in-memory caching
-- hypertile vae breaks for diffusers when using non-standard sizes
-- forcing reloading entire model as loading transformers only leads to massive memory usage
-- lora-direct with bnb
-- make lora for quantized flux
-- control script process
-- monkey-patch for modernui missing tabs.select event
+- TODO install: python 3.12.4 or higher cause a mess with pydantic (fixme)
+- TODO install: enable ROCm for windows when available (fixme)
+- TODO resize image: enable full VAE mode for resize-latent (fixme)
+- TODO processing: remove duplicate mask params (fixme)
+- TODO flux: fix loader for civitai nf4 models (fixme)
+- TODO model loader: implement model in-memory caching (fixme)
+- TODO hypertile: vae breaks when using non-standard sizes (fixme)
+- TODO model load: force-reloading entire model as loading transformers only leads to massive memory usage (fixme)
+- TODO lora load: direct with bnb (fixme)
+- TODO: lora make: support quantized flux (fixme)
+- TODO control: support scripts via api (fixme)
+- TODO modernui: monkey-patch for missing tabs.select event (fixme)

@@ -80,7 +80,7 @@ class Script(scripts.Script):
         devices.torch_gc()
 
     def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=arguments-differ, unused-argument
-        # TODO instantir is a mess to unload
+        # TODO instantir: a mess to unload
         """
         if self.orig_pipe is None:
             return processed

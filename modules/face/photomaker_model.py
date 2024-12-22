@@ -244,7 +244,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
             prompt_embeds_list = []
             prompts = [prompt, prompt_2]
             for prompt, tokenizer, text_encoder in zip(prompts, tokenizers, text_encoders):
-                input_ids = tokenizer.encode(prompt) # TODO: batch encode
+                input_ids = tokenizer.encode(prompt)
                 clean_index = 0
                 clean_input_ids = []
                 class_token_index = []
@@ -296,7 +296,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
             prompt_embeds = torch.concat(prompt_embeds_list, dim=-1)
 
         prompt_embeds = prompt_embeds.to(dtype=self.text_encoder_2.dtype, device=device)
-        class_tokens_mask = class_tokens_mask.to(device=device) # TODO: ignoring two-prompt case
+        class_tokens_mask = class_tokens_mask.to(device=device)
 
         return prompt_embeds, pooled_prompt_embeds, class_tokens_mask
 
@@ -332,7 +332,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
         callback_steps: int = 1,
         # Added parameters (for PhotoMaker)
         input_id_images: PipelineImageInput = None,
-        start_merge_step: int = 0, # TODO: change to `style_strength_ratio` in the future
+        start_merge_step: int = 0,
         class_tokens_mask: Optional[torch.LongTensor] = None,
         prompt_embeds_text_only: Optional[torch.FloatTensor] = None,
         pooled_prompt_embeds_text_only: Optional[torch.FloatTensor] = None,
@@ -410,7 +410,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
         (
             prompt_embeds_text_only,
             negative_prompt_embeds,
-            pooled_prompt_embeds_text_only, # TODO: replace the pooled_prompt_embeds with text only prompt
+            pooled_prompt_embeds_text_only,
             negative_pooled_prompt_embeds,
         ) = self.encode_prompt(
             prompt=prompt_text_only,
@@ -431,7 +431,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
         if not isinstance(input_id_images[0], torch.Tensor):
             id_pixel_values = self.id_image_processor(input_id_images, return_tensors="pt").pixel_values
 
-        id_pixel_values = id_pixel_values.unsqueeze(0).to(device=device, dtype=dtype) # TODO: multiple prompts
+        id_pixel_values = id_pixel_values.unsqueeze(0).to(device=device, dtype=dtype)
 
         # 6. Get the update text embedding with the stacked ID embedding
         prompt_embeds = self.id_encoder(id_pixel_values, prompt_embeds, class_tokens_mask)

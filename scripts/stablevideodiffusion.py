@@ -75,7 +75,7 @@ class Script(scripts.Script):
         if model_name != model_loaded or c != 'StableVideoDiffusionPipeline':
             shared.opts.sd_model_checkpoint = model_path
             sd_models.reload_model_weights()
-            shared.sd_model = shared.sd_model.to(torch.float32) # TODO svd runs in fp32
+            shared.sd_model = shared.sd_model.to(torch.float32) # TODO svd: runs in fp32 causing dtype mismatch
 
         # set params
         if override_resolution:

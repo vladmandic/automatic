@@ -36,7 +36,7 @@ def load_unet(model):
                 model.prior_pipe.text_encoder = prior_text_encoder.to(devices.device, dtype=devices.dtype)
         elif "Flux" in model.__class__.__name__ or "StableDiffusion3" in model.__class__.__name__:
             loaded_unet = shared.opts.sd_unet
-            sd_models.load_diffuser() # TODO forcing reloading entire model as loading transformers only leads to massive memory usage
+            sd_models.load_diffuser() # TODO model load: force-reloading entire model as loading transformers only leads to massive memory usage
             """
             from modules.model_flux import load_transformer
             transformer = load_transformer(unet_dict[shared.opts.sd_unet])

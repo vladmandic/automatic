@@ -266,8 +266,6 @@ class Adapter_XL(nn.Module):
         b, c, _, _ = x[-1].shape
         if t is not None:
             if not torch.is_tensor(t):
-                # TODO: this requires sync between CPU and GPU. So try to pass timesteps as tensors if you can
-                # This would be a good case for the `match` statement (Python 3.10+)
                 is_mps = x[0].device.type == "mps"
                 if isinstance(timestep, float):
                     dtype = torch.float32 if is_mps else torch.float64

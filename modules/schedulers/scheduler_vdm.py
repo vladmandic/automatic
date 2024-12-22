@@ -147,7 +147,7 @@ class VDMScheduler(SchedulerMixin, ConfigMixin):
         self.timesteps = torch.from_numpy(self.get_timesteps(len(self)))
         if num_train_timesteps:
             alphas_cumprod = self.alphas_cumprod(torch.flip(self.timesteps, dims=(0,)))
-            alphas = alphas_cumprod[1:] / alphas_cumprod[:-1]  # TODO: Might not be exact
+            alphas = alphas_cumprod[1:] / alphas_cumprod[:-1]
             self.alphas = torch.cat([alphas_cumprod[:1], alphas])
             self.betas = 1 - self.alphas
 

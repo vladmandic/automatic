@@ -311,7 +311,7 @@ def control_run(state: str = '',
     # processing.process_init(p)
     resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
 
-    # TODO monkey-patch for modernui missing tabs.select event
+    # TODO modernui: monkey-patch for missing tabs.select event
     if selected_scale_tab_before == 0 and resize_name_before != 'None' and scale_by_before != 1 and inputs is not None and len(inputs) > 0:
         shared.log.debug('Control: override resize mode=before')
         selected_scale_tab_before = 1
