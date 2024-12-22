@@ -734,8 +734,6 @@ def check_torch():
             torch_command = install_rocm_zluda()
         elif is_ipex_available:
             torch_command = install_ipex(torch_command)
-        elif allow_openvino:
-            torch_command = install_openvino(torch_command)
 
         else:
             machine = platform.machine()
