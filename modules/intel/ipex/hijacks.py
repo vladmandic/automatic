@@ -313,7 +313,7 @@ def torch_load(f, map_location=None, *args, **kwargs):
 
 # Hijack Functions:
 def ipex_hijacks(legacy=True):
-    if legacy:
+    if legacy and float(torch.__version__[:3]) < 2.5:
         torch.nn.functional.interpolate = interpolate
     torch.tensor = torch_tensor
     torch.Tensor.to = Tensor_to
