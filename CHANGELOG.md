@@ -176,7 +176,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
   - `GGUF` with pre-quantized weights  
   - Switch `GGUF` loader from custom to diffuser native
 - **IPEX**: update to IPEX 2.5.10+xpu  
-- **OpenVINO**: update to 2024.5.0  
+- **OpenVINO**: update to 2024.6.0  
 - **Sampler** improvements  
   - UniPC, DEIS, SA, DPM-Multistep: allow FlowMatch sigma method and prediction type  
   - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
