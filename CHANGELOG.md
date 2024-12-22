@@ -220,6 +220,8 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 - fix svd image2video  
 - fix gallery display during generate  
 - fix wildcards replacement to be unique  
+- fix animatediff-xl  
+- fix pag with batch count  
 
 ## Update for 2024-11-21
 
