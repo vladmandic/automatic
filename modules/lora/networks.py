@@ -416,7 +416,7 @@ def network_apply_direct(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
             if deactivate:
                 updown *= -1
             if getattr(self, "quant_type", None) in ['nf4', 'fp4'] and bnb is not None:
-                try: # TODO lora-direct with bnb
+                try: # TODO lora load: direct with bnb
                     weight = bnb.functional.dequantize_4bit(self.weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
                     new_weight = weight.to(devices.device) + updown.to(devices.device)
                     self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)

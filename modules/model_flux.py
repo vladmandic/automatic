@@ -213,7 +213,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
-    elif 'nf4' in quant: # TODO fix flux loader for civitai nf4 models
+    elif 'nf4' in quant: # TODO flux: fix loader for civitai nf4 models
         from modules.model_flux_nf4 import load_flux_nf4
         _transformer, _text_encoder_2 = load_flux_nf4(file_path)
         if _transformer is not None:
@@ -342,7 +342,7 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
     shared.log.debug(f'Load model: type=FLUX cls={cls.__name__} preloaded={list(kwargs)} revision={diffusers_load_config.get("revision", None)}')
     for c in kwargs:
         if getattr(kwargs[c], 'quantization_method', None) is not None or getattr(kwargs[c], 'gguf', None) is not None:
-            shared.log.debug(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} quant={getattr(kwargs[c], 'quantization_method', None) or getattr(kwargs[c], 'gguf', None)}')
+            shared.log.debug(f'Load model: type=FLUX component={c} dtype={kwargs[c].dtype} quant={getattr(kwargs[c], "quantization_method", None) or getattr(kwargs[c], "gguf", None)}')
         if kwargs[c].dtype == torch.float32 and devices.dtype != torch.float32:
             try:
                 kwargs[c] = kwargs[c].to(dtype=devices.dtype)

@@ -31,7 +31,6 @@ from .hf_configs import arch_dict
 def _camel2snake(s):
     return re.sub(r'(?<!^)(?=[A-Z])', '_', s).lower()
 
-# TODO: ?last - for gpt-like models
 _POOLERS = {}
 
 def register_pooler(cls):
@@ -88,7 +87,6 @@ class HFTextEncoder(nn.Module):
 
         self.output_dim = output_dim
 
-        # TODO: find better way to get this information
         uses_transformer_pooler = (pooler_type == "cls_pooler")
 
         if transformers is None:
@@ -101,7 +99,6 @@ class HFTextEncoder(nn.Module):
             else:
                 create_func, model_args = (AutoModel.from_pretrained, model_name_or_path) if pretrained else (
                     AutoModel.from_config, self.config)
-            # TODO: do all model configs have this attribute? PretrainedConfig does so yes??
             if hasattr(self.config, "is_encoder_decoder") and self.config.is_encoder_decoder:
                 self.transformer = create_func(model_args)
                 self.transformer = self.transformer.encoder

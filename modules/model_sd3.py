@@ -1,7 +1,7 @@
 import os
 import diffusers
 import transformers
-from modules import shared, devices, sd_models, sd_unet, model_te, model_quant, model_tools
+from modules import shared, devices, sd_models, sd_unet, model_quant, model_tools
 
 
 def load_overrides(kwargs, cache_dir):

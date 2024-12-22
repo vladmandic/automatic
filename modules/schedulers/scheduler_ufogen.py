@@ -310,14 +310,11 @@ class UFOGenScheduler(SchedulerMixin, ConfigMixin):
             self.num_inference_steps = num_inference_steps
             self.custom_timesteps = False
 
-            # TODO: For now, handle special case when num_inference_steps == 1 separately
             if num_inference_steps == 1:
                 # Set the timestep schedule to num_train_timesteps - 1 rather than 0
                 # (that is, the one-step timestep schedule is always trailing rather than leading or linspace)
                 timesteps = np.array([self.config.num_train_timesteps - 1], dtype=np.int64)
             else:
-                # TODO: For now, retain the DDPM timestep spacing logic
-                # "linspace", "leading", "trailing" corresponds to annotation of Table 2. of https://arxiv.org/abs/2305.08891
                 if self.config.timestep_spacing == "linspace":
                     timesteps = (
                         np.linspace(0, self.config.num_train_timesteps - 1, num_inference_steps)
@@ -446,8 +443,6 @@ class UFOGenScheduler(SchedulerMixin, ConfigMixin):
         # Noise is not used on the final timestep of the timestep schedule.
         # This also means that noise is not used for one-step sampling.
         if t != self.timesteps[-1]:
-            # TODO: is this correct?
-            # Sample prev sample x_{t - 1} ~ q(x_{t - 1} | x_0 =  G(x_t, t))
             device = model_output.device
             noise = randn_tensor(model_output.shape, generator=generator, device=device, dtype=model_output.dtype)
             sqrt_alpha_prod_t_prev = alpha_prod_t_prev**0.5

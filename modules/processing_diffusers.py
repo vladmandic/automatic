@@ -330,13 +330,6 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 errors.display(e, 'Processing')
                 modelstats.analyze()
 
-            """ # TODO decode using refiner
-            if not shared.state.interrupted and not shared.state.skipped:
-                refiner_images = processing_vae.vae_decode(latents=refiner_output.images, model=shared.sd_refiner, full_quality=True, width=max(p.width, p.hr_upscale_to_x), height=max(p.height, p.hr_upscale_to_y))
-                for refiner_image in refiner_images:
-                    results.append(refiner_image)
-            """
-
         if shared.opts.diffusers_offload_mode == "balanced":
             shared.sd_refiner = sd_models.apply_balanced_offload(shared.sd_refiner)
         elif shared.opts.diffusers_move_refiner:

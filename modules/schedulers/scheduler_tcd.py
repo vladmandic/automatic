@@ -447,7 +447,6 @@ class TCDScheduler(SchedulerMixin, ConfigMixin):
             init_timestep = min(int(self.num_inference_steps * strength), self.num_inference_steps)
             t_start = max(self.num_inference_steps - init_timestep, 0)
             timesteps = timesteps[t_start * self.order :]
-            # TODO: also reset self.num_inference_steps?
         else:
             # 2.2 Create the "standard" TCD inference timestep schedule.
             if num_inference_steps > self.config.num_train_timesteps:

@@ -234,7 +234,7 @@ def make_diffusers_transformer_block(block_class: Type[torch.nn.Module]) -> Type
                 norm_hidden_states = self.norm2(hidden_states)
                 norm_hidden_states = norm_hidden_states * (1 + scale_mlp) + shift_mlp
             if self._chunk_size is not None:
-                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size) # pylint: disable=undefined-variable # TODO hidiffusion undefined
+                ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size) # pylint: disable=undefined-variable
             else:
                 ff_output = self.ff(norm_hidden_states)
             if self.use_ada_layer_norm_zero:
@@ -308,7 +308,7 @@ def make_diffusers_cross_attn_down_block(block_class: Type[torch.nn.Module]) -> 
                 self.T1 = int(self.max_timestep * self.T1_ratio)
 
             output_states = ()
-            _scale = cross_attention_kwargs.get("scale", 1.0) if cross_attention_kwargs is not None else 1.0 # TODO hidiffusion unused
+            _scale = cross_attention_kwargs.get("scale", 1.0) if cross_attention_kwargs is not None else 1.0
 
             blocks = list(zip(self.resnets, self.attentions))
 
@@ -407,7 +407,7 @@ def make_diffusers_cross_attn_up_block(block_class: Type[torch.nn.Module]) -> Ty
             encoder_attention_mask: Optional[torch.FloatTensor] = None,
         ) -> torch.FloatTensor:
 
-            def fix_scale(first, second): # TODO hidiffusion breaks hidden_scale.shape on 3rd generate with sdxl
+            def fix_scale(first, second):
                 if (first.shape[-1] != second.shape[-1] or first.shape[-2] != second.shape[-2]):
                     rescale = min(second.shape[-2] / first.shape[-2], second.shape[-1] / first.shape[-1])
                     # log.debug(f"HiDiffusion rescale: {hidden_states.shape} => {res_hidden_states_tuple[0].shape} scale={rescale}")

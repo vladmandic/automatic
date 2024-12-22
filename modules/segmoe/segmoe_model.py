@@ -136,7 +136,7 @@ class SegMoEPipeline:
                 memory_format=torch.channels_last,
             )
 
-    def to(self, *args, **kwargs): # TODO added no-op to avoid error
+    def to(self, *args, **kwargs):
         self.pipe.to(*args, **kwargs)
 
     def load_from_scratch(self, config: str, **kwargs) -> None:
@@ -202,7 +202,6 @@ class SegMoEPipeline:
         self.config["down_idx_start"] = self.down_idx_start
         self.config["down_idx_end"] = self.down_idx_end
 
-        # TODO: Add Support for Scheduler Selection
         self.pipe.scheduler = DDPMScheduler.from_config(self.pipe.scheduler.config)
 
         # Load Experts
@@ -242,7 +241,6 @@ class SegMoEPipeline:
                             **kwargs,
                         )
 
-                        # TODO: Add Support for Scheduler Selection
                         expert.scheduler = DDPMScheduler.from_config(
                             expert.scheduler.config
                         )

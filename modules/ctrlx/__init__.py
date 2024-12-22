@@ -136,7 +136,7 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
     @torch.no_grad()
     def __call__(
         self,
-        prompt: Union[str, List[str]] = None,  # TODO: Support prompt_2 and negative_prompt_2
+        prompt: Union[str, List[str]] = None,
         structure_prompt: Optional[Union[str, List[str]]] = None,
         appearance_prompt: Optional[Union[str, List[str]]] = None,
         structure_image: Optional[PipelineImageInput] = None,
@@ -180,7 +180,6 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         **kwargs,
     ):
-        # TODO: Add function argument documentation
 
         callback = kwargs.pop("callback", None)
         callback_steps = kwargs.pop("callback_steps", None)
@@ -205,7 +204,7 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
         target_size = target_size or (height, width)
 
         # 1. Check inputs. Raise error if not correct
-        self.check_inputs(  # TODO: Custom check_inputs for our method
+        self.check_inputs(
             prompt,
             None,  # prompt_2
             height,
@@ -425,7 +424,7 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
 
         # 7.2 Optionally get guidance scale embedding
         timestep_cond = None
-        if self.unet.config.time_cond_proj_dim is not None:  # TODO: Make guidance scale embedding work with batch_order
+        if self.unet.config.time_cond_proj_dim is not None:
             guidance_scale_tensor = torch.tensor(self.guidance_scale - 1).repeat(batch_size * num_images_per_prompt)
             timestep_cond = self.get_guidance_scale_embedding(
                 guidance_scale_tensor, embedding_dim=self.unet.config.time_cond_proj_dim
@@ -457,7 +456,6 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
 
                 register_attr(self, t=t.item(), do_control=True, batch_order=batch_order)
 
-                # TODO: For now, assume we are doing classifier-free guidance, support no CF-guidance later
                 latent_model_input = self.scheduler.scale_model_input(latents, t)
                 structure_latent_model_input = self.scheduler.scale_model_input(structure_latents, t)
                 appearance_latent_model_input = self.scheduler.scale_model_input(appearance_latents, t)
@@ -563,7 +561,7 @@ class CtrlXStableDiffusionXLPipeline(StableDiffusionXLPipeline):  # diffusers==0
                 # Self-recurrence
                 for _ in range(self_recurrence_schedule[i]):
                     if hasattr(self.scheduler, "_step_index"):  # For fancier schedulers
-                        self.scheduler._step_index -= 1  # TODO: Does this actually work?
+                        self.scheduler._step_index -= 1
 
                     t_prev = 0 if i + 1 >= num_inference_steps else timesteps[i + 1]
                     latents = noise_t2t(self.scheduler, t_prev, t, latents)

@@ -241,7 +241,7 @@ class OnnxRawPipeline(PipelineBase):
                 for i in range(len(flow)):
                     flow[i] = flow[i].replace("AutoExecutionProvider", shared.opts.onnx_execution_provider)
             olive_config["input_model"]["config"]["model_path"] = os.path.abspath(os.path.join(in_dir, submodel, "model.onnx"))
-            olive_config["systems"]["local_system"]["config"]["accelerators"][0]["device"] = "cpu" if shared.opts.onnx_execution_provider == ExecutionProvider.CPU else "gpu" # TODO: npu
+            olive_config["systems"]["local_system"]["config"]["accelerators"][0]["device"] = "cpu" if shared.opts.onnx_execution_provider == ExecutionProvider.CPU else "gpu"
             olive_config["systems"]["local_system"]["config"]["accelerators"][0]["execution_providers"] = [shared.opts.onnx_execution_provider]
 
             for pass_key in olive_config["passes"]:

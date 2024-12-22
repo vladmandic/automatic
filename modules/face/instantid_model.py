@@ -344,7 +344,6 @@ class IPAttnProcessor(nn.Module):
         return hidden_states
 
     def _memory_efficient_attention_xformers(self, query, key, value, attention_mask):
-        # TODO attention_mask
         query = query.contiguous()
         key = key.contiguous()
         value = value.contiguous()
