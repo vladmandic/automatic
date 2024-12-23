@@ -357,7 +357,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             for i, sample in enumerate(samples):
                 debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{p.n_iter}')
                 p.batch_index = i
-                if type(sample) == Image.Image:
+                if isinstance(sample, Image.Image) or (isinstance(sample, list) and isinstance(sample[0], Image.Image)):
                     image = sample
                     sample = np.array(sample)
                 else:
@@ -399,11 +399,20 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
                 info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
                 infotexts.append(info)
-                image.info["parameters"] = info
-                output_images.append(image)
+                if isinstance(image, list):
+                    for img in image:
+                        img.info["parameters"] = info
+                    output_images = image
+                else:
+                    image.info["parameters"] = info
+                    output_images.append(image)
                 if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
                     info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
-                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
+                    if isinstance(image, list):
+                        for img in image:
+                            images.save_image(img, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
+                    else:
+                        images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
                 if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
                     image_mask = p.mask_for_overlay.convert('RGB')
                     image1 = image.convert('RGBA').convert('RGBa')

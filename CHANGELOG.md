@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-22
+## Update for 2024-12-23
 
-### Highlights for 2024-12-22
+### Highlights for 2024-12-23
 
 ### SD.Next Xmass edition: *What's new?*
 
@@ -32,7 +32,7 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-## Details for 2024-12-22
+## Details for 2024-12-23
 
 ### New models and integrations
 
@@ -93,17 +93,20 @@ All-in-all, we're around ~160 commits worth of updates, check changelog for full
 
 ### Video models
 
-- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)
-  model size: 27.75gb
+- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)  
+  model size: 27.75gb  
+  support for 0.9.0, 0.9.1 and custom safetensor-based models with full quantization and offloading support  
   support for text-to-video and image-to-video, to use, select in *scripts -> ltx-video*  
-  *refrence values*: steps 50, width 704, height 512, frames 161, guidance scale 3.0
+  *refrence values*: steps 50, width 704, height 512, frames 161, guidance scale 3.0  
 - [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo)  
-  model size: 40.92gb
+  model size: 40.92gb  
   support for text-to-video, to use, select in *scripts -> hunyuan video*  
-  *refrence values*: steps 50, width 1280, height 720, frames 129, guidance scale 6.0
-- [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)
+  basic support only  
+  *refrence values*: steps 50, width 1280, height 720, frames 129, guidance scale 6.0  
+- [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
   support for text-to-video, to use, select in *scripts -> mochi.1 video*  
-  *refrence values*: steps 64, width 848, height 480, frames 19, guidance scale 4.5
+  basic support only  
+  *refrence values*: steps 64, width 848, height 480, frames 19, guidance scale 4.5  
 
 *Notes*:
 - all video models are very large and resource intensive!  
