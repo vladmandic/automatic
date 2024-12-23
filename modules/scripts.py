@@ -330,12 +330,38 @@ class ScriptRunner:
         self.scripts = []
         self.selectable_scripts = []
         self.alwayson_scripts = []
+        self.auto_processing_scripts = []
         self.titles = []
         self.infotext_fields = []
         self.paste_field_names = []
         self.script_load_ctr = 0
         self.is_img2img = False
         self.inputs = [None]
+
+    def add_script(self, script_class, path, is_img2img, is_control):
+        try:
+            script = script_class()
+            script.filename = path
+            script.is_txt2img = not is_img2img
+            script.is_img2img = is_img2img
+            if is_control: # this is messy but show is a legacy function that is not aware of control tab
+                v1 = script.show(script.is_txt2img)
+                v2 = script.show(script.is_img2img)
+                if v1 == AlwaysVisible or v2 == AlwaysVisible:
+                    visibility = AlwaysVisible
+                else:
+                    visibility = v1 or v2
+            else:
+                visibility = script.show(script.is_img2img)
+            if visibility == AlwaysVisible:
+                self.scripts.append(script)
+                self.alwayson_scripts.append(script)
+                script.alwayson = True
+            elif visibility:
+                self.scripts.append(script)
+                self.selectable_scripts.append(script)
+        except Exception as e:
+            errors.log.error(f'Script initialize: {path} {e}')
 
     def initialize_scripts(self, is_img2img=False, is_control=False):
         from modules import scripts_auto_postprocessing
@@ -351,34 +377,14 @@ class ScriptRunner:
         self.scripts.clear()
         self.alwayson_scripts.clear()
         self.selectable_scripts.clear()
-        auto_processing_scripts = scripts_auto_postprocessing.create_auto_preprocessing_script_data()
+        self.auto_processing_scripts = scripts_auto_postprocessing.create_auto_preprocessing_script_data()
 
-        all_scripts = auto_processing_scripts + scripts_data
-        sorted_scripts = sorted(all_scripts, key=lambda x: x.script_class().title().lower())
+        sorted_scripts = sorted(scripts_data, key=lambda x: x.script_class().title().lower())
         for script_class, path, _basedir, _script_module in sorted_scripts:
-            try:
-                script = script_class()
-                script.filename = path
-                script.is_txt2img = not is_img2img
-                script.is_img2img = is_img2img
-                if is_control: # this is messy but show is a legacy function that is not aware of control tab
-                    v1 = script.show(script.is_txt2img)
-                    v2 = script.show(script.is_img2img)
-                    if v1 == AlwaysVisible or v2 == AlwaysVisible:
-                        visibility = AlwaysVisible
-                    else:
-                        visibility = v1 or v2
-                else:
-                    visibility = script.show(script.is_img2img)
-                if visibility == AlwaysVisible:
-                    self.scripts.append(script)
-                    self.alwayson_scripts.append(script)
-                    script.alwayson = True
-                elif visibility:
-                    self.scripts.append(script)
-                    self.selectable_scripts.append(script)
-            except Exception as e:
-                errors.log.error(f'Script initialize: {path} {e}')
+            self.add_script(script_class, path, is_img2img, is_control)
+        sorted_scripts = sorted(self.auto_processing_scripts, key=lambda x: x.script_class().title().lower())
+        for script_class, path, _basedir, _script_module in sorted_scripts:
+            self.add_script(script_class, path, is_img2img, is_control)
 
     def prepare_ui(self):
         self.inputs = [None]
