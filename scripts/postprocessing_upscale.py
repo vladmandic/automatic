@@ -10,43 +10,43 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
     order = 1000
 
     def ui(self):
-        selected_tab = gr.State(value=0) # pylint: disable=abstract-class-instantiated
+        with gr.Accordion('Postprocess Upscale', open = False):
+            selected_tab = gr.State(value=0) # pylint: disable=abstract-class-instantiated
+            with gr.Column():
+                with gr.Row(elem_id="extras_upscale"):
+                    with gr.Tabs(elem_id="extras_resize_mode"):
+                        with gr.TabItem('Scale by', elem_id="extras_scale_by_tab") as tab_scale_by:
+                            upscaling_resize = gr.Slider(minimum=0.1, maximum=8.0, step=0.05, label="Resize", value=2.0, elem_id="extras_upscaling_resize")
 
-        with gr.Column():
-            with gr.Row(elem_id="extras_upscale"):
-                with gr.Tabs(elem_id="extras_resize_mode"):
-                    with gr.TabItem('Scale by', elem_id="extras_scale_by_tab") as tab_scale_by:
-                        upscaling_resize = gr.Slider(minimum=0.1, maximum=8.0, step=0.05, label="Resize", value=2.0, elem_id="extras_upscaling_resize")
+                        with gr.TabItem('Scale to', elem_id="extras_scale_to_tab") as tab_scale_to:
+                            with gr.Row():
+                                with gr.Row(elem_id="upscaling_column_size"):
+                                    upscaling_resize_w = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=1024, elem_id="extras_upscaling_resize_w")
+                                    upscaling_resize_h = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=1024, elem_id="extras_upscaling_resize_h")
+                                    upscaling_res_switch_btn = ToolButton(value=symbols.switch, elem_id="upscaling_res_switch_btn")
+                                    upscaling_crop = gr.Checkbox(label='Crop to fit', value=True, elem_id="extras_upscaling_crop")
 
-                    with gr.TabItem('Scale to', elem_id="extras_scale_to_tab") as tab_scale_to:
-                        with gr.Row():
-                            with gr.Row(elem_id="upscaling_column_size"):
-                                upscaling_resize_w = gr.Slider(minimum=64, maximum=4096, step=8, label="Width", value=1024, elem_id="extras_upscaling_resize_w")
-                                upscaling_resize_h = gr.Slider(minimum=64, maximum=4096, step=8, label="Height", value=1024, elem_id="extras_upscaling_resize_h")
-                                upscaling_res_switch_btn = ToolButton(value=symbols.switch, elem_id="upscaling_res_switch_btn")
-                                upscaling_crop = gr.Checkbox(label='Crop to fit', value=True, elem_id="extras_upscaling_crop")
+                with gr.Row():
+                    extras_upscaler_1 = gr.Dropdown(label='Upscaler', elem_id="extras_upscaler_1", choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name)
 
-            with gr.Row():
-                extras_upscaler_1 = gr.Dropdown(label='Upscaler', elem_id="extras_upscaler_1", choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name)
+                with gr.Row():
+                    extras_upscaler_2 = gr.Dropdown(label='Refine Upscaler', elem_id="extras_upscaler_2", choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name)
+                    extras_upscaler_2_visibility = gr.Slider(minimum=0.0, maximum=1.0, step=0.001, label="Upscaler 2 visibility", value=0.0, elem_id="extras_upscaler_2_visibility")
 
-            with gr.Row():
-                extras_upscaler_2 = gr.Dropdown(label='Refine Upscaler', elem_id="extras_upscaler_2", choices=[x.name for x in shared.sd_upscalers], value=shared.sd_upscalers[0].name)
-                extras_upscaler_2_visibility = gr.Slider(minimum=0.0, maximum=1.0, step=0.001, label="Upscaler 2 visibility", value=0.0, elem_id="extras_upscaler_2_visibility")
+            upscaling_res_switch_btn.click(lambda w, h: (h, w), inputs=[upscaling_resize_w, upscaling_resize_h], outputs=[upscaling_resize_w, upscaling_resize_h], show_progress=False)
+            tab_scale_by.select(fn=lambda: 0, inputs=[], outputs=[selected_tab])
+            tab_scale_to.select(fn=lambda: 1, inputs=[], outputs=[selected_tab])
 
-        upscaling_res_switch_btn.click(lambda w, h: (h, w), inputs=[upscaling_resize_w, upscaling_resize_h], outputs=[upscaling_resize_w, upscaling_resize_h], show_progress=False)
-        tab_scale_by.select(fn=lambda: 0, inputs=[], outputs=[selected_tab])
-        tab_scale_to.select(fn=lambda: 1, inputs=[], outputs=[selected_tab])
-
-        return {
-            "upscale_mode": selected_tab,
-            "upscale_by": upscaling_resize,
-            "upscale_to_width": upscaling_resize_w,
-            "upscale_to_height": upscaling_resize_h,
-            "upscale_crop": upscaling_crop,
-            "upscaler_1_name": extras_upscaler_1,
-            "upscaler_2_name": extras_upscaler_2,
-            "upscaler_2_visibility": extras_upscaler_2_visibility,
-        }
+            return {
+                "upscale_mode": selected_tab,
+                "upscale_by": upscaling_resize,
+                "upscale_to_width": upscaling_resize_w,
+                "upscale_to_height": upscaling_resize_h,
+                "upscale_crop": upscaling_crop,
+                "upscaler_1_name": extras_upscaler_1,
+                "upscaler_2_name": extras_upscaler_2,
+                "upscaler_2_visibility": extras_upscaler_2_visibility,
+            }
 
     def upscale(self, image, info, upscaler, upscale_mode, upscale_by,  upscale_to_width, upscale_to_height, upscale_crop):
         if upscale_mode == 1:

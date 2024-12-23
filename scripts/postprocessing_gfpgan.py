@@ -9,8 +9,9 @@ class ScriptPostprocessingGfpGan(scripts_postprocessing.ScriptPostprocessing):
     order = 2000
 
     def ui(self):
-        with gr.Row():
-            gfpgan_visibility = gr.Slider(minimum=0.0, maximum=1.0, step=0.001, label="Strength", value=0, elem_id="extras_gfpgan_visibility")
+        with gr.Accordion('Restore faces: GFPGan', open = False):
+            with gr.Row():
+                gfpgan_visibility = gr.Slider(minimum=0.0, maximum=1.0, step=0.001, label="Strength", value=0, elem_id="extras_gfpgan_visibility")
         return { "gfpgan_visibility": gfpgan_visibility }
 
     def process(self, pp: scripts_postprocessing.PostprocessedImage, gfpgan_visibility): # pylint: disable=arguments-differ
