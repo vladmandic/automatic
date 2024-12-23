@@ -361,6 +361,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
             else:
                 width = getattr(p, 'width', 0)
                 height = getattr(p, 'height', 0)
+            frames = p.task_args.get('num_frames', None)
             if isinstance(output.images, list):
                 results = []
                 for i in range(len(output.images)):
@@ -370,6 +371,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
                         full_quality = p.full_quality,
                         width = width,
                         height = height,
+                        frames = frames,
                     )
                     for result in list(result_batch):
                         results.append(result)
@@ -380,6 +382,7 @@ def process_decode(p: processing.StableDiffusionProcessing, output):
                     full_quality = p.full_quality,
                     width = width,
                     height = height,
+                    frames = frames,
                 )
         elif hasattr(output, 'images'):
             results = output.images

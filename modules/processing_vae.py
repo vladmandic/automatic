@@ -203,7 +203,7 @@ def taesd_vae_encode(image):
     return encoded
 
 
-def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None):
+def vae_decode(latents, model, output_type='np', full_quality=True, width=None, height=None, frames=None):
     t0 = time.time()
     model = model or shared.sd_model
     if not hasattr(model, 'vae') and hasattr(model, 'pipe'):
@@ -221,7 +221,11 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         shared.log.error('VAE not found in model')
         return []
 
-    if hasattr(model, "_unpack_latents") and hasattr(model, "vae_scale_factor") and width is not None and height is not None: # FLUX
+    if hasattr(model, '_unpack_latents') and hasattr(model, 'transformer_spatial_patch_size') and frames is not None: # LTX
+        latent_num_frames = (frames - 1) // model.vae_temporal_compression_ratio + 1
+        latents = model._unpack_latents(latents.unsqueeze(0), latent_num_frames, height // 32, width // 32, model.transformer_spatial_patch_size, model.transformer_temporal_patch_size) # pylint: disable=protected-access
+        latents = model._denormalize_latents(latents, model.vae.latents_mean, model.vae.latents_std, model.vae.config.scaling_factor) # pylint: disable=protected-access
+    if hasattr(model, '_unpack_latents') and hasattr(model, "vae_scale_factor") and width is not None and height is not None: # FLUX
         latents = model._unpack_latents(latents, height, width, model.vae_scale_factor) # pylint: disable=protected-access
     if len(latents.shape) == 3: # lost a batch dim in hires
         latents = latents.unsqueeze(0)
@@ -238,7 +242,9 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         decoded = taesd_vae_decode(latents=latents)
 
     if torch.is_tensor(decoded):
-        if hasattr(model, 'image_processor'):
+        if hasattr(model, 'video_processor'):
+            imgs = model.video_processor.postprocess_video(decoded, output_type='pil')
+        elif hasattr(model, 'image_processor'):
             imgs = model.image_processor.postprocess(decoded, output_type=output_type)
         elif hasattr(model, "vqgan"):
             imgs = decoded.permute(0, 2, 3, 1).cpu().float().numpy()
