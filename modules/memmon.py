@@ -42,14 +42,14 @@ class MemUsageMonitor():
         if not self.disabled:
             try:
                 self.data["free"], self.data["total"] = torch.cuda.mem_get_info(self.device.index if self.device.index is not None else torch.cuda.current_device())
+                self.data["used"] = self.data["total"] - self.data["free"]
                 torch_stats = torch.cuda.memory_stats(self.device)
-                self.data["active"] = torch_stats["active.all.current"]
+                self.data["active"] = torch_stats.get("active.all.current", torch_stats["active_bytes.all.current"])
                 self.data["active_peak"] = torch_stats["active_bytes.all.peak"]
                 self.data["reserved"] = torch_stats["reserved_bytes.all.current"]
                 self.data["reserved_peak"] = torch_stats["reserved_bytes.all.peak"]
-                self.data['retries'] = torch_stats["num_alloc_retries"]
-                self.data['oom'] = torch_stats["num_ooms"]
-                self.data["used"] = self.data["total"] - self.data["free"]
+                self.data['retries'] = torch_stats.get("num_alloc_retries", -1)
+                self.data['oom'] = torch_stats.get("num_ooms", -1)
             except Exception:
                 self.disabled = True
         return self.data

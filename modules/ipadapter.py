@@ -9,11 +9,16 @@ import os
 import time
 import json
 from PIL import Image
-from modules import processing, shared, devices, sd_models
+import diffusers
+import transformers
+from modules import processing, shared, devices, sd_models, errors
 
 
-clip_repo = "h94/IP-Adapter"
 clip_loaded = None
+adapters_loaded = []
+CLIP_ID = "h94/IP-Adapter"
+OPEN_ID = "openai/clip-vit-large-patch14"
+SIGLIP_ID = 'google/siglip-so400m-patch14-384'
 ADAPTERS_NONE = {
     'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
 }
@@ -36,11 +41,13 @@ ADAPTERS_SDXL = {
     'Ostris Composition ViT-H SDXL': { 'name': 'ip_plus_composition_sdxl.safetensors', 'repo': 'ostris/ip-composition-adapter', 'subfolder': '' },
 }
 ADAPTERS_SD3 = {
-    'InstantX Large': { 'name': 'ip-adapter.bin', 'repo': 'InstantX/SD3.5-Large-IP-Adapter' },
+    'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
+    'InstantX Large': { 'name': 'none', 'repo': 'InstantX/SD3.5-Large-IP-Adapter', 'subfolder': 'none', 'revision': 'refs/pr/10' },
 }
 ADAPTERS_F1 = {
-    'XLabs AI v1': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter' },
-    'XLabs AI v2': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter-v2' },
+    'None': { 'name': 'none', 'repo': 'none', 'subfolder': 'none' },
+    'XLabs AI v1': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter', 'subfolder': 'none' },
+    'XLabs AI v2': { 'name': 'ip_adapter.safetensors', 'repo': 'XLabs-AI/flux-ip-adapter-v2', 'subfolder': 'none' },
 }
 ADAPTERS = { **ADAPTERS_SD15, **ADAPTERS_SDXL, **ADAPTERS_SD3, **ADAPTERS_F1 }
 ADAPTERS_ALL = { **ADAPTERS_SD15, **ADAPTERS_SDXL, **ADAPTERS_SD3, **ADAPTERS_F1 }
@@ -125,14 +132,27 @@ def crop_images(images, crops):
                     shared.log.error(f'IP adapter: failed to crop image: source={len(images[i])} faces={len(cropped)}')
     except Exception as e:
         shared.log.error(f'IP adapter: failed to crop image: {e}')
+    if shared.sd_model_type == 'sd3' and len(images) == 1:
+        return images[0]
     return images
 
 
-def unapply(pipe): # pylint: disable=arguments-differ
+def unapply(pipe, unload: bool = False): # pylint: disable=arguments-differ
+    if len(adapters_loaded) == 0:
+        return
     try:
         if hasattr(pipe, 'set_ip_adapter_scale'):
             pipe.set_ip_adapter_scale(0)
-        if hasattr(pipe, 'unet') and hasattr(pipe.unet, 'config') and pipe.unet.config.encoder_hid_dim_type == 'ip_image_proj':
+            if unload:
+                shared.log.debug('IP adapter unload')
+                pipe.unload_ip_adapter()
+        if hasattr(pipe, 'unet'):
+            module = pipe.unet
+        elif hasattr(pipe, 'transformer'):
+            module = pipe.transformer
+        else:
+            module = None
+        if module is not None and hasattr(module, 'config') and module.config.encoder_hid_dim_type == 'ip_image_proj':
             pipe.unet.encoder_hid_proj = None
             pipe.config.encoder_hid_dim_type = None
             pipe.unet.set_default_attn_processor()
@@ -140,27 +160,78 @@ def unapply(pipe): # pylint: disable=arguments-differ
         pass
 
 
-def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_crops=[False], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
+def load_image_encoder(pipe: diffusers.DiffusionPipeline, adapter_names: list[str]):
     global clip_loaded # pylint: disable=global-statement
-    # overrides
-    if hasattr(p, 'ip_adapter_names'):
-        if isinstance(p.ip_adapter_names, str):
-            p.ip_adapter_names = [p.ip_adapter_names]
-        adapters = [ADAPTERS_ALL.get(adapter_name, None) for adapter_name in p.ip_adapter_names if adapter_name is not None and adapter_name.lower() != 'none']
-        adapter_names = p.ip_adapter_names
-    else:
-        if isinstance(adapter_names, str):
-            adapter_names = [adapter_names]
-        adapters = [ADAPTERS.get(adapter, None) for adapter in adapter_names]
-    adapters = [adapter for adapter in adapters if adapter is not None and adapter['name'].lower() != 'none']
-    if len(adapters) == 0:
-        unapply(pipe)
-        if hasattr(p, 'ip_adapter_images'):
-            del p.ip_adapter_images
-        return False
-    if shared.sd_model_type not in ['sd', 'sdxl', 'sd3', 'f1']:
-        shared.log.error(f'IP adapter: model={shared.sd_model_type} class={pipe.__class__.__name__} not supported')
-        return False
+    for adapter_name in adapter_names:
+        # which clip to use
+        clip_repo = CLIP_ID
+        if 'ViT' not in adapter_name: # defaults per model
+            clip_subfolder = 'models/image_encoder' if shared.sd_model_type == 'sd' else 'sdxl_models/image_encoder'
+        if 'ViT-H' in adapter_name:
+            clip_subfolder = 'models/image_encoder' # this is vit-h
+        elif 'ViT-G' in adapter_name:
+            clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
+        else:
+            if shared.sd_model_type == 'sd':
+                clip_subfolder = 'models/image_encoder'
+            elif shared.sd_model_type == 'sdxl':
+                clip_subfolder = 'sdxl_models/image_encoder'
+            elif shared.sd_model_type == 'sd3':
+                clip_repo = SIGLIP_ID
+                clip_subfolder = None
+            elif shared.sd_model_type == 'f1':
+                clip_repo = OPEN_ID
+                clip_subfolder = None
+            else:
+                shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
+                return False
+
+    # load image encoder used by ip adapter
+    if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
+        try:
+            if shared.sd_model_type == 'sd3':
+                image_encoder = transformers.SiglipVisionModel.from_pretrained(clip_repo, torch_dtype=devices.dtype, cache_dir=shared.opts.hfcache_dir)
+            else:
+                if clip_subfolder is None:
+                    image_encoder = transformers.CLIPVisionModelWithProjection.from_pretrained(clip_repo, torch_dtype=devices.dtype, cache_dir=shared.opts.hfcache_dir, use_safetensors=True)
+                    shared.log.debug(f'IP adapter load: encoder="{clip_repo}" cls={pipe.image_encoder.__class__.__name__}')
+                else:
+                    image_encoder = transformers.CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.hfcache_dir, use_safetensors=True)
+                    shared.log.debug(f'IP adapter load: encoder="{clip_repo}/{clip_subfolder}" cls={pipe.image_encoder.__class__.__name__}')
+            if hasattr(pipe, 'register_modules'):
+                pipe.register_modules(image_encoder=image_encoder)
+            else:
+                pipe.image_encoder = image_encoder
+            clip_loaded = f'{clip_repo}/{clip_subfolder}'
+        except Exception as e:
+            shared.log.error(f'IP adapter load: encoder="{clip_repo}/{clip_subfolder}" {e}')
+            errors.display(e, 'IP adapter: type=encoder')
+            return False
+    sd_models.move_model(pipe.image_encoder, devices.device)
+    return True
+
+
+def load_feature_extractor(pipe):
+    # load feature extractor used by ip adapter
+    if pipe.feature_extractor is None:
+        try:
+            if shared.sd_model_type == 'sd3':
+                feature_extractor = transformers.SiglipImageProcessor.from_pretrained(SIGLIP_ID, torch_dtype=devices.dtype, cache_dir=shared.opts.hfcache_dir)
+            else:
+                feature_extractor = transformers.CLIPImageProcessor()
+            if hasattr(pipe, 'register_modules'):
+                pipe.register_modules(feature_extractor=feature_extractor)
+            else:
+                pipe.feature_extractor = feature_extractor
+            shared.log.debug(f'IP adapter load: extractor={pipe.feature_extractor.__class__.__name__}')
+        except Exception as e:
+            shared.log.error(f'IP adapter load: extractor {e}')
+            errors.display(e, 'IP adapter: type=extractor')
+            return False
+    return True
+
+
+def parse_params(p: processing.StableDiffusionProcessing, adapters: list, adapter_scales: list[float], adapter_crops: list[bool], adapter_starts: list[float], adapter_ends: list[float], adapter_images: list):
     if hasattr(p, 'ip_adapter_scales'):
         adapter_scales = p.ip_adapter_scales
     if hasattr(p, 'ip_adapter_crops'):
@@ -201,6 +272,33 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
     p.ip_adapter_starts = adapter_starts.copy()
     adapter_ends = get_scales(adapter_ends, adapter_images)
     p.ip_adapter_ends = adapter_ends.copy()
+    return adapter_images, adapter_masks, adapter_scales, adapter_crops, adapter_starts, adapter_ends
+
+
+def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapter_scales=[1.0], adapter_crops=[False], adapter_starts=[0.0], adapter_ends=[1.0], adapter_images=[]):
+    global adapters_loaded # pylint: disable=global-statement
+    # overrides
+    if hasattr(p, 'ip_adapter_names'):
+        if isinstance(p.ip_adapter_names, str):
+            p.ip_adapter_names = [p.ip_adapter_names]
+        adapters = [ADAPTERS_ALL.get(adapter_name, None) for adapter_name in p.ip_adapter_names if adapter_name is not None and adapter_name.lower() != 'none']
+        adapter_names = p.ip_adapter_names
+    else:
+        if isinstance(adapter_names, str):
+            adapter_names = [adapter_names]
+        adapters = [ADAPTERS.get(adapter_name, None) for adapter_name in adapter_names if adapter_name.lower() != 'none']
+
+    if len(adapters) == 0:
+        unapply(pipe, getattr(p, 'ip_adapter_unload', False))
+        if hasattr(p, 'ip_adapter_images'):
+            del p.ip_adapter_images
+        return False
+    if shared.sd_model_type not in ['sd', 'sdxl', 'sd3', 'f1']:
+        shared.log.error(f'IP adapter: model={shared.sd_model_type} class={pipe.__class__.__name__} not supported')
+        return False
+
+    adapter_images, adapter_masks, adapter_scales, adapter_crops, adapter_starts, adapter_ends = parse_params(p, adapters, adapter_scales, adapter_crops, adapter_starts, adapter_ends, adapter_images)
+
     # init code
     if pipe is None:
         return False
@@ -211,7 +309,7 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         shared.log.error('IP adapter: no image provided')
         adapters = [] # unload adapter if previously loaded as it will cause runtime errors
     if len(adapters) == 0:
-        unapply(pipe)
+        unapply(pipe, getattr(p, 'ip_adapter_unload', False))
         if hasattr(p, 'ip_adapter_images'):
             del p.ip_adapter_images
         return False
@@ -219,61 +317,30 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         shared.log.error(f'IP adapter: pipeline not supported: {pipe.__class__.__name__}')
         return False
 
-    for adapter_name in adapter_names:
-        # which clip to use
-        if 'ViT' not in adapter_name: # defaults per model
-            if shared.sd_model_type == 'sd':
-                clip_subfolder = 'models/image_encoder'
-            else:
-                clip_subfolder = 'sdxl_models/image_encoder'
-        if 'ViT-H' in adapter_name:
-            clip_subfolder = 'models/image_encoder' # this is vit-h
-        elif 'ViT-G' in adapter_name:
-            clip_subfolder = 'sdxl_models/image_encoder' # this is vit-g
-        else:
-            if shared.sd_model_type == 'sd':
-                clip_subfolder = 'models/image_encoder'
-            elif shared.sd_model_type == 'sdxl':
-                clip_subfolder = 'sdxl_models/image_encoder'
-            elif shared.sd_model_type == 'sd3':
-                shared.log.error(f'IP adapter: adapter={adapter_name} type={shared.sd_model_type} cls={shared.sd_model.__class__.__name__}: unsupported base model')
-                return False
-            elif shared.sd_model_type == 'f1':
-                shared.log.error(f'IP adapter: adapter={adapter_name} type={shared.sd_model_type} cls={shared.sd_model.__class__.__name__}: unsupported base model')
-                return False
-            else:
-                shared.log.error(f'IP adapter: unknown model type: {adapter_name}')
-                return False
+    if not load_image_encoder(pipe, adapter_names):
+        return False
 
-    # load feature extractor used by ip adapter
-    if pipe.feature_extractor is None:
-        try:
-            from transformers import CLIPImageProcessor
-            shared.log.debug('IP adapter load: feature extractor')
-            pipe.feature_extractor = CLIPImageProcessor()
-        except Exception as e:
-            shared.log.error(f'IP adapter load: feature extractor {e}')
-            return False
-
-    # load image encoder used by ip adapter
-    if pipe.image_encoder is None or clip_loaded != f'{clip_repo}/{clip_subfolder}':
-        try:
-            from transformers import CLIPVisionModelWithProjection
-            shared.log.debug(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}"')
-            pipe.image_encoder = CLIPVisionModelWithProjection.from_pretrained(clip_repo, subfolder=clip_subfolder, torch_dtype=devices.dtype, cache_dir=shared.opts.diffusers_dir, use_safetensors=True)
-            clip_loaded = f'{clip_repo}/{clip_subfolder}'
-        except Exception as e:
-            shared.log.error(f'IP adapter load: image encoder="{clip_repo}/{clip_subfolder}" {e}')
-            return False
-    sd_models.move_model(pipe.image_encoder, devices.device)
+    if not load_feature_extractor(pipe):
+        return False
 
     # main code
     try:
         t0 = time.time()
-        repos = [adapter['repo'] for adapter in adapters]
-        subfolders = [adapter['subfolder'] for adapter in adapters]
-        names = [adapter['name'] for adapter in adapters]
-        pipe.load_ip_adapter(repos, subfolder=subfolders, weight_name=names)
+        repos = [adapter.get('repo', None) for adapter in adapters if adapter.get('repo', 'none') != 'none']
+        subfolders = [adapter.get('subfolder', None) for adapter in adapters if adapter.get('subfolder', 'none') != 'none']
+        names = [adapter.get('name', None) for adapter in adapters if adapter.get('name', 'none') != 'none']
+        revisions = [adapter.get('revision', None) for adapter in adapters if adapter.get('revision', 'none') != 'none']
+        kwargs = {}
+        if len(repos) == 1:
+            repos = repos[0]
+        if len(subfolders) > 0:
+            kwargs['subfolder'] = subfolders if len(subfolders) > 1 else subfolders[0]
+        if len(names) > 0:
+            kwargs['weight_name'] = names if len(names) > 1 else names[0]
+        if len(revisions) > 0:
+            kwargs['revision'] = revisions[0]
+        pipe.load_ip_adapter(repos, **kwargs)
+        adapters_loaded = names
         if hasattr(p, 'ip_adapter_layers'):
             pipe.set_ip_adapter_scale(p.ip_adapter_layers)
             ip_str = ';'.join(adapter_names) + ':' + json.dumps(p.ip_adapter_layers)
@@ -281,8 +348,8 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
             for i in range(len(adapter_scales)):
                 if adapter_starts[i] > 0:
                     adapter_scales[i] = 0.00
-            pipe.set_ip_adapter_scale(adapter_scales)
-            ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}' for adapter, scale, start, end in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends)]
+            pipe.set_ip_adapter_scale(adapter_scales if len(adapter_scales) > 1 else adapter_scales[0])
+            ip_str =  [f'{os.path.splitext(adapter)[0]}:{scale}:{start}:{end}:{crop}' for adapter, scale, start, end, crop in zip(adapter_names, adapter_scales, adapter_starts, adapter_ends, adapter_crops)]
         p.task_args['ip_adapter_image'] = crop_images(adapter_images, adapter_crops)
         if len(adapter_masks) > 0:
             p.cross_attention_kwargs = { 'ip_adapter_masks': adapter_masks }
@@ -291,4 +358,5 @@ def apply(pipe, p: processing.StableDiffusionProcessing, adapter_names=[], adapt
         shared.log.info(f'IP adapter: {ip_str} image={adapter_images} mask={adapter_masks is not None} time={t1-t0:.2f}')
     except Exception as e:
         shared.log.error(f'IP adapter load: adapters={adapter_names} repo={repos} folders={subfolders} names={names} {e}')
+        errors.display(e, 'IP adapter: type=adapter')
     return True

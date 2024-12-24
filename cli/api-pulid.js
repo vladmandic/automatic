@@ -10,12 +10,13 @@ const argparse = require('argparse');
 const sd_url = process.env.SDAPI_URL || 'http://127.0.0.1:7860';
 const sd_username = process.env.SDAPI_USR;
 const sd_password = process.env.SDAPI_PWD;
+let args = {};
 
 function b64(file) {
   const data = fs.readFileSync(file);
-  const b64 = Buffer.from(data).toString('base64');
+  const b64str = Buffer.from(data).toString('base64');
   const ext = path.extname(file).replace('.', '');
-  str = `data:image/${ext};base64,${b64}`;
+  const str = `data:image/${ext};base64,${b64str}`;
   // console.log('b64:', ext, b64.length);
   return str;
 }
@@ -39,7 +40,16 @@ function options() {
   if (args.pulid) {
     const b64image = b64(args.pulid);
     opt.script_name = 'pulid';
-    opt.script_args = [b64image, 0.9];
+    opt.script_args = [
+      b64image, // b64 encoded image, required param
+      0.9, // strength, optional
+      20, // zero, optional
+      'dpmpp_sde', // sampler, optional
+      'v2', // ortho, optional
+      true, // restore (disable pulid after run), optional
+      true, // offload, optional
+      'v1.1', // version, optional
+    ];
   }
   // console.log('options:', opt);
   return opt;
@@ -53,8 +63,8 @@ function init() {
   parser.add_argument('--height', { type: 'int', help: 'height' });
   parser.add_argument('--pulid', { type: 'str', help: 'pulid init image' });
   parser.add_argument('--output', { type: 'str', help: 'output path' });
-  const args = parser.parse_args();
-  return args
+  const parsed = parser.parse_args();
+  return parsed;
 }
 
 async function main() {
@@ -73,12 +83,12 @@ async function main() {
     console.log('result:', json.info);
     for (const i in json.images) { // eslint-disable-line guard-for-in
       const file = args.output || `/tmp/test-${i}.jpg`;
-      const data = atob(json.images[i])
+      const data = atob(json.images[i]);
       fs.writeFileSync(file, data, 'binary');
       console.log('image saved:', file);
     }
   }
 }
 
-const args = init();
+args = init();
 main();

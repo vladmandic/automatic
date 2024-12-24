@@ -1,13 +1,15 @@
+import time
 import threading
 from collections import namedtuple
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_vae_stablecascade, sd_samplers
+from modules import shared, devices, processing, images, sd_vae_approx, sd_vae_taesd, sd_vae_stablecascade, sd_samplers, timer
 
 
 SamplerData = namedtuple('SamplerData', ['name', 'constructor', 'aliases', 'options'])
 approximation_indexes = { "Simple": 0, "Approximate": 1, "TAESD": 2, "Full VAE": 3 }
+flow_models = ['f1', 'sd3', 'lumina', 'auraflow', 'sana']
 warned = False
 queue_lock = threading.Lock()
 
@@ -33,13 +35,12 @@ def setup_img2img_steps(p, steps=None):
 
 def single_sample_to_image(sample, approximation=None):
     with queue_lock:
-        sd_cascade = False
+        t0 = time.time()
         if approximation is None:
             approximation = approximation_indexes.get(shared.opts.show_progress_type, None)
             if approximation is None:
                 warn_once('Unknown decode type')
                 approximation = 0
-        # normal sample is [4,64,64]
         try:
             if sample.dtype == torch.bfloat16 and (approximation == 0 or approximation == 1):
                 sample = sample.to(torch.float16)
@@ -48,22 +49,15 @@ def single_sample_to_image(sample, approximation=None):
 
         if len(sample.shape) > 4: # likely unknown video latent (e.g. svd)
             return Image.new(mode="RGB", size=(512, 512))
-        if len(sample) == 16: # sd_cascade
-            sd_cascade = True
         if len(sample.shape) == 4 and sample.shape[0]: # likely animatediff latent
             sample = sample.permute(1, 0, 2, 3)[0]
-        if shared.native: # [-x,x] to [-5,5]
-            sample_max = torch.max(sample)
-            if sample_max > 5:
-                sample = sample * (5 / sample_max)
-            sample_min = torch.min(sample)
-            if sample_min < -5:
-                sample = sample * (5 / abs(sample_min))
-
         if approximation == 2: # TAESD
+            if shared.opts.live_preview_downscale and (sample.shape[-1] > 128 or sample.shape[-2] > 128):
+                scale = 128 / max(sample.shape[-1], sample.shape[-2])
+                sample = torch.nn.functional.interpolate(sample.unsqueeze(0), scale_factor=[scale, scale], mode='bilinear', align_corners=False)[0]
             x_sample = sd_vae_taesd.decode(sample)
             x_sample = (1.0 + x_sample) / 2.0 # preview requires smaller range
-        elif sd_cascade and approximation != 3:
+        elif shared.sd_model_type == 'sc' and approximation != 3:
             x_sample = sd_vae_stablecascade.decode(sample)
         elif approximation == 0: # Simple
             x_sample = sd_vae_approx.cheap_approximation(sample) * 0.5 + 0.5
@@ -84,6 +78,8 @@ def single_sample_to_image(sample, approximation=None):
         except Exception as e:
             warn_once(f'Preview: {e}')
             image = Image.new(mode="RGB", size=(512, 512))
+        t1 = time.time()
+        timer.process.add('preview', t1 - t0)
         return image
 
 

@@ -13,10 +13,11 @@ import diffusers.loaders.single_file_utils
 from rich import progress # pylint: disable=redefined-builtin
 import torch
 import safetensors.torch
+import accelerate
 from omegaconf import OmegaConf
 from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
-from modules.timer import Timer
+from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
@@ -33,6 +34,8 @@ debug_load = os.environ.get('SD_LOAD_DEBUG', None)
 debug_process = shared.log.trace if os.environ.get('SD_PROCESS_DEBUG', None) is not None else lambda *args, **kwargs: None
 diffusers_version = int(diffusers.__version__.split('.')[1])
 checkpoint_tiles = checkpoint_titles # legacy compatibility
+should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen']
+offload_hook_instance = None
 
 
 class NoWatermark:
@@ -279,7 +282,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
                 model.eval()
             return model
         sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
-    if len(shared.opts.torchao_quantization) > 0:
+    if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode == 'post':
         sd_model = sd_models_compile.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
@@ -310,6 +313,7 @@ def set_accelerate(sd_model):
 
 
 def set_diffuser_offload(sd_model, op: str = 'model'):
+    t0 = time.time()
     if not shared.native:
         shared.log.warning('Attempting to use offload with backend=original')
         return
@@ -318,13 +322,17 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         return
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
-    if hasattr(sd_model, 'maybe_free_model_hooks') and shared.opts.diffusers_offload_mode == "none":
-        shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
-        sd_model.maybe_free_model_hooks()
-        sd_model.has_accelerate = False
-    if hasattr(sd_model, "enable_model_cpu_offload") and shared.opts.diffusers_offload_mode == "model":
+    if shared.opts.diffusers_offload_mode == "none":
+        if shared.sd_model_type in should_offload:
+            shared.log.warning(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} type={shared.sd_model.__class__.__name__} large model')
+        else:
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
+        if hasattr(sd_model, 'maybe_free_model_hooks'):
+            sd_model.maybe_free_model_hooks()
+            sd_model.has_accelerate = False
+    if shared.opts.diffusers_offload_mode == "model" and hasattr(sd_model, "enable_model_cpu_offload"):
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -337,9 +345,9 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
             set_accelerate(sd_model)
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
-    if hasattr(sd_model, "enable_sequential_cpu_offload") and shared.opts.diffusers_offload_mode == "sequential":
+    if shared.opts.diffusers_offload_mode == "sequential" and hasattr(sd_model, "enable_sequential_cpu_offload"):
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
+            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False
@@ -358,74 +366,159 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         except Exception as e:
             shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
     if shared.opts.diffusers_offload_mode == "balanced":
-        try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode}')
-            sd_model = apply_balanced_offload(sd_model)
-        except Exception as e:
-            shared.log.error(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} {e}')
+        sd_model = apply_balanced_offload(sd_model)
+    process_timer.add('offload', time.time() - t0)
 
 
-def apply_balanced_offload(sd_model):
-    from accelerate import infer_auto_device_map, dispatch_model
-    from accelerate.hooks import add_hook_to_module, remove_hook_from_module, ModelHook
+class OffloadHook(accelerate.hooks.ModelHook):
+    def __init__(self, checkpoint_name):
+        if shared.opts.diffusers_offload_max_gpu_memory > 1:
+            shared.opts.diffusers_offload_max_gpu_memory = 0.75
+        if shared.opts.diffusers_offload_max_cpu_memory > 1:
+            shared.opts.diffusers_offload_max_cpu_memory = 0.75
+        self.checkpoint_name = checkpoint_name
+        self.min_watermark = shared.opts.diffusers_offload_min_gpu_memory
+        self.max_watermark = shared.opts.diffusers_offload_max_gpu_memory
+        self.cpu_watermark = shared.opts.diffusers_offload_max_cpu_memory
+        self.gpu = int(shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory * 1024*1024*1024)
+        self.cpu = int(shared.cpu_memory * shared.opts.diffusers_offload_max_cpu_memory * 1024*1024*1024)
+        self.offload_map = {}
+        self.param_map = {}
+        gpu = f'{shared.gpu_memory * shared.opts.diffusers_offload_min_gpu_memory:.3f}-{shared.gpu_memory * shared.opts.diffusers_offload_max_gpu_memory}:{shared.gpu_memory}'
+        shared.log.info(f'Offload: type=balanced op=init watermark={self.min_watermark}-{self.max_watermark} gpu={gpu} cpu={shared.cpu_memory:.3f} limit={shared.opts.cuda_mem_fraction:.2f}')
+        self.validate()
+        super().__init__()
+
+    def validate(self):
+        if shared.opts.diffusers_offload_mode != 'balanced':
+            return
+        if shared.opts.diffusers_offload_min_gpu_memory < 0 or shared.opts.diffusers_offload_min_gpu_memory > 1:
+            shared.opts.diffusers_offload_min_gpu_memory = 0.25
+            shared.log.warning(f'Offload: type=balanced op=validate: watermark low={shared.opts.diffusers_offload_min_gpu_memory} invalid value')
+        if shared.opts.diffusers_offload_max_gpu_memory < 0.1 or shared.opts.diffusers_offload_max_gpu_memory > 1:
+            shared.opts.diffusers_offload_max_gpu_memory = 0.75
+            shared.log.warning(f'Offload: type=balanced op=validate: watermark high={shared.opts.diffusers_offload_max_gpu_memory} invalid value')
+        if shared.opts.diffusers_offload_min_gpu_memory > shared.opts.diffusers_offload_max_gpu_memory:
+            shared.opts.diffusers_offload_min_gpu_memory = shared.opts.diffusers_offload_max_gpu_memory
+            shared.log.warning(f'Offload: type=balanced op=validate: watermark low={shared.opts.diffusers_offload_min_gpu_memory} reset')
+        if shared.opts.diffusers_offload_max_gpu_memory * shared.gpu_memory < 4:
+            shared.log.warning(f'Offload: type=balanced op=validate: watermark high={shared.opts.diffusers_offload_max_gpu_memory} low memory')
+
+    def model_size(self):
+        return sum(self.offload_map.values())
+
+    def init_hook(self, module):
+        return module
+
+    def pre_forward(self, module, *args, **kwargs):
+        if devices.normalize_device(module.device) != devices.normalize_device(devices.device):
+            device_index = torch.device(devices.device).index
+            if device_index is None:
+                device_index = 0
+            max_memory = { device_index: self.gpu, "cpu": self.cpu }
+            device_map = getattr(module, "balanced_offload_device_map", None)
+            if device_map is None or max_memory != getattr(module, "balanced_offload_max_memory", None):
+                device_map = accelerate.infer_auto_device_map(module, max_memory=max_memory)
+            offload_dir = getattr(module, "offload_dir", os.path.join(shared.opts.accelerate_offload_path, module.__class__.__name__))
+            module = accelerate.dispatch_model(module, device_map=device_map, offload_dir=offload_dir)
+            module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+            module.balanced_offload_device_map = device_map
+            module.balanced_offload_max_memory = max_memory
+        return args, kwargs
+
+    def post_forward(self, module, output):
+        return output
+
+    def detach_hook(self, module):
+        return module
+
+
+def apply_balanced_offload(sd_model, exclude=[]):
+    global offload_hook_instance # pylint: disable=global-statement
+    if shared.opts.diffusers_offload_mode != "balanced":
+        return sd_model
+    t0 = time.time()
     excluded = ['OmniGenPipeline']
     if sd_model.__class__.__name__ in excluded:
         return sd_model
+    cached = True
+    checkpoint_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
+    if checkpoint_name is None:
+        checkpoint_name = sd_model.__class__.__name__
+    if offload_hook_instance is None or offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory or offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory or checkpoint_name != offload_hook_instance.checkpoint_name:
+        cached = False
+        offload_hook_instance = OffloadHook(checkpoint_name)
 
-    class dispatch_from_cpu_hook(ModelHook):
-        def init_hook(self, module):
-            return module
-
-        def pre_forward(self, module, *args, **kwargs):
-            if devices.normalize_device(module.device) != devices.normalize_device(devices.device):
-                device_index = torch.device(devices.device).index
-                if device_index is None:
-                    device_index = 0
-                max_memory = {
-                    device_index: f"{shared.opts.diffusers_offload_max_gpu_memory}GiB",
-                    "cpu": f"{shared.opts.diffusers_offload_max_cpu_memory}GiB",
-                }
-                device_map = infer_auto_device_map(module, max_memory=max_memory)
-                module = remove_hook_from_module(module, recurse=True)
-                offload_dir = getattr(module, "offload_dir", os.path.join(shared.opts.accelerate_offload_path, module.__class__.__name__))
-                module = dispatch_model(module, device_map=device_map, offload_dir=offload_dir)
-                module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
-                module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
-            return args, kwargs
-
-        def post_forward(self, module, output):
-            return output
-
-        def detach_hook(self, module):
-            return module
+    def get_pipe_modules(pipe):
+        if hasattr(pipe, "_internal_dict"):
+            modules_names = pipe._internal_dict.keys() # pylint: disable=protected-access
+        else:
+            modules_names = get_signature(pipe).keys()
+        modules_names = [m for m in modules_names if m not in exclude and not m.startswith('_')]
+        modules = {}
+        for module_name in modules_names:
+            module_size = offload_hook_instance.offload_map.get(module_name, None)
+            if module_size is None:
+                module = getattr(pipe, module_name, None)
+                if not isinstance(module, torch.nn.Module):
+                    continue
+                try:
+                    module_size = sum(p.numel() * p.element_size() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
+                    param_num = sum(p.numel() for p in module.parameters(recurse=True)) / 1024 / 1024 / 1024
+                except Exception as e:
+                    shared.log.error(f'Offload: type=balanced op=calc module={module_name} {e}')
+                    module_size = 0
+                offload_hook_instance.offload_map[module_name] = module_size
+                offload_hook_instance.param_map[module_name] = param_num
+            modules[module_name] = module_size
+        modules = sorted(modules.items(), key=lambda x: x[1], reverse=True)
+        return modules
 
     def apply_balanced_offload_to_module(pipe):
+        used_gpu, used_ram = devices.torch_gc(fast=True)
         if hasattr(pipe, "pipe"):
             apply_balanced_offload_to_module(pipe.pipe)
         if hasattr(pipe, "_internal_dict"):
             keys = pipe._internal_dict.keys() # pylint: disable=protected-access
         else:
-            keys = get_signature(shared.sd_model).keys()
-        for module_name in keys: # pylint: disable=protected-access
+            keys = get_signature(pipe).keys()
+        keys = [k for k in keys if k not in exclude and not k.startswith('_')]
+        for module_name, module_size in get_pipe_modules(pipe): # pylint: disable=protected-access
             module = getattr(pipe, module_name, None)
-            if isinstance(module, torch.nn.Module):
-                checkpoint_name = pipe.sd_checkpoint_info.name if getattr(pipe, "sd_checkpoint_info", None) is not None else None
-                if checkpoint_name is None:
-                    checkpoint_name = pipe.__class__.__name__
-                offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
-                module = remove_hook_from_module(module, recurse=True)
-                try:
-                    module = module.to("cpu")
-                    module.offload_dir = offload_dir
-                    network_layer_name = getattr(module, "network_layer_name", None)
-                    module = add_hook_to_module(module, dispatch_from_cpu_hook(), append=True)
-                    module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
-                    if network_layer_name:
-                        module.network_layer_name = network_layer_name
-                except Exception as e:
-                    if 'bitsandbytes' not in str(e):
-                        shared.log.error(f'Balanced offload: module={module_name} {e}')
-                devices.torch_gc(fast=True)
+            if module is None:
+                continue
+            network_layer_name = getattr(module, "network_layer_name", None)
+            device_map = getattr(module, "balanced_offload_device_map", None)
+            max_memory = getattr(module, "balanced_offload_max_memory", None)
+            module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
+            perc_gpu = used_gpu / shared.gpu_memory
+            try:
+                prev_gpu = used_gpu
+                do_offload = (perc_gpu > shared.opts.diffusers_offload_min_gpu_memory) and (module.device != devices.cpu)
+                if do_offload:
+                    module = module.to(devices.cpu, non_blocking=True)
+                    used_gpu -= module_size
+                if not cached:
+                    shared.log.debug(f'Offload: type=balanced module={module_name} cls={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
+                debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} module={module.__class__.__name__} size={module_size:.3f}')
+            except Exception as e:
+                if 'out of memory' in str(e):
+                    devices.torch_gc(fast=True, force=True, reason='oom')
+                elif 'bitsandbytes' in str(e):
+                    pass
+                else:
+                    shared.log.error(f'Offload: type=balanced op=apply module={module_name} {e}')
+                if os.environ.get('SD_MOVE_DEBUG', None):
+                    errors.display(e, f'Offload: type=balanced op=apply module={module_name}')
+            module.offload_dir = os.path.join(shared.opts.accelerate_offload_path, checkpoint_name, module_name)
+            module = accelerate.hooks.add_hook_to_module(module, offload_hook_instance, append=True)
+            module._hf_hook.execution_device = torch.device(devices.device) # pylint: disable=protected-access
+            if network_layer_name:
+                module.network_layer_name = network_layer_name
+            if device_map and max_memory:
+                module.balanced_offload_device_map = device_map
+                module.balanced_offload_max_memory = max_memory
+        devices.torch_gc(fast=True, force=True, reason='offload')
 
     apply_balanced_offload_to_module(sd_model)
     if hasattr(sd_model, "pipe"):
@@ -435,6 +528,12 @@ def apply_balanced_offload(sd_model):
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
     set_accelerate(sd_model)
+    t = time.time() - t0
+    process_timer.add('offload', t)
+    fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+    debug_move(f'Apply offload: time={t:.2f} type=balanced fn={fn}')
+    if not cached:
+        shared.log.info(f'Offload: type=balanced op=apply class={sd_model.__class__.__name__} modules={len(offload_hook_instance.offload_map)} size={offload_hook_instance.model_size():.3f}')
     return sd_model
 
 
@@ -479,7 +578,7 @@ def move_model(model, device=None, force=False):
                             shared.log.error(f'Model move execution device: device={device} {e}')
     if getattr(model, 'has_accelerate', False) and not force:
         return
-    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device):
+    if hasattr(model, "device") and devices.normalize_device(model.device) == devices.normalize_device(device) and not force:
         return
     try:
         t0 = time.time()
@@ -512,7 +611,10 @@ def move_model(model, device=None, force=False):
     except Exception as e1:
         t1 = time.time()
         shared.log.error(f'Model move: device={device} {e1}')
-    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 0.1:
+    if 'move' not in process_timer.records:
+        process_timer.records['move'] = 0
+    process_timer.records['move'] += t1 - t0
+    if os.environ.get('SD_MOVE_DEBUG', None) or (t1-t0) > 2:
         shared.log.debug(f'Model move: device={device} class={model.__class__.__name__} accelerate={getattr(model, "has_accelerate", False)} fn={fn} time={t1-t0:.2f}') # pylint: disable=protected-access
     devices.torch_gc()
 
@@ -612,6 +714,9 @@ def load_diffuser_force(model_type, checkpoint_info, diffusers_load_config, op='
         elif model_type in ['PixArt-Sigma']: # forced pipeline
             from modules.model_pixart import load_pixart
             sd_model = load_pixart(checkpoint_info, diffusers_load_config)
+        elif model_type in ['Sana']: # forced pipeline
+            from modules.model_sana import load_sana
+            sd_model = load_sana(checkpoint_info, diffusers_load_config)
         elif model_type in ['Lumina-Next']: # forced pipeline
             from modules.model_lumina import load_lumina
             sd_model = load_lumina(checkpoint_info, diffusers_load_config)
@@ -771,7 +876,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
     return sd_model
 
 
-def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'): # pylint: disable=unused-argument
+def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model', revision=None): # pylint: disable=unused-argument
     if timer is None:
         timer = Timer()
     logging.getLogger("diffusers").setLevel(logging.ERROR)
@@ -784,6 +889,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         "requires_safety_checker": False, # sd15 specific but we cant know ahead of time
         # "use_safetensors": True,
     }
+    if revision is not None:
+        diffusers_load_config['revision'] = revision
     if shared.opts.diffusers_model_load_variant != 'default':
         diffusers_load_config['variant'] = shared.opts.diffusers_model_load_variant
     if shared.opts.diffusers_pipeline == 'Custom Diffusers Pipeline' and len(shared.opts.custom_diffusers_pipeline) > 0:
@@ -925,7 +1032,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         shared.log.error(f"Load {op}: {e}")
         errors.display(e, "Model")
 
-    devices.torch_gc(force=True)
+    if shared.opts.diffusers_offload_mode != 'balanced':
+        devices.torch_gc(force=True)
     if sd_model is not None:
         script_callbacks.model_loaded_callback(sd_model)
 
@@ -958,6 +1066,11 @@ def get_diffusers_task(pipe: diffusers.DiffusionPipeline) -> DiffusersTaskType:
 
 def get_signature(cls):
     signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
+    return signature.parameters
+
+
+def get_call(cls):
+    signature = inspect.signature(cls.__call__, follow_wrapped=True, eval_str=True)
     return signature.parameters
 
 
@@ -1077,6 +1190,9 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'OmniGenPipeline',
         'StableDiffusion3ControlNetPipeline',
         'InstantIRPipeline',
+        'FluxFillPipeline',
+        'FluxControlPipeline',
+        'StableVideoDiffusionPipeline',
     ]
 
     n = getattr(pipe.__class__, '__name__', '')
@@ -1345,7 +1461,7 @@ def reload_text_encoder(initial=False):
         set_t5(pipe=shared.sd_model, module='text_encoder_3', t5=shared.opts.sd_text_encoder, cache_dir=shared.opts.diffusers_dir)
 
 
-def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False):
+def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model', force=False, revision=None):
     load_dict = shared.opts.sd_model_dict != model_data.sd_dict
     from modules import lowvram, sd_hijack
     checkpoint_info = info or select_checkpoint(op=op) # are we selecting model or dictionary
@@ -1380,7 +1496,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             unload_model_weights(op=op)
             sd_model = None
     timer = Timer()
-    # TODO implement caching after diffusers implement state_dict loading
+    # TODO model loader: implement model in-memory caching
     state_dict = get_checkpoint_state_dict(checkpoint_info, timer) if not shared.native else None
     checkpoint_config = sd_models_config.find_checkpoint_config(state_dict, checkpoint_info)
     timer.record("config")
@@ -1390,7 +1506,7 @@ def reload_model_weights(sd_model=None, info=None, reuse_dict=False, op='model',
             load_model(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
             model_data.sd_dict = shared.opts.sd_model_dict
         else:
-            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op)
+            load_diffuser(checkpoint_info, already_loaded_state_dict=state_dict, timer=timer, op=op, revision=revision)
         if load_dict and next_checkpoint_info is not None:
             model_data.sd_dict = shared.opts.sd_model_dict
             shared.opts.data["sd_model_checkpoint"] = next_checkpoint_info.title
@@ -1441,10 +1557,17 @@ def disable_offload(sd_model):
     from accelerate.hooks import remove_hook_from_module
     if not getattr(sd_model, 'has_accelerate', False):
         return
-    if hasattr(sd_model, 'components'):
-        for _name, model in sd_model.components.items():
-            if isinstance(model, torch.nn.Module):
-                remove_hook_from_module(model, recurse=True)
+    if hasattr(sd_model, "_internal_dict"):
+        keys = sd_model._internal_dict.keys() # pylint: disable=protected-access
+    else:
+        keys = get_signature(sd_model).keys()
+    for module_name in keys: # pylint: disable=protected-access
+        module = getattr(sd_model, module_name, None)
+        if isinstance(module, torch.nn.Module):
+            network_layer_name = getattr(module, "network_layer_name", None)
+            module = remove_hook_from_module(module, recurse=True)
+            if network_layer_name:
+                module.network_layer_name = network_layer_name
     sd_model.has_accelerate = False
 
 

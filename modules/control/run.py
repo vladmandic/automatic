@@ -7,6 +7,7 @@ from PIL import Image
 from modules.control import util # helper functions
 from modules.control import unit # control units
 from modules.control import processors # image preprocessors
+from modules.control import tile # tiling module
 from modules.control.units import controlnet # lllyasviel ControlNet
 from modules.control.units import xs # VisLearn ControlNet-XS
 from modules.control.units import lite # Kohya ControlLLLite
@@ -42,6 +43,167 @@ def terminate(msg):
     restore_pipeline()
     shared.log.error(f'Control terminated: {msg}')
     return msg
+
+
+def set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits):
+    global pipe, instance # pylint: disable=global-statement
+    pipe = None
+    if has_models:
+        p.ops.append('control')
+        p.extra_generation_params["Control type"] = unit_type # overriden later with pretty-print
+        p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
+        p.extra_generation_params["Control conditioning"] = control_conditioning if isinstance(control_conditioning, list) else [control_conditioning]
+        p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
+        p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
+        p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in p.extra_generation_params["Control conditioning"]])
+        p.extra_generation_params['Control start'] = ';'.join([str(c) for c in p.extra_generation_params['Control start']])
+        p.extra_generation_params['Control end'] = ';'.join([str(c) for c in p.extra_generation_params['Control end']])
+    if unit_type == 't2i adapter' and has_models:
+        p.extra_generation_params["Control type"] = 'T2I-Adapter'
+        p.task_args['adapter_conditioning_scale'] = control_conditioning
+        instance = t2iadapter.AdapterPipeline(selected_models, shared.sd_model)
+        pipe = instance.pipeline
+        if inits is not None:
+            shared.log.warning('Control: T2I-Adapter does not support separate init image')
+    elif unit_type == 'controlnet' and has_models:
+        p.extra_generation_params["Control type"] = 'ControlNet'
+        p.task_args['controlnet_conditioning_scale'] = control_conditioning
+        p.task_args['control_guidance_start'] = control_guidance_start
+        p.task_args['control_guidance_end'] = control_guidance_end
+        p.task_args['guess_mode'] = p.guess_mode
+        instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model, p=p)
+        pipe = instance.pipeline
+    elif unit_type == 'xs' and has_models:
+        p.extra_generation_params["Control type"] = 'ControlNet-XS'
+        p.controlnet_conditioning_scale = control_conditioning
+        p.control_guidance_start = control_guidance_start
+        p.control_guidance_end = control_guidance_end
+        instance = xs.ControlNetXSPipeline(selected_models, shared.sd_model)
+        pipe = instance.pipeline
+        if inits is not None:
+            shared.log.warning('Control: ControlNet-XS does not support separate init image')
+    elif unit_type == 'lite' and has_models:
+        p.extra_generation_params["Control type"] = 'ControlLLLite'
+        p.controlnet_conditioning_scale = control_conditioning
+        instance = lite.ControlLLitePipeline(shared.sd_model)
+        pipe = instance.pipeline
+        if inits is not None:
+            shared.log.warning('Control: ControlLLLite does not support separate init image')
+    elif unit_type == 'reference' and has_models:
+        p.extra_generation_params["Control type"] = 'Reference'
+        p.extra_generation_params["Control attention"] = p.attention
+        p.task_args['reference_attn'] = 'Attention' in p.attention
+        p.task_args['reference_adain'] = 'Adain' in p.attention
+        p.task_args['attention_auto_machine_weight'] = p.query_weight
+        p.task_args['gn_auto_machine_weight'] = p.adain_weight
+        p.task_args['style_fidelity'] = p.fidelity
+        instance = reference.ReferencePipeline(shared.sd_model)
+        pipe = instance.pipeline
+        if inits is not None:
+            shared.log.warning('Control: ControlNet-XS does not support separate init image')
+    else: # run in txt2img/img2img mode
+        if len(active_strength) > 0:
+            p.strength = active_strength[0]
+        pipe = shared.sd_model
+        instance = None
+    debug(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
+    return pipe
+
+
+def check_active(p, unit_type, units):
+    active_process: List[processors.Processor] = [] # all active preprocessors
+    active_model: List[Union[controlnet.ControlNet, xs.ControlNetXS, t2iadapter.Adapter]] = [] # all active models
+    active_strength: List[float] = [] # strength factors for all active models
+    active_start: List[float] = [] # start step for all active models
+    active_end: List[float] = [] # end step for all active models
+    num_units = 0
+    for u in units:
+        if u.type != unit_type:
+            continue
+        num_units += 1
+        debug(f'Control unit: i={num_units} type={u.type} enabled={u.enabled}')
+        if not u.enabled:
+            if u.controlnet is not None and u.controlnet.model is not None:
+                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
+                sd_models.move_model(u.controlnet.model, devices.cpu)
+            continue
+        if u.controlnet is not None and u.controlnet.model is not None:
+            debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
+            sd_models.move_model(u.controlnet.model, devices.device)
+        if unit_type == 't2i adapter' and u.adapter.model is not None:
+            active_process.append(u.process)
+            active_model.append(u.adapter)
+            active_strength.append(float(u.strength))
+            p.adapter_conditioning_factor = u.factor
+            shared.log.debug(f'Control T2I-Adapter unit: i={num_units} process="{u.process.processor_id}" model="{u.adapter.model_id}" strength={u.strength} factor={u.factor}')
+        elif unit_type == 'controlnet' and u.controlnet.model is not None:
+            active_process.append(u.process)
+            active_model.append(u.controlnet)
+            active_strength.append(float(u.strength))
+            active_start.append(float(u.start))
+            active_end.append(float(u.end))
+            p.guess_mode = u.guess
+            if isinstance(u.mode, str):
+                p.control_mode = u.choices.index(u.mode) if u.mode in u.choices else 0
+                p.is_tile = p.is_tile or 'tile' in u.mode.lower()
+                p.control_tile = u.tile
+                p.extra_generation_params["Control mode"] = u.mode
+            shared.log.debug(f'Control ControlNet unit: i={num_units} process="{u.process.processor_id}" model="{u.controlnet.model_id}" strength={u.strength} guess={u.guess} start={u.start} end={u.end} mode={u.mode}')
+        elif unit_type == 'xs' and u.controlnet.model is not None:
+            active_process.append(u.process)
+            active_model.append(u.controlnet)
+            active_strength.append(float(u.strength))
+            active_start.append(float(u.start))
+            active_end.append(float(u.end))
+            shared.log.debug(f'Control ControlNet-XS unit: i={num_units} process={u.process.processor_id} model={u.controlnet.model_id} strength={u.strength} guess={u.guess} start={u.start} end={u.end}')
+        elif unit_type == 'lite' and u.controlnet.model is not None:
+            active_process.append(u.process)
+            active_model.append(u.controlnet)
+            active_strength.append(float(u.strength))
+            shared.log.debug(f'Control ControlLLite unit: i={num_units} process={u.process.processor_id} model={u.controlnet.model_id} strength={u.strength} guess={u.guess} start={u.start} end={u.end}')
+        elif unit_type == 'reference':
+            p.override = u.override
+            p.attention = u.attention
+            p.query_weight = float(u.query_weight)
+            p.adain_weight = float(u.adain_weight)
+            p.fidelity = u.fidelity
+            shared.log.debug('Control Reference unit')
+        else:
+            if u.process.processor_id is not None:
+                active_process.append(u.process)
+            shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
+            active_strength.append(float(u.strength))
+    debug(f'Control active: process={len(active_process)} model={len(active_model)}')
+    return active_process, active_model, active_strength, active_start, active_end
+
+
+def check_enabled(p, unit_type, units, active_model, active_strength, active_start, active_end):
+    has_models = False
+    selected_models: List[Union[controlnet.ControlNetModel, xs.ControlNetXSModel, t2iadapter.AdapterModel]] = None
+    control_conditioning = None
+    control_guidance_start = None
+    control_guidance_end = None
+    if unit_type == 't2i adapter' or unit_type == 'controlnet' or unit_type == 'xs' or unit_type == 'lite':
+        if len(active_model) == 0:
+            selected_models = None
+        elif len(active_model) == 1:
+            selected_models = active_model[0].model if active_model[0].model is not None else None
+            p.is_tile = p.is_tile or 'tile' in active_model[0].model_id.lower()
+            has_models = selected_models is not None
+            control_conditioning = active_strength[0] if len(active_strength) > 0 else 1 # strength or list[strength]
+            control_guidance_start = active_start[0] if len(active_start) > 0 else 0
+            control_guidance_end = active_end[0] if len(active_end) > 0 else 1
+        else:
+            selected_models = [m.model for m in active_model if m.model is not None]
+            has_models = len(selected_models) > 0
+            control_conditioning = active_strength[0] if len(active_strength) == 1 else list(active_strength) # strength or list[strength]
+            control_guidance_start = active_start[0] if len(active_start) == 1 else list(active_start)
+            control_guidance_end = active_end[0] if len(active_end) == 1 else list(active_end)
+    elif unit_type == 'reference':
+        has_models = any(u.enabled for u in units if u.type == 'reference')
+    else:
+        pass
+    return has_models, selected_models, control_conditioning, control_guidance_start, control_guidance_end
 
 
 def control_set(kwargs):
@@ -83,20 +245,15 @@ def control_run(state: str = '',
                 u.adapter.load(u.model_name, force=False)
             else:
                 u.controlnet.load(u.model_name, force=False)
+                u.update_choices(u.model_name)
         if u.process is not None and u.process.override is None and u.override is not None:
             u.process.override = u.override
 
-    global instance, pipe, original_pipeline # pylint: disable=global-statement
-    t_start = time.time()
+    global pipe, original_pipeline # pylint: disable=global-statement
     debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
     if inputs is None or (type(inputs) is list and len(inputs) == 0):
         inputs = [None]
     output_images: List[Image.Image] = [] # output images
-    active_process: List[processors.Processor] = [] # all active preprocessors
-    active_model: List[Union[controlnet.ControlNet, xs.ControlNetXS, t2iadapter.Adapter]] = [] # all active models
-    active_strength: List[float] = [] # strength factors for all active models
-    active_start: List[float] = [] # start step for all active models
-    active_end: List[float] = [] # end step for all active models
     processed_image: Image.Image = None # last processed image
     if mask is not None and input_type == 0:
         input_type = 1 # inpaint always requires control_image
@@ -150,10 +307,11 @@ def control_run(state: str = '',
         outpath_grids=shared.opts.outdir_grids or shared.opts.outdir_control_grids,
     )
     p.state = state
+    p.is_tile = False
     # processing.process_init(p)
     resize_mode_before = resize_mode_before if resize_name_before != 'None' and inputs is not None and len(inputs) > 0 else 0
 
-    # TODO monkey-patch for modernui missing tabs.select event
+    # TODO modernui: monkey-patch for missing tabs.select event
     if selected_scale_tab_before == 0 and resize_name_before != 'None' and scale_by_before != 1 and inputs is not None and len(inputs) > 0:
         shared.log.debug('Control: override resize mode=before')
         selected_scale_tab_before = 1
@@ -224,155 +382,17 @@ def control_run(state: str = '',
 
     unit_type = unit_type.strip().lower() if unit_type is not None else ''
     t0 = time.time()
-    num_units = 0
-    for u in units:
-        if u.type != unit_type:
-            continue
-        num_units += 1
-        debug(f'Control unit: i={num_units} type={u.type} enabled={u.enabled}')
-        if not u.enabled:
-            if u.controlnet is not None and u.controlnet.model is not None:
-                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
-                sd_models.move_model(u.controlnet.model, devices.cpu)
-            continue
-        if u.controlnet is not None and u.controlnet.model is not None:
-            debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
-            sd_models.move_model(u.controlnet.model, devices.device)
-        if unit_type == 't2i adapter' and u.adapter.model is not None:
-            active_process.append(u.process)
-            active_model.append(u.adapter)
-            active_strength.append(float(u.strength))
-            p.adapter_conditioning_factor = u.factor
-            shared.log.debug(f'Control T2I-Adapter unit: i={num_units} process={u.process.processor_id} model={u.adapter.model_id} strength={u.strength} factor={u.factor}')
-        elif unit_type == 'controlnet' and u.controlnet.model is not None:
-            active_process.append(u.process)
-            active_model.append(u.controlnet)
-            active_strength.append(float(u.strength))
-            active_start.append(float(u.start))
-            active_end.append(float(u.end))
-            p.guess_mode = u.guess
-            p.control_mode = u.mode
-            shared.log.debug(f'Control ControlNet unit: i={num_units} process={u.process.processor_id} model={u.controlnet.model_id} strength={u.strength} guess={u.guess} start={u.start} end={u.end} mode={u.mode}')
-        elif unit_type == 'xs' and u.controlnet.model is not None:
-            active_process.append(u.process)
-            active_model.append(u.controlnet)
-            active_strength.append(float(u.strength))
-            active_start.append(float(u.start))
-            active_end.append(float(u.end))
-            shared.log.debug(f'Control ControlNet-XS unit: i={num_units} process={u.process.processor_id} model={u.controlnet.model_id} strength={u.strength} guess={u.guess} start={u.start} end={u.end}')
-        elif unit_type == 'lite' and u.controlnet.model is not None:
-            active_process.append(u.process)
-            active_model.append(u.controlnet)
-            active_strength.append(float(u.strength))
-            shared.log.debug(f'Control ControlLLite unit: i={num_units} process={u.process.processor_id} model={u.controlnet.model_id} strength={u.strength} guess={u.guess} start={u.start} end={u.end}')
-        elif unit_type == 'reference':
-            p.override = u.override
-            p.attention = u.attention
-            p.query_weight = float(u.query_weight)
-            p.adain_weight = float(u.adain_weight)
-            p.fidelity = u.fidelity
-            shared.log.debug('Control Reference unit')
-        else:
-            if u.process.processor_id is not None:
-                active_process.append(u.process)
-            shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
-            active_strength.append(float(u.strength))
-    debug(f'Control active: process={len(active_process)} model={len(active_model)}')
+
+    active_process, active_model, active_strength, active_start, active_end = check_active(p, unit_type, units)
+    has_models, selected_models, control_conditioning, control_guidance_start, control_guidance_end = check_enabled(p, unit_type, units, active_model, active_strength, active_start, active_end)
 
     processed: processing.Processed = None
     image_txt = ''
     info_txt = []
-    has_models = False
-    selected_models: List[Union[controlnet.ControlNetModel, xs.ControlNetXSModel, t2iadapter.AdapterModel]] = None
-    control_conditioning = None
-    control_guidance_start = None
-    control_guidance_end = None
-    if unit_type == 't2i adapter' or unit_type == 'controlnet' or unit_type == 'xs' or unit_type == 'lite':
-        if len(active_model) == 0:
-            selected_models = None
-        elif len(active_model) == 1:
-            selected_models = active_model[0].model if active_model[0].model is not None else None
-            has_models = selected_models is not None
-            control_conditioning = active_strength[0] if len(active_strength) > 0 else 1 # strength or list[strength]
-            control_guidance_start = active_start[0] if len(active_start) > 0 else 0
-            control_guidance_end = active_end[0] if len(active_end) > 0 else 1
-        else:
-            selected_models = [m.model for m in active_model if m.model is not None]
-            has_models = len(selected_models) > 0
-            control_conditioning = active_strength[0] if len(active_strength) == 1 else list(active_strength) # strength or list[strength]
-            control_guidance_start = active_start[0] if len(active_start) == 1 else list(active_start)
-            control_guidance_end = active_end[0] if len(active_end) == 1 else list(active_end)
-    elif unit_type == 'reference':
-        has_models = any(u.enabled for u in units if u.type == 'reference')
-    else:
-        pass
 
-    def set_pipe():
-        global pipe, instance # pylint: disable=global-statement
-        pipe = None
-        if has_models:
-            p.ops.append('control')
-            p.extra_generation_params["Control mode"] = unit_type # overriden later with pretty-print
-            p.extra_generation_params["Control conditioning"] = control_conditioning if isinstance(control_conditioning, list) else [control_conditioning]
-            p.extra_generation_params['Control start'] = control_guidance_start if isinstance(control_guidance_start, list) else [control_guidance_start]
-            p.extra_generation_params['Control end'] = control_guidance_end if isinstance(control_guidance_end, list) else [control_guidance_end]
-            p.extra_generation_params["Control model"] = ';'.join([(m.model_id or '') for m in active_model if m.model is not None])
-            p.extra_generation_params["Control conditioning"] = ';'.join([str(c) for c in p.extra_generation_params["Control conditioning"]])
-            p.extra_generation_params['Control start'] = ';'.join([str(c) for c in p.extra_generation_params['Control start']])
-            p.extra_generation_params['Control end'] = ';'.join([str(c) for c in p.extra_generation_params['Control end']])
-        if unit_type == 't2i adapter' and has_models:
-            p.extra_generation_params["Control mode"] = 'T2I-Adapter'
-            p.task_args['adapter_conditioning_scale'] = control_conditioning
-            instance = t2iadapter.AdapterPipeline(selected_models, shared.sd_model)
-            pipe = instance.pipeline
-            if inits is not None:
-                shared.log.warning('Control: T2I-Adapter does not support separate init image')
-        elif unit_type == 'controlnet' and has_models:
-            p.extra_generation_params["Control mode"] = 'ControlNet'
-            p.task_args['controlnet_conditioning_scale'] = control_conditioning
-            p.task_args['control_guidance_start'] = control_guidance_start
-            p.task_args['control_guidance_end'] = control_guidance_end
-            p.task_args['guess_mode'] = p.guess_mode
-            instance = controlnet.ControlNetPipeline(selected_models, shared.sd_model)
-            pipe = instance.pipeline
-        elif unit_type == 'xs' and has_models:
-            p.extra_generation_params["Control mode"] = 'ControlNet-XS'
-            p.controlnet_conditioning_scale = control_conditioning
-            p.control_guidance_start = control_guidance_start
-            p.control_guidance_end = control_guidance_end
-            instance = xs.ControlNetXSPipeline(selected_models, shared.sd_model)
-            pipe = instance.pipeline
-            if inits is not None:
-                shared.log.warning('Control: ControlNet-XS does not support separate init image')
-        elif unit_type == 'lite' and has_models:
-            p.extra_generation_params["Control mode"] = 'ControlLLLite'
-            p.controlnet_conditioning_scale = control_conditioning
-            instance = lite.ControlLLitePipeline(shared.sd_model)
-            pipe = instance.pipeline
-            if inits is not None:
-                shared.log.warning('Control: ControlLLLite does not support separate init image')
-        elif unit_type == 'reference' and has_models:
-            p.extra_generation_params["Control mode"] = 'Reference'
-            p.extra_generation_params["Control attention"] = p.attention
-            p.task_args['reference_attn'] = 'Attention' in p.attention
-            p.task_args['reference_adain'] = 'Adain' in p.attention
-            p.task_args['attention_auto_machine_weight'] = p.query_weight
-            p.task_args['gn_auto_machine_weight'] = p.adain_weight
-            p.task_args['style_fidelity'] = p.fidelity
-            instance = reference.ReferencePipeline(shared.sd_model)
-            pipe = instance.pipeline
-            if inits is not None:
-                shared.log.warning('Control: ControlNet-XS does not support separate init image')
-        else: # run in txt2img/img2img mode
-            if len(active_strength) > 0:
-                p.strength = active_strength[0]
-            pipe = shared.sd_model
-            instance = None
-        debug(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
-        return pipe
+    p.is_tile = p.is_tile and has_models
 
-
-    pipe = set_pipe()
+    pipe = set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits)
     debug(f'Control pipeline: class={pipe.__class__.__name__} args={vars(p)}')
     t1, t2, t3 = time.time(), 0, 0
     status = True
@@ -394,6 +414,8 @@ def control_run(state: str = '',
         sd_models.set_diffuser_options(shared.sd_model)
     else:
         original_pipeline = None
+
+    possible = sd_models.get_call(pipe).keys()
 
     try:
         with devices.inference_context():
@@ -424,7 +446,7 @@ def control_run(state: str = '',
 
             while status:
                 if pipe is None: # pipe may have been reset externally
-                    pipe = set_pipe()
+                    pipe = set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits)
                     debug(f'Control pipeline reinit: class={pipe.__class__.__name__}')
                 processed_image = None
                 if frame is not None:
@@ -564,19 +586,29 @@ def control_run(state: str = '',
                             return [], '', '', 'Reference mode without image'
                     elif unit_type == 'controlnet' and has_models:
                         if input_type == 0: # Control only
-                            if shared.sd_model_type in ['f1', 'sd3'] and 'control_image' not in p.task_args:
-                                p.task_args['control_image'] = p.init_images # some controlnets mandate this
+                            if 'control_image' in possible:
+                                p.task_args['control_image'] = [p.init_images] if isinstance(p.init_images, Image.Image) else p.init_images
+                            elif 'image' in possible:
+                                p.task_args['image'] = [p.init_images] if isinstance(p.init_images, Image.Image) else p.init_images
+                            if 'control_mode' in possible:
+                                p.task_args['control_mode'] = getattr(p, 'control_mode', None)
+                            if 'strength' in possible:
                                 p.task_args['strength'] = p.denoising_strength
+                            p.init_images = None
                         elif input_type == 1: # Init image same as control
-                            p.task_args['control_image'] = p.init_images # switch image and control_image
-                            p.task_args['strength'] = p.denoising_strength
+                            if 'control_image' in possible:
+                                p.task_args['control_image'] = p.init_images # switch image and control_image
+                            if 'strength' in possible:
+                                p.task_args['strength'] = p.denoising_strength
                             p.init_images = [p.override or input_image] * len(active_model)
                         elif input_type == 2: # Separate init image
                             if init_image is None:
                                 shared.log.warning('Control: separate init image not provided')
                                 init_image = input_image
-                            p.task_args['control_image'] = p.init_images # switch image and control_image
-                            p.task_args['strength'] = p.denoising_strength
+                            if 'control_image' in possible:
+                                p.task_args['control_image'] = p.init_images # switch image and control_image
+                            if 'strength' in possible:
+                                p.task_args['strength'] = p.denoising_strength
                             p.init_images = [init_image] * len(active_model)
 
                     if is_generator:
@@ -609,26 +641,31 @@ def control_run(state: str = '',
                             p.task_args['strength'] = denoising_strength
                             p.image_mask = mask
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.INPAINTING) # only controlnet supports inpaint
-                        elif 'control_image' in p.task_args:
+                        if hasattr(p, 'init_images') and p.init_images is not None:
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE) # only controlnet supports img2img
                         else:
                             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
-                            if hasattr(p, 'init_images') and p.init_images is not None:
+                            if hasattr(p, 'init_images') and p.init_images is not None and 'image' in possible:
                                 p.task_args['image'] = p.init_images # need to set explicitly for txt2img
                                 del p.init_images
                         if unit_type == 'lite':
                             p.init_image = [input_image]
                             instance.apply(selected_models, processed_image, control_conditioning)
-                        if p.control_mode is not None:
-                            p.task_args['control_mode'] = p.control_mode
+                        if getattr(p, 'control_mode', None) is not None:
+                            p.task_args['control_mode'] = getattr(p, 'control_mode', None)
                     if hasattr(p, 'init_images') and p.init_images is None: # delete empty
                         del p.init_images
 
                     # final check
                     if has_models:
-                        if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] and p.task_args.get('image', None) is None and getattr(p, 'init_images', None) is None:
+                        if unit_type in ['controlnet', 't2i adapter', 'lite', 'xs'] \
+                            and p.task_args.get('image', None) is None \
+                            and p.task_args.get('control_image', None) is None \
+                            and getattr(p, 'init_images', None) is None \
+                            and getattr(p, 'image', None) is None:
                             if is_generator:
-                                yield terminate(f'Mode={p.extra_generation_params.get("Control mode", None)} input image is none')
+                                shared.log.debug(f'Control args: {p.task_args}')
+                                yield terminate(f'Mode={p.extra_generation_params.get("Control type", None)} input image is none')
                             return [], '', '', 'Error: Input image is none'
 
                     # resize mask
@@ -658,12 +695,19 @@ def control_run(state: str = '',
                                 script_runner.initialize_scripts(False)
                             p.script_args = script.init_default_script_args(script_runner)
 
-                        processed = p.scripts.run(p, *p.script_args)
+                        # actual processing
+                        if p.is_tile:
+                            processed: processing.Processed = tile.run_tiling(p, input_image)
+                        if processed is None and p.scripts is not None:
+                            processed = p.scripts.run(p, *p.script_args)
                         if processed is None:
                             processed: processing.Processed = processing.process_images(p) # run actual pipeline
                         else:
                             script_run = True
-                        processed = p.scripts.after(p, processed, *p.script_args)
+
+                        # postprocessing
+                        if p.scripts is not None:
+                            processed = p.scripts.after(p, processed, *p.script_args)
                         output = None
                         if processed is not None:
                             output = processed.images
@@ -717,14 +761,11 @@ def control_run(state: str = '',
         shared.log.error(f'Control pipeline failed: type={unit_type} units={len(active_model)} error={e}')
         errors.display(e, 'Control')
 
-    t_end = time.time()
-
     if len(output_images) == 0:
         output_images = None
         image_txt = '| Images None'
     else:
-        image_str = [f'{image.width}x{image.height}' for image in output_images]
-        image_txt = f'| Time {t_end-t_start:.2f}s | Images {len(output_images)} | Size {" ".join(image_str)}'
+        image_txt = ''
         p.init_images = output_images # may be used for hires
 
     if video_type != 'None' and isinstance(output_images, list):
@@ -738,10 +779,9 @@ def control_run(state: str = '',
     restore_pipeline()
     debug(f'Ready: {image_txt}')
 
-    html_txt = f'<p>Ready {image_txt}</p>'
+    html_txt = f'<p>Ready {image_txt}</p>' if image_txt != '' else ''
     if len(info_txt) > 0:
         html_txt = html_txt + infotext_to_html(info_txt[0])
     if is_generator:
         yield (output_images, blended_image, html_txt, output_filename)
-    else:
-        return (output_images, blended_image, html_txt, output_filename)
+    return (output_images, blended_image, html_txt, output_filename)

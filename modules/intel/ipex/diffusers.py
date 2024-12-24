@@ -1,7 +1,7 @@
 import os
 from functools import wraps, cache
 import torch
-import diffusers #0.29.1 # pylint: disable=import-error
+import diffusers # pylint: disable=import-error
 from diffusers.models.attention_processor import Attention
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
@@ -20,20 +20,31 @@ def fourier_filter(x_in, threshold, scale):
 
 
 # fp64 error
-def rope(pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
-    assert dim % 2 == 0, "The dimension must be even."
+class FluxPosEmbed(torch.nn.Module):
+    def __init__(self, theta: int, axes_dim):
+        super().__init__()
+        self.theta = theta
+        self.axes_dim = axes_dim
 
-    scale = torch.arange(0, dim, 2, dtype=torch.float32, device=pos.device) / dim # force fp32 instead of fp64
-    omega = 1.0 / (theta**scale)
-
-    batch_size, seq_length = pos.shape
-    out = torch.einsum("...n,d->...nd", pos, omega)
-    cos_out = torch.cos(out)
-    sin_out = torch.sin(out)
-
-    stacked_out = torch.stack([cos_out, -sin_out, sin_out, cos_out], dim=-1)
-    out = stacked_out.view(batch_size, -1, dim // 2, 2, 2)
-    return out.float()
+    def forward(self, ids: torch.Tensor) -> torch.Tensor:
+        n_axes = ids.shape[-1]
+        cos_out = []
+        sin_out = []
+        pos = ids.float()
+        for i in range(n_axes):
+            cos, sin = diffusers.models.embeddings.get_1d_rotary_pos_embed(
+                self.axes_dim[i],
+                pos[:, i],
+                theta=self.theta,
+                repeat_interleave_real=True,
+                use_real=True,
+                freqs_dtype=torch.float32,
+            )
+            cos_out.append(cos)
+            sin_out.append(sin)
+        freqs_cos = torch.cat(cos_out, dim=-1).to(ids.device)
+        freqs_sin = torch.cat(sin_out, dim=-1).to(ids.device)
+        return freqs_cos, freqs_sin
 
 
 @cache
@@ -337,4 +348,5 @@ def ipex_diffusers():
     if not device_supports_fp64 or os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is not None:
         diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
         diffusers.models.attention_processor.AttnProcessor = AttnProcessor
-        diffusers.models.transformers.transformer_flux.rope = rope
+    if not device_supports_fp64:
+        diffusers.models.embeddings.FluxPosEmbed = FluxPosEmbed

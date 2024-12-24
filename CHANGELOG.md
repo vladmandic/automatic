@@ -1,21 +1,230 @@
 # Change Log for SD.Next
 
-## Update for 2024-11-22
+## Update for 2024-12-24
 
-- Model loader improvements:  
+### Highlights for 2024-12-24
+
+### SD.Next Xmass edition: *What's new?*
+
+While we have several new supported models, workflows and tools, this release is primarily about *quality-of-life improvements*:  
+- New memory management engine  
+  list of changes that went into this one is long: changes to GPU offloading, brand new LoRA loader, system memory management, on-the-fly quantization, improved gguf loader, etc.  
+  but main goal is enabling modern large models to run on standard consumer GPUs  
+  without performance hits typically associated with aggressive memory swapping and needs for constant manual tweaks  
+- New [documentation website](https://vladmandic.github.io/sdnext-docs/)  
+  with full search and tons of new documentation  
+- New settings panel with simplified and streamlined configuration  
+
+We've also added support for several new models such as highly anticipated [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px) (see [supported models](https://vladmandic.github.io/sdnext-docs/Model-Support/) for full list)  
+And several new SOTA video models: [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video), [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo) and [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
+
+And a lot of **Control** and **IPAdapter** goodies  
+- for **SDXL** there is new [ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0), improved *Union* and *Tiling* models 
+- for **FLUX.1** there are [Flux Tools](https://blackforestlabs.ai/flux-1-tools/) as well as official *Canny* and *Depth* models,  
+  a cool [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev) model as well as [XLabs](https://huggingface.co/XLabs-AI/flux-ip-adapter-v2) IP-adapter
+- for **SD3.5** there are official *Canny*, *Blur* and *Depth* models in addition to existing 3rd party models  
+  as well as [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
+
+Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
+
+And it wouldn't be a *Xmass edition* without couple of custom themes: *Snowflake* and *Elf-Green*!  
+All-in-all, we're around ~180 commits worth of updates, check the changelog for full list  
+
+[ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
+
+## Details for 2024-12-24
+
+### New models and integrations
+
+- [NVLabs Sana](https://huggingface.co/Efficient-Large-Model/Sana_1600M_1024px)
+  support for 1.6B 2048px, 1.6B 1024px and 0.6B 512px models  
+  **Sana** can synthesize high-resolution images with strong text-image alignment by using **Gemma2** as text-encoder  
+  and its *fast* - typically at least **2x** faster than sd-xl even for 1.6B variant and maintains performance regardless of resolution  
+  e.g., rendering at 4k is possible in less than 8GB vram  
+  to use, select from *networks -> models -> reference* and models will be auto-downloaded on first use  
+  *reference values*: sampler: default (or any flow-match variant), steps: 20, width/height: 1024, guidance scale: 4.5  
+  *note* like other LLM-based text-encoders, sana prefers long and descriptive prompts  
+  any short prompt below 300 characters will be auto-expanded using built in Gemma LLM before encoding while long prompts will be passed as-is  
+- **ControlNet**
+  - improved support for **Union** controlnets with granular control mode type
+  - added support for latest [Xinsir ProMax](https://huggingface.co/xinsir/controlnet-union-sdxl-1.0) all-in-one controlnet  
+  - added support for multiple **Tiling** controlnets, for example [Xinsir Tile](https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0)  
+    *note*: when selecting tiles in control settings, you can also specify non-square ratios  
+    in which case it will use context-aware image resize to maintain overall composition  
+    *note*: available tiling options can be set in settings -> control  
+- **IP-Adapter**  
+  - FLUX.1 [XLabs](https://huggingface.co/XLabs-AI/flux-ip-adapter-v2) v1 and v2 IP-adapter  
+  - FLUX.1 secondary guidance, enabled using *Attention guidance* in advanced menu  
+  - SD 3.5 [InstantX](https://huggingface.co/InstantX/SD3.5-Large-IP-Adapter) IP-adapter  
+- [Flux Tools](https://blackforestlabs.ai/flux-1-tools/)  
+  **Redux** is actually a tool, **Fill** is inpaint/outpaint optimized version of *Flux-dev*  
+  **Canny** & **Depth** are optimized versions of *Flux-dev* for their respective tasks: they are *not* ControlNets that work on top of a model  
+  to use, go to image or control interface and select *Flux Tools* in scripts  
+  all models are auto-downloaded on first use  
+  *note*: All models are [gated](https://github.com/vladmandic/automatic/wiki/Gated) and require acceptance of terms and conditions via web page  
+  *recommended*: Enable on-the-fly [quantization](https://github.com/vladmandic/automatic/wiki/Quantization) or [compression](https://github.com/vladmandic/automatic/wiki/NNCF-Compression) to reduce resource usage  
+  *todo*: support for Canny/Depth LoRAs  
+  - [Redux](https://huggingface.co/black-forest-labs/FLUX.1-Redux-dev): ~0.1GB  
+    works together with existing model and basically uses input image to analyze it and use that instead of prompt  
+    *optional* can use prompt to combine guidance with input image  
+    *recommended*: low denoise strength levels result in more variety  
+  - [Fill](https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev): ~23.8GB, replaces currently loaded model  
+    *note*: can be used in inpaint/outpaint mode only  
+  - [Canny](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 30  
+  - [Depth](https://huggingface.co/black-forest-labs/FLUX.1-Depth-dev): ~23.8GB, replaces currently loaded model  
+    *recommended*: guidance scale 10  
+- [Flux ControlNet LoRA](https://huggingface.co/black-forest-labs/FLUX.1-Canny-dev-lora)  
+  alternative to standard ControlNets, FLUX.1 also allows LoRA to help guide the generation process  
+  both **Depth** and **Canny** LoRAs are available in standard control menus  
+- [StabilityAI SD35 ControlNets](https://huggingface.co/stabilityai/stable-diffusion-3.5-controlnets)
+  - In addition to previously released `InstantX` and `Alimama`, we now have *official* ones from StabilityAI  
+- [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
+  enable in scripts, compatible with sd-xl  
+  enter multiple prompts in prompt field separated by new line  
+  style-aligned applies selected attention layers uniformly to all images to achive consistency  
+  can be used with or without input image in which case first prompt is used to establish baseline  
+  *note:* all prompts are processes as a single batch, so vram is limiting factor  
+- [FreeScale](https://github.com/ali-vilab/FreeScale)  
+  enable in scripts, compatible with sd-xl for text and img2img  
+  run iterative generation of images at different scales to achieve better results  
+  can render 4k sdxl images  
+  *note*: disable live preview to avoid memory issues when generating large images  
+
+### Video models
+
+- [Lightricks LTX-Video](https://huggingface.co/Lightricks/LTX-Video)  
+  model size: 27.75gb  
+  support for 0.9.0, 0.9.1 and custom safetensor-based models with full quantization and offloading support  
+  support for text-to-video and image-to-video, to use, select in *scripts -> ltx-video*  
+  *refrence values*: steps 50, width 704, height 512, frames 161, guidance scale 3.0  
+- [Hunyuan Video](https://huggingface.co/tencent/HunyuanVideo)  
+  model size: 40.92gb  
+  support for text-to-video, to use, select in *scripts -> hunyuan video*  
+  basic support only  
+  *refrence values*: steps 50, width 1280, height 720, frames 129, guidance scale 6.0  
+- [Genmo Mochi.1 Preview](https://huggingface.co/genmo/mochi-1-preview)  
+  support for text-to-video, to use, select in *scripts -> mochi.1 video*  
+  basic support only  
+  *refrence values*: steps 64, width 848, height 480, frames 19, guidance scale 4.5  
+
+*Notes*:
+- all video models are very large and resource intensive!  
+  any use on gpus below 16gb and systems below 48gb ram is experimental at best  
+- sdnext support for video models is relatively basic with further optimizations pending community interest  
+  any future optimizations would likely have to go into partial loading and excecution instead of offloading inactive parts of the model  
+- new video models use generic llms for prompting and due to that requires very long and descriptive prompt  
+- you may need to enable sequential offload for maximum gpu memory savings  
+- optionally enable pre-quantization using bnb for additional memory savings  
+- reduce number of frames and/or resolution to reduce memory usage  
+
+### UI and workflow improvements
+
+- **Docs**:
+  - New documentation site! <https://vladmandic.github.io/sdnext-docs/>
+  - Additional Wiki content: Styles, Wildcards, etc.
+- **LoRA** handler rewrite:  
+  - LoRA weights are no longer calculated on-the-fly during model execution, but are pre-calculated at the start  
+    this results in perceived overhead on generate startup, but results in overall faster execution as LoRA does not need to be processed on each step  
+    thanks @AI-Casanova  
+  - LoRA weights can be applied/unapplied as on each generate or they can store weights backups for later use  
+    this setting has large performance and resource implications, see [Offload](https://github.com/vladmandic/automatic/wiki/Offload) wiki for details  
+  - LoRA name in prompt can now also be an absolute path to a LoRA file, even if LoRA is not indexed  
+    example: `<lora:/test/folder/my-lora.safetensors:1.0>`
+  - LoRA name in prompt can now also be path to a LoRA file op `huggingface`  
+    example: `<lora:/huggingface.co/vendor/repo/my-lora.safetensors:1.0>`
+- **Model loader** improvements:  
   - detect model components on model load fail  
+  - allow passing absolute path to model loader  
   - Flux, SD35: force unload model  
   - Flux: apply `bnb` quant when loading *unet/transformer*  
   - Flux: all-in-one safetensors  
     example: <https://civitai.com/models/646328?modelVersionId=1040235>  
   - Flux: do not recast quants  
-- Sampler improvements  
-  - update DPM FlowMatch samplers  
-- Fixes:  
-  - update `diffusers`  
-  - fix README links  
-  - fix sdxl controlnet single-file loader  
-  - relax settings validator  
+- **Memory** improvements:  
+  - faster and more compatible *balanced offload* mode  
+  - balanced offload: units are now in percentage instead of bytes  
+  - balanced offload: add both high and low watermark, defaults as below  
+    `0.25` for low-watermark: skip offload if memory usage is below 25%  
+    `0.70` high-watermark: must offload if memory usage is above 70%  
+  - balanced offload will attempt to run offload as non-blocking and force gc at the end  
+  - change-in-behavior:  
+    low-end systems, triggered by either `lowvrwam` or by detection of <=4GB will use *sequential offload*  
+    all other systems use *balanced offload* by default (can be changed in settings)  
+    previous behavior was to use *model offload* on systems with <=8GB and `medvram` and no offload by default  
+  - VAE upcase is now disabled by default on all systems  
+    if you have issues with image decode, you'll need to enable it manually  
+- **UI**:  
+  - improved stats on generate completion  
+  - improved live preview display and performance  
+  - improved accordion behavior  
+  - auto-size networks height for sidebar  
+  - control: hide preview column by default
+  - control: optionn to hide input column
+  - control: add stats
+  - settings: reorganized and simplified  
+  - browser -> server logging framework  
+  - add addtional themes: `black-reimagined`, thanks @Artheriax  
+- **Batch**
+  - image batch processing will use caption files if they exist instead of default prompt  
+
+### Updates
+
+- **Quantization**
+  - Add `TorchAO` *pre* (during load) and *post* (during execution) quantization  
+    **torchao** supports 4 different int-based and 3 float-based quantization schemes  
+  This is in addition to existing support for:  
+  - `BitsAndBytes` with 3 float-based quantization schemes  
+  - `Optimium.Quanto` with 3 int-based and 2 float-based quantizations schemes  
+  - `GGUF` with pre-quantized weights  
+  - Switch `GGUF` loader from custom to diffuser native
+- **IPEX**: update to IPEX 2.5.10+xpu  
+- **OpenVINO**:  
+  - update to 2024.6.0  
+  - disable model caching by default  
+- **Sampler** improvements  
+  - UniPC, DEIS, SA, DPM-Multistep: allow FlowMatch sigma method and prediction type  
+  - Euler FlowMatch: add sigma methods (*karras/exponential/betas*)  
+  - Euler FlowMatch: allow using timestep presets to set sigmas  
+  - DPM FlowMatch: update all and add sigma methods  
+  - BDIA-DDIM: *experimental* new scheduler  
+  - UFOGen: *experimental* new scheduler  
+
+### Fixes  
+
+- add `SD_NO_CACHE=true` env variable to disable file/folder caching  
+- add settings -> networks -> embeddings -> enable/disable
+- update `diffusers`  
+- fix README links  
+- fix sdxl controlnet single-file loader  
+- relax settings validator  
+- improve js progress calls resiliency  
+- fix text-to-video pipeline  
+- avoid live-preview if vae-decode is running  
+- allow xyz-grid with multi-axis s&r  
+- fix xyz-grid with lora  
+- fix api script callbacks  
+- fix gpu memory monitoring  
+- simplify img2img/inpaint/sketch canvas handling  
+- fix prompt caching  
+- fix xyz grid skip final pass  
+- fix sd upscale script  
+- fix cogvideox-i2v  
+- lora auto-apply tags remove duplicates  
+- control load model on-demand if not already loaded  
+- taesd limit render to 2024px  
+- taesd downscale preview to 1024px max: configurable in settings -> live preview  
+- uninstall conflicting `wandb` package  
+- dont skip diffusers version check if quick is specified  
+- notify on torch install  
+- detect pipeline fro diffusers folder-style model  
+- do not recast flux quants  
+- fix xyz-grid with lora none  
+- fix svd image2video  
+- fix gallery display during generate  
+- fix wildcards replacement to be unique  
+- fix animatediff-xl  
+- fix pag with batch count  
 
 ## Update for 2024-11-21
 
@@ -270,7 +479,7 @@ A month later and with nearly 300 commits, here is the latest [SD.Next](https://
 
 #### New models for 2024-10-23
 
-- New fine-tuned [CLiP-ViT-L]((https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14)) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
+- New fine-tuned [CLiP-ViT-L](https://huggingface.co/zer0int/CLIP-GmP-ViT-L-14) 1st stage **text-encoders** used by most models (SD15/SDXL/SD3/Flux/etc.) brings additional details to your images  
 - New models:  
   [Stable Diffusion 3.5 Large](https://huggingface.co/stabilityai/stable-diffusion-3.5-large)  
   [OmniGen](https://arxiv.org/pdf/2409.11340)  
@@ -370,7 +579,7 @@ And there are also other goodies like multiple *XYZ grid* improvements, addition
   - xyz grid support for sampler options  
   - metadata updates for sampler options  
   - modernui updates for sampler options  
-  - *note* sampler options defaults are not save in ui settings, they are saved in server settings  
+  - *note* sampler options defaults are not saved in ui settings, they are saved in server settings  
     to apply your defaults, set ui values and apply via *system -> settings -> apply settings*  
 
   *sampler options*:  
@@ -602,7 +811,7 @@ Examples:
   - vae is list of manually downloaded safetensors  
   - text-encoder is list of predefined and manually downloaded text-encoders  
 - **controlnet** support:
-  support for **InstantX/Shakker-Labs** models including [Union-Pro](InstantX/FLUX.1-dev-Controlnet-Union)  
+  support for **InstantX/Shakker-Labs** models including [Union-Pro](https://huggingface.co/InstantX/FLUX.1-dev-Controlnet-Union)
   note that flux controlnet models are large, up to 6.6GB on top of already large base model!  
   as such, you may need to use offloading:sequential which is not as fast, but uses far less memory  
   when using union model, you must also select control mode in the control unit  
@@ -2117,7 +2326,7 @@ Also new is support for **SDXL-Turbo** as well as new **Kandinsky 3** models and
     - in *Advanced* params
     - allows control of *latent clamping*, *color centering* and *range maximization*  
     - supported by *XYZ grid*  
-  - [SD21 Turbo](https://huggingface.co/stabilityai/sd-turbo) and [SDXL Turbo](<https://huggingface.co/stabilityai/sdxl-turbo>) support  
+  - [SD21 Turbo](https://huggingface.co/stabilityai/sd-turbo) and [SDXL Turbo](https://huggingface.co/stabilityai/sdxl-turbo) support  
     - just set CFG scale (0.0-1.0) and steps (1-3) to a very low value  
     - compatible with original StabilityAI SDXL-Turbo or any of the newer merges
     - download safetensors or select from networks -> reference

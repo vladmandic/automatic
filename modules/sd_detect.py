@@ -71,6 +71,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Cascade'
             if 'pixart-sigma' in f.lower():
                 guess = 'PixArt-Sigma'
+            if 'sana' in f.lower():
+                guess = 'Sana'
             if 'lumina-next' in f.lower():
                 guess = 'Lumina-Next'
             if 'kolors' in f.lower():
@@ -94,6 +96,17 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'FLUX'
                 if size > 11000 and size < 16000:
                     warn(f'Model detected as FLUX UNET model, but attempting to load a base model: {op}={f} size={size} MB')
+            # guess for diffusers
+            index = os.path.join(f, 'model_index.json')
+            if os.path.exists(index) and os.path.isfile(index):
+                index = shared.readfile(index, silent=True)
+                cls = index.get('_class_name', None)
+                if cls is not None:
+                    pipeline = getattr(diffusers, cls)
+                if 'Flux' in pipeline.__name__:
+                    guess = 'FLUX'
+                if 'StableDiffusion3' in pipeline.__name__:
+                    guess = 'Stable Diffusion 3'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'
@@ -105,7 +118,7 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Stable Diffusion XL Instruct'
             # get actual pipeline
             pipeline = shared_items.get_pipelines().get(guess, None) if pipeline is None else pipeline
-            if not quiet:
+            if debug_load is not None:
                 shared.log.info(f'Autodetect {op}: detect="{guess}" class={getattr(pipeline, "__name__", None)} file="{f}" size={size}MB')
                 t0 = time.time()
                 keys = model_tools.get_safetensor_keys(f)

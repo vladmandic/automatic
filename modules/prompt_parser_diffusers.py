@@ -16,6 +16,7 @@ orig_encode_token_ids_to_embeddings = EmbeddingsProvider._encode_token_ids_to_em
 token_dict = None # used by helper get_tokens
 token_type = None # used by helper get_tokens
 cache = OrderedDict()
+last_attention = None
 embedder = None
 
 
@@ -38,8 +39,6 @@ def prepare_model(pipe = None):
         pipe = pipe.pipe
     if not hasattr(pipe, "text_encoder"):
         return None
-    if shared.opts.diffusers_offload_mode == "balanced":
-        pipe = sd_models.apply_balanced_offload(pipe)
     elif hasattr(pipe, "maybe_free_model_hooks"):
         pipe.maybe_free_model_hooks()
         devices.torch_gc()
@@ -52,7 +51,7 @@ class PromptEmbedder:
         self.prompts = prompts
         self.negative_prompts = negative_prompts
         self.batchsize = len(self.prompts)
-        self.attention = None
+        self.attention = last_attention
         self.allsame = self.compare_prompts()  # collapses batched prompts to single prompt if possible
         self.steps = steps
         self.clip_skip = clip_skip
@@ -64,6 +63,8 @@ class PromptEmbedder:
         self.positive_schedule = None
         self.negative_schedule = None
         self.scheduled_prompt = False
+        if hasattr(p, 'dummy'):
+            return
         earlyout = self.checkcache(p)
         if earlyout:
             return
@@ -93,7 +94,7 @@ class PromptEmbedder:
             return [x for xs in xss for x in xs]
 
         # unpack EN data in case of TE LoRA
-        en_data = p.extra_network_data
+        en_data = p.network_data
         en_data = [idx.items for item in en_data.values() for idx in item]
         effective_batch = 1 if self.allsame else self.batchsize
         key = str([self.prompts, self.negative_prompts, effective_batch, self.clip_skip, self.steps, en_data])
@@ -113,6 +114,7 @@ class PromptEmbedder:
                 debug(f"Prompt cache: add={key}")
                 while len(cache) > int(shared.opts.sd_textencoder_cache_size):
                     cache.popitem(last=False)
+                return True
         if item:
             self.__dict__.update(cache[key])
             cache.move_to_end(key)
@@ -161,8 +163,10 @@ class PromptEmbedder:
             self.negative_pooleds[batchidx].append(self.negative_pooleds[batchidx][idx])
 
     def encode(self, pipe, positive_prompt, negative_prompt, batchidx):
+        global last_attention # pylint: disable=global-statement
         self.attention = shared.opts.prompt_attention
-        if self.attention == "xhinker" or 'Flux' in pipe.__class__.__name__:
+        last_attention = self.attention
+        if self.attention == "xhinker":
             prompt_embed, positive_pooled, negative_embed, negative_pooled = get_xhinker_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
         else:
             prompt_embed, positive_pooled, negative_embed, negative_pooled = get_weighted_text_embeddings(pipe, positive_prompt, negative_prompt, self.clip_skip)
@@ -178,7 +182,6 @@ class PromptEmbedder:
         if debug_enabled:
             get_tokens(pipe, 'positive', positive_prompt)
             get_tokens(pipe, 'negative', negative_prompt)
-        pipe = prepare_model()
 
     def __call__(self, key, step=0):
         batch = getattr(self, key)
@@ -194,8 +197,6 @@ class PromptEmbedder:
 
 
 def compel_hijack(self, token_ids: torch.Tensor, attention_mask: typing.Optional[torch.Tensor] = None) -> torch.Tensor:
-    if not devices.same_device(self.text_encoder.device, devices.device):
-        sd_models.move_model(self.text_encoder, devices.device)
     needs_hidden_states = self.returned_embeddings_type != 1
     text_encoder_output = self.text_encoder(token_ids, attention_mask, output_hidden_states=needs_hidden_states, return_dict=True)
 
@@ -372,25 +373,31 @@ def prepare_embedding_providers(pipe, clip_skip) -> list[EmbeddingsProvider]:
         embedding_type = -(clip_skip + 1)
     else:
         embedding_type = clip_skip
+    embedding_args = {
+        'truncate': False,
+        'returned_embeddings_type': embedding_type,
+        'device': device,
+        'dtype_for_device_getter': lambda device: devices.dtype,
+    }
     if getattr(pipe, "prior_pipe", None) is not None and getattr(pipe.prior_pipe, "tokenizer", None) is not None and getattr(pipe.prior_pipe, "text_encoder", None) is not None:
-        provider = EmbeddingsProvider(padding_attention_mask_value=0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        provider = EmbeddingsProvider(padding_attention_mask_value=0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, **embedding_args)
         embeddings_providers.append(provider)
-        no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        no_mask_provider = EmbeddingsProvider(padding_attention_mask_value=1 if "sote" in pipe.sd_checkpoint_info.name.lower() else 0, tokenizer=pipe.prior_pipe.tokenizer, text_encoder=pipe.prior_pipe.text_encoder, **embedding_args)
         embeddings_providers.append(no_mask_provider)
     elif getattr(pipe, "tokenizer", None) is not None and getattr(pipe, "text_encoder", None) is not None:
-        if not devices.same_device(pipe.text_encoder.device, devices.device):
-            sd_models.move_model(pipe.text_encoder, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder, **embedding_args)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_2", None) is not None and getattr(pipe, "text_encoder_2", None) is not None:
-        if not devices.same_device(pipe.text_encoder_2.device, devices.device):
-            sd_models.move_model(pipe.text_encoder_2, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder_2.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder_2, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_2, text_encoder=pipe.text_encoder_2, **embedding_args)
         embeddings_providers.append(provider)
     if getattr(pipe, "tokenizer_3", None) is not None and getattr(pipe, "text_encoder_3", None) is not None:
-        if not devices.same_device(pipe.text_encoder_3.device, devices.device):
-            sd_models.move_model(pipe.text_encoder_3, devices.device)
-        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_3, text_encoder=pipe.text_encoder_3, truncate=False, returned_embeddings_type=embedding_type, device=device)
+        if pipe.text_encoder_3.__class__.__name__.startswith('CLIP'):
+            sd_models.move_model(pipe.text_encoder_3, devices.device, force=True)
+        provider = EmbeddingsProvider(tokenizer=pipe.tokenizer_3, text_encoder=pipe.text_encoder_3, **embedding_args)
         embeddings_providers.append(provider)
     return embeddings_providers
 
@@ -583,15 +590,15 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
     te1_device, te2_device, te3_device = None, None, None
     if hasattr(pipe, "text_encoder") and pipe.text_encoder.device != devices.device:
         te1_device = pipe.text_encoder.device
-        sd_models.move_model(pipe.text_encoder, devices.device)
+        sd_models.move_model(pipe.text_encoder, devices.device, force=True)
     if hasattr(pipe, "text_encoder_2") and pipe.text_encoder_2.device != devices.device:
         te2_device = pipe.text_encoder_2.device
-        sd_models.move_model(pipe.text_encoder_2, devices.device)
+        sd_models.move_model(pipe.text_encoder_2, devices.device, force=True)
     if hasattr(pipe, "text_encoder_3") and pipe.text_encoder_3.device != devices.device:
         te3_device = pipe.text_encoder_3.device
-        sd_models.move_model(pipe.text_encoder_3, devices.device)
+        sd_models.move_model(pipe.text_encoder_3, devices.device, force=True)
 
-    if is_sd3:
+    if 'StableDiffusion3' in pipe.__class__.__name__:
         prompt_embed, negative_embed, positive_pooled, negative_pooled = get_weighted_text_embeddings_sd3(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, use_t5_encoder=bool(pipe.text_encoder_3))
     elif 'Flux' in pipe.__class__.__name__:
         prompt_embed, positive_pooled = get_weighted_text_embeddings_flux1(pipe=pipe, prompt=prompt, prompt2=prompt_2, device=devices.device)
@@ -601,10 +608,10 @@ def get_xhinker_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", cl
         prompt_embed, negative_embed = get_weighted_text_embeddings_sd15(pipe=pipe, prompt=prompt, neg_prompt=neg_prompt, clip_skip=clip_skip)
 
     if te1_device is not None:
-        sd_models.move_model(pipe.text_encoder, te1_device)
+        sd_models.move_model(pipe.text_encoder, te1_device, force=True)
     if te2_device is not None:
-        sd_models.move_model(pipe.text_encoder_2, te1_device)
+        sd_models.move_model(pipe.text_encoder_2, te1_device, force=True)
     if te3_device is not None:
-        sd_models.move_model(pipe.text_encoder_3, te1_device)
+        sd_models.move_model(pipe.text_encoder_3, te1_device, force=True)
 
     return prompt_embed, positive_pooled, negative_embed, negative_pooled

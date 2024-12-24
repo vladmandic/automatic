@@ -20,7 +20,7 @@ async function preloadImages() {
   try {
     await Promise.all(imagePromises);
   } catch (error) {
-    console.error('Error preloading images:', error);
+    error(`preloadImages: ${error}`);
   }
 }
 
@@ -43,14 +43,16 @@ async function createSplash() {
       const motdEl = document.getElementById('motd');
       if (motdEl) motdEl.innerHTML = text.replace(/["]+/g, '');
     })
-    .catch((err) => console.error('getMOTD:', err));
+    .catch((err) => error(`getMOTD: ${err}`));
 }
 
 async function removeSplash() {
   const splash = document.getElementById('splash');
   if (splash) splash.remove();
   log('removeSplash');
-  log('startupTime', Math.round(performance.now() - appStartTime) / 1000);
+  const t = Math.round(performance.now() - appStartTime) / 1000;
+  log('startupTime', t);
+  xhrPost('/sdapi/v1/log', { message: `ready time=${t}` });
 }
 
 window.onload = createSplash;

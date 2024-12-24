@@ -35,7 +35,8 @@ class Api:
 
         # server api
         self.add_api_route("/sdapi/v1/motd", server.get_motd, methods=["GET"], response_model=str)
-        self.add_api_route("/sdapi/v1/log", server.get_log_buffer, methods=["GET"], response_model=List[str])
+        self.add_api_route("/sdapi/v1/log", server.get_log, methods=["GET"], response_model=List[str])
+        self.add_api_route("/sdapi/v1/log", server.post_log, methods=["POST"])
         self.add_api_route("/sdapi/v1/start", self.get_session_start, methods=["GET"])
         self.add_api_route("/sdapi/v1/version", server.get_version, methods=["GET"])
         self.add_api_route("/sdapi/v1/status", server.get_status, methods=["GET"], response_model=models.ResStatus)
@@ -89,6 +90,11 @@ class Api:
         self.add_api_route("/sdapi/v1/refresh-vae", endpoints.post_refresh_vae, methods=["POST"])
         self.add_api_route("/sdapi/v1/history", endpoints.get_history, methods=["GET"], response_model=List[str])
         self.add_api_route("/sdapi/v1/history", endpoints.post_history, methods=["POST"], response_model=int)
+
+        # lora api
+        if shared.native:
+            self.add_api_route("/sdapi/v1/loras", endpoints.get_loras, methods=["GET"], response_model=List[dict])
+            self.add_api_route("/sdapi/v1/refresh-loras", endpoints.post_refresh_loras, methods=["POST"])
 
         # gallery api
         gallery.register_api(app)

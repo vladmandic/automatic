@@ -6,6 +6,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Union
 from installer import log
 
 
+do_cache_folders = os.environ.get('SD_NO_CACHE', None) is None
 class Directory: # forward declaration
     ...
 
@@ -87,8 +88,6 @@ class Directory(Directory): # pylint: disable=E0102
         return not self.is_directory or self.mtime != self.live_mtime
 
 
-
-
 class DirectoryCache(UserDict, DirectoryCollection):
     def __delattr__(self, directory_path: str) -> None:
         directory: Directory = get_directory(directory_path, fetch=False)
@@ -126,7 +125,7 @@ def clean_directory(directory: Directory, /, recursive: RecursiveType=False) -> 
     return is_clean
 
 
-def get_directory(directory_or_path: str, /, fetch:bool=True) -> Union[Directory, None]:
+def get_directory(directory_or_path: str, /, fetch: bool=True) -> Union[Directory, None]:
     if isinstance(directory_or_path, Directory):
         if directory_or_path.is_directory:
             return directory_or_path
@@ -136,8 +135,9 @@ def get_directory(directory_or_path: str, /, fetch:bool=True) -> Union[Directory
     if not cache_folders.get(directory_or_path, None):
         if fetch:
             directory = fetch_directory(directory_path=directory_or_path)
-            if directory:
+            if directory and do_cache_folders:
                 cache_folders[directory_or_path] = directory
+            return directory
     else:
         clean_directory(cache_folders[directory_or_path])
     return cache_folders[directory_or_path] if directory_or_path in cache_folders else None

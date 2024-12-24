@@ -7,9 +7,11 @@ import os
 import torch
 from modules import shared, sd_vae_taesd, devices
 
+
 debug_enabled = os.environ.get('SD_HDR_DEBUG', None) is not None
 debug = shared.log.trace if debug_enabled else lambda *args, **kwargs: None
 debug('Trace: HDR')
+skip_correction = False
 
 
 def sharpen_tensor(tensor, ratio=0):
@@ -116,8 +118,15 @@ def correction(p, timestep, latent):
     return latent
 
 
-def correction_callback(p, timestep, kwargs):
-    if not any([p.hdr_clamp, p.hdr_mode, p.hdr_maximize, p.hdr_sharpen, p.hdr_color, p.hdr_brightness, p.hdr_tint_ratio]):
+def correction_callback(p, timestep, kwargs, initial: bool = False):
+    global skip_correction # pylint: disable=global-statement
+    if initial:
+        if not any([p.hdr_clamp, p.hdr_mode, p.hdr_maximize, p.hdr_sharpen, p.hdr_color, p.hdr_brightness, p.hdr_tint_ratio]):
+            skip_correction = True
+            return kwargs
+        else:
+            skip_correction = False
+    elif skip_correction:
         return kwargs
     latents = kwargs["latents"]
     if debug_enabled:

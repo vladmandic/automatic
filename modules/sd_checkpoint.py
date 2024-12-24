@@ -123,13 +123,17 @@ def list_models():
     checkpoint_aliases.clear()
     ext_filter = [".safetensors"] if shared.opts.sd_disable_ckpt or shared.native else [".ckpt", ".safetensors"]
     model_list = list(modelloader.load_models(model_path=model_path, model_url=None, command_path=shared.opts.ckpt_dir, ext_filter=ext_filter, download_name=None, ext_blacklist=[".vae.ckpt", ".vae.safetensors"]))
+    safetensors_list = []
     for filename in sorted(model_list, key=str.lower):
         checkpoint_info = CheckpointInfo(filename)
+        safetensors_list.append(checkpoint_info)
         if checkpoint_info.name is not None:
             checkpoint_info.register()
+    diffusers_list = []
     if shared.native:
         for repo in modelloader.load_diffusers_models(clear=True):
             checkpoint_info = CheckpointInfo(repo['name'], sha=repo['hash'])
+            diffusers_list.append(checkpoint_info)
             if checkpoint_info.name is not None:
                 checkpoint_info.register()
     if shared.cmd_opts.ckpt is not None:
@@ -143,7 +147,7 @@ def list_models():
                 shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
     elif shared.cmd_opts.ckpt != shared.default_sd_model_file and shared.cmd_opts.ckpt is not None:
         shared.log.warning(f'Load model: path="{shared.cmd_opts.ckpt}" not found')
-    shared.log.info(f'Available Models: path="{shared.opts.ckpt_dir}" items={len(checkpoints_list)} time={time.time()-t0:.2f}')
+    shared.log.info(f'Available Models: items={len(checkpoints_list)} safetensors="{shared.opts.ckpt_dir}":{len(safetensors_list)} diffusers="{shared.opts.diffusers_dir}":{len(diffusers_list)} time={time.time()-t0:.2f}')
     checkpoints_list = dict(sorted(checkpoints_list.items(), key=lambda cp: cp[1].filename))
 
 def update_model_hashes():
@@ -168,7 +172,10 @@ def update_model_hashes():
 
 def get_closet_checkpoint_match(s: str):
     if s.startswith('https://huggingface.co/'):
-        s = s.replace('https://huggingface.co/', '')
+        model_name = s.replace('https://huggingface.co/', '')
+        checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
+        checkpoint_info.type = 'huggingface'
+        return checkpoint_info
     if s.startswith('huggingface/'):
         model_name = s.replace('huggingface/', '')
         checkpoint_info = CheckpointInfo(model_name) # create a virutal model info
@@ -185,6 +192,11 @@ def get_closet_checkpoint_match(s: str):
     if found and len(found) == 1:
         return found[0]
 
+    # absolute path
+    if s.endswith('.safetensors') and os.path.isfile(s):
+        checkpoint_info = CheckpointInfo(s)
+        return checkpoint_info
+
     # reference search
     """
     found = sorted([info for info in shared.reference_models.values() if os.path.basename(info['path']).lower().startswith(s.lower())], key=lambda x: len(x['path']))
@@ -198,8 +210,9 @@ def get_closet_checkpoint_match(s: str):
     if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
         modelloader.hf_login()
         found = modelloader.find_diffuser(s, full=True)
+        found = [f for f in found if f == s]
         shared.log.info(f'HF search: model="{s}" results={found}')
-        if found is not None and len(found) == 1 and found[0] == s:
+        if found is not None and len(found) == 1:
             checkpoint_info = CheckpointInfo(s)
             checkpoint_info.type = 'huggingface'
             return checkpoint_info
@@ -240,6 +253,8 @@ def select_checkpoint(op='model'):
         model_checkpoint = shared.opts.data.get('sd_model_refiner', None)
     else:
         model_checkpoint = shared.opts.sd_model_checkpoint
+    if len(model_checkpoint) < 3:
+        return None
     if model_checkpoint is None or model_checkpoint == 'None':
         return None
     checkpoint_info = get_closet_checkpoint_match(model_checkpoint)
@@ -264,6 +279,12 @@ def select_checkpoint(op='model'):
     else:
         shared.log.info(f'Load {op}: select="{checkpoint_info.title if checkpoint_info is not None else None}"')
     return checkpoint_info
+
+
+def init_metadata():
+    global sd_metadata # pylint: disable=global-statement
+    if sd_metadata is None:
+        sd_metadata = shared.readfile(sd_metadata_file, lock=True) if os.path.isfile(sd_metadata_file) else {}
 
 
 def read_metadata_from_safetensors(filename):

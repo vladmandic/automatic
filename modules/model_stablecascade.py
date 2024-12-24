@@ -187,8 +187,7 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         callback_on_step_end=None,
         callback_on_step_end_tensor_inputs=["latents"],
     ):
-        if shared.opts.diffusers_offload_mode == "balanced":
-            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
+        shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         # 0. Define commonly used variables
         self.guidance_scale = guidance_scale
         self.do_classifier_free_guidance = self.guidance_scale > 1
@@ -330,14 +329,11 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
             elif output_type == "pil":
                 images = images.permute(0, 2, 3, 1).cpu().float().numpy()  # float() as bfloat16-> numpy doesnt work
                 images = self.numpy_to_pil(images)
+            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         else:
             images = latents
 
-        # Offload all models
-        if shared.opts.diffusers_offload_mode == "balanced":
-            shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
-        else:
-            self.maybe_free_model_hooks()
+        self.maybe_free_model_hooks()
 
         if not return_dict:
             return images

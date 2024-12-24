@@ -1,6 +1,32 @@
 let nvmlInterval = null; // eslint-disable-line prefer-const
 let nvmlEl = null;
 let nvmlTable = null;
+const chartData = { mem: [], load: [] };
+
+async function updateNVMLChart(mem, load) {
+  const maxLen = 120;
+  const colorRangeMap = $.range_map({ // eslint-disable-line no-undef
+    '0:5': '#fffafa',
+    '6:10': '#fff7ed',
+    '11:20': '#fed7aa',
+    '21:30': '#fdba74',
+    '31:40': '#fb923c',
+    '41:50': '#f97316',
+    '51:60': '#ea580c',
+    '61:70': '#c2410c',
+    '71:80': '#9a3412',
+    '81:90': '#7c2d12',
+    '91:100': '#6c2e12',
+  });
+  const sparklineConfigLOAD = { type: 'bar', height: '100px', barWidth: '2px', barSpacing: '1px', chartRangeMin: 0, chartRangeMax: 100, barColor: '#89007D' };
+  const sparklineConfigMEM = { type: 'bar', height: '100px', barWidth: '2px', barSpacing: '1px', chartRangeMin: 0, chartRangeMax: 100, colorMap: colorRangeMap, composite: true };
+  if (chartData.load.length > maxLen) chartData.load.shift();
+  chartData.load.push(load);
+  if (chartData.mem.length > maxLen) chartData.mem.shift();
+  chartData.mem.push(mem);
+  $('#nvmlChart').sparkline(chartData.load, sparklineConfigLOAD); // eslint-disable-line no-undef
+  $('#nvmlChart').sparkline(chartData.mem, sparklineConfigMEM); // eslint-disable-line no-undef
+}
 
 async function updateNVML() {
   try {
@@ -35,6 +61,7 @@ async function updateNVML() {
         <tr><td>State</td><td>${gpu.state}</td></tr>
       `;
       nvmlTbody.innerHTML = rows;
+      updateNVMLChart(gpu.load.memory, gpu.load.gpu);
     }
     nvmlEl.style.display = 'block';
   } catch (e) {
@@ -56,7 +83,10 @@ async function initNVML() {
       <thead><tr><th></th><th></th></tr></thead>
       <tbody></tbody>
     `;
+    const nvmlChart = document.createElement('div');
+    nvmlChart.id = 'nvmlChart';
     nvmlEl.appendChild(nvmlTable);
+    nvmlEl.appendChild(nvmlChart);
     gradioApp().appendChild(nvmlEl);
     log('initNVML');
   }

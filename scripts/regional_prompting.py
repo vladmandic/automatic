@@ -9,7 +9,7 @@ from modules import shared, devices, scripts, processing, sd_models, prompt_pars
 def hijack_register_modules(self, **kwargs):
     for name, module in kwargs.items():
         register_dict = None
-        if module is None or isinstance(module, (tuple, list)) and module[0] is None:
+        if module is None or (isinstance(module, (tuple, list)) and module[0] is None):
             register_dict = {name: (None, None)}
         elif isinstance(module, bool):
             pass
@@ -82,6 +82,7 @@ class Script(scripts.Script):
         }
         # run pipeline
         shared.log.debug(f'Regional: args={p.task_args}')
+        p.task_args['prompt'] = p.prompt
         processed: processing.Processed = processing.process_images(p) # runs processing using main loop
 
         # restore pipeline and params

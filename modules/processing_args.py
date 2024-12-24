@@ -6,13 +6,14 @@ import time
 import inspect
 import torch
 import numpy as np
-from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer
+from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer, extra_networks
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
 from modules.api import helpers
 
 
-debug = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
+debug_enabled = os.environ.get('SD_DIFFUSERS_DEBUG', None)
+debug_log = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
 def task_specific_kwargs(p, model):
@@ -22,7 +23,7 @@ def task_specific_kwargs(p, model):
         if isinstance(p.init_images[0], str):
             p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images]
         p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images]
-    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0 and not is_img2img_model:
+    if (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0) and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
             task_args = {
@@ -93,12 +94,14 @@ def task_specific_kwargs(p, model):
             'target_subject_category': getattr(p, 'prompt', '').split()[-1],
             'output_type': 'pil',
         }
-    debug(f'Diffusers task specific args: {task_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers task specific args: {task_args}')
     return task_args
 
 
 def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2: typing.Optional[list]=None, negative_prompts_2: typing.Optional[list]=None, desc:str='', **kwargs):
     t0 = time.time()
+    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     apply_circular(p.tiling, model)
     if hasattr(model, "set_progress_bar_config"):
         model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
@@ -108,7 +111,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     signature = inspect.signature(type(model).__call__, follow_wrapped=True)
     possible = list(signature.parameters)
 
-    debug(f'Diffusers pipeline possible: {possible}')
+    if debug_enabled:
+        debug_log(f'Diffusers pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
@@ -130,12 +134,13 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     else:
         prompt_parser_diffusers.embedder = None
 
+    extra_networks.activate(p, include=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
     if 'prompt' in possible:
         if 'OmniGen' in model.__class__.__name__:
             prompts = [p.replace('|image|', '<|image_1|>') for p in prompts]
         if hasattr(model, 'text_encoder') and hasattr(model, 'tokenizer') and 'prompt_embeds' in possible and prompt_parser_diffusers.embedder is not None:
             args['prompt_embeds'] = prompt_parser_diffusers.embedder('prompt_embeds')
-            if 'StableCascade' in model.__class__.__name__ and len(getattr(p, 'negative_pooleds', [])) > 0:
+            if 'StableCascade' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
                 args['prompt_embeds_pooled'] = prompt_parser_diffusers.embedder('positive_pooleds').unsqueeze(0)
             elif 'XL' in model.__class__.__name__ and prompt_parser_diffusers.embedder is not None:
                 args['pooled_prompt_embeds'] = prompt_parser_diffusers.embedder('positive_pooleds')
@@ -159,6 +164,13 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['negative_prompt'] = negative_prompts[0]
             else:
                 args['negative_prompt'] = negative_prompts
+    if 'complex_human_instruction' in possible:
+        chi = any(len(p) < 300 for p in prompts)
+        p.extra_generation_params["CHI"] = chi
+        if not chi:
+            args['complex_human_instruction'] = None
+    if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
+        prompt_parser_diffusers.embedder = None
 
     if 'clip_skip' in possible and parser == 'fixed':
         if clip_skip == 1:
@@ -181,6 +193,21 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                     shared.log.error(f'Sampler timesteps: {e}')
             else:
                 shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} timesteps not supported')
+    if 'sigmas' in possible:
+        sigmas = re.split(',| ', shared.opts.schedulers_timesteps)
+        sigmas = [float(x)/1000.0 for x in sigmas if x.isdigit()]
+        if len(sigmas) > 0:
+            if hasattr(model.scheduler, 'set_timesteps') and "sigmas" in set(inspect.signature(model.scheduler.set_timesteps).parameters.keys()):
+                try:
+                    args['sigmas'] = sigmas
+                    p.steps = len(sigmas)
+                    p.timesteps = sigmas
+                    steps = p.steps
+                    shared.log.debug(f'Sampler: steps={len(sigmas)} sigmas={sigmas}')
+                except Exception as e:
+                    shared.log.error(f'Sampler sigmas: {e}')
+            else:
+                shared.log.warning(f'Sampler: sampler={model.scheduler.__class__.__name__} sigmas not supported')
 
     if hasattr(model, 'scheduler') and hasattr(model.scheduler, 'noise_sampler_seed') and hasattr(model.scheduler, 'noise_sampler'):
         model.scheduler.noise_sampler = None # noise needs to be reset instead of using cached values
@@ -248,14 +275,16 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if arg in possible:
             args[arg] = task_kwargs[arg]
     task_args = getattr(p, 'task_args', {})
-    debug(f'Diffusers task args: {task_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers task args: {task_args}')
     for k, v in task_args.items():
         if k in possible:
             args[k] = v
         else:
-            debug(f'Diffusers unknown task args: {k}={v}')
+            debug_log(f'Diffusers unknown task args: {k}={v}')
     cross_attention_args = getattr(p, 'cross_attention_kwargs', {})
-    debug(f'Diffusers cross-attention args: {cross_attention_args}')
+    if debug_enabled:
+        debug_log(f'Diffusers cross-attention args: {cross_attention_args}')
     for k, v in cross_attention_args.items():
         if args.get('cross_attention_kwargs', None) is None:
             args['cross_attention_kwargs'] = {}
@@ -273,7 +302,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:
-        debug('Diffusers: set control image')
+        debug_log('Diffusers: set control image')
         args['control_image'] = args['image']
 
     sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
@@ -291,11 +320,14 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         clean['negative_prompt'] = len(clean['negative_prompt'])
     clean.pop('generator', None)
     clean['parser'] = parser
-    for k, v in clean.items():
+    for k, v in clean.copy().items():
         if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray):
             clean[k] = v.shape
         if isinstance(v, list) and len(v) > 0 and (isinstance(v[0], torch.Tensor) or isinstance(v[0], np.ndarray)):
             clean[k] = [x.shape for x in v]
+        if not debug_enabled and k.endswith('_embeds'):
+            del clean[k]
+            clean['prompt'] = 'embeds'
     shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
 
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
@@ -309,5 +341,6 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if shared.cmd_opts.profile:
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
-    debug(f'Diffusers pipeline args: {args}')
+    if debug_enabled:
+        debug_log(f'Diffusers pipeline args: {args}')
     return args

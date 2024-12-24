@@ -12,20 +12,6 @@ debug = os.environ.get('SD_LOAD_DEBUG', None) is not None
 loaded_te = None
 
 
-def install_gguf():
-    # pip install git+https://github.com/junejae/transformers@feature/t5-gguf
-    install('gguf', quiet=True)
-    # https://github.com/ggerganov/llama.cpp/issues/9566
-    import gguf
-    scripts_dir = os.path.join(os.path.dirname(gguf.__file__), '..', 'scripts')
-    if os.path.exists(scripts_dir):
-        os.rename(scripts_dir, scripts_dir + '_gguf')
-    # monkey patch transformers so they detect gguf pacakge correctly
-    import importlib
-    transformers.utils.import_utils._is_gguf_available = True # pylint: disable=protected-access
-    transformers.utils.import_utils._gguf_version = importlib.metadata.version('gguf') # pylint: disable=protected-access
-
-
 def load_t5(name=None, cache_dir=None):
     global loaded_te # pylint: disable=global-statement
     if name is None:
@@ -34,8 +20,9 @@ def load_t5(name=None, cache_dir=None):
     modelloader.hf_login()
     repo_id = 'stabilityai/stable-diffusion-3-medium-diffusers'
     fn = te_dict.get(name) if name in te_dict else None
-    if fn is not None and 'gguf' in name.lower():
-        install_gguf()
+    if fn is not None and name.lower().endswith('gguf'):
+        from modules import ggml
+        ggml.install_gguf()
         with open(os.path.join('configs', 'flux', 'text_encoder_2', 'config.json'), encoding='utf8') as f:
             t5_config = transformers.T5Config(**json.load(f))
         t5 = transformers.T5EncoderModel.from_pretrained(None, gguf_file=fn, config=t5_config, device_map="auto", cache_dir=cache_dir, torch_dtype=devices.dtype)
@@ -52,7 +39,8 @@ def load_t5(name=None, cache_dir=None):
             if torch.is_floating_point(param) and not is_param_float8_e4m3fn:
                 param = param.to(devices.dtype)
                 set_module_tensor_to_device(t5, param_name, device=0, value=param)
-        t5.eval()
+        if shared.opts.diffusers_eval:
+            t5.eval()
         if t5.dtype != devices.dtype:
             try:
                 t5 = t5.to(dtype=devices.dtype)

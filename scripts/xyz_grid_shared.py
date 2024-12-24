@@ -63,28 +63,15 @@ def apply_seed(p, x, xs):
 
 
 def apply_prompt(p, x, xs):
-    if not hasattr(p, 'orig_prompt'):
-        p.orig_prompt = p.prompt
-        p.orig_negative = p.negative_prompt
-    if xs[0] not in p.orig_prompt and xs[0] not in p.orig_negative:
-        shared.log.warning(f'XYZ grid: prompt S/R string="{xs[0]}" not found')
-    else:
-        p.prompt = p.orig_prompt.replace(xs[0], x)
-        p.negative_prompt = p.orig_negative.replace(xs[0], x)
-        p.all_prompts = None
-        p.all_negative_prompts = None
-        """
-        if p.all_prompts is not None:
-            for i in range(len(p.all_prompts)):
-                for j in range(len(xs)):
-                    p.all_prompts[i] = p.all_prompts[i].replace(xs[j], x)
-        p.negative_prompt = p.negative_prompt.replace(xs[0], x)
-        if p.all_negative_prompts is not None:
-            for i in range(len(p.all_negative_prompts)):
-                for j in range(len(xs)):
-                    p.all_negative_prompts[i] = p.all_negative_prompts[i].replace(xs[j], x)
-        """
-        shared.log.debug(f'XYZ grid apply prompt: "{xs[0]}"="{x}"')
+    for s in xs:
+        if s in p.prompt:
+            shared.log.debug(f'XYZ grid apply prompt: "{s}"="{x}"')
+            p.prompt = p.prompt.replace(s, x)
+        if s in p.negative_prompt:
+            shared.log.debug(f'XYZ grid apply negative: "{s}"="{x}"')
+            p.negative_prompt = p.negative_prompt.replace(s, x)
+    p.all_prompts = None
+    p.all_negative_prompts = None
 
 
 def apply_order(p, x, xs):
@@ -205,19 +192,28 @@ def apply_vae(p, x, xs):
 
 def list_lora():
     import sys
-    lora = [v for k, v in sys.modules.items() if k == 'networks'][0]
+    lora = [v for k, v in sys.modules.items() if k == 'networks' or k == 'modules.lora.networks'][0]
     loras = [v.fullname for v in lora.available_networks.values()]
     return ['None'] + loras
 
 
 def apply_lora(p, x, xs):
+    p.all_prompts = None
+    p.all_negative_prompts = None
     if x == 'None':
         return
     x = os.path.basename(x)
     p.prompt = p.prompt + f" <lora:{x}:{shared.opts.extra_networks_default_multiplier}>"
+    shared.log.debug(f'XYZ grid apply LoRA: "{x}"')
+
+
+def apply_lora_strength(p, x, xs):
+    shared.log.debug(f'XYZ grid apply LoRA strength: "{x}"')
+    p.prompt = p.prompt.replace(':1.0>', '>')
+    p.prompt = p.prompt.replace(f':{shared.opts.extra_networks_default_multiplier}>', '>')
     p.all_prompts = None
     p.all_negative_prompts = None
-    shared.log.debug(f'XYZ grid apply LoRA: "{x}"')
+    shared.opts.data['extra_networks_default_multiplier'] = x
 
 
 def apply_te(p, x, xs):

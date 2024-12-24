@@ -182,14 +182,14 @@ def set_free_init(method, iters, order, spatial, temporal):
 def set_free_noise(frames):
     context_length = 16
     context_stride = 4
-    if frames >= context_length:
+    if frames >= context_length and hasattr(shared.sd_model, 'enable_free_noise'):
         shared.log.debug(f'AnimateDiff free noise: frames={frames} context={context_length} stride={context_stride}')
         shared.sd_model.enable_free_noise(context_length=context_length, context_stride=context_stride)
 
 
 class Script(scripts.Script):
     def title(self):
-        return 'Video AnimateDiff'
+        return 'Video: AnimateDiff'
 
     def show(self, is_img2img):
         # return scripts.AlwaysVisible if shared.native else False
@@ -250,7 +250,7 @@ class Script(scripts.Script):
         processing.fix_seed(p)
         p.extra_generation_params['AnimateDiff'] = loaded_adapter
         p.do_not_save_grid = True
-        p.ops.append('animatediff')
+        p.ops.append('video')
         p.task_args['generator'] = None
         p.task_args['num_frames'] = frames
         p.task_args['num_inference_steps'] = p.steps

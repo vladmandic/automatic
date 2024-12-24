@@ -3,6 +3,7 @@ import copy
 from modules import shared
 from modules.sd_samplers_common import samples_to_image_grid, sample_to_image # pylint: disable=unused-import
 
+
 debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
 debug('Trace: SAMPLER')
 all_samplers = []
@@ -47,6 +48,8 @@ def visible_sampler_names():
 
 
 def create_sampler(name, model):
+    if name is None or name == 'None':
+        return model.scheduler
     try:
         current = model.scheduler.__class__.__name__
     except Exception:
@@ -73,15 +76,15 @@ def create_sampler(name, model):
         shared.log.debug(f'Sampler: sampler="{name}" config={config.options}')
         return sampler
     elif shared.native:
-        FlowModels = ['Flux', 'StableDiffusion3', 'Lumina', 'AuraFlow']
+        FlowModels = ['Flux', 'StableDiffusion3', 'Lumina', 'AuraFlow', 'Sana']
         if 'KDiffusion' in model.__class__.__name__:
-            return None
-        if any(x in model.__class__.__name__ for x in FlowModels) and 'FlowMatch' not in name:
-            shared.log.warning(f'Sampler: default={current} target="{name}" class={model.__class__.__name__} linear scheduler unsupported')
             return None
         if not any(x in model.__class__.__name__ for x in FlowModels) and 'FlowMatch' in name:
             shared.log.warning(f'Sampler: default={current} target="{name}" class={model.__class__.__name__} flow-match scheduler unsupported')
             return None
+        # if any(x in model.__class__.__name__ for x in FlowModels) and 'FlowMatch' not in name:
+        #    shared.log.warning(f'Sampler: default={current} target="{name}" class={model.__class__.__name__} linear scheduler unsupported')
+        #    return None
         sampler = config.constructor(model)
         if sampler is None:
             sampler = config.constructor(model)
@@ -91,7 +94,8 @@ def create_sampler(name, model):
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
             model.prior_pipe.scheduler.config.clip_sample = False
-        shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={sampler.config}')
+        clean_config = {k: v for k, v in sampler.config.items() if v is not None and v is not False}
+        shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={clean_config}')
         return sampler.sampler
     else:
         return None

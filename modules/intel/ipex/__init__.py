@@ -77,7 +77,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch.cuda.warnings = torch.xpu.warnings
                 torch.cuda.classproperty = torch.xpu.classproperty
                 torch.UntypedStorage.cuda = torch.UntypedStorage.xpu
-                if not ipex.__version__.startswith("2.3"):
+                if float(ipex.__version__[:3]) < 2.3:
                     torch.cuda._initialization_lock = torch.xpu.lazy_init._initialization_lock
                     torch.cuda._initialized = torch.xpu.lazy_init._initialized
                     torch.cuda._is_in_bad_fork = torch.xpu.lazy_init._is_in_bad_fork
@@ -111,7 +111,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                     torch.cuda.ComplexFloatStorage = torch.xpu.ComplexFloatStorage
                     torch.cuda.ComplexDoubleStorage = torch.xpu.ComplexDoubleStorage
 
-            if not legacy or ipex.__version__.startswith("2.3"):
+            if not legacy or float(ipex.__version__[:3]) >= 2.3:
                 torch.cuda._initialization_lock = torch.xpu._initialization_lock
                 torch.cuda._initialized = torch.xpu._initialized
                 torch.cuda._is_in_bad_fork = torch.xpu._is_in_bad_fork
@@ -122,7 +122,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch.cuda.traceback = torch.xpu.traceback
 
             # Memory:
-            if legacy and 'linux' in sys.platform and "WSL2" in os.popen("uname -a").read():
+            if 'linux' in sys.platform and "WSL2" in os.popen("uname -a").read():
                 torch.xpu.empty_cache = lambda: None
             torch.cuda.empty_cache = torch.xpu.empty_cache
 
@@ -159,7 +159,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                 torch.xpu.amp.custom_fwd = torch.cuda.amp.custom_fwd
                 torch.xpu.amp.custom_bwd = torch.cuda.amp.custom_bwd
                 torch.cuda.amp = torch.xpu.amp
-                if not ipex.__version__.startswith("2.3"):
+                if float(ipex.__version__[:3]) < 2.3:
                     torch.is_autocast_enabled = torch.xpu.is_autocast_xpu_enabled
                     torch.get_autocast_gpu_dtype = torch.xpu.get_autocast_xpu_dtype
 
@@ -178,7 +178,7 @@ def ipex_init(): # pylint: disable=too-many-statements
                         torch.cuda.amp.GradScaler = ipex.cpu.autocast._grad_scaler.GradScaler
 
             # C
-            if legacy and not ipex.__version__.startswith("2.3"):
+            if legacy and float(ipex.__version__[:3]) < 2.3:
                 torch._C._cuda_getCurrentRawStream = ipex._C._getCurrentRawStream
                 ipex._C._DeviceProperties.multi_processor_count = ipex._C._DeviceProperties.gpu_subslice_count
                 ipex._C._DeviceProperties.major = 12

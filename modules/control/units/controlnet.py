@@ -5,6 +5,7 @@ from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, FluxPi
 from modules.control.units import detect
 from modules.shared import log, opts, listdir
 from modules import errors, sd_models, devices, model_quant
+from modules.processing import StableDiffusionProcessingControl
 
 
 what = 'ControlNet'
@@ -51,17 +52,20 @@ predefined_sdxl = {
     'Depth Mid XL': 'diffusers/controlnet-depth-sdxl-1.0-mid',
     'OpenPose XL': 'thibaud/controlnet-openpose-sdxl-1.0/bin',
     'Xinsir Union XL': 'xinsir/controlnet-union-sdxl-1.0',
+    'Xinsir ProMax XL': 'brad-twinkl/controlnet-union-sdxl-1.0-promax',
     'Xinsir OpenPose XL': 'xinsir/controlnet-openpose-sdxl-1.0',
     'Xinsir Canny XL': 'xinsir/controlnet-canny-sdxl-1.0',
     'Xinsir Depth XL': 'xinsir/controlnet-depth-sdxl-1.0',
     'Xinsir Scribble XL': 'xinsir/controlnet-scribble-sdxl-1.0',
     'Xinsir Anime Painter XL': 'xinsir/anime-painter',
+    'Xinsir Tile XL': 'xinsir/controlnet-tile-sdxl-1.0',
     'NoobAI Canny XL': 'Eugeoter/noob-sdxl-controlnet-canny',
     'NoobAI Lineart Anime XL': 'Eugeoter/noob-sdxl-controlnet-lineart_anime',
     'NoobAI Depth XL': 'Eugeoter/noob-sdxl-controlnet-depth',
     'NoobAI Normal XL': 'Eugeoter/noob-sdxl-controlnet-normal',
     'NoobAI SoftEdge XL': 'Eugeoter/noob-sdxl-controlnet-softedge_hed',
     'NoobAI OpenPose XL': 'einar77/noob-openpose',
+    'TTPlanet Tile Realistic XL': 'Yakonrus/SDXL_Controlnet_Tile_Realistic_v2',
     # 'StabilityAI Canny R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-canny-rank128.safetensors',
     # 'StabilityAI Depth R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-depth-rank128.safetensors',
     # 'StabilityAI Recolor R128': 'stabilityai/control-lora/control-LoRAs-rank128/control-lora-recolor-rank128.safetensors',
@@ -75,6 +79,8 @@ predefined_f1 = {
     "InstantX Union": 'InstantX/FLUX.1-dev-Controlnet-Union',
     "InstantX Canny": 'InstantX/FLUX.1-dev-Controlnet-Canny',
     "JasperAI Depth": 'jasperai/Flux.1-dev-Controlnet-Depth',
+    "BlackForrestLabs Canny LoRA": '/huggingface.co/black-forest-labs/FLUX.1-Canny-dev-lora/flux1-canny-dev-lora.safetensors',
+    "BlackForrestLabs Depth LoRA": '/huggingface.co/black-forest-labs/FLUX.1-Depth-dev-lora/flux1-depth-dev-lora.safetensors',
     "JasperAI Surface Normals": 'jasperai/Flux.1-dev-Controlnet-Surface-Normals',
     "JasperAI Upscaler": 'jasperai/Flux.1-dev-Controlnet-Upscaler',
     "Shakker-Labs Union": 'Shakker-Labs/FLUX.1-dev-ControlNet-Union-Pro',
@@ -85,12 +91,23 @@ predefined_f1 = {
     "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
 predefined_sd3 = {
+    "StabilityAI Canny": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
+    "StabilityAI Depth": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
+    "StabilityAI Blur": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
     "InstantX Canny": 'InstantX/SD3-Controlnet-Canny',
     "InstantX Pose": 'InstantX/SD3-Controlnet-Pose',
     "InstantX Depth": 'InstantX/SD3-Controlnet-Depth',
     "InstantX Tile": 'InstantX/SD3-Controlnet-Tile',
     "Alimama Inpainting": 'alimama-creative/SD3-Controlnet-Inpainting',
     "Alimama SoftEdge": 'alimama-creative/SD3-Controlnet-Softedge',
+}
+variants = {
+    'NoobAI Canny XL': 'fp16',
+    'NoobAI Lineart Anime XL': 'fp16',
+    'NoobAI Depth XL': 'fp16',
+    'NoobAI Normal XL': 'fp16',
+    'NoobAI SoftEdge XL': 'fp16',
+    'TTPlanet Tile Realistic XL': 'fp16',
 }
 models = {}
 all_models = {}
@@ -159,26 +176,35 @@ class ControlNet():
         self.model = None
         self.model_id = None
 
-    def get_class(self):
-        import modules.shared
-        if modules.shared.sd_model_type == 'sd':
+    def get_class(self, model_id:str=''):
+        from modules import shared
+        if shared.sd_model_type == 'none':
+            _load = shared.sd_model # trigger a load
+        if shared.sd_model_type == 'sd':
             from diffusers import ControlNetModel as cls # pylint: disable=reimported
             config = 'lllyasviel/control_v11p_sd15_canny'
-        elif modules.shared.sd_model_type == 'sdxl':
-            from diffusers import ControlNetModel as cls # pylint: disable=reimported # sdxl shares same model class
-            config = 'Eugeoter/noob-sdxl-controlnet-canny'
-        elif modules.shared.sd_model_type == 'f1':
+        elif shared.sd_model_type == 'sdxl':
+            if 'union' in model_id.lower():
+                from diffusers import ControlNetUnionModel as cls
+                config = 'xinsir/controlnet-union-sdxl-1.0'
+            elif 'promax' in model_id.lower():
+                from diffusers import ControlNetUnionModel as cls
+                config = 'brad-twinkl/controlnet-union-sdxl-1.0-promax'
+            else:
+                from diffusers import ControlNetModel as cls # pylint: disable=reimported # sdxl shares same model class
+                config = 'Eugeoter/noob-sdxl-controlnet-canny'
+        elif shared.sd_model_type == 'f1':
             from diffusers import FluxControlNetModel as cls
             config = 'InstantX/FLUX.1-dev-Controlnet-Union'
-        elif modules.shared.sd_model_type == 'sd3':
+        elif shared.sd_model_type == 'sd3':
             from diffusers import SD3ControlNetModel as cls
             config = 'InstantX/SD3-Controlnet-Canny'
         else:
-            log.error(f'Control {what}: type={modules.shared.sd_model_type} unsupported model')
+            log.error(f'Control {what}: type={shared.sd_model_type} unsupported model')
             return None, None
         return cls, config
 
-    def load_safetensors(self, model_path):
+    def load_safetensors(self, model_id, model_path):
         name = os.path.splitext(model_path)[0]
         config_path = None
         if not os.path.exists(model_path):
@@ -203,7 +229,7 @@ class ControlNet():
             config_path = f'{name}.json'
         if config_path is not None:
             self.load_config['original_config_file '] = config_path
-        cls, config = self.get_class()
+        cls, config = self.get_class(model_id)
         if cls is None:
             log.error(f'Control {what} model load failed: unknown base model')
         else:
@@ -225,23 +251,26 @@ class ControlNet():
             if model_path is None:
                 log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
                 return
+            if 'lora' in model_id.lower():
+                self.model = model_path
+                return
             if model_id == self.model_id and not force:
                 log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
                 return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
+            cls, _config = self.get_class(model_id)
             if model_path.endswith('.safetensors'):
-                self.load_safetensors(model_path)
+                self.load_safetensors(model_id, model_path)
             else:
                 kwargs = {}
                 if '/bin' in model_path:
                     model_path = model_path.replace('/bin', '')
                     self.load_config['use_safetensors'] = False
-                cls, _config = self.get_class()
                 if cls is None:
                     log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
                     return
-                if 'Eugeoter' in model_path:
-                    kwargs['variant'] = 'fp16'
+                if variants.get(model_id, None) is not None:
+                    kwargs['variant'] = variants[model_id]
                 self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
             if self.model is None:
                 return
@@ -268,7 +297,7 @@ class ControlNet():
                 self.model.to(self.device)
             t1 = time.time()
             self.model_id = model_id
-            log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')
+            log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" cls={cls.__name__} time={t1-t0:.2f}')
             return f'{what} loaded model: {model_id}'
         except Exception as e:
             log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
@@ -281,16 +310,27 @@ class ControlNetPipeline():
                  controlnet: Union[ControlNetModel, list[ControlNetModel]],
                  pipeline: Union[StableDiffusionXLPipeline, StableDiffusionPipeline, FluxPipeline, StableDiffusion3Pipeline],
                  dtype = None,
+                 p: StableDiffusionProcessingControl = None, # pylint: disable=unused-argument
                 ):
         t0 = time.time()
         self.orig_pipeline = pipeline
         self.pipeline = None
+
+        controlnets = controlnet if isinstance(controlnet, list) else [controlnet]
+        loras = [cn for cn in controlnets if isinstance(cn, str)]
+        controlnets = [cn for cn in controlnets if not isinstance(cn, str)]
+
         if pipeline is None:
             log.error('Control model pipeline: model not loaded')
             return
-        elif detect.is_sdxl(pipeline):
-            from diffusers import StableDiffusionXLControlNetPipeline
-            self.pipeline = StableDiffusionXLControlNetPipeline(
+        elif detect.is_sdxl(pipeline) and len(controlnets) > 0:
+            from diffusers import StableDiffusionXLControlNetPipeline, StableDiffusionXLControlNetUnionPipeline
+            if controlnet.__class__.__name__ == 'ControlNetUnionModel':
+                cls = StableDiffusionXLControlNetUnionPipeline
+                controlnets = controlnets[0] # using only first one
+            else:
+                cls = StableDiffusionXLControlNetPipeline
+            self.pipeline = cls(
                 vae=pipeline.vae,
                 text_encoder=pipeline.text_encoder,
                 text_encoder_2=pipeline.text_encoder_2,
@@ -299,9 +339,9 @@ class ControlNetPipeline():
                 unet=pipeline.unet,
                 scheduler=pipeline.scheduler,
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
-                controlnet=controlnet, # can be a list
+                controlnet=controlnets, # can be a list
             )
-        elif detect.is_sd15(pipeline):
+        elif detect.is_sd15(pipeline) and len(controlnets) > 0:
             from diffusers import StableDiffusionControlNetPipeline
             self.pipeline = StableDiffusionControlNetPipeline(
                 vae=pipeline.vae,
@@ -312,10 +352,10 @@ class ControlNetPipeline():
                 feature_extractor=getattr(pipeline, 'feature_extractor', None),
                 requires_safety_checker=False,
                 safety_checker=None,
-                controlnet=controlnet, # can be a list
+                controlnet=controlnets, # can be a list
             )
             sd_models.move_model(self.pipeline, pipeline.device)
-        elif detect.is_f1(pipeline):
+        elif detect.is_f1(pipeline) and len(controlnets) > 0:
             from diffusers import FluxControlNetPipeline
             self.pipeline = FluxControlNetPipeline(
                 vae=pipeline.vae.to(devices.device),
@@ -325,9 +365,9 @@ class ControlNetPipeline():
                 tokenizer_2=pipeline.tokenizer_2,
                 transformer=pipeline.transformer,
                 scheduler=pipeline.scheduler,
-                controlnet=controlnet, # can be a list
+                controlnet=controlnets, # can be a list
             )
-        elif detect.is_sd3(pipeline):
+        elif detect.is_sd3(pipeline) and len(controlnets) > 0:
             from diffusers import StableDiffusion3ControlNetPipeline
             self.pipeline = StableDiffusion3ControlNetPipeline(
                 vae=pipeline.vae,
@@ -339,8 +379,18 @@ class ControlNetPipeline():
                 tokenizer_3=pipeline.tokenizer_3,
                 transformer=pipeline.transformer,
                 scheduler=pipeline.scheduler,
-                controlnet=controlnet, # can be a list
+                controlnet=controlnets, # can be a list
             )
+        elif len(loras) > 0:
+            self.pipeline = pipeline
+            for lora in loras:
+                log.debug(f'Control {what} pipeline: lora="{lora}"')
+                lora = lora.replace('/huggingface.co/', '')
+                self.pipeline.load_lora_weights(lora)
+                """
+                if p is not None:
+                    p.prompt += f'<lora:{lora}:1.0>'
+                """
         else:
             log.error(f'Control {what} pipeline: class={pipeline.__class__.__name__} unsupported model type')
             return
@@ -350,6 +400,7 @@ class ControlNetPipeline():
             return
         if dtype is not None:
             self.pipeline = self.pipeline.to(dtype)
+
         if opts.diffusers_offload_mode == 'none':
             sd_models.move_model(self.pipeline, devices.device)
         from modules.sd_models import set_diffuser_offload
@@ -359,5 +410,6 @@ class ControlNetPipeline():
         log.debug(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
 
     def restore(self):
+        self.pipeline.unload_lora_weights()
         self.pipeline = None
         return self.orig_pipeline

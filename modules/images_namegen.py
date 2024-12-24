@@ -45,12 +45,12 @@ class FilenameGenerator:
         'prompt_hash': lambda self: hashlib.sha256(self.prompt.encode()).hexdigest()[0:8],
 
         'sampler': lambda self: self.p and self.p.sampler_name,
-        'seed': lambda self: self.seed and str(self.seed) or '',
+        'seed': lambda self: (self.seed and str(self.seed)) or '',
         'steps': lambda self: self.p and getattr(self.p, 'steps', 0),
         'cfg': lambda self: self.p and getattr(self.p, 'cfg_scale', 0),
         'clip_skip': lambda self: self.p and getattr(self.p, 'clip_skip', 0),
         'denoising': lambda self: self.p and getattr(self.p, 'denoising_strength', 0),
-        'styles': lambda self: self.p and ", ".join([style for style in self.p.styles if not style == "None"]) or "None",
+        'styles': lambda self: (self.p and ", ".join([style for style in self.p.styles if not style == "None"])) or "None",
         'uuid': lambda self: str(uuid.uuid4()),
     }
     default_time_format = '%Y%m%d%H%M%S'

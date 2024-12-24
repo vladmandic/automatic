@@ -9,11 +9,11 @@ from modules.control.units import xs # vislearn ControlNet-XS
 from modules.control.units import lite # vislearn ControlNet-XS
 from modules.control.units import t2iadapter # TencentARC T2I-Adapter
 from modules.control.units import reference # reference pipeline
-from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images, processing_vae # pylint: disable=ungrouped-imports
+from modules import errors, shared, progress, ui_components, ui_symbols, ui_common, ui_sections, generation_parameters_copypaste, call_queue, scripts, masking, images, processing_vae, timer # pylint: disable=ungrouped-imports
 from modules import ui_control_helpers as helpers
 
 
-gr_height = None
+gr_height = 512
 max_units = shared.opts.control_max_units
 units: list[unit.Unit] = [] # main state variable
 controls: list[gr.component] = [] # list of gr controls
@@ -21,13 +21,41 @@ debug = shared.log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None
 debug('Trace: CONTROL')
 
 
-def return_controls(res):
+def return_stats(t: float = None):
+    if t is None:
+        elapsed_text = ''
+    else:
+        elapsed = time.perf_counter() - t
+        elapsed_m = int(elapsed // 60)
+        elapsed_s = elapsed % 60
+        elapsed_text = f"Time: {elapsed_m}m {elapsed_s:.2f}s |" if elapsed_m > 0 else f"Time: {elapsed_s:.2f}s |"
+    summary = timer.process.summary(min_time=0.25, total=False).replace('=', ' ')
+    gpu = ''
+    cpu = ''
+    if not shared.mem_mon.disabled:
+        vram = {k: -(v//-(1024*1024)) for k, v in shared.mem_mon.read().items()}
+        peak = max(vram['active_peak'], vram['reserved_peak'], vram['used'])
+        used = round(100.0 * peak / vram['total']) if vram['total'] > 0 else 0
+        if used > 0:
+            gpu += f"| GPU {peak} MB {used}%"
+            gpu += f" | retries {vram['retries']} oom {vram['oom']}" if vram.get('retries', 0) > 0 or vram.get('oom', 0) > 0 else ''
+        ram = shared.ram_stats()
+        if ram['used'] > 0:
+            cpu += f"| RAM {ram['used']} GB {round(100.0 * ram['used'] / ram['total'])}%"
+    return f"<div class='performance'><p>Time: {elapsed_text} | {summary} {gpu} {cpu}</p></div>"
+
+
+def return_controls(res, t: float = None):
     # return preview, image, video, gallery, text
     debug(f'Control received: type={type(res)} {res}')
+    if t is None:
+        perf = ''
+    else:
+        perf = return_stats(t)
     if res is None: # no response
-        return [None, None, None, None, '']
+        return [None, None, None, None, '', perf]
     elif isinstance(res, str): # error response
-        return [None, None, None, None, res]
+        return [None, None, None, None, res, perf]
     elif isinstance(res, tuple): # standard response received as tuple via control_run->yield(output_images, process_image, result_txt)
         preview_image = res[1] # may be None
         output_image = res[0][0] if isinstance(res[0], list) else res[0] # may be image or list of images
@@ -37,9 +65,9 @@ def return_controls(res):
             output_gallery = [res[0]] if res[0] is not None else [] # must return list, but can receive single image
         result_txt = res[2] if len(res) > 2 else '' # do we have a message
         output_video = res[3] if len(res) > 3 else None # do we have a video filename
-        return [preview_image, output_image, output_video, output_gallery, result_txt]
+        return [preview_image, output_image, output_video, output_gallery, result_txt, perf]
     else: # unexpected
-        return [None, None, None, None, f'Control: Unexpected response: {type(res)}']
+        return [None, None, None, None, f'Control: Unexpected response: {type(res)}', perf]
 
 
 def get_units(*values):
@@ -67,17 +95,18 @@ def generate_click(job_id: str, state: str, active_tab: str, *args):
     shared.state.begin('Generate')
     progress.add_task_to_queue(job_id)
     with call_queue.queue_lock:
-        yield [None, None, None, None, 'Control: starting']
+        yield [None, None, None, None, 'Control: starting', '']
         shared.mem_mon.reset()
         progress.start_task(job_id)
         try:
+            t = time.perf_counter()
             for results in control_run(state, units, helpers.input_source, helpers.input_init, helpers.input_mask, active_tab, True, *args):
                 progress.record_results(job_id, results)
-                yield return_controls(results)
+                yield return_controls(results, t)
         except Exception as e:
             shared.log.error(f"Control exception: {e}")
             errors.display(e, 'Control')
-            yield [None, None, None, None, f'Control: Exception: {e}']
+            yield [None, None, None, None, f'Control: Exception: {e}', '']
         progress.finish_task(job_id)
     shared.state.end()
 
@@ -106,11 +135,12 @@ def create_ui(_blocks: gr.Blocks=None):
 
                 with gr.Accordion(open=False, label="Input", elem_id="control_input", elem_classes=["small-accordion"]):
                     with gr.Row():
-                        show_preview = gr.Checkbox(label="Show preview", value=True, elem_id="control_show_preview")
+                        show_input = gr.Checkbox(label="Show input", value=True, elem_id="control_show_input")
+                        show_preview = gr.Checkbox(label="Show preview", value=False, elem_id="control_show_preview")
                     with gr.Row():
-                        input_type = gr.Radio(label="Input type", choices=['Control only', 'Init image same as control', 'Separate init image'], value='Control only', type='index', elem_id='control_input_type')
+                        input_type = gr.Radio(label="Control input type", choices=['Control only', 'Init image same as control', 'Separate init image'], value='Control only', type='index', elem_id='control_input_type')
                     with gr.Row():
-                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.50, elem_id="control_input_denoising_strength")
+                        denoising_strength = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label='Denoising strength', value=0.30, elem_id="control_input_denoising_strength")
 
                 with gr.Accordion(open=False, label="Size", elem_id="control_size", elem_classes=["small-accordion"]):
                     with gr.Tabs():
@@ -153,13 +183,13 @@ def create_ui(_blocks: gr.Blocks=None):
                 override_settings = ui_common.create_override_inputs('control')
 
             with gr.Row(variant='compact', elem_id="control_extra_networks", elem_classes=["extra_networks_root"], visible=False) as extra_networks_ui:
-                from modules import timer, ui_extra_networks
+                from modules import ui_extra_networks
                 extra_networks_ui = ui_extra_networks.create_ui(extra_networks_ui, btn_extra, 'control', skip_indexing=shared.opts.extra_network_skip_indexing)
                 timer.startup.record('ui-networks')
 
             with gr.Row(elem_id='control-inputs'):
-                with gr.Column(scale=9, elem_id='control-input-column', visible=True) as _column_input:
-                    gr.HTML('<span id="control-input-button">Control input</p>')
+                with gr.Column(scale=9, elem_id='control-input-column', visible=True) as column_input:
+                    gr.HTML('<span id="control-input-button">Input</p>')
                     with gr.Tabs(elem_classes=['control-tabs'], elem_id='control-tab-input'):
                         with gr.Tab('Image', id='in-image') as tab_image:
                             input_mode = gr.Label(value='select', visible=False)
@@ -190,12 +220,12 @@ def create_ui(_blocks: gr.Blocks=None):
                     gr.HTML('<span id="control-output-button">Output</p>')
                     with gr.Tabs(elem_classes=['control-tabs'], elem_id='control-tab-output') as output_tabs:
                         with gr.Tab('Gallery', id='out-gallery'):
-                            output_gallery, _output_gen_info, _output_html_info, _output_html_info_formatted, _output_html_log = ui_common.create_output_panel("control", preview=True, prompt=prompt, height=gr_height)
+                            output_gallery, _output_gen_info, _output_html_info, _output_html_info_formatted, output_html_log = ui_common.create_output_panel("control", preview=True, prompt=prompt, height=gr_height)
                         with gr.Tab('Image', id='out-image'):
                             output_image = gr.Image(label="Output", show_label=False, type="pil", interactive=False, tool="editor", height=gr_height, elem_id='control_output_image', elem_classes=['control-image'])
                         with gr.Tab('Video', id='out-video'):
                             output_video = gr.Video(label="Output", show_label=False, height=gr_height, elem_id='control_output_video', elem_classes=['control-image'])
-                with gr.Column(scale=9, elem_id='control-preview-column', visible=True) as column_preview:
+                with gr.Column(scale=9, elem_id='control-preview-column', visible=False) as column_preview:
                     gr.HTML('<span id="control-preview-button">Preview</p>')
                     with gr.Tabs(elem_classes=['control-tabs'], elem_id='control-tab-preview'):
                         with gr.Tab('Preview', id='preview-image') as _tab_preview:
@@ -220,10 +250,11 @@ def create_ui(_blocks: gr.Blocks=None):
                                     process_id = gr.Dropdown(label="Processor", choices=processors.list_models(), value='None', elem_id=f'control_unit-{i}-process_name')
                                     model_id = gr.Dropdown(label="ControlNet", choices=controlnet.list_models(), value='None', elem_id=f'control_unit-{i}-model_name')
                                     ui_common.create_refresh_button(model_id, controlnet.list_models, lambda: {"choices": controlnet.list_models(refresh=True)}, f'refresh_controlnet_models_{i}')
+                                    control_mode = gr.Dropdown(label="CN Mode", choices=['default'], value='default', visible=False, elem_id=f'control_unit-{i}-mode')
                                     model_strength = gr.Slider(label="CN Strength", minimum=0.01, maximum=2.0, step=0.01, value=1.0, elem_id=f'control_unit-{i}-strength')
-                                    control_start = gr.Slider(label="Start", minimum=0.0, maximum=1.0, step=0.05, value=0, elem_id=f'control_unit-{i}-start')
-                                    control_end = gr.Slider(label="End", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id=f'control_unit-{i}-end')
-                                    control_mode = gr.Dropdown(label="CN Mode", choices=['', 'Canny', 'Tile', 'Depth', 'Blur', 'Pose', 'Gray', 'LQ'], value=0, type='index', visible=False, elem_id=f'control_unit-{i}-mode')
+                                    control_start = gr.Slider(label="CN Start", minimum=0.0, maximum=1.0, step=0.05, value=0, elem_id=f'control_unit-{i}-start')
+                                    control_end = gr.Slider(label="CN End", minimum=0.0, maximum=1.0, step=0.05, value=1.0, elem_id=f'control_unit-{i}-end')
+                                    control_tile = gr.Dropdown(label="CN Tiles", choices=[x.strip() for x in shared.opts.control_tiles.split(',') if 'x' in x], value='1x1', visible=False, elem_id=f'control_unit-{i}-tile')
                                     reset_btn = ui_components.ToolButton(value=ui_symbols.reset)
                                     image_upload = gr.UploadButton(label=ui_symbols.upload, file_types=['image'], elem_classes=['form', 'gradio-button', 'tool'])
                                     image_reuse= ui_components.ToolButton(value=ui_symbols.reuse)
@@ -248,6 +279,7 @@ def create_ui(_blocks: gr.Blocks=None):
                                 control_start = control_start,
                                 control_end = control_end,
                                 control_mode = control_mode,
+                                control_tile = control_tile,
                                 extra_controls = extra_controls,
                                 )
                             )
@@ -498,6 +530,7 @@ def create_ui(_blocks: gr.Blocks=None):
             btn_update = gr.Button('Update', interactive=True, visible=False, elem_id='control_update')
             btn_update.click(fn=get_units, inputs=controls, outputs=[], show_progress=True, queue=False)
 
+            show_input.change(fn=lambda x: gr.update(visible=x), inputs=[show_input], outputs=[column_input])
             show_preview.change(fn=lambda x: gr.update(visible=x), inputs=[show_preview], outputs=[column_preview])
             input_type.change(fn=lambda x: gr.update(visible=x == 2), inputs=[input_type], outputs=[column_init])
             btn_prompt_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[prompt, steps], outputs=[prompt_counter])
@@ -550,6 +583,7 @@ def create_ui(_blocks: gr.Blocks=None):
                 output_video,
                 output_gallery,
                 result_txt,
+                output_html_log,
             ]
             control_dict = dict(
                 fn=generate_click,

@@ -52,7 +52,7 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, see
                         choice = random.choice(lines).strip(' \n')
                         if '|' in choice:
                             choice = random.choice(choice.split('|')).strip(' []{}\n')
-                        prompt = prompt.replace(f"__{wildcard}__", choice)
+                        prompt = prompt.replace(f"__{wildcard}__", choice, 1)
                         shared.log.debug(f'Wildcards apply: wildcard="{wildcard}" choice="{choice}" file="{file}" choices={len(lines)}')
                         replaced.append(wildcard)
                 return prompt, True

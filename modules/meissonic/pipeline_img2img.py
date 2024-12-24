@@ -56,9 +56,6 @@ class Img2ImgPipeline(DiffusionPipeline):
 
     model_cpu_offload_seq = "text_encoder->transformer->vqvae"
 
-    # TODO - when calling self.vqvae.quantize, it uses self.vqvae.quantize.embedding.weight before
-    # the forward method of self.vqvae.quantize, so the hook doesn't get called to move the parameter
-    # off the meta device. There should be a way to fix this instead of just not offloading it
     _exclude_from_cpu_offload = ["vqvae"]
 
     def __init__(

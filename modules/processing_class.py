@@ -31,8 +31,8 @@ class StableDiffusionProcessing:
                  n_iter: int = 1,
                  steps: int = 50,
                  clip_skip: int = 1,
-                 width: int = 512,
-                 height: int = 512,
+                 width: int = 1024,
+                 height: int = 1024,
                  # samplers
                  sampler_index: int = None, # pylint: disable=unused-argument # used only to set sampler_name
                  sampler_name: str = None,
@@ -139,6 +139,7 @@ class StableDiffusionProcessing:
         self.negative_pooleds = []
         self.disable_extra_networks = False
         self.iteration = 0
+        self.network_data = {}
 
         # initializers
         self.prompt = prompt
@@ -169,7 +170,7 @@ class StableDiffusionProcessing:
         self.image_cfg_scale = image_cfg_scale
         self.scale_by = scale_by
         self.mask = mask
-        self.image_mask = mask # TODO duplciate mask params
+        self.image_mask = mask # TODO processing: remove duplicate mask params
         self.latent_mask = latent_mask
         self.mask_blur = mask_blur
         self.inpainting_fill = inpainting_fill
@@ -338,6 +339,9 @@ class StableDiffusionProcessing:
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
 
+    def __str__(self):
+        return f'{self.__class__.__name__}: {self.__dict__}'
+
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     def __init__(self, **kwargs):
@@ -347,8 +351,8 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
     def init(self, all_prompts=None, all_seeds=None, all_subseeds=None):
         if shared.native:
             shared.sd_model = sd_models.set_diffuser_pipe(self.sd_model, sd_models.DiffusersTaskType.TEXT_2_IMAGE)
-        self.width = self.width or 512
-        self.height = self.height or 512
+        self.width = self.width or 1024
+        self.height = self.height or 1024
         if all_prompts is not None:
             self.all_prompts = all_prompts
         if all_seeds is not None:
