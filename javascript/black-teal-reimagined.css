@@ -783,7 +783,7 @@ svg.feather.feather-image,
   margin-top: var(--spacing-lg);
 }
 
-/* Extra Networks Container */
+/* Networks Container */
 #extra_networks_root {
   z-index: 100;
   background: var(--background-color);
@@ -801,7 +801,7 @@ svg.feather.feather-image,
   }
 }
 
-/* Extra Networks Styles */
+/* Networks Styles */
 .extra-networks {
   border-left: 2px solid var(--highlight-color) !important;
   padding-left: 4px;

@@ -2287,7 +2287,7 @@ Plus some nifty new modules such as **FaceID** automatic face guidance using emb
       can remove artifacts and hard edges of inpaint area but also remove some details from original  
     - **chaiNNer** fix `NaN` issues due to autocast  
     - **Upscale** increase limit from 4x to 8x given the quality of some upscalers  
-    - **Extra Networks** fix sort  
+    - **Networks** fix sort  
     - reduced default **CFG scale** from 6 to 4 to be more out-of-the-box compatibile with LCM/Turbo models
     - disable google fonts check on server startup  
     - fix torchvision/basicsr compatibility  

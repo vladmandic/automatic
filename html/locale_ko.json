@@ -182,7 +182,7 @@
   {"id":"","label":"Training","localized":"학습(훈련)","hint":""},
   {"id":"","label":"Interrogate","localized":"이미지➠텍스트","hint":""},
   {"id":"","label":"Upscaling","localized":"업스케일링","hint":""},
-  {"id":"","label":"Extra Networks","localized":"엑스트라 네트워크","hint":""},
+  {"id":"","label":"Networks","localized":"엑스트라 네트워크","hint":""},
   {"id":"","label":"Licenses","localized":"라이선스 정보","hint":""},
   {"id":"","label":"Show all pages","localized":"모든 페이지 보기","hint":""},
   {"id":"","label":"Request browser notifications","localized":"브라우저 알림 요청","hint":""}

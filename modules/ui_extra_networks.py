@@ -203,9 +203,9 @@ class ExtraNetworksPage:
             self.refresh_time = time.time()
         except Exception as e:
             self.items = []
-            shared.log.error(f'Extra networks error listing items: class={self.__class__.__name__} tab={tabname} {e}')
+            shared.log.error(f'Networks: listing items class={self.__class__.__name__} tab={tabname} {e}')
             if os.environ.get('SD_EN_DEBUG', None):
-                errors.display(e, f'Extra networks error listing items: class={self.__class__.__name__} tab={tabname}')
+                errors.display(e, f'Networks: listing items: class={self.__class__.__name__} tab={tabname}')
         for item in self.items:
             if item is None:
                 continue
@@ -321,9 +321,9 @@ class ExtraNetworksPage:
                 args['title'] += f'\nAlias: {alias}'
             return self.card.format(**args)
         except Exception as e:
-            shared.log.error(f'Extra networks item error: page={tabname} item={item["name"]} {e}')
+            shared.log.error(f'Networks: item error: page={tabname} item={item["name"]} {e}')
             if os.environ.get('SD_EN_DEBUG', None) is not None:
-                errors.display(e, 'Extra networks')
+                errors.display(e, 'Networks')
             return ""
 
     def find_preview_file(self, path):
@@ -567,7 +567,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             nonlocal state
             state = SimpleNamespace(**json.loads(state_text))
         except Exception as e:
-            shared.log.error(f'Extra networks state error: {e}')
+            shared.log.error(f'Networks: state error: {e}')
             return
         _page, _item = get_item(state)
         # shared.log.debug(f'Extra network: op={state.op} page={page.title if page is not None else None} item={item.filename if item is not None else None}')
@@ -880,7 +880,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             page.refresh_time = 0
             page.refresh()
             page.create_page(ui.tabname)
-            shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname}")
+            shared.log.debug(f"Networks: refresh page='{page.title}' items={len(page.items)} tab={ui.tabname}")
             pages.append(page.html)
         ui.search.update(title)
         return pages
@@ -894,7 +894,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
             page.card = card_full if page.view == 'gallery' else card_list
             page.html = ''
             page.create_page(ui.tabname)
-            shared.log.debug(f"Refreshing Extra networks: page='{page.title}' items={len(page.items)} tab={ui.tabname} view={page.view}")
+            shared.log.debug(f"Networks: refresh page='{page.title}' items={len(page.items)} tab={ui.tabname} view={page.view}")
             pages.append(page.html)
         ui.search.update(title)
         return pages
@@ -946,7 +946,7 @@ def create_ui(container, button_parent, tabname, skip_indexing = False):
         if shared.opts.extra_networks_sort != sort_order:
             shared.opts.extra_networks_sort = sort_order
             shared.opts.save(shared.config_filename)
-        return f'Extra networks sort={sort_order}'
+        return f'Networks: sort={sort_order}'
 
     dummy = gr.State(value=False) # pylint: disable=abstract-class-instantiated
     button_parent.click(fn=toggle_visibility, inputs=[ui.visible], outputs=[ui.visible, container, button_parent])
