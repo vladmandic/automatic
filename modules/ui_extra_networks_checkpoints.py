@@ -27,7 +27,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
             experimental = v.get('experimental', False)
             if experimental:
                 if shared.cmd_opts.experimental:
-                    shared.log.debug(f'Extra networks experimental: model="{k}"')
+                    shared.log.debug(f'Networks: experimental model="{k}"')
                 else:
                     continue
             preview = v.get('preview', v['path'])
