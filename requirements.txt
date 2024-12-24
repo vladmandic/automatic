@@ -45,7 +45,7 @@ accelerate==1.2.1
 opencv-contrib-python-headless==4.9.0.80
 einops==0.4.1
 gradio==3.43.2
-huggingface_hub==0.26.5
+huggingface_hub==0.27.0
 numexpr==2.8.8
 numpy==1.26.4
 numba==0.59.1

@@ -141,7 +141,8 @@ def full_vae_decode(latents, model):
 
     log_debug(f'VAE config: {model.vae.config}')
     try:
-        decoded = model.vae.decode(latents, return_dict=False)[0]
+        with devices.inference_context():
+            decoded = model.vae.decode(latents, return_dict=False)[0]
     except Exception as e:
         shared.log.error(f'VAE decode: {stats} {e}')
         if 'out of memory' not in str(e):
@@ -159,8 +160,6 @@ def full_vae_decode(latents, model):
             model.vae.apply(sd_models.convert_to_faketensors)
             devices.torch_gc(force=True)
 
-    # if shared.opts.diffusers_offload_mode == "balanced":
-    #    shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     elif shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and base_device is not None:
         sd_models.move_base(model, base_device)
     t1 = time.time()

@@ -26,7 +26,7 @@
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
 - Multiple UIs!  
   ▹ **Standard | Modern**  
-- Multiple diffusion models!  
+- Multiple [diffusion models](https://vladmandic.github.io/sdnext-docs/Model-Support/)!  
 - Built-in Control for Text, Image, Batch and video processing!  
 - Multiplatform!  
  ▹ **Windows | Linux | MacOS | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
@@ -36,7 +36,6 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Optimized processing with latest `torch` developments with built-in support for `torch.compile`  
   and multiple compile backends: *Triton, ZLUDA, StableFast, DeepCache, OpenVINO, NNCF, IPEX, OneDiff*  
 - Built-in queue management  
-- Enterprise level logging and hardened API  
 - Built in installer with automatic updates and dependency management  
 - Mobile compatible  
 
@@ -68,7 +67,7 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 - Any GPU or device compatible with **OpenVINO** libraries on both *Windows and Linux*  
 - *Apple M1/M2* on *OSX* using built-in support in Torch with **MPS** optimizations  
 - *ONNX/Olive*  
-- *AMD* GPUs on Windows using **ZLUDA** libraries
+- *AMD* GPUs on Windows using **ZLUDA** libraries  
 
 ## Getting started
 
