@@ -311,6 +311,8 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
         t0 = time.time()
 
         weights_backup = getattr(self, "network_weights_backup", None)
+        if (shared.opts.lora_fuse_diffusers and not isinstance(weights_backup, bool)) or (not shared.opts.lora_fuse_diffusers and isinstance(weights_backup, bool)):
+            weights_backup = None # invalidate so we can change direct/backup on-the-fly
         if weights_backup is None and wanted_names != (): # pylint: disable=C1803
             weight = getattr(self, 'weight', None)
             self.network_weights_backup = None
