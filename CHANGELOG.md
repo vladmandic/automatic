@@ -1,8 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-23
+## Update for 2024-12-24
 
-### Highlights for 2024-12-23
+### Highlights for 2024-12-24
 
 ### SD.Next Xmass edition: *What's new?*
 
@@ -28,11 +28,11 @@ And a lot of **Control** and **IPAdapter** goodies
 Plus couple of new integrated workflows such as [FreeScale](https://github.com/ali-vilab/FreeScale) and [Style Aligned Image Generation](https://style-aligned-gen.github.io/)  
 
 And it wouldn't be a *Xmass edition* without couple of custom themes: *Snowflake* and *Elf-Green*!  
-All-in-all, we're around ~160 commits worth of updates, check changelog for full list  
+All-in-all, we're around ~180 commits worth of updates, check the changelog for full list  
 
 [ReadMe](https://github.com/vladmandic/automatic/blob/master/README.md) | [ChangeLog](https://github.com/vladmandic/automatic/blob/master/CHANGELOG.md) | [Docs](https://vladmandic.github.io/sdnext-docs/) | [WiKi](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.com/invite/sd-next-federal-batch-inspectors-1101998836328697867)
 
-## Details for 2024-12-23
+## Details for 2024-12-24
 
 ### New models and integrations
 
