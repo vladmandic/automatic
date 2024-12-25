@@ -161,7 +161,7 @@ class State:
         import modules.sd_samplers # pylint: disable=W0621
         try:
             sample = self.current_latent
-            if self.job == "txt2img" and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+            if self.job == "txt2img" and self.job_no == 0 and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
                     sample = original_sample - (self.current_noise_pred * self.current_sigma)
