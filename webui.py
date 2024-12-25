@@ -100,7 +100,7 @@ def initialize():
     modules.sd_models.setup_model()
     timer.startup.record("models")
 
-    if shared.native:
+    if not shared.opts.lora_legacy:
         import modules.lora.networks as lora_networks
         lora_networks.list_available_networks()
         timer.startup.record("lora")

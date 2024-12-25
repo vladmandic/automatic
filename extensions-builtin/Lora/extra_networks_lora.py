@@ -129,7 +129,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         if len(networks.loaded_networks) > 0 and step == 0:
             self.infotext(p)
             self.prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t1-t0:.2f}')
+            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} method=legacy te={te_multipliers} unet={unet_multipliers} dims={dyn_dims} load={t1-t0:.2f}')
 
     def deactivate(self, p):
         t0 = time.time()

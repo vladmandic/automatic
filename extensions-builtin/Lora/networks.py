@@ -182,11 +182,11 @@ def load_network(name, network_on_disk) -> network.Network:
         else:
             net.modules[key] = net_module
     if len(keys_failed_to_match) > 0:
-        shared.log.warning(f'LoRA name="{name}" type={set(network_types)} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
+        shared.log.warning(f'Load network: type=LoRA name="{name}" type={set(network_types)} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
         if debug:
-            shared.log.debug(f'LoRA name="{name}" unmatched={keys_failed_to_match}')
+            shared.log.debug(f'Load network: type=LoRA name="{name}" unmatched={keys_failed_to_match}')
     else:
-        shared.log.debug(f'LoRA name="{name}" type={set(network_types)} keys={len(matched_networks)}')
+        shared.log.debug(f'Load network: type=LoRA name="{name}" type={set(network_types)} keys={len(matched_networks)}')
     if len(matched_networks) == 0:
         return None
     lora_cache[name] = net
