@@ -106,23 +106,12 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
         else:
             shared.state.current_latent = kwargs['latents']
 
+        shared.state.current_noise_pred = kwargs.get("noise_pred", None)
+        if shared.state.current_noise_pred is None:
+            shared.state.current_noise_pred = kwargs.get("predicted_image_embedding", None)
         if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas"):
-            noise_pred = None
-            if kwargs.get("noise_pred", None) is not None:
-                noise_pred = kwargs.get("noise_pred")
-            elif kwargs.get("predicted_image_embedding", None) is not None:
-                noise_pred = kwargs.get("predicted_image_embedding")
-            if noise_pred is not None:
-                sigma = pipe.scheduler.sigmas[step]
-                sigma_next = pipe.scheduler.sigmas[step + 1]
-                original_sample = shared.state.current_latent - (noise_pred * (sigma_next-sigma))
-                if "flow" in pipe.scheduler.__class__.__name__.lower():
-                    shared.state.current_latent = original_sample - (noise_pred * sigma)
-                elif hasattr(pipe.scheduler, "config") and hasattr(pipe.scheduler.config, "prediction_type"):
-                    if pipe.scheduler.config.prediction_type in {"epsilon", "flow_prediction"}:
-                        shared.state.current_latent = original_sample - (noise_pred * sigma)
-                    elif pipe.scheduler.config.prediction_type == "v_prediction":
-                        shared.state.current_latent = noise_pred * (-sigma / (sigma**2 + 1) ** 0.5) + (original_sample / (sigma**2 + 1))
+            shared.state.current_sigma = pipe.scheduler.sigmas[step]
+            shared.state.current_sigma_next = pipe.scheduler.sigmas[step + 1]
     except Exception as e:
         shared.log.error(f'Callback: {e}')
     if shared.cmd_opts.profile and shared.profiler is not None:
