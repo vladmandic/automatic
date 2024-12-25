@@ -507,7 +507,7 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing", gr.Checkbox, {"visible": native}),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling", gr.Checkbox, {"visible": native}),
     "diffusers_vae_tile_size": OptionInfo(1024, "VAE tile size", gr.Slider, {"minimum": 256, "maximum": 4096, "step": 8 }),
-    "diffusers_vae_tile_overlap": OptionInfo(0.1, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.9, "step": 0.1 }),
+    "diffusers_vae_tile_overlap": OptionInfo(0.25, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.95, "step": 0.05 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
@@ -609,12 +609,12 @@ options_templates.update(options_section(('quantization', "Quantization Settings
 
 options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "token_merging_sep": OptionInfo("<h2>Token Merging</h2>", "", gr.HTML),
-    "token_merging_method": OptionInfo("None", "Token merging method", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
+    "token_merging_method": OptionInfo("None", "Token merging enabled", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
     "tome_ratio": OptionInfo(0.0, "ToMe token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
     "todo_ratio": OptionInfo(0.0, "ToDo token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
 
     "freeu_sep": OptionInfo("<h2>FreeU</h2>", "", gr.HTML),
-    "freeu_enabled": OptionInfo(False, "FreeU"),
+    "freeu_enabled": OptionInfo(False, "FreeU enabled"),
     "freeu_b1": OptionInfo(1.2, "1st stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
     "freeu_b2": OptionInfo(1.4, "2nd stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
     "freeu_s1": OptionInfo(0.9, "1st stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
@@ -624,9 +624,10 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
-    "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),
     "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
-    "hypertile_unet_tile": OptionInfo(0, "UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),
+    "hypertile_unet_tile": OptionInfo(0, "UNet max tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_unet_min_tile": OptionInfo(0, "UNet min tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_unet_swap_size": OptionInfo(1, "UNet swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
     "hypertile_unet_depth": OptionInfo(0, "UNet depth", gr.Slider, {"minimum": 0, "maximum": 4, "step": 1}),
     "hypertile_vae_enabled": OptionInfo(False, "VAE Enabled", gr.Checkbox),
