@@ -170,7 +170,7 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
 .dark .progressDiv { background: #424c5b; }
 .progressDiv .progress { width: 0%; height: 20px; background: #0060df; color: white; font-weight: bold; line-height: 20px; padding: 0 8px 0 0; text-align: right; overflow: visible; white-space: nowrap; padding: 0 0.5em; }
 .livePreview { position: absolute; z-index: 50; width: -moz-available; width: -webkit-fill-available; height: 100%; background-color: var(--background-color); }
-.livePreview img { object-fit: contain; width: 100%; justify-self: center; }
+.livePreview img { object-fit: contain; width: 100%; justify-self: center; max-height: calc(100vh - 320px); }
 .popup-metadata { color: white; background: #0000; display: inline-block; white-space: pre-wrap; font-size: var(--text-xxs); }
 .generating { animation: unset !important; border: unset !important; }
 /* fullpage image viewer */
