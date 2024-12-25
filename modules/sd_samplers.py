@@ -62,6 +62,10 @@ def create_sampler(name, model):
                 model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
         shared.log.debug(f'Sampler: sampler=default class={current}: {config}')
+        if "flow" in model.scheduler.__class__.__name__.lower():
+            shared.state.prediction_type = "flow_prediction"
+        elif hasattr(model.scheduler, "config") and hasattr(model.scheduler.config, "prediction_type"):
+            shared.state.prediction_type = model.scheduler.config.prediction_type
         return model.scheduler
     config = find_sampler_config(name)
     if config is None or config.constructor is None:
@@ -94,6 +98,10 @@ def create_sampler(name, model):
         if hasattr(model, "prior_pipe") and hasattr(model.prior_pipe, "scheduler"):
             model.prior_pipe.scheduler = sampler.sampler
             model.prior_pipe.scheduler.config.clip_sample = False
+        if "flow" in model.scheduler.__class__.__name__.lower():
+            shared.state.prediction_type = "flow_prediction"
+        elif hasattr(model.scheduler, "config") and hasattr(model.scheduler.config, "prediction_type"):
+            shared.state.prediction_type = model.scheduler.config.prediction_type
         clean_config = {k: v for k, v in sampler.config.items() if v is not None and v is not False}
         shared.log.debug(f'Sampler: sampler="{sampler.name}" class="{model.scheduler.__class__.__name__} config={clean_config}')
         return sampler.sampler

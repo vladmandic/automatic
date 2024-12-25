@@ -17,10 +17,14 @@ class State:
     sampling_step = 0
     sampling_steps = 0
     current_latent = None
+    current_noise_pred = None
+    current_sigma = None
+    current_sigma_next = None
     current_image = None
     current_image_sampling_step = 0
     id_live_preview = 0
     textinfo = None
+    prediction_type = "epsilon"
     api = False
     time_start = None
     need_restart = False
@@ -102,6 +106,9 @@ class State:
         self.current_image = None
         self.current_image_sampling_step = 0
         self.current_latent = None
+        self.current_noise_pred = None
+        self.current_sigma = None
+        self.current_sigma_next = None
         self.id_live_preview = 0
         self.interrupted = False
         self.job = title
@@ -113,6 +120,7 @@ class State:
         self.sampling_step = 0
         self.skipped = False
         self.textinfo = None
+        self.prediction_type = "epsilon"
         self.api = api if api is not None else self.api
         self.time_start = time.time()
         if self.debug_output:
@@ -152,7 +160,14 @@ class State:
         from modules.shared import opts
         import modules.sd_samplers # pylint: disable=W0621
         try:
-            image = modules.sd_samplers.samples_to_image_grid(self.current_latent) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(self.current_latent)
+            sample = self.current_latent
+            if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+                original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
+                if self.prediction_type in {"epsilon", "flow_prediction"}:
+                    sample = original_sample - (self.current_noise_pred * self.current_sigma)
+                elif self.prediction_type == "v_prediction":
+                    sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1))
+            image = modules.sd_samplers.samples_to_image_grid(sample) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
             self.current_image_sampling_step = self.sampling_step
         except Exception:
