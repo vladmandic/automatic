@@ -161,12 +161,12 @@ class State:
         import modules.sd_samplers # pylint: disable=W0621
         try:
             sample = self.current_latent
-            if self.job == "txt2img" and self.job_no == 0 and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+            if self.job == "txt2img" and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
                     sample = original_sample - (self.current_noise_pred * self.current_sigma)
                 elif self.prediction_type == "v_prediction":
-                    sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1))
+                    sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
             image = modules.sd_samplers.samples_to_image_grid(sample) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
             self.current_image_sampling_step = self.sampling_step

@@ -22,7 +22,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         def index(ix, iy, iz):
             return ix + iy * len(xs) + iz * len(xs) * len(ys)
 
-        shared.state.job = 'grid'
+        shared.state.job = 'Grid'
         p0 = time.time()
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         p1 = time.time()
