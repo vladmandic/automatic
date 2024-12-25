@@ -119,7 +119,7 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
                 if "flow" in pipe.scheduler.__class__.__name__.lower():
                     shared.state.current_latent = original_sample - (noise_pred * sigma)
                 elif hasattr(pipe.scheduler, "config") and hasattr(pipe.scheduler.config, "prediction_type"):
-                    if pipe.scheduler.config.prediction_type == "epsilon":
+                    if pipe.scheduler.config.prediction_type in {"epsilon", "flow_prediction"}:
                         shared.state.current_latent = original_sample - (noise_pred * sigma)
                     elif pipe.scheduler.config.prediction_type == "v_prediction":
                         shared.state.current_latent = noise_pred * (-sigma / (sigma**2 + 1) ** 0.5) + (original_sample / (sigma**2 + 1))

@@ -1345,6 +1345,8 @@ def add_noise_pred_to_diffusers_callback(pipe):
         pipe.prior_pipe._callback_tensor_inputs.append("predicted_image_embedding")
     elif hasattr(pipe, "scheduler") and "flow" in pipe.scheduler.__class__.__name__.lower():
         pipe._callback_tensor_inputs.append("noise_pred")
+    elif hasattr(pipe, "default_scheduler") and "flow" in pipe.default_scheduler.__class__.__name__.lower():
+        pipe._callback_tensor_inputs.append("noise_pred")
     return pipe
 
 
