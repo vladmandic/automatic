@@ -4,9 +4,10 @@
 
 ### Post release
 
-- Add granular VAE tiling options in *settings -> variable auto encoder*  
 - Add legacy option to use old LoRA loader in *settings -> networks*  
+- Add granular VAE tiling options in *settings -> variable auto encoder*  
 - Add sigma calculation to VAE preview, thanks @Disty0
+- Fix live preview image sizes in modern and standard ui
 
 ## Update for 2024-12-24
 
