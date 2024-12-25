@@ -366,7 +366,7 @@ def list_samplers():
 
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
-    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff', 'Lora']
+    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
     disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
     disabled = []
@@ -422,6 +422,8 @@ def temp_disable_extensions():
         for ext in disable_original:
             if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
+    if not opts.lora_legacy:
+        disabled.append('Lora')
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
 
@@ -504,6 +506,8 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half-vae)"),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing", gr.Checkbox, {"visible": native}),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling", gr.Checkbox, {"visible": native}),
+    "diffusers_vae_tile_size": OptionInfo(1024, "VAE tile size", gr.Slider, {"minimum": 256, "maximum": 4096, "step": 8 }),
+    "diffusers_vae_tile_overlap": OptionInfo(0.1, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.9, "step": 0.1 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
@@ -924,8 +928,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"], "visible": False}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info to metadata"),
     "lora_fuse_diffusers": OptionInfo(True, "LoRA fuse directly to model"),
-    "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
-    "lora_maybe_diffusers": OptionInfo(False, "LoRA force loading of specific models using Diffusers"),
+    "lora_legacy": OptionInfo(not native, "LoRA load using legacy method"),
+    "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA load using Diffusers method"),
+    "lora_maybe_diffusers": OptionInfo(False, "LoRA load using Diffusers method for selected models"),
     "lora_apply_tags": OptionInfo(0, "LoRA auto-apply tags", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
     "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_quant": OptionInfo("NF4","LoRA precision when quantized", gr.Radio, {"choices": ["NF4", "FP4"]}),

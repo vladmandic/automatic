@@ -154,4 +154,4 @@ def list_extensions():
     for dirname, path, is_builtin in extension_paths:
         extension = Extension(name=dirname, path=path, enabled=dirname not in disabled_extensions, is_builtin=is_builtin)
         extensions.append(extension)
-    shared.log.debug(f'Disabled extensions: {[e.name for e in extensions if not e.enabled]}')
+    shared.log.debug(f'Extensions disabled: {[e.name for e in extensions if not e.enabled]}')

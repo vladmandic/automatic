@@ -226,15 +226,7 @@ def copy_diffuser_options(new_pipe, orig_pipe):
         set_accelerate(new_pipe)
 
 
-def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
-    if sd_model is None:
-        shared.log.warning(f'{op} is not loaded')
-        return
-
-    if hasattr(sd_model, "watermark"):
-        sd_model.watermark = NoWatermark()
-    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
-        sd_model.has_accelerate = False
+def set_vae_options(sd_model, vae = None, op: str = 'model'):
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
@@ -254,7 +246,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
         if shared.opts.diffusers_vae_tiling:
-            shared.log.debug(f'Setting {op}: component=VAE tiling=True')
+            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'config') and hasattr(sd_model.vae.config, 'sample_size') and isinstance(sd_model.vae.config.sample_size, int):
+                sd_model.vae.tile_sample_min_size = int(shared.opts.diffusers_vae_tile_size)
+                sd_model.vae.tile_latent_min_size = int(sd_model.vae.config.sample_size / (2 ** (len(sd_model.vae.config.block_out_channels) - 1)))
+                sd_model.vae.tile_overlap_factor = float(shared.opts.diffusers_vae_tile_overlap)
+                shared.log.debug(f'Setting {op}: component=VAE tiling=True tile={sd_model.vae.tile_sample_min_size} overlap={sd_model.vae.tile_overlap_factor}')
+            else:
+                shared.log.debug(f'Setting {op}: component=VAE tiling=True')
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
@@ -262,6 +260,18 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         shared.log.debug(f'Setting {op}: component=VQVAE upcast=True')
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
+
+def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
+    if sd_model is None:
+        shared.log.warning(f'{op} is not loaded')
+        return
+
+    if hasattr(sd_model, "watermark"):
+        sd_model.watermark = NoWatermark()
+    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
+        sd_model.has_accelerate = False
+
+    set_vae_options(sd_model, vae, op)
     set_diffusers_attention(sd_model)
 
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):

@@ -131,11 +131,11 @@ def load_safetensors(name, network_on_disk) -> Union[network.Network, None]:
         else:
             net.modules[key] = net_module
     if len(keys_failed_to_match) > 0:
-        shared.log.warning(f'LoRA name="{name}" type={set(network_types)} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
+        shared.log.warning(f'Load network: type=LoRA name="{name}" type={set(network_types)} unmatched={len(keys_failed_to_match)} matched={len(matched_networks)}')
         if debug:
-            shared.log.debug(f'LoRA name="{name}" unmatched={keys_failed_to_match}')
+            shared.log.debug(f'Load network: type=LoRA name="{name}" unmatched={keys_failed_to_match}')
     else:
-        shared.log.debug(f'LoRA name="{name}" type={set(network_types)} keys={len(matched_networks)} direct={shared.opts.lora_fuse_diffusers}')
+        shared.log.debug(f'Load network: type=LoRA name="{name}" type={set(network_types)} keys={len(matched_networks)} direct={shared.opts.lora_fuse_diffusers}')
     if len(matched_networks) == 0:
         return None
     lora_cache[name] = net
@@ -311,8 +311,14 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
         t0 = time.time()
 
         weights_backup = getattr(self, "network_weights_backup", None)
-        if (shared.opts.lora_fuse_diffusers and not isinstance(weights_backup, bool)) or (not shared.opts.lora_fuse_diffusers and isinstance(weights_backup, bool)):
-            weights_backup = None # invalidate so we can change direct/backup on-the-fly
+        bias_backup = getattr(self, "network_bias_backup", None)
+        if weights_backup is not None or bias_backup is not None:
+            if (shared.opts.lora_fuse_diffusers and not isinstance(weights_backup, bool)) or (not shared.opts.lora_fuse_diffusers and isinstance(weights_backup, bool)): # invalidate so we can change direct/backup on-the-fly
+                weights_backup = None
+                bias_backup = None
+                self.network_weights_backup = weights_backup
+                self.network_bias_backup = bias_backup
+
         if weights_backup is None and wanted_names != (): # pylint: disable=C1803
             weight = getattr(self, 'weight', None)
             self.network_weights_backup = None
@@ -340,7 +346,6 @@ def network_backup_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.n
                 else:
                     self.network_weights_backup = weight.clone().to(devices.cpu)
 
-        bias_backup = getattr(self, "network_bias_backup", None)
         if bias_backup is None:
             if getattr(self, 'bias', None) is not None:
                 if shared.opts.lora_fuse_diffusers:
@@ -407,6 +412,10 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
 def network_apply_direct(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], updown: torch.Tensor, ex_bias: torch.Tensor, deactivate: bool = False):
     weights_backup = getattr(self, "network_weights_backup", False)
     bias_backup = getattr(self, "network_bias_backup", False)
+    if not isinstance(weights_backup, bool):
+        weights_backup = True
+    if not isinstance(bias_backup, bool):
+        bias_backup = True
     if not weights_backup and not bias_backup:
         return None, None
     t0 = time.time()
