@@ -221,6 +221,7 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
+    add_noise_pred_to_diffusers_callback(new_pipe)
     if new_pipe.has_accelerate:
         set_accelerate(new_pipe)
 
@@ -975,6 +976,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if model_type not in ['Stable Cascade']: # need a special-case
             sd_unet.load_unet(sd_model)
 
+        add_noise_pred_to_diffusers_callback(sd_model)
+
         timer.record("load")
 
         if op == 'refiner':
@@ -1276,9 +1279,11 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
     if hasattr(new_pipe, 'watermark'):
         new_pipe.watermark = NoWatermark()
+    add_noise_pred_to_diffusers_callback(new_pipe)
 
     if hasattr(new_pipe, 'pipe'): # also handle nested pipelines
         new_pipe.pipe = set_diffuser_pipe(new_pipe.pipe, new_pipe_type)
+        add_noise_pred_to_diffusers_callback(new_pipe.pipe)
 
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     shared.log.debug(f"Pipeline class change: original={cls} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
@@ -1331,6 +1336,16 @@ def set_diffusers_attention(pipe):
         set_attn(pipe, DynamicAttnProcessorBMM())
 
     pipe.current_attn_name = shared.opts.cross_attention_optimization
+
+
+def add_noise_pred_to_diffusers_callback(pipe):
+    if pipe.__class__.__name__.startswith("StableDiffusion"):
+        pipe._callback_tensor_inputs.append("noise_pred")
+    elif pipe.__class__.__name__.startswith("StableCascade"):
+        pipe.prior_pipe._callback_tensor_inputs.append("predicted_image_embedding")
+    elif hasattr(pipe, "scheduler") and "flow" in pipe.scheduler.__class__.__name__.lower():
+        pipe._callback_tensor_inputs.append("noise_pred")
+    return pipe
 
 
 def get_native(pipe: diffusers.DiffusionPipeline):
