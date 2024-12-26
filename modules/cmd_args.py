@@ -74,7 +74,7 @@ def compatibility_args():
     group_compat.add_argument("--disable-safe-unpickle", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--lowram", action='store_true', help=argparse.SUPPRESS)
     group_compat.add_argument("--disable-extension-access", default=False, action='store_true', help=argparse.SUPPRESS)
-    group_compat.add_argument("--api", help=argparse.SUPPRESS, default=True)
+    group_compat.add_argument("--api", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--api-auth", type=str, help=argparse.SUPPRESS, default=None)
 
 
@@ -94,7 +94,7 @@ def settings_args(opts, args):
     group_compat.add_argument("--lowram", action='store_true', help=argparse.SUPPRESS)
     group_compat.add_argument("--disable-extension-access", default=False, action='store_true', help=argparse.SUPPRESS)
     group_compat.add_argument("--allowed-paths", nargs='+', default=[], type=str, required=False, help="add additional paths to paths allowed for web access")
-    group_compat.add_argument("--api", help=argparse.SUPPRESS, default=True)
+    group_compat.add_argument("--api", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--api-auth", type=str, help=argparse.SUPPRESS, default=None)
     # removed args that have been moved to opts are added here as hidden with default values as defined in opts
     group_compat.add_argument("--ckpt-dir", type=str, help=argparse.SUPPRESS, default=opts.ckpt_dir)

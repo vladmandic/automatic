@@ -26,6 +26,7 @@ class State:
     textinfo = None
     prediction_type = "epsilon"
     api = False
+    disable_preview = False
     time_start = None
     need_restart = False
     server_start = time.time()
@@ -151,7 +152,7 @@ class State:
         from modules.shared import opts, cmd_opts
         if cmd_opts.lowvram or self.api or not opts.live_previews_enable or opts.show_progress_every_n_steps <= 0:
             return
-        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps:
+        if not self.disable_preview and (abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps):
             self.do_set_current_image()
 
     def do_set_current_image(self):
@@ -161,6 +162,9 @@ class State:
         import modules.sd_samplers # pylint: disable=W0621
         try:
             sample = self.current_latent
+            self.current_image_sampling_step = self.sampling_step
+            if self.disable_preview:
+                return
             if self.job == "txt2img" and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
@@ -169,7 +173,6 @@ class State:
                     sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
             image = modules.sd_samplers.samples_to_image_grid(sample) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
-            self.current_image_sampling_step = self.sampling_step
         except Exception:
             # log.error(f'Error setting current image: step={self.sampling_step} {e}')
             pass
