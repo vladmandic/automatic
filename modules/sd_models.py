@@ -1349,6 +1349,8 @@ def set_diffusers_attention(pipe):
 
 
 def add_noise_pred_to_diffusers_callback(pipe):
+    if not hasattr(pipe, "_callback_tensor_inputs"):
+        return pipe
     if pipe.__class__.__name__.startswith("StableDiffusion"):
         pipe._callback_tensor_inputs.append("noise_pred") # pylint: disable=protected-access
     elif pipe.__class__.__name__.startswith("StableCascade"):
