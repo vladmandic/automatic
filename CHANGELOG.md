@@ -1,13 +1,14 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-25
+## Update for 2024-12-26
 
 ### Post release
 
 - Add legacy option to use old LoRA loader in *settings -> networks*  
 - Add granular VAE tiling options in *settings -> variable auto encoder*  
 - Add sigma calculation to VAE preview, thanks @Disty0
-- Fix live preview image sizes in modern and standard ui
+- Fix live preview image sizes in modern and standard UI
+- HunyuanVideo optimizations: full offload, quantization and tiling support
 
 ## Update for 2024-12-24
 

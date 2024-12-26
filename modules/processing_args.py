@@ -314,9 +314,9 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     clean.pop('callback_steps', None)
     clean.pop('callback_on_step_end', None)
     clean.pop('callback_on_step_end_tensor_inputs', None)
-    if 'prompt' in clean:
+    if 'prompt' in clean and clean['prompt'] is not None:
         clean['prompt'] = len(clean['prompt'])
-    if 'negative_prompt' in clean:
+    if 'negative_prompt' in clean and clean['negative_prompt'] is not None:
         clean['negative_prompt'] = len(clean['negative_prompt'])
     clean.pop('generator', None)
     clean['parser'] = parser

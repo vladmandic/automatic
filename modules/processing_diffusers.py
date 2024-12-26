@@ -479,7 +479,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     timer.process.record('decode')
 
     shared.sd_model = orig_pipeline
-    # shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     if p.state == '':
         global last_p # pylint: disable=global-statement
