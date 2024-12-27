@@ -165,7 +165,7 @@ class State:
             self.current_image_sampling_step = self.sampling_step
             if self.disable_preview:
                 return
-            if self.job == "txt2img" and self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+            if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
                     sample = original_sample - (self.current_noise_pred * self.current_sigma)
