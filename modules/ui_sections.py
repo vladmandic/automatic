@@ -217,7 +217,8 @@ def create_sampler_options(tabname):
         shared.opts.save(shared.config_filename, silent=True)
 
     def set_sampler_options(sampler_options):
-        shared.opts.data['schedulers_use_thresholding'] = 'dynamic' in sampler_options
+        shared.opts.data['schedulers_dynamic_shift'] = 'dynamic' in sampler_options
+        shared.opts.data['schedulers_use_thresholding'] = 'thresholding' in sampler_options
         shared.opts.data['schedulers_use_loworder'] = 'low order' in sampler_options
         shared.opts.data['schedulers_rescale_betas'] = 'rescale' in sampler_options
         shared.log.debug(f'Sampler set options: {sampler_options}')
@@ -253,6 +254,11 @@ def create_sampler_options(tabname):
         shared.opts.schedulers_beta_schedule = sampler_beta
         shared.opts.save(shared.config_filename, silent=True)
 
+    def set_sampler_shift(sampler_shift):
+        shared.log.debug(f'Sampler set options: shift={sampler_shift}')
+        shared.opts.schedulers_shift = sampler_shift
+        shared.opts.save(shared.config_filename, silent=True)
+
     # 'linear', 'scaled_linear', 'squaredcos_cap_v2'
     def set_sampler_preset(preset):
         if preset == 'AYS SD15':
@@ -286,10 +292,13 @@ def create_sampler_options(tabname):
             sampler_timesteps = gr.Textbox(label='Timesteps override', elem_id=f"{tabname}_sampler_timesteps", value=shared.opts.schedulers_timesteps)
         with gr.Row(elem_classes=['flex-break']):
             sampler_order = gr.Slider(minimum=0, maximum=5, step=1, label="Sampler order", value=shared.opts.schedulers_solver_order, elem_id=f"{tabname}_sampler_order")
-            options = ['low order', 'dynamic', 'rescale']
+            sampler_shift = gr.Slider(minimum=0, maximum=10, step=0.1, label="Flow shift", value=shared.opts.schedulers_shift, elem_id=f"{tabname}_sampler_shift")
+        with gr.Row(elem_classes=['flex-break']):
+            options = ['low order', 'thresholding', 'dynamic', 'rescale']
             values = []
             values += ['low order'] if shared.opts.data.get('schedulers_use_loworder', True) else []
-            values += ['dynamic'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
+            values += ['thresholding'] if shared.opts.data.get('schedulers_use_thresholding', False) else []
+            values += ['dynamic'] if shared.opts.data.get('schedulers_dynamic_shift', False) else []
             values += ['rescale'] if shared.opts.data.get('schedulers_rescale_betas', False) else []
             sampler_options = gr.CheckboxGroup(label='Options', elem_id=f"{tabname}_sampler_options", choices=options, value=values, type='value')
 
@@ -300,6 +309,7 @@ def create_sampler_options(tabname):
         sampler_beta.change(fn=set_sampler_beta, inputs=[sampler_beta], outputs=[])
         sampler_prediction.change(fn=set_sampler_prediction, inputs=[sampler_prediction], outputs=[])
         sampler_order.change(fn=set_sampler_order, inputs=[sampler_order], outputs=[])
+        sampler_shift.change(fn=set_sampler_shift, inputs=[sampler_shift], outputs=[])
         sampler_options.change(fn=set_sampler_options, inputs=[sampler_options], outputs=[])
 
 

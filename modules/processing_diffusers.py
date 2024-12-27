@@ -201,7 +201,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                     output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
-                    p.task_args['image'] = output.images # replace so hires uses new output
+                    p.init_images = output.images # replace so hires uses new output
+                    # p.task_args['image'] = output.images # replace so hires uses new output
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
@@ -290,8 +291,9 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
-            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
-                p.task_args['image'] = image
+            if p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
+                # p.task_args['image'] = image
+                p.init_images = [image]
             shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             update_sampler(p, shared.sd_refiner, second_pass=True)
             refiner_args = set_pipeline_args(

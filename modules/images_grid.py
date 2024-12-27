@@ -42,10 +42,11 @@ def image_grid(imgs, batch_size=1, rows=None):
     imgs = [i for i in imgs if i is not None] if imgs is not None else []
     if len(imgs) == 0:
         return None
-    w, h = max(i.width for i in imgs), max(i.height for i in imgs)
+    w, h = max(i.width for i in imgs if i is not None), max(i.height for i in imgs if i is not None)
     grid = Image.new('RGB', size=(params.cols * w, params.rows * h), color=shared.opts.grid_background)
     for i, img in enumerate(params.imgs):
-        grid.paste(img, box=(i % params.cols * w, i // params.cols * h))
+        if img is not None:
+            grid.paste(img, box=(i % params.cols * w, i // params.cols * h))
     return grid
 
 
