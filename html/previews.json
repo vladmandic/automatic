@@ -2,10 +2,16 @@
   "stabilityai--stable-diffusion-3-medium-diffusers": "models/Reference/stabilityai--stable-diffusion-3.jpg",
   "stabilityai--stable-diffusion-3.5-medium": "models/Reference/stabilityai--stable-diffusion-3_5.jpg",
   "stabilityai--stable-diffusion-3.5-large": "models/Reference/stabilityai--stable-diffusion-3_5.jpg",
+  "stabilityai--stable-diffusion-3.5-large-turbo": "models/Reference/stabilityai--stable-diffusion-3_5.jpg",
   "Disty0--FLUX.1-dev-qint8": "models/Reference/black-forest-labs--FLUX.1-dev.jpg",
   "Disty0--FLUX.1-dev-qint4": "models/Reference/black-forest-labs--FLUX.1-dev.jpg",
   "sayakpaul--flux.1-dev-nf4": "models/Reference/black-forest-labs--FLUX.1-dev.jpg",
   "THUDM--CogVideoX-2b": "models/Reference/THUDM--CogView3-Plus-3B.jpg",
   "THUDM--CogVideoX-5b": "models/Reference/THUDM--CogView3-Plus-3B.jpg",
-  "THUDM--CogVideoX-5b-I2V": "models/Reference/THUDM--CogView3-Plus-3B.jpg"
+  "THUDM--CogVideoX-5b-I2V": "models/Reference/THUDM--CogView3-Plus-3B.jpg",
+  "Efficient-Large-Model--Sana_1600M_1024px_BF16_diffusers": "models/Reference/Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+  "Efficient-Large-Model--Sana_1600M_2Kpx_BF16_diffusers": "models/Reference/Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+  "Efficient-Large-Model--Sana_600M_1024px_diffusers": "models/Reference/Efficient-Large-Model--Sana_1600M_1024px_diffusers.jpg",
+  "stabilityai--stable-video-diffusion-img2vid-xt-1-1": "models/Reference/stabilityai--stable-video-diffusion-img2vid-xt.jpg",
+  "shuttleai--shuttle-3-diffusion": "models/Reference/shuttleai--shuttle-3-diffusion.jpg"
 }

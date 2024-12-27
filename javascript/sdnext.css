@@ -220,6 +220,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-networks .second-line { display: flex; width: -moz-available; width: -webkit-fill-available; gap: 0.3em; box-shadow: var(--input-shadow); margin-bottom: 2px; }
 .extra-networks .search { flex: 1; height: 4em; }
 .extra-networks .description { flex: 3; }
+.extra-networks .description textarea { font-size: 0.8rem; }
 .extra-networks .tab-nav>button { margin-right: 0; height: 24px; padding: 2px 4px 2px 4px; }
 .extra-networks .buttons { position: absolute; right: 0; margin: -4px; background: var(--background-color); }
 .extra-networks .buttons>button { margin-left: -0.2em; height: 1.4em; color: var(--primary-300) !important; font-size: 20px !important; }
