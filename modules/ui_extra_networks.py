@@ -392,7 +392,6 @@ class ExtraNetworksPage:
                     debug(f'EN mapped-preview: {item["name"]}={found}')
             if item.get('preview', None) is None:
                 item['preview'] = self.link_preview('html/card-no-preview.png')
-                print('HERE', base)
                 debug(f'EN missing-preview: {item["name"]}')
         self.preview_time += time.time() - t0
 

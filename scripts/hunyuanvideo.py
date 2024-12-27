@@ -38,7 +38,7 @@ def hijack_decode(*args, **kwargs):
     res = shared.sd_model.vae.orig_decode(*args, **kwargs)
     t1 = time.time()
     timer.process.add('vae', t1-t0)
-    shared.log.debug(f'Video: decoder={vae.__class__.__name__} tile={vae.tile_sample_min_width}:{vae.tile_sample_min_height}:{vae.tile_sample_min_num_frames} stride={vae.tile_sample_stride_width}:{vae.tile_sample_stride_height}:{vae.tile_sample_stride_num_frames} time={t1-t0:.2f}')
+    shared.log.debug(f'Video: vae={vae.__class__.__name__} tile={vae.tile_sample_min_width}:{vae.tile_sample_min_height}:{vae.tile_sample_min_num_frames} stride={vae.tile_sample_stride_width}:{vae.tile_sample_stride_height}:{vae.tile_sample_stride_num_frames} time={t1-t0:.2f}')
     return res
 
 
@@ -47,7 +47,7 @@ def hijack_encode_prompt(*args, **kwargs):
     res = shared.sd_model.vae.orig_encode_prompt(*args, **kwargs)
     t1 = time.time()
     timer.process.add('te', t1-t0)
-    shared.log.debug(f'Video: encode cls={shared.sd_model.text_encoder.__class__.__name__} time={t1-t0:.2f}')
+    shared.log.debug(f'Video: te={shared.sd_model.text_encoder.__class__.__name__} time={t1-t0:.2f}')
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     return res
 
