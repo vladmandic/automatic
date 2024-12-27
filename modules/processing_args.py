@@ -22,7 +22,7 @@ def task_specific_kwargs(p, model):
     if len(getattr(p, 'init_images', [])) > 0:
         if isinstance(p.init_images[0], str):
             p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images]
-        p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images]
+        p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images if i is not None]
     if (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0) and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
@@ -261,6 +261,9 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['callback_on_step_end_tensor_inputs'] = ['latents']
     elif 'callback' in possible:
         args['callback'] = diffusers_callback_legacy
+
+    if 'image' in kwargs and len(getattr(p, 'init_images', [])) == 0:
+        p.init_images = kwargs['image'] if isinstance(kwargs['image'], list) else [kwargs['image']]
 
     # handle remaining args
     for arg in kwargs:

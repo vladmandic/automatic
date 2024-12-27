@@ -109,7 +109,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         idx0 = (i * len(xs) * len(ys)) + i # starting index of images in subgrid
         idx1 = (len(xs) * len(ys)) + idx0  # ending index of images in subgrid
         to_process = processed_result.images[idx0:idx1]
-        w, h = max(i.width for i in to_process), max(i.height for i in to_process if i is not None)
+        w, h = max(i.width for i in to_process if i is not None), max(i.height for i in to_process if i is not None)
         if w is None or h is None or w == 0 or h == 0:
             shared.log.error("XYZ grid: failed get valid image")
             continue

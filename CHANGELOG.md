@@ -8,10 +8,12 @@
 - Add legacy option to use old LoRA loader in *settings -> networks*  
 - Add sigma calculation to VAE preview, thanks @Disty0  
 - Fix live preview image sizes in modern and standard UI  
+- Fix image width/height calculation when doing img2img  
 - HunyuanVideo optimizations: full offload, quantization and tiling support  
 - LTXVideo optimizations: full offload, quantization and tiling support  
 - Do not show disabled networks  
 - CSS optimizations when log view is disabled  
+- Sampler options: add flow shift and separate dynamic thresholding from dynamic shifting  
 
 ## Update for 2024-12-24
 
