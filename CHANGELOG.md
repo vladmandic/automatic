@@ -11,6 +11,7 @@
 - HunyuanVideo optimizations: full offload, quantization and tiling support  
 - LTXVideo optimizations: full offload, quantization and tiling support  
 - Do not show disabled networks  
+- CSS optimizations when log view is disabled  
 
 ## Update for 2024-12-24
 

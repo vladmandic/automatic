@@ -396,6 +396,7 @@ async function initGallery() { // triggered on gradio change to monitor when ui 
   el.search = gradioApp().querySelector('#tab-gallery-search textarea');
   el.search.addEventListener('input', gallerySearch);
   el.btnSend = gradioApp().getElementById('tab-gallery-send-image');
+  document.getElementById('tab-gallery-files').style.height = opts.logmonitor_show ? '75vh' : '85vh';
 
   const intersectionObserver = new IntersectionObserver((entries) => {
     if (entries[0].intersectionRatio <= 0) galleryHidden();

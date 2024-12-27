@@ -440,7 +440,8 @@ function setupExtraNetworksForTab(tabname) {
       for (const el of Array.from(gradioApp().getElementById(`${tabname}_extra_tabs`).querySelectorAll('.extra-networks-page'))) {
         const h = Math.trunc(entry.contentRect.height);
         if (h <= 0) return;
-        if (window.opts.extra_networks_card_cover === 'sidebar' && window.opts.theme_type === 'Standard') el.style.height = `max(55vh, ${h - 90}px)`;
+        const vh = opts.logmonitor_show ? '55vh' : '68vh';
+        if (window.opts.extra_networks_card_cover === 'sidebar' && window.opts.theme_type === 'Standard') el.style.height = `max(${vh}, ${h - 90}px)`;
         // log(`${tabname} height: ${entry.target.id}=${h} ${el.id}=${el.clientHeight}`);
       }
     }

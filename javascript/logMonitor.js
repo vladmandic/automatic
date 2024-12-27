@@ -44,10 +44,17 @@ async function logMonitor() {
     if (modenUIBtn) modenUIBtn.setAttribute('error-count', logErrors > 0 ? logErrors : '');
   };
 
+  document.getElementById('txt2img_gallery').style.height = opts.logmonitor_show ? '50vh' : '55vh';
+  document.getElementById('img2img_gallery').style.height = opts.logmonitor_show ? '50vh' : '55vh';
+
+  if (!opts.logmonitor_show) {
+    Array.from(document.getElementsByClassName('log-monitor')).forEach((el) => el.style.display = 'none');
+    return;
+  }
+
   if (logMonitorStatus) setTimeout(logMonitor, opts.logmonitor_refresh_period);
   else setTimeout(logMonitor, 10 * 1000); // on failure try to reconnect every 10sec
 
-  if (!opts.logmonitor_show) return;
   logMonitorStatus = false;
   if (!logMonitorEl) {
     logMonitorEl = document.getElementById('logMonitorData');
