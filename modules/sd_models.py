@@ -1208,7 +1208,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'StableVideoDiffusionPipeline',
     ]
 
-    n = getattr(pipe.__class__, '__name__', '')
+    has_errors = False
     if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
         clean_diffuser_pipe(pipe)
 
@@ -1217,7 +1217,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
 
     # skip specific pipelines
     cls = pipe.__class__.__name__
-    if n in exclude:
+    if cls in exclude:
         return pipe
     if 'Onnx' in cls:
         return pipe
@@ -1225,9 +1225,9 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe = None
     # in some cases we want to reset the pipeline to parent as they dont have their own variants
     if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING:
-        if n == 'StableDiffusionPAGPipeline':
+        if cls == 'StableDiffusionPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
-        if n == 'StableDiffusionXLPAGPipeline':
+        if cls == 'StableDiffusionXLPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
@@ -1254,8 +1254,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
                 shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls} {e}')
-                return pipe
-        else:
+                has_errors = True
+        if not hasattr(pipe, 'config') or has_errors:
             try: # maybe a wrapper pipeline so just change the class
                 if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
                     pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
@@ -1267,11 +1267,11 @@ def set_diffuser_pipe(pipe, new_pipe_type):
                     pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
                     new_pipe = pipe
                 else:
-                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
+                    shared.log.error(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls}')
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
                 shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls} {e}')
-                return pipe
+                has_errors = True
 
     # if pipe.__class__ == new_pipe.__class__:
     #    return pipe
@@ -1282,8 +1282,13 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.has_accelerate = has_accelerate
     new_pipe.current_attn_name = current_attn_name
     new_pipe.default_scheduler = default_scheduler
-    new_pipe.image_encoder = image_encoder
-    new_pipe.feature_extractor = feature_extractor
+    if image_encoder is not None:
+        new_pipe.image_encoder = image_encoder
+    if feature_extractor is not None:
+        new_pipe.feature_extractor = feature_extractor
+    if new_pipe.__class__.__name__ == 'FluxPipeline':
+        new_pipe.register_modules(image_encoder = image_encoder)
+        new_pipe.register_modules(feature_extractor = feature_extractor)
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
