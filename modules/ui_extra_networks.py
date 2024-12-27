@@ -392,6 +392,7 @@ class ExtraNetworksPage:
                     debug(f'EN mapped-preview: {item["name"]}={found}')
             if item.get('preview', None) is None:
                 item['preview'] = self.link_preview('html/card-no-preview.png')
+                print('HERE', base)
                 debug(f'EN missing-preview: {item["name"]}')
         self.preview_time += time.time() - t0
 
@@ -464,13 +465,15 @@ def register_pages():
     from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
     from modules.ui_extra_networks_vae import ExtraNetworksPageVAEs
     from modules.ui_extra_networks_styles import ExtraNetworksPageStyles
-    from modules.ui_extra_networks_history import ExtraNetworksPageHistory
-    from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
     register_page(ExtraNetworksPageCheckpoints())
     register_page(ExtraNetworksPageVAEs())
     register_page(ExtraNetworksPageStyles())
-    register_page(ExtraNetworksPageHistory())
-    register_page(ExtraNetworksPageTextualInversion())
+    if shared.opts.latent_history > 0:
+        from modules.ui_extra_networks_history import ExtraNetworksPageHistory
+        register_page(ExtraNetworksPageHistory())
+    if shared.opts.diffusers_enable_embed:
+        from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
+        register_page(ExtraNetworksPageTextualInversion())
     if shared.native:
         from modules.ui_extra_networks_lora import ExtraNetworksPageLora
         register_page(ExtraNetworksPageLora())
