@@ -109,9 +109,9 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
         shared.state.current_noise_pred = kwargs.get("noise_pred", None)
         if shared.state.current_noise_pred is None:
             shared.state.current_noise_pred = kwargs.get("predicted_image_embedding", None)
-        if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas"):
-            shared.state.current_sigma = pipe.scheduler.sigmas[step]
-            shared.state.current_sigma_next = pipe.scheduler.sigmas[step + 1]
+        if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas") and hasattr(pipe.scheduler, "step_index"):
+            shared.state.current_sigma = pipe.scheduler.sigmas[pipe.scheduler.step_index - 1]
+            shared.state.current_sigma_next = pipe.scheduler.sigmas[pipe.scheduler.step_index]
     except Exception as e:
         shared.log.error(f'Callback: {e}')
     if shared.cmd_opts.profile and shared.profiler is not None:
