@@ -7,20 +7,23 @@ from modules import shared, sd_models, devices, modelloader, model_quant
 
 
 def load_quants(kwargs, repo_id, cache_dir):
-    if len(shared.opts.bnb_quantization) > 0:
-        quant_args = {}
-        quant_args = model_quant.create_bnb_config(quant_args)
-        quant_args = model_quant.create_ao_config(quant_args)
-        load_args = kwargs.copy()
-        if not quant_args:
-            return kwargs
-        model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args} args={load_args}')
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
-            kwargs['transformer'] = diffusers.models.SanaTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, **load_args, **quant_args)
-            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-        if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-            kwargs['text_encoder_3'] = transformers.AutoModelForCausalLM.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=cache_dir, **load_args, **quant_args)
-            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    quant_args = {}
+    quant_args = model_quant.create_bnb_config(quant_args)
+    if quant_args:
+        model_quant.load_bnb(f'Load model: type=Sana quant={quant_args}')
+    quant_args = model_quant.create_ao_config(quant_args)
+    if quant_args:
+        model_quant.load_torchao(f'Load model: type=Sana quant={quant_args}')
+    if not quant_args:
+        return kwargs
+    load_args = kwargs.copy()
+    model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args} args={load_args}')
+    if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+        kwargs['transformer'] = diffusers.models.SanaTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, **load_args, **quant_args)
+        shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
+        kwargs['text_encoder_3'] = transformers.AutoModelForCausalLM.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=cache_dir, **load_args, **quant_args)
+        shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
 

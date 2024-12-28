@@ -100,16 +100,20 @@ class Script(scripts.Script):
         if shared.sd_model.__class__ != diffusers.HunyuanVideoPipeline:
             sd_models.unload_model_weights()
             t0 = time.time()
-            kwargs = {}
-            kwargs = model_quant.create_bnb_config(kwargs)
-            kwargs = model_quant.create_ao_config(kwargs)
+            quant_args = {}
+            quant_args = model_quant.create_bnb_config(quant_args)
+            if quant_args:
+                model_quant.load_bnb(f'Load model: type=HunyuanVideo quant={quant_args}')
+            quant_args = model_quant.create_ao_config(quant_args)
+            if quant_args:
+                model_quant.load_torchao(f'Load model: type=HunyuanVideo quant={quant_args}')
             transformer = diffusers.HunyuanVideoTransformer3DModel.from_pretrained(
                 repo_id,
                 subfolder="transformer",
                 torch_dtype=devices.dtype,
                 revision="refs/pr/18",
                 cache_dir = shared.opts.hfcache_dir,
-                **kwargs
+                **quant_args
             )
             shared.log.debug(f'Video: module={transformer.__class__.__name__}')
             text_encoder = transformers.LlamaModel.from_pretrained(
@@ -118,7 +122,7 @@ class Script(scripts.Script):
                 revision="refs/pr/18",
                 cache_dir = shared.opts.hfcache_dir,
                 torch_dtype=devices.dtype,
-                **kwargs
+                **quant_args
             )
             shared.log.debug(f'Video: module={text_encoder.__class__.__name__}')
             shared.sd_model = diffusers.HunyuanVideoPipeline.from_pretrained(
@@ -128,7 +132,7 @@ class Script(scripts.Script):
                 revision="refs/pr/18",
                 cache_dir = shared.opts.hfcache_dir,
                 torch_dtype=devices.dtype,
-                **kwargs
+                **quant_args
             )
             t1 = time.time()
             shared.log.debug(f'Video: load cls={shared.sd_model.__class__.__name__} repo="{repo_id}" dtype={devices.dtype} time={t1-t0:.2f}')

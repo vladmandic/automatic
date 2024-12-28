@@ -27,6 +27,7 @@ class State:
     prediction_type = "epsilon"
     api = False
     disable_preview = False
+    preview_busy = False
     time_start = None
     need_restart = False
     server_start = time.time()
@@ -156,26 +157,25 @@ class State:
             self.do_set_current_image()
 
     def do_set_current_image(self):
-        if self.current_latent is None:
+        if self.current_latent is None or self.disable_preview or self.preview_busy:
             return
-        from modules.shared import opts
-        import modules.sd_samplers # pylint: disable=W0621
+        from modules import shared, sd_samplers
+        self.preview_busy = True
         try:
             sample = self.current_latent
             self.current_image_sampling_step = self.sampling_step
-            if self.disable_preview:
-                return
             if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
                     sample = original_sample - (self.current_noise_pred * self.current_sigma)
                 elif self.prediction_type == "v_prediction":
                     sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
-            image = modules.sd_samplers.samples_to_image_grid(sample) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(sample)
+            image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
         except Exception:
             # log.error(f'Error setting current image: step={self.sampling_step} {e}')
             pass
+        self.preview_busy = False
 
     def assign_current_image(self, image):
         self.current_image = image

@@ -543,7 +543,6 @@ def network_MultiheadAttention_load_state_dict(self, *args, **kwargs):
 
 
 def list_available_networks():
-    print('HERE')
     t0 = time.time()
     available_networks.clear()
     available_network_aliases.clear()

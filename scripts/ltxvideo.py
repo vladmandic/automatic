@@ -15,19 +15,22 @@ repos = {
 
 
 def load_quants(kwargs, repo_id):
-    if len(shared.opts.bnb_quantization) > 0:
-        quant_args = {}
-        quant_args = model_quant.create_bnb_config(quant_args)
-        quant_args = model_quant.create_ao_config(quant_args)
-        if not quant_args:
-            return kwargs
-        model_quant.load_bnb(f'Load model: type=LTX quant={quant_args}')
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
-            kwargs['transformer'] = diffusers.LTXVideoTransformer3DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-        if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-            kwargs['text_encoder'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    quant_args = {}
+    quant_args = model_quant.create_bnb_config(quant_args)
+    if quant_args:
+        model_quant.load_bnb(f'Load model: type=LTXVideo quant={quant_args}')
+    quant_args = model_quant.create_ao_config(quant_args)
+    if quant_args:
+        model_quant.load_torchao(f'Load model: type=LTXVideo quant={quant_args}')
+    if not quant_args:
+        return kwargs
+    model_quant.load_bnb(f'Load model: type=LTX quant={quant_args}')
+    if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+        kwargs['transformer'] = diffusers.LTXVideoTransformer3DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
+        kwargs['text_encoder'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=shared.opts.hfcache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
 
