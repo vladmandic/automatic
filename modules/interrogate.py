@@ -248,14 +248,16 @@ def update_interrogate_params(caption_max_length, chunk_size, min_flavors, max_f
 
 def get_clip_models():
     import open_clip
-    return ['/'.join(x) for x in open_clip.list_pretrained()]
+    models = sorted(open_clip.list_pretrained())
+    shared.log.info(f'Interrogate: pkg=openclip version={open_clip.__version__} models={len(models)}')
+    return ['/'.join(x) for x in models]
 
 
 def load_interrogator(clip_model, blip_model):
     from installer import install
     install('clip_interrogator==0.6.0')
     import clip_interrogator
-    clip_interrogator.CAPTION_MODELS = caption_models
+    clip_interrogator.clip_interrogator.CAPTION_MODELS = caption_models
     global ci # pylint: disable=global-statement
     if ci is None:
         interrogator_config = clip_interrogator.Config(
@@ -329,6 +331,7 @@ def interrogate_image(image, clip_model, blip_model, mode):
     except Exception as e:
         prompt = f"Exception {type(e)}"
         shared.log.error(f'Interrogate: {e}')
+        errors.display(e, 'Interrogate')
     shared.state.end()
     return prompt
 

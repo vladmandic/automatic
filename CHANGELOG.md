@@ -15,6 +15,7 @@
 - Fix: live preview image sizes in modern and standard UI  
 - Fix: image width/height calculation when doing img2img  
 - Fix: Flux pipeline switches: txt/img/inpaint  
+- Fix: Interrogate caption with T5  
 
 ## Update for 2024-12-24
 
