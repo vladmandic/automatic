@@ -473,7 +473,7 @@ def register_pages():
     if shared.opts.diffusers_enable_embed:
         from modules.ui_extra_networks_textual_inversion import ExtraNetworksPageTextualInversion
         register_page(ExtraNetworksPageTextualInversion())
-    if shared.native:
+    if not shared.opts.lora_legacy:
         from modules.ui_extra_networks_lora import ExtraNetworksPageLora
         register_page(ExtraNetworksPageLora())
     if shared.opts.hypernetwork_enabled:
