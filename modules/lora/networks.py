@@ -414,7 +414,7 @@ def add_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
         return self.weight
     if deactivate:
         bias *= -1
-    if weights is None: # weights are used if provided else use self.weight
+    if weights is None: # weights are used if provided-from-backup else use self.weight
         weights = self.weight
     # TODO lora: add other quantization types
     if self.__class__.__name__ == 'Linear4bit' and bnb is not None:
@@ -423,15 +423,13 @@ def add_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm
             new_weight = dequant_weight.to(devices.device) + bias.to(devices.device)
             self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
         except Exception as e:
-            new_weight = None
-            shared.log.error(f'Load network: type=LoRA quant=bnb type={self.quant_type} blocksize={self.blocksize} state={vars(self.quant_state)} weight={self.weight} bias={bias} {e}')
+            shared.log.error(f'Load network: type=LoRA quant=bnb cls={self.__class__.__name__} type={self.quant_type} blocksize={self.blocksize} state={vars(self.quant_state)} weight={self.weight} bias={bias} {e}')
     else:
         try:
             new_weight = weights.to(devices.device) + bias.to(devices.device)
         except Exception:
             new_weight = weights + bias # try without device cast
         self.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-        del weights
     try:
         self.weight = self.weight.to(device=devices.device) # required since quantization happens only during .to call, not during params creation
     except Exception:
