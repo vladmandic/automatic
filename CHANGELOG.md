@@ -10,7 +10,7 @@
 - **HunyuanVideo** optimizations: full offload, quantization and tiling support  
 - **LTXVideo** optimizations: full offload, quantization and tiling support  
 - VAE tiling granular options in *settings -> variable auto encoder*  
-- UI: live preview optimizations
+- UI: live preview optimizations and error handling  
 - UI: CSS optimizations when log view is disabled  
 - Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
 - **Fixes**  
