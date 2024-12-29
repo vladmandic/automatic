@@ -61,8 +61,8 @@ function randomId() {
 function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgress = null, once = false) {
   localStorage.setItem('task', id_task);
   let hasStarted = false;
-  const dateStart = new Date();
-  const prevProgress = null;
+  let dateStart = new Date();
+  let prevProgress = null;
   const parentGallery = galleryEl ? galleryEl.parentNode : null;
   let livePreview;
   let img;
@@ -113,30 +113,36 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
     if (!opts.live_previews_enable || opts.live_preview_refresh_period === 0 || opts.show_progress_every_n_steps === 0) return;
 
     const onProgressHandler = (res) => {
-      // debug('onProgress', res);
+      if (res?.debug) debug('livePreview:', dateStart, res);
       lastState = res;
       const elapsedFromStart = (new Date() - dateStart) / 1000;
       hasStarted |= res.active;
       if (res.completed || (!res.active && (hasStarted || once)) || (elapsedFromStart > 30 && !res.queued && res.progress === prevProgress)) {
-        // debug('onProgressEnd', res);
+        if (res?.debug) debug('livePreview end:', res);
         done();
         return;
+      }
+      if (res.progress !== prevProgress) {
+        dateStart = new Date();
+        prevProgress = res.progress;
       }
       setProgress(res);
       if (res.live_preview && !livePreview) initLivePreview();
       if (res.live_preview && galleryEl) {
         if (img.src !== res.live_preview) img.src = res.live_preview;
+        id_live_preview = res.id_live_preview;
       }
       if (onProgress) onProgress(res);
       setTimeout(() => start(id_task, id_live_preview), opts.live_preview_refresh_period || 500);
     };
 
     const onProgressErrorHandler = (err) => {
-      error(`onProgressError: ${err}`);
+      error(`livePreview: ${err}`);
       done();
     };
 
     xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler, false, 5000);
   };
+  debug('livePreview start:', dateStart);
   start(id_task, 0);
 }

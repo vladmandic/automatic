@@ -1,4 +1,5 @@
 import base64
+import os
 import io
 import time
 from pydantic import BaseModel, Field # pylint: disable=no-name-in-module
@@ -10,6 +11,8 @@ pending_tasks = {}
 finished_tasks = []
 recorded_results = []
 recorded_results_limit = 2
+debug = os.environ.get('SD_PREVIEW_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
 
 
 def start_task(id_task):
@@ -48,6 +51,7 @@ class InternalProgressResponse(BaseModel):
     queued: bool = Field(title="Whether the task is in queue")
     paused: bool = Field(title="Whether the task is paused")
     completed: bool = Field(title="Whether the task has already finished")
+    debug: bool = Field(title="Debug logging level")
     progress: float = Field(default=None, title="Progress", description="The progress with a range of 0 to 1")
     eta: float = Field(default=None, title="ETA in secs")
     live_preview: str = Field(default=None, title="Live preview image", description="Current live preview; a data: uri")
@@ -60,8 +64,6 @@ def progressapi(req: ProgressRequest):
     queued = req.id_task in pending_tasks
     completed = req.id_task in finished_tasks
     paused = shared.state.paused
-    if not active:
-        return InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, id_live_preview=-1, textinfo="Queued..." if queued else "Waiting...")
     shared.state.job_count = max(shared.state.frame_count, shared.state.job_count, shared.state.job_no)
     batch_x = max(shared.state.job_no, 0)
     batch_y = max(shared.state.job_count, 1)
@@ -75,14 +77,17 @@ def progressapi(req: ProgressRequest):
     eta = predicted - elapsed if predicted is not None else None
     id_live_preview = req.id_live_preview
     live_preview = None
-    shared.state.set_current_image()
-    if shared.opts.live_previews_enable and (shared.state.id_live_preview != req.id_live_preview) and (shared.state.current_image is not None):
+    updated = shared.state.set_current_image()
+    debug_log(f'Preview: job={shared.state.job} active={active} progress={current}/{total} request={id_live_preview} last={shared.state.id_live_preview} enabled={shared.opts.live_previews_enable} updated={updated} image={shared.state.current_image} elapsed={elapsed:.3f}')
+    if not active:
+        return InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, id_live_preview=-1, debug=debug, textinfo="Queued..." if queued else "Waiting...")
+    if shared.opts.live_previews_enable and (shared.state.id_live_preview != id_live_preview) and (shared.state.current_image is not None):
         buffered = io.BytesIO()
         shared.state.current_image.save(buffered, format='jpeg')
         live_preview = f'data:image/jpeg;base64,{base64.b64encode(buffered.getvalue()).decode("ascii")}'
-        id_live_preview = shared.state.id_live_preview
+    id_live_preview = shared.state.id_live_preview
 
-    res = InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, textinfo=shared.state.textinfo)
+    res = InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, debug=debug, textinfo=shared.state.textinfo)
     return res
 
 

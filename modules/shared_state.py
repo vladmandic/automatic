@@ -149,16 +149,17 @@ class State:
 
     def set_current_image(self):
         if self.job == 'VAE': # avoid generating preview while vae is running
-            return
+            return False
         from modules.shared import opts, cmd_opts
-        if cmd_opts.lowvram or self.api or not opts.live_previews_enable or opts.show_progress_every_n_steps <= 0:
-            return
-        if not self.disable_preview and (abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps):
-            self.do_set_current_image()
+        if cmd_opts.lowvram or self.api or (not opts.live_previews_enable) or (opts.show_progress_every_n_steps <= 0):
+            return False
+        if (not self.disable_preview) and (abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps):
+            return self.do_set_current_image()
+        return False
 
     def do_set_current_image(self):
-        if self.current_latent is None or self.disable_preview or self.preview_busy:
-            return
+        if (self.current_latent is None) or self.disable_preview or self.preview_busy:
+            return False
         from modules import shared, sd_samplers
         self.preview_busy = True
         try:
@@ -175,10 +176,13 @@ class State:
             """
             image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
+            self.preview_busy = False
+            return True
         except Exception as e:
+            self.preview_busy = False
             log.error(f'State image: last={self.id_live_preview} step={self.sampling_step} {e}')
             display(e, 'State image')
-        self.preview_busy = False
+            return False
 
     def assign_current_image(self, image):
         self.current_image = image
