@@ -221,7 +221,10 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'img_guidance_scale' in possible and hasattr(p, 'image_cfg_scale'):
         args['img_guidance_scale'] = p.image_cfg_scale
     if 'generator' in possible:
-        args['generator'] = get_generator(p)
+        generator = get_generator(p)
+        args['generator'] = generator
+    else:
+        generator = None
     if 'latents' in possible and getattr(p, "init_latent", None) is not None:
         if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
             args['latents'] = p.init_latent
@@ -321,7 +324,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         clean['prompt'] = len(clean['prompt'])
     if 'negative_prompt' in clean and clean['negative_prompt'] is not None:
         clean['negative_prompt'] = len(clean['negative_prompt'])
-    clean.pop('generator', None)
+    if generator is not None:
+        clean['generator'] = f'{generator[0].device}:{[g.initial_seed() for g in generator]}'
     clean['parser'] = parser
     for k, v in clean.copy().items():
         if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray):
@@ -331,7 +335,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if not debug_enabled and k.endswith('_embeds'):
             del clean[k]
             clean['prompt'] = 'embeds'
-    shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
+    shared.log.info(f'{desc}: pipeline={model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
 
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
         txt = 'HDR:'

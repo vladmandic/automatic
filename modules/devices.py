@@ -516,6 +516,7 @@ def randn_without_seed(shape):
         return torch.randn(shape, device=cpu).to(device)
     return torch.randn(shape, device=device)
 
+
 def autocast(disable=False):
     if disable or dtype == torch.float32:
         return contextlib.nullcontext()

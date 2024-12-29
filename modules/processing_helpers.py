@@ -511,10 +511,9 @@ def get_generator(p):
     else:
         generator_device = devices.cpu if shared.opts.diffusers_generator_device == "CPU" else shared.device
         try:
+            p.seeds = [seed if seed != -1 else get_fixed_seed(seed) for seed in p.seeds if seed]
             devices.randn(p.seeds[0])
             generator = [torch.Generator(generator_device).manual_seed(s) for s in p.seeds]
-            seeds = [g.initial_seed() for g in generator]
-            shared.log.debug(f'Torch generator: device={generator_device} seeds={seeds}')
         except Exception as e:
             shared.log.error(f'Torch generator: seeds={p.seeds} device={generator_device} {e}')
             generator = None

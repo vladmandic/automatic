@@ -57,7 +57,6 @@ def process_base(p: processing.StableDiffusionProcessing):
     use_denoise_start = not is_txt2img() and p.refiner_start > 0 and p.refiner_start < 1
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
-    shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
     update_sampler(p, shared.sd_model)
     timer.process.record('prepare')
     base_args = set_pipeline_args(
@@ -90,7 +89,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.unet, devices.device)
         if hasattr(shared.sd_model, 'transformer'):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
-        extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2'])
+        extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
@@ -195,7 +194,6 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
         if p.hr_force:
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
-            shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
             if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__:
                 output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
@@ -294,7 +292,6 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
             if p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
                 # p.task_args['image'] = image
                 p.init_images = [image]
-            shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             update_sampler(p, shared.sd_refiner, second_pass=True)
             refiner_args = set_pipeline_args(
                 p=p,
