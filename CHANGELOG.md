@@ -1,24 +1,26 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-28
+## Update for 2024-12-29
 
-### Post release
-
+- **LoRA**:
+  - **Sana** support  
+  - quantized models support  
+  - fuse support with on-demand apply/unapply  
+  - add legacy option in *settings -> networks*  
 - **HunyuanVideo** optimizations: full offload, quantization and tiling support  
 - **LTXVideo** optimizations: full offload, quantization and tiling support  
 - VAE tiling granular options in *settings -> variable auto encoder*  
-- LoRA loader add legacy option in *settings -> networks*  
-- LoRA loader better apply for quantized models  
-- Live preview: add sigma calculation, thanks @Disty0  
+- UI: live preview add sigma calculation, thanks @Disty0  
 - UI: CSS optimizations when log view is disabled  
-- Sampler options: add flow shift and separate dynamic thresholding from dynamic shifting  
-- Fix: do not show disabled networks  
-- Fix: live preview image sizes in modern and standard UI  
-- Fix: image width/height calculation when doing img2img  
-- Fix: flux pipeline switches: txt/img/inpaint  
-- Fix: interrogate caption with T5  
-- Fix: on-the-fly quantization using TorchAO  
-- Fix: remove concurrent preview requests  
+- Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
+- **Fixes**  
+  - do not show disabled networks  
+  - live preview image sizes in modern and standard UI  
+  - image width/height calculation when doing img2img  
+  - flux pipeline switches: txt/img/inpaint  
+  - interrogate caption with T5  
+  - on-the-fly quantization using TorchAO  
+  - remove concurrent preview requests  
 
 ## Update for 2024-12-24
 

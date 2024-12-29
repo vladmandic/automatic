@@ -104,9 +104,10 @@ class Script(scripts.Script):
             quant_args = model_quant.create_bnb_config(quant_args)
             if quant_args:
                 model_quant.load_bnb(f'Load model: type=HunyuanVideo quant={quant_args}')
-            quant_args = model_quant.create_ao_config(quant_args)
-            if quant_args:
-                model_quant.load_torchao(f'Load model: type=HunyuanVideo quant={quant_args}')
+            if not quant_args:
+                quant_args = model_quant.create_ao_config(quant_args)
+                if quant_args:
+                    model_quant.load_torchao(f'Load model: type=HunyuanVideo quant={quant_args}')
             transformer = diffusers.HunyuanVideoTransformer3DModel.from_pretrained(
                 repo_id,
                 subfolder="transformer",

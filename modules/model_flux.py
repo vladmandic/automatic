@@ -148,9 +148,10 @@ def load_quants(kwargs, repo_id, cache_dir):
     quant_args = model_quant.create_bnb_config(quant_args)
     if quant_args:
         model_quant.load_bnb(f'Load model: type=FLUX quant={quant_args}')
-    quant_args = model_quant.create_ao_config(quant_args)
-    if quant_args:
-        model_quant.load_torchao(f'Load model: type=FLUX quant={quant_args}')
+    if not quant_args:
+        quant_args = model_quant.create_ao_config(quant_args)
+        if quant_args:
+            model_quant.load_torchao(f'Load model: type=FLUX quant={quant_args}')
     if not quant_args:
         return kwargs
     if 'transformer' not in kwargs and ('Model' in shared.opts.bnb_quantization or 'Model' in shared.opts.torchao_quantization):

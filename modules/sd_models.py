@@ -510,7 +510,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
                     module = module.to(devices.cpu, non_blocking=True)
                     used_gpu -= module_size
                 if not cached:
-                    shared.log.debug(f'Offload: type=balanced module={module_name} cls={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
+                    shared.log.debug(f'Model module={module_name} type={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
                 debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} module={module.__class__.__name__} size={module_size:.3f}')
             except Exception as e:
                 if 'out of memory' in str(e):
@@ -544,7 +544,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     debug_move(f'Apply offload: time={t:.2f} type=balanced fn={fn}')
     if not cached:
-        shared.log.info(f'Offload: type=balanced op=apply class={sd_model.__class__.__name__} modules={len(offload_hook_instance.offload_map)} size={offload_hook_instance.model_size():.3f}')
+        shared.log.info(f'Model class={sd_model.__class__.__name__} modules={len(offload_hook_instance.offload_map)} size={offload_hook_instance.model_size():.3f}')
     return sd_model
 
 

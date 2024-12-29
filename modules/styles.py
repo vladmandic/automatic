@@ -103,9 +103,9 @@ def apply_wildcards_to_prompt(prompt, all_wildcards, seed=-1, silent=False):
     prompt, replaced_file, not_found = apply_file_wildcards(prompt, [], [], recursion=0, seed=seed)
     t2 = time.time()
     if replaced and not silent:
-        shared.log.debug(f'Wildcards applied: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
+        shared.log.debug(f'Apply wildcards: {replaced} path="{shared.opts.wildcards_dir}" type=style time={t1-t0:.2f}')
     if (len(replaced_file) > 0 or len(not_found) > 0) and not silent:
-        shared.log.debug(f'Wildcards applied: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
+        shared.log.debug(f'Apply wildcards: {replaced_file} missing: {not_found} path="{shared.opts.wildcards_dir}" type=file time={t2-t2:.2f} ')
     if old_state is not None:
         random.setstate(old_state)
     return prompt
@@ -158,7 +158,7 @@ def apply_styles_to_extra(p, style: Style):
             fields.append(f'{k}={v}')
         else:
             skipped.append(f'{k}={v}')
-    shared.log.debug(f'Applying style: name="{style.name}" extra={fields} skipped={skipped} reference={True if reference_style else False}')
+    shared.log.debug(f'Apply style: name="{style.name}" extra={fields} skipped={skipped} reference={True if reference_style else False}')
 
 
 class StyleDatabase:
