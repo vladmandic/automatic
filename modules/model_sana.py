@@ -18,12 +18,11 @@ def load_quants(kwargs, repo_id, cache_dir):
     if not quant_args:
         return kwargs
     load_args = kwargs.copy()
-    model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args} args={load_args}')
-    if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+    if 'transformer' not in kwargs and ('Model' in shared.opts.bnb_quantization or 'Model' in shared.opts.torchao_quantization):
         kwargs['transformer'] = diffusers.models.SanaTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, **load_args, **quant_args)
         shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-    if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-        kwargs['text_encoder_3'] = transformers.AutoModelForCausalLM.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=cache_dir, **load_args, **quant_args)
+    if 'text_encoder' not in kwargs and ('Text Encoder' in shared.opts.bnb_quantization or 'Text Encoder' in shared.opts.torchao_quantization):
+        kwargs['text_encoder'] = transformers.AutoModelForCausalLM.from_pretrained(repo_id, subfolder="text_encoder", cache_dir=cache_dir, **load_args, **quant_args)
         shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
@@ -55,9 +54,9 @@ def load_sana(checkpoint_info, kwargs={}):
         kwargs['variant'] = 'fp16'
 
     if (fn is None) or (not os.path.exists(fn) or os.path.isdir(fn)):
-        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir)
-    # kwargs = model_quant.create_bnb_config(kwargs)
-    # kwargs = model_quant.create_ao_config(kwargs)
+        # TODO sana: fails when quantized
+        # kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir)
+        pass
     shared.log.debug(f'Load model: type=Sana repo="{repo_id}" args={list(kwargs)}')
     t0 = time.time()
     pipe = diffusers.SanaPipeline.from_pretrained(repo_id, cache_dir=shared.opts.diffusers_dir, **kwargs)

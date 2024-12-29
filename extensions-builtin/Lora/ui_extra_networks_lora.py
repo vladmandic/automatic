@@ -80,7 +80,6 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def create_item(self, name):
         l = networks.available_networks.get(name)
         if l is None:
-            print('HERE1')
             shared.log.warning(f'Networks: type=lora registered={len(list(networks.available_networks))} file="{name}" not registered')
             return None
         try:

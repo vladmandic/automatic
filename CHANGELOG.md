@@ -10,12 +10,11 @@
 - **HunyuanVideo** optimizations: full offload, quantization and tiling support  
 - **LTXVideo** optimizations: full offload, quantization and tiling support  
 - VAE tiling granular options in *settings -> variable auto encoder*  
-- UI: live preview add sigma calculation, thanks @Disty0  
+- UI: live preview optimizations
 - UI: CSS optimizations when log view is disabled  
 - Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
 - **Fixes**  
   - do not show disabled networks  
-  - live preview image sizes in modern and standard UI  
   - image width/height calculation when doing img2img  
   - flux pipeline switches: txt/img/inpaint  
   - interrogate caption with T5  
