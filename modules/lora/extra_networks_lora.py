@@ -127,7 +127,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)
         if not hasattr(sd_model, 'loaded_loras'):
             sd_model.loaded_loras = {}
-        key = f'{",".join(include)}:{','.join(exclude)}'
+        key = f'{",".join(include)}:{",".join(exclude)}'
         loaded = sd_model.loaded_loras.get(key, [])
         # shared.log.trace(f'Load network: type=LoRA key="{key}" requested={requested} loaded={loaded}')
         if len(requested) != len(loaded):
