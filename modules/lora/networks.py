@@ -411,26 +411,26 @@ def network_calc_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
     return batch_updown, batch_ex_bias
 
 
-def add_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], weights: Union[None, torch.Tensor] = None, bias: torch.Tensor = None, deactivate: bool = False):
-    if bias is None:
+def network_add_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.GroupNorm, torch.nn.LayerNorm, diffusers.models.lora.LoRACompatibleLinear, diffusers.models.lora.LoRACompatibleConv], model_weights: Union[None, torch.Tensor] = None, lora_weights: torch.Tensor = None, deactivate: bool = False):
+    if lora_weights is None:
         return self.weight
     if deactivate:
-        bias *= -1
-    if weights is None: # weights are used if provided-from-backup else use self.weight
-        weights = self.weight
+        lora_weights *= -1
+    if model_weights is None: # weights are used if provided-from-backup else use self.weight
+        model_weights = self.weight
     # TODO lora: add other quantization types
     if self.__class__.__name__ == 'Linear4bit' and bnb is not None:
         try:
-            dequant_weight = bnb.functional.dequantize_4bit(weights.to(devices.device), quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
-            new_weight = dequant_weight.to(devices.device) + bias.to(devices.device)
+            dequant_weight = bnb.functional.dequantize_4bit(model_weights.to(devices.device), quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
+            new_weight = dequant_weight.to(devices.device) + lora_weights.to(devices.device)
             self.weight = bnb.nn.Params4bit(new_weight, quant_state=self.quant_state, quant_type=self.quant_type, blocksize=self.blocksize)
         except Exception as e:
-            shared.log.error(f'Load network: type=LoRA quant=bnb cls={self.__class__.__name__} type={self.quant_type} blocksize={self.blocksize} state={vars(self.quant_state)} weight={self.weight} bias={bias} {e}')
+            shared.log.error(f'Load network: type=LoRA quant=bnb cls={self.__class__.__name__} type={self.quant_type} blocksize={self.blocksize} state={vars(self.quant_state)} weight={self.weight} bias={lora_weights} {e}')
     else:
         try:
-            new_weight = weights.to(devices.device) + bias.to(devices.device)
+            new_weight = model_weights.to(devices.device) + lora_weights.to(devices.device)
         except Exception:
-            new_weight = weights + bias # try without device cast
+            new_weight = model_weights + lora_weights # try without device cast
         self.weight = torch.nn.Parameter(new_weight, requires_grad=False)
     try:
         self.weight = self.weight.to(device=devices.device) # required since quantization happens only during .to call, not during params creation
@@ -454,11 +454,11 @@ def network_apply_direct(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn.
         if updown is not None and len(self.weight.shape) == 4 and self.weight.shape[1] == 9: # inpainting model. zero pad updown to make channel[1]  4 to 9
             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))  # pylint: disable=not-callable
         if updown is not None:
-            self.weight = add_weights(self, bias=updown, deactivate=deactivate)
+            self.weight = network_add_weights(self, lora_weights=updown, deactivate=deactivate)
 
     if bias_backup:
         if ex_bias is not None:
-            self.bias = add_weights(self, bias=ex_bias, deactivate=deactivate)
+            self.bias = network_add_weights(self, lora_weights=ex_bias, deactivate=deactivate)
 
     if hasattr(self, "qweight") and hasattr(self, "freeze"):
         self.freeze()
@@ -479,14 +479,14 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
         if updown is not None and len(weights_backup.shape) == 4 and weights_backup.shape[1] == 9: # inpainting model. zero pad updown to make channel[1]  4 to 9
             updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))  # pylint: disable=not-callable
         if updown is not None:
-            self.weight = add_weights(self, weights=weights_backup, bias=updown, deactivate=deactivate)
+            self.weight = network_add_weights(self, model_weights=weights_backup, lora_weights=updown, deactivate=deactivate)
         else:
             self.weight = torch.nn.Parameter(weights_backup.to(device=orig_device), requires_grad=False)
 
     if bias_backup is not None:
         self.bias = None
         if ex_bias is not None:
-            self.weight = add_weights(self, weights=weights_backup, bias=ex_bias, deactivate=deactivate)
+            self.weight = network_add_weights(self, model_weights=weights_backup, lora_weights=ex_bias, deactivate=deactivate)
         else:
             self.bias = torch.nn.Parameter(bias_backup.to(device=orig_device), requires_grad=False)
 
