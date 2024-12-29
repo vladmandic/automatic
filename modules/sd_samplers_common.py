@@ -71,6 +71,8 @@ def single_sample_to_image(sample, approximation=None):
             warn_once(f"Unknown latent decode type: {approximation}")
             return Image.new(mode="RGB", size=(512, 512))
         try:
+            if x_sample.shape[0] > 4:
+                return Image.new(mode="RGB", size=(512, 512))
             if x_sample.dtype == torch.bfloat16:
                 x_sample.to(torch.float16)
             transform = T.ToPILImage()

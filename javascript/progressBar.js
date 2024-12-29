@@ -118,7 +118,7 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
       const elapsedFromStart = (new Date() - dateStart) / 1000;
       hasStarted |= res.active;
       if (res.completed || (!res.active && (hasStarted || once)) || (elapsedFromStart > 30 && !res.queued && res.progress === prevProgress)) {
-        debug('onProgressEnd', res);
+        // debug('onProgressEnd', res);
         done();
         return;
       }

@@ -1,7 +1,7 @@
 import os
 import time
 import datetime
-from modules.errors import log
+from modules.errors import log, display
 
 
 class State:
@@ -164,17 +164,20 @@ class State:
         try:
             sample = self.current_latent
             self.current_image_sampling_step = self.sampling_step
+            """
             if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
                 original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
+                # RuntimeError: The size of tensor a (128) must match the size of tensor b (64) at non-singleton dimension 3
                 if self.prediction_type in {"epsilon", "flow_prediction"}:
                     sample = original_sample - (self.current_noise_pred * self.current_sigma)
                 elif self.prediction_type == "v_prediction":
                     sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
+            """
             image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
-        except Exception:
-            # log.error(f'Error setting current image: step={self.sampling_step} {e}')
-            pass
+        except Exception as e:
+            log.error(f'State image: last={self.id_live_preview} step={self.sampling_step} {e}')
+            display(e, 'State image')
         self.preview_busy = False
 
     def assign_current_image(self, image):
