@@ -199,8 +199,6 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                     output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
-                    p.init_images = output.images # replace so hires uses new output
-                    # p.task_args['image'] = output.images # replace so hires uses new output
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
@@ -289,10 +287,8 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
-            if p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
-                # p.task_args['image'] = image
-                p.init_images = [image]
             update_sampler(p, shared.sd_refiner, second_pass=True)
+            shared.opts.prompt_attention = 'fixed'
             refiner_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_refiner,
@@ -309,6 +305,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 image=image,
                 output_type=output_type,
                 clip_skip=p.clip_skip,
+                prompt_attention='fixed',
                 desc='Refiner',
             )
             shared.state.sampling_steps = refiner_args.get('prior_num_inference_steps', None) or p.steps or refiner_args.get('num_inference_steps', None)
