@@ -5,6 +5,7 @@ import gradio as gr
 import diffusers
 import transformers
 from modules import scripts, processing, shared, images, devices, sd_models, sd_checkpoint, model_quant, timer
+from modules.teacache.teacache_ltx import teacache_forward
 
 
 repos = {
@@ -84,6 +85,9 @@ class Script(scripts.Script):
             num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=41)
             sampler = gr.Checkbox(label='Override sampler', value=True)
         with gr.Row():
+            teacache_enable = gr.Checkbox(label='Enable TeaCache', value=False)
+            teacache_threshold = gr.Slider(label='Threshold', minimum=0.01, maximum=0.1, step=0.01, value=0.03)
+        with gr.Row():
             model_custom = gr.Textbox(value='', label='Path to model file', visible=False)
         with gr.Row():
             video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
@@ -94,9 +98,9 @@ class Script(scripts.Script):
             mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
         video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
         model.change(fn=model_change, inputs=[model], outputs=[model_custom])
-        return [model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
+        return [model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, teacache_enable, teacache_threshold]
 
-    def run(self, p: processing.StableDiffusionProcessing, model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, teacache_enable, teacache_threshold): # pylint: disable=arguments-differ, unused-argument
         # set params
         image = getattr(p, 'init_images', None)
         image = None if image is None or len(image) == 0 else image[0]
@@ -130,6 +134,7 @@ class Script(scripts.Script):
             kwargs = {}
             kwargs = model_quant.create_bnb_config(kwargs)
             kwargs = model_quant.create_ao_config(kwargs)
+            diffusers.LTXVideoTransformer3DModel.forward = teacache_forward
             if os.path.isfile(repo_id):
                 shared.sd_model = cls.from_single_file(
                     repo_id,
@@ -156,7 +161,16 @@ class Script(scripts.Script):
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
         devices.torch_gc(force=True)
-        shared.log.debug(f'Video: cls={shared.sd_model.__class__.__name__} args={p.task_args}')
+
+        shared.sd_model.transformer.cnt = 0
+        shared.sd_model.transformer.accumulated_rel_l1_distance = 0
+        shared.sd_model.transformer.previous_modulated_input = None
+        shared.sd_model.transformer.previous_residual = None
+        shared.sd_model.transformer.enable_teacache = teacache_enable
+        shared.sd_model.transformer.rel_l1_thresh = teacache_threshold
+        shared.sd_model.transformer.num_steps = p.steps
+
+        shared.log.debug(f'Video: cls={shared.sd_model.__class__.__name__} args={p.task_args} steps={p.steps} teacache={teacache_enable} threshold={teacache_threshold}')
 
         # run processing
         t0 = time.time()
