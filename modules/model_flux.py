@@ -212,7 +212,8 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
-    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4':
+    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4' or 'Model' in shared.opts.bnb_quantization:
+        print('HERE0')
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
@@ -222,9 +223,18 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         if _transformer is not None:
             transformer = _transformer
     else:
-        diffusers_load_config = model_quant.create_bnb_config(diffusers_load_config)
-        diffusers_load_config = model_quant.create_ao_config(diffusers_load_config)
-        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
+        print('HERE1')
+        quant_args = {}
+        quant_args = model_quant.create_bnb_config(quant_args)
+        if quant_args:
+            model_quant.load_bnb(f'Load model: type=Sana quant={quant_args}')
+        if not quant_args:
+            quant_args = model_quant.create_ao_config(quant_args)
+            if quant_args:
+                model_quant.load_torchao(f'Load model: type=Sana quant={quant_args}')
+        print('HERE2', diffusers_load_config)
+        print('HERE3', quant_args)
+        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config, **quant_args)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
         shared.opts.sd_unet = 'None'
