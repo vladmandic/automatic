@@ -113,6 +113,7 @@ class State:
         self.current_sigma_next = None
         self.id_live_preview = 0
         self.interrupted = False
+        self.preview_busy = False
         self.job = title
         self.job_count = -1
         self.frame_count = -1
@@ -136,11 +137,14 @@ class State:
             # log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
             self.time_start = time.time()
         if self.debug_output:
+            if self.preview_busy:
+                log.debug('State end: preview busy')
             log.debug(f'State end: {self.job} time={time.time() - self.time_start:.2f}')
         self.job = ""
         self.job_count = 0
         self.job_no = 0
         self.frame_count = 0
+        self.preview_busy = False
         self.paused = False
         self.interrupted = False
         self.skipped = False
