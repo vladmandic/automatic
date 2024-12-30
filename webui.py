@@ -13,7 +13,7 @@ import modules.loader
 import torch # pylint: disable=wrong-import-order
 from modules import timer, errors, paths # pylint: disable=unused-import
 from installer import log, git_commit, custom_excepthook
-import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
+# import ldm.modules.encoders.modules # pylint: disable=unused-import, wrong-import-order
 from modules import shared, extensions, gr_tempdir, modelloader # pylint: disable=ungrouped-imports
 from modules import extra_networks, ui_extra_networks # pylint: disable=ungrouped-imports
 from modules.paths import create_paths
