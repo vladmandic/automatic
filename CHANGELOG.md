@@ -22,6 +22,7 @@
   - remove concurrent preview requests  
   - hires batch  
   - sdxl refiner  
+  - kandinsky   
 
 ## Update for 2024-12-24
 
