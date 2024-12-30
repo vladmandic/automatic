@@ -268,7 +268,15 @@ class DiffusionSampler:
         debug(f'Sampler: config={self.config}')
         debug(f'Sampler: signature={possible}')
         # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
-        self.sampler = constructor(**self.config)
+        sampler = constructor(**self.config)
+        accept_sigmas = "sigmas" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
+        accepts_timesteps = "timesteps" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
+        debug(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
+        if ('Flux' in model.__class__.__name__) and (not accept_sigmas):
+            shared.log.warning(f'Sampler: sampler="{name}" does not accept sigmas')
+            self.sampler = None
+            return
+        self.sampler = sampler
         if name == 'DC Solver':
             if not hasattr(self.sampler, 'dc_ratios'):
                 pass
