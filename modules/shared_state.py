@@ -169,15 +169,15 @@ class State:
         try:
             sample = self.current_latent
             self.current_image_sampling_step = self.sampling_step
-            """
-            if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
-                original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
-                # RuntimeError: The size of tensor a (128) must match the size of tensor b (64) at non-singleton dimension 3
-                if self.prediction_type in {"epsilon", "flow_prediction"}:
-                    sample = original_sample - (self.current_noise_pred * self.current_sigma)
-                elif self.prediction_type == "v_prediction":
-                    sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
-            """
+            try:
+                if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+                    original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
+                    if self.prediction_type in {"epsilon", "flow_prediction"}:
+                        sample = original_sample - (self.current_noise_pred * self.current_sigma)
+                    elif self.prediction_type == "v_prediction":
+                        sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
+            except Exception:
+                pass # ignore sigma errors
             image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
             self.preview_busy = False
