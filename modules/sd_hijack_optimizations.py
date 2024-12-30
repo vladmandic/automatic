@@ -4,11 +4,14 @@ import math
 import psutil
 import torch
 from torch import einsum
-from ldm.util import default
 from einops import rearrange
 from modules import shared, errors, devices
 from modules.hypernetworks import hypernetwork
 from .sub_quadratic_attention import efficient_dot_product_attention # pylint: disable=relative-beyond-top-level
+
+
+if not shared.native:
+    from ldm.util import default
 
 
 if shared.opts.cross_attention_optimization == "xFormers":
@@ -47,7 +50,7 @@ def split_cross_attention_forward_v1(self, x, context=None, mask=None): # pylint
     h = self.heads
 
     q_in = self.to_q(x)
-    context = default(context, x)
+    context = default(context, x) # pylint: disable=possibly-used-before-assignment
 
     context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
     k_in = self.to_k(context_k)

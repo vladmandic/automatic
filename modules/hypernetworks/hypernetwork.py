@@ -6,7 +6,6 @@ import torch
 from torch import einsum
 from torch.nn.init import normal_, xavier_normal_, xavier_uniform_, kaiming_normal_, kaiming_uniform_, zeros_
 from einops import rearrange, repeat
-from ldm.util import default
 from modules import devices, shared, hashes, errors, files_cache
 
 
@@ -327,6 +326,7 @@ def apply_hypernetworks(hypernetworks, context, layer=None):
 
 
 def attention_CrossAttention_forward(self, x, context=None, mask=None):
+    from ldm.util import default
     h = self.heads
     q = self.to_q(x)
     context = default(context, x)

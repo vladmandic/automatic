@@ -1,15 +1,16 @@
 import os
 import sys
 import traceback
-
 from modules.upscaler import Upscaler, UpscalerData
-from modules.ldsr.ldsr_model_arch import LDSR
 from modules import shared, script_callbacks
-import modules.ldsr.sd_hijack_autoencoder # pylint: disable=unused-import
-import modules.ldsr.sd_hijack_ddpm_v1 # pylint: disable=unused-import
 
 
-class UpscalerLDSR(Upscaler):
+class Dummy:
+    pass
+
+cls = Upscaler if not shared.native else Dummy
+
+class UpscalerLDSR(cls):
     def __init__(self, user_path):
         self.name = "LDSR"
         self.user_path = user_path
@@ -20,6 +21,9 @@ class UpscalerLDSR(Upscaler):
         self.scalers = [scaler_data]
 
     def load_model(self, path: str):
+        from modules.ldsr.ldsr_model_arch import LDSR
+        import modules.ldsr.sd_hijack_autoencoder # pylint: disable=unused-import
+        import modules.ldsr.sd_hijack_ddpm_v1 # pylint: disable=unused-import
         # Remove incorrect project.yaml file if too big
         yaml_path = os.path.join(self.model_path, "project.yaml")
         old_model_path = os.path.join(self.model_path, "model.pth")
@@ -50,7 +54,6 @@ class UpscalerLDSR(Upscaler):
 
         try:
             return LDSR(model, yaml)
-
         except Exception:
             print("Error importing LDSR:", file=sys.stderr)
             print(traceback.format_exc(), file=sys.stderr)

@@ -7,33 +7,29 @@ from torch.nn.functional import silu
 import diffusers
 
 from modules import shared
-shared.log.debug('Importing LDM')
-stdout = io.StringIO()
-with contextlib.redirect_stdout(stdout):
-    import ldm.modules.attention
-    import ldm.modules.distributions.distributions
-    import ldm.modules.diffusionmodules.model
-    import ldm.modules.diffusionmodules.openaimodel
-    import ldm.models.diffusion.ddim
-    import ldm.models.diffusion.plms
-    import ldm.modules.encoders.modules
+if not shared.native:
+    shared.log.warning('Importing LDM')
+    stdout = io.StringIO()
+    with contextlib.redirect_stdout(stdout):
+        import ldm.modules.attention
+        import ldm.modules.distributions.distributions
+        import ldm.modules.diffusionmodules.model
+        import ldm.modules.diffusionmodules.openaimodel
+        import ldm.models.diffusion.ddim
+        import ldm.models.diffusion.plms
+        import ldm.modules.encoders.modules
+    attention_CrossAttention_forward = ldm.modules.attention.CrossAttention.forward
+    diffusionmodules_model_nonlinearity = ldm.modules.diffusionmodules.model.nonlinearity
+    diffusionmodules_model_AttnBlock_forward = ldm.modules.diffusionmodules.model.AttnBlock.forward
+    ldm.modules.attention.MemoryEfficientCrossAttention = ldm.modules.attention.CrossAttention
+    ldm.modules.attention.BasicTransformerBlock.ATTENTION_MODES["softmax-xformers"] = ldm.modules.attention.CrossAttention
+    # silence new console spam from SD2
+    ldm.modules.attention.print = lambda *args: None
+    ldm.modules.diffusionmodules.model.print = lambda *args: None
 
-import modules.textual_inversion.textual_inversion
-from modules import devices, sd_hijack_optimizations
+from modules import devices, sd_hijack_optimizations # pylint: disable=ungrouped-imports
+from modules.textual_inversion import textual_inversion
 from modules.hypernetworks import hypernetwork
-
-attention_CrossAttention_forward = ldm.modules.attention.CrossAttention.forward
-diffusionmodules_model_nonlinearity = ldm.modules.diffusionmodules.model.nonlinearity
-diffusionmodules_model_AttnBlock_forward = ldm.modules.diffusionmodules.model.AttnBlock.forward
-
-# new memory efficient cross attention blocks do not support hypernets and we already
-# have memory efficient cross attention anyway, so this disables SD2.0's memory efficient cross attention
-ldm.modules.attention.MemoryEfficientCrossAttention = ldm.modules.attention.CrossAttention
-ldm.modules.attention.BasicTransformerBlock.ATTENTION_MODES["softmax-xformers"] = ldm.modules.attention.CrossAttention
-
-# silence new console spam from SD2
-ldm.modules.attention.print = lambda *args: None
-ldm.modules.diffusionmodules.model.print = lambda *args: None
 
 current_optimizer = SimpleNamespace(**{ "name": "none" })
 
@@ -86,9 +82,10 @@ def apply_optimizations():
 
 
 def undo_optimizations():
-    ldm.modules.attention.CrossAttention.forward = hypernetwork.attention_CrossAttention_forward
-    ldm.modules.diffusionmodules.model.nonlinearity = diffusionmodules_model_nonlinearity
-    ldm.modules.diffusionmodules.model.AttnBlock.forward = diffusionmodules_model_AttnBlock_forward
+    if not shared.native:
+        ldm.modules.attention.CrossAttention.forward = hypernetwork.attention_CrossAttention_forward
+        ldm.modules.diffusionmodules.model.nonlinearity = diffusionmodules_model_nonlinearity
+        ldm.modules.diffusionmodules.model.AttnBlock.forward = diffusionmodules_model_AttnBlock_forward
 
 
 def fix_checkpoint():
@@ -153,7 +150,7 @@ class StableDiffusionModelHijack:
     clip = None
     optimization_method = None
 
-    embedding_db = modules.textual_inversion.textual_inversion.EmbeddingDatabase()
+    embedding_db = textual_inversion.EmbeddingDatabase()
 
     def __init__(self):
         self.embedding_db.add_embedding_dir(shared.opts.embeddings_dir)
@@ -330,11 +327,10 @@ def register_buffer(self, name, attr):
     setattr(self, name, attr)
 
 
-ldm.models.diffusion.ddim.DDIMSampler.register_buffer = register_buffer
-ldm.models.diffusion.plms.PLMSSampler.register_buffer = register_buffer
-
-# Ensure samping from Guassian for DDPM follows types
-ldm.modules.distributions.distributions.DiagonalGaussianDistribution.sample = lambda self: self.mean.to(self.parameters.dtype) + self.std.to(self.parameters.dtype) * torch.randn(self.mean.shape, dtype=self.parameters.dtype).to(device=self.parameters.device)
+if not shared.native:
+    ldm.models.diffusion.ddim.DDIMSampler.register_buffer = register_buffer
+    ldm.models.diffusion.plms.PLMSSampler.register_buffer = register_buffer
+    ldm.modules.distributions.distributions.DiagonalGaussianDistribution.sample = lambda self: self.mean.to(self.parameters.dtype) + self.std.to(self.parameters.dtype) * torch.randn(self.mean.shape, dtype=self.parameters.dtype).to(device=self.parameters.device)
 
 
 # Upcast BF16 to FP32

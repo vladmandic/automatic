@@ -14,6 +14,7 @@
 - UI: live preview sigma calulations, thanks @Disty0  
 - UI: CSS optimizations when log view is disabled  
 - Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
+- Refactor: remove all LDM imports if running in native mode  
 - **Fixes**  
   - do not show disabled networks  
   - image width/height calculation when doing img2img  
