@@ -29,7 +29,7 @@ class StableDiffusionProcessing:
                  seed_resize_from_w: int = -1,
                  batch_size: int = 1,
                  n_iter: int = 1,
-                 steps: int = 50,
+                 steps: int = 20,
                  clip_skip: int = 1,
                  width: int = 1024,
                  height: int = 1024,
@@ -39,7 +39,7 @@ class StableDiffusionProcessing:
                  hr_sampler_name: str = None,
                  eta: float = None,
                  # guidance
-                 cfg_scale: float = 7.0,
+                 cfg_scale: float = 6.0,
                  cfg_end: float = 1,
                  diffusers_guidance_rescale: float = 0.7,
                  pag_scale: float = 0.0,

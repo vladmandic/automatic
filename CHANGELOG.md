@@ -12,11 +12,13 @@
 - **VAE**: tiling granular options in *settings -> variable auto encoder*  
 - **UI**:
   - live preview optimizations and error handling  
-  - live preview high quality for flow models, thanks @Disty0  
+  - live preview high quality output, thanks @Disty0  
   - CSS optimizations when log view is disabled  
 - **Samplers**:
   - add flow shift options and separate dynamic thresholding from dynamic shifting  
   - autodetect matching sigma capabilities  
+- **API**
+  - better default values for generate  
 - **Refactor**:
   - remove all LDM imports if running in native mode  
 - **Fixes**  
@@ -29,7 +31,8 @@
   - xyz grid recover on error  
   - hires batch  
   - sdxl refiner  
-  - kandinsky   
+  - kandinsky  
+  - flux custom unet loader for bnb  
 
 ## Update for 2024-12-24
 
