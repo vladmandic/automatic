@@ -26,18 +26,18 @@
 - **Refactor**:
   - remove all LDM imports if running in native mode  
 - **Fixes**  
-  - do not show disabled networks  
-  - image width/height calculation when doing img2img  
   - flux pipeline switches: txt/img/inpaint  
+  - flux custom unet loader for bnb  
   - interrogate caption with T5  
   - on-the-fly quantization using TorchAO  
   - remove concurrent preview requests  
   - xyz grid recover on error  
   - hires batch  
   - sdxl refiner  
-  - kandinsky  
-  - flux custom unet loader for bnb  
-
+  - kandinsky matmul  
+  - do not show disabled networks  
+  - image width/height calculation when doing img2img  
+  
 ## Update for 2024-12-24
 
 ### Highlights for 2024-12-24
