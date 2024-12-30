@@ -95,6 +95,10 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
                 if kwargs[key] is not None:
                     kwargs[key] = kwargs[key].chunk(2)[-1]
     try:
+        current_noise_pred = kwargs.get("noise_pred", None)
+        if current_noise_pred is None:
+            current_noise_pred = kwargs.get("predicted_image_embedding", None)
+
         if hasattr(pipe, "_unpack_latents") and hasattr(pipe, "vae_scale_factor"): # FLUX
             if p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5) and p.is_hr_pass:
                 width = max(getattr(p, 'width', 0), getattr(p, 'hr_upscale_to_x', 0))
@@ -103,12 +107,14 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
                 width = getattr(p, 'width', 0)
                 height = getattr(p, 'height', 0)
             shared.state.current_latent = pipe._unpack_latents(kwargs['latents'], height, width, pipe.vae_scale_factor) # pylint: disable=protected-access
+            if current_noise_pred is not None:
+                shared.state.current_noise_pred = pipe._unpack_latents(current_noise_pred, height, width, pipe.vae_scale_factor) # pylint: disable=protected-access
+            else:
+                shared.state.current_noise_pred = current_noise_pred
         else:
             shared.state.current_latent = kwargs['latents']
+            shared.state.current_noise_pred = current_noise_pred
 
-        shared.state.current_noise_pred = kwargs.get("noise_pred", None)
-        if shared.state.current_noise_pred is None:
-            shared.state.current_noise_pred = kwargs.get("predicted_image_embedding", None)
         if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas") and hasattr(pipe.scheduler, "step_index"):
             shared.state.current_sigma = pipe.scheduler.sigmas[pipe.scheduler.step_index - 1]
             shared.state.current_sigma_next = pipe.scheduler.sigmas[pipe.scheduler.step_index]
