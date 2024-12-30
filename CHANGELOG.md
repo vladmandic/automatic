@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-29
+## Update for 2024-12-30
 
 - **LoRA**:
   - **Sana** support  
@@ -11,6 +11,7 @@
 - **LTXVideo** optimizations: full offload, quantization and tiling support  
 - VAE tiling granular options in *settings -> variable auto encoder*  
 - UI: live preview optimizations and error handling  
+- UI: live preview sigma calulations, thanks @Disty0  
 - UI: CSS optimizations when log view is disabled  
 - Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
 - **Fixes**  
@@ -20,6 +21,7 @@
   - interrogate caption with T5  
   - on-the-fly quantization using TorchAO  
   - remove concurrent preview requests  
+  - xyz grid recover on error  
   - hires batch  
   - sdxl refiner  
   - kandinsky   
