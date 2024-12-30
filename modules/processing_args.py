@@ -233,9 +233,11 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
             args['latents'] = p.init_latent
     if 'output_type' in possible:
         if not hasattr(model, 'vae'):
-            args['output_type'] = 'np' # only set latent if model has vae
+            kwargs['output_type'] = 'np' # only set latent if model has vae
 
-    # stable cascade
+    # model specific
+    if 'Kandinsky' in model.__class__.__name__:
+        kwargs['output_type'] = 'np' # only set latent if model has vae
     if 'StableCascade' in model.__class__.__name__:
         kwargs.pop("guidance_scale") # remove
         kwargs.pop("num_inference_steps") # remove

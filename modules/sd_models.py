@@ -1325,6 +1325,8 @@ def set_diffusers_attention(pipe):
                 module.set_attn_processor(p.HunyuanAttnProcessor2_0())
             elif module.__class__.__name__ in ['AuraFlowTransformer2DModel']:
                 module.set_attn_processor(p.AuraFlowAttnProcessor2_0())
+            elif 'KandinskyCombinedPipeline' in pipe.__class__.__name__:
+                pass
             elif 'Transformer' in module.__class__.__name__:
                 pass # unknown transformer so probably dont want to force attention processor
             else:
