@@ -6,6 +6,7 @@ import time
 import inspect
 import torch
 import numpy as np
+from PIL import Image
 from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer, extra_networks
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
@@ -22,7 +23,8 @@ def task_specific_kwargs(p, model):
     if len(getattr(p, 'init_images', [])) > 0:
         if isinstance(p.init_images[0], str):
             p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images]
-        p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images if i is not None]
+        if isinstance(p.init_images[0], Image.Image):
+            p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images if i is not None]
     if (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0) and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
@@ -99,7 +101,7 @@ def task_specific_kwargs(p, model):
     return task_args
 
 
-def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2: typing.Optional[list]=None, negative_prompts_2: typing.Optional[list]=None, desc:str='', **kwargs):
+def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:typing.Optional[list]=None, negative_prompts_2:typing.Optional[list]=None, prompt_attention:typing.Optional[str]=None, desc:typing.Optional[str]='', **kwargs):
     t0 = time.time()
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     apply_circular(p.tiling, model)
@@ -118,7 +120,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     clip_skip = kwargs.pop("clip_skip", 1)
 
     parser = 'fixed'
-    if shared.opts.prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
+    prompt_attention = prompt_attention or shared.opts.prompt_attention
+    if prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
@@ -265,7 +268,7 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     elif 'callback' in possible:
         args['callback'] = diffusers_callback_legacy
 
-    if 'image' in kwargs and len(getattr(p, 'init_images', [])) == 0:
+    if 'image' in kwargs:
         p.init_images = kwargs['image'] if isinstance(kwargs['image'], list) else [kwargs['image']]
 
     # handle remaining args

@@ -20,6 +20,8 @@
   - interrogate caption with T5  
   - on-the-fly quantization using TorchAO  
   - remove concurrent preview requests  
+  - hires batch  
+  - sdxl refiner  
 
 ## Update for 2024-12-24
 

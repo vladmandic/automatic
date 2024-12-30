@@ -170,6 +170,8 @@ def get_load_config(model_file, model_type, config_type='yaml'):
             return 'configs/sd15'
         if model_type == 'Stable Diffusion XL':
             return 'configs/sdxl'
+        if model_type == 'Stable Diffusion XL Refiner':
+            return 'configs/sdxl-refiner'
         if model_type == 'Stable Diffusion 3':
             return 'configs/sd3'
         if model_type == 'FLUX':
