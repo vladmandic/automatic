@@ -9,12 +9,16 @@
   - add legacy option in *settings -> networks*  
 - **HunyuanVideo** optimizations: full offload, quantization and tiling support  
 - **LTXVideo** optimizations: full offload, quantization and tiling support  
-- VAE tiling granular options in *settings -> variable auto encoder*  
-- UI: live preview optimizations and error handling  
-- UI: live preview sigma calulations, thanks @Disty0  
-- UI: CSS optimizations when log view is disabled  
-- Samplers: add flow shift options and separate dynamic thresholding from dynamic shifting  
-- Refactor: remove all LDM imports if running in native mode  
+- **VAE**: tiling granular options in *settings -> variable auto encoder*  
+- **UI**:
+  - live preview optimizations and error handling  
+  - live preview high quality for flow models, thanks @Disty0  
+  - CSS optimizations when log view is disabled  
+- **Samplers**:
+  - add flow shift options and separate dynamic thresholding from dynamic shifting  
+  - autodetect matching sigma capabilities  
+- **Refactor**:
+  - remove all LDM imports if running in native mode  
 - **Fixes**  
   - do not show disabled networks  
   - image width/height calculation when doing img2img  
