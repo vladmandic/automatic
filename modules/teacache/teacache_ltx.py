@@ -1,3 +1,7 @@
+"""
+source: https://github.com/ali-vilab/TeaCache/blob/main/TeaCache4LTX-Video/teacache_ltx.py
+"""
+
 from typing import Any, Dict, Optional, Tuple
 import numpy as np
 import torch

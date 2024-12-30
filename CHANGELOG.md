@@ -7,9 +7,13 @@
   - quantized models support  
   - fuse support with on-demand apply/unapply  
   - add legacy option in *settings -> networks*  
-- **HunyuanVideo** optimizations: full offload, quantization and tiling support  
-- **LTXVideo** optimizations: full offload, quantization and tiling support  
-- **VAE**: tiling granular options in *settings -> variable auto encoder*  
+- **HunyuanVideo**
+  - optimizations: full offload, quantization and tiling support  
+- **LTXVideo**
+  - optimizations: full offload, quantization and tiling support  
+  - [TeaCache](https://github.com/ali-vilab/TeaCache/blob/main/TeaCache4LTX-Video/README.md) integration  
+- **VAE**:
+  - tiling granular options in *settings -> variable auto encoder*  
 - **UI**:
   - live preview optimizations and error handling  
   - live preview high quality output, thanks @Disty0  
