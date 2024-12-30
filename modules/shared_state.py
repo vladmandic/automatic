@@ -123,7 +123,7 @@ class State:
         self.skipped = False
         self.textinfo = None
         self.prediction_type = "epsilon"
-        self.api = api if api is not None else self.api
+        self.api = api or self.api
         self.time_start = time.time()
         if self.debug_output:
             log.debug(f'State begin: {self.job}')
@@ -144,11 +144,11 @@ class State:
         self.paused = False
         self.interrupted = False
         self.skipped = False
-        self.api = api if api is not None else self.api
+        self.api = api or self.api
         modules.devices.torch_gc()
 
     def set_current_image(self):
-        if self.job == 'VAE': # avoid generating preview while vae is running
+        if self.job == 'VAE' or self.job == 'Upscale': # avoid generating preview while vae is running
             return False
         from modules.shared import opts, cmd_opts
         if cmd_opts.lowvram or self.api or (not opts.live_previews_enable) or (opts.show_progress_every_n_steps <= 0):
