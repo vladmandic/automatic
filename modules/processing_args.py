@@ -343,13 +343,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     shared.log.info(f'{desc}: pipeline={model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
 
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
-        txt = 'HDR:'
-        txt += f' Brightness={p.hdr_brightness}' if p.hdr_brightness != 0 else ' Brightness off'
-        txt += f' Color={p.hdr_color}' if p.hdr_color != 0 else ' Color off'
-        txt += f' Sharpen={p.hdr_sharpen}' if p.hdr_sharpen != 0 else ' Sharpen off'
-        txt += f' Clamp threshold={p.hdr_threshold} boundary={p.hdr_boundary}' if p.hdr_clamp else ' Clamp off'
-        txt += f' Maximize boundary={p.hdr_max_boundry} center={p.hdr_max_center}' if p.hdr_maximize else ' Maximize off'
-        shared.log.debug(txt)
+        shared.log.debug(f'HDR: clamp={p.hdr_clamp} maximize={p.hdr_maximize} brightness={p.hdr_brightness} color={p.hdr_color} sharpen={p.hdr_sharpen} threshold={p.hdr_threshold} boundary={p.hdr_boundary} max={p.hdr_max_boundry} center={p.hdr_max_center}')
     if shared.cmd_opts.profile:
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
