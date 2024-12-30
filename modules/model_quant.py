@@ -102,7 +102,7 @@ def load_quanto(msg='', silent=False):
         quanto = optimum_quanto
         fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
         log.debug(f'Quantization: type=quanto version={quanto.__version__} fn={fn}') # pylint: disable=protected-access
-        if shared.opts.diffusers_offload_mode != 'none':
+        if shared.opts.diffusers_offload_mode in {'balanced', 'sequential'}:
             shared.log.error(f'Quantization: type=quanto offload={shared.opts.diffusers_offload_mode} not supported')
         return quanto
     except Exception as e:
