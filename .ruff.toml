@@ -26,6 +26,7 @@ exclude = [
     "modules/schedulers",
     "modules/segmoe",
     "modules/taesd",
+    "modules/teacache",
     "modules/todo",
     "modules/unipc",
     "modules/xadapter",
