@@ -360,7 +360,13 @@ def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=Non
     )
     model_hash_str = executor_parameters.get("model_hash_str", None)
 
-    signature = "signature" #str(id(gm))
+    if file_name:
+        signature = file_name.rsplit("/", maxsplit=1)[-1].split("_fs", maxsplit=1)[0]
+    else:
+        signature = "signature"
+    if model_hash_str is None:
+        file_name = None
+
     idx_minus = 0
     int_inputs = []
     for idx, input_data in enumerate(args):
@@ -455,19 +461,19 @@ def openvino_fx(subgraph, example_inputs):
         dont_use_nncf = bool("Text Encoder" not in shared.opts.nncf_compress_weights)
         dont_use_quant = bool("Text Encoder" not in shared.opts.nncf_quantize)
 
+    # Create a hash to be used for caching
+    shared.compiled_model_state.model_hash_str = ""
+    subgraph.apply(generate_subgraph_str)
+    #shared.compiled_model_state.model_hash_str = shared.compiled_model_state.model_hash_str + sha256(subgraph.code.encode('utf-8')).hexdigest()
+    shared.compiled_model_state.model_hash_str = sha256(shared.compiled_model_state.model_hash_str.encode('utf-8')).hexdigest()
+
+    # Check if the model was fully supported and already cached
+    example_inputs.reverse()
+    inputs_reversed = True
+    maybe_fs_cached_name = cached_model_name(shared.compiled_model_state.model_hash_str + "_fs", get_device(), example_inputs, shared.opts.openvino_cache_path)
     if not shared.opts.openvino_disable_model_caching:
         os.environ.setdefault('OPENVINO_TORCH_MODEL_CACHING', "1")
-
-        # Create a hash to be used for caching
-        subgraph.apply(generate_subgraph_str)
-        shared.compiled_model_state.model_hash_str = shared.compiled_model_state.model_hash_str + sha256(subgraph.code.encode('utf-8')).hexdigest()
-        shared.compiled_model_state.model_hash_str = sha256(shared.compiled_model_state.model_hash_str.encode('utf-8')).hexdigest()
-
         executor_parameters = {"model_hash_str": shared.compiled_model_state.model_hash_str}
-        # Check if the model was fully supported and already cached
-        example_inputs.reverse()
-        inputs_reversed = True
-        maybe_fs_cached_name = cached_model_name(shared.compiled_model_state.model_hash_str + "_fs", get_device(), example_inputs, shared.opts.openvino_cache_path)
 
         if os.path.isfile(maybe_fs_cached_name + ".xml") and os.path.isfile(maybe_fs_cached_name + ".bin"):
             example_inputs_reordered = []
@@ -510,7 +516,6 @@ def openvino_fx(subgraph, example_inputs):
             return _call
     else:
         os.environ.setdefault('OPENVINO_TORCH_MODEL_CACHING', "0")
-        maybe_fs_cached_name = None
 
     if inputs_reversed:
         example_inputs.reverse()
