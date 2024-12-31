@@ -27,7 +27,7 @@ class State:
     prediction_type = "epsilon"
     api = False
     disable_preview = False
-    preview_busy = False
+    preview_job = -1
     time_start = None
     need_restart = False
     server_start = time.time()
@@ -113,7 +113,7 @@ class State:
         self.current_sigma_next = None
         self.id_live_preview = 0
         self.interrupted = False
-        self.preview_busy = False
+        self.preview_job = -1
         self.job = title
         self.job_count = -1
         self.frame_count = -1
@@ -136,15 +136,11 @@ class State:
             # fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
             # log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
             self.time_start = time.time()
-        if self.debug_output:
-            if self.preview_busy:
-                log.debug('State end: preview busy')
-            log.debug(f'State end: {self.job} time={time.time() - self.time_start:.2f}')
         self.job = ""
         self.job_count = 0
         self.job_no = 0
         self.frame_count = 0
-        self.preview_busy = False
+        self.preview_job = -1
         self.paused = False
         self.interrupted = False
         self.skipped = False
@@ -162,10 +158,10 @@ class State:
         return False
 
     def do_set_current_image(self):
-        if (self.current_latent is None) or self.disable_preview or self.preview_busy:
+        if (self.current_latent is None) or self.disable_preview or (self.preview_job == self.job_no):
             return False
         from modules import shared, sd_samplers
-        self.preview_busy = True
+        self.preview_job = self.job_no
         try:
             sample = self.current_latent
             self.current_image_sampling_step = self.sampling_step
@@ -180,10 +176,10 @@ class State:
                 pass # ignore sigma errors
             image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
             self.assign_current_image(image)
-            self.preview_busy = False
+            self.preview_job = -1
             return True
         except Exception as e:
-            self.preview_busy = False
+            self.preview_job = -1
             log.error(f'State image: last={self.id_live_preview} step={self.sampling_step} {e}')
             display(e, 'State image')
             return False
