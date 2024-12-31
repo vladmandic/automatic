@@ -34,6 +34,7 @@
   - xyz grid recover on error  
   - hires batch  
   - sdxl refiner  
+  - increase progress timeout
   - kandinsky matmul  
   - do not show disabled networks  
   - image width/height calculation when doing img2img  
