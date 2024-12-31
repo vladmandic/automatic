@@ -2,12 +2,15 @@
 
 ## Update for 2024-12-31
 
-NYE refresh release with quite a few optimizatios and bug fixes...
+NYE refresh release with quite a few optimizatios and bug fixes...  
+Commit hash: `master: #dcfc9f3` `dev: #935cac6`  
 
 - **LoRA**:  
+  - LoRA load/apply/unapply methods have been changed in 12/2024 Xmass release and further tuned in this release
+  - for details on available methods, see <https://github.com/vladmandic/automatic/wiki/Lora#lora-loader>  
   - **Sana** support  
   - quantized models support  
-  - fuse support with on-demand apply/unapply  
+  - add fuse support with on-demand apply/unapply (new default)  
   - add legacy option in *settings -> networks*  
 - **HunyuanVideo**:  
   - optimizations: full offload, quantization and tiling support  
@@ -33,9 +36,6 @@ NYE refresh release with quite a few optimizatios and bug fixes...
 - **OpenVINO**:  
   - disable re-compile on resolution change  
   - fix shape mismatch on resolution change  
-- **LoRA**:
-  - LoRA load/apply/unapply methods have been changed in 12/2024 Xmass release and further tuned in this release
-  - for details on available methods, see <https://github.com/vladmandic/automatic/wiki/Lora#lora-loader>  
 - **Fixes**:  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
