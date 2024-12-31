@@ -84,6 +84,8 @@ def initialize():
     modules.hashes.init_cache()
     check_rollback_vae()
 
+    log.debug(f'Huggingface cache: path="{shared.opts.hfcache_dir}"')
+
     modules.sd_samplers.list_samplers()
     timer.startup.record("samplers")
 
@@ -226,7 +228,7 @@ def start_common():
     if shared.cmd_opts.data_dir is not None and len(shared.cmd_opts.data_dir) > 0:
         log.info(f'Using data path: {shared.cmd_opts.data_dir}')
     if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0 and shared.cmd_opts.models_dir != 'models':
-        log.info(f'Using models path: {shared.cmd_opts.models_dir}')
+        log.info(f'Models path: {shared.cmd_opts.models_dir}')
     create_paths(shared.opts)
     async_policy()
     initialize()
@@ -321,8 +323,10 @@ def start_ui():
     modules.script_callbacks.app_started_callback(shared.demo, app)
     timer.startup.record("app-started")
 
-    time_setup = [f'{k}:{round(v,3)}' for (k,v) in modules.scripts.time_setup.items() if v > 0.005]
-    shared.log.debug(f'Scripts setup: {time_setup}')
+    time_sorted = sorted(modules.scripts.time_setup.items(), key=lambda x: x[1], reverse=True)
+    time_script = [f'{k}:{round(v,3)}' for (k,v) in time_sorted if v > 0.01]
+    time_total = sum(modules.scripts.time_setup.values())
+    shared.log.debug(f'Scripts setup: time={time_total:.3f} {time_script}')
     time_component = [f'{k}:{round(v,3)}' for (k,v) in modules.scripts.time_component.items() if v > 0.005]
     if len(time_component) > 0:
         shared.log.debug(f'Scripts components: {time_component}')

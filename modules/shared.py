@@ -93,7 +93,6 @@ elif os.environ.get("HF_HUB", None) is not None:
 else:
     hfcache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
     os.environ["HF_HUB_CACHE"] = hfcache_dir
-log.debug(f'Huggingface cache: folder="{hfcache_dir}"')
 
 
 class Backend(Enum):

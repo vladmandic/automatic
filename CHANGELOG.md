@@ -25,6 +25,7 @@
   - better default values for generate  
 - **Refactor**:
   - remove all LDM imports if running in native mode  
+  - startup optimizatios
 - **Fixes**  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
@@ -37,6 +38,7 @@
   - increase progress timeout
   - kandinsky matmul  
   - do not show disabled networks  
+  - enable debug logging by default
   - image width/height calculation when doing img2img  
   
 ## Update for 2024-12-24
