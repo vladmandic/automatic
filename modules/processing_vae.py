@@ -136,8 +136,8 @@ def full_vae_decode(latents, model):
 
     vae_name = os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0] if sd_vae.loaded_vae_file is not None else "default"
     vae_stats = f'vae="{vae_name}" dtype={model.vae.dtype} device={model.vae.device} upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)}'
-    latents_stats = f'shape={latents.shape} dtype={latents.dtype} device={latents.device}'
-    stats = f'{vae_stats} latents {latents_stats}'
+    latents_stats = f'latents={latents.shape}:{latents.device}:{latents.dtype}'
+    stats = f'{vae_stats} {latents_stats}'
 
     log_debug(f'VAE config: {model.vae.config}')
     try:
