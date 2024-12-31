@@ -33,6 +33,9 @@ NYE refresh release with quite a few optimizatios and bug fixes...
 - **OpenVINO**:  
   - disable re-compile on resolution change  
   - fix shape mismatch on resolution change  
+- **LoRA**:
+  - LoRA load/apply/unapply methods have been changed in 12/2024 Xmass release and further tuned in this release
+  - for details on available methods, see <https://github.com/vladmandic/automatic/wiki/Lora#lora-loader>  
 - **Fixes**:  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
@@ -51,6 +54,7 @@ NYE refresh release with quite a few optimizatios and bug fixes...
   - corrections with batch processing  
   - hires with refiner prompt and batch processing  
   - processing with nested calls  
+  - ui networks initial sort  
 
 ## Update for 2024-12-24
 
