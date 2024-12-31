@@ -30,6 +30,9 @@ NYE refresh release with quite a few optimizatios and bug fixes...
   - startup optimizatios  
 - **Torch**:  
   - support for `torch==2.6.0`  
+- **OpenVINO**:  
+  - disable re-compile on resolution change  
+  - fix shape mismatch on resolution change  
 - **Fixes**:  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
