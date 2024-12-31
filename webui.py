@@ -303,7 +303,7 @@ def start_ui():
         shared.log.info(f'API ReDocs: {local_url[:-1]}/redocs') # pylint: disable=unsubscriptable-object
     if share_url is not None:
         shared.log.info(f'Share URL: {share_url}')
-    shared.log.debug(f'Gradio functions: registered={len(shared.demo.fns)}')
+    # shared.log.debug(f'Gradio functions: registered={len(shared.demo.fns)}')
     shared.demo.server.wants_restart = False
     setup_middleware(app, cmd_opts)
 
