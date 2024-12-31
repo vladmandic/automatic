@@ -32,12 +32,11 @@ DEFAULT_OPENVINO_PYTHON_CONFIG = MappingProxyType(
 
 
 class OpenVINOGraphModule(torch.nn.Module):
-    def __init__(self, gm, partition_id, use_python_fusion_cache, model_hash_str: str = None, file_name="", signature="", int_inputs=[]):
+    def __init__(self, gm, partition_id, use_python_fusion_cache, model_hash_str: str = None, file_name="", int_inputs=[]):
         super().__init__()
         self.gm = gm
         self.int_inputs = int_inputs
         self.partition_id = partition_id
-        self.signature = signature
         self.executor_parameters = {"use_python_fusion_cache": use_python_fusion_cache,
                                     "model_hash_str": model_hash_str}
         self.file_name = file_name
@@ -49,7 +48,7 @@ class OpenVINOGraphModule(torch.nn.Module):
                 ov_inputs.append(arg)
         for idx, int_input in self.int_inputs:
             ov_inputs.insert(idx, int_input)
-        result = openvino_execute(self.gm, *ov_inputs, executor_parameters=self.executor_parameters, partition_id=self.partition_id, file_name=self.file_name, signature=self.signature)
+        result = openvino_execute(self.gm, *ov_inputs, executor_parameters=self.executor_parameters, partition_id=self.partition_id, file_name=self.file_name)
         return result
 
 
@@ -307,21 +306,14 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
     return compiled_model
 
 
-def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition_id=None, file_name="", signature=""):
-    if isinstance(gm, OpenVINOGraphModule):
+def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition_id=None, file_name=""):
+    if hasattr(gm, "partition_id"):
         partition_id = gm.partition_id
-        file_name = gm.file_name
-        signature = gm.signature
-        executor_parameters = gm.executor_parameters
+    if hasattr(gm, "gm"):
         gm = gm.gm
     executor_parameters = executor_parameters or DEFAULT_OPENVINO_PYTHON_CONFIG
 
-    if partition_id is not None:
-        model_cache_str = str(partition_id) + "_" + signature
-    elif signature:
-        model_cache_str = signature
-
-    use_cache = model_cache_str and executor_parameters.get(
+    use_cache = partition_id is not None and executor_parameters.get(
         "use_python_fusion_cache",
         DEFAULT_OPENVINO_PYTHON_CONFIG["use_python_fusion_cache"],
     )
@@ -330,9 +322,9 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
     if model_hash_str is not None:
         model_hash_str = model_hash_str + str(partition_id) if partition_id is not None else ""
 
-    if use_cache and (model_cache_str in shared.compiled_model_state.compiled_cache):
-        compiled = shared.compiled_model_state.compiled_cache[model_cache_str]
-        req = shared.compiled_model_state.req_cache[model_cache_str]
+    if use_cache and (partition_id in shared.compiled_model_state.compiled_cache.keys()):
+        compiled = shared.compiled_model_state.compiled_cache[partition_id]
+        req = shared.compiled_model_state.req_cache[partition_id]
     else:
         if (shared.compiled_model_state.cn_model != [] and file_name is not None
                 and os.path.isfile(file_name + ".xml") and os.path.isfile(file_name + ".bin")):
@@ -340,10 +332,10 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
         else:
             compiled = openvino_compile(gm, *args, model_hash_str=model_hash_str, file_name=file_name)
         if use_cache:
-            shared.compiled_model_state.compiled_cache[model_cache_str] = compiled
+            shared.compiled_model_state.compiled_cache[partition_id] = compiled
         req = compiled.create_infer_request()
         if use_cache:
-            shared.compiled_model_state.req_cache[model_cache_str] = req
+            shared.compiled_model_state.req_cache[partition_id] = req
 
     flat_args, _ = tree_flatten(args)
     ov_inputs = []
@@ -382,7 +374,7 @@ def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=Non
 
     if signature not in shared.compiled_model_state.partitioned_modules:
         shared.compiled_model_state.partitioned_modules[signature] = partition_graph(gm,  use_python_fusion_cache=use_python_fusion_cache,
-                                                        model_hash_str=model_hash_str, file_name=file_name, signature=signature, int_inputs=int_inputs)
+                                                        model_hash_str=model_hash_str, file_name=file_name, int_inputs=int_inputs)
 
     ov_inputs = []
     for arg in args:
@@ -393,21 +385,19 @@ def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=Non
     return shared.compiled_model_state.partitioned_modules[signature][0](*ov_inputs)
 
 
-def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_str: str = None, file_name="", signature="", int_inputs=[]):
+def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_str: str = None, file_name="", int_inputs=[]):
     for node in gm.graph.nodes:
         if node.op == "call_module" and "fused_" in node.name:
             openvino_submodule = getattr(gm, node.name)
             if isinstance(openvino_submodule, OpenVINOGraphModule):
-                openvino_submodule.signature = signature
                 int_inputs = openvino_submodule.int_inputs
-                if isinstance(openvino_submodule.gm, OpenVINOGraphModule):
-                    continue
+                continue
             gm.delete_submodule(node.target)
             gm.add_submodule(
                 node.target,
                 OpenVINOGraphModule(
                     openvino_submodule, shared.compiled_model_state.partition_id, use_python_fusion_cache,
-                    model_hash_str=model_hash_str, file_name=file_name, signature=signature, int_inputs=int_inputs),
+                    model_hash_str=model_hash_str, file_name=file_name, int_inputs=int_inputs),
             )
             shared.compiled_model_state.partition_id += 1
 
