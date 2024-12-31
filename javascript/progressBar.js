@@ -141,7 +141,7 @@ function requestProgress(id_task, progressEl, galleryEl, atEnd = null, onProgres
       done();
     };
 
-    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler, false, 5000);
+    xhrPost('./internal/progress', { id_task, id_live_preview }, onProgressHandler, onProgressErrorHandler, false, 30000);
   };
   debug('livePreview start:', dateStart);
   start(id_task, 0);
