@@ -315,9 +315,9 @@ def optimize_openvino(sd_model):
             shared.compiled_model_state.partitioned_modules.clear()
         shared.compiled_model_state = CompiledModelState()
         shared.compiled_model_state.is_compiled = True
-        shared.compiled_model_state.first_pass = True if not shared.opts.cuda_compile_precompile else False
-        shared.compiled_model_state.first_pass_vae = True if not shared.opts.cuda_compile_precompile else False
-        shared.compiled_model_state.first_pass_refiner = True if not shared.opts.cuda_compile_precompile else False
+        shared.compiled_model_state.first_pass = not shared.opts.cuda_compile_precompile
+        shared.compiled_model_state.first_pass_vae = not shared.opts.cuda_compile_precompile
+        shared.compiled_model_state.first_pass_refiner = not shared.opts.cuda_compile_precompile
         sd_models.set_accelerate(sd_model)
     except Exception as e:
         shared.log.warning(f"Model compile: task=OpenVINO: {e}")
@@ -532,30 +532,42 @@ def torchao_quantization(sd_model):
 
 
 def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes
-    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
-        if shared.opts.cuda_compile_backend == "openvino_fx":
-            compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
-            compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
-            if (shared.compiled_model_state is None or
-            (not shared.compiled_model_state.first_pass
-            and (shared.compiled_model_state.height != compile_height
-            or shared.compiled_model_state.width != compile_width
-            or shared.compiled_model_state.batch_size != p.batch_size))):
-                if refiner:
-                    shared.log.info("OpenVINO: Recompiling refiner")
-                    sd_models.unload_model_weights(op='refiner')
-                    sd_models.reload_model_weights(op='refiner')
-                else:
-                    shared.log.info("OpenVINO: Recompiling base model")
-                    sd_models.unload_model_weights(op='model')
-                    sd_models.reload_model_weights(op='model')
-            shared.compiled_model_state.height = compile_height
-            shared.compiled_model_state.width = compile_width
-            shared.compiled_model_state.batch_size = p.batch_size
+    if shared.opts.cuda_compile_backend == "openvino_fx" and 'Model' in shared.opts.cuda_compile:
+        compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
+        compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
+        """
+        if shared.compiled_model_state is None:
+            openvino_first_pass = True
+        else:
+            if refiner:
+                openvino_first_pass = shared.compiled_model_state.first_pass_refiner
+            else:
+                openvino_first_pass = shared.compiled_model_state.first_pass
+        if (shared.compiled_model_state is None or
+            (
+            not openvino_first_pass
+            and (
+                    shared.compiled_model_state.height != compile_height
+                    or shared.compiled_model_state.width != compile_width
+                    or shared.compiled_model_state.batch_size != p.batch_size
+                )
+            )):
+            if refiner:
+                shared.log.info("OpenVINO: Recompiling refiner")
+                sd_models.unload_model_weights(op='refiner')
+                sd_models.reload_model_weights(op='refiner')
+            else:
+                shared.log.info("OpenVINO: Recompiling base model")
+                sd_models.unload_model_weights(op='model')
+                sd_models.reload_model_weights(op='model')
+        """
+        shared.compiled_model_state.height = compile_height
+        shared.compiled_model_state.width = compile_width
+        shared.compiled_model_state.batch_size = p.batch_size
 
 
 def openvino_post_compile(op="base"): # delete unet after OpenVINO compile
-    if 'Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx":
+    if shared.opts.cuda_compile_backend == "openvino_fx" and 'Model' in shared.opts.cuda_compile:
         if shared.compiled_model_state.first_pass and op == "base":
             shared.compiled_model_state.first_pass = False
             if not shared.opts.openvino_disable_memory_cleanup and hasattr(shared.sd_model, "unet"):
