@@ -129,5 +129,5 @@ def resize_image(resize_mode: int, im: Image.Image, width: int, height: int, ups
         shared.log.error(f'Invalid resize mode: {resize_mode}')
     t1 = time.time()
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
-    shared.log.debug(f'Image resize: input={im} width={width} height={height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" context="{context}" type={output_type} result={res} time={t1-t0:.2f} fn={fn}') # pylint: disable=protected-access
+    shared.log.debug(f'Image resize: source={im.width}:{im.height} target={width}:{height} mode="{shared.resize_modes[resize_mode]}" upscaler="{upscaler_name}" type={output_type} time={t1-t0:.2f} fn={fn}') # pylint: disable=protected-access
     return np.array(res) if output_type == 'np' else res
