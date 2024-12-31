@@ -531,7 +531,7 @@ def torchao_quantization(sd_model):
     return sd_model
 
 
-def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes
+def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a parameter changes # pylint: disable=unused-argument
     if shared.opts.cuda_compile_backend == "openvino_fx" and 'Model' in shared.opts.cuda_compile:
         compile_height = p.height if not hires and hasattr(p, 'height') else p.hr_upscale_to_y
         compile_width = p.width if not hires and hasattr(p, 'width') else p.hr_upscale_to_x
