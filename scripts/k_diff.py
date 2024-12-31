@@ -1,6 +1,5 @@
 import inspect
 import gradio as gr
-import diffusers
 from modules import scripts, processing, shared, sd_models
 
 
@@ -38,6 +37,7 @@ class Script(scripts.Script):
         if shared.sd_model_type not in self.supported_models:
             shared.log.warning(f'K-Diffusion: class={shared.sd_model.__class__.__name__} model={shared.sd_model_type} required={self.supported_models}')
             return None
+        import diffusers
         cls = None
         if shared.sd_model_type == "sd":
             cls = diffusers.pipelines.StableDiffusionKDiffusionPipeline

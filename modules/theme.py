@@ -54,11 +54,9 @@ def list_themes():
         huggingface = {x['id'] for x in huggingface if x['status'] == 'RUNNING' and 'test' not in x['id'].lower()}
         huggingface = [f'huggingface/{x}' for x in huggingface]
         themes = sorted(gradio) + sorted(huggingface, key=str.casefold)
-        modules.shared.log.debug(f'UI themes available: type=={modules.shared.opts.theme_type} gradio={len(gradio)} huggingface={len(huggingface)}')
     elif modules.shared.opts.theme_type == 'Standard':
         builtin = list_builtin_themes()
         themes = sorted(builtin)
-        modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(builtin)}')
     elif modules.shared.opts.theme_type == 'Modern':
         ext = next((e for e in modules.extensions.extensions if e.name == 'sdnext-modernui'), None)
         if ext is None:
@@ -76,7 +74,6 @@ def list_themes():
         if len(themes) == 0:
             themes.append('modern/Default')
         themes = sorted(themes)
-        modules.shared.log.debug(f'UI themes available: type={modules.shared.opts.theme_type} themes={len(themes)}')
     else:
         modules.shared.log.error(f'UI themes: type={modules.shared.opts.theme_type} unknown')
         themes = []
@@ -109,11 +106,11 @@ def reload_gradio_theme():
         return None
     elif modules.shared.opts.theme_type == 'Standard':
         gradio_theme = gr.themes.Base(**default_font_params)
-        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}"')
+        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}" available={len(available_themes)}')
         return 'sdnext.css'
     elif modules.shared.opts.theme_type == 'Modern':
         gradio_theme = gr.themes.Base(**default_font_params)
-        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}"')
+        modules.shared.log.info(f'UI theme: type={modules.shared.opts.theme_type} name="{theme_name}" available={len(available_themes)}')
         return 'base.css'
     elif modules.shared.opts.theme_type == 'None':
         if theme_name.startswith('gradio/'):
