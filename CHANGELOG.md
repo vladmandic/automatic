@@ -55,6 +55,7 @@ NYE refresh release with quite a few optimizatios and bug fixes...
   - hires with refiner prompt and batch processing  
   - processing with nested calls  
   - ui networks initial sort  
+  - esrgan on cpu devices  
 
 ## Update for 2024-12-24
 
