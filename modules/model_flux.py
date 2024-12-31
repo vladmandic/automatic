@@ -143,7 +143,9 @@ def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
 """
 
 
-def load_quants(kwargs, repo_id, cache_dir):
+def load_quants(kwargs, repo_id, cache_dir, allow_quant):
+    if not allow_quant:
+        return kwargs
     quant_args = {}
     quant_args = model_quant.create_bnb_config(quant_args)
     if quant_args:
@@ -359,10 +361,10 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             except Exception:
                 pass
 
-    allow_quant = 'gguf' not in (sd_unet.loaded_unet or '')
+    allow_quant = 'gguf' not in (sd_unet.loaded_unet or '') and (quant is None or quant == 'none')
     fn = checkpoint_info.path
     if (fn is None) or (not os.path.exists(fn) or os.path.isdir(fn)):
-        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir)
+        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir, allow_quant=allow_quant)
     kwargs = model_quant.create_bnb_config(kwargs, allow_quant)
     kwargs = model_quant.create_ao_config(kwargs, allow_quant)
     if fn.endswith('.safetensors') and os.path.isfile(fn):

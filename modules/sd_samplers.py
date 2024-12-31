@@ -61,7 +61,7 @@ def create_sampler(name, model):
                 model.prior_pipe.scheduler = copy.deepcopy(model.default_scheduler)
                 model.prior_pipe.scheduler.config.clip_sample = False
         config = {k: v for k, v in model.scheduler.config.items() if not k.startswith('_')}
-        shared.log.debug(f'Sampler: default class={current}: {config}')
+        shared.log.debug(f'Sampler: "default" class={current}: {config}')
         if "flow" in model.scheduler.__class__.__name__.lower():
             shared.state.prediction_type = "flow_prediction"
         elif hasattr(model.scheduler, "config") and hasattr(model.scheduler.config, "prediction_type"):

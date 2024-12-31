@@ -255,7 +255,7 @@ def uninstall(package, quiet = False):
 
 
 @lru_cache()
-def pip(arg: str, ignore: bool = False, quiet: bool = False, uv = True):
+def pip(arg: str, ignore: bool = False, quiet: bool = True, uv = True):
     originalArg = arg
     arg = arg.replace('>=', '==')
     package = arg.replace("install", "").replace("--upgrade", "").replace("--no-deps", "").replace("--force", "").replace(" ", " ").strip()

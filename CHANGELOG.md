@@ -36,6 +36,7 @@ NYE refresh release with quite a few optimizatios and bug fixes...
 - **Fixes**:  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
+  - flux do not requantize already quantized model
   - interrogate caption with T5  
   - on-the-fly quantization using TorchAO  
   - remove concurrent preview requests  
