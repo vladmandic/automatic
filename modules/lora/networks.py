@@ -146,6 +146,7 @@ def load_safetensors(name, network_on_disk) -> Union[network.Network, None]:
 
 def maybe_recompile_model(names, te_multipliers):
     recompile_model = False
+    skip_lora_load = False
     if shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled:
         if len(names) == len(shared.compiled_model_state.lora_model):
             for i, name in enumerate(names):
@@ -155,19 +156,23 @@ def maybe_recompile_model(names, te_multipliers):
                     shared.compiled_model_state.lora_model = []
                     break
             if not recompile_model:
+                skip_lora_load = True
                 if len(loaded_networks) > 0 and debug:
                     shared.log.debug('Model Compile: Skipping LoRa loading')
-                return recompile_model
+                return recompile_model, skip_lora_load
         else:
             recompile_model = True
             shared.compiled_model_state.lora_model = []
     if recompile_model:
         backup_cuda_compile = shared.opts.cuda_compile
+        backup_scheduler = getattr(shared.sd_model, "scheduler", None)
         sd_models.unload_model_weights(op='model')
         shared.opts.cuda_compile = []
         sd_models.reload_model_weights(op='model')
         shared.opts.cuda_compile = backup_cuda_compile
-    return recompile_model
+        if backup_scheduler is not None:
+            shared.sd_model.scheduler = backup_scheduler
+    return recompile_model, skip_lora_load
 
 
 def list_available_networks():
@@ -230,7 +235,7 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
         if names[i].startswith('/'):
             networks_on_disk[i] = network_download(names[i])
     failed_to_load_networks = []
-    recompile_model = maybe_recompile_model(names, te_multipliers)
+    recompile_model, skip_lora_load = maybe_recompile_model(names, te_multipliers)
 
     loaded_networks.clear()
     diffuser_loaded.clear()
@@ -272,7 +277,7 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
         name = next(iter(lora_cache))
         lora_cache.pop(name, None)
 
-    if len(diffuser_loaded) > 0:
+    if not skip_lora_load and len(diffuser_loaded) > 0:
         shared.log.debug(f'Load network: type=LoRA loaded={diffuser_loaded} available={shared.sd_model.get_list_adapters()} active={shared.sd_model.get_active_adapters()} scales={diffuser_scales}')
         try:
             t0 = time.time()
@@ -294,7 +299,6 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
         backup_lora_model = shared.compiled_model_state.lora_model
         if 'Model' in shared.opts.cuda_compile:
             shared.sd_model = sd_models_compile.compile_diffusers(shared.sd_model)
-
         shared.compiled_model_state.lora_model = backup_lora_model
 
     if len(loaded_networks) > 0:
@@ -498,7 +502,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
 
 
 def network_deactivate(include=[], exclude=[]):
-    if not shared.opts.lora_fuse_diffusers:
+    if not shared.opts.lora_fuse_diffusers or shared.opts.lora_force_diffusers:
         return
     t0 = time.time()
     sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)  # wrapped model compatiblility
