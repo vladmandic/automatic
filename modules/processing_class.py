@@ -116,18 +116,23 @@ class StableDiffusionProcessing:
                  # overrides
                  override_settings: Dict[str, Any] = {},
                  override_settings_restore_afterwards: bool = True,
-                 task_args: Dict[str, Any] = {},
-                 ops: List[str] = [],
                  # metadata
-                 extra_generation_params: Dict[Any, Any] = {},
+                 # extra_generation_params: Dict[Any, Any] = {},
+                 # task_args: Dict[str, Any] = {},
+                 # ops: List[str] = [],
+                 **kwargs,
                 ):
 
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
         # extra args set by processing loop
-        self.task_args = task_args
+        self.task_args = {}
+        self.extra_generation_params = {}
 
         # state items
         self.state: str = ''
-        self.ops = ops
+        self.ops = []
         self.skip = []
         self.color_corrections = []
         self.is_control = False
@@ -203,7 +208,6 @@ class StableDiffusionProcessing:
         self.do_not_save_samples = do_not_save_samples
         self.do_not_save_grid = do_not_save_grid
         self.override_settings_restore_afterwards = override_settings_restore_afterwards
-        self.extra_generation_params = extra_generation_params
         self.eta = eta
         self.cfg_scale = cfg_scale
         self.cfg_end = cfg_end

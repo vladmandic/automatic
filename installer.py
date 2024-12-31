@@ -54,7 +54,7 @@ git_commit = "unknown"
 diffusers_commit = "unknown"
 extensions_commit = {
     'sd-webui-controlnet': 'ecd33eb',
-    'adetailer': 'a89c01d'
+    # 'adetailer': 'a89c01d'
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
 
@@ -1075,6 +1075,7 @@ def set_environment():
     os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '2')
     os.environ.setdefault('TF_ENABLE_ONEDNN_OPTS', '0')
     os.environ.setdefault('USE_TORCH', '1')
+    os.environ.setdefault('TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD', '1')
     os.environ.setdefault('UVICORN_TIMEOUT_KEEP_ALIVE', '60')
     os.environ.setdefault('KINETO_LOG_LEVEL', '3')
     os.environ.setdefault('DO_NOT_TRACK', '1')
