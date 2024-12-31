@@ -16,7 +16,7 @@ skip_correction = False
 
 def sharpen_tensor(tensor, ratio=0):
     if ratio == 0:
-        debug("Sharpen: Early exit")
+        # debug("Sharpen: Early exit")
         return tensor
     kernel = torch.ones((3, 3), dtype=tensor.dtype, device=tensor.device)
     kernel[1, 1] = 5.0
@@ -42,18 +42,18 @@ def soft_clamp_tensor(tensor, threshold=0.8, boundary=4):
     min_replace = ((tensor + threshold) / (min_vals + threshold)) * (-boundary + threshold) - threshold
     under_mask = tensor < -threshold
     tensor = torch.where(over_mask, max_replace, torch.where(under_mask, min_replace, tensor))
-    debug(f'HDR soft clamp: threshold={threshold} boundary={boundary} shape={tensor.shape}')
+    # debug(f'HDR soft clamp: threshold={threshold} boundary={boundary} shape={tensor.shape}')
     return tensor
 
 
 def center_tensor(tensor, channel_shift=0.0, full_shift=0.0, offset=0.0):
     if channel_shift == 0 and full_shift == 0 and offset == 0:
         return tensor
-    debug(f'HDR center: Before Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
+    # debug(f'HDR center: Before Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
     tensor -= tensor.mean(dim=(-1, -2), keepdim=True) * channel_shift
     tensor -= tensor.mean() * full_shift - offset
-    debug(f'HDR center: channel-shift={channel_shift} full-shift={full_shift}')
-    debug(f'HDR center: After Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
+    # debug(f'HDR center: channel-shift={channel_shift} full-shift={full_shift}')
+    # debug(f'HDR center: After Adjustment: Full mean={tensor.mean().item()} Channel means={tensor.mean(dim=(-1, -2)).float().cpu().numpy()}')
     return tensor
 
 
@@ -65,7 +65,7 @@ def maximize_tensor(tensor, boundary=1.0):
     max_val = tensor.max()
     normalization_factor = boundary / max(abs(min_val), abs(max_val))
     tensor *= normalization_factor
-    debug(f'HDR maximize: boundary={boundary} min={min_val} max={max_val} factor={normalization_factor}')
+    # debug(f'HDR maximize: boundary={boundary} min={min_val} max={max_val} factor={normalization_factor}')
     return tensor
 
 
@@ -78,7 +78,7 @@ def get_color(colorstr):
 
 def color_adjust(tensor, colorstr, ratio):
     color = get_color(colorstr)
-    debug(f'HDR tint: str={colorstr} color={color} ratio={ratio}')
+    # debug(f'HDR tint: str={colorstr} color={color} ratio={ratio}')
     for i in range(3):
         tensor[i] = center_tensor(tensor[i], full_shift=1, offset=color[i]*(ratio/2))
     return tensor
@@ -86,35 +86,26 @@ def color_adjust(tensor, colorstr, ratio):
 
 def correction(p, timestep, latent):
     if timestep > 950 and p.hdr_clamp:
-        p.extra_generation_params["HDR clamp"] = f'{p.hdr_threshold}/{p.hdr_boundary}'
         latent = soft_clamp_tensor(latent, threshold=p.hdr_threshold, boundary=p.hdr_boundary)
-    if 600 < timestep < 900 and (p.hdr_color != 0 or p.hdr_tint_ratio != 0):
-        if p.hdr_brightness != 0:
-            latent[0:1] = center_tensor(latent[0:1], full_shift=float(p.hdr_mode), offset=2*p.hdr_brightness)  # Brightness
-            p.extra_generation_params["HDR brightness"] = f'{p.hdr_brightness}'
-            p.hdr_brightness = 0
-        if p.hdr_color != 0:
-            latent[1:] = center_tensor(latent[1:], channel_shift=p.hdr_color, full_shift=float(p.hdr_mode))  # Color
-            p.extra_generation_params["HDR color"] = f'{p.hdr_color}'
-            p.hdr_color = 0
-        if p.hdr_tint_ratio != 0:
-            latent = color_adjust(latent, p.hdr_color_picker, p.hdr_tint_ratio)
-            p.hdr_tint_ratio = 0
+        p.extra_generation_params["HDR clamp"] = f'{p.hdr_threshold}/{p.hdr_boundary}'
+    if 600 < timestep < 900 and p.hdr_color != 0:
+        latent[1:] = center_tensor(latent[1:], channel_shift=p.hdr_color, full_shift=float(p.hdr_mode))  # Color
+        p.extra_generation_params["HDR color"] = f'{p.hdr_color}'
+    if 600 < timestep < 900 and p.hdr_tint_ratio != 0:
+        latent = color_adjust(latent, p.hdr_color_picker, p.hdr_tint_ratio)
+        p.extra_generation_params["HDR tint"] = f'{p.hdr_tint_ratio}'
     if timestep < 200 and (p.hdr_brightness != 0): # do it late so it doesn't change the composition
-        if p.hdr_brightness != 0:
-            latent[0:1] = center_tensor(latent[0:1], full_shift=float(p.hdr_mode), offset=2*p.hdr_brightness)  # Brightness
-            p.extra_generation_params["HDR brightness"] = f'{p.hdr_brightness}'
-            p.hdr_brightness = 0
+        latent[0:1] = center_tensor(latent[0:1], full_shift=float(p.hdr_mode), offset=p.hdr_brightness)  # Brightness
+        p.extra_generation_params["HDR brightness"] = f'{p.hdr_brightness}'
     if timestep < 350 and p.hdr_sharpen != 0:
-        p.extra_generation_params["HDR sharpen"] = f'{p.hdr_sharpen}'
         per_step_ratio = 2 ** (timestep / 250) * p.hdr_sharpen / 16
         if abs(per_step_ratio) > 0.01:
-            debug(f"HDR Sharpen: timestep={timestep} ratio={p.hdr_sharpen} val={per_step_ratio}")
             latent = sharpen_tensor(latent, ratio=per_step_ratio)
+        p.extra_generation_params["HDR sharpen"] = f'{p.hdr_sharpen}'
     if 1 < timestep < 100 and p.hdr_maximize:
-        p.extra_generation_params["HDR max"] = f'{p.hdr_max_center}/{p.hdr_max_boundry}'
         latent = center_tensor(latent, channel_shift=p.hdr_max_center, full_shift=1.0)
         latent = maximize_tensor(latent, boundary=p.hdr_max_boundry)
+        p.extra_generation_params["HDR max"] = f'{p.hdr_max_center}/{p.hdr_max_boundry}'
     return latent
 
 
@@ -129,9 +120,6 @@ def correction_callback(p, timestep, kwargs, initial: bool = False):
     elif skip_correction:
         return kwargs
     latents = kwargs["latents"]
-    if debug_enabled:
-        debug('')
-        debug(f' Timestep: {timestep}')
     # debug(f'HDR correction: latents={latents.shape}')
     if len(latents.shape) == 4: # standard batched latent
         for i in range(latents.shape[0]):

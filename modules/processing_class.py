@@ -116,16 +116,18 @@ class StableDiffusionProcessing:
                  # overrides
                  override_settings: Dict[str, Any] = {},
                  override_settings_restore_afterwards: bool = True,
+                 task_args: Dict[str, Any] = {},
+                 ops: List[str] = [],
                  # metadata
                  extra_generation_params: Dict[Any, Any] = {},
                 ):
 
         # extra args set by processing loop
-        self.task_args = {}
+        self.task_args = task_args
 
         # state items
         self.state: str = ''
-        self.ops = []
+        self.ops = ops
         self.skip = []
         self.color_corrections = []
         self.is_control = False
@@ -266,7 +268,6 @@ class StableDiffusionProcessing:
         self.s_max = shared.opts.s_max
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
-        self.task_args = {}
 
         # ip adapter
         self.ip_adapter_names = []
@@ -298,6 +299,9 @@ class StableDiffusionProcessing:
         self.positive_pooleds = []
         self.negative_embeds = []
         self.negative_pooleds = []
+
+    def __str__(self):
+        return f'{self.__class__.__name__}: {self.__dict__}'
 
     @property
     def sd_model(self):
@@ -338,9 +342,6 @@ class StableDiffusionProcessing:
 
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
-
-    def __str__(self):
-        return f'{self.__class__.__name__}: {self.__dict__}'
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):

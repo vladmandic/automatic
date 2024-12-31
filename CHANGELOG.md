@@ -1,6 +1,8 @@
 # Change Log for SD.Next
 
-## Update for 2024-12-30
+## Update for 2024-12-31
+
+NYE refresh release with quite a few optimizatios and bug fixes...
 
 - **LoRA**:
   - **Sana** support  
@@ -40,7 +42,9 @@
   - do not show disabled networks  
   - enable debug logging by default
   - image width/height calculation when doing img2img  
-  
+  - corrections with batch processing  
+  - hires with refiner prompt and batch processing
+
 ## Update for 2024-12-24
 
 ### Highlights for 2024-12-24
