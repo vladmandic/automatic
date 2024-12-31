@@ -130,7 +130,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         key = f'{",".join(include)}:{",".join(exclude)}'
         loaded = sd_model.loaded_loras.get(key, [])
         # shared.log.trace(f'Load network: type=LoRA key="{key}" requested={requested} loaded={loaded}')
-        if len(requested) != len(loaded):
+        if (len(requested) == 0) or (len(requested) != len(loaded)):
             sd_model.loaded_loras[key] = requested
             return True
         for r, l in zip(requested, loaded):
