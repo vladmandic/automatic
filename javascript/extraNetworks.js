@@ -1,5 +1,6 @@
 const activePromptTextarea = {};
 let sortVal = -1;
+let totalCards = -1;
 
 // helpers
 
@@ -226,8 +227,8 @@ function sortExtraNetworks(fixed = 'no') {
   if (fixed !== 'fixed') sortVal = (sortVal + 1) % sortDesc.length;
   for (const pg of pages) {
     const cards = Array.from(pg.querySelectorAll('.card') || []);
-    num = cards.length;
-    if (num === 0) return 'sort: no cards';
+    if (cards.length === 0) return 'sort: no cards';
+    num += cards.length;
     cards.sort((a, b) => { // eslint-disable-line no-loop-func
       switch (sortVal) {
         case 0: return 0;
@@ -243,12 +244,12 @@ function sortExtraNetworks(fixed = 'no') {
     for (const card of cards) pg.appendChild(card);
   }
   const desc = sortDesc[sortVal];
-  log('sortExtraNetworks', { name: pagename, val: sortVal, order: desc, fixed: fixed === 'fixed', items: num });
+  log('sortNetworks', { name: pagename, val: sortVal, order: desc, fixed: fixed === 'fixed', items: num });
   return desc;
 }
 
 function refreshENInput(tabname) {
-  log('refreshExtraNetworks', tabname, gradioApp().querySelector(`#${tabname}_extra_networks textarea`)?.value);
+  log('refreshNetworks', tabname, gradioApp().querySelector(`#${tabname}_extra_networks textarea`)?.value);
   gradioApp().querySelector(`#${tabname}_extra_networks textarea`)?.dispatchEvent(new Event('input'));
 }
 
@@ -467,11 +468,15 @@ function setupExtraNetworksForTab(tabname) {
         el.parentElement.style.width = '-webkit-fill-available';
       }
     }
+    const cards = Array.from(gradioApp().querySelectorAll('.extra-network-cards > .card'));
+    if (cards.length > 0 && cards.length !== totalCards) {
+      totalCards = cards.length;
+      sortExtraNetworks('fixed');
+    }
     if (lastView !== entries[0].intersectionRatio > 0) {
       lastView = entries[0].intersectionRatio > 0;
       if (lastView) {
         refreshENpage();
-        // sortExtraNetworks('fixed');
         if (window.opts.extra_networks_card_cover === 'cover') {
           en.style.position = 'absolute';
           en.style.height = 'unset';
@@ -536,5 +541,5 @@ async function setupExtraNetworks() {
   registerPrompt('img2img', 'img2img_neg_prompt');
   registerPrompt('control', 'control_prompt');
   registerPrompt('control', 'control_neg_prompt');
-  log('initExtraNetworks');
+  log('initNetworks');
 }
