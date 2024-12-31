@@ -43,7 +43,8 @@ NYE refresh release with quite a few optimizatios and bug fixes...
   - enable debug logging by default
   - image width/height calculation when doing img2img  
   - corrections with batch processing  
-  - hires with refiner prompt and batch processing
+  - hires with refiner prompt and batch processing  
+  - processing with nested calls  
 
 ## Update for 2024-12-24
 
