@@ -4,31 +4,33 @@
 
 NYE refresh release with quite a few optimizatios and bug fixes...
 
-- **LoRA**:
+- **LoRA**:  
   - **Sana** support  
   - quantized models support  
   - fuse support with on-demand apply/unapply  
   - add legacy option in *settings -> networks*  
-- **HunyuanVideo**
+- **HunyuanVideo**:  
   - optimizations: full offload, quantization and tiling support  
-- **LTXVideo**
+- **LTXVideo**:  
   - optimizations: full offload, quantization and tiling support  
   - [TeaCache](https://github.com/ali-vilab/TeaCache/blob/main/TeaCache4LTX-Video/README.md) integration  
-- **VAE**:
+- **VAE**:  
   - tiling granular options in *settings -> variable auto encoder*  
-- **UI**:
+- **UI**:  
   - live preview optimizations and error handling  
   - live preview high quality output, thanks @Disty0  
   - CSS optimizations when log view is disabled  
-- **Samplers**:
+- **Samplers**:  
   - add flow shift options and separate dynamic thresholding from dynamic shifting  
   - autodetect matching sigma capabilities  
-- **API**
+- **API**:  
   - better default values for generate  
-- **Refactor**:
+- **Refactor**:  
   - remove all LDM imports if running in native mode  
-  - startup optimizatios
-- **Fixes**  
+  - startup optimizatios  
+- **Torch**:  
+  - support for `torch==2.6.0`  
+- **Fixes**:  
   - flux pipeline switches: txt/img/inpaint  
   - flux custom unet loader for bnb  
   - interrogate caption with T5  
