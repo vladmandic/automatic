@@ -57,7 +57,8 @@ def infotext_pasted(infotext, d): # pylint: disable=unused-argument
     d["Prompt"] = re.sub(re_lora, network_replacement, d["Prompt"])
 
 
-if not shared.native:
+if shared.opts.lora_legacy:
+    shared.log.debug('Register network: type=LoRA method=legacy')
     script_callbacks.on_app_started(api_networks)
     script_callbacks.on_before_ui(before_ui)
     script_callbacks.on_model_loaded(networks.assign_network_names_to_compvis_modules)

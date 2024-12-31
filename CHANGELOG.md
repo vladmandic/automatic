@@ -1,5 +1,62 @@
 # Change Log for SD.Next
 
+## Update for 2024-12-31
+
+NYE refresh release with quite a few optimizatios and bug fixes...
+
+- **LoRA**:  
+  - **Sana** support  
+  - quantized models support  
+  - fuse support with on-demand apply/unapply  
+  - add legacy option in *settings -> networks*  
+- **HunyuanVideo**:  
+  - optimizations: full offload, quantization and tiling support  
+- **LTXVideo**:  
+  - optimizations: full offload, quantization and tiling support  
+  - [TeaCache](https://github.com/ali-vilab/TeaCache/blob/main/TeaCache4LTX-Video/README.md) integration  
+- **VAE**:  
+  - tiling granular options in *settings -> variable auto encoder*  
+- **UI**:  
+  - live preview optimizations and error handling  
+  - live preview high quality output, thanks @Disty0  
+  - CSS optimizations when log view is disabled  
+- **Samplers**:  
+  - add flow shift options and separate dynamic thresholding from dynamic shifting  
+  - autodetect matching sigma capabilities  
+- **API**:  
+  - better default values for generate  
+- **Refactor**:  
+  - remove all LDM imports if running in native mode  
+  - startup optimizatios  
+- **Torch**:  
+  - support for `torch==2.6.0`  
+- **OpenVINO**:  
+  - disable re-compile on resolution change  
+  - fix shape mismatch on resolution change  
+- **LoRA**:
+  - LoRA load/apply/unapply methods have been changed in 12/2024 Xmass release and further tuned in this release
+  - for details on available methods, see <https://github.com/vladmandic/automatic/wiki/Lora#lora-loader>  
+- **Fixes**:  
+  - flux pipeline switches: txt/img/inpaint  
+  - flux custom unet loader for bnb  
+  - flux do not requantize already quantized model
+  - interrogate caption with T5  
+  - on-the-fly quantization using TorchAO  
+  - remove concurrent preview requests  
+  - xyz grid recover on error  
+  - hires batch  
+  - sdxl refiner  
+  - increase progress timeout
+  - kandinsky matmul  
+  - do not show disabled networks  
+  - enable debug logging by default
+  - image width/height calculation when doing img2img  
+  - corrections with batch processing  
+  - hires with refiner prompt and batch processing  
+  - processing with nested calls  
+  - ui networks initial sort  
+  - esrgan on cpu devices  
+
 ## Update for 2024-12-24
 
 ### Highlights for 2024-12-24

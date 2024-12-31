@@ -35,16 +35,16 @@ class Script(scripts.Script):
             s1_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='Restart step')
         with gr.Row():
             s2_enable = gr.Checkbox(value=True, label='2nd Stage')
-            s2_scale = gr.Slider(minimum=1, maximum=8.0, value=2.0, label='Scale')
-            s2_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='Restart step')
+            s2_scale = gr.Slider(minimum=1, maximum=8.0, value=2.0, label='2nd Scale')
+            s2_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='2nd Restart step')
         with gr.Row():
             s3_enable = gr.Checkbox(value=False, label='3rd Stage')
-            s3_scale = gr.Slider(minimum=1, maximum=8.0, value=3.0, label='Scale')
-            s3_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='Restart step')
+            s3_scale = gr.Slider(minimum=1, maximum=8.0, value=3.0, label='3rd Scale')
+            s3_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='3rd Restart step')
         with gr.Row():
             s4_enable = gr.Checkbox(value=False, label='4th Stage')
-            s4_scale = gr.Slider(minimum=1, maximum=8.0, value=4.0, label='Scale')
-            s4_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='Restart step')
+            s4_scale = gr.Slider(minimum=1, maximum=8.0, value=4.0, label='4th Scale')
+            s4_restart = gr.Slider(minimum=0, maximum=1.0, value=0.75, label='4th Restart step')
         return [cosine_scale, override_sampler, cosine_scale_bg, dilate_tau, s1_enable, s1_scale, s1_restart, s2_enable, s2_scale, s2_restart, s3_enable, s3_scale, s3_restart, s4_enable, s4_scale, s4_restart]
 
     def run(self, p: processing.StableDiffusionProcessing, cosine_scale, override_sampler, cosine_scale_bg, dilate_tau, s1_enable, s1_scale, s1_restart, s2_enable, s2_scale, s2_restart, s3_enable, s3_scale, s3_restart, s4_enable, s4_scale, s4_restart): # pylint: disable=arguments-differ

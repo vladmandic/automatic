@@ -42,29 +42,32 @@ def load_overrides(kwargs, cache_dir):
             from modules import sd_vae
             vae_file = sd_vae.vae_dict[shared.opts.sd_vae]
             if os.path.exists(vae_file):
-                vae_config = os.path.join('configs', 'flux', 'vae', 'config.json')
+                vae_config = os.path.join('configs', 'sd3', 'vae', 'config.json')
                 kwargs['vae'] = diffusers.AutoencoderKL.from_single_file(vae_file, config=vae_config, cache_dir=cache_dir, torch_dtype=devices.dtype)
                 shared.log.debug(f'Load model: type=SD3 vae="{shared.opts.sd_vae}"')
         except Exception as e:
-            shared.log.error(f"Load model: type=FLUX failed to load VAE: {e}")
+            shared.log.error(f"Load model: type=SD3 failed to load VAE: {e}")
             shared.opts.sd_vae = 'None'
     return kwargs
 
 
 def load_quants(kwargs, repo_id, cache_dir):
-    if len(shared.opts.bnb_quantization) > 0:
-        quant_args = {}
-        quant_args = model_quant.create_bnb_config(quant_args)
-        quant_args = model_quant.create_ao_config(quant_args)
-        if not quant_args:
-            return kwargs
+    quant_args = {}
+    quant_args = model_quant.create_bnb_config(quant_args)
+    if quant_args:
         model_quant.load_bnb(f'Load model: type=SD3 quant={quant_args}')
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
-            kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-        if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-            kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if not quant_args:
+        quant_args = model_quant.create_ao_config(quant_args)
+        if quant_args:
+            model_quant.load_torchao(f'Load model: type=SD3 quant={quant_args}')
+    if not quant_args:
+        return kwargs
+    if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
+        kwargs['transformer'] = diffusers.SD3Transformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if 'text_encoder_3' not in kwargs and ('Text Encoder' in shared.opts.bnb_quantization or 'Text Encoder' in shared.opts.torchao_quantization):
+        kwargs['text_encoder_3'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_3", variant='fp16', cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
 

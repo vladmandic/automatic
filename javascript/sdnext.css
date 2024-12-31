@@ -170,7 +170,7 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
 .dark .progressDiv { background: #424c5b; }
 .progressDiv .progress { width: 0%; height: 20px; background: #0060df; color: white; font-weight: bold; line-height: 20px; padding: 0 8px 0 0; text-align: right; overflow: visible; white-space: nowrap; padding: 0 0.5em; }
 .livePreview { position: absolute; z-index: 50; width: -moz-available; width: -webkit-fill-available; height: 100%; background-color: var(--background-color); }
-.livePreview img { object-fit: contain; width: 100%; justify-self: center; }
+.livePreview img { object-fit: contain; width: 100%; justify-self: center; max-height: calc(100vh - 320px); }
 .popup-metadata { color: white; background: #0000; display: inline-block; white-space: pre-wrap; font-size: var(--text-xxs); }
 .generating { animation: unset !important; border: unset !important; }
 /* fullpage image viewer */
@@ -220,6 +220,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .extra-networks .second-line { display: flex; width: -moz-available; width: -webkit-fill-available; gap: 0.3em; box-shadow: var(--input-shadow); margin-bottom: 2px; }
 .extra-networks .search { flex: 1; height: 4em; }
 .extra-networks .description { flex: 3; }
+.extra-networks .description textarea { font-size: 0.8rem; }
 .extra-networks .tab-nav>button { margin-right: 0; height: 24px; padding: 2px 4px 2px 4px; }
 .extra-networks .buttons { position: absolute; right: 0; margin: -4px; background: var(--background-color); }
 .extra-networks .buttons>button { margin-left: -0.2em; height: 1.4em; color: var(--primary-300) !important; font-size: 20px !important; }
@@ -323,7 +324,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 div:has(>#tab-gallery-folders) { flex-grow: 0 !important; background-color: var(--input-background-fill); min-width: max-content !important; }
 .gallery-separator { background-color: var(--input-background-fill); font-size: larger; padding: 0.5em; display: block !important; }
 #html_log_gallery { font-size: 0.95em; }
-#gallery_gallery { height: 60vh; }
+#gallery_gallery { height: 63vh; }
 #gallery_gallery .thumbnails { display: none; }
 #gallery_gallery .preview { background: none; }
 #gallery_gallery img { object-fit: contain; height: 100% !important; }

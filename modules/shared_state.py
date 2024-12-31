@@ -1,7 +1,7 @@
 import os
 import time
 import datetime
-from modules.errors import log
+from modules.errors import log, display
 
 
 class State:
@@ -17,11 +17,17 @@ class State:
     sampling_step = 0
     sampling_steps = 0
     current_latent = None
+    current_noise_pred = None
+    current_sigma = None
+    current_sigma_next = None
     current_image = None
     current_image_sampling_step = 0
     id_live_preview = 0
     textinfo = None
+    prediction_type = "epsilon"
     api = False
+    disable_preview = False
+    preview_job = -1
     time_start = None
     need_restart = False
     server_start = time.time()
@@ -102,8 +108,12 @@ class State:
         self.current_image = None
         self.current_image_sampling_step = 0
         self.current_latent = None
+        self.current_noise_pred = None
+        self.current_sigma = None
+        self.current_sigma_next = None
         self.id_live_preview = 0
         self.interrupted = False
+        self.preview_job = -1
         self.job = title
         self.job_count = -1
         self.frame_count = -1
@@ -113,7 +123,8 @@ class State:
         self.sampling_step = 0
         self.skipped = False
         self.textinfo = None
-        self.api = api if api is not None else self.api
+        self.prediction_type = "epsilon"
+        self.api = api or self.api
         self.time_start = time.time()
         if self.debug_output:
             log.debug(f'State begin: {self.job}')
@@ -125,39 +136,53 @@ class State:
             # fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
             # log.debug(f'Access state.end: {fn}') # pylint: disable=protected-access
             self.time_start = time.time()
-        if self.debug_output:
-            log.debug(f'State end: {self.job} time={time.time() - self.time_start:.2f}')
         self.job = ""
         self.job_count = 0
         self.job_no = 0
         self.frame_count = 0
+        self.preview_job = -1
         self.paused = False
         self.interrupted = False
         self.skipped = False
-        self.api = api if api is not None else self.api
+        self.api = api or self.api
         modules.devices.torch_gc()
 
     def set_current_image(self):
-        if self.job == 'VAE': # avoid generating preview while vae is running
-            return
+        if self.job == 'VAE' or self.job == 'Upscale': # avoid generating preview while vae is running
+            return False
         from modules.shared import opts, cmd_opts
-        if cmd_opts.lowvram or self.api or not opts.live_previews_enable or opts.show_progress_every_n_steps <= 0:
-            return
-        if abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps:
-            self.do_set_current_image()
+        if cmd_opts.lowvram or self.api or (not opts.live_previews_enable) or (opts.show_progress_every_n_steps <= 0):
+            return False
+        if (not self.disable_preview) and (abs(self.sampling_step - self.current_image_sampling_step) >= opts.show_progress_every_n_steps):
+            return self.do_set_current_image()
+        return False
 
     def do_set_current_image(self):
-        if self.current_latent is None:
-            return
-        from modules.shared import opts
-        import modules.sd_samplers # pylint: disable=W0621
+        if (self.current_latent is None) or self.disable_preview or (self.preview_job == self.job_no):
+            return False
+        from modules import shared, sd_samplers
+        self.preview_job = self.job_no
         try:
-            image = modules.sd_samplers.samples_to_image_grid(self.current_latent) if opts.show_progress_grid else modules.sd_samplers.sample_to_image(self.current_latent)
-            self.assign_current_image(image)
+            sample = self.current_latent
             self.current_image_sampling_step = self.sampling_step
-        except Exception:
-            # log.error(f'Error setting current image: step={self.sampling_step} {e}')
-            pass
+            try:
+                if self.current_noise_pred is not None and self.current_sigma is not None and self.current_sigma_next is not None:
+                    original_sample = sample - (self.current_noise_pred * (self.current_sigma_next-self.current_sigma))
+                    if self.prediction_type in {"epsilon", "flow_prediction"}:
+                        sample = original_sample - (self.current_noise_pred * self.current_sigma)
+                    elif self.prediction_type == "v_prediction":
+                        sample = self.current_noise_pred * (-self.current_sigma / (self.current_sigma**2 + 1) ** 0.5) + (original_sample / (self.current_sigma**2 + 1)) # pylint: disable=invalid-unary-operand-type
+            except Exception:
+                pass # ignore sigma errors
+            image = sd_samplers.samples_to_image_grid(sample) if shared.opts.show_progress_grid else sd_samplers.sample_to_image(sample)
+            self.assign_current_image(image)
+            self.preview_job = -1
+            return True
+        except Exception as e:
+            self.preview_job = -1
+            log.error(f'State image: last={self.id_live_preview} step={self.sampling_step} {e}')
+            display(e, 'State image')
+            return False
 
     def assign_current_image(self, image):
         self.current_image = image

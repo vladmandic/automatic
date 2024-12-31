@@ -418,7 +418,7 @@ class EmbeddingDatabase:
         self.word_embeddings.update(sorted_word_embeddings)
 
         displayed_embeddings = (tuple(self.word_embeddings.keys()), tuple(self.skipped_embeddings.keys()))
-        if self.previously_displayed_embeddings != displayed_embeddings:
+        if self.previously_displayed_embeddings != displayed_embeddings and shared.opts.diffusers_enable_embed:
             self.previously_displayed_embeddings = displayed_embeddings
             t1 = time.time()
             shared.log.info(f"Load network: type=embeddings loaded={len(self.word_embeddings)} skipped={len(self.skipped_embeddings)} time={t1-t0:.2f}")

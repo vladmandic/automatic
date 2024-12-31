@@ -15,7 +15,6 @@ import torch
 import safetensors.torch
 import accelerate
 from omegaconf import OmegaConf
-from ldm.util import instantiate_from_config
 from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
 from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
@@ -221,19 +220,12 @@ def copy_diffuser_options(new_pipe, orig_pipe):
     new_pipe.is_sdxl = getattr(orig_pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(orig_pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(orig_pipe, 'is_sd1', True)
+    add_noise_pred_to_diffusers_callback(new_pipe)
     if new_pipe.has_accelerate:
         set_accelerate(new_pipe)
 
 
-def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
-    if sd_model is None:
-        shared.log.warning(f'{op} is not loaded')
-        return
-
-    if hasattr(sd_model, "watermark"):
-        sd_model.watermark = NoWatermark()
-    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
-        sd_model.has_accelerate = False
+def set_vae_options(sd_model, vae = None, op: str = 'model'):
     if hasattr(sd_model, "vae"):
         if vae is not None:
             sd_model.vae = vae
@@ -253,7 +245,13 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
             sd_model.disable_vae_slicing()
     if hasattr(sd_model, "enable_vae_tiling"):
         if shared.opts.diffusers_vae_tiling:
-            shared.log.debug(f'Setting {op}: component=VAE tiling=True')
+            if hasattr(sd_model, 'vae') and hasattr(sd_model.vae, 'config') and hasattr(sd_model.vae.config, 'sample_size') and isinstance(sd_model.vae.config.sample_size, int):
+                sd_model.vae.tile_sample_min_size = int(shared.opts.diffusers_vae_tile_size)
+                sd_model.vae.tile_latent_min_size = int(sd_model.vae.config.sample_size / (2 ** (len(sd_model.vae.config.block_out_channels) - 1)))
+                sd_model.vae.tile_overlap_factor = float(shared.opts.diffusers_vae_tile_overlap)
+                shared.log.debug(f'Setting {op}: component=VAE tiling=True tile={sd_model.vae.tile_sample_min_size} overlap={sd_model.vae.tile_overlap_factor}')
+            else:
+                shared.log.debug(f'Setting {op}: component=VAE tiling=True')
             sd_model.enable_vae_tiling()
         else:
             sd_model.disable_vae_tiling()
@@ -261,6 +259,18 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
         shared.log.debug(f'Setting {op}: component=VQVAE upcast=True')
         sd_model.vqvae.to(torch.float32) # vqvae is producing nans in fp16
 
+
+def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
+    if sd_model is None:
+        shared.log.warning(f'{op} is not loaded')
+        return
+
+    if hasattr(sd_model, "watermark"):
+        sd_model.watermark = NoWatermark()
+    if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
+        sd_model.has_accelerate = False
+
+    set_vae_options(sd_model, vae, op)
     set_diffusers_attention(sd_model)
 
     if shared.opts.diffusers_fuse_projections and hasattr(sd_model, 'fuse_qkv_projections'):
@@ -499,7 +509,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
                     module = module.to(devices.cpu, non_blocking=True)
                     used_gpu -= module_size
                 if not cached:
-                    shared.log.debug(f'Offload: type=balanced module={module_name} cls={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
+                    shared.log.debug(f'Model module={module_name} type={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
                 debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} module={module.__class__.__name__} size={module_size:.3f}')
             except Exception as e:
                 if 'out of memory' in str(e):
@@ -533,7 +543,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     debug_move(f'Apply offload: time={t:.2f} type=balanced fn={fn}')
     if not cached:
-        shared.log.info(f'Offload: type=balanced op=apply class={sd_model.__class__.__name__} modules={len(offload_hook_instance.offload_map)} size={offload_hook_instance.model_size():.3f}')
+        shared.log.info(f'Model class={sd_model.__class__.__name__} modules={len(offload_hook_instance.offload_map)} size={offload_hook_instance.model_size():.3f}')
     return sd_model
 
 
@@ -975,6 +985,8 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
         if model_type not in ['Stable Cascade']: # need a special-case
             sd_unet.load_unet(sd_model)
 
+        add_noise_pred_to_diffusers_callback(sd_model)
+
         timer.record("load")
 
         if op == 'refiner':
@@ -1195,7 +1207,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'StableVideoDiffusionPipeline',
     ]
 
-    n = getattr(pipe.__class__, '__name__', '')
+    has_errors = False
     if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
         clean_diffuser_pipe(pipe)
 
@@ -1204,7 +1216,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
 
     # skip specific pipelines
     cls = pipe.__class__.__name__
-    if n in exclude:
+    if cls in exclude:
         return pipe
     if 'Onnx' in cls:
         return pipe
@@ -1212,9 +1224,9 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe = None
     # in some cases we want to reset the pipeline to parent as they dont have their own variants
     if new_pipe_type == DiffusersTaskType.IMAGE_2_IMAGE or new_pipe_type == DiffusersTaskType.INPAINTING:
-        if n == 'StableDiffusionPAGPipeline':
+        if cls == 'StableDiffusionPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionPipeline, pipe)
-        if n == 'StableDiffusionXLPAGPipeline':
+        if cls == 'StableDiffusionXLPAGPipeline':
             pipe = switch_pipe(diffusers.StableDiffusionXLPipeline, pipe)
 
     sd_checkpoint_info = getattr(pipe, "sd_checkpoint_info", None)
@@ -1241,8 +1253,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
                 shared.log.warning(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls} {e}')
-                return pipe
-        else:
+                has_errors = True
+        if not hasattr(pipe, 'config') or has_errors:
             try: # maybe a wrapper pipeline so just change the class
                 if new_pipe_type == DiffusersTaskType.TEXT_2_IMAGE:
                     pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_TEXT2IMAGE_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
@@ -1254,11 +1266,11 @@ def set_diffuser_pipe(pipe, new_pipe_type):
                     pipe.__class__ = diffusers.pipelines.auto_pipeline._get_task_class(diffusers.pipelines.auto_pipeline.AUTO_INPAINT_PIPELINES_MAPPING, cls) # pylint: disable=protected-access
                     new_pipe = pipe
                 else:
-                    shared.log.error(f'Pipeline class change failed: type={new_pipe_type} pipeline={cls}')
+                    shared.log.error(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls}')
                     return pipe
             except Exception as e: # pylint: disable=unused-variable
                 shared.log.warning(f'Pipeline class set failed: type={new_pipe_type} pipeline={cls} {e}')
-                return pipe
+                has_errors = True
 
     # if pipe.__class__ == new_pipe.__class__:
     #    return pipe
@@ -1269,16 +1281,23 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     new_pipe.has_accelerate = has_accelerate
     new_pipe.current_attn_name = current_attn_name
     new_pipe.default_scheduler = default_scheduler
-    new_pipe.image_encoder = image_encoder
-    new_pipe.feature_extractor = feature_extractor
+    if image_encoder is not None:
+        new_pipe.image_encoder = image_encoder
+    if feature_extractor is not None:
+        new_pipe.feature_extractor = feature_extractor
+    if new_pipe.__class__.__name__ == 'FluxPipeline':
+        new_pipe.register_modules(image_encoder = image_encoder)
+        new_pipe.register_modules(feature_extractor = feature_extractor)
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item
     new_pipe.is_sd2 = getattr(pipe, 'is_sd2', False)
     new_pipe.is_sd1 = getattr(pipe, 'is_sd1', True)
     if hasattr(new_pipe, 'watermark'):
         new_pipe.watermark = NoWatermark()
+    add_noise_pred_to_diffusers_callback(new_pipe)
 
     if hasattr(new_pipe, 'pipe'): # also handle nested pipelines
         new_pipe.pipe = set_diffuser_pipe(new_pipe.pipe, new_pipe_type)
+        add_noise_pred_to_diffusers_callback(new_pipe.pipe)
 
     fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
     shared.log.debug(f"Pipeline class change: original={cls} target={new_pipe.__class__.__name__} device={pipe.device} fn={fn}") # pylint: disable=protected-access
@@ -1305,6 +1324,8 @@ def set_diffusers_attention(pipe):
                 module.set_attn_processor(p.HunyuanAttnProcessor2_0())
             elif module.__class__.__name__ in ['AuraFlowTransformer2DModel']:
                 module.set_attn_processor(p.AuraFlowAttnProcessor2_0())
+            elif 'KandinskyCombinedPipeline' in pipe.__class__.__name__:
+                pass
             elif 'Transformer' in module.__class__.__name__:
                 pass # unknown transformer so probably dont want to force attention processor
             else:
@@ -1333,13 +1354,25 @@ def set_diffusers_attention(pipe):
     pipe.current_attn_name = shared.opts.cross_attention_optimization
 
 
+def add_noise_pred_to_diffusers_callback(pipe):
+    if not hasattr(pipe, "_callback_tensor_inputs"):
+        return pipe
+    if pipe.__class__.__name__.startswith("StableDiffusion"):
+        pipe._callback_tensor_inputs.append("noise_pred") # pylint: disable=protected-access
+    elif pipe.__class__.__name__.startswith("StableCascade"):
+        pipe.prior_pipe._callback_tensor_inputs.append("predicted_image_embedding") # pylint: disable=protected-access
+    elif hasattr(pipe, "scheduler") and "flow" in pipe.scheduler.__class__.__name__.lower():
+        pipe._callback_tensor_inputs.append("noise_pred") # pylint: disable=protected-access
+    elif hasattr(pipe, "default_scheduler") and "flow" in pipe.default_scheduler.__class__.__name__.lower():
+        pipe._callback_tensor_inputs.append("noise_pred") # pylint: disable=protected-access
+    return pipe
+
+
 def get_native(pipe: diffusers.DiffusionPipeline):
     if hasattr(pipe, "vae") and hasattr(pipe.vae.config, "sample_size"):
-        # Stable Diffusion
-        size = pipe.vae.config.sample_size
+        size = pipe.vae.config.sample_size # Stable Diffusion
     elif hasattr(pipe, "movq") and hasattr(pipe.movq.config, "sample_size"):
-        # Kandinsky
-        size = pipe.movq.config.sample_size
+        size = pipe.movq.config.sample_size # Kandinsky
     elif hasattr(pipe, "unet") and hasattr(pipe.unet.config, "sample_size"):
         size = pipe.unet.config.sample_size
     else:
@@ -1348,6 +1381,7 @@ def get_native(pipe: diffusers.DiffusionPipeline):
 
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model'):
+    from ldm.util import instantiate_from_config
     from modules import lowvram, sd_hijack
     checkpoint_info = checkpoint_info or select_checkpoint(op=op)
     if checkpoint_info is None:
@@ -1588,6 +1622,11 @@ def unload_model_weights(op='model'):
             model_data.sd_model = None
             devices.torch_gc(force=True)
             shared.log.debug(f'Unload weights {op}: {memory_stats()}')
+            if not shared.opts.lora_legacy:
+                from modules.lora import networks
+                networks.loaded_networks.clear()
+                networks.previously_loaded_networks.clear()
+                networks.lora_cache.clear()
     elif op == 'refiner':
         if model_data.sd_refiner:
             if not shared.native:

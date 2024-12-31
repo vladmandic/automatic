@@ -57,7 +57,6 @@ def process_base(p: processing.StableDiffusionProcessing):
     use_denoise_start = not is_txt2img() and p.refiner_start > 0 and p.refiner_start < 1
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
-    shared.log.info(f'Base: class={shared.sd_model.__class__.__name__}')
     update_sampler(p, shared.sd_model)
     timer.process.record('prepare')
     base_args = set_pipeline_args(
@@ -90,7 +89,7 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.unet, devices.device)
         if hasattr(shared.sd_model, 'transformer'):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
-        extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2'])
+        extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
         hidiffusion.apply(p, shared.sd_model_type)
         # if 'image' in base_args:
         #    base_args['image'] = set_latents(p)
@@ -195,23 +194,21 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
         if p.hr_force:
             shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
-            shared.log.info(f'HiRes: class={shared.sd_model.__class__.__name__} sampler="{p.hr_sampler_name}"')
-            if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__:
+            if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__ or 'Kandinsky' in shared.sd_model.__class__.__name__:
                 output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
             if p.is_control and hasattr(p, 'task_args') and p.task_args.get('image', None) is not None:
                 if hasattr(shared.sd_model, "vae") and output.images is not None and len(output.images) > 0:
                     output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.hr_upscale_to_x, height=p.hr_upscale_to_y) # controlnet cannnot deal with latent input
-                    p.task_args['image'] = output.images # replace so hires uses new output
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
             hires_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_model,
-                prompts=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
-                negative_prompts=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
-                prompts_2=[p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
-                negative_prompts_2=[p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
+                prompts=len(output.images)* [p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
+                negative_prompts=len(output.images) * [p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
+                prompts_2=len(output.images) * [p.refiner_prompt] if len(p.refiner_prompt) > 0 else p.prompts,
+                negative_prompts_2=len(output.images) * [p.refiner_negative] if len(p.refiner_negative) > 0 else p.negative_prompts,
                 num_inference_steps=calculate_hires_steps(p),
                 eta=shared.opts.scheduler_eta,
                 guidance_scale=p.image_cfg_scale if p.image_cfg_scale is not None else p.cfg_scale,
@@ -286,14 +283,12 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
             image = output.images[i]
             noise_level = round(350 * p.denoising_strength)
             output_type='latent'
-            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux' in shared.sd_refiner.__class__.__name__:
+            if 'Upscale' in shared.sd_refiner.__class__.__name__ or 'Flux' in shared.sd_refiner.__class__.__name__ or 'Kandinsky' in shared.sd_refiner.__class__.__name__:
                 image = processing_vae.vae_decode(latents=image, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
                 p.extra_generation_params['Noise level'] = noise_level
                 output_type = 'np'
-            if hasattr(p, 'task_args') and p.task_args.get('image', None) is not None and output is not None: # replace input with output so it can be used by hires/refine
-                p.task_args['image'] = image
-            shared.log.info(f'Refiner: class={shared.sd_refiner.__class__.__name__}')
             update_sampler(p, shared.sd_refiner, second_pass=True)
+            shared.opts.prompt_attention = 'fixed'
             refiner_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_refiner,
@@ -310,6 +305,7 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 image=image,
                 output_type=output_type,
                 clip_skip=p.clip_skip,
+                prompt_attention='fixed',
                 desc='Refiner',
             )
             shared.state.sampling_steps = refiner_args.get('prior_num_inference_steps', None) or p.steps or refiner_args.get('num_inference_steps', None)
@@ -479,7 +475,6 @@ def process_diffusers(p: processing.StableDiffusionProcessing):
     timer.process.record('decode')
 
     shared.sd_model = orig_pipeline
-    # shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
 
     if p.state == '':
         global last_p # pylint: disable=global-statement

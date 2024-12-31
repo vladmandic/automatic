@@ -22,7 +22,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         def index(ix, iy, iz):
             return ix + iy * len(xs) + iz * len(xs) * len(ys)
 
-        shared.state.job = 'grid'
+        shared.state.job = 'Grid'
         p0 = time.time()
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         p1 = time.time()
@@ -97,10 +97,10 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
                         process_cell(x, y, z, ix, iy, iz)
 
     if not processed_result:
-        shared.log.error("XYZ grid: Failed to initialize processing")
+        shared.log.error("XYZ grid: failed to initialize processing")
         return processing.Processed(p, [])
     elif not any(processed_result.images):
-        shared.log.error("XYZ grid: Failed to return processed image")
+        shared.log.error("XYZ grid: failed to return processed image")
         return processing.Processed(p, [])
 
     t1 = time.time()
@@ -109,7 +109,10 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         idx0 = (i * len(xs) * len(ys)) + i # starting index of images in subgrid
         idx1 = (len(xs) * len(ys)) + idx0  # ending index of images in subgrid
         to_process = processed_result.images[idx0:idx1]
-        w, h = max(i.width for i in to_process), max(i.height for i in to_process)
+        w, h = max(i.width for i in to_process if i is not None), max(i.height for i in to_process if i is not None)
+        if w is None or h is None or w == 0 or h == 0:
+            shared.log.error("XYZ grid: failed get valid image")
+            continue
         if (not no_grid or include_sub_grids) and images.check_grid_size(to_process):
             grid = images.image_grid(to_process, rows=len(ys))
             if draw_legend:

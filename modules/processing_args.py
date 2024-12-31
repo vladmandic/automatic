@@ -6,6 +6,7 @@ import time
 import inspect
 import torch
 import numpy as np
+from PIL import Image
 from modules import shared, errors, sd_models, processing, processing_vae, processing_helpers, sd_hijack_hypertile, prompt_parser_diffusers, timer, extra_networks
 from modules.processing_callbacks import diffusers_callback_legacy, diffusers_callback, set_callbacks_p
 from modules.processing_helpers import resize_hires, fix_prompts, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, get_generator, set_latents, apply_circular # pylint: disable=unused-import
@@ -22,7 +23,8 @@ def task_specific_kwargs(p, model):
     if len(getattr(p, 'init_images', [])) > 0:
         if isinstance(p.init_images[0], str):
             p.init_images = [helpers.decode_base64_to_image(i, quiet=True) for i in p.init_images]
-        p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images]
+        if isinstance(p.init_images[0], Image.Image):
+            p.init_images = [i.convert('RGB') if i.mode != 'RGB' else i for i in p.init_images if i is not None]
     if (sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE or len(getattr(p, 'init_images', [])) == 0) and not is_img2img_model:
         p.ops.append('txt2img')
         if hasattr(p, 'width') and hasattr(p, 'height'):
@@ -99,7 +101,7 @@ def task_specific_kwargs(p, model):
     return task_args
 
 
-def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2: typing.Optional[list]=None, negative_prompts_2: typing.Optional[list]=None, desc:str='', **kwargs):
+def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:typing.Optional[list]=None, negative_prompts_2:typing.Optional[list]=None, prompt_attention:typing.Optional[str]=None, desc:typing.Optional[str]='', **kwargs):
     t0 = time.time()
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     apply_circular(p.tiling, model)
@@ -118,7 +120,8 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     clip_skip = kwargs.pop("clip_skip", 1)
 
     parser = 'fixed'
-    if shared.opts.prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
+    prompt_attention = prompt_attention or shared.opts.prompt_attention
+    if prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
@@ -221,15 +224,20 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     if 'img_guidance_scale' in possible and hasattr(p, 'image_cfg_scale'):
         args['img_guidance_scale'] = p.image_cfg_scale
     if 'generator' in possible:
-        args['generator'] = get_generator(p)
+        generator = get_generator(p)
+        args['generator'] = generator
+    else:
+        generator = None
     if 'latents' in possible and getattr(p, "init_latent", None) is not None:
         if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
             args['latents'] = p.init_latent
     if 'output_type' in possible:
         if not hasattr(model, 'vae'):
-            args['output_type'] = 'np' # only set latent if model has vae
+            kwargs['output_type'] = 'np' # only set latent if model has vae
 
-    # stable cascade
+    # model specific
+    if 'Kandinsky' in model.__class__.__name__:
+        kwargs['output_type'] = 'np' # only set latent if model has vae
     if 'StableCascade' in model.__class__.__name__:
         kwargs.pop("guidance_scale") # remove
         kwargs.pop("num_inference_steps") # remove
@@ -261,6 +269,9 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
                 args['callback_on_step_end_tensor_inputs'] = ['latents']
     elif 'callback' in possible:
         args['callback'] = diffusers_callback_legacy
+
+    if 'image' in kwargs:
+        p.init_images = kwargs['image'] if isinstance(kwargs['image'], list) else [kwargs['image']]
 
     # handle remaining args
     for arg in kwargs:
@@ -314,11 +325,12 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
     clean.pop('callback_steps', None)
     clean.pop('callback_on_step_end', None)
     clean.pop('callback_on_step_end_tensor_inputs', None)
-    if 'prompt' in clean:
+    if 'prompt' in clean and clean['prompt'] is not None:
         clean['prompt'] = len(clean['prompt'])
-    if 'negative_prompt' in clean:
+    if 'negative_prompt' in clean and clean['negative_prompt'] is not None:
         clean['negative_prompt'] = len(clean['negative_prompt'])
-    clean.pop('generator', None)
+    if generator is not None:
+        clean['generator'] = f'{generator[0].device}:{[g.initial_seed() for g in generator]}'
     clean['parser'] = parser
     for k, v in clean.copy().items():
         if isinstance(v, torch.Tensor) or isinstance(v, np.ndarray):
@@ -328,16 +340,11 @@ def set_pipeline_args(p, model, prompts: list, negative_prompts: list, prompts_2
         if not debug_enabled and k.endswith('_embeds'):
             del clean[k]
             clean['prompt'] = 'embeds'
-    shared.log.debug(f'Diffuser pipeline: {model.__class__.__name__} task={sd_models.get_diffusers_task(model)} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
+    task = str(sd_models.get_diffusers_task(model)).replace('DiffusersTaskType.', '')
+    shared.log.info(f'{desc}: pipeline={model.__class__.__name__} task={task} batch={p.iteration + 1}/{p.n_iter}x{p.batch_size} set={clean}')
 
     if p.hdr_clamp or p.hdr_maximize or p.hdr_brightness != 0 or p.hdr_color != 0 or p.hdr_sharpen != 0:
-        txt = 'HDR:'
-        txt += f' Brightness={p.hdr_brightness}' if p.hdr_brightness != 0 else ' Brightness off'
-        txt += f' Color={p.hdr_color}' if p.hdr_color != 0 else ' Color off'
-        txt += f' Sharpen={p.hdr_sharpen}' if p.hdr_sharpen != 0 else ' Sharpen off'
-        txt += f' Clamp threshold={p.hdr_threshold} boundary={p.hdr_boundary}' if p.hdr_clamp else ' Clamp off'
-        txt += f' Maximize boundary={p.hdr_max_boundry} center={p.hdr_max_center}' if p.hdr_maximize else ' Maximize off'
-        shared.log.debug(txt)
+        shared.log.debug(f'HDR: clamp={p.hdr_clamp} maximize={p.hdr_maximize} brightness={p.hdr_brightness} color={p.hdr_color} sharpen={p.hdr_sharpen} threshold={p.hdr_threshold} boundary={p.hdr_boundary} max={p.hdr_max_boundry} center={p.hdr_max_center}')
     if shared.cmd_opts.profile:
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')

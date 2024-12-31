@@ -217,7 +217,6 @@ def compile_upscaler(model):
     try:
         if "Upscaler" in shared.opts.cuda_compile and shared.opts.cuda_compile_backend != 'none':
             import torch._dynamo # pylint: disable=unused-import,redefined-outer-name
-            torch._dynamo.reset() # pylint: disable=protected-access
             if shared.opts.cuda_compile_backend not in torch._dynamo.list_backends(): # pylint: disable=protected-access
                 shared.log.warning(f"Upscaler compile not available: backend={shared.opts.cuda_compile_backend} available={torch._dynamo.list_backends()}") # pylint: disable=protected-access
                 return model

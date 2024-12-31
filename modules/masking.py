@@ -388,7 +388,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     if input_image is None:
         return input_mask
 
-    t0 = time.time()
+    # t0 = time.time()
     input_mask = get_mask(input_image, input_mask) # perform optional auto-masking
     if input_mask is None:
         return None
@@ -436,14 +436,14 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
     if opts.invert:
         mask = np.invert(mask)
 
-    mask_size = np.count_nonzero(mask)
-    total_size = np.prod(mask.shape)
-    area_size = np.count_nonzero(mask)
-    t1 = time.time()
 
     return_type = return_type or opts.preview_type
 
-    shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur:.3f} erode={opts.mask_erode:.3f} dilate={opts.mask_dilate:.3f} type={return_type} time={t1-t0:.2f}')
+    # mask_size = np.count_nonzero(mask)
+    # total_size = np.prod(mask.shape)
+    # area_size = np.count_nonzero(mask)
+    # t1 = time.time()
+    # shared.log.debug(f'Mask: size={input_image.width}x{input_image.height} masked={mask_size}px area={area_size/total_size:.2f} auto={opts.auto_mask} blur={opts.mask_blur:.3f} erode={opts.mask_erode:.3f} dilate={opts.mask_dilate:.3f} type={return_type} time={t1-t0:.2f}')
     if return_type == 'None':
         return input_mask
     elif return_type == 'Opaque':

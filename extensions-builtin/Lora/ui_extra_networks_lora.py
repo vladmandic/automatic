@@ -12,6 +12,7 @@ class ExtraNetworksPageLora(ui_extra_networks.ExtraNetworksPage):
     def __init__(self):
         super().__init__('Lora')
         self.list_time = 0
+        shared.log.warning('Networks: type=lora method=legacy')
 
     def refresh(self):
         networks.list_available_networks()

@@ -1,11 +1,16 @@
+from typing import List
+import os
 import re
 import numpy as np
-import modules.lora.networks as networks
+from modules.lora import networks
 from modules import extra_networks, shared
 
 
-# from https://github.com/cheald/sd-webui-loractl/blob/master/loractl/lib/utils.py
-def get_stepwise(param, step, steps):
+debug = os.environ.get('SD_SCRIPT_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
+
+
+def get_stepwise(param, step, steps): # from https://github.com/cheald/sd-webui-loractl/blob/master/loractl/lib/utils.py
     def sorted_positions(raw_steps):
         steps = [[float(s.strip()) for s in re.split("[@~]", x)]
                  for x in re.split("[,;]", str(raw_steps))]
@@ -46,7 +51,8 @@ def prompt(p):
     if len(all_tags) > 0:
         all_tags = list(set(all_tags))
         all_tags = [t for t in all_tags if t not in p.prompt]
-        shared.log.debug(f"Load network: type=LoRA tags={all_tags} max={shared.opts.lora_apply_tags} apply")
+        if len(all_tags) > 0:
+            shared.log.debug(f"Load network: type=LoRA tags={all_tags} max={shared.opts.lora_apply_tags} apply")
         all_tags = ', '.join(all_tags)
         p.extra_generation_params["LoRA tags"] = all_tags
         if '_tags_' in p.prompt:
@@ -114,26 +120,58 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         self.model = None
         self.errors = {}
 
+    def signature(self, names: List[str], te_multipliers: List, unet_multipliers: List):
+        return [f'{name}:{te}:{unet}' for name, te, unet in zip(names, te_multipliers, unet_multipliers)]
+
+    def changed(self, requested: List[str], include: List[str], exclude: List[str]):
+        sd_model = getattr(shared.sd_model, "pipe", shared.sd_model)
+        if not hasattr(sd_model, 'loaded_loras'):
+            sd_model.loaded_loras = {}
+        key = f'{",".join(include)}:{",".join(exclude)}'
+        loaded = sd_model.loaded_loras.get(key, [])
+        # shared.log.trace(f'Load network: type=LoRA key="{key}" requested={requested} loaded={loaded}')
+        if len(requested) != len(loaded):
+            sd_model.loaded_loras[key] = requested
+            return True
+        for r, l in zip(requested, loaded):
+            if r != l:
+                sd_model.loaded_loras[key] = requested
+                return True
+        return False
+
     def activate(self, p, params_list, step=0, include=[], exclude=[]):
         self.errors.clear()
         if self.active:
             if self.model != shared.opts.sd_model_checkpoint: # reset if model changed
                 self.active = False
         if len(params_list) > 0 and not self.active: # activate patches once
-            # shared.log.debug(f'Activate network: type=LoRA model="{shared.opts.sd_model_checkpoint}"')
             self.active = True
             self.model = shared.opts.sd_model_checkpoint
-        if 'text_encoder' in include:
-            networks.timer.clear(complete=True)
         names, te_multipliers, unet_multipliers, dyn_dims = parse(p, params_list, step)
+        requested = self.signature(names, te_multipliers, unet_multipliers)
+
+        if debug:
+            import sys
+            fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+            debug_log(f'Load network: type=LoRA include={include} exclude={exclude} requested={requested} fn={fn}')
+
         networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
-        networks.network_activate(include, exclude)
+        has_changed = self.changed(requested, include, exclude)
+        if has_changed:
+            networks.network_deactivate(include, exclude)
+            networks.network_activate(include, exclude)
+            debug_log(f'Load network: type=LoRA previous={[n.name for n in networks.previously_loaded_networks]} current={[n.name for n in networks.loaded_networks]} changed')
+
         if len(networks.loaded_networks) > 0 and len(networks.applied_layers) > 0 and step == 0:
             infotext(p)
             prompt(p)
-            shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} mode={"fuse" if shared.opts.lora_fuse_diffusers else "backup"} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
+            if has_changed and len(include) == 0: # print only once
+                shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} mode={"fuse" if shared.opts.lora_fuse_diffusers else "backup"} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
 
     def deactivate(self, p):
+        if shared.native:
+            networks.previously_loaded_networks = networks.loaded_networks.copy()
+            debug_log(f'Load network: type=LoRA active={[n.name for n in networks.previously_loaded_networks]} deactivate')
         if shared.native and len(networks.diffuser_loaded) > 0:
             if hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
                 if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
@@ -143,7 +181,6 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
                         shared.sd_model.unload_lora_weights() # fails for non-CLIP models
                     except Exception:
                         pass
-        networks.network_deactivate()
         if self.active and networks.debug:
             shared.log.debug(f"Network end: type=LoRA time={networks.timer.summary}")
         if self.errors:

@@ -93,7 +93,6 @@ elif os.environ.get("HF_HUB", None) is not None:
 else:
     hfcache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
     os.environ["HF_HUB_CACHE"] = hfcache_dir
-log.debug(f'Huggingface cache: folder="{hfcache_dir}"')
 
 
 class Backend(Enum):
@@ -366,7 +365,7 @@ def list_samplers():
 
 def temp_disable_extensions():
     disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
-    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff', 'Lora']
+    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
     disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
     disabled = []
@@ -422,6 +421,8 @@ def temp_disable_extensions():
         for ext in disable_original:
             if ext.lower() not in opts.disabled_extensions:
                 disabled.append(ext)
+    if not opts.lora_legacy:
+        disabled.append('Lora')
     cmd_opts.controlnet_loglevel = 'WARNING'
     return disabled
 
@@ -475,7 +476,7 @@ options_templates.update(options_section(('sd', "Models & Loading"), {
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_unet": OptionInfo("None", "UNET model", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list),
-    "latent_history": OptionInfo(16, "Latent history size", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
+    "latent_history": OptionInfo(16, "Latent history size", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
 
     "offload_sep": OptionInfo("<h2>Model Offloading</h2>", "", gr.HTML),
     "diffusers_move_base": OptionInfo(False, "Move base model to CPU when using refiner", gr.Checkbox, {"visible": False }),
@@ -504,6 +505,8 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "no_half_vae": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half-vae)"),
     "diffusers_vae_slicing": OptionInfo(True, "VAE slicing", gr.Checkbox, {"visible": native}),
     "diffusers_vae_tiling": OptionInfo(cmd_opts.lowvram or cmd_opts.medvram, "VAE tiling", gr.Checkbox, {"visible": native}),
+    "diffusers_vae_tile_size": OptionInfo(1024, "VAE tile size", gr.Slider, {"minimum": 256, "maximum": 4096, "step": 8 }),
+    "diffusers_vae_tile_overlap": OptionInfo(0.25, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.95, "step": 0.05 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
     "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
@@ -605,12 +608,12 @@ options_templates.update(options_section(('quantization', "Quantization Settings
 
 options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "token_merging_sep": OptionInfo("<h2>Token Merging</h2>", "", gr.HTML),
-    "token_merging_method": OptionInfo("None", "Token merging method", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
+    "token_merging_method": OptionInfo("None", "Token merging enabled", gr.Radio, {"choices": ['None', 'ToMe', 'ToDo']}),
     "tome_ratio": OptionInfo(0.0, "ToMe token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
     "todo_ratio": OptionInfo(0.0, "ToDo token merging ratio", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
 
     "freeu_sep": OptionInfo("<h2>FreeU</h2>", "", gr.HTML),
-    "freeu_enabled": OptionInfo(False, "FreeU"),
+    "freeu_enabled": OptionInfo(False, "FreeU enabled"),
     "freeu_b1": OptionInfo(1.2, "1st stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
     "freeu_b2": OptionInfo(1.4, "2nd stage backbone", gr.Slider, {"minimum": 1.0, "maximum": 2.0, "step": 0.01}),
     "freeu_s1": OptionInfo(0.9, "1st stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
@@ -620,9 +623,10 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
-    "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),
     "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
-    "hypertile_unet_tile": OptionInfo(0, "UNet tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),
+    "hypertile_unet_tile": OptionInfo(0, "UNet max tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
+    "hypertile_unet_min_tile": OptionInfo(0, "UNet min tile size", gr.Slider, {"minimum": 0, "maximum": 1024, "step": 8}),
     "hypertile_unet_swap_size": OptionInfo(1, "UNet swap size", gr.Slider, {"minimum": 1, "maximum": 10, "step": 1}),
     "hypertile_unet_depth": OptionInfo(0, "UNet depth", gr.Slider, {"minimum": 0, "maximum": 4, "step": 1}),
     "hypertile_vae_enabled": OptionInfo(False, "VAE Enabled", gr.Checkbox),
@@ -817,8 +821,8 @@ options_templates.update(options_section(('sampler-params', "Sampler Settings"),
     'schedulers_beta_start': OptionInfo(0, "Beta start", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.00001, "visible": native}),
     'schedulers_beta_end': OptionInfo(0, "Beta end", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.00001, "visible": native}),
     'schedulers_timesteps_range': OptionInfo(1000, "Timesteps range", gr.Slider, {"minimum": 250, "maximum": 4000, "step": 1, "visible": native}),
-    'schedulers_shift': OptionInfo(0, "Sampler shift", gr.Slider, {"minimum": 0.1, "maximum": 10, "step": 0.1, "visible": native}),
-    'schedulers_dynamic_shift': OptionInfo(True, "Sampler dynamic shift", gr.Checkbox, {"visible": native}),
+    'schedulers_shift': OptionInfo(3, "Sampler shift", gr.Slider, {"minimum": 0.1, "maximum": 10, "step": 0.1, "visible": False}),
+    'schedulers_dynamic_shift': OptionInfo(True, "Sampler dynamic shift", gr.Checkbox, {"visible": False}),
 
     # managed from ui.py for backend original k-diffusion
     "always_batch_cond_uncond": OptionInfo(False, "Disable conditional batching", gr.Checkbox, {"visible": not native}),
@@ -924,8 +928,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_preferred_name": OptionInfo("filename", "LoRA preferred name", gr.Radio, {"choices": ["filename", "alias"], "visible": False}),
     "lora_add_hashes_to_infotext": OptionInfo(False, "LoRA add hash info to metadata"),
     "lora_fuse_diffusers": OptionInfo(True, "LoRA fuse directly to model"),
-    "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA force loading of all models using Diffusers"),
-    "lora_maybe_diffusers": OptionInfo(False, "LoRA force loading of specific models using Diffusers"),
+    "lora_legacy": OptionInfo(not native, "LoRA load using legacy method"),
+    "lora_force_diffusers": OptionInfo(False if not cmd_opts.use_openvino else True, "LoRA load using Diffusers method"),
+    "lora_maybe_diffusers": OptionInfo(False, "LoRA load using Diffusers method for selected models"),
     "lora_apply_tags": OptionInfo(0, "LoRA auto-apply tags", gr.Slider, {"minimum": -1, "maximum": 32, "step": 1}),
     "lora_in_memory_limit": OptionInfo(0, "LoRA memory cache", gr.Slider, {"minimum": 0, "maximum": 24, "step": 1}),
     "lora_quant": OptionInfo("NF4","LoRA precision when quantized", gr.Radio, {"choices": ["NF4", "FP4"]}),

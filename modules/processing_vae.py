@@ -135,9 +135,9 @@ def full_vae_decode(latents, model):
         latents = latents + shift_factor
 
     vae_name = os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0] if sd_vae.loaded_vae_file is not None else "default"
-    vae_stats = f'name="{vae_name}" dtype={model.vae.dtype} device={model.vae.device} upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)}'
-    latents_stats = f'shape={latents.shape} dtype={latents.dtype} device={latents.device}'
-    stats = f'vae {vae_stats} latents {latents_stats}'
+    vae_stats = f'vae="{vae_name}" dtype={model.vae.dtype} device={model.vae.device} upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)}'
+    latents_stats = f'latents={latents.shape}:{latents.device}:{latents.dtype}'
+    stats = f'{vae_stats} {latents_stats}'
 
     log_debug(f'VAE config: {model.vae.config}')
     try:
@@ -165,7 +165,7 @@ def full_vae_decode(latents, model):
     t1 = time.time()
     if debug:
         log_debug(f'VAE memory: {shared.mem_mon.read()}')
-    shared.log.debug(f'VAE decode: {stats} time={round(t1-t0, 3)}')
+    shared.log.debug(f'Decode: {stats} time={round(t1-t0, 3)}')
     return decoded
 
 

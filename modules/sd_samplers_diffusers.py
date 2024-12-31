@@ -235,16 +235,9 @@ class DiffusionSampler:
         if 'beta_end' in self.config and shared.opts.schedulers_beta_end > 0:
             self.config['beta_end'] = shared.opts.schedulers_beta_end
         if 'shift' in self.config:
-            if shared.opts.schedulers_shift == 0:
-                if 'StableDiffusion3' in model.__class__.__name__:
-                    self.config['shift'] = 3
-                if 'Flux' in model.__class__.__name__:
-                    self.config['shift'] = 1
-            else:
-                self.config['shift'] = shared.opts.schedulers_shift
+            self.config['shift'] = shared.opts.schedulers_shift if shared.opts.schedulers_shift > 0 else 3
         if 'use_dynamic_shifting' in self.config:
-            if 'Flux' in model.__class__.__name__:
-                self.config['use_dynamic_shifting'] = shared.opts.schedulers_dynamic_shift
+            self.config['use_dynamic_shifting'] = True if shared.opts.schedulers_shift <= 0 else shared.opts.schedulers_dynamic_shift
         if 'use_beta_sigmas' in self.config and 'sigma_schedule' in self.config:
             self.config['use_beta_sigmas'] = 'StableDiffusion3' in model.__class__.__name__
         if 'rescale_betas_zero_snr' in self.config:
@@ -275,7 +268,15 @@ class DiffusionSampler:
         debug(f'Sampler: config={self.config}')
         debug(f'Sampler: signature={possible}')
         # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
-        self.sampler = constructor(**self.config)
+        sampler = constructor(**self.config)
+        accept_sigmas = "sigmas" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
+        accepts_timesteps = "timesteps" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
+        debug(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
+        if ('Flux' in model.__class__.__name__) and (not accept_sigmas):
+            shared.log.warning(f'Sampler: sampler="{name}" does not accept sigmas')
+            self.sampler = None
+            return
+        self.sampler = sampler
         if name == 'DC Solver':
             if not hasattr(self.sampler, 'dc_ratios'):
                 pass

@@ -32,16 +32,23 @@ DEFAULT_OPENVINO_PYTHON_CONFIG = MappingProxyType(
 
 
 class OpenVINOGraphModule(torch.nn.Module):
-    def __init__(self, gm, partition_id, use_python_fusion_cache, model_hash_str: str = None, file_name=""):
+    def __init__(self, gm, partition_id, use_python_fusion_cache, model_hash_str: str = None, file_name="", int_inputs=[]):
         super().__init__()
         self.gm = gm
+        self.int_inputs = int_inputs
         self.partition_id = partition_id
         self.executor_parameters = {"use_python_fusion_cache": use_python_fusion_cache,
                                     "model_hash_str": model_hash_str}
         self.file_name = file_name
 
     def __call__(self, *args):
-        result = openvino_execute(self.gm, *args, executor_parameters=self.executor_parameters, partition_id=self.partition_id, file_name=self.file_name)
+        ov_inputs = []
+        for arg in args:
+            if not isinstance(arg, int):
+                ov_inputs.append(arg)
+        for idx, int_input in self.int_inputs:
+            ov_inputs.insert(idx, int_input)
+        result = openvino_execute(self.gm, *ov_inputs, executor_parameters=self.executor_parameters, partition_id=self.partition_id, file_name=self.file_name)
         return result
 
 
@@ -111,10 +118,7 @@ def cached_model_name(model_hash_str, device, args, cache_root, reversed = False
             else:
                 inputs_str += "_" + "torch.SymInt1"
         elif isinstance(input_data, int):
-            if reversed:
-                inputs_str = "_" + "int" + inputs_str
-            else:
-                inputs_str += "_" + "int"
+            pass
         else:
             if reversed:
                 inputs_str = "_" + str(input_data.type()) + str(input_data.size())[11:-1].replace(" ", "") + inputs_str
@@ -174,16 +178,13 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
                 input_types.append(torch.SymInt)
                 input_shapes.append(torch.Size([1]))
             elif isinstance(input_data, int):
-                input_types.append(torch.int64)
-                input_shapes.append(torch.Size([1]))
+                pass
             else:
                 input_types.append(input_data.type())
                 input_shapes.append(input_data.size())
 
         decoder = TorchFXPythonDecoder(gm, input_shapes=input_shapes, input_types=input_types)
-
         im = fe.load(decoder)
-
         om = fe.convert(im)
 
         if file_name is not None:
@@ -206,13 +207,13 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         torch.bool: Type.boolean
     }
 
+    idx_minus = 0
     for idx, input_data in enumerate(example_inputs):
         if isinstance(input_data, int):
-            om.inputs[idx].get_node().set_element_type(dtype_mapping[torch.int64])
-            om.inputs[idx].get_node().set_partial_shape(PartialShape(list(torch.Size([1]))))
+            idx_minus += 1
         else:
-            om.inputs[idx].get_node().set_element_type(dtype_mapping[input_data.dtype])
-            om.inputs[idx].get_node().set_partial_shape(PartialShape(list(input_data.shape)))
+            om.inputs[idx-idx_minus].get_node().set_element_type(dtype_mapping[input_data.dtype])
+            om.inputs[idx-idx_minus].get_node().set_partial_shape(PartialShape(list(input_data.shape)))
     om.validate_nodes_and_infer_types()
 
     if shared.opts.nncf_quantize and not dont_use_quant:
@@ -305,19 +306,23 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
     return compiled_model
 
 
-def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition_id, file_name=""):
+def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition_id=None, file_name=""):
+    if hasattr(gm, "partition_id"):
+        partition_id = gm.partition_id
+    if hasattr(gm, "gm"):
+        gm = gm.gm
     executor_parameters = executor_parameters or DEFAULT_OPENVINO_PYTHON_CONFIG
 
-    use_cache = executor_parameters.get(
+    use_cache = partition_id is not None and executor_parameters.get(
         "use_python_fusion_cache",
         DEFAULT_OPENVINO_PYTHON_CONFIG["use_python_fusion_cache"],
     )
 
     model_hash_str = executor_parameters.get("model_hash_str", None)
     if model_hash_str is not None:
-        model_hash_str = model_hash_str + str(partition_id)
+        model_hash_str = model_hash_str + str(partition_id) if partition_id is not None else ""
 
-    if use_cache and (partition_id in shared.compiled_model_state.compiled_cache):
+    if use_cache and (partition_id in shared.compiled_model_state.compiled_cache.keys()):
         compiled = shared.compiled_model_state.compiled_cache[partition_id]
         req = shared.compiled_model_state.req_cache[partition_id]
     else:
@@ -326,14 +331,17 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
             compiled = openvino_compile_cached_model(file_name, *args)
         else:
             compiled = openvino_compile(gm, *args, model_hash_str=model_hash_str, file_name=file_name)
-        shared.compiled_model_state.compiled_cache[partition_id] = compiled
+        if use_cache:
+            shared.compiled_model_state.compiled_cache[partition_id] = compiled
         req = compiled.create_infer_request()
-        shared.compiled_model_state.req_cache[partition_id] = req
+        if use_cache:
+            shared.compiled_model_state.req_cache[partition_id] = req
 
     flat_args, _ = tree_flatten(args)
     ov_inputs = []
     for arg in flat_args:
-        ov_inputs.append((arg if isinstance(arg, int) else arg.detach().cpu().numpy()))
+        if not isinstance(arg, int):
+            ov_inputs.append((arg.detach().cpu().numpy()))
 
     res = req.infer(ov_inputs, share_inputs=True, share_outputs=True)
 
@@ -352,33 +360,54 @@ def openvino_execute_partitioned(gm: GraphModule, *args, executor_parameters=Non
     )
     model_hash_str = executor_parameters.get("model_hash_str", None)
 
-    signature = str(id(gm))
+    if file_name:
+        signature = file_name.rsplit("/", maxsplit=1)[-1].split("_fs", maxsplit=1)[0]
+    else:
+        signature = "signature"
+    if model_hash_str is None:
+        file_name = None
+
+    idx_minus = 0
+    int_inputs = []
     for idx, input_data in enumerate(args):
-        if isinstance(input_data, torch.Tensor):
-            signature = signature + "_" + str(idx) + ":" + str(input_data.type())[6:] + ":" + str(input_data.size())[11:-1].replace(" ", "")
+        if isinstance(input_data, int):
+            int_inputs.append([idx, input_data])
+            idx_minus += 1
+        elif isinstance(input_data, torch.Tensor):
+            signature = signature + "_" + str(idx-idx_minus) + ":" + str(input_data.type())[6:] + ":" + str(input_data.size())[11:-1].replace(" ", "")
         else:
-            signature = signature + "_" + str(idx) + ":" + type(input_data).__name__ + ":val(" + str(input_data) + ")"
+            signature = signature + "_" + str(idx-idx_minus) + ":" + type(input_data).__name__ + ":val(" + str(input_data) + ")"
 
     if signature not in shared.compiled_model_state.partitioned_modules:
-        shared.compiled_model_state.partitioned_modules[signature] = partition_graph(gm, use_python_fusion_cache=use_python_fusion_cache,
-                                                         model_hash_str=model_hash_str, file_name=file_name)
+        shared.compiled_model_state.partitioned_modules[signature] = partition_graph(gm,  use_python_fusion_cache=use_python_fusion_cache,
+                                                        model_hash_str=model_hash_str, file_name=file_name, int_inputs=int_inputs)
 
-    return shared.compiled_model_state.partitioned_modules[signature](*args)
+    ov_inputs = []
+    for arg in args:
+        if not isinstance(arg, int):
+            ov_inputs.append(arg)
+    for idx, int_input in shared.compiled_model_state.partitioned_modules[signature][1]:
+        ov_inputs.insert(idx, int_input)
+    return shared.compiled_model_state.partitioned_modules[signature][0](*ov_inputs)
 
 
-def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_str: str = None, file_name=""):
+def partition_graph(gm: GraphModule, use_python_fusion_cache: bool, model_hash_str: str = None, file_name="", int_inputs=[]):
     for node in gm.graph.nodes:
         if node.op == "call_module" and "fused_" in node.name:
             openvino_submodule = getattr(gm, node.name)
+            if isinstance(openvino_submodule, OpenVINOGraphModule):
+                int_inputs = openvino_submodule.int_inputs
+                continue
             gm.delete_submodule(node.target)
             gm.add_submodule(
                 node.target,
-                OpenVINOGraphModule(openvino_submodule, shared.compiled_model_state.partition_id, use_python_fusion_cache,
-                        model_hash_str=model_hash_str, file_name=file_name),
+                OpenVINOGraphModule(
+                    openvino_submodule, shared.compiled_model_state.partition_id, use_python_fusion_cache,
+                    model_hash_str=model_hash_str, file_name=file_name, int_inputs=int_inputs),
             )
-            shared.compiled_model_state.partition_id = shared.compiled_model_state.partition_id + 1
+            shared.compiled_model_state.partition_id += 1
 
-    return gm
+    return gm, int_inputs
 
 
 def generate_subgraph_str(tensor):
@@ -432,19 +461,19 @@ def openvino_fx(subgraph, example_inputs):
         dont_use_nncf = bool("Text Encoder" not in shared.opts.nncf_compress_weights)
         dont_use_quant = bool("Text Encoder" not in shared.opts.nncf_quantize)
 
+    # Create a hash to be used for caching
+    shared.compiled_model_state.model_hash_str = ""
+    subgraph.apply(generate_subgraph_str)
+    #shared.compiled_model_state.model_hash_str = shared.compiled_model_state.model_hash_str + sha256(subgraph.code.encode('utf-8')).hexdigest()
+    shared.compiled_model_state.model_hash_str = sha256(shared.compiled_model_state.model_hash_str.encode('utf-8')).hexdigest()
+
+    # Check if the model was fully supported and already cached
+    example_inputs.reverse()
+    inputs_reversed = True
+    maybe_fs_cached_name = cached_model_name(shared.compiled_model_state.model_hash_str + "_fs", get_device(), example_inputs, shared.opts.openvino_cache_path)
     if not shared.opts.openvino_disable_model_caching:
         os.environ.setdefault('OPENVINO_TORCH_MODEL_CACHING', "1")
-
-        # Create a hash to be used for caching
-        subgraph.apply(generate_subgraph_str)
-        shared.compiled_model_state.model_hash_str = shared.compiled_model_state.model_hash_str + sha256(subgraph.code.encode('utf-8')).hexdigest()
-        shared.compiled_model_state.model_hash_str = sha256(shared.compiled_model_state.model_hash_str.encode('utf-8')).hexdigest()
-
         executor_parameters = {"model_hash_str": shared.compiled_model_state.model_hash_str}
-        # Check if the model was fully supported and already cached
-        example_inputs.reverse()
-        inputs_reversed = True
-        maybe_fs_cached_name = cached_model_name(shared.compiled_model_state.model_hash_str + "_fs", get_device(), example_inputs, shared.opts.openvino_cache_path)
 
         if os.path.isfile(maybe_fs_cached_name + ".xml") and os.path.isfile(maybe_fs_cached_name + ".bin"):
             example_inputs_reordered = []
@@ -487,7 +516,6 @@ def openvino_fx(subgraph, example_inputs):
             return _call
     else:
         os.environ.setdefault('OPENVINO_TORCH_MODEL_CACHING', "0")
-        maybe_fs_cached_name = None
 
     if inputs_reversed:
         example_inputs.reverse()

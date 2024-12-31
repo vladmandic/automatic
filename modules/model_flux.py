@@ -143,20 +143,25 @@ def quant_flux_bnb(checkpoint_info, transformer, text_encoder_2):
 """
 
 
-def load_quants(kwargs, repo_id, cache_dir):
-    if len(shared.opts.bnb_quantization) > 0:
-        quant_args = {}
-        quant_args = model_quant.create_bnb_config(quant_args)
-        quant_args = model_quant.create_ao_config(quant_args)
-        if not quant_args:
-            return kwargs
+def load_quants(kwargs, repo_id, cache_dir, allow_quant):
+    if not allow_quant:
+        return kwargs
+    quant_args = {}
+    quant_args = model_quant.create_bnb_config(quant_args)
+    if quant_args:
         model_quant.load_bnb(f'Load model: type=FLUX quant={quant_args}')
-        if 'Model' in shared.opts.bnb_quantization and 'transformer' not in kwargs:
-            kwargs['transformer'] = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
-        if 'Text Encoder' in shared.opts.bnb_quantization and 'text_encoder_3' not in kwargs:
-            kwargs['text_encoder_2'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
-            shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if not quant_args:
+        quant_args = model_quant.create_ao_config(quant_args)
+        if quant_args:
+            model_quant.load_torchao(f'Load model: type=FLUX quant={quant_args}')
+    if not quant_args:
+        return kwargs
+    if 'transformer' not in kwargs and ('Model' in shared.opts.bnb_quantization or 'Model' in shared.opts.torchao_quantization):
+        kwargs['transformer'] = diffusers.FluxTransformer2DModel.from_pretrained(repo_id, subfolder="transformer", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=transformer type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
+    if 'text_encoder_2' not in kwargs and ('Text Encoder' in shared.opts.bnb_quantization or 'Text Encoder' in shared.opts.torchao_quantization):
+        kwargs['text_encoder_2'] = transformers.T5EncoderModel.from_pretrained(repo_id, subfolder="text_encoder_2", cache_dir=cache_dir, torch_dtype=devices.dtype, **quant_args)
+        shared.log.debug(f'Quantization: module=t5 type=bnb dtype={shared.opts.bnb_quantization_type} storage={shared.opts.bnb_quantization_storage}')
     return kwargs
 
 
@@ -209,7 +214,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
-    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4':
+    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4' or 'Model' in shared.opts.bnb_quantization:
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
@@ -219,9 +224,15 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         if _transformer is not None:
             transformer = _transformer
     else:
-        diffusers_load_config = model_quant.create_bnb_config(diffusers_load_config)
-        diffusers_load_config = model_quant.create_ao_config(diffusers_load_config)
-        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
+        quant_args = {}
+        quant_args = model_quant.create_bnb_config(quant_args)
+        if quant_args:
+            model_quant.load_bnb(f'Load model: type=Sana quant={quant_args}')
+        if not quant_args:
+            quant_args = model_quant.create_ao_config(quant_args)
+            if quant_args:
+                model_quant.load_torchao(f'Load model: type=Sana quant={quant_args}')
+        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config, **quant_args)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
         shared.opts.sd_unet = 'None'
@@ -350,11 +361,10 @@ def load_flux(checkpoint_info, diffusers_load_config): # triggered by opts.sd_ch
             except Exception:
                 pass
 
-    allow_quant = 'gguf' not in (sd_unet.loaded_unet or '')
+    allow_quant = 'gguf' not in (sd_unet.loaded_unet or '') and (quant is None or quant == 'none')
     fn = checkpoint_info.path
     if (fn is None) or (not os.path.exists(fn) or os.path.isdir(fn)):
-        # transformer, text_encoder_2 = quant_flux_bnb(checkpoint_info, transformer, text_encoder_2)
-        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir)
+        kwargs = load_quants(kwargs, repo_id, cache_dir=shared.opts.diffusers_dir, allow_quant=allow_quant)
     kwargs = model_quant.create_bnb_config(kwargs, allow_quant)
     kwargs = model_quant.create_ao_config(kwargs, allow_quant)
     if fn.endswith('.safetensors') and os.path.isfile(fn):

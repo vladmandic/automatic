@@ -18,7 +18,7 @@ def register_extra_network(extra_network):
 def register_default_extra_networks():
     from modules.ui_extra_networks_styles import ExtraNetworkStyles
     register_extra_network(ExtraNetworkStyles())
-    if shared.native:
+    if not shared.opts.lora_legacy:
         from modules.lora.networks import extra_network_lora
         register_extra_network(extra_network_lora)
     if shared.opts.hypernetwork_enabled:
@@ -80,14 +80,14 @@ def activate(p, extra_network_data=None, step=0, include=[], exclude=[]):
     if p.disable_extra_networks:
         return
     extra_network_data = extra_network_data or p.network_data
-    if extra_network_data is None or len(extra_network_data) == 0:
-        return
+    # if extra_network_data is None or len(extra_network_data) == 0:
+        # return
     stepwise = False
     for extra_network_args in extra_network_data.values():
         stepwise = stepwise or is_stepwise(extra_network_args)
     functional = shared.opts.lora_functional
     if shared.opts.lora_force_diffusers and stepwise:
-        shared.log.warning("Composable LoRA not compatible with 'lora_force_diffusers'")
+        shared.log.warning("Load network: type=LoRA method=composable loader=diffusers not compatible")
         stepwise = False
     shared.opts.data['lora_functional'] = stepwise or functional
 
@@ -110,7 +110,12 @@ def activate(p, extra_network_data=None, step=0, include=[], exclude=[]):
         if args is not None:
             continue
         try:
-            extra_network.activate(p, [])
+            # extra_network.activate(p, [])
+            signature = list(inspect.signature(extra_network.activate).parameters)
+            if 'include' in signature and 'exclude' in signature:
+                extra_network.activate(p, [], include=include, exclude=exclude)
+            else:
+                extra_network.activate(p, [])
         except Exception as e:
             errors.display(e, f"Activating network: type={extra_network_name}")
 
@@ -125,8 +130,8 @@ def deactivate(p, extra_network_data=None):
     if p.disable_extra_networks:
         return
     extra_network_data = extra_network_data or p.network_data
-    if extra_network_data is None or len(extra_network_data) == 0:
-        return
+    # if extra_network_data is None or len(extra_network_data) == 0:
+    #    return
     for extra_network_name in extra_network_data:
         extra_network = extra_network_registry.get(extra_network_name, None)
         if extra_network is None:

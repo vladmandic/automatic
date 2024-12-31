@@ -68,7 +68,7 @@ def get_pipelines():
         'Stable Diffusion Instruct': getattr(diffusers, 'StableDiffusionInstructPix2PixPipeline', None),
         'Stable Diffusion Upscale': getattr(diffusers, 'StableDiffusionUpscalePipeline', None),
         'Stable Diffusion XL': getattr(diffusers, 'StableDiffusionXLPipeline', None),
-        'Stable Diffusion XL Refiner': getattr(diffusers, 'StableDiffusionXLPipeline', None),
+        'Stable Diffusion XL Refiner': getattr(diffusers, 'StableDiffusionXLImg2ImgPipeline', None),
         'Stable Diffusion XL Img2Img': getattr(diffusers, 'StableDiffusionXLImg2ImgPipeline', None),
         'Stable Diffusion XL Inpaint': getattr(diffusers, 'StableDiffusionXLInpaintPipeline', None),
         'Stable Diffusion XL Instruct': getattr(diffusers, 'StableDiffusionXLInstructPix2PixPipeline', None),

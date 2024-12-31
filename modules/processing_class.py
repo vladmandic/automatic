@@ -29,7 +29,7 @@ class StableDiffusionProcessing:
                  seed_resize_from_w: int = -1,
                  batch_size: int = 1,
                  n_iter: int = 1,
-                 steps: int = 50,
+                 steps: int = 20,
                  clip_skip: int = 1,
                  width: int = 1024,
                  height: int = 1024,
@@ -39,7 +39,7 @@ class StableDiffusionProcessing:
                  hr_sampler_name: str = None,
                  eta: float = None,
                  # guidance
-                 cfg_scale: float = 7.0,
+                 cfg_scale: float = 6.0,
                  cfg_end: float = 1,
                  diffusers_guidance_rescale: float = 0.7,
                  pag_scale: float = 0.0,
@@ -117,11 +117,18 @@ class StableDiffusionProcessing:
                  override_settings: Dict[str, Any] = {},
                  override_settings_restore_afterwards: bool = True,
                  # metadata
-                 extra_generation_params: Dict[Any, Any] = {},
+                 # extra_generation_params: Dict[Any, Any] = {},
+                 # task_args: Dict[str, Any] = {},
+                 # ops: List[str] = [],
+                 **kwargs,
                 ):
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
         # extra args set by processing loop
         self.task_args = {}
+        self.extra_generation_params = {}
 
         # state items
         self.state: str = ''
@@ -201,7 +208,6 @@ class StableDiffusionProcessing:
         self.do_not_save_samples = do_not_save_samples
         self.do_not_save_grid = do_not_save_grid
         self.override_settings_restore_afterwards = override_settings_restore_afterwards
-        self.extra_generation_params = extra_generation_params
         self.eta = eta
         self.cfg_scale = cfg_scale
         self.cfg_end = cfg_end
@@ -266,7 +272,6 @@ class StableDiffusionProcessing:
         self.s_max = shared.opts.s_max
         self.s_tmin = shared.opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
-        self.task_args = {}
 
         # ip adapter
         self.ip_adapter_names = []
@@ -298,6 +303,9 @@ class StableDiffusionProcessing:
         self.positive_pooleds = []
         self.negative_embeds = []
         self.negative_pooleds = []
+
+    def __str__(self):
+        return f'{self.__class__.__name__}: {self.__dict__}'
 
     @property
     def sd_model(self):
@@ -338,9 +346,6 @@ class StableDiffusionProcessing:
 
     def close(self):
         self.sampler = None # pylint: disable=attribute-defined-outside-init
-
-    def __str__(self):
-        return f'{self.__class__.__name__}: {self.__dict__}'
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):

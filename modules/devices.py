@@ -486,7 +486,7 @@ def set_cuda_params():
         device_name = get_raw_openvino_device()
     else:
         device_name = torch.device(get_optimal_device_name())
-    log.info(f'Torch parameters: backend={backend} device={device_name} config={opts.cuda_dtype} dtype={dtype} vae={dtype_vae} unet={dtype_unet} context={inference_context.__name__} nohalf={opts.no_half} nohalfvae={opts.no_half_vae} upcast={opts.upcast_sampling} deterministic={opts.cudnn_deterministic} test-fp16={fp16_ok} test-bf16={bf16_ok} optimization="{opts.cross_attention_optimization}"')
+    log.info(f'Torch parameters: backend={backend} device={device_name} config={opts.cuda_dtype} dtype={dtype} context={inference_context.__name__} nohalf={opts.no_half} nohalfvae={opts.no_half_vae} upcast={opts.upcast_sampling} deterministic={opts.cudnn_deterministic} fp16={"pass" if fp16_ok else "fail"} bf16={"pass" if bf16_ok else "fail"} optimization="{opts.cross_attention_optimization}"')
 
 
 def cond_cast_unet(tensor):
@@ -515,6 +515,7 @@ def randn_without_seed(shape):
     if device.type == 'mps':
         return torch.randn(shape, device=cpu).to(device)
     return torch.randn(shape, device=device)
+
 
 def autocast(disable=False):
     if disable or dtype == torch.float32:
