@@ -1622,6 +1622,11 @@ def unload_model_weights(op='model'):
             model_data.sd_model = None
             devices.torch_gc(force=True)
             shared.log.debug(f'Unload weights {op}: {memory_stats()}')
+            if not shared.opts.lora_legacy:
+                from modules.lora import networks
+                networks.loaded_networks.clear()
+                networks.previously_loaded_networks.clear()
+                networks.lora_cache.clear()
     elif op == 'refiner':
         if model_data.sd_refiner:
             if not shared.native:
