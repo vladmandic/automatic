@@ -31,8 +31,9 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Multiplatform!  
  ▹ **Windows | Linux | MacOS | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
 - Platform specific autodetection and tuning performed on install  
-- Optimized processing with latest `torch` developments with built-in support for `torch.compile`  
-  and multiple compile backends: *Triton, StableFast, DeepCache, NNCF, OneDiff*  
+- Optimized processing with latest `torch` developments with built-in support for model compile, quantize and compress  
+  Compile backends: *Triton | StableFast | DeepCache | OneDiff*  
+  Quantization and compression methods: *BitsAndBytes | TorchAO | Optimum-Quanto | NNCF*  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
 - Mobile compatible  
