@@ -29,7 +29,7 @@ def return_stats(t: float = None):
         elapsed_m = int(elapsed // 60)
         elapsed_s = elapsed % 60
         elapsed_text = f"Time: {elapsed_m}m {elapsed_s:.2f}s |" if elapsed_m > 0 else f"Time: {elapsed_s:.2f}s |"
-    summary = timer.process.summary(min_time=0.25, total=False).replace('=', ' ')
+    summary = timer.process.summary(total=False).replace('=', ' ')
     gpu = ''
     cpu = ''
     if not shared.mem_mon.disabled:
