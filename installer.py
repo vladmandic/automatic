@@ -54,7 +54,7 @@ git_commit = "unknown"
 diffusers_commit = "unknown"
 extensions_commit = {
     'sd-webui-controlnet': 'ecd33eb',
-    # 'adetailer': 'a89c01d'
+    'adetailer': 'a89c01d'
     # 'stable-diffusion-webui-images-browser': '27fe4a7',
 }
 
@@ -230,16 +230,16 @@ def installed(package, friendly: str = None, reload = False, quiet = False):
                     exact = pkg_version == p[1]
                     if not exact and not quiet:
                         if args.experimental:
-                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} allowing experimental")
+                            log.warning(f'Install: package="{p[0]}" installed={pkg_version} required={p[1]} allowing experimental')
                         else:
-                            log.warning(f"Package: {p[0]} installed={pkg_version} required={p[1]} version mismatch")
+                            log.warning(f'Install: package="{p[0]}" installed={pkg_version} required={p[1]} version mismatch')
                     ok = ok and (exact or args.experimental)
             else:
                 if not quiet:
-                    log.debug(f"Package: {p[0]} not found")
+                    log.debug(f'Install: package="{p[0]}" install required')
         return ok
     except Exception as e:
-        log.error(f"Package: {pkgs} {e}")
+        log.error(f'Install: package="{pkgs}" {e}')
         return False
 
 
@@ -1342,9 +1342,10 @@ def add_args(parser):
 
     group_log = parser.add_argument_group('Logging')
     group_log.add_argument("--log", type=str, default=os.environ.get("SD_LOG", None), help="Set log file, default: %(default)s")
-    # group_log.add_argument('--debug', default=os.environ.get("SD_DEBUG",False), action='store_true', help="Run installer with debug logging, default: %(default)s")
+    group_log.add_argument('--debug', default=os.environ.get("SD_DEBUG",False), action='store_true', help="Run installer with debug logging, default: %(default)s")
     group_log.add_argument("--profile", default=os.environ.get("SD_PROFILE", False), action='store_true', help="Run profiler, default: %(default)s")
     group_log.add_argument('--docs', default=os.environ.get("SD_DOCS", False), action='store_true', help="Mount API docs, default: %(default)s")
+    group_log.add_argument("--api-log", default=os.environ.get("SD_APILOG", True), action='store_true', help="Log all API requests")
 
 
 def parse_args(parser):

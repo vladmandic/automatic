@@ -231,7 +231,7 @@ class YoloRestorer(Detailer):
                 'negative_prompt': negative,
                 'denoising_strength': shared.opts.detailer_strength,
                 'sampler_name': orig_p.get('hr_sampler_name', 'default'),
-                'steps': orig_p.get('refiner_steps', 0),
+                'steps': shared.opts.detailer_steps,
                 'styles': [],
                 'inpaint_full_res': True,
                 'inpainting_mask_invert': 0,
@@ -308,7 +308,7 @@ class YoloRestorer(Detailer):
         return np_image
 
     def ui(self, tab: str):
-        def ui_settings_change(detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou):
+        def ui_settings_change(detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps):
             shared.opts.detailer_models = detailers
             shared.opts.detailer_classes = classes
             shared.opts.detailer_strength = strength
@@ -319,8 +319,9 @@ class YoloRestorer(Detailer):
             shared.opts.detailer_min_size = min_size
             shared.opts.detailer_max_size = max_size
             shared.opts.detailer_iou = iou
+            shared.opts.detailer_steps = steps
             shared.opts.save(shared.config_filename, silent=True)
-            shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} classes={shared.opts.detailer_classes} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding}')
+            shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} classes={shared.opts.detailer_classes} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding} steps={shared.opts.detailer_steps}')
 
         with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer_accordion", elem_classes=["small-accordion"], visible=shared.native):
             with gr.Row():
@@ -331,7 +332,9 @@ class YoloRestorer(Detailer):
             with gr.Row():
                 classes = gr.Textbox(label="Classes", placeholder="Classes", elem_id=f"{tab}_detailer_classes")
             with gr.Row():
+                steps = gr.Slider(label="Detailer steps", elem_id=f"{tab}_detailer_steps", value=shared.opts.detailer_steps, min=0, max=99, step=1)
                 strength = gr.Slider(label="Detailer strength", elem_id=f"{tab}_detailer_strength", value=shared.opts.detailer_strength, minimum=0, maximum=1, step=0.01)
+            with gr.Row():
                 max_detected = gr.Slider(label="Max detected", elem_id=f"{tab}_detailer_max", value=shared.opts.detailer_max, min=1, maximum=10, step=1)
             with gr.Row():
                 padding = gr.Slider(label="Edge padding", elem_id=f"{tab}_detailer_padding", value=shared.opts.detailer_padding, minimum=0, maximum=100, step=1)
@@ -344,16 +347,17 @@ class YoloRestorer(Detailer):
                 min_size = gr.Slider(label="Min size", elem_id=f"{tab}_detailer_min_size", value=min_size, minimum=0.0, maximum=1.0, step=0.05)
                 max_size = shared.opts.detailer_max_size if shared.opts.detailer_max_size < 1 and shared.opts.detailer_max_size > 0 else 1.0
                 max_size = gr.Slider(label="Max size", elem_id=f"{tab}_detailer_max_size", value=max_size, minimum=0.0, maximum=1.0, step=0.05)
-            detailers.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            classes.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            strength.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            padding.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            blur.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            min_confidence.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            max_detected.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            min_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            max_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
-            iou.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou], outputs=[])
+            detailers.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            classes.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            strength.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            padding.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            blur.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            min_confidence.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            max_detected.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            min_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            max_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            iou.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
+            steps.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             return enabled
 
 

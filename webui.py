@@ -244,7 +244,7 @@ def start_common():
 
 
 def start_ui():
-    log.info('UI start')
+    log.debug('UI start sequence')
     modules.script_callbacks.before_ui_callback()
     timer.startup.record("before-ui")
     shared.demo = modules.ui.create_ui(timer.startup)

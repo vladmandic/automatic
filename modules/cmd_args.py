@@ -74,9 +74,7 @@ def compatibility_args():
     group_compat.add_argument("--disable-extension-access", default=False, action='store_true', help=argparse.SUPPRESS)
     group_compat.add_argument("--api", action='store_true', help=argparse.SUPPRESS, default=True)
     group_compat.add_argument("--api-auth", type=str, help=argparse.SUPPRESS, default=None)
-    group_compat.add_argument("--api-log", default=os.environ.get("SD_APILOG", True), action='store_true', help=argparse.SUPPRESS)
     group_compat.add_argument("--disable-queue", default=os.environ.get("SD_DISABLEQUEUE", False), action='store_true', help=argparse.SUPPRESS)
-    group_compat.add_argument('--debug', default=os.environ.get("SD_DEBUG", True), action='store_true', help=argparse.SUPPRESS)
 
 
 

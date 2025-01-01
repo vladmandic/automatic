@@ -270,6 +270,7 @@ def set_diffuser_options(sd_model, vae = None, op: str = 'model', offload=True):
     if not (hasattr(sd_model, "has_accelerate") and sd_model.has_accelerate):
         sd_model.has_accelerate = False
 
+    clear_caches()
     set_vae_options(sd_model, vae, op)
     set_diffusers_attention(sd_model)
 
@@ -1605,6 +1606,17 @@ def disable_offload(sd_model):
     sd_model.has_accelerate = False
 
 
+def clear_caches():
+    shared.log.debug('Cache clear')
+    if not shared.opts.lora_legacy:
+        from modules.lora import networks
+        networks.loaded_networks.clear()
+        networks.previously_loaded_networks.clear()
+        networks.lora_cache.clear()
+    from modules import prompt_parser_diffusers
+    prompt_parser_diffusers.cache.clear()
+
+
 def unload_model_weights(op='model'):
     if shared.compiled_model_state is not None:
         shared.compiled_model_state.compiled_cache.clear()
@@ -1622,11 +1634,6 @@ def unload_model_weights(op='model'):
             model_data.sd_model = None
             devices.torch_gc(force=True)
             shared.log.debug(f'Unload weights {op}: {memory_stats()}')
-            if not shared.opts.lora_legacy:
-                from modules.lora import networks
-                networks.loaded_networks.clear()
-                networks.previously_loaded_networks.clear()
-                networks.lora_cache.clear()
     elif op == 'refiner':
         if model_data.sd_refiner:
             if not shared.native:
