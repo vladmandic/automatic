@@ -19,6 +19,7 @@
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
   - xyzgrid fix progress calculation  
+  - vae tiling use default value if not set  
 
 ## Update for 2024-12-31
 
