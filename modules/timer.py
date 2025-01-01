@@ -1,5 +1,12 @@
+import os
 import time
 import sys
+
+
+try:
+    default_min_time = float(os.environ.get('SD_MIN_TIMER', '0.05'))
+except Exception:
+    default_min_time = 0.1
 
 
 class Timer:
@@ -31,20 +38,23 @@ class Timer:
         self.records[category] += e + extra_time
         self.total += e + extra_time
 
-    def summary(self, min_time=0.05, total=True):
+    def summary(self, min_time=default_min_time, total=True):
         if self.profile:
             min_time = -1
-        res = f"{self.total:.2f} " if total else ''
+        res = f"total={self.total:.2f} " if total else ''
         additions = [x for x in self.records.items() if x[1] >= min_time]
+        additions = sorted(additions, key=lambda x: x[1], reverse=True)
         if not additions:
             return res
         res += " ".join([f"{category}={time_taken:.2f}" for category, time_taken in additions])
         return res
 
-    def dct(self, min_time=0.05):
+    def dct(self, min_time=default_min_time):
         if self.profile:
-            return {k: round(v, 4) for k, v in self.records.items()}
-        return {k: round(v, 2) for k, v in self.records.items() if v >= min_time}
+            res = {k: round(v, 4) for k, v in self.records.items()}
+        res = {k: round(v, 2) for k, v in self.records.items() if v >= min_time}
+        res = {k: v for k, v in sorted(res.items(), key=lambda x: x[1], reverse=True)} # noqa: C416
+        return res
 
     def reset(self):
         self.__init__()

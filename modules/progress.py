@@ -71,6 +71,8 @@ def progressapi(req: ProgressRequest):
     step_y = max(shared.state.sampling_steps, 1)
     current = step_y * batch_x + step_x
     total = step_y * batch_y
+    while total < current:
+        total += step_y
     progress = min(1, abs(current / total) if total > 0 else 0)
     elapsed = time.time() - shared.state.time_start if shared.state.time_start is not None else 0
     predicted = elapsed / progress if progress > 0 else None

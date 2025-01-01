@@ -1,5 +1,20 @@
 # Change Log for SD.Next
 
+## Update for 2025-01-01
+
+- **Logging**:
+  - reverted enable debug by default  
+  - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
+  - sort logged timers by duration  
+  - allow min duration env variable for timers: `SD_MIN_TIMER=0.1` (default)  
+  - update installer messages  
+- **Detailer**:
+  - add explicit detailer steps setting  
+- **Fixes**:
+  - explict clear caches on model load  
+  - lock adetailer commit: `#a89c01d`  
+  - xyzgrid fix progress calculation  
+
 ## Update for 2024-12-31
 
 NYE refresh release with quite a few optimizatios and bug fixes...  
