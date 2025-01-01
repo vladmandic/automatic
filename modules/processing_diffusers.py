@@ -91,8 +91,6 @@ def process_base(p: processing.StableDiffusionProcessing):
             sd_models.move_model(shared.sd_model.transformer, devices.device)
         extra_networks.activate(p, exclude=['text_encoder', 'text_encoder_2', 'text_encoder_3'])
         hidiffusion.apply(p, shared.sd_model_type)
-        # if 'image' in base_args:
-        #    base_args['image'] = set_latents(p)
         timer.process.record('move')
         if hasattr(shared.sd_model, 'tgate') and getattr(p, 'gate_step', -1) > 0:
             base_args['gate_step'] = p.gate_step

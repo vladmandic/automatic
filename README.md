@@ -30,11 +30,9 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
 - Built-in Control for Text, Image, Batch and video processing!  
 - Multiplatform!  
  ▹ **Windows | Linux | MacOS | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
-- Multiple backends!  
-  ▹ **Diffusers | Original**  
 - Platform specific autodetection and tuning performed on install  
 - Optimized processing with latest `torch` developments with built-in support for `torch.compile`  
-  and multiple compile backends: *Triton, ZLUDA, StableFast, DeepCache, OpenVINO, NNCF, IPEX, OneDiff*  
+  and multiple compile backends: *Triton, StableFast, DeepCache, NNCF, OneDiff*  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
 - Mobile compatible  
@@ -82,10 +80,6 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 
 > [!WARNING]
 > If you run into issues, check out [troubleshooting](https://vladmandic.github.io/sdnext-docs/Troubleshooting/) and [debugging](https://vladmandic.github.io/sdnext-docs/Debug/) guides  
-
-> [!TIP]
-> All command line options can also be set via env variable  
-> For example `--debug` is same as `set SD_DEBUG=true`  
 
 ### Credits
 
