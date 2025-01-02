@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Optional, Dict, List, Type, Callable
+from typing import Any, Optional, Dict, List, Type, Callable, Union
 from pydantic import BaseModel, Field, create_model # pylint: disable=no-name-in-module
 from inflection import underscore
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
@@ -194,7 +194,7 @@ ReqTxt2Img = PydanticModelGenerator(
     "StableDiffusionProcessingTxt2Img",
     StableDiffusionProcessingTxt2Img,
     [
-        {"key": "sampler_index", "type": int, "default": 0},
+        {"key": "sampler_index", "type": Union[int, str], "default": 0},
         {"key": "sampler_name", "type": str, "default": "UniPC"},
         {"key": "hr_sampler_name", "type": str, "default": "Same as primary"},
         {"key": "script_name", "type": str, "default": "none"},
@@ -218,7 +218,7 @@ ReqImg2Img = PydanticModelGenerator(
     "StableDiffusionProcessingImg2Img",
     StableDiffusionProcessingImg2Img,
     [
-        {"key": "sampler_index", "type": int, "default": 0},
+        {"key": "sampler_index", "type": Union[int, str], "default": 0},
         {"key": "sampler_name", "type": str, "default": "UniPC"},
         {"key": "hr_sampler_name", "type": str, "default": "Same as primary"},
         {"key": "script_name", "type": str, "default": "none"},
@@ -404,10 +404,6 @@ class ResNVML(BaseModel): # definition of http response
     power: list = []
     state: str = Field(title="State")
 
-
-# compatibility items
-StableDiffusionTxt2ImgProcessingAPI = ResTxt2Img
-StableDiffusionImg2ImgProcessingAPI = ResImg2Img
 
 # helper function
 

@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-01
+## Update for 2025-01-02
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -15,11 +15,17 @@
   - update installer messages  
 - **Detailer**:
   - add explicit detailer steps setting  
+- **SysInfo**:
+  - update to collected data and benchmarks  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
-  - xyzgrid fix progress calculation  
+  - xyzgrid progress calculation  
+  - xyzgrid detailer
   - vae tiling use default value if not set  
+  - sd35 img2img
+  - samplers test for scale noise before using  
+  - scheduler api  
 
 ## Update for 2024-12-31
 

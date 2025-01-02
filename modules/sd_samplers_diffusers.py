@@ -271,9 +271,14 @@ class DiffusionSampler:
         sampler = constructor(**self.config)
         accept_sigmas = "sigmas" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
         accepts_timesteps = "timesteps" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
+        accept_scale_noise = hasattr(sampler, "scale_noise")
         debug(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
         if ('Flux' in model.__class__.__name__) and (not accept_sigmas):
             shared.log.warning(f'Sampler: sampler="{name}" does not accept sigmas')
+            self.sampler = None
+            return
+        if ('StableDiffusion3' in model.__class__.__name__) and (not accept_scale_noise):
+            shared.log.warning(f'Sampler: sampler="{name}" does not implement scale noise')
             self.sampler = None
             return
         self.sampler = sampler
