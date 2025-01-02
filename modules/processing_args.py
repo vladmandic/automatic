@@ -307,6 +307,9 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
             if isinstance(args['image'], torch.Tensor) or isinstance(args['image'], np.ndarray):
                 args['width'] = 8 * args['image'].shape[-1]
                 args['height'] = 8 * args['image'].shape[-2]
+            elif isinstance(args['image'][0], torch.Tensor) or isinstance(args['image'][0], np.ndarray):
+                args['width'] = 8 * args['image'][0].shape[-1]
+                args['height'] = 8 * args['image'][0].shape[-2]
             else:
                 args['width'] = 8 * math.ceil(args['image'][0].width / 8)
                 args['height'] = 8 * math.ceil(args['image'][0].height / 8)

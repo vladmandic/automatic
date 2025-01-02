@@ -463,7 +463,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         ipadapter.unapply(shared.sd_model, unload=getattr(p, 'ip_adapter_unload', False))
 
     if shared.opts.include_mask:
-        if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images):
+        if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images) > 0:
             p.image_mask = create_binary_mask(p.overlay_images[0])
             p.image_mask = ImageOps.invert(p.image_mask)
             output_images.append(p.image_mask)

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 import os
+from copy import copy
 import numpy as np
 import gradio as gr
 from PIL import Image, ImageDraw
@@ -259,23 +260,23 @@ class YoloRestorer(Detailer):
 
             report = [{'label': i.label, 'score': i.score, 'size': f'{i.width}x{i.height}' } for i in items]
             shared.log.info(f'Detailer: model="{name}" items={report} args={items[0].args} denoise={p.denoising_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
-            shared.log.debug(f'Detailer: prompt="{prompt}" negative="{negative}"')
+            # shared.log.debug(f'Detailer: prompt="{prompt}" negative="{negative}"')
             models_used.append(name)
 
             mask_all = []
             p.state = ''
             prev_state = shared.state.job
+            pc = copy(p)
             for item in items:
                 if item.mask is None:
                     continue
-                p.init_images = [image]
-                p.image_mask = [item.mask]
-                # mask_all.append(item.mask)
-                p.recursion = True
+                pc.init_images = [image]
+                pc.image_mask = [item.mask]
+                pc.overlay_images = []
+                pc.recursion = True
                 shared.state.job = 'Detailer'
-                pp = processing.process_images_inner(p)
-                del p.recursion
-                p.overlay_images = None # skip applying overlay twice
+                pp = processing.process_images_inner(pc)
+                del pc.recursion
                 if pp is not None and pp.images is not None and len(pp.images) > 0:
                     image = pp.images[0] # update image to be reused for next item
                     if len(pp.images) > 1:
@@ -298,13 +299,10 @@ class YoloRestorer(Detailer):
             if len(mask_all) > 0 and shared.opts.include_mask:
                 from modules.control.util import blend
                 p.image_mask = blend([np.array(m) for m in mask_all])
-                # combined = blend([np_image, p.image_mask])
-                # combined = Image.fromarray(combined)
-                # combined.save('/tmp/item.png')
                 p.image_mask = Image.fromarray(p.image_mask)
 
-        if len(models_used) > 0:
-            shared.log.debug(f'Detailer processed: models={models_used}')
+        # if len(models_used) > 0:
+        #     shared.log.debug(f'Detailer processed: models={models_used}')
         return np_image
 
     def ui(self, tab: str):

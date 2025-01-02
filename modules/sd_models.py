@@ -1288,7 +1288,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         new_pipe.image_encoder = image_encoder
     if feature_extractor is not None:
         new_pipe.feature_extractor = feature_extractor
-    if new_pipe.__class__.__name__ == 'FluxPipeline':
+    if new_pipe.__class__.__name__ in ['FluxPipeline', 'StableDiffusion3Pipeline']:
         new_pipe.register_modules(image_encoder = image_encoder)
         new_pipe.register_modules(feature_extractor = feature_extractor)
     new_pipe.is_sdxl = getattr(pipe, 'is_sdxl', False) # a1111 compatibility item

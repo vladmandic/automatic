@@ -325,12 +325,14 @@ class Script(scripts.Script):
             x_opt.apply(pc, x, xs)
             y_opt.apply(pc, y, ys)
             z_opt.apply(pc, z, zs)
+
             try:
                 processed = processing.process_images(pc)
             except Exception as e:
                 shared.log.error(f"XYZ grid: Failed to process image: {e}")
                 errors.display(e, 'XYZ grid')
                 processed = None
+
             if ix == 0 and iy == 0: # create subgrid info text
                 pc.extra_generation_params = copy(pc.extra_generation_params)
                 pc.extra_generation_params['Script'] = self.title()
