@@ -15,6 +15,8 @@
   - update installer messages  
 - **Detailer**:
   - add explicit detailer steps setting  
+- **SysInfo**:
+  - update to collected data and benchmarks  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
@@ -23,6 +25,7 @@
   - vae tiling use default value if not set  
   - sd35 img2img
   - samplers test for scale noise before using  
+  - scheduler api  
 
 ## Update for 2024-12-31
 
