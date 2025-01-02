@@ -99,6 +99,10 @@ class Api:
         # gallery api
         gallery.register_api(app)
 
+        # compatibility api
+        self.text2imgapi = self.generate.post_text2img
+        self.img2imgapi = self.generate.post_img2img
+
     def add_api_route(self, path: str, endpoint, **kwargs):
         if (shared.cmd_opts.auth or shared.cmd_opts.auth_file) and shared.cmd_opts.api_only:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)

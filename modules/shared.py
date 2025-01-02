@@ -303,8 +303,12 @@ class OptionInfo:
                     # return False
         minimum = args.get("minimum", None)
         maximum = args.get("maximum", None)
-        if (minimum is not None and value < minimum) or (maximum is not None and value > maximum):
-            log.error(f'Setting validation: "{opt}"={value} default={self.default} minimum={minimum} maximum={maximum}')
+        try:
+            if (minimum is not None and value < minimum) or (maximum is not None and value > maximum):
+                log.error(f'Setting validation: "{opt}"={value} default={self.default} minimum={minimum} maximum={maximum}')
+                return False
+        except Exception as err:
+            log.error(f'Setting validation: "{opt}"={value} default={self.default} minimum={minimum} maximum={maximum} error={err}')
             return False
         return True
 
