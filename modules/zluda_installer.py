@@ -1,8 +1,10 @@
 import os
 import sys
+import site
 import ctypes
 import shutil
 import zipfile
+import subprocess
 import urllib.request
 from typing import Optional, Union
 from modules import rocm
@@ -13,8 +15,10 @@ DLL_MAPPING = {
     'cusparse.dll': 'cusparse64_11.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll']
+HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll']
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
+version: Union[str, None] = None
+experimental_hipBLASLt_support: bool = False
 default_agent: Union[rocm.Agent, None] = None
 
 
@@ -28,7 +32,9 @@ def set_default_agent(agent: rocm.Agent):
 
 
 def install(zluda_path: os.PathLike) -> None:
+
     if os.path.exists(zluda_path):
+        __initialize(zluda_path)
         return
 
     commit = os.environ.get("ZLUDA_HASH", "1b6e012d8f2404840b524e2abae12cb91e1ac01d")
@@ -42,6 +48,7 @@ def install(zluda_path: os.PathLike) -> None:
                 info.filename = os.path.basename(info.filename)
                 archive.extract(info, '.zluda')
     os.remove('_zluda')
+    __initialize(zluda_path)
 
 
 def uninstall() -> None:
@@ -50,6 +57,8 @@ def uninstall() -> None:
 
 
 def make_copy(zluda_path: os.PathLike) -> None:
+    __initialize(zluda_path)
+
     for k, v in DLL_MAPPING.items():
         if not os.path.exists(os.path.join(zluda_path, v)):
             try:
@@ -60,6 +69,7 @@ def make_copy(zluda_path: os.PathLike) -> None:
 
 def load(zluda_path: os.PathLike) -> None:
     os.environ["ZLUDA_COMGR_LOG_LEVEL"] = "1"
+    os.environ["ZLUDA_NVRTC_LIB"] = os.path.join([v for v in site.getsitepackages() if v.endswith("site-packages")][0], "torch", "lib", "nvrtc64_112_0.dll")
 
     for v in HIPSDK_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
@@ -86,7 +96,24 @@ def load(zluda_path: os.PathLike) -> None:
 def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
     if agent is not None:
         if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
-            return "2.3.1"
+            return "2.4.1" if experimental_hipBLASLt_support else "2.3.1"
         elif agent.arch == rocm.MicroArchitecture.GCN:
             return "2.2.1"
-    return "2.3.1"
+    return "2.4.1" if experimental_hipBLASLt_support else "2.3.1"
+
+
+def __initialize(zluda_path: os.PathLike):
+    global version, experimental_hipBLASLt_support # pylint: disable=global-statement
+
+    if version is not None:
+        return
+
+    process = subprocess.run(["zluda", "--version"], cwd=zluda_path, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    version = process.stdout.decode(encoding="utf8", errors="ignore")[6:].strip()
+    experimental_hipBLASLt_support = version == "3.8.5.pre1"
+
+    if experimental_hipBLASLt_support:
+        HIPSDK_TARGETS.append('hipblaslt.dll')
+        DLL_MAPPING['cublasLt.dll'] = 'cublasLt64_11.dll'
+    else:
+        HIPSDK_TARGETS.append(f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll')
