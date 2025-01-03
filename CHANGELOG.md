@@ -1,12 +1,15 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-02
+## Update for 2025-01-03
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
   - *reference values*: width 1280 height 720 frames 88 steps 100 guidance 7.5  
   - *note*: allegro model is really sensitive to input width/height/frames/steps  
     and may result in completely corrupt output if those are not within expected range  
+- [PixelSmith](https://github.com/Thanos-DB/Pixelsmith/)
+  - available for SD-XL in txt2img and img2img workflows
+  - select from *scripts -> pixelsmith*  
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
