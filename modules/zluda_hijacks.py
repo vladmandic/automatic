@@ -1,5 +1,5 @@
 import torch
-from modules import rocm
+from modules import zluda_installer, rocm
 
 
 _topk = torch.topk
@@ -35,4 +35,6 @@ def do_hijack():
     torch.fft.fftn = fft_fftn
     torch.fft.ifftn = fft_ifftn
     torch.fft.rfftn = fft_rfftn
-    torch.jit.script = jit_script
+
+    if not zluda_installer.experimental_hipBLASLt_support:
+        torch.jit.script = jit_script
