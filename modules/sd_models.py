@@ -1208,6 +1208,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'FluxFillPipeline',
         'FluxControlPipeline',
         'StableVideoDiffusionPipeline',
+        'PixelSmithXLPipeline',
     ]
 
     has_errors = False
