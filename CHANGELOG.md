@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-03
+## Update for 2025-01-04
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -20,6 +20,8 @@
   - add explicit detailer steps setting  
 - **SysInfo**:
   - update to collected data and benchmarks  
+- **Metadata**:
+  - improved metadata save and restore  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
