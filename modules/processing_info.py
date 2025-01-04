@@ -37,7 +37,6 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         all_negative_prompts.append(all_negative_prompts[-1])
     comment = ', '.join(comments) if comments is not None and type(comments) is list else None
     ops = list(set(p.ops))
-    ops.reverse()
     args = {
         # basic
         "Size": f"{p.width}x{p.height}" if hasattr(p, 'width') and hasattr(p, 'height') else None,
@@ -46,6 +45,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Seed": all_seeds[index],
         "Seed resize from": None if p.seed_resize_from_w == 0 or p.seed_resize_from_h == 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}",
         "CFG scale": p.cfg_scale if p.cfg_scale > 1.0 else None,
+        "CFG rescale": p.diffusers_guidance_rescale if p.diffusers_guidance_rescale > 0 else None,
         "CFG end": p.cfg_end if p.cfg_end < 1.0 else None,
         "Clip skip": p.clip_skip if p.clip_skip > 1 else None,
         "Batch": f'{p.n_iter}x{p.batch_size}' if p.n_iter > 1 or p.batch_size > 1 else None,
@@ -82,31 +82,33 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args["Variation strength"] = p.subseed_strength if p.subseed_strength > 0 else None
     if 'hires' in p.ops or 'upscale' in p.ops:
         is_resize = p.hr_resize_mode > 0 and (p.hr_upscaler != 'None' or p.hr_resize_mode == 5)
+        is_fixed = p.hr_resize_x > 0 or p.hr_resize_y > 0
         args["Refine"] = p.enable_hr
         args["Hires force"] = p.hr_force
         args["Hires steps"] = p.hr_second_pass_steps
-        args["HiRes resize mode"] = p.hr_resize_mode if is_resize else None
-        args["HiRes resize context"] = p.hr_resize_context if p.hr_resize_mode == 5 else None
+        args["HiRes mode"] = p.hr_resize_mode if is_resize else None
+        args["HiRes context"] = p.hr_resize_context if p.hr_resize_mode == 5 else None
         args["Hires upscaler"] = p.hr_upscaler if is_resize else None
-        args["Hires scale"] = p.hr_scale if is_resize else None
-        args["Hires resize"] = f"{p.hr_resize_x}x{p.hr_resize_y}" if is_resize else None
+        if is_fixed:
+            args["Hires fixed"] = f"{p.hr_resize_x}x{p.hr_resize_y}" if is_resize else None
+        else:
+            args["Hires scale"] = p.hr_scale if is_resize else None
         args["Hires size"] = f"{p.hr_upscale_to_x}x{p.hr_upscale_to_y}" if is_resize else None
-        args["Denoising strength"] = p.denoising_strength
-        args["Hires sampler"] = p.hr_sampler_name
-        args["Image CFG scale"] = p.image_cfg_scale
-        args["CFG rescale"] = p.diffusers_guidance_rescale
+        args["Hires strength"] = p.denoising_strength
+        args["Hires sampler"] = p.hr_sampler_name if p.hr_sampler_name != p.sampler_name else None
+        args["Hires CFG scale"] = p.image_cfg_scale
     if 'refine' in p.ops:
         args["Refine"] = p.enable_hr
         args["Refiner"] = None if (not shared.opts.add_model_name_to_info) or (not shared.sd_refiner) or (not shared.sd_refiner.sd_checkpoint_info.model_name) else shared.sd_refiner.sd_checkpoint_info.model_name.replace(',', '').replace(':', '')
-        args['Image CFG scale'] = p.image_cfg_scale
+        args['Hires CFG scale'] = p.image_cfg_scale
         args['Refiner steps'] = p.refiner_steps
         args['Refiner start'] = p.refiner_start
         args["Hires steps"] = p.hr_second_pass_steps
         args["Hires sampler"] = p.hr_sampler_name
-        args["CFG rescale"] = p.diffusers_guidance_rescale
-    if 'img2img' in p.ops or 'inpaint' in p.ops:
+    if ('img2img' in p.ops or 'inpaint' in p.ops) and ('txt2img' not in p.ops and 'hires' not in p.ops): # real img2img/inpaint
         args["Init image size"] = f"{getattr(p, 'init_img_width', 0)}x{getattr(p, 'init_img_height', 0)}"
         args["Init image hash"] = getattr(p, 'init_img_hash', None)
+        args['Image CFG scale'] = p.image_cfg_scale
         args['Resize scale'] = getattr(p, 'scale_by', None)
         args["Mask weight"] = getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) if p.is_using_inpainting_conditioning else None
         args["Denoising strength"] = getattr(p, 'denoising_strength', None)
