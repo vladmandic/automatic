@@ -294,7 +294,6 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         debug_log(f'Diffusers task args: {task_args}')
     for k, v in task_args.items():
         if k in possible:
-            print('HERE OVERRIDE', k, v)
             args[k] = v
         else:
             debug_log(f'Diffusers unknown task args: {k}={v}')
