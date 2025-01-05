@@ -122,12 +122,11 @@ def connect_paste_params_buttons():
         if binding.tabname not in paste_fields:
             debug(f"Not not registered: tab={binding.tabname}")
             continue
+        """
+        # legacy code that sets width/height based on image itself instead of metadata
         destination_image_component = paste_fields[binding.tabname]["init_img"]
-        fields = paste_fields[binding.tabname]["fields"]
-        override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]
         destination_width_component = next(iter([field for field, name in fields if name == "Size-1"] if fields else []), None)
         destination_height_component = next(iter([field for field, name in fields if name == "Size-2"] if fields else []), None)
-
         if binding.source_image_component and destination_image_component:
             if isinstance(binding.source_image_component, gr.Gallery):
                 func = send_image_and_dimensions if destination_width_component else image_from_url_text
@@ -142,6 +141,9 @@ def connect_paste_params_buttons():
                 outputs=[destination_image_component, destination_width_component, destination_height_component] if destination_width_component else [destination_image_component],
                 show_progress=False,
             )
+        """
+        fields = paste_fields[binding.tabname]["fields"]
+        override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]
         if binding.source_text_component is not None and fields is not None:
             connect_paste(binding.paste_button, fields, binding.source_text_component, override_settings_component, binding.tabname)
         if binding.source_tabname is not None and fields is not None and binding.source_tabname in paste_fields:

@@ -658,13 +658,16 @@ def create_ui(_blocks: gr.Blocks=None):
                 # second pass
                 (enable_hr, "Second pass"),
                 (enable_hr, "Refine"),
-                (hr_sampler_index, "Hires sampler"),
-                (denoising_strength, "Hires strength"),
                 (denoising_strength, "Denoising strength"),
+                (denoising_strength, "Hires strength"),
+                (hr_sampler_index, "Hires sampler"),
+                (hr_resize_mode, "Hires mode"),
+                (hr_resize_context, "Hires context"),
                 (hr_upscaler, "Hires upscaler"),
                 (hr_force, "Hires force"),
                 (hr_second_pass_steps, "Hires steps"),
                 (hr_scale, "Hires upscale"),
+                (hr_scale, "Hires scale"),
                 (hr_resize_x, "Hires fixed-1"),
                 (hr_resize_y, "Hires fixed-2"),
                 # refiner

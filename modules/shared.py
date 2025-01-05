@@ -784,8 +784,8 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),
     "return_mask_composite": OptionInfo(False, "Inpainting include masked composite in results"),
     "disable_weights_auto_swap": OptionInfo(True, "Do not change selected model when reading generation parameters"),
-    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface"),
-    "send_size": OptionInfo(True, "Send size when sending prompt or image to another interface"),
+    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface", gr.Checkbox, {"visible": False}),
+    "send_size": OptionInfo(False, "Send size when sending prompt or image to another interface", gr.Checkbox, {"visible": False}),
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", gr.Dropdown, lambda: {"multiselect":True, "choices": list(opts.data_labels.keys())}),
 }))
 
