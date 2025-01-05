@@ -201,7 +201,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
-            p.task_args.pop('image', None) # remove image override from hires
+            orig_image = p.task_args.pop('image', None) # remove image override from hires
             hires_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_model,
@@ -245,6 +245,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 shared.log.error(f'Processing step=hires: args={hires_args} {e}')
                 errors.display(e, 'Processing')
                 modelstats.analyze()
+            if orig_image is not None:
+                p.task_args['image'] = orig_image
             p.denoising_strength = orig_denoise
         shared.state.job = prev_job
         shared.state.nextjob()
