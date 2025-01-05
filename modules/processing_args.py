@@ -109,8 +109,10 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     if hasattr(model, "set_progress_bar_config"):
         model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
     args = {}
+    has_vae = hasattr(model, 'vae') or (hasattr(model, 'pipe') and hasattr(model.pipe, 'vae'))
     if hasattr(model, 'pipe') and not hasattr(model, 'no_recurse'): # recurse
         model = model.pipe
+        has_vae = has_vae or hasattr(model, 'vae')
     signature = inspect.signature(type(model).__call__, follow_wrapped=True)
     possible = list(signature.parameters)
 
@@ -233,7 +235,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
             args['latents'] = p.init_latent
     if 'output_type' in possible:
-        if not hasattr(model, 'vae'):
+        if not has_vae:
             kwargs['output_type'] = 'np' # only set latent if model has vae
 
     # model specific
