@@ -27,7 +27,7 @@ def prompt_callback(step, kwargs):
         assert prompt_embeds.shape == kwargs['prompt_embeds'].shape, f"prompt_embed shape mismatch {kwargs['prompt_embeds'].shape} {prompt_embeds.shape}"
         kwargs['prompt_embeds'] = prompt_embeds
     except Exception as e:
-        debug_callback(f"Callback: {e}")
+        debug_callback(f"Callback: type=prompt {e}")
     return kwargs
 
 
@@ -115,11 +115,16 @@ def diffusers_callback(pipe, step: int = 0, timestep: int = 0, kwargs: dict = {}
             shared.state.current_latent = kwargs['latents']
             shared.state.current_noise_pred = current_noise_pred
 
-        if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas") and hasattr(pipe.scheduler, "step_index"):
-            shared.state.current_sigma = pipe.scheduler.sigmas[pipe.scheduler.step_index - 1]
-            shared.state.current_sigma_next = pipe.scheduler.sigmas[pipe.scheduler.step_index]
+        if hasattr(pipe, "scheduler") and hasattr(pipe.scheduler, "sigmas") and hasattr(pipe.scheduler, "step_index") and pipe.scheduler.step_index is not None:
+            try:
+                shared.state.current_sigma = pipe.scheduler.sigmas[pipe.scheduler.step_index-1]
+                shared.state.current_sigma_next = pipe.scheduler.sigmas[pipe.scheduler.step_index]
+            except Exception:
+                pass
     except Exception as e:
         shared.log.error(f'Callback: {e}')
+        # from modules import errors
+        # errors.display(e, 'Callback')
     if shared.cmd_opts.profile and shared.profiler is not None:
         shared.profiler.step()
     t1 = time.time()

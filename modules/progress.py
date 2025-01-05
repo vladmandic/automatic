@@ -80,7 +80,7 @@ def progressapi(req: ProgressRequest):
     id_live_preview = req.id_live_preview
     live_preview = None
     updated = shared.state.set_current_image()
-    debug_log(f'Preview: job={shared.state.job} active={active} progress={current}/{total} step={shared.state.current_image_sampling_step}/{shared.state.sampling_step} request={id_live_preview} last={shared.state.id_live_preview} enabled={shared.opts.live_previews_enable} job={shared.state.preview_job} updated={updated} image={shared.state.current_image} elapsed={elapsed:.3f}')
+    debug_log(f'Preview: job={shared.state.job} active={active} progress={current}/{total} step={shared.state.current_image_sampling_step}/{step_x}/{step_y} request={id_live_preview} last={shared.state.id_live_preview} enabled={shared.opts.live_previews_enable} job={shared.state.preview_job} updated={updated} image={shared.state.current_image} elapsed={elapsed:.3f}')
     if not active:
         return InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, id_live_preview=-1, debug=debug, textinfo="Queued..." if queued else "Waiting...")
     if shared.opts.live_previews_enable and (shared.state.id_live_preview != id_live_preview) and (shared.state.current_image is not None):
