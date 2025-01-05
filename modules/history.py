@@ -62,6 +62,7 @@ class History():
         return -1
 
     def add(self, latent, preview=None, info=None, ops=[]):
+        shared.state.latent_history += 1
         if shared.opts.latent_history == 0:
             return
         if torch.is_tensor(latent):

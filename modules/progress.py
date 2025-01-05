@@ -64,23 +64,16 @@ def progressapi(req: ProgressRequest):
     queued = req.id_task in pending_tasks
     completed = req.id_task in finished_tasks
     paused = shared.state.paused
-    shared.state.job_count = max(shared.state.frame_count, shared.state.job_count, shared.state.job_no)
-    batch_x = max(shared.state.job_no, 0)
-    batch_y = max(shared.state.job_count, 1)
-    step_x = max(shared.state.sampling_step, 0)
-    step_y = max(shared.state.sampling_steps, 1)
-    current = step_y * batch_x + step_x
-    total = step_y * batch_y
-    while total < current:
-        total += step_y
-    progress = min(1, abs(current / total) if total > 0 else 0)
+    step = max(shared.state.sampling_step, 0)
+    steps = max(shared.state.sampling_steps, 1)
+    progress = round(min(1, abs(step / steps) if steps > 0 else 0), 2)
     elapsed = time.time() - shared.state.time_start if shared.state.time_start is not None else 0
     predicted = elapsed / progress if progress > 0 else None
     eta = predicted - elapsed if predicted is not None else None
     id_live_preview = req.id_live_preview
     live_preview = None
     updated = shared.state.set_current_image()
-    debug_log(f'Preview: job={shared.state.job} active={active} progress={current}/{total} step={shared.state.current_image_sampling_step}/{step_x}/{step_y} request={id_live_preview} last={shared.state.id_live_preview} enabled={shared.opts.live_previews_enable} job={shared.state.preview_job} updated={updated} image={shared.state.current_image} elapsed={elapsed:.3f}')
+    debug_log(f'Preview: job={shared.state.job} active={active} progress={step}/{steps}/{progress} image={shared.state.current_image_sampling_step} request={id_live_preview} last={shared.state.id_live_preview} enabled={shared.opts.live_previews_enable} job={shared.state.preview_job} updated={updated} image={shared.state.current_image} elapsed={elapsed:.3f}')
     if not active:
         return InternalProgressResponse(job=shared.state.job, active=active, queued=queued, paused=paused, completed=completed, id_live_preview=-1, debug=debug, textinfo="Queued..." if queued else "Waiting...")
     if shared.opts.live_previews_enable and (shared.state.id_live_preview != id_live_preview) and (shared.state.current_image is not None):

@@ -129,7 +129,7 @@ def create_ui():
     )
     submit.click(
         _js="submit_postprocessing",
-        fn=call_queue.wrap_gradio_gpu_call(submit_process, extra_outputs=[None, '']),
+        fn=call_queue.wrap_gradio_gpu_call(submit_process, extra_outputs=[None, ''], name='Postprocess'),
         inputs=[
             tab_index,
             extras_image,

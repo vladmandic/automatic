@@ -15,6 +15,7 @@ from modules.api import helpers
 
 debug_enabled = os.environ.get('SD_DIFFUSERS_DEBUG', None)
 debug_log = shared.log.trace if os.environ.get('SD_DIFFUSERS_DEBUG', None) is not None else lambda *args, **kwargs: None
+disable_pbar = os.environ.get('SD_DISABLE_PBAR', None) is not None
 
 
 def task_specific_kwargs(p, model):
@@ -107,7 +108,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
     apply_circular(p.tiling, model)
     if hasattr(model, "set_progress_bar_config"):
-        model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba')
+        model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining} ' + '\x1b[38;5;71m' + desc, ncols=80, colour='#327fba', disable=disable_pbar)
     args = {}
     has_vae = hasattr(model, 'vae') or (hasattr(model, 'pipe') and hasattr(model.pipe, 'vae'))
     if hasattr(model, 'pipe') and not hasattr(model, 'no_recurse'): # recurse

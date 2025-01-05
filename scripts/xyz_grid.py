@@ -253,6 +253,7 @@ class Script(scripts.Script):
             ys = fix_axis_seeds(y_opt, ys)
             zs = fix_axis_seeds(z_opt, zs)
 
+        total_jobs = len(xs) * len(ys) * len(zs)
         if x_opt.label == 'Steps':
             total_steps = sum(xs) * len(ys) * len(zs)
         elif y_opt.label == 'Steps':
@@ -260,7 +261,7 @@ class Script(scripts.Script):
         elif z_opt.label == 'Steps':
             total_steps = sum(zs) * len(xs) * len(ys)
         else:
-            total_steps = p.steps * len(xs) * len(ys) * len(zs)
+            total_steps = p.steps * total_jobs
         if isinstance(p, processing.StableDiffusionProcessingTxt2Img) and p.enable_hr:
             if x_opt.label == "Hires steps":
                 total_steps += sum(xs) * len(ys) * len(zs)
@@ -269,10 +270,12 @@ class Script(scripts.Script):
             elif z_opt.label == "Hires steps":
                 total_steps += sum(zs) * len(xs) * len(ys)
             elif p.hr_second_pass_steps:
-                total_steps += p.hr_second_pass_steps * len(xs) * len(ys) * len(zs)
+                total_steps += p.hr_second_pass_steps * total_jobs
             else:
                 total_steps *= 2
         total_steps *= p.n_iter
+        shared.state.update('Grid', total_steps, total_jobs * p.n_iter)
+
         image_cell_count = p.n_iter * p.batch_size
         shared.log.info(f"XYZ grid: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} shape={len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
         AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
