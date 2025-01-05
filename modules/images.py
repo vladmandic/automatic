@@ -29,6 +29,7 @@ def atomically_save_image():
     Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
     while True:
         image, filename, extension, params, exifinfo, filename_txt = save_queue.get()
+        shared.state.image_history += 1
         with open(os.path.join(paths.data_path, "params.txt"), "w", encoding="utf8") as file:
             file.write(exifinfo)
         fn = filename + extension
@@ -49,6 +50,7 @@ def atomically_save_image():
                 shared.log.info(f'Save: text="{filename_txt}" len={len(exifinfo)}')
             except Exception as e:
                 shared.log.warning(f'Save failed: description={filename_txt} {e}')
+
         # actual save
         if image_format == 'PNG':
             pnginfo_data = PngImagePlugin.PngInfo()
@@ -79,6 +81,7 @@ def atomically_save_image():
             errors.display(e, 'Image save')
         size = os.path.getsize(fn) if os.path.exists(fn) else 0
         shared.log.info(f'Save: image="{fn}" type={image_format} width={image.width} height={image.height} size={size}')
+
         if shared.opts.save_log_fn != '' and len(exifinfo) > 0:
             fn = os.path.join(paths.data_path, shared.opts.save_log_fn)
             if not fn.endswith('.json'):

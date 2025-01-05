@@ -280,19 +280,22 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     output_images = []
 
     process_init(p)
-    if os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings and not shared.native:
+    if not shared.native and os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings:
         modules.sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=False)
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
 
     ema_scope_context = p.sd_model.ema_scope if not shared.native else nullcontext
-    shared.state.job_count = p.n_iter
+    if not shared.native:
+        shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
         if not hasattr(p, 'skip_init'):
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
+            # if hasattr(p, 'skip_processing'):
+            #     continue
             pag.apply(p)
             debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
             p.iteration = n

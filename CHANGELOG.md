@@ -20,6 +20,8 @@
   - add explicit detailer steps setting  
 - **SysInfo**:
   - update to collected data and benchmarks  
+- **Progress**:
+  - refactored progress monitoring, job updates and live preview  
 - **Metadata**:
   - improved metadata save and restore  
 - **Fixes**:

@@ -22,6 +22,7 @@
     "default-case":"off",
     "no-await-in-loop":"off",
     "no-bitwise":"off",
+    "no-continue":"off",
     "no-confusing-arrow":"off",
     "no-console":"off",
     "no-empty":"off",

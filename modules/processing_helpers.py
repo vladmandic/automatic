@@ -584,3 +584,26 @@ def update_sampler(p, sd_model, second_pass=False):
             sampler_options.append('low order')
         if len(sampler_options) > 0:
             p.extra_generation_params['Sampler options'] = '/'.join(sampler_options)
+
+
+def get_job_name(p, model):
+    if hasattr(model, 'pipe'):
+        model = model.pipe
+    if hasattr(p, 'xyz'):
+        return 'Ignore' # xyz grid handles its own jobs
+    if sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.TEXT_2_IMAGE:
+        return 'Text'
+    elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.IMAGE_2_IMAGE:
+        if p.is_refiner_pass:
+            return 'Refiner'
+        elif p.is_hr_pass:
+            return 'Hires'
+        else:
+            return 'Image'
+    elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING:
+        if p.detailer:
+            return 'Detailer'
+        else:
+            return 'Inpaint'
+    else:
+        return 'Unknown'

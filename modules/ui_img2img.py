@@ -193,7 +193,7 @@ def create_ui():
                 override_settings,
             ]
             img2img_dict = dict(
-                fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', '']),
+                fn=wrap_gradio_gpu_call(modules.img2img.img2img, extra_outputs=[None, '', ''], name='Image'),
                 _js="submit_img2img",
                 inputs= img2img_args + img2img_script_inputs,
                 outputs=[

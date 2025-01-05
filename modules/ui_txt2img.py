@@ -77,7 +77,7 @@ def create_ui():
                 override_settings,
             ]
             txt2img_dict = dict(
-                fn=wrap_gradio_gpu_call(modules.txt2img.txt2img, extra_outputs=[None, '', '']),
+                fn=wrap_gradio_gpu_call(modules.txt2img.txt2img, extra_outputs=[None, '', ''], name='Text'),
                 _js="submit_txt2img",
                 inputs=txt2img_args + txt2img_script_inputs,
                 outputs=[

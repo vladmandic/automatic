@@ -20,29 +20,36 @@ function checkPaused(state) {
 
 function setProgress(res) {
   const elements = ['txt2img_generate', 'img2img_generate', 'extras_generate', 'control_generate'];
-  const progress = (res?.progress || 0);
-  let job = res?.job || '';
-  job = job.replace('txt2img', 'Generate').replace('img2img', 'Generate');
-  const perc = res && (progress > 0) ? `${Math.round(100.0 * progress)}%` : '';
-  let sec = res?.eta || 0;
+  const progress = res?.progress || 0;
+  const job = res?.job || '';
+  let perc = '';
   let eta = '';
-  if (res?.paused) eta = 'Paused';
-  else if (res?.completed || (progress > 0.99)) eta = 'Finishing';
-  else if (sec === 0) eta = 'Starting';
+  if (job === 'VAE') perc = 'Decode';
   else {
-    const min = Math.floor(sec / 60);
-    sec %= 60;
-    eta = min > 0 ? `${Math.round(min)}m ${Math.round(sec)}s` : `${Math.round(sec)}s`;
+    perc = res && (progress > 0) && (progress < 1) ? `${Math.round(100.0 * progress)}% ` : '';
+    let sec = res?.eta || 0;
+    if (res?.paused) eta = 'Paused';
+    else if (res?.completed || (progress > 0.99)) eta = 'Finishing';
+    else if (sec === 0) eta = 'Start';
+    else {
+      const min = Math.floor(sec / 60);
+      sec %= 60;
+      eta = min > 0 ? `${Math.round(min)}m ${Math.round(sec)}s` : `${Math.round(sec)}s`;
+    }
   }
   document.title = `SD.Next ${perc}`;
   for (const elId of elements) {
     const el = document.getElementById(elId);
     if (el) {
-      el.innerText = (res ? `${job} ${perc} ${eta}` : 'Generate');
+      const jobLabel = (res ? `${job} ${perc}${eta}` : 'Generate').trim();
+      el.innerText = jobLabel;
       if (!window.waitForUiReady) {
-        el.style.background = res && (progress > 0)
-          ? `linear-gradient(to right, var(--primary-500) 0%, var(--primary-800) ${perc}, var(--neutral-700) ${perc})`
-          : 'var(--button-primary-background-fill)';
+        const gradient = perc !== '' ? perc : '100%';
+        if (jobLabel === 'Generate') el.style.background = 'var(--primary-500)';
+        else if (jobLabel.endsWith('Decode')) continue;
+        else if (jobLabel.endsWith('Start') || jobLabel.endsWith('Finishing')) el.style.background = 'var(--primary-800)';
+        else if (res && progress > 0 && progress < 1) el.style.background = `linear-gradient(to right, var(--primary-500) 0%, var(--primary-800) ${gradient}, var(--neutral-700) ${gradient})`;
+        else el.style.background = 'var(--primary-500)';
       }
     }
   }

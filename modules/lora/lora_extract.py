@@ -265,7 +265,7 @@ def create_ui():
 
         auto_rank.change(fn=lambda x: gr_show(x), inputs=[auto_rank], outputs=[rank_ratio])
         extract.click(
-            fn=wrap_gradio_gpu_call(make_lora, extra_outputs=[]),
+            fn=wrap_gradio_gpu_call(make_lora, extra_outputs=[], name='LoRA'),
             inputs=[filename, rank, auto_rank, rank_ratio, modules, overwrite],
             outputs=[status]
         )

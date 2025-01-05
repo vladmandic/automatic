@@ -10,7 +10,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
     z_texts = [[images.GridAnnotation(z)] for z in z_labels]
     list_size = (len(xs) * len(ys) * len(zs))
     processed_result = None
-    shared.state.job_count = list_size * p.n_iter
+
     t0 = time.time()
     i = 0
 
@@ -22,7 +22,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         def index(ix, iy, iz):
             return ix + iy * len(xs) + iz * len(xs) * len(ys)
 
-        shared.state.job = 'Grid'
         p0 = time.time()
         processed: processing.Processed = cell(x, y, z, ix, iy, iz)
         p1 = time.time()
@@ -63,7 +62,7 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
                 cell_mode = processed_result.images[0].mode
                 cell_size = processed_result.images[0].size
             processed_result.images[idx] = Image.new(cell_mode, cell_size)
-        return
+        shared.state.nextjob()
 
     if first_axes_processed == 'x':
         for ix, x in enumerate(xs):
@@ -129,5 +128,6 @@ def draw_xyz_grid(p, xs, ys, zs, x_labels, y_labels, z_labels, cell, draw_legend
         processed_result.infotexts.insert(0, processed_result.infotexts[0])
 
     t2 = time.time()
-    shared.log.info(f'XYZ grid complete: images={list_size} size={grid.size if grid is not None else None} time={t1-t0:.2f} save={t2-t1:.2f}')
+    shared.log.info(f'XYZ grid complete: images={list_size} results={len(processed_result.images)}size={grid.size if grid is not None else None} time={t1-t0:.2f} save={t2-t1:.2f}')
+    p.skip_processing = True
     return processed_result
