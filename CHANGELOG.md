@@ -33,6 +33,7 @@
   - sd35 img2img
   - samplers test for scale noise before using  
   - scheduler api  
+  - controlnet with hires  
 
 ## Update for 2024-12-31
 
