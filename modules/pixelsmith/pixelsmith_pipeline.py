@@ -1683,7 +1683,7 @@ class PixelSmithXLPipeline(
                     mask_first_row = torch.zeros(1, patch_size)
                     mask_first_row[:, ::d_rate] = 1
                     mask_second_row = torch.roll(mask_first_row, shifts=1, dims=1)
-                    for d in range(1, d_rate):
+                    for _d in range(1, d_rate):
                         stacked_rows = torch.concatenate((mask_first_row, mask_second_row), axis=-2)
                     den_mask = torch.tile(stacked_rows, (patch_size//stacked_rows.shape[0], 1)).to(self.device)
                     den_mask = den_mask[np.newaxis, np.newaxis, ...].to(self.unet.dtype)

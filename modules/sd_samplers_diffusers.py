@@ -48,6 +48,7 @@ except Exception as e:
         errors.display(e, 'Samplers')
 try:
     from modules.schedulers.scheduler_tcd import TCDScheduler # pylint: disable=ungrouped-imports
+    from modules.schedulers.scheduler_tdd import TDDScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_dc import DCSolverMultistepScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_vdm import VDMScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_dpm_flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
@@ -98,7 +99,8 @@ config = {
     'VDM Solver': { 'clip_sample_range': 2.0, },
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False, 'timestep_spacing': 'linspace' },
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
-    'UFOGen': {},
+    'TDD': { },
+    'UFOGen': { },
     'BDIA DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'leading', 'rescale_betas_zero_snr': False, 'thresholding': False, 'gamma': 1.0 },
 
     'PNDM': { 'skip_prk_steps': False, 'set_alpha_to_one': False, 'steps_offset': 0, 'timestep_spacing': 'linspace' },
@@ -157,6 +159,7 @@ samplers_data_diffusers = [
 
     SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
+    SamplerData('TDD', lambda model: DiffusionSampler('TDD', TDDScheduler, model), [], {}),
     SamplerData('UFOGen', lambda model: DiffusionSampler('UFOGen', UFOGenScheduler, model), [], {}),
 
     SamplerData('Same as primary', None, [], {}),
