@@ -1242,6 +1242,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
     default_scheduler = getattr(pipe, "default_scheduler", None)
     image_encoder = getattr(pipe, "image_encoder", None)
     feature_extractor = getattr(pipe, "feature_extractor", None)
+    mask_processor = getattr(pipe, "mask_processor", None)
 
     if new_pipe is None:
         if hasattr(pipe, 'config'): # real pipeline which can be auto-switched
@@ -1289,6 +1290,8 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         new_pipe.image_encoder = image_encoder
     if feature_extractor is not None:
         new_pipe.feature_extractor = feature_extractor
+    if mask_processor is not None:
+        new_pipe.mask_processor = mask_processor
     if new_pipe.__class__.__name__ in ['FluxPipeline', 'StableDiffusion3Pipeline']:
         new_pipe.register_modules(image_encoder = image_encoder)
         new_pipe.register_modules(feature_extractor = feature_extractor)

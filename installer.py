@@ -459,13 +459,15 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
 def check_diffusers():
     if args.skip_all or args.skip_git:
         return
-    sha = '6dfaec348780c6153a4cfd03a01972a291d67f82' # diffusers commit hash
+    sha = 'b5726358cf125f2fa1a596dce321e91a225a57e4' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
     if (minor == 0) or (cur != sha):
-        log.info(f'Diffusers {"install" if minor == 0 else "upgrade"}: package={pkg} current={cur} target={sha}')
-        if minor > 0:
+        if minor == 0:
+            log.info(f'Diffusers install: commit={sha}')
+        else:
+            log.info(f'Diffusers update: package={pkg} current={cur} target={sha}')
             pip('uninstall --yes diffusers', ignore=True, quiet=True, uv=False)
         pip(f'install --upgrade git+https://github.com/huggingface/diffusers@{sha}', ignore=False, quiet=True, uv=False)
         global diffusers_commit # pylint: disable=global-statement
