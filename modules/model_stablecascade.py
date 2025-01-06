@@ -256,7 +256,7 @@ class StableCascadeDecoderPipelineFixed(diffusers.StableCascadeDecoderPipeline):
         if isinstance(self.scheduler, diffusers.DDPMWuerstchenScheduler):
             timesteps = timesteps[:-1]
         else:
-            if hasattr(self.scheduler.config, "clip_sample") and self.scheduler.config.clip_sample:
+            if hasattr(self.scheduler.config, "clip_sample") and self.scheduler.config.clip_sample: # pylint: disable=no-member
                 self.scheduler.config.clip_sample = False  # disample sample clipping
 
         # 6. Run denoising loop

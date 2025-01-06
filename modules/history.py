@@ -47,13 +47,13 @@ class History():
     @property
     def selected(self):
         if self.index >= 0 and self.index < self.count:
-            index = self.index
+            current_index = self.index
             self.index = -1
         else:
-            index = 0
-        item = self.latents[index]
-        shared.log.debug(f'History get: index={index} time={item.ts} shape={item.latent.shape} dtype={item.latent.dtype} count={self.count}')
-        return item.latent.to(devices.device), index
+            current_index = 0
+        item = self.latents[current_index]
+        shared.log.debug(f'History get: index={current_index} time={item.ts} shape={item.latent.shape} dtype={item.latent.dtype} count={self.count}')
+        return item.latent.to(devices.device), current_index
 
     def find(self, name):
         for i, item in enumerate(self.latents):
