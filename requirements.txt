@@ -32,7 +32,7 @@ invisible-watermark
 pi-heif
 
 # versioned
-safetensors==0.4.5
+safetensors==0.5.0
 tensordict==0.1.2
 peft==0.14.0
 httpx==0.24.1
