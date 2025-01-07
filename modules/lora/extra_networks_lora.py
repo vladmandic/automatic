@@ -2,7 +2,7 @@ from typing import List
 import os
 import re
 import numpy as np
-from modules.lora import networks
+from modules.lora import networks, network_overrides
 from modules import extra_networks, shared
 
 
@@ -155,17 +155,23 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
             debug_log(f'Load network: type=LoRA include={include} exclude={exclude} requested={requested} fn={fn}')
 
-        networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
-        has_changed = self.changed(requested, include, exclude)
-        if has_changed:
-            networks.network_deactivate(include, exclude)
-            networks.network_activate(include, exclude)
-            debug_log(f'Load network: type=LoRA previous={[n.name for n in networks.previously_loaded_networks]} current={[n.name for n in networks.loaded_networks]} changed')
+        force_diffusers = network_overrides.check_override()
+        if force_diffusers:
+            has_changed = False # diffusers handle their own loading
+            if len(exclude) == 0:
+                networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load only on first call
+        else:
+            networks.network_load(names, te_multipliers, unet_multipliers, dyn_dims) # load
+            has_changed = self.changed(requested, include, exclude)
+            if has_changed:
+                networks.network_deactivate(include, exclude)
+                networks.network_activate(include, exclude)
+                debug_log(f'Load network: type=LoRA previous={[n.name for n in networks.previously_loaded_networks]} current={[n.name for n in networks.loaded_networks]} changed')
 
-        if len(networks.loaded_networks) > 0 and len(networks.applied_layers) > 0 and step == 0:
+        if len(networks.loaded_networks) > 0 and (len(networks.applied_layers) > 0 or force_diffusers) and step == 0:
             infotext(p)
             prompt(p)
-            if has_changed and len(include) == 0: # print only once
+            if (has_changed or force_diffusers) and len(include) == 0: # print only once
                 shared.log.info(f'Load network: type=LoRA apply={[n.name for n in networks.loaded_networks]} mode={"fuse" if shared.opts.lora_fuse_diffusers else "backup"} te={te_multipliers} unet={unet_multipliers} time={networks.timer.summary}')
 
     def deactivate(self, p):
