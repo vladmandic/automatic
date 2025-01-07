@@ -4,7 +4,7 @@ from modules import errors
 from modules.ui_components import ToolButton
 
 
-debug = os.environ.get('SD_UI_DEBUG', None)
+debug_ui = os.environ.get('SD_UI_DEBUG', None)
 
 
 class UiLoadsave:
@@ -46,7 +46,7 @@ class UiLoadsave:
                 setattr(obj, field, saved_value)
                 if init_field is not None:
                     init_field(saved_value)
-            if debug and key in self.component_mapping and not key.startswith('customscript'):
+            if debug_ui and key in self.component_mapping and not key.startswith('customscript'):
                 errors.log.warning(f'UI duplicate: key="{key}" id={getattr(obj, "elem_id", None)} class={getattr(obj, "elem_classes", None)}')
             if field == 'value' and key not in self.component_mapping:
                 self.component_mapping[key] = x

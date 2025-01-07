@@ -1009,6 +1009,7 @@ class Options:
     data_labels = options_templates
     filename = None
     typemap = {int: float}
+    debug = os.environ.get('SD_CONFIG_DEBUG', None) is not None
 
     def __init__(self):
         self.data = {k: v.default for k, v in self.data_labels.items()}
@@ -1022,6 +1023,8 @@ class Options:
                 if cmd_opts.hide_ui_dir_config and key in restricted_opts:
                     log.warning(f'Settings key is restricted: {key}')
                     return
+                if self.debug:
+                    log.trace(f'Settings set: {key}={value}')
                 self.data[key] = value
                 return
         return super(Options, self).__setattr__(key, value) # pylint: disable=super-with-arguments
@@ -1079,13 +1082,13 @@ class Options:
             diff = {}
             unused_settings = []
 
-            if os.environ.get('SD_CONFIG_DEBUG', None) is not None:
+            if self.debug:
                 log.debug('Settings: user')
                 for k, v in self.data.items():
                     log.trace(f'  Config: item={k} value={v} default={self.data_labels[k].default if k in self.data_labels else None}')
-                log.debug('Settings: defaults')
-                for k in self.data_labels.keys():
-                    log.trace(f'  Setting: item={k} default={self.data_labels[k].default}')
+                # log.debug('Settings: defaults')
+                # for k in self.data_labels.keys():
+                #    log.trace(f'  Setting: item={k} default={self.data_labels[k].default}')
 
             for k, v in self.data.items():
                 if k in self.data_labels:
@@ -1099,6 +1102,8 @@ class Options:
                         if not k.startswith('uiux_'):
                             unused_settings.append(k)
             writefile(diff, filename, silent=silent)
+            if self.debug:
+                log.trace(f'Settings save: {diff}')
             if len(unused_settings) > 0:
                 log.debug(f"Settings: unused={unused_settings}")
         except Exception as err:
