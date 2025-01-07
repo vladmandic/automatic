@@ -133,7 +133,7 @@ def create_ui():
                     full_quality, tiling, hidiffusion, cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end = ui_sections.create_advanced_inputs('img2img')
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('img2img')
                     enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, hr_refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
-                    detailer = shared.yolo.ui('img2img')
+                    detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength = shared.yolo.ui('img2img')
 
                     # with gr.Group(elem_id="inpaint_controls", visible=False) as inpaint_controls:
                     with gr.Accordion(open=False, label="Mask", elem_classes=["small-accordion"], elem_id="img2img_mask_group") as inpaint_controls:
@@ -174,7 +174,8 @@ def create_ui():
                 sampler_index,
                 mask_blur, mask_alpha,
                 inpainting_fill,
-                full_quality, detailer, tiling, hidiffusion,
+                full_quality, tiling, hidiffusion,
+                detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale,
                 diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
@@ -261,9 +262,14 @@ def create_ui():
                 (clip_skip, "Clip skip"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
+                # detailer
+                (detailer_enabled, "Detailer"),
+                (detailer_prompt, "Detailer prompt"),
+                (detailer_negative, "Detailer negative"),
+                (detailer_steps, "Detailer steps"),
+                (detailer_strength, "Detailer strength"),
                 # second pass
                 (enable_hr, "Second pass"),
                 (enable_hr, "Refine"),
@@ -282,8 +288,8 @@ def create_ui():
                 # refiner
                 (refiner_start, "Refiner start"),
                 (refiner_steps, "Refiner steps"),
-                (refiner_prompt, "Prompt2"),
-                (refiner_negative, "Negative2"),
+                (refiner_prompt, "refiner prompt"),
+                (refiner_negative, "Refiner negative"),
                 # pag
                 (pag_scale, "PAG scale"),
                 (pag_adaptive, "PAG adaptive"),

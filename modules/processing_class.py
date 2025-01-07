@@ -52,8 +52,13 @@ class StableDiffusionProcessing:
                  # other
                  hidiffusion: bool = False,
                  do_not_reload_embeddings: bool = False,
-                 detailer: bool = False,
                  restore_faces: bool = False,
+                 # detailer
+                detailer_enabled: bool = False,
+                detailer_prompt: str = '',
+                detailer_negative: str = '',
+                detailer_steps: int = 10,
+                detailer_strength: float = 0.3,
                  # hdr corrections
                  hdr_mode: int = 0,
                  hdr_brightness: float = 0,
@@ -167,7 +172,11 @@ class StableDiffusionProcessing:
         self.full_quality = full_quality
         self.hidiffusion = hidiffusion
         self.do_not_reload_embeddings = do_not_reload_embeddings
-        self.detailer = detailer
+        self.detailer_enabled = detailer_enabled
+        self.detailer_prompt = detailer_prompt
+        self.detailer_negative = detailer_negative
+        self.detailer_steps = detailer_steps
+        self.detailer_strength = detailer_strength
         self.restore_faces = restore_faces
         self.init_images = init_images
         self.resize_mode = resize_mode

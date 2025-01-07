@@ -90,11 +90,11 @@ def sample_txt2img(p: processing.StableDiffusionProcessingTxt2Img, conditioning,
             for i, x_sample in enumerate(decoded_samples):
                 x_sample = validate_sample(x_sample)
                 image = Image.fromarray(x_sample)
-                bak_extra_generation_params, bak_detailer = p.extra_generation_params, p.detailer
+                orig_extra_generation_params, orig_detailer = p.extra_generation_params, p.detailer_denabled
                 p.extra_generation_params = {}
-                p.detailer = False
+                p.detailer_denabled = False
                 info = processing.create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, [], iteration=p.iteration, position_in_batch=i)
-                p.extra_generation_params, p.detailer = bak_extra_generation_params, bak_detailer
+                p.extra_generation_params, p.detailer_enabled = orig_extra_generation_params, orig_detailer
                 images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], shared.opts.samples_format, info=info, suffix="-before-hires")
         if latent_scale_mode is None or p.hr_force: # non-latent upscaling
             shared.state.job = 'Upscale'

@@ -53,8 +53,8 @@ class Processed:
         self.batch_size = max(1, p.batch_size)
         self.restore_faces = p.restore_faces or False
         self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
-        self.detailer = p.detailer or False
-        self.detailer_model = shared.opts.detailer_model if p.detailer else None
+        self.detailer = p.detailer_enabled or False
+        self.detailer_model = shared.opts.detailer_model if p.detailer_enabled else None
         self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
@@ -374,7 +374,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     sample = face_restoration.restore_faces(sample, p)
                     if sample is not None:
                         image = Image.fromarray(sample)
-                if p.detailer:
+                if p.detailer_enabled:
                     p.ops.append('detailer')
                     if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)

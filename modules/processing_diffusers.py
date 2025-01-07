@@ -47,7 +47,7 @@ def restore_state(p: processing.StableDiffusionProcessing):
             p.init_images = None
         if state == 'reprocess_detail':
             p.skip = ['encode', 'base', 'hires']
-            p.detailer = True
+            p.detailer_enabled = True
         shared.log.info(f'Restore state: op={p.state} skip={p.skip}')
     return p
 

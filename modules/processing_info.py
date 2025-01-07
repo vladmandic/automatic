@@ -52,8 +52,8 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         "Model": None if (not shared.opts.add_model_name_to_info) or (not shared.sd_model.sd_checkpoint_info.model_name) else shared.sd_model.sd_checkpoint_info.model_name.replace(',', '').replace(':', ''),
         "Model hash": getattr(p, 'sd_model_hash', None if (not shared.opts.add_model_hash_to_info) or (not shared.sd_model.sd_model_hash) else shared.sd_model.sd_model_hash),
         "VAE": (None if not shared.opts.add_model_name_to_info or sd_vae.loaded_vae_file is None else os.path.splitext(os.path.basename(sd_vae.loaded_vae_file))[0]) if p.full_quality else 'TAESD',
-        "Prompt2": p.refiner_prompt if len(p.refiner_prompt) > 0 else None,
-        "Negative2": p.refiner_negative if len(p.refiner_negative) > 0 else None,
+        "Refiner prompt": p.refiner_prompt if len(p.refiner_prompt) > 0 else None,
+        "Refiner negative": p.refiner_negative if len(p.refiner_negative) > 0 else None,
         "Styles": "; ".join(p.styles) if p.styles is not None and len(p.styles) > 0 else None,
         # sdnext
         "App": 'SD.Next',
@@ -136,6 +136,10 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
         args['Size name mask'] = p.resize_name_mask
     if 'detailer' in p.ops:
         args["Detailer"] = ', '.join(shared.opts.detailer_models)
+        args["Detailer steps"] = p.detailer_steps
+        args["Detailer strength"] = p.detailer_strength
+        args["Detailer prompt"] = p.detailer_prompt if len(p.detailer_prompt) > 0 else None
+        args["Detailer negative"] = p.detailer_negative if len(p.detailer_negative) > 0 else None
     if 'color' in p.ops:
         args["Color correction"] = True
     # embeddings

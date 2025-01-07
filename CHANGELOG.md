@@ -26,8 +26,15 @@
 - **Schedulers**:
   - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
+- **Detailer**:
+  - add explicit detailer prompt and negative prompt  
+  - move steps, strength, prompt, negative from settings into ui params  
+  - set/restore detailer metadata  
+  - new [detailer wiki](https://github.com/vladmandic/automatic/wiki/Detailer)
+- **XYZ Grid**
+  - add prompt search&replace options: *primary, refine, detailer, all*
 - [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
-  - updated: install, debug, control-howto, zluda  
+  - updated: Detailer, Install, Debug, Control-HowTo, ZLUDA  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  

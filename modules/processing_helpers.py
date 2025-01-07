@@ -601,7 +601,7 @@ def get_job_name(p, model):
         else:
             return 'Image'
     elif sd_models.get_diffusers_task(model) == sd_models.DiffusersTaskType.INPAINTING:
-        if p.detailer:
+        if p.detailer_enabled:
             return 'Detailer'
         else:
             return 'Inpaint'

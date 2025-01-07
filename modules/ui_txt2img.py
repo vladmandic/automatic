@@ -47,7 +47,7 @@ def create_ui():
                     full_quality, tiling, hidiffusion, _cfg_scale, clip_skip, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, _cfg_end = ui_sections.create_advanced_inputs('txt2img', base=False)
                     hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio = ui_sections.create_correction_inputs('txt2img')
                     enable_hr, hr_sampler_index, denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('txt2img')
-                    detailer = shared.yolo.ui('txt2img')
+                    detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength  = shared.yolo.ui('txt2img')
                     override_settings = ui_common.create_override_inputs('txt2img')
                     state = gr.Textbox(value='', visible=False)
 
@@ -64,7 +64,8 @@ def create_ui():
                 dummy_component, state,
                 txt2img_prompt, txt2img_negative_prompt, txt2img_prompt_styles,
                 steps, sampler_index, hr_sampler_index,
-                full_quality, detailer, tiling, hidiffusion,
+                full_quality, tiling, hidiffusion,
+                detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
                 batch_count, batch_size,
                 cfg_scale, image_cfg_scale, diffusers_guidance_rescale, pag_scale, pag_adaptive, cfg_end,
                 clip_skip,
@@ -122,9 +123,14 @@ def create_ui():
                 (image_cfg_scale, "Hires CFG scale"),
                 (diffusers_guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
+                # detailer
+                (detailer_enabled, "Detailer"),
+                (detailer_prompt, "Detailer prompt"),
+                (detailer_negative, "Detailer negative"),
+                (detailer_steps, "Detailer steps"),
+                (detailer_strength, "Detailer strength"),
                 # second pass
                 (enable_hr, "Second pass"),
                 (enable_hr, "Refine"),
@@ -143,8 +149,8 @@ def create_ui():
                 # refiner
                 (refiner_start, "Refiner start"),
                 (refiner_steps, "Refiner steps"),
-                (refiner_prompt, "Prompt2"),
-                (refiner_negative, "Negative2"),
+                (refiner_prompt, "refiner prompt"),
+                (refiner_negative, "Refiner negative"),
                 # pag
                 (pag_scale, "PAG scale"),
                 (pag_adaptive, "PAG adaptive"),
