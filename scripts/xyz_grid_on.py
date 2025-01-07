@@ -286,8 +286,8 @@ class Script(scripts.Script):
                 total_steps += p.hr_second_pass_steps * total_jobs
             else:
                 total_steps *= 2
-        if p.detailer:
-            total_steps += shared.opts.detailer_steps * total_jobs
+        if p.detailer_enabled:
+            total_steps += p.detailer_steps * total_jobs
 
         total_steps *= p.n_iter
         total_jobs *= p.n_iter
@@ -432,7 +432,7 @@ class Script(scripts.Script):
     def process_images(self, p, *args): # pylint: disable=W0221, W0613
         if xyz_results_cache is not None and len(xyz_results_cache.images) > 0:
             p.restore_faces = False
-            p.detailer = False
+            p.detailer_enabled = False
             p.color_corrections = None
             # p.scripts = None
             return xyz_results_cache

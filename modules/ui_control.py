@@ -177,7 +177,7 @@ def create_ui(_blocks: gr.Blocks=None):
                     video_type.change(fn=helpers.video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
 
                 enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, refiner_start, refiner_prompt, refiner_negative = ui_sections.create_hires_inputs('control')
-                detailer = shared.yolo.ui('control')
+                detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength = shared.yolo.ui('control')
 
             with gr.Row():
                 override_settings = ui_common.create_override_inputs('control')
@@ -567,7 +567,8 @@ def create_ui(_blocks: gr.Blocks=None):
                 prompt, negative, styles,
                 steps, sampler_index,
                 seed, subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w,
-                cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, detailer, tiling, hidiffusion,
+                cfg_scale, clip_skip, image_cfg_scale, guidance_rescale, pag_scale, pag_adaptive, cfg_end, full_quality, tiling, hidiffusion,
+                detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
                 hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
                 resize_mode_before, resize_name_before, resize_context_before, width_before, height_before, scale_by_before, selected_scale_tab_before,
                 resize_mode_after, resize_name_after, resize_context_after, width_after, height_after, scale_by_after, selected_scale_tab_after,
@@ -652,9 +653,14 @@ def create_ui(_blocks: gr.Blocks=None):
                 (image_cfg_scale, "Hires CFG scale"),
                 (guidance_rescale, "CFG rescale"),
                 (full_quality, "Full quality"),
-                (detailer, "Detailer"),
                 (tiling, "Tiling"),
                 (hidiffusion, "HiDiffusion"),
+                # detailer
+                (detailer_enabled, "Detailer"),
+                (detailer_prompt, "Detailer prompt"),
+                (detailer_negative, "Detailer negative"),
+                (detailer_steps, "Detailer steps"),
+                (detailer_strength, "Detailer strength"),
                 # second pass
                 (enable_hr, "Second pass"),
                 (enable_hr, "Refine"),
@@ -673,8 +679,8 @@ def create_ui(_blocks: gr.Blocks=None):
                 # refiner
                 (refiner_start, "Refiner start"),
                 (refiner_steps, "Refiner steps"),
-                (refiner_prompt, "Prompt2"),
-                (refiner_negative, "Negative2"),
+                (refiner_prompt, "refiner prompt"),
+                (refiner_negative, "Refiner negative"),
                 # pag
                 (pag_scale, "PAG scale"),
                 (pag_adaptive, "PAG adaptive"),

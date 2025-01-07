@@ -139,7 +139,8 @@ def img2img(id_task: str, state: str, mode: int,
             sampler_index,
             mask_blur, mask_alpha,
             inpainting_fill,
-            full_quality, detailer, tiling, hidiffusion,
+            full_quality, tiling, hidiffusion,
+            detailer_enabled, detailer_prompt, detailer_negative, detailer_steps, detailer_strength,
             n_iter, batch_size,
             cfg_scale, image_cfg_scale,
             diffusers_guidance_rescale,
@@ -158,13 +159,14 @@ def img2img(id_task: str, state: str, mode: int,
             hdr_mode, hdr_brightness, hdr_color, hdr_sharpen, hdr_clamp, hdr_boundary, hdr_threshold, hdr_maximize, hdr_max_center, hdr_max_boundry, hdr_color_picker, hdr_tint_ratio,
             enable_hr, hr_sampler_index, hr_denoising_strength, hr_resize_mode, hr_resize_context, hr_upscaler, hr_force, hr_second_pass_steps, hr_scale, hr_resize_x, hr_resize_y, refiner_steps, hr_refiner_start, refiner_prompt, refiner_negative,
             override_settings_texts,
-            *args): # pylint: disable=unused-argument
+            *args):
+
+
+    debug(f'img2img: {id_task}')
 
     if shared.sd_model is None:
         shared.log.warning('Aborted: op=img model not loaded')
         return [], '', '', 'Error: model not loaded'
-
-    debug(f'img2img: id_task={id_task}|mode={mode}|prompt={prompt}|negative_prompt={negative_prompt}|prompt_styles={prompt_styles}|init_img={init_img}|sketch={sketch}|init_img_with_mask={init_img_with_mask}|inpaint_color_sketch={inpaint_color_sketch}|inpaint_color_sketch_orig={inpaint_color_sketch_orig}|init_img_inpaint={init_img_inpaint}|init_mask_inpaint={init_mask_inpaint}|steps={steps}|sampler_index={sampler_index}||mask_blur={mask_blur}|mask_alpha={mask_alpha}|inpainting_fill={inpainting_fill}|full_quality={full_quality}|detailer={detailer}|tiling={tiling}|hidiffusion={hidiffusion}|n_iter={n_iter}|batch_size={batch_size}|cfg_scale={cfg_scale}|image_cfg_scale={image_cfg_scale}|clip_skip={clip_skip}|denoising_strength={denoising_strength}|seed={seed}|subseed{subseed}|subseed_strength={subseed_strength}|seed_resize_from_h={seed_resize_from_h}|seed_resize_from_w={seed_resize_from_w}|selected_scale_tab={selected_scale_tab}|height={height}|width={width}|scale_by={scale_by}|resize_mode={resize_mode}|resize_name={resize_name}|resize_context={resize_context}|inpaint_full_res={inpaint_full_res}|inpaint_full_res_padding={inpaint_full_res_padding}|inpainting_mask_invert={inpainting_mask_invert}|img2img_batch_files={img2img_batch_files}|img2img_batch_input_dir={img2img_batch_input_dir}|img2img_batch_output_dir={img2img_batch_output_dir}|img2img_batch_inpaint_mask_dir={img2img_batch_inpaint_mask_dir}|override_settings_texts={override_settings_texts}')
 
     if sampler_index is None:
         shared.log.warning('Sampler: invalid')
@@ -240,9 +242,13 @@ def img2img(id_task: str, state: str, mode: int,
         width=width,
         height=height,
         full_quality=full_quality,
-        detailer=detailer,
         tiling=tiling,
         hidiffusion=hidiffusion,
+        detailer_enabled=detailer_enabled,
+        detailer_prompt=detailer_prompt,
+        detailer_negative=detailer_negative,
+        detailer_steps=detailer_steps,
+        detailer_strength=detailer_strength,
         init_images=[image],
         mask=mask,
         mask_blur=mask_blur,
