@@ -46,6 +46,7 @@
   - scheduler api  
   - controlnet with hires  
   - controlnet with batch count  
+  - apply settings skip hidden settings  
 
 ## Update for 2024-12-31
 
