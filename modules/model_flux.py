@@ -84,7 +84,7 @@ def load_flux_bnb(checkpoint_info, diffusers_load_config): # pylint: disable=unu
         repo_path = checkpoint_info
     else:
         repo_path = checkpoint_info.path
-    model_quant.load_bnb('Load model: type=T5')
+    model_quant.load_bnb('Load model: type=FLUX')
     quant = model_quant.get_quant(repo_path)
     try:
         if quant == 'fp8':
@@ -203,7 +203,8 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         "torch_dtype": devices.dtype,
         "cache_dir": shared.opts.hfcache_dir,
     }
-    shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant={quant} dtype={devices.dtype}')
+    if quant is not None and quant != 'none':
+        shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} prequant={quant} dtype={devices.dtype}')
     if 'gguf' in file_path.lower():
         # _transformer, _text_encoder_2 = load_flux_gguf(file_path)
         from modules import ggml
@@ -214,25 +215,34 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_quanto(file_path)
         if _transformer is not None:
             transformer = _transformer
-    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4' or 'Model' in shared.opts.bnb_quantization:
+    elif quant == 'fp8' or quant == 'fp4' or quant == 'nf4':
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
     elif 'nf4' in quant: # TODO flux: fix loader for civitai nf4 models
         from modules.model_flux_nf4 import load_flux_nf4
-        _transformer, _text_encoder_2 = load_flux_nf4(file_path)
+        _transformer, _text_encoder_2 = load_flux_nf4(file_path, prequantized=True)
         if _transformer is not None:
             transformer = _transformer
     else:
-        quant_args = {}
-        quant_args = model_quant.create_bnb_config(quant_args)
+        quant_args = model_quant.create_bnb_config({})
         if quant_args:
-            model_quant.load_bnb(f'Load model: type=Sana quant={quant_args}')
-        if not quant_args:
-            quant_args = model_quant.create_ao_config(quant_args)
-            if quant_args:
-                model_quant.load_torchao(f'Load model: type=Sana quant={quant_args}')
-        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config, **quant_args)
+            model_quant.load_bnb(f'Load model: type=FLUX quant={quant_args}')
+            shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant=bnb dtype={devices.dtype}')
+            from modules.model_flux_nf4 import load_flux_nf4
+            transformer, _text_encoder_2 = load_flux_nf4(file_path, prequantized=False)
+            if transformer is not None:
+                return transformer
+        quant_args = model_quant.create_ao_config({})
+        if quant_args:
+            model_quant.load_torchao(f'Load model: type=FLUX quant={quant_args}')
+            shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant=torchao dtype={devices.dtype}')
+            transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config, **quant_args)
+            if transformer is not None:
+                return transformer
+        shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant=none dtype={devices.dtype}')
+        # shared.log.warning('Load module: type=UNet/Transformer does not support load-time quantization') # TODO flux transformer from-single-file with quant
+        transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
         shared.opts.sd_unet = 'None'
