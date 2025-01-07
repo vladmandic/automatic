@@ -1613,7 +1613,7 @@ def disable_offload(sd_model):
 
 
 def clear_caches():
-    shared.log.debug('Cache clear')
+    # shared.log.debug('Cache clear')
     if not shared.opts.lora_legacy:
         from modules.lora import networks
         networks.loaded_networks.clear()

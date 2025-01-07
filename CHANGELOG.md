@@ -51,6 +51,7 @@
   - apply settings skip hidden settings  
   - lora diffusers method apply only once  
   - lora diffusers method set prompt tags and metadata  
+  - flux support on-the-fly quantization for bnb of unet only  
 
 ## Update for 2024-12-31
 

@@ -24,7 +24,6 @@ def _replace_with_bnb_linear(
 ):
     """
     Private method that wraps the recursion for module replacement.
-
     Returns the converted model and a boolean that indicates if the conversion has been successfull or not.
     """
     bnb = model_quant.load_bnb('Load model: type=FLUX')
@@ -106,7 +105,6 @@ def create_quantized_param(
             new_value = old_value.to(target_device)
         else:
             new_value = param_value.to(target_device)
-
         new_value = torch.nn.Parameter(new_value, requires_grad=old_value.requires_grad)
         module._parameters[tensor_name] = new_value # pylint: disable=protected-access
         return
@@ -121,13 +119,8 @@ def create_quantized_param(
         raise ValueError(f"{tensor_name} is on the meta device, we need a `value` to put in on {target_device}.")
 
     if pre_quantized:
-        if (param_name + ".quant_state.bitsandbytes__fp4" not in state_dict) and (
-                param_name + ".quant_state.bitsandbytes__nf4" not in state_dict
-            ):
-            raise ValueError(
-                f"Supplied state dict for {param_name} does not contain `bitsandbytes__*` and possibly other `quantized_stats` components."
-            )
-
+        if (param_name + ".quant_state.bitsandbytes__fp4" not in state_dict) and (param_name + ".quant_state.bitsandbytes__nf4" not in state_dict):
+            raise ValueError(f"Supplied state dict for {param_name} does not contain `bitsandbytes__*` and possibly other `quantized_stats` components.")
         quantized_stats = {}
         for k, v in state_dict.items():
             # `startswith` to counter for edge cases where `param_name`
@@ -136,23 +129,20 @@ def create_quantized_param(
                 quantized_stats[k] = v
                 if unexpected_keys is not None and k in unexpected_keys:
                     unexpected_keys.remove(k)
-
         new_value = bnb.nn.Params4bit.from_prequantized(
             data=param_value,
             quantized_stats=quantized_stats,
             requires_grad=False,
             device=target_device,
         )
-
     else:
         new_value = param_value.to("cpu")
         kwargs = old_value.__dict__
         new_value = bnb.nn.Params4bit(new_value, requires_grad=False, **kwargs).to(target_device)
-
     module._parameters[tensor_name] = new_value # pylint: disable=protected-access
 
 
-def load_flux_nf4(checkpoint_info):
+def load_flux_nf4(checkpoint_info, prequantized: bool = True):
     transformer = None
     text_encoder_2 = None
     if isinstance(checkpoint_info, str):
@@ -197,7 +187,7 @@ def load_flux_nf4(checkpoint_info):
             if not check_quantized_param(transformer, param_name):
                 set_module_tensor_to_device(transformer, param_name, device=0, value=param)
             else:
-                create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=True)
+                create_quantized_param(transformer, param, param_name, target_device=0, state_dict=original_state_dict, pre_quantized=prequantized)
     except Exception as e:
         transformer, text_encoder_2 = None, None
         shared.log.error(f"Load model: type=FLUX failed to load UNET: {e}")
