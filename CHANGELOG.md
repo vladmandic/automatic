@@ -10,6 +10,8 @@
 - [PixelSmith](https://github.com/Thanos-DB/Pixelsmith/)
   - available for SD-XL in txt2img and img2img workflows
   - select from *scripts -> pixelsmith*  
+- [Hunyuan Video](https://github.com/Tencent/HunyuanVideo) LoRA support
+  - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
@@ -47,6 +49,8 @@
   - controlnet with hires  
   - controlnet with batch count  
   - apply settings skip hidden settings  
+  - lora diffusers method apply only once  
+  - lora diffusers method set prompt tags and metadata  
 
 ## Update for 2024-12-31
 
