@@ -1078,7 +1078,6 @@ class Options:
             log.warning(f'Setting: fn="{filename}" save disabled')
             return
         try:
-            # output = json.dumps(self.data, indent=2)
             diff = {}
             unused_settings = []
 
@@ -1086,9 +1085,6 @@ class Options:
                 log.debug('Settings: user')
                 for k, v in self.data.items():
                     log.trace(f'  Config: item={k} value={v} default={self.data_labels[k].default if k in self.data_labels else None}')
-                # log.debug('Settings: defaults')
-                # for k in self.data_labels.keys():
-                #    log.trace(f'  Setting: item={k} default={self.data_labels[k].default}')
 
             for k, v in self.data.items():
                 if k in self.data_labels:
