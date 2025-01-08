@@ -24,12 +24,20 @@ python = sys.executable # used by some extensions to run python
 skip_install = False # parsed by some extensions
 
 
+try:
+    from modules.timer import launch
+    rec = launch.record
+except Exception:
+    rec = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
+
+
 def init_args():
     global parser, args # pylint: disable=global-statement
     import modules.cmd_args
     parser = modules.cmd_args.parser
     installer.add_args(parser)
     args, _ = parser.parse_known_args()
+    rec('args')
 
 
 def init_paths():
@@ -38,6 +46,7 @@ def init_paths():
     modules.paths.register_paths()
     script_path = modules.paths.script_path
     extensions_dir = modules.paths.extensions_dir
+    rec('paths')
 
 
 def get_custom_args():
@@ -60,6 +69,7 @@ def get_custom_args():
     ldd = os.environ.get('LD_PRELOAD', None)
     if ldd is not None:
         installer.log.debug(f'Linker flags: "{ldd}"')
+    rec('args')
 
 
 @lru_cache()
@@ -71,6 +81,7 @@ def commit_hash(): # compatbility function
         stored_commit_hash = run(f"{git} rev-parse HEAD").strip()
     except Exception:
         stored_commit_hash = "<none>"
+    rec('commit')
     return stored_commit_hash
 
 
@@ -185,6 +196,7 @@ def start_server(immediate=True, server=None):
     if args.profile:
         pr.disable()
         installer.print_profile(pr, 'WebUI')
+    rec('server')
     return uvicorn, server
 
 
@@ -218,7 +230,6 @@ def main():
         installer.install("uv", "uv")
     installer.check_torch()
     installer.check_onnx()
-    installer.check_torchao()
     installer.check_diffusers()
     installer.check_modified_files()
     if args.reinstall:

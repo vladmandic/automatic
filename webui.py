@@ -171,7 +171,7 @@ def initialize():
 
 def load_model():
     if not shared.opts.sd_checkpoint_autoload and shared.cmd_opts.ckpt is None:
-        log.debug('Model auto load disabled')
+        log.info('Model auto load disabled')
     else:
         shared.state.begin('Load')
         thread_model = Thread(target=lambda: shared.sd_model)
@@ -356,7 +356,15 @@ def webui(restart=False):
     for m in modules.scripts.postprocessing_scripts_data:
         debug(f'  {m}')
     modules.script_callbacks.print_timers()
-    log.info(f"Startup time: {timer.startup.summary()}")
+
+    if cmd_opts.profile:
+        log.info(f"Launch time: {timer.launch.summary(min_time=0)}")
+        log.info(f"Installer time: {timer.init.summary(min_time=0)}")
+        log.info(f"Startup time: {timer.startup.summary(min_time=0)}")
+    else:
+        timer.startup.add('launch', timer.launch.get_total())
+        timer.startup.add('installer', timer.launch.get_total())
+        log.info(f"Startup time: {timer.startup.summary()}")
     timer.startup.reset()
 
     if not restart:

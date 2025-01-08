@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-07
+## Update for 2025-01-08
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -25,6 +25,7 @@
 - **Refactor**:
   - refactored progress monitoring, job updates and live preview  
   - improved metadata save and restore  
+  - startup tracing and optimizations  
 - **Schedulers**:
   - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
