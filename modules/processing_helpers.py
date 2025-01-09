@@ -428,11 +428,16 @@ def resize_hires(p, latents): # input=latents output=pil if not latent_upscaler 
     return resized_images
 
 
-def fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2):
+def fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2):
     if type(prompts) is str:
         prompts = [prompts]
     if type(negative_prompts) is str:
         negative_prompts = [negative_prompts]
+    if hasattr(p, '[init_images]') and p.init_images is not None and len(p.init_images) > 1:
+        while len(prompts) < len(p.init_images):
+            prompts.append(prompts[-1])
+        while len(negative_prompts) < len(p.init_images):
+            negative_prompts.append(negative_prompts[-1])
     while len(negative_prompts) < len(prompts):
         negative_prompts.append(negative_prompts[-1])
     while len(prompts) < len(negative_prompts):

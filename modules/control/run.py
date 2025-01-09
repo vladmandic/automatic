@@ -188,7 +188,7 @@ def check_enabled(p, unit_type, units, active_model, active_strength, active_sta
             selected_models = None
         elif len(active_model) == 1:
             selected_models = active_model[0].model if active_model[0].model is not None else None
-            p.is_tile = p.is_tile or 'tile' in active_model[0].model_id.lower()
+            p.is_tile = p.is_tile or 'tile' in (active_model[0].model_id or '').lower()
             has_models = selected_models is not None
             control_conditioning = active_strength[0] if len(active_strength) > 0 else 1 # strength or list[strength]
             control_guidance_start = active_start[0] if len(active_start) > 0 else 0
@@ -687,6 +687,7 @@ def control_run(state: str = '',
                     if pipe is not None: # run new pipeline
                         if not hasattr(pipe, 'restore_pipeline') and video is None:
                             pipe.restore_pipeline = restore_pipeline
+                            shared.sd_model.restore_pipeline = restore_pipeline
                         debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
                         # debug(f'Control exec pipeline: p={vars(p)}')
                         # debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
