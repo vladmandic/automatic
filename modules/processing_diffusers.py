@@ -189,7 +189,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
 
         # hires
         if p.hr_force and strength == 0:
-            shared.log.warning('HiRes skip: denoising=0')
+            shared.log.warning('Hires skip: denoising=0')
             p.hr_force = False
         if p.hr_force:
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)

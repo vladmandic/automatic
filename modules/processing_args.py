@@ -1,6 +1,7 @@
 import typing
 import os
 import re
+import copy
 import math
 import time
 import inspect
@@ -122,7 +123,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
 
     if debug_enabled:
         debug_log(f'Diffusers pipeline possible: {possible}')
-    prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(prompts, negative_prompts, prompts_2, negative_prompts_2)
+    prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2)
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
 
@@ -278,7 +279,10 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         args['callback'] = diffusers_callback_legacy
 
     if 'image' in kwargs:
-        p.init_images = kwargs['image'] if isinstance(kwargs['image'], list) else [kwargs['image']]
+        if isinstance(kwargs['image'], list) and isinstance(kwargs['image'][0], Image.Image):
+            p.init_images = kwargs['image']
+        if isinstance(kwargs['image'], Image.Image):
+            p.init_images = [kwargs['image']]
 
     # handle remaining args
     for arg in kwargs:
@@ -360,4 +364,6 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
     if debug_enabled:
         debug_log(f'Diffusers pipeline args: {args}')
-    return args
+
+    _args = copy.deepcopy(args) # pipeline may modify underlying args
+    return _args

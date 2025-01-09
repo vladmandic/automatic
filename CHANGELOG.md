@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-08
+## Update for 2025-01-09
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -53,6 +53,8 @@
   - lora diffusers method apply only once  
   - lora diffusers method set prompt tags and metadata  
   - flux support on-the-fly quantization for bnb of unet only  
+  - control restore pipeline before running hires  
+  - restore args after batch run  
 
 ## Update for 2024-12-31
 
