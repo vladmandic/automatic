@@ -4,7 +4,6 @@ import site
 import ctypes
 import shutil
 import zipfile
-import subprocess
 import urllib.request
 from typing import Optional, Union
 from modules import rocm
@@ -17,7 +16,6 @@ DLL_MAPPING = {
 }
 HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll']
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
-version: Union[str, None] = None
 experimental_hipBLASLt_support: bool = False
 default_agent: Union[rocm.Agent, None] = None
 
@@ -32,7 +30,6 @@ def set_default_agent(agent: rocm.Agent):
 
 
 def install(zluda_path: os.PathLike) -> None:
-
     if os.path.exists(zluda_path):
         __initialize(zluda_path)
         return
@@ -103,14 +100,8 @@ def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
 
 
 def __initialize(zluda_path: os.PathLike):
-    global version, experimental_hipBLASLt_support # pylint: disable=global-statement
-
-    if version is not None:
-        return
-
-    process = subprocess.run(["zluda", "--version"], cwd=zluda_path, shell=True, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    version = process.stdout.decode(encoding="utf8", errors="ignore")[6:].strip()
-    experimental_hipBLASLt_support = version == "3.8.5.pre1"
+    global experimental_hipBLASLt_support # pylint: disable=global-statement
+    experimental_hipBLASLt_support = os.path.exists(os.path.join(zluda_path, 'cublasLt.dll'))
 
     if experimental_hipBLASLt_support:
         HIPSDK_TARGETS.append('hipblaslt.dll')
