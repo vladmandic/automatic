@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 import os
+import threading
 from copy import copy
 import numpy as np
 import gradio as gr
@@ -16,6 +17,7 @@ PREDEFINED = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-v1.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-full-v1.pt',
 ]
+load_lock = threading.Lock()
 
 
 class YoloResult:
@@ -151,28 +153,29 @@ class YoloRestorer(Detailer):
         return result
 
     def load(self, model_name: str = None):
-        from modules import modelloader
-        model = None
-        self.dependencies()
-        if model_name is None:
-            model_name = list(self.list)[0]
-        if model_name in self.models:
-            return model_name, self.models[model_name]
-        else:
-            model_url = self.list.get(model_name)
-            file_name = os.path.basename(model_url)
-            model_file = None
-            try:
-                model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
-                if model_file is not None:
-                    import ultralytics
-                    model = ultralytics.YOLO(model_file)
-                    classes = list(model.names.values())
-                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" ultralytics={ultralytics.__version__} classes={classes}')
-                    self.models[model_name] = model
-                    return model_name, model
-            except Exception as e:
-                shared.log.error(f'Load: type=Detailer name="{model_name}" error="{e}"')
+        with load_lock:
+            from modules import modelloader
+            model = None
+            self.dependencies()
+            if model_name is None:
+                model_name = list(self.list)[0]
+            if model_name in self.models:
+                return model_name, self.models[model_name]
+            else:
+                model_url = self.list.get(model_name)
+                file_name = os.path.basename(model_url)
+                model_file = None
+                try:
+                    model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
+                    if model_file is not None:
+                        import ultralytics
+                        model = ultralytics.YOLO(model_file)
+                        classes = list(model.names.values())
+                        shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" ultralytics={ultralytics.__version__} classes={classes}')
+                        self.models[model_name] = model
+                        return model_name, model
+                except Exception as e:
+                    shared.log.error(f'Load: type=Detailer name="{model_name}" error="{e}"')
         return None, None
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):

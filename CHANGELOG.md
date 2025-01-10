@@ -26,6 +26,7 @@
   - refactored progress monitoring, job updates and live preview  
   - improved metadata save and restore  
   - startup tracing and optimizations  
+  - threading load locks on model loads
 - **Schedulers**:
   - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
@@ -55,7 +56,6 @@
   - flux support on-the-fly quantization for bnb of unet only  
   - control restore pipeline before running hires  
   - restore args after batch run  
-  - control add load lock  
 
 ## Update for 2024-12-31
 

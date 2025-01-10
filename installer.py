@@ -1397,11 +1397,20 @@ def add_args(parser):
     group_log.add_argument('--docs', default=os.environ.get("SD_DOCS", False), action='store_true', help="Mount API docs, default: %(default)s")
     group_log.add_argument("--api-log", default=os.environ.get("SD_APILOG", True), action='store_true', help="Log all API requests")
 
+    group_nargs = parser.add_argument_group('Other')
+    group_nargs.add_argument('args', type=str, nargs='*')
+
 
 def parse_args(parser):
     # command line args
     global args # pylint: disable=global-statement
-    args = parser.parse_args()
+    if "USED_VSCODE_COMMAND_PICKARGS" in os.environ:
+        import shlex
+        argv = shlex.split(" ".join(sys.argv[1:])) if "USED_VSCODE_COMMAND_PICKARGS" in os.environ else sys.argv[1:]
+        log.debug('VSCode Launch')
+        args = parser.parse_args(argv)
+    else:
+        args = parser.parse_args()
     return args
 
 
