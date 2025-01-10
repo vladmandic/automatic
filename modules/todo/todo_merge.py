@@ -25,7 +25,6 @@ def init_generator(device: torch.device, fallback: torch.Generator = None):
     """
     Forks the current default random generator given device.
     """
-    print(f"init_generator device = {device}")
     if device.type == "cpu":
         return torch.Generator(device="cpu").set_state(torch.get_rng_state())
     elif device.type == "cuda":

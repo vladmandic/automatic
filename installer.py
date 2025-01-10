@@ -1010,7 +1010,6 @@ def ensure_base_requirements():
     setuptools_version = '69.5.1'
 
     def update_setuptools():
-        # print('Install base requirements')
         global pkg_resources, setuptools, distutils # pylint: disable=global-statement
         # python may ship with incompatible setuptools
         subprocess.run(f'"{sys.executable}" -m pip install setuptools=={setuptools_version}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
