@@ -410,7 +410,9 @@ def control_run(state: str = '',
     blended_image = None
 
     # set pipeline
-    if pipe.__class__.__name__ != shared.sd_model.__class__.__name__:
+    if pipe is None:
+        return [], '', '', 'Pipeline not set'
+    elif pipe.__class__.__name__ != shared.sd_model.__class__.__name__:
         original_pipeline = shared.sd_model
         shared.sd_model = pipe
         sd_models.move_model(shared.sd_model, shared.device)

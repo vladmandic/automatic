@@ -175,7 +175,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
             shared.state.update('Upscale', 0, 1)
-            output.images = resize_hires(p, latents=output.images)
+            output.images = resize_hires(p, latents=output.images) if output is not None else []
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)

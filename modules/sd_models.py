@@ -1085,6 +1085,8 @@ def get_signature(cls):
 
 
 def get_call(cls):
+    if cls is None:
+        return []
     signature = inspect.signature(cls.__call__, follow_wrapped=True, eval_str=True)
     return signature.parameters
 

@@ -365,5 +365,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     if debug_enabled:
         debug_log(f'Diffusers pipeline args: {args}')
 
-    _args = copy.deepcopy(args) # pipeline may modify underlying args
+    _args = {}
+    for k, v in args.items():
+        _args[k] = copy.deepcopy(v) if not torch.is_tensor(v) else v # pipeline may modify underlying args
     return _args
