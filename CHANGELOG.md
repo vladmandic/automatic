@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-09
+## Update for 2025-01-10
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
