@@ -55,6 +55,7 @@
   - flux support on-the-fly quantization for bnb of unet only  
   - control restore pipeline before running hires  
   - restore args after batch run  
+  - control add load lock  
 
 ## Update for 2024-12-31
 
