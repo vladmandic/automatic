@@ -253,6 +253,9 @@ class Processor():
                 image_resized = image_input
             with devices.inference_context():
                 image_process = self.model(image_resized, **kwargs)
+            if image_process is None:
+                log.error(f'Control Processor: id="{self.processor_id}" no image')
+                return image_input
             if isinstance(image_process, np.ndarray):
                 if np.max(image_process) < 2:
                     image_process = (255.0 * image_process).astype(np.uint8)
