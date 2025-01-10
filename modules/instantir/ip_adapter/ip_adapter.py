@@ -169,8 +169,6 @@ class IPAdapterPlus(torch.nn.Module):
         if "latents" in state_dict["image_proj"] and "latents" in self.image_proj.state_dict():
             # Check if the shapes are mismatched
             if state_dict["image_proj"]["latents"].shape != self.image_proj.state_dict()["latents"].shape:
-                print(f"Shapes of 'image_proj.latents' in checkpoint {ckpt_path} and current model do not match.")
-                print("Removing 'latents' from checkpoint and loading the rest of the weights.")
                 del state_dict["image_proj"]["latents"]
                 strict_load_image_proj_model = False
 

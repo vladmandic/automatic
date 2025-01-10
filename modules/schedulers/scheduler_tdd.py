@@ -117,8 +117,7 @@ class TDDScheduler(DPMSolverSinglestepScheduler):
         timesteps = tcd_origin_timesteps[inference_indices]
         if self.special_jump:
             if self.tdd_train_step == 50:
-                #timesteps = np.array([999., 879., 759., 499., 259.])
-                print(timesteps)
+                pass
             elif self.tdd_train_step == 250:
                 if num_inference_steps == 5:
                     timesteps = np.array([999., 875., 751., 499., 251.])
@@ -203,7 +202,6 @@ class TDDScheduler(DPMSolverSinglestepScheduler):
 
         sigmas_s = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
         if self.config.use_karras_sigmas:
-            print("have not write")
             pass
         else:
             sigmas_s = np.interp(timesteps_s, np.arange(0, len(sigmas_s)), sigmas_s)

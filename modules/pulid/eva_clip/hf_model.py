@@ -222,7 +222,6 @@ class HFTextEncoder(nn.Module):
 
         encoder = self.transformer.encoder if hasattr(self.transformer, 'encoder') else self.transformer
         layer_list = getattr(encoder, arch_dict[self.config.model_type]["config_names"]["layer_attr"])
-        print(f"Unlocking {unlocked_layers}/{len(layer_list) + 1} layers of hf model")
         embeddings = getattr(
             self.transformer, arch_dict[self.config.model_type]["config_names"]["token_embeddings_attr"])
         modules = [embeddings, *layer_list][:-unlocked_layers]

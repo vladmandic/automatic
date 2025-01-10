@@ -670,15 +670,11 @@ class Simple_UVitBlock(nn.Module):
             self.upsample = None
 
     def forward(self, x):
-        # print("before,", x.shape)
         if self.downsample is not None:
-            # print('downsample')
             x = self.downsample(x)
 
         if self.upsample is not None:
-            # print('upsample')
             x = self.upsample(x)
-        # print("after,", x.shape)
         return x
 
 
