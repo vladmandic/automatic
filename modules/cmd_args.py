@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 from modules.paths import data_path
 
@@ -154,7 +155,12 @@ def settings_args(opts, args):
     opts.onchange("lora_dir", lambda: setattr(args, "lora_dir", opts.lora_dir))
     opts.onchange("lyco_dir", lambda: setattr(args, "lyco_dir", opts.lyco_dir))
 
-    args = parser.parse_args()
+    if "USED_VSCODE_COMMAND_PICKARGS" in os.environ:
+        import shlex
+        argv = shlex.split(" ".join(sys.argv[1:])) if "USED_VSCODE_COMMAND_PICKARGS" in os.environ else sys.argv[1:]
+        args = parser.parse_args(argv)
+    else:
+        args = parser.parse_args()
     return args
 
 

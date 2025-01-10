@@ -1,6 +1,7 @@
 import os
 import time
 from typing import Union
+import threading
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline, T2IAdapter, MultiAdapter, StableDiffusionAdapterPipeline, StableDiffusionXLAdapterPipeline # pylint: disable=unused-import
 from modules.shared import log
 from modules import errors, sd_models
@@ -43,6 +44,7 @@ all_models = {}
 all_models.update(predefined_sd15)
 all_models.update(predefined_sdxl)
 cache_dir = 'models/control/adapter'
+load_lock = threading.Lock()
 
 
 def list_models(refresh=False):
@@ -87,45 +89,46 @@ class Adapter():
         self.model_id = None
 
     def load(self, model_id: str = None, force: bool = True) -> str:
-        try:
-            t0 = time.time()
-            model_id = model_id or self.model_id
-            if model_id is None or model_id == 'None':
-                self.reset()
-                return
-            if model_id not in all_models:
-                log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
-                return
-            model_path, model_args = all_models[model_id]
-            self.load_config.update(model_args)
-            if model_path is None:
-                log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
-                return
-            if model_id == self.model_id and not force:
-                # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
-                return
-            log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
-            if model_path.endswith('.pth') or model_path.endswith('.pt') or model_path.endswith('.safetensors') or model_path.endswith('.bin'):
-                from huggingface_hub import hf_hub_download
-                parts = model_path.split('/')
-                repo_id = f'{parts[0]}/{parts[1]}'
-                filename = '/'.join(parts[2:])
-                model = hf_hub_download(repo_id, filename, **self.load_config)
-                self.model = T2IAdapter.from_pretrained(model, **self.load_config)
-            else:
-                self.model = T2IAdapter.from_pretrained(model_path, **self.load_config)
-            if self.device is not None:
-                self.model.to(self.device)
-            if self.dtype is not None:
-                self.model.to(self.dtype)
-            t1 = time.time()
-            self.model_id = model_id
-            log.debug(f'Control {what} loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')
-            return f'{what} loaded model: {model_id}'
-        except Exception as e:
-            log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
-            errors.display(e, f'Control {what} load')
-            return f'{what} failed to load model: {model_id}'
+        with load_lock:
+            try:
+                t0 = time.time()
+                model_id = model_id or self.model_id
+                if model_id is None or model_id == 'None':
+                    self.reset()
+                    return
+                if model_id not in all_models:
+                    log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                    return
+                model_path, model_args = all_models[model_id]
+                self.load_config.update(model_args)
+                if model_path is None:
+                    log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
+                    return
+                if model_id == self.model_id and not force:
+                    # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
+                    return
+                log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
+                if model_path.endswith('.pth') or model_path.endswith('.pt') or model_path.endswith('.safetensors') or model_path.endswith('.bin'):
+                    from huggingface_hub import hf_hub_download
+                    parts = model_path.split('/')
+                    repo_id = f'{parts[0]}/{parts[1]}'
+                    filename = '/'.join(parts[2:])
+                    model = hf_hub_download(repo_id, filename, **self.load_config)
+                    self.model = T2IAdapter.from_pretrained(model, **self.load_config)
+                else:
+                    self.model = T2IAdapter.from_pretrained(model_path, **self.load_config)
+                if self.device is not None:
+                    self.model.to(self.device)
+                if self.dtype is not None:
+                    self.model.to(self.dtype)
+                t1 = time.time()
+                self.model_id = model_id
+                log.debug(f'Control {what} loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')
+                return f'{what} loaded model: {model_id}'
+            except Exception as e:
+                log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
+                errors.display(e, f'Control {what} load')
+                return f'{what} failed to load model: {model_id}'
 
 
 class AdapterPipeline():

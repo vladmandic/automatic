@@ -3,6 +3,7 @@ import sys
 import time
 from collections import namedtuple
 from pathlib import Path
+import threading
 import re
 import torch
 import torch.hub # pylint: disable=ungrouped-imports
@@ -34,6 +35,7 @@ blip_image_eval_size = 384
 clip_model_name = 'ViT-L/14'
 Category = namedtuple("Category", ["name", "topn", "items"])
 re_topn = re.compile(r"\.top(\d+)\.")
+load_lock = threading.Lock()
 
 
 def category_types():
@@ -97,34 +99,35 @@ class InterrogateModels:
         sys.modules["fairscale.nn.checkpoint.checkpoint_activations"] = FakeFairscale
 
     def load_blip_model(self):
-        self.create_fake_fairscale()
-        from repositories.blip import models # pylint: disable=unused-import
-        from repositories.blip.models import blip
-        import modules.modelloader as modelloader
-        model_path = os.path.join(paths.models_path, "BLIP")
-        download_name='model_base_caption_capfilt_large.pth'
-        shared.log.debug(f'Model interrogate load: type=BLiP model={download_name} path={model_path}')
-        files = modelloader.load_models(
-            model_path=model_path,
-            model_url='https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_caption_capfilt_large.pth',
-            ext_filter=[".pth"],
-            download_name=download_name,
-        )
-        blip_model = blip.blip_decoder(pretrained=files[0], image_size=blip_image_eval_size, vit='base', med_config=os.path.join(paths.paths["BLIP"], "configs", "med_config.json")) # pylint: disable=c-extension-no-member
-        blip_model.eval()
-
-        return blip_model
+        with load_lock:
+            self.create_fake_fairscale()
+            from repositories.blip import models # pylint: disable=unused-import
+            from repositories.blip.models import blip
+            import modules.modelloader as modelloader
+            model_path = os.path.join(paths.models_path, "BLIP")
+            download_name='model_base_caption_capfilt_large.pth'
+            shared.log.debug(f'Model interrogate load: type=BLiP model={download_name} path={model_path}')
+            files = modelloader.load_models(
+                model_path=model_path,
+                model_url='https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_caption_capfilt_large.pth',
+                ext_filter=[".pth"],
+                download_name=download_name,
+            )
+            blip_model = blip.blip_decoder(pretrained=files[0], image_size=blip_image_eval_size, vit='base', med_config=os.path.join(paths.paths["BLIP"], "configs", "med_config.json")) # pylint: disable=c-extension-no-member
+            blip_model.eval()
+            return blip_model
 
     def load_clip_model(self):
-        shared.log.debug(f'Model interrogate load: type=CLiP model={clip_model_name} path={shared.opts.clip_models_path}')
-        import clip
-        if self.running_on_cpu:
-            model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.opts.clip_models_path)
-        else:
-            model, preprocess = clip.load(clip_model_name, download_root=shared.opts.clip_models_path)
-        model.eval()
-        model = model.to(devices.device)
-        return model, preprocess
+        with load_lock:
+            shared.log.debug(f'Model interrogate load: type=CLiP model={clip_model_name} path={shared.opts.clip_models_path}')
+            import clip
+            if self.running_on_cpu:
+                model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.opts.clip_models_path)
+            else:
+                model, preprocess = clip.load(clip_model_name, download_root=shared.opts.clip_models_path)
+            model.eval()
+            model = model.to(devices.device)
+            return model, preprocess
 
     def load(self):
         if self.blip_model is None:

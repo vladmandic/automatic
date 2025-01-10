@@ -1,11 +1,13 @@
 import os
 import re
+import threading
 import torch
 import numpy as np
 from PIL import Image
 from modules import modelloader, paths, deepbooru_model, devices, images, shared
 
 re_special = re.compile(r'([\\()])')
+load_lock = threading.Lock()
 
 
 class DeepDanbooru:
@@ -13,22 +15,23 @@ class DeepDanbooru:
         self.model = None
 
     def load(self):
-        if self.model is not None:
-            return
-        model_path = os.path.join(paths.models_path, "DeepDanbooru")
-        shared.log.debug(f'Load interrogate model: type=DeepDanbooru folder="{model_path}"')
-        files = modelloader.load_models(
-            model_path=model_path,
-            model_url='https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt',
-            ext_filter=[".pt"],
-            download_name='model-resnet_custom_v3.pt',
-        )
+        with load_lock:
+            if self.model is not None:
+                return
+            model_path = os.path.join(paths.models_path, "DeepDanbooru")
+            shared.log.debug(f'Load interrogate model: type=DeepDanbooru folder="{model_path}"')
+            files = modelloader.load_models(
+                model_path=model_path,
+                model_url='https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt',
+                ext_filter=[".pt"],
+                download_name='model-resnet_custom_v3.pt',
+            )
 
-        self.model = deepbooru_model.DeepDanbooruModel()
-        self.model.load_state_dict(torch.load(files[0], map_location="cpu"))
+            self.model = deepbooru_model.DeepDanbooruModel()
+            self.model.load_state_dict(torch.load(files[0], map_location="cpu"))
 
-        self.model.eval()
-        self.model.to(devices.cpu, devices.dtype)
+            self.model.eval()
+            self.model.to(devices.cpu, devices.dtype)
 
     def start(self):
         self.load()

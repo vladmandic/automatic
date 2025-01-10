@@ -1,6 +1,7 @@
 import os
 import time
 from typing import Union
+import threading
 import numpy as np
 from PIL import Image
 from diffusers import StableDiffusionPipeline, StableDiffusionXLPipeline
@@ -27,6 +28,7 @@ all_models = {}
 all_models.update(predefined_sd15)
 all_models.update(predefined_sdxl)
 cache_dir = 'models/control/lite'
+load_lock = threading.Lock()
 
 
 def find_models():
@@ -79,44 +81,45 @@ class ControlLLLite():
         self.model_id = None
 
     def load(self, model_id: str = None, force: bool = True) -> str:
-        try:
-            t0 = time.time()
-            model_id = model_id or self.model_id
-            if model_id is None or model_id == 'None':
-                self.reset()
-                return
-            if model_id not in all_models:
-                log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
-                return
-            model_path = all_models[model_id]
-            if model_path == '':
-                return
-            if model_path is None:
-                log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
-                return
-            if model_id == self.model_id and not force:
-                # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
-                return
-            log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}" {self.load_config}')
-            if model_path.endswith('.safetensors'):
-                self.model = ControlNetLLLite(model_path)
-            else:
-                import huggingface_hub as hf
-                folder, filename = os.path.split(model_path)
-                model_path = hf.hf_hub_download(repo_id=folder, filename=f'{filename}.safetensors', cache_dir=cache_dir)
-                self.model = ControlNetLLLite(model_path)
-            if self.device is not None:
-                self.model.to(self.device)
-            if self.dtype is not None:
-                self.model.to(self.dtype)
-            t1 = time.time()
-            self.model_id = model_id
-            log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')
-            return f'{what} loaded model: {model_id}'
-        except Exception as e:
-            log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
-            errors.display(e, f'Control {what} load')
-            return f'{what} failed to load model: {model_id}'
+        with load_lock:
+            try:
+                t0 = time.time()
+                model_id = model_id or self.model_id
+                if model_id is None or model_id == 'None':
+                    self.reset()
+                    return
+                if model_id not in all_models:
+                    log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                    return
+                model_path = all_models[model_id]
+                if model_path == '':
+                    return
+                if model_path is None:
+                    log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
+                    return
+                if model_id == self.model_id and not force:
+                    # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
+                    return
+                log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}" {self.load_config}')
+                if model_path.endswith('.safetensors'):
+                    self.model = ControlNetLLLite(model_path)
+                else:
+                    import huggingface_hub as hf
+                    folder, filename = os.path.split(model_path)
+                    model_path = hf.hf_hub_download(repo_id=folder, filename=f'{filename}.safetensors', cache_dir=cache_dir)
+                    self.model = ControlNetLLLite(model_path)
+                if self.device is not None:
+                    self.model.to(self.device)
+                if self.dtype is not None:
+                    self.model.to(self.dtype)
+                t1 = time.time()
+                self.model_id = model_id
+                log.debug(f'Control {what} model loaded: id="{model_id}" path="{model_path}" time={t1-t0:.2f}')
+                return f'{what} loaded model: {model_id}'
+            except Exception as e:
+                log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
+                errors.display(e, f'Control {what} load')
+                return f'{what} failed to load model: {model_id}'
 
 
 class ControlLLitePipeline():

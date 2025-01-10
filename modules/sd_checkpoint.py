@@ -210,6 +210,8 @@ def get_closet_checkpoint_match(s: str):
     if shared.opts.sd_checkpoint_autodownload and s.count('/') == 1:
         modelloader.hf_login()
         found = modelloader.find_diffuser(s, full=True)
+        if found is None:
+            return None
         found = [f for f in found if f == s]
         shared.log.info(f'HF search: model="{s}" results={found}')
         if found is not None and len(found) == 1:
@@ -262,7 +264,7 @@ def select_checkpoint(op='model'):
         shared.log.info(f'Load {op}: select="{checkpoint_info.title if checkpoint_info is not None else None}"')
         return checkpoint_info
     if len(checkpoints_list) == 0:
-        shared.log.warning("Cannot generate without a checkpoint")
+        shared.log.error("No models found")
         shared.log.info("Set system paths to use existing folders")
         shared.log.info("  or use --models-dir <path-to-folder> to specify base folder with all models")
         shared.log.info("  or use --ckpt-dir <path-to-folder> to specify folder with sd models")
