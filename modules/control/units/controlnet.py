@@ -255,7 +255,7 @@ class ControlNet():
                 self.model = model_path
                 return
             if model_id == self.model_id and not force:
-                log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
+                # log.debug(f'Control {what} model: id="{model_id}" path="{model_path}" already loaded')
                 return
             log.debug(f'Control {what} model loading: id="{model_id}" path="{model_path}"')
             cls, _config = self.get_class(model_id)
