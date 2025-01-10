@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SD.Next VSCode Debugger",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "launch.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": { "USED_VSCODE_COMMAND_PICKARGS": "1" },
+      "args": [
+        "--uv",
+        "--quick",
+        "--debug",
+        "--docs",
+        "--api-log",
+        "--log", "vscode.log",
+        "${command:pickArgs}",
+      ]
+    }
+  ]
+}
