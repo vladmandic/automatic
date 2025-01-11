@@ -92,15 +92,15 @@ predefined_f1 = {
     "XLabs-AI HED": 'XLabs-AI/flux-controlnet-hed-diffusers'
 }
 predefined_sd3 = {
-    "StabilityAI Canny": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
-    "StabilityAI Depth": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
-    "StabilityAI Blur": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
-    "InstantX Canny": 'InstantX/SD3-Controlnet-Canny',
-    "InstantX Pose": 'InstantX/SD3-Controlnet-Pose',
-    "InstantX Depth": 'InstantX/SD3-Controlnet-Depth',
-    "InstantX Tile": 'InstantX/SD3-Controlnet-Tile',
-    "Alimama Inpainting": 'alimama-creative/SD3-Controlnet-Inpainting',
-    "Alimama SoftEdge": 'alimama-creative/SD3-Controlnet-Softedge',
+    "StabilityAI Canny SD35": 'diffusers-internal-dev/sd35-controlnet-canny-8b',
+    "StabilityAI Depth SD35": 'diffusers-internal-dev/sd35-controlnet-depth-8b',
+    "StabilityAI Blur SD35": 'diffusers-internal-dev/sd35-controlnet-blur-8b',
+    "InstantX Canny SD35": 'InstantX/SD3-Controlnet-Canny',
+    "InstantX Pose SD35": 'InstantX/SD3-Controlnet-Pose',
+    "InstantX Depth SD35": 'InstantX/SD3-Controlnet-Depth',
+    "InstantX Tile SD35": 'InstantX/SD3-Controlnet-Tile',
+    "Alimama Inpainting SD35": 'alimama-creative/SD3-Controlnet-Inpainting',
+    "Alimama SoftEdge SD35": 'alimama-creative/SD3-Controlnet-Softedge',
 }
 variants = {
     'NoobAI Canny XL': 'fp16',
