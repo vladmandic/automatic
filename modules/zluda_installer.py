@@ -16,12 +16,10 @@ DLL_MAPPING = {
 }
 HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll']
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
-experimental_hipBLASLt_support: bool = False
+
+path = os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 default_agent: Union[rocm.Agent, None] = None
-
-
-def get_path() -> str:
-    return os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
+hipBLASLt_enabled = os.path.exists(os.path.join(rocm.path, "bin", "hipblaslt.dll")) and os.path.exists(rocm.blaslt_tensile_libpath) and os.path.exists(os.path.join(path, 'cublasLt.dll'))
 
 
 def set_default_agent(agent: rocm.Agent):
@@ -29,9 +27,8 @@ def set_default_agent(agent: rocm.Agent):
     default_agent = agent
 
 
-def install(zluda_path: os.PathLike) -> None:
-    if os.path.exists(zluda_path):
-        __initialize(zluda_path)
+def install() -> None:
+    if os.path.exists(path):
         return
 
     platform = "windows"
@@ -46,7 +43,6 @@ def install(zluda_path: os.PathLike) -> None:
                 info.filename = os.path.basename(info.filename)
                 archive.extract(info, '.zluda')
     os.remove('_zluda')
-    __initialize(zluda_path)
 
 
 def uninstall() -> None:
@@ -54,27 +50,45 @@ def uninstall() -> None:
         shutil.rmtree('.zluda')
 
 
-def make_copy(zluda_path: os.PathLike) -> None:
-    __initialize(zluda_path)
+def set_blaslt_enabled(enabled: bool):
+    global hipBLASLt_enabled # pylint: disable=global-statement
+    hipBLASLt_enabled = enabled
 
+
+def get_blaslt_enabled() -> bool:
+    return hipBLASLt_enabled
+
+
+def link_or_copy(src: os.PathLike, dst: os.PathLike):
+    try:
+        os.link(src, dst)
+    except Exception:
+        shutil.copyfile(src, dst)
+
+
+def make_copy() -> None:
     for k, v in DLL_MAPPING.items():
-        if not os.path.exists(os.path.join(zluda_path, v)):
-            try:
-                os.link(os.path.join(zluda_path, k), os.path.join(zluda_path, v))
-            except Exception:
-                shutil.copyfile(os.path.join(zluda_path, k), os.path.join(zluda_path, v))
+        if not os.path.exists(os.path.join(path, v)):
+            link_or_copy(os.path.join(path, k), os.path.join(path, v))
+
+    if hipBLASLt_enabled and not os.path.exists(os.path.join(path, 'cublasLt64_11.dll')):
+        link_or_copy(os.path.join(path, 'cublasLt.dll'), os.path.join(path, 'cublasLt64_11.dll'))
 
 
-def load(zluda_path: os.PathLike) -> None:
+def load() -> None:
     os.environ["ZLUDA_COMGR_LOG_LEVEL"] = "1"
     os.environ["ZLUDA_NVRTC_LIB"] = os.path.join([v for v in site.getsitepackages() if v.endswith("site-packages")][0], "torch", "lib", "nvrtc64_112_0.dll")
 
     for v in HIPSDK_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
     for v in ZLUDA_TARGETS:
-        ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
+        ctypes.windll.LoadLibrary(os.path.join(path, v))
     for v in DLL_MAPPING.values():
-        ctypes.windll.LoadLibrary(os.path.join(zluda_path, v))
+        ctypes.windll.LoadLibrary(os.path.join(path, v))
+
+    if hipBLASLt_enabled:
+        ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', 'hipblaslt.dll'))
+        ctypes.windll.LoadLibrary(os.path.join(path, 'cublasLt64_11.dll'))
 
     def conceal():
         import torch # pylint: disable=unused-import
@@ -94,18 +108,7 @@ def load(zluda_path: os.PathLike) -> None:
 def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
     if agent is not None:
         if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
-            return "2.4.1" if experimental_hipBLASLt_support else "2.3.1"
+            return "2.4.1" if hipBLASLt_enabled else "2.3.1"
         elif agent.arch == rocm.MicroArchitecture.GCN:
             return "2.2.1"
-    return "2.4.1" if experimental_hipBLASLt_support else "2.3.1"
-
-
-def __initialize(zluda_path: os.PathLike):
-    global experimental_hipBLASLt_support # pylint: disable=global-statement
-    experimental_hipBLASLt_support = os.path.exists(os.path.join(zluda_path, 'cublasLt.dll'))
-
-    if experimental_hipBLASLt_support:
-        HIPSDK_TARGETS.append('hipblaslt.dll')
-        DLL_MAPPING['cublasLt.dll'] = 'cublasLt64_11.dll'
-    else:
-        HIPSDK_TARGETS.append(f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll')
+    return "2.4.1" if hipBLASLt_enabled else "2.3.1"

@@ -8,10 +8,6 @@ from typing import Union, List
 from enum import Enum
 
 
-HIPBLASLT_TENSILE_LIBPATH = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", None if sys.platform == "win32" # not available
-                                           else "/opt/rocm/lib/hipblaslt/library")
-
-
 def resolve_link(path_: str) -> str:
     if not os.path.islink(path_):
         return path_
@@ -55,8 +51,7 @@ class Agent:
     gfx_version: int
     arch: MicroArchitecture
     is_apu: bool
-    if sys.platform != "win32":
-        blaslt_supported: bool
+    blaslt_supported: bool
 
     @staticmethod
     def parse_gfx_version(name: str) -> int:
@@ -83,8 +78,7 @@ class Agent:
         else:
             self.arch = MicroArchitecture.GCN
         self.is_apu = (self.gfx_version & 0xFFF0 == 0x1150) or self.gfx_version in (0x801, 0x902, 0x90c, 0x1013, 0x1033, 0x1035, 0x1036, 0x1103,)
-        if sys.platform != "win32":
-            self.blaslt_supported = os.path.exists(os.path.join(HIPBLASLT_TENSILE_LIBPATH, f"extop_{name}.co"))
+        self.blaslt_supported = os.path.exists(os.path.join(blaslt_tensile_libpath, f"Kernels.so-000-{name}.hsaco" if sys.platform == "win32" else f"extop_{name}.co"))
 
     def get_gfx_version(self) -> Union[str, None]:
         if self.gfx_version >= 0x1200:
@@ -163,6 +157,7 @@ if sys.platform == "win32":
         return [Agent(x.split(' ')[-1].strip()) for x in spawn("hipinfo", cwd=os.path.join(path, 'bin')).split("\n") if x.startswith('gcnArchName:')]
 
     is_wsl: bool = False
+    version_torch = None
 else:
     def find() -> Union[str, None]:
         rocm_path = shutil.which("hipconfig")
@@ -199,12 +194,12 @@ else:
     def set_blaslt_enabled(enabled: bool) -> None:
         if enabled:
             load_library_global("/opt/rocm/lib/libhipblaslt.so") # Preload hipBLASLt.
-            os.environ["HIPBLASLT_TENSILE_LIBPATH"] = HIPBLASLT_TENSILE_LIBPATH
+            os.environ["HIPBLASLT_TENSILE_LIBPATH"] = blaslt_tensile_libpath
         else:
             os.environ["TORCH_BLAS_PREFER_HIPBLASLT"] = "0"
 
     def get_blaslt_enabled() -> bool:
-        return bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1")))
+        return version == version_torch and bool(int(os.environ.get("TORCH_BLAS_PREFER_HIPBLASLT", "1")))
 
     def get_flash_attention_command(agent: Agent):
         if os.environ.get("FLASH_ATTENTION_USE_TRITON_ROCM", "FALSE") == "TRUE":
@@ -215,10 +210,11 @@ else:
         return os.environ.get("FLASH_ATTENTION_PACKAGE", default)
 
     is_wsl: bool = os.environ.get('WSL_DISTRO_NAME', 'unknown' if spawn('wslpath -w /') else None) is not None
+    version_torch = get_version_torch()
 path = find()
+blaslt_tensile_libpath = os.environ.get("HIPBLASLT_TENSILE_LIBPATH", os.path.join(path, "bin" if sys.platform == "win32" else "lib", "hipblaslt", "library"))
 is_installed = False
 version = None
-version_torch = get_version_torch()
 if path is not None:
     is_installed = True
     version = get_version()

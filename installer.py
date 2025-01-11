@@ -569,6 +569,7 @@ def install_rocm_zluda():
         msg += f', using agent {device.name}'
     log.info(msg)
     torch_command = ''
+
     if sys.platform == "win32":
         # TODO install: enable ROCm for windows when available
 
@@ -584,17 +585,20 @@ def install_rocm_zluda():
         try:
             if args.reinstall:
                 zluda_installer.uninstall()
-            zluda_path = zluda_installer.get_path()
-            zluda_installer.install(zluda_path)
-            zluda_installer.make_copy(zluda_path)
+            zluda_installer.install()
         except Exception as e:
             error = e
             log.warning(f'Failed to install ZLUDA: {e}')
+
         if error is None:
             try:
-                zluda_installer.load(zluda_path)
+                if device is not None and zluda_installer.get_blaslt_enabled():
+                    log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
+                    zluda_installer.set_blaslt_enabled(device.blaslt_supported)
+                zluda_installer.make_copy()
+                zluda_installer.load()
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch=={zluda_installer.get_default_torch_version(device)} torchvision --index-url https://download.pytorch.org/whl/cu118')
-                log.info(f'Using ZLUDA in {zluda_path}')
+                log.info(f'Using ZLUDA in {zluda_installer.path}')
             except Exception as e:
                 error = e
                 log.warning(f'Failed to load ZLUDA: {e}')
@@ -631,7 +635,7 @@ def install_rocm_zluda():
             #elif not args.experimental:
             #    uninstall('flash-attn')
 
-        if device is not None and rocm.version != "6.2" and rocm.version == rocm.version_torch and rocm.get_blaslt_enabled():
+        if device is not None and rocm.version != "6.2" and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
             rocm.set_blaslt_enabled(device.blaslt_supported)
 
