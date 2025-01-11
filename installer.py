@@ -1050,6 +1050,7 @@ def install_optional():
     install('basicsr')
     install('gfpgan')
     install('clean-fid')
+    install('pillow-jxl-plugin==1.3.1', ignore=True)
     install('optimum-quanto=0.2.6', ignore=True)
     install('bitsandbytes==0.45.0', ignore=True)
     install('pynvml', ignore=True)
