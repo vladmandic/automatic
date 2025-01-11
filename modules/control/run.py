@@ -67,7 +67,7 @@ def set_pipe(p, has_models, unit_type, selected_models, active_model, active_str
             shared.log.warning('Control: T2I-Adapter does not support separate init image')
     elif unit_type == 'controlnet' and has_models:
         p.extra_generation_params["Control type"] = 'ControlNet'
-        p.task_args['controlnet_conditioning_scale'] = control_conditioning
+        p.task_args['controlnet_conditioning_scale'] = [control_conditioning]
         p.task_args['control_guidance_start'] = control_guidance_start
         p.task_args['control_guidance_end'] = control_guidance_end
         p.task_args['guess_mode'] = p.guess_mode

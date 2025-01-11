@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-10
+## Update for 2025-01-11
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -18,10 +18,6 @@
   - sort logged timers by duration  
   - allow min duration env variable for timers: `SD_MIN_TIMER=0.1` (default)  
   - update installer messages  
-- **Detailer**:
-  - add explicit detailer steps setting  
-- **SysInfo**:
-  - update to collected data and benchmarks  
 - **Refactor**:
   - refactored progress monitoring, job updates and live preview  
   - improved metadata save and restore  
@@ -32,11 +28,13 @@
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
 - **Detailer**:
   - add explicit detailer prompt and negative prompt  
+  - add explicit detailer steps setting  
   - move steps, strength, prompt, negative from settings into ui params  
   - set/restore detailer metadata  
   - new [detailer wiki](https://github.com/vladmandic/automatic/wiki/Detailer)
-- **XYZ Grid**
-  - add prompt search&replace options: *primary, refine, detailer, all*
+- **Other**
+  - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
+  - **SysInfo**: update to collected data and benchmarks  
 - [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
   - updated: Detailer, Install, Debug, Control-HowTo, ZLUDA  
 - **Fixes**:
@@ -56,6 +54,7 @@
   - flux support on-the-fly quantization for bnb of unet only  
   - control restore pipeline before running hires  
   - restore args after batch run  
+  - flux controlnet  
 
 ## Update for 2024-12-31
 
