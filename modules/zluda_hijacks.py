@@ -36,5 +36,5 @@ def do_hijack():
     torch.fft.ifftn = fft_ifftn
     torch.fft.rfftn = fft_rfftn
 
-    if not zluda_installer.experimental_hipBLASLt_support:
+    if not zluda_installer.get_blaslt_enabled():
         torch.jit.script = jit_script
