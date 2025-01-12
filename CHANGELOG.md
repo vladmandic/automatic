@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-11
+## Update for 2025-01-12
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -32,6 +32,10 @@
   - move steps, strength, prompt, negative from settings into ui params  
   - set/restore detailer metadata  
   - new [detailer wiki](https://github.com/vladmandic/automatic/wiki/Detailer)
+- **Preview**
+  - since different TAESD versions produce different results and latest is not necessarily greatest  
+    you can choose TAESD version in settings -> live preview  
+    also added is support for another finetuned version of TAESD [Hybrid TinyVAE](https://huggingface.co/cqyan/hybrid-sd-tinyvae-xl)  
 - **Other**
   - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
   - **SysInfo**: update to collected data and benchmarks  
@@ -46,6 +50,7 @@
   - sd35 img2img
   - samplers test for scale noise before using  
   - scheduler api  
+  - sampler create error handling  
   - controlnet with hires  
   - controlnet with batch count  
   - apply settings skip hidden settings  

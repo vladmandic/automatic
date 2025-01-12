@@ -239,6 +239,8 @@ def vae_decode(latents, model, output_type='np', full_quality=True, width=None, 
         decoded = full_vqgan_decode(latents=latents, model=model)
     else:
         decoded = taesd_vae_decode(latents=latents)
+        if torch.is_tensor(decoded):
+            decoded = 2.0 * decoded - 1.0 # typical normalized range
 
     if torch.is_tensor(decoded):
         if hasattr(model, 'video_processor'):

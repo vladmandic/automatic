@@ -1,4 +1,4 @@
-const timeout = 10000;
+const timeout = 30000;
 
 const log = async (...msg) => {
   const dt = new Date();

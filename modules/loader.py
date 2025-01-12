@@ -74,7 +74,7 @@ timer.startup.record("diffusers")
 
 try:
     import pillow_jxl # pylint: disable=W0611,C0411
-except:
+except Exception:
     pass
 from PIL import Image # pylint: disable=W0611,C0411
 timer.startup.record("pillow")

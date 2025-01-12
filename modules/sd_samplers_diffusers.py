@@ -7,8 +7,8 @@ from modules import shared, errors
 from modules.sd_samplers_common import SamplerData, flow_models
 
 
-debug = shared.log.trace if os.environ.get('SD_SAMPLER_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: SAMPLER')
+debug = os.environ.get('SD_SAMPLER_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
 
 try:
     from diffusers import (
@@ -178,17 +178,17 @@ class DiffusionSampler:
             model.default_scheduler = copy.deepcopy(model.scheduler)
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
-        debug(f'Sampler: all="{self.config}"')
+        debug_log(f'Sampler: all="{self.config}"')
         if hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.default_scheduler.scheduler_config
         else:
             orig_config = model.default_scheduler.config
-        debug(f'Sampler: diffusers="{self.config}"')
-        debug(f'Sampler: original="{orig_config}"')
+        debug_log(f'Sampler: diffusers="{self.config}"')
+        debug_log(f'Sampler: original="{orig_config}"')
         for key, value in orig_config.items(): # apply model defaults
             if key in self.config:
                 self.config[key] = value
-        debug(f'Sampler: default="{self.config}"')
+        debug_log(f'Sampler: default="{self.config}"')
         for key, value in config.get(name, {}).items(): # apply diffusers per-scheduler defaults
             self.config[key] = value
         for key, value in kwargs.items(): # apply user args, if any
@@ -267,15 +267,22 @@ class DiffusionSampler:
             if key not in possible:
                 # shared.log.warning(f'Sampler: sampler="{name}" config={self.config} invalid={key}')
                 del self.config[key]
-        debug(f'Sampler: name="{name}"')
-        debug(f'Sampler: config={self.config}')
-        debug(f'Sampler: signature={possible}')
-        # shared.log.debug(f'Sampler: sampler="{name}" config={self.config}')
-        sampler = constructor(**self.config)
+        debug_log(f'Sampler: name="{name}"')
+        debug_log(f'Sampler: config={self.config}')
+        debug_log(f'Sampler: signature={possible}')
+        # shared.log.debug_log(f'Sampler: sampler="{name}" config={self.config}')
+        try:
+            sampler = constructor(**self.config)
+        except Exception as e:
+            shared.log.error(f'Sampler: sampler="{name}" {e}')
+            if debug:
+                errors.display(e, 'Samplers')
+            self.sampler = None
+            return
         accept_sigmas = "sigmas" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
         accepts_timesteps = "timesteps" in set(inspect.signature(sampler.set_timesteps).parameters.keys())
         accept_scale_noise = hasattr(sampler, "scale_noise")
-        debug(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
+        debug_log(f'Sampler: sampler="{name}" sigmas={accept_sigmas} timesteps={accepts_timesteps}')
         if ('Flux' in model.__class__.__name__) and (not accept_sigmas):
             shared.log.warning(f'Sampler: sampler="{name}" does not accept sigmas')
             self.sampler = None
@@ -289,5 +296,5 @@ class DiffusionSampler:
             if not hasattr(self.sampler, 'dc_ratios'):
                 pass
                 # self.sampler.dc_ratios = self.sampler.cascade_polynomial_regression(test_CFG=6.0, test_NFE=10, cpr_path='tmp/sd2.1.npy')
-        # shared.log.debug(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
+        # shared.log.debug_log(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
         self.sampler.name = name

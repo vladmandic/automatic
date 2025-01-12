@@ -241,7 +241,8 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
             if transformer is not None:
                 return transformer
         shared.log.info(f'Load module: type=UNet/Transformer file="{file_path}" offload={shared.opts.diffusers_offload_mode} quant=none dtype={devices.dtype}')
-        # shared.log.warning('Load module: type=UNet/Transformer does not support load-time quantization') # TODO flux transformer from-single-file with quant
+        # TODO flux transformer from-single-file with quant
+        # shared.log.warning('Load module: type=UNet/Transformer does not support load-time quantization')
         transformer = diffusers.FluxTransformer2DModel.from_single_file(file_path, **diffusers_load_config)
     if transformer is None:
         shared.log.error('Failed to load UNet model')
