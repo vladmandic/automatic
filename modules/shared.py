@@ -211,14 +211,12 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
 
 
 # early select backend
-default_backend = 'diffusers'
 early_opts = readfile(cmd_opts.config, silent=True)
-early_backend = early_opts.get('sd_backend', default_backend)
-backend = Backend.DIFFUSERS if early_backend.lower() == 'diffusers' else Backend.ORIGINAL
+early_backend = early_opts.get('sd_backend', 'diffusers')
+backend = Backend.ORIGINAL if early_backend.lower() == 'original' else Backend.DIFFUSERS
 if cmd_opts.backend is not None: # override with args
-    backend = Backend.DIFFUSERS if cmd_opts.backend.lower() == 'diffusers' else Backend.ORIGINAL
+    backend = Backend.ORIGINAL if cmd_opts.backend.lower() == 'original' else Backend.DIFFUSERS
 if cmd_opts.use_openvino: # override for openvino
-    backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
 elif cmd_opts.use_ipex or devices.has_xpu():
     from modules.intel.ipex import ipex_init
@@ -226,15 +224,14 @@ elif cmd_opts.use_ipex or devices.has_xpu():
     if not ok:
         log.error(f'IPEX initialization failed: {e}')
 elif cmd_opts.use_directml:
-    name = 'directml'
     from modules.dml import directml_init
     ok, e = directml_init()
     if not ok:
         log.error(f'DirectML initialization failed: {e}')
 devices.backend = devices.get_backend(cmd_opts)
 devices.device = devices.get_optimal_device()
-cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 mem_stat = memory_stats()
+cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
 native = backend == Backend.DIFFUSERS
 if not files_cache.do_cache_folders:
@@ -475,7 +472,7 @@ def get_default_modes():
 startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Models & Loading"), {
-    "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
+    "sd_backend": OptionInfo('diffusers', "Execution backend", gr.Radio, {"choices": ['diffusers', 'original'] }),
     "diffusers_pipeline": OptionInfo('Autodetect', 'Model pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()), "visible": native}),
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
@@ -513,7 +510,7 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "diffusers_vae_tile_overlap": OptionInfo(0.25, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.95, "step": 0.05 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
-    "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
+    "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values", gr.Checkbox, {"visible": not native}),
 }))
 
 options_templates.update(options_section(('text_encoder', "Text Encoder"), {

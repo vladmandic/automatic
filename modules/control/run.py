@@ -17,10 +17,11 @@ from modules import devices, shared, errors, processing, images, sd_models, scri
 from modules.processing_class import StableDiffusionProcessingControl
 from modules.ui_common import infotext_to_html
 from modules.api import script
+from modules.timer import process as process_timer
 
 
-debug = shared.log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: CONTROL')
+debug = os.environ.get('SD_CONTROL_DEBUG', None) is not None
+debug_log = shared.log.trace if debug else lambda *args, **kwargs: None
 pipe = None
 instance = None
 original_pipeline = None
@@ -32,7 +33,7 @@ def restore_pipeline():
     if instance is not None and hasattr(instance, 'restore'):
         instance.restore()
     if original_pipeline is not None and (original_pipeline.__class__.__name__ != shared.sd_model.__class__.__name__):
-        debug(f'Control restored pipeline: class={shared.sd_model.__class__.__name__} to={original_pipeline.__class__.__name__}')
+        debug_log(f'Control restored pipeline: class={shared.sd_model.__class__.__name__} to={original_pipeline.__class__.__name__}')
         shared.sd_model = original_pipeline
     pipe = None
     instance = None
@@ -109,7 +110,7 @@ def set_pipe(p, has_models, unit_type, selected_models, active_model, active_str
             p.strength = active_strength[0]
         pipe = shared.sd_model
         instance = None
-    debug(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
+    debug_log(f'Control: run type={unit_type} models={has_models} pipe={pipe.__class__.__name__ if pipe is not None else None}')
     return pipe
 
 
@@ -124,14 +125,14 @@ def check_active(p, unit_type, units):
         if u.type != unit_type:
             continue
         num_units += 1
-        debug(f'Control unit: i={num_units} type={u.type} enabled={u.enabled}')
+        debug_log(f'Control unit: i={num_units} type={u.type} enabled={u.enabled}')
         if not u.enabled:
             if u.controlnet is not None and u.controlnet.model is not None:
-                debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
+                debug_log(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.cpu}')
                 sd_models.move_model(u.controlnet.model, devices.cpu)
             continue
         if u.controlnet is not None and u.controlnet.model is not None:
-            debug(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
+            debug_log(f'Control unit offload: model="{u.controlnet.model_id}" device={devices.device}')
             sd_models.move_model(u.controlnet.model, devices.device)
         if unit_type == 't2i adapter' and u.adapter.model is not None:
             active_process.append(u.process)
@@ -176,7 +177,7 @@ def check_active(p, unit_type, units):
                 active_process.append(u.process)
             shared.log.debug(f'Control process unit: i={num_units} process={u.process.processor_id}')
             active_strength.append(float(u.strength))
-    debug(f'Control active: process={len(active_process)} model={len(active_model)}')
+    debug_log(f'Control active: process={len(active_process)} model={len(active_model)}')
     return active_process, active_model, active_strength, active_start, active_end
 
 
@@ -213,7 +214,7 @@ def control_set(kwargs):
     if kwargs:
         global p_extra_args # pylint: disable=global-statement
         p_extra_args = {}
-        debug(f'Control extra args: {kwargs}')
+        debug_log(f'Control extra args: {kwargs}')
     for k, v in kwargs.items():
         p_extra_args[k] = v
 
@@ -254,7 +255,7 @@ def control_run(state: str = '',
             u.process.override = u.override
 
     global pipe, original_pipeline # pylint: disable=global-statement
-    debug(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
+    debug_log(f'Control: type={unit_type} input={inputs} init={inits} type={input_type}')
     if inputs is None or (type(inputs) is list and len(inputs) == 0):
         inputs = [None]
     output_images: List[Image.Image] = [] # output images
@@ -402,7 +403,7 @@ def control_run(state: str = '',
     p.is_tile = p.is_tile and has_models
 
     pipe = set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits)
-    debug(f'Control pipeline: class={pipe.__class__.__name__} args={vars(p)}')
+    debug_log(f'Control pipeline: class={pipe.__class__.__name__} args={vars(p)}')
     t1, t2, t3 = time.time(), 0, 0
     status = True
     frame = None
@@ -420,7 +421,7 @@ def control_run(state: str = '',
         shared.sd_model = pipe
         sd_models.move_model(shared.sd_model, shared.device)
         shared.sd_model.to(dtype=devices.dtype)
-        debug(f'Control device={devices.device} dtype={devices.dtype}')
+        debug_log(f'Control device={devices.device} dtype={devices.dtype}')
         sd_models.copy_diffuser_options(shared.sd_model, original_pipeline) # copy options from original pipeline
         sd_models.set_diffuser_options(shared.sd_model)
     else:
@@ -458,12 +459,12 @@ def control_run(state: str = '',
             while status:
                 if pipe is None: # pipe may have been reset externally
                     pipe = set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits)
-                    debug(f'Control pipeline reinit: class={pipe.__class__.__name__}')
+                    debug_log(f'Control pipeline reinit: class={pipe.__class__.__name__}')
                 processed_image = None
                 if frame is not None:
                     inputs = [Image.fromarray(frame)] # cv2 to pil
                 for i, input_image in enumerate(inputs):
-                    debug(f'Control Control image: {i + 1} of {len(inputs)}')
+                    debug_log(f'Control Control image: {i + 1} of {len(inputs)}')
                     if shared.state.skipped:
                         shared.state.skipped = False
                         continue
@@ -481,20 +482,20 @@ def control_run(state: str = '',
                             continue
                     # match init input
                     if input_type == 1:
-                        debug('Control Init image: same as control')
+                        debug_log('Control Init image: same as control')
                         init_image = input_image
                     elif inits is None:
-                        debug('Control Init image: none')
+                        debug_log('Control Init image: none')
                         init_image = None
                     elif isinstance(inits[i], str):
-                        debug(f'Control: init image: {inits[i]}')
+                        debug_log(f'Control: init image: {inits[i]}')
                         try:
                             init_image = Image.open(inits[i])
                         except Exception as e:
                             shared.log.error(f'Control: image open failed: path={inits[i]} type=init error={e}')
                             continue
                     else:
-                        debug(f'Control Init image: {i % len(inits) + 1} of {len(inits)}')
+                        debug_log(f'Control Init image: {i % len(inits) + 1} of {len(inits)}')
                         init_image = inits[i % len(inits)]
                     if video is not None and index % (video_skip_frames + 1) != 0:
                         index += 1
@@ -507,18 +508,18 @@ def control_run(state: str = '',
                             width_before, height_before = int(input_image.width * scale_by_before), int(input_image.height * scale_by_before)
                         if input_image is not None:
                             p.extra_generation_params["Control resize"] = f'{resize_name_before}'
-                            debug(f'Control resize: op=before image={input_image} width={width_before} height={height_before} mode={resize_mode_before} name={resize_name_before} context="{resize_context_before}"')
+                            debug_log(f'Control resize: op=before image={input_image} width={width_before} height={height_before} mode={resize_mode_before} name={resize_name_before} context="{resize_context_before}"')
                             input_image = images.resize_image(resize_mode_before, input_image, width_before, height_before, resize_name_before, context=resize_context_before)
                     if input_image is not None and init_image is not None and init_image.size != input_image.size:
-                        debug(f'Control resize init: image={init_image} target={input_image}')
+                        debug_log(f'Control resize init: image={init_image} target={input_image}')
                         init_image = images.resize_image(resize_mode=1, im=init_image, width=input_image.width, height=input_image.height)
                     if input_image is not None and p.override is not None and p.override.size != input_image.size:
-                        debug(f'Control resize override: image={p.override} target={input_image}')
+                        debug_log(f'Control resize override: image={p.override} target={input_image}')
                         p.override = images.resize_image(resize_mode=1, im=p.override, width=input_image.width, height=input_image.height)
                     if input_image is not None:
                         p.width = input_image.width
                         p.height = input_image.height
-                        debug(f'Control: input image={input_image}')
+                        debug_log(f'Control: input image={input_image}')
 
                     processed_images = []
                     if mask is not None:
@@ -533,7 +534,7 @@ def control_run(state: str = '',
                     else:
                         masked_image = input_image
                     for i, process in enumerate(active_process): # list[image]
-                        debug(f'Control: i={i+1} process="{process.processor_id}" input={masked_image} override={process.override}')
+                        debug_log(f'Control: i={i+1} process="{process.processor_id}" input={masked_image} override={process.override}')
                         processed_image = process(
                             image_input=masked_image,
                             mode='RGB',
@@ -548,7 +549,7 @@ def control_run(state: str = '',
                             processors.config[process.processor_id]['dirty'] = True # to force reload
                             process.model = None
 
-                    debug(f'Control processed: {len(processed_images)}')
+                    debug_log(f'Control processed: {len(processed_images)}')
                     if len(processed_images) > 0:
                         try:
                             if len(p.extra_generation_params["Control process"]) == 0:
@@ -574,7 +575,7 @@ def control_run(state: str = '',
                             blended_image = util.blend(blended_image) # blend all processed images into one
                             blended_image = Image.fromarray(blended_image)
                         if isinstance(selected_models, list) and len(processed_images) == len(selected_models):
-                            debug(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
+                            debug_log(f'Control: inputs match: input={len(processed_images)} models={len(selected_models)}')
                             p.init_images = processed_images
                         elif isinstance(selected_models, list) and len(processed_images) != len(selected_models):
                             if is_generator:
@@ -583,14 +584,14 @@ def control_run(state: str = '',
                         elif selected_models is not None:
                             p.init_images = processed_image
                     else:
-                        debug('Control processed: using input direct')
+                        debug_log('Control processed: using input direct')
                         processed_image = input_image
 
                     if unit_type == 'reference' and has_models:
                         p.ref_image = p.override or input_image
                         p.task_args.pop('image', None)
                         p.task_args['ref_image'] = p.ref_image
-                        debug(f'Control: process=None image={p.ref_image}')
+                        debug_log(f'Control: process=None image={p.ref_image}')
                         if p.ref_image is None:
                             if is_generator:
                                 yield terminate('Attempting reference mode but image is none')
@@ -625,7 +626,7 @@ def control_run(state: str = '',
                     if is_generator:
                         image_txt = f'{blended_image.width}x{blended_image.height}' if blended_image is not None else 'None'
                         msg = f'process | {index} of {frames if video is not None else len(inputs)} | {"Image" if video is None else "Frame"} {image_txt}'
-                        debug(f'Control yield: {msg}')
+                        debug_log(f'Control yield: {msg}')
                         if is_generator:
                             yield (None, blended_image, f'Control {msg}')
                     t2 += time.time() - t2
@@ -684,7 +685,7 @@ def control_run(state: str = '',
                         if selected_scale_tab_mask == 1:
                             width_mask, height_mask = int(input_image.width * scale_by_mask), int(input_image.height * scale_by_mask)
                         p.width, p.height = width_mask, height_mask
-                        debug(f'Control resize: op=mask image={mask} width={width_mask} height={height_mask} mode={resize_mode_mask} name={resize_name_mask} context="{resize_context_mask}"')
+                        debug_log(f'Control resize: op=mask image={mask} width={width_mask} height={height_mask} mode={resize_mode_mask} name={resize_name_mask} context="{resize_context_mask}"')
 
                     # pipeline
                     output = None
@@ -693,9 +694,9 @@ def control_run(state: str = '',
                         if not hasattr(pipe, 'restore_pipeline') and video is None:
                             pipe.restore_pipeline = restore_pipeline
                             shared.sd_model.restore_pipeline = restore_pipeline
-                        debug(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
-                        # debug(f'Control exec pipeline: p={vars(p)}')
-                        # debug(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
+                        debug_log(f'Control exec pipeline: task={sd_models.get_diffusers_task(pipe)} class={pipe.__class__}')
+                        # debug_log(f'Control exec pipeline: p={vars(p)}')
+                        # debug_log(f'Control exec pipeline: args={p.task_args} image={p.task_args.get("image", None)} control={p.task_args.get("control_image", None)} mask={p.task_args.get("mask_image", None) or p.image_mask} ref={p.task_args.get("ref_image", None)}')
                         if sd_models.get_diffusers_task(pipe) != sd_models.DiffusersTaskType.TEXT_2_IMAGE: # force vae back to gpu if not in txt2img mode
                             sd_models.move_model(pipe.vae, devices.device)
 
@@ -741,7 +742,7 @@ def control_run(state: str = '',
                                 width_after = int(output_image.width * scale_by_after)
                                 height_after = int(output_image.height * scale_by_after)
                             if resize_mode_after != 0 and resize_name_after != 'None' and not is_grid:
-                                debug(f'Control resize: op=after image={output_image} width={width_after} height={height_after} mode={resize_mode_after} name={resize_name_after} context="{resize_context_after}"')
+                                debug_log(f'Control resize: op=after image={output_image} width={width_after} height={height_after} mode={resize_mode_after} name={resize_name_after} context="{resize_context_after}"')
                                 output_image = images.resize_image(resize_mode_after, output_image, width_after, height_after, resize_name_after, context=resize_context_after)
 
                             output_images.append(output_image)
@@ -761,14 +762,16 @@ def control_run(state: str = '',
                     status, frame = video.read()
                     if status:
                         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    debug(f'Control: video frame={index} frames={frames} status={status} skip={index % (video_skip_frames + 1)} progress={index/frames:.2f}')
+                    debug_log(f'Control: video frame={index} frames={frames} status={status} skip={index % (video_skip_frames + 1)} progress={index/frames:.2f}')
                 else:
                     status = False
 
             if video is not None:
                 video.release()
 
-            shared.log.info(f'Control: pipeline units={len(active_model)} process={len(active_process)} time={t3-t0:.2f} init={t1-t0:.2f} proc={t2-t1:.2f} ctrl={t3-t2:.2f} outputs={len(output_images)}')
+            debug_log(f'Control: pipeline units={len(active_model)} process={len(active_process)} time={t3-t0:.2f} init={t1-t0:.2f} proc={t2-t1:.2f} ctrl={t3-t2:.2f} outputs={len(output_images)}')
+            process_timer.add('init', t1-t0)
+            process_timer.add('proc', t2-t1)
     except Exception as e:
         shared.log.error(f'Control pipeline failed: type={unit_type} units={len(active_model)} error={e}')
         errors.display(e, 'Control')
@@ -789,7 +792,7 @@ def control_run(state: str = '',
 
     p.close()
     restore_pipeline()
-    debug(f'Ready: {image_txt}')
+    debug_log(f'Ready: {image_txt}')
 
     html_txt = f'<p>Ready {image_txt}</p>' if image_txt != '' else ''
     if len(info_txt) > 0:

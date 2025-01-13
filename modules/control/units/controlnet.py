@@ -411,13 +411,14 @@ class ControlNetPipeline():
         if dtype is not None:
             self.pipeline = self.pipeline.to(dtype)
 
+        sd_models.copy_diffuser_options(self.pipeline, pipeline)
         if opts.diffusers_offload_mode == 'none':
             sd_models.move_model(self.pipeline, devices.device)
         from modules.sd_models import set_diffuser_offload
         set_diffuser_offload(self.pipeline, 'model')
 
         t1 = time.time()
-        log.debug(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
+        debug_log(f'Control {what} pipeline: class={self.pipeline.__class__.__name__} time={t1-t0:.2f}')
 
     def restore(self):
         self.pipeline.unload_lora_weights()

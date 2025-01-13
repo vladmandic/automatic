@@ -22,7 +22,8 @@
   - refactored progress monitoring, job updates and live preview  
   - improved metadata save and restore  
   - startup tracing and optimizations  
-  - threading load locks on model loads
+  - threading load locks on model loads  
+  - refactor native vs legacy model loader  
 - **Schedulers**:
   - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
@@ -40,7 +41,7 @@
   - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
   - **SysInfo**: update to collected data and benchmarks  
 - [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
-  - updated: Detailer, Install, Debug, Control-HowTo, ZLUDA  
+  - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
@@ -61,6 +62,8 @@
   - restore args after batch run  
   - flux controlnet  
   - zluda installer  
+  - control inherit parent pipe settings  
+  - control logging  
 
 ## Update for 2024-12-31
 

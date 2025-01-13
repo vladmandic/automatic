@@ -4,6 +4,7 @@ import time
 import inspect
 import torch
 import accelerate
+
 from modules import shared, devices, errors
 from modules.timer import process as process_timer
 
@@ -16,6 +17,24 @@ offload_hook_instance = None
 def get_signature(cls):
     signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
     return signature.parameters
+
+
+def disable_offload(sd_model):
+    from accelerate.hooks import remove_hook_from_module
+    if not getattr(sd_model, 'has_accelerate', False):
+        return
+    if hasattr(sd_model, "_internal_dict"):
+        keys = sd_model._internal_dict.keys() # pylint: disable=protected-access
+    else:
+        keys = get_signature(sd_model).keys()
+    for module_name in keys: # pylint: disable=protected-access
+        module = getattr(sd_model, module_name, None)
+        if isinstance(module, torch.nn.Module):
+            network_layer_name = getattr(module, "network_layer_name", None)
+            module = remove_hook_from_module(module, recurse=True)
+            if network_layer_name:
+                module.network_layer_name = network_layer_name
+    sd_model.has_accelerate = False
 
 
 def set_accelerate(sd_model):
@@ -36,7 +55,7 @@ def set_accelerate(sd_model):
         set_accelerate_to_module(sd_model.decoder_pipe)
 
 
-def set_diffuser_offload(sd_model, op: str = 'model'):
+def set_diffuser_offload(sd_model, op:str='model', quiet:bool=False):
     t0 = time.time()
     if not shared.native:
         shared.log.warning('Attempting to use offload with backend=original')
@@ -50,13 +69,13 @@ def set_diffuser_offload(sd_model, op: str = 'model'):
         if shared.sd_model_type in should_offload:
             shared.log.warning(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} type={shared.sd_model.__class__.__name__} large model')
         else:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
+            shared.log.quiet(quiet, f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
         if hasattr(sd_model, 'maybe_free_model_hooks'):
             sd_model.maybe_free_model_hooks()
             sd_model.has_accelerate = False
     if shared.opts.diffusers_offload_mode == "model" and hasattr(sd_model, "enable_model_cpu_offload"):
         try:
-            shared.log.debug(f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
+            shared.log.quiet(quiet, f'Setting {op}: offload={shared.opts.diffusers_offload_mode} limit={shared.opts.cuda_mem_fraction}')
             if shared.opts.diffusers_move_base or shared.opts.diffusers_move_unet or shared.opts.diffusers_move_refiner:
                 shared.opts.diffusers_move_base = False
                 shared.opts.diffusers_move_unet = False

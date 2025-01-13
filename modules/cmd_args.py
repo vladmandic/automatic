@@ -78,7 +78,6 @@ def compatibility_args():
     group_compat.add_argument("--disable-queue", default=os.environ.get("SD_DISABLEQUEUE", False), action='store_true', help=argparse.SUPPRESS)
 
 
-
 def settings_args(opts, args):
     # removed args are added here as hidden in fixed format for compatbility reasons
     group_compat = parser.add_argument_group('Compatibility options')

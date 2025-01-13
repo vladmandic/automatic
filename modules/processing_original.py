@@ -27,6 +27,18 @@ def get_conds_with_caching(function, required_prompts, steps, cache):
     cache[0] = (required_prompts, steps)
     return cache[1]
 
+def check_rollback_vae():
+    if shared.cmd_opts.rollback_vae:
+        if not torch.cuda.is_available():
+            shared.log.error("Rollback VAE functionality requires compatible GPU")
+            shared.cmd_opts.rollback_vae = False
+        elif torch.__version__.startswith('1.') or torch.__version__.startswith('2.0'):
+            shared.log.error("Rollback VAE functionality requires Torch 2.1 or higher")
+            shared.cmd_opts.rollback_vae = False
+        elif 0 < torch.cuda.get_device_capability()[0] < 8:
+            shared.log.error('Rollback VAE functionality device capabilities not met')
+            shared.cmd_opts.rollback_vae = False
+
 
 def process_original(p: processing.StableDiffusionProcessing):
     cached_uc = [None, None]
@@ -42,6 +54,7 @@ def process_original(p: processing.StableDiffusionProcessing):
         for x in x_samples_ddim:
             devices.test_for_nans(x, "vae")
     except devices.NansException as e:
+        check_rollback_vae()
         if not shared.opts.no_half and not shared.opts.no_half_vae and shared.cmd_opts.rollback_vae:
             shared.log.warning('Tensor with all NaNs was produced in VAE')
             devices.dtype_vae = torch.bfloat16

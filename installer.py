@@ -150,6 +150,11 @@ def setup_logging():
     log.addHandler(rb)
     log.buffer = rb.buffer
 
+    def quiet_log(quiet: bool=False, *args, **kwargs): # pylint: disable=redefined-outer-name,keyword-arg-before-vararg
+        if not quiet:
+            log.debug(*args, **kwargs)
+    log.quiet = quiet_log
+
     # overrides
     logging.getLogger("urllib3").setLevel(logging.ERROR)
     logging.getLogger("httpx").setLevel(logging.ERROR)
