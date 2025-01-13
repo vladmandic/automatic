@@ -417,7 +417,7 @@ def get_platform():
             'system': platform.system(),
             'release': release,
             'python': platform.python_version(),
-            'docker': os.environ.get('SD_INSTALL_DEBUG', None) is not None,
+            'docker': os.environ.get('SD_DOCKER', None) is not None,
             # 'host': platform.node(),
             # 'version': platform.version(),
         }
