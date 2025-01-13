@@ -84,15 +84,7 @@ console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8
-if os.environ.get("SD_HFCACHEDIR", None) is not None:
-    hfcache_dir = os.environ.get("SD_HFCACHEDIR")
-if os.environ.get("HF_HUB_CACHE", None) is not None:
-    hfcache_dir = os.environ.get("HF_HUB_CACHE")
-elif os.environ.get("HF_HUB", None) is not None:
-    hfcache_dir = os.path.join(os.environ.get("HF_HUB"), '.cache')
-else:
-    hfcache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
-    os.environ["HF_HUB_CACHE"] = hfcache_dir
+default_hfcache_dir = os.environ.get("SD_HFCACHEDIR", None) or os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
 
 
 class Backend(Enum):
@@ -668,7 +660,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "model_paths_sep_options": OptionInfo("<h2>Paths for specific models</h2>", "", gr.HTML),
     "ckpt_dir": OptionInfo(os.path.join(paths.models_path, 'Stable-diffusion'), "Folder with stable diffusion models", folder=True),
     "diffusers_dir": OptionInfo(os.path.join(paths.models_path, 'Diffusers'), "Folder with Huggingface models", folder=True),
-    "hfcache_dir": OptionInfo(hfcache_dir, "Folder for Huggingface cache", folder=True),
+    "hfcache_dir": OptionInfo(default_hfcache_dir, "Folder for Huggingface cache", folder=True),
     "vae_dir": OptionInfo(os.path.join(paths.models_path, 'VAE'), "Folder with VAE files", folder=True),
     "unet_dir": OptionInfo(os.path.join(paths.models_path, 'UNET'), "Folder with UNET files", folder=True),
     "te_dir": OptionInfo(os.path.join(paths.models_path, 'Text-encoder'), "Folder with Text encoder files", folder=True),

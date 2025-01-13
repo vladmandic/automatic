@@ -64,6 +64,7 @@
   - zluda installer  
   - control inherit parent pipe settings  
   - control logging  
+  - hf cache folder settings  
 
 ## Update for 2024-12-31
 
