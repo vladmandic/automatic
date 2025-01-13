@@ -41,13 +41,13 @@ def install() -> None:
         for info in infos:
             if not info.is_dir():
                 info.filename = os.path.basename(info.filename)
-                archive.extract(info, '.zluda')
+                archive.extract(info, path)
     os.remove('_zluda')
 
 
 def uninstall() -> None:
-    if os.path.exists('.zluda'):
-        shutil.rmtree('.zluda')
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
 
 def set_blaslt_enabled(enabled: bool):
