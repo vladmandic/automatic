@@ -65,6 +65,7 @@
   - control inherit parent pipe settings  
   - control logging  
   - hf cache folder settings  
+  - fluxfill should not require base model
 
 ## Update for 2024-12-31
 
