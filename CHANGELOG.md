@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-12
+## Update for 2025-01-13
 
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
@@ -60,6 +60,7 @@
   - control restore pipeline before running hires  
   - restore args after batch run  
   - flux controlnet  
+  - zluda installer  
 
 ## Update for 2024-12-31
 

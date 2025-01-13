@@ -10,8 +10,8 @@ from modules.processing import StableDiffusionProcessingControl
 
 
 what = 'ControlNet'
-debug = log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
-debug('Trace: CONTROL')
+debug = os.environ.get('SD_CONTROL_DEBUG', None) is not None
+debug_log = log.trace if os.environ.get('SD_CONTROL_DEBUG', None) is not None else lambda *args, **kwargs: None
 predefined_sd15 = {
     'Canny': "lllyasviel/control_v11p_sd15_canny",
     'Depth': "lllyasviel/control_v11f1p_sd15_depth",
@@ -156,7 +156,7 @@ def list_models(refresh=False):
     else:
         log.warning(f'Control {what} model list failed: unknown model type')
         models = ['None'] + sorted(predefined_sd15) + sorted(predefined_sdxl) + sorted(predefined_f1) + sorted(predefined_sd3) + sorted(find_models())
-    debug(f'Control list {what}: path={cache_dir} models={models}')
+    debug_log(f'Control list {what}: path={cache_dir} models={models}')
     return models
 
 
@@ -174,7 +174,7 @@ class ControlNet():
 
     def reset(self):
         if self.model is not None:
-            debug(f'Control {what} model unloaded')
+            debug_log(f'Control {what} model unloaded')
         self.model = None
         self.model_id = None
 
@@ -233,7 +233,7 @@ class ControlNet():
             self.load_config['original_config_file '] = config_path
         cls, config = self.get_class(model_id)
         if cls is None:
-            log.error(f'Control {what} model load failed: unknown base model')
+            log.error(f'Control {what} model load: unknown base model')
         else:
             self.model = cls.from_single_file(model_path, config=config, **self.load_config)
 
@@ -246,13 +246,13 @@ class ControlNet():
                     self.reset()
                     return
                 if model_id not in all_models:
-                    log.error(f'Control {what} unknown model: id="{model_id}" available={list(all_models)}')
+                    log.error(f'Control {what}: id="{model_id}" available={list(all_models)} unknown model')
                     return
                 model_path = all_models[model_id]
                 if model_path == '':
                     return
                 if model_path is None:
-                    log.error(f'Control {what} model load failed: id="{model_id}" error=unknown model id')
+                    log.error(f'Control {what} model load: id="{model_id}" unknown model id')
                     return
                 if 'lora' in model_id.lower():
                     self.model = model_path
@@ -269,12 +269,19 @@ class ControlNet():
                     if '/bin' in model_path:
                         model_path = model_path.replace('/bin', '')
                         self.load_config['use_safetensors'] = False
+                    else:
+                        self.load_config['use_safetensors'] = True
                     if cls is None:
-                        log.error(f'Control {what} model load failed: id="{model_id}" unknown base model')
+                        log.error(f'Control {what} model load: id="{model_id}" unknown base model')
                         return
                     if variants.get(model_id, None) is not None:
                         kwargs['variant'] = variants[model_id]
-                    self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
+                    try:
+                        self.model = cls.from_pretrained(model_path, **self.load_config, **kwargs)
+                    except Exception as e:
+                        log.error(f'Control {what} model load: id="{model_id}" {e}')
+                        if debug:
+                            errors.display(e, 'Control')
                 if self.model is None:
                     return
                 if self.dtype is not None:
@@ -287,7 +294,7 @@ class ControlNet():
                         from modules.sd_models_compile import nncf_compress_model
                         self.model = nncf_compress_model(self.model)
                     except Exception as e:
-                        log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" error={e}')
+                        log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" {e}')
                 elif "ControlNet" in opts.optimum_quanto_weights:
                     try:
                         log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
@@ -295,7 +302,7 @@ class ControlNet():
                         from modules.sd_models_compile import optimum_quanto_model
                         self.model = optimum_quanto_model(self.model)
                     except Exception as e:
-                        log.error(f'Control {what} model Optimum Quanto failed: id="{model_id}" error={e}')
+                        log.error(f'Control {what} model Optimum Quanto: id="{model_id}" {e}')
                 if self.device is not None:
                     self.model.to(self.device)
                 t1 = time.time()
@@ -303,7 +310,7 @@ class ControlNet():
                 log.info(f'Control {what} model loaded: id="{model_id}" path="{model_path}" cls={cls.__name__} time={t1-t0:.2f}')
                 return f'{what} loaded model: {model_id}'
             except Exception as e:
-                log.error(f'Control {what} model load failed: id="{model_id}" error={e}')
+                log.error(f'Control {what} model load: id="{model_id}" {e}')
                 errors.display(e, f'Control {what} load')
                 return f'{what} failed to load model: {model_id}'
 
