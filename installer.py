@@ -630,7 +630,8 @@ def install_rocm_zluda():
 
 
 def install_ipex(torch_command):
-    check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
+    # https://pytorch-extension.intel.com/installation?platform=gpu&version=v2.5.10%2Bxpu&os=linux%2Fwsl2&package=pip
+    check_python(supported_minors=[9,10,11,12], reason='IPEX backend requires Python 3.9 - 3.12')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('IPEX: Intel OneAPI toolkit detected')
     if os.environ.get("NEOReadDebugKeys", None) is None:
