@@ -19,7 +19,8 @@ ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 path = os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
 default_agent: Union[rocm.Agent, None] = None
-hipBLASLt_enabled = os.path.exists(os.path.join(rocm.path, "bin", "hipblaslt.dll")) and os.path.exists(rocm.blaslt_tensile_libpath) and os.path.exists(os.path.join(path, 'cublasLt.dll'))
+nightly = os.environ.get("ZLUDA_NIGHTLY", "0") == "1"
+hipBLASLt_enabled = os.path.exists(os.path.join(rocm.path, "bin", "hipblaslt.dll")) and os.path.exists(rocm.blaslt_tensile_libpath) and ((not os.path.exists(path) and nightly) or os.path.exists(os.path.join(path, 'cublasLt.dll')))
 
 
 def set_default_agent(agent: rocm.Agent):
@@ -33,7 +34,7 @@ def install() -> None:
 
     platform = "windows"
     commit = os.environ.get("ZLUDA_HASH", "d60bddbc870827566b3d2d417e00e1d2d8acc026")
-    if os.environ.get("ZLUDA_NIGHTLY", "0") == "1":
+    if nightly:
         platform = "nightly-" + platform
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{commit}/ZLUDA-{platform}-rocm{rocm.version[0]}-amd64.zip', '_zluda')
     with zipfile.ZipFile('_zluda', 'r') as archive:
