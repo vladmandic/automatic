@@ -3,10 +3,8 @@ import os
 import time
 import contextlib
 import gradio as gr
-import numpy as np
 from PIL import Image
 from modules import shared, devices, errors, scripts, processing, processing_helpers, sd_models
-from modules.api.api import decode_base64_to_image
 
 
 debug = os.environ.get('SD_PULID_DEBUG', None) is not None
@@ -59,12 +57,16 @@ class Script(scripts.Script):
                 xyz_classes.axis_options.append(option)
 
 
+    def decode_image(self,  b64):
+        from modules.api.api import decode_base64_to_image
+        return decode_base64_to_image(b64)
+
     def load_images(self, files):
         uploaded_images.clear()
         for file in files or []:
             try:
                 if isinstance(file, str):
-                    image = decode_base64_to_image(file)
+                    image = self.decode_image(file)
                 elif isinstance(file, Image.Image):
                     image = file
                 elif isinstance(file, dict) and 'name' in file:
@@ -113,16 +115,17 @@ class Script(scripts.Script):
             version: str = 'v1.1'
         ): # pylint: disable=arguments-differ, unused-argument
         images = []
+        import numpy as np
         try:
             if gallery is None or (isinstance(gallery, list) and len(gallery) == 0):
                 images = getattr(p, 'pulid_images', uploaded_images)
-                images = [decode_base64_to_image(image) if isinstance(image, str) else image for image in images]
+                images = [self.decode_image(image) if isinstance(image, str) else image for image in images]
             elif isinstance(gallery[0], dict):
                 images = [Image.open(f['name']) for f in gallery]
             elif isinstance(gallery, str):
-                images = [decode_base64_to_image(gallery)]
+                images = [self.decode_image(gallery)]
             elif isinstance(gallery[0], str):
-                images = [decode_base64_to_image(f) for f in gallery]
+                images = [self.decode_image(f) for f in gallery]
             else:
                 images = gallery
             images = [np.array(image) for image in images]

@@ -2,18 +2,20 @@
 import os
 import sys
 import json
+import shlex
 import argparse
 from modules.errors import log
 
 
 # parse args, parse again after we have the data-dir and early-read the config file
+argv = shlex.split(" ".join(sys.argv[1:])) if "USED_VSCODE_COMMAND_PICKARGS" in os.environ else sys.argv[1:]
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--ckpt", type=str, default=os.environ.get("SD_MODEL", None), help="Path to model checkpoint to load immediately, default: %(default)s")
 parser.add_argument("--data-dir", type=str, default=os.environ.get("SD_DATADIR", ''), help="Base path where all user data is stored, default: %(default)s")
 parser.add_argument("--models-dir", type=str, default=os.environ.get("SD_MODELSDIR", None), help="Base path where all models are stored, default: %(default)s",)
-cli = parser.parse_known_args()[0]
-parser.add_argument("--config", type=str, default=os.environ.get("SD_CONFIG", os.path.join(cli.data_dir, 'config.json')), help="Use specific server configuration file, default: %(default)s")
-cli = parser.parse_known_args()[0]
+cli = parser.parse_known_args(argv)[0]
+parser.add_argument("--config", type=str, default=os.environ.get("SD_CONFIG", os.path.join(cli.data_dir, 'config.json')), help="Use specific server configuration file, default: %(default)s") # twice because we want data_dir
+cli = parser.parse_known_args(argv)[0]
 config_path = cli.config if os.path.isabs(cli.config) else os.path.join(cli.data_dir, cli.config)
 try:
     with open(config_path, 'r', encoding='utf8') as f:

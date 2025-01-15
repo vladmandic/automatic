@@ -13,12 +13,14 @@ from installer import installed, pip, log
 from modules.control.util import HWC3, resize_image
 from .draw import draw_bodypose, draw_handpose, draw_facepose
 checked_ok = False
+busy = False
 
 
 def check_dependencies():
-    global checked_ok # pylint: disable=global-statement
+    global checked_ok, busy # pylint: disable=global-statement
     debug = log.trace if os.environ.get('SD_DWPOSE_DEBUG', None) is not None else lambda *args, **kwargs: None
     packages = [
+        'termcolor',
         'openmim==0.3.9',
         'mmengine==0.10.4',
         'mmcv==2.1.0',
@@ -68,8 +70,13 @@ class DWposeDetector:
         if not checked_ok:
             if not check_dependencies():
                 return
-        from .wholebody import Wholebody
-        self.pose_estimation = Wholebody(det_config, det_ckpt, pose_config, pose_ckpt, device)
+        Wholebody = None
+        try:
+            from .wholebody import Wholebody
+        except Exception as e:
+            log.error(f'DWPose: {e}')
+        if Wholebody is not None:
+            self.pose_estimation = Wholebody(det_config, det_ckpt, pose_config, pose_ckpt, device)
 
     def to(self, device):
         self.pose_estimation.to(device)
@@ -78,6 +85,7 @@ class DWposeDetector:
     def __call__(self, input_image, detect_resolution=512, image_resolution=512, output_type="pil", min_confidence=0.3, **kwargs):
         if self.pose_estimation is None:
             log.error("DWPose: not loaded")
+            return None
         input_image = cv2.cvtColor(np.array(input_image, dtype=np.uint8), cv2.COLOR_RGB2BGR)
 
         input_image = HWC3(input_image)

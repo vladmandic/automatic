@@ -89,9 +89,7 @@ class LinFusion(ModelMixin, ConfigMixin):
                 pipe_name_path = pipe_name_path or pipeline._internal_dict._name_or_path # pylint: disable=protected-access
                 pretrained_model_name_or_path = model_dict.get(pipe_name_path, None)
                 if pretrained_model_name_or_path:
-                    print(
-                        f"Matching LinFusion '{pretrained_model_name_or_path}' for pipeline '{pipe_name_path}'."
-                    )
+                    pass
                 else:
                     raise RuntimeError(
                         f"LinFusion not found for pipeline [{pipe_name_path}], please provide the path."

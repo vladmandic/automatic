@@ -259,7 +259,6 @@ class OmniGen(nn.Module, PeftAdapterMixin):
         left = (self.pos_embed_max_size - width) // 2
         spatial_pos_embed = self.pos_embed.reshape(1, self.pos_embed_max_size, self.pos_embed_max_size, -1)
         spatial_pos_embed = spatial_pos_embed[:, top : top + height, left : left + width, :]
-        # print(top, top + height, left, left + width, spatial_pos_embed.size())
         spatial_pos_embed = spatial_pos_embed.reshape(1, -1, spatial_pos_embed.shape[-1])
         return spatial_pos_embed
 

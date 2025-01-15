@@ -17,7 +17,7 @@
   },
   "scripts": {
     "venv": "source venv/bin/activate",
-    "start": "python launch.py --debug --experimental",
+    "start": "python launch.py --debug",
     "ruff": "ruff check",
     "eslint": "eslint javascript/ extensions-builtin/sdnext-modernui/javascript/",
     "pylint": "pylint *.py modules/ extensions-builtin/",

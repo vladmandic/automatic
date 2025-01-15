@@ -6,7 +6,7 @@ import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
 from modules import shared, devices, processing, sd_models, errors, sd_hijack_hypertile, processing_vae, sd_models_compile, hidiffusion, timer, modelstats, extra_networks
-from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled
+from modules.processing_helpers import resize_hires, calculate_base_steps, calculate_hires_steps, calculate_refiner_steps, save_intermediate, update_sampler, is_txt2img, is_refiner_enabled, get_job_name
 from modules.processing_args import set_pipeline_args
 from modules.onnx_impl import preprocess_pipeline as preprocess_onnx_pipeline, check_parameters_changed as olive_check_parameters_changed
 from modules.lora import networks
@@ -47,14 +47,15 @@ def restore_state(p: processing.StableDiffusionProcessing):
             p.init_images = None
         if state == 'reprocess_detail':
             p.skip = ['encode', 'base', 'hires']
-            p.detailer = True
+            p.detailer_enabled = True
         shared.log.info(f'Restore state: op={p.state} skip={p.skip}')
     return p
 
 
 def process_base(p: processing.StableDiffusionProcessing):
-    use_refiner_start = is_txt2img() and is_refiner_enabled(p) and not p.is_hr_pass and p.refiner_start > 0 and p.refiner_start < 1
-    use_denoise_start = not is_txt2img() and p.refiner_start > 0 and p.refiner_start < 1
+    txt2img = is_txt2img()
+    use_refiner_start = txt2img and is_refiner_enabled(p) and not p.is_hr_pass and p.refiner_start > 0 and p.refiner_start < 1
+    use_denoise_start = not txt2img and p.refiner_start > 0 and p.refiner_start < 1
 
     shared.sd_model = update_pipeline(shared.sd_model, p)
     update_sampler(p, shared.sd_model)
@@ -76,7 +77,8 @@ def process_base(p: processing.StableDiffusionProcessing):
         clip_skip=p.clip_skip,
         desc='Base',
     )
-    shared.state.sampling_steps = base_args.get('prior_num_inference_steps', None) or p.steps or base_args.get('num_inference_steps', None)
+    base_steps = base_args.get('prior_num_inference_steps', None) or p.steps or base_args.get('num_inference_steps', None)
+    shared.state.update(get_job_name(p, shared.sd_model), base_steps, 1)
     if shared.opts.scheduler_eta is not None and shared.opts.scheduler_eta > 0 and shared.opts.scheduler_eta < 1:
         p.extra_generation_params["Sampler Eta"] = shared.opts.scheduler_eta
     output = None
@@ -172,8 +174,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             p.ops.append('upscale')
             if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
-            shared.state.job = 'Upscale'
-            output.images = resize_hires(p, latents=output.images)
+            shared.state.update('Upscale', 0, 1)
+            output.images = resize_hires(p, latents=output.images) if output is not None else []
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
@@ -187,10 +189,9 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
 
         # hires
         if p.hr_force and strength == 0:
-            shared.log.warning('HiRes skip: denoising=0')
+            shared.log.warning('Hires skip: denoising=0')
             p.hr_force = False
         if p.hr_force:
-            shared.state.job_count = 2 * p.n_iter
             shared.sd_model = sd_models.set_diffuser_pipe(shared.sd_model, sd_models.DiffusersTaskType.IMAGE_2_IMAGE)
             if 'Upscale' in shared.sd_model.__class__.__name__ or 'Flux' in shared.sd_model.__class__.__name__ or 'Kandinsky' in shared.sd_model.__class__.__name__:
                 output.images = processing_vae.vae_decode(latents=output.images, model=shared.sd_model, full_quality=p.full_quality, output_type='pil', width=p.width, height=p.height)
@@ -200,6 +201,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             update_sampler(p, shared.sd_model, second_pass=True)
             orig_denoise = p.denoising_strength
             p.denoising_strength = strength
+            orig_image = p.task_args.pop('image', None) # remove image override from hires
             hires_args = set_pipeline_args(
                 p=p,
                 model=shared.sd_model,
@@ -217,8 +219,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 strength=strength,
                 desc='Hires',
             )
-            shared.state.job = 'HiRes'
-            shared.state.sampling_steps = hires_args.get('prior_num_inference_steps', None) or p.steps or hires_args.get('num_inference_steps', None)
+            hires_steps = hires_args.get('prior_num_inference_steps', None) or p.hr_second_pass_steps or hires_args.get('num_inference_steps', None)
+            shared.state.update(get_job_name(p, shared.sd_model), hires_steps, 1)
             try:
                 shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
                 sd_models.move_model(shared.sd_model, devices.device)
@@ -243,6 +245,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
                 shared.log.error(f'Processing step=hires: args={hires_args} {e}')
                 errors.display(e, 'Processing')
                 modelstats.analyze()
+            if orig_image is not None:
+                p.task_args['image'] = orig_image
             p.denoising_strength = orig_denoise
         shared.state.job = prev_job
         shared.state.nextjob()
@@ -255,8 +259,6 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
     # optional refiner pass or decode
     if is_refiner_enabled(p):
         prev_job = shared.state.job
-        shared.state.job = 'Refine'
-        shared.state.job_count +=1
         if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):
             save_intermediate(p, latents=output.images, suffix="-before-refiner")
         if shared.opts.diffusers_move_base:
@@ -306,7 +308,8 @@ def process_refine(p: processing.StableDiffusionProcessing, output):
                 prompt_attention='fixed',
                 desc='Refiner',
             )
-            shared.state.sampling_steps = refiner_args.get('prior_num_inference_steps', None) or p.steps or refiner_args.get('num_inference_steps', None)
+            refiner_steps = refiner_args.get('prior_num_inference_steps', None) or p.steps or refiner_args.get('num_inference_steps', None)
+            shared.state.update(get_job_name(p, shared.sd_refiner), refiner_steps, 1)
             try:
                 if 'requires_aesthetics_score' in shared.sd_refiner.config: # sdxl-model needs false and sdxl-refiner needs true
                     shared.sd_refiner.register_to_config(requires_aesthetics_score = getattr(shared.sd_refiner, 'tokenizer', None) is None)

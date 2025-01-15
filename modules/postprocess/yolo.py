@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 import os
+import threading
 from copy import copy
 import numpy as np
 import gradio as gr
@@ -16,6 +17,7 @@ PREDEFINED = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-v1.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-full-v1.pt',
 ]
+load_lock = threading.Lock()
 
 
 class YoloResult:
@@ -151,28 +153,29 @@ class YoloRestorer(Detailer):
         return result
 
     def load(self, model_name: str = None):
-        from modules import modelloader
-        model = None
-        self.dependencies()
-        if model_name is None:
-            model_name = list(self.list)[0]
-        if model_name in self.models:
-            return model_name, self.models[model_name]
-        else:
-            model_url = self.list.get(model_name)
-            file_name = os.path.basename(model_url)
-            model_file = None
-            try:
-                model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
-                if model_file is not None:
-                    import ultralytics
-                    model = ultralytics.YOLO(model_file)
-                    classes = list(model.names.values())
-                    shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" ultralytics={ultralytics.__version__} classes={classes}')
-                    self.models[model_name] = model
-                    return model_name, model
-            except Exception as e:
-                shared.log.error(f'Load: type=Detailer name="{model_name}" error="{e}"')
+        with load_lock:
+            from modules import modelloader
+            model = None
+            self.dependencies()
+            if model_name is None:
+                model_name = list(self.list)[0]
+            if model_name in self.models:
+                return model_name, self.models[model_name]
+            else:
+                model_url = self.list.get(model_name)
+                file_name = os.path.basename(model_url)
+                model_file = None
+                try:
+                    model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
+                    if model_file is not None:
+                        import ultralytics
+                        model = ultralytics.YOLO(model_file)
+                        classes = list(model.names.values())
+                        shared.log.info(f'Load: type=Detailer name="{model_name}" model="{model_file}" ultralytics={ultralytics.__version__} classes={classes}')
+                        self.models[model_name] = model
+                        return model_name, model
+                except Exception as e:
+                    shared.log.error(f'Load: type=Detailer name="{model_name}" error="{e}"')
         return None, None
 
     def restore(self, np_image, p: processing.StableDiffusionProcessing = None):
@@ -207,8 +210,8 @@ class YoloRestorer(Detailer):
             resolution = 512 if shared.sd_model_type in ['none', 'sd', 'lcm', 'unknown'] else 1024
             orig_prompt: str = orig_p.get('all_prompts', [''])[0]
             orig_negative: str = orig_p.get('all_negative_prompts', [''])[0]
-            prompt: str = orig_p.get('refiner_prompt', '')
-            negative: str = orig_p.get('refiner_negative', '')
+            prompt: str = orig_p.get('detailer_prompt', '')
+            negative: str = orig_p.get('detailer_negative', '')
             if len(prompt) == 0:
                 prompt = orig_prompt
             else:
@@ -230,9 +233,9 @@ class YoloRestorer(Detailer):
                 'n_iter': 1,
                 'prompt': prompt,
                 'negative_prompt': negative,
-                'denoising_strength': shared.opts.detailer_strength,
+                'denoising_strength': p.detailer_strength,
                 'sampler_name': orig_p.get('hr_sampler_name', 'default'),
-                'steps': shared.opts.detailer_steps,
+                'steps': p.detailer_steps,
                 'styles': [],
                 'inpaint_full_res': True,
                 'inpainting_mask_invert': 0,
@@ -309,7 +312,6 @@ class YoloRestorer(Detailer):
         def ui_settings_change(detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps):
             shared.opts.detailer_models = detailers
             shared.opts.detailer_classes = classes
-            shared.opts.detailer_strength = strength
             shared.opts.detailer_padding = padding
             shared.opts.detailer_blur = blur
             shared.opts.detailer_conf = min_confidence
@@ -317,9 +319,8 @@ class YoloRestorer(Detailer):
             shared.opts.detailer_min_size = min_size
             shared.opts.detailer_max_size = max_size
             shared.opts.detailer_iou = iou
-            shared.opts.detailer_steps = steps
             shared.opts.save(shared.config_filename, silent=True)
-            shared.log.debug(f'Detailer settings: models={shared.opts.detailer_models} classes={shared.opts.detailer_classes} strength={shared.opts.detailer_strength} conf={shared.opts.detailer_conf} max={shared.opts.detailer_max} iou={shared.opts.detailer_iou} size={shared.opts.detailer_min_size}-{shared.opts.detailer_max_size} padding={shared.opts.detailer_padding} steps={shared.opts.detailer_steps}')
+            shared.log.debug(f'Detailer settings: models={detailers} classes={classes} strength={strength} conf={min_confidence} max={max_detected} iou={iou} size={min_size}-{max_size} padding={padding} steps={steps}')
 
         with gr.Accordion(open=False, label="Detailer", elem_id=f"{tab}_detailer_accordion", elem_classes=["small-accordion"], visible=shared.native):
             with gr.Row():
@@ -330,8 +331,12 @@ class YoloRestorer(Detailer):
             with gr.Row():
                 classes = gr.Textbox(label="Classes", placeholder="Classes", elem_id=f"{tab}_detailer_classes")
             with gr.Row():
-                steps = gr.Slider(label="Detailer steps", elem_id=f"{tab}_detailer_steps", value=shared.opts.detailer_steps, min=0, max=99, step=1)
-                strength = gr.Slider(label="Detailer strength", elem_id=f"{tab}_detailer_strength", value=shared.opts.detailer_strength, minimum=0, maximum=1, step=0.01)
+                prompt = gr.Textbox(label="Detailer prompt", value='', placeholder='Detailer prompt', lines=2, elem_id=f"{tab}_detailer_prompt")
+            with gr.Row():
+                negative = gr.Textbox(label="Detailer negative prompt", value='', placeholder='Detailer negative prompt', lines=2, elem_id=f"{tab}_detailer_negative")
+            with gr.Row():
+                steps = gr.Slider(label="Detailer steps", elem_id=f"{tab}_detailer_steps", value=10, min=0, max=99, step=1)
+                strength = gr.Slider(label="Detailer strength", elem_id=f"{tab}_detailer_strength", value=0.3, minimum=0, maximum=1, step=0.01)
             with gr.Row():
                 max_detected = gr.Slider(label="Max detected", elem_id=f"{tab}_detailer_max", value=shared.opts.detailer_max, min=1, maximum=10, step=1)
             with gr.Row():
@@ -347,7 +352,6 @@ class YoloRestorer(Detailer):
                 max_size = gr.Slider(label="Max size", elem_id=f"{tab}_detailer_max_size", value=max_size, minimum=0.0, maximum=1.0, step=0.05)
             detailers.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             classes.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
-            strength.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             padding.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             blur.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             min_confidence.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
@@ -355,8 +359,7 @@ class YoloRestorer(Detailer):
             min_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             max_size.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
             iou.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
-            steps.change(fn=ui_settings_change, inputs=[detailers, classes, strength, padding, blur, min_confidence, max_detected, min_size, max_size, iou, steps], outputs=[])
-            return enabled
+            return enabled, prompt, negative, steps, strength
 
 
 def initialize():

@@ -37,6 +37,8 @@ def get_model_type(pipe):
         model_type = 'cogvideox'
     elif "Sana" in name:
         model_type = 'sana'
+    elif 'HunyuanVideoPipeline' in name:
+        model_type = 'hunyuanvideo'
     else:
         model_type = name
     return model_type

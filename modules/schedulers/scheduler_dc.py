@@ -820,7 +820,6 @@ class DCSolverMultistepScheduler(SchedulerMixin, ConfigMixin):
             loss.backward()
             optimizer.step()
             ratio_bound = bound_func(ratio_param)
-            print(f'iter [{iter_}]', ratio_bound.item(), loss.item())
 
         torch.cuda.empty_cache()
         return ratio_bound.data.detach().item()
