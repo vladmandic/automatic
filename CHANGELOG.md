@@ -1,16 +1,20 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-13
+## Update for 2025-01-15
+
+### Highlights for 2025-01-15
 
 Two weeks since last release, time for update!  
+This time a bit shorter highligh reel as this is primarily a service release, but still there is more than few updates
+
 *What's New?"  
 - Large [Wiki](https://github.com/vladmandic/automatic/wiki)/[Docs](https://vladmandic.github.io/sdnext-docs/) updates  
-- New models: **Allegro Video**, new pipelines: **PixelSmith**, updates: **Hunyuan-Video**, **LTX-Video**  
-- New schedulers (TDD)  
-- Improvements to **Detailer**, **XYZ grid**, **Sysinfo**, **Logging**  
+- New models: **Allegro Video**, new pipelines: **PixelSmith**, updates: **Hunyuan-Video**, **LTX-Video**, **Sana 4k**  
+- New version for **ZLUDA**  
+- New features in **Detailer**, **XYZ grid**, **Sysinfo**, **Logging**, **Schedulers**, **Video save/create**  
 - And a tons of hotfixes...  
 
-### Details for 2025-01-13
+### Details for 2025-01-15
 
 - [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
   - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
@@ -26,6 +30,10 @@ Two weeks since last release, time for update!
   - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
 - [LTX Video](https://github.com/Lightricks/LTX-Video) framewise decoding  
   - enabled by default, allows generating longer videos with reduced memory requirements  
+- [Sana 4k](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)  
+  - new Sana variation with support of directly generating 4k images  
+  - simply select from *networks -> models -> reference*  
+  - tip: enable vae tiling when generating very large images  
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
@@ -38,6 +46,7 @@ Two weeks since last release, time for update!
   - startup tracing and optimizations  
   - threading load locks on model loads  
   - refactor native vs legacy model loader  
+  - video save/create
 - **Schedulers**:
   - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
     recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
@@ -51,6 +60,11 @@ Two weeks since last release, time for update!
   - since different TAESD versions produce different results and latest is not necessarily greatest  
     you can choose TAESD version in settings -> live preview  
     also added is support for another finetuned version of TAESD [Hybrid TinyVAE](https://huggingface.co/cqyan/hybrid-sd-tinyvae-xl)  
+- **Video**  
+  - all video create/save code is now unified  
+  - add support for video formats: GIF, PNG, MP4/MP4V, MP4/AVC1, MP4/JVT3, MKV/H264, AVI/DIVX, AVI/RGBA, MJPEG/MJPG, MPG/MPG1, AVR/AVR1
+  - *note*: video format support is platform dependent and not all formats may be available on all platforms
+  - *note*: avc1 and h264 need custom opencv due to oss licensing issues  
 - **ZLUDA** v3.8.7  
   - new runtime compiler implementation: complex types, JIT are now available  
   - fast fourier transformation is implemented  

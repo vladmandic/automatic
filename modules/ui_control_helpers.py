@@ -181,15 +181,6 @@ def select_input(input_mode, input_image, init_image, init_type, input_resize, i
     return res
 
 
-def video_type_change(video_type):
-    return [
-        gr.update(visible=video_type != 'None'),
-        gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-        gr.update(visible=video_type == 'MP4'),
-        gr.update(visible=video_type == 'MP4'),
-    ]
-
-
 def copy_input(mode_from, mode_to, input_image, input_resize, input_inpaint):
     debug_log(f'Control transfter input: from={mode_from} to={mode_to} image={input_image} resize={input_resize} inpaint={input_inpaint}')
     def getimg(ctrl):

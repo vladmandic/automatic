@@ -197,14 +197,6 @@ class Script(scripts.Script):
 
 
     def ui(self, _is_img2img):
-        def video_type_change(video_type):
-            return [
-                gr.update(visible=video_type != 'None'),
-                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-                gr.update(visible=video_type == 'MP4'),
-                gr.update(visible=video_type == 'MP4'),
-            ]
-
         with gr.Row():
             gr.HTML("<span>&nbsp AnimateDiff</span><br>")
         with gr.Row():
@@ -217,9 +209,6 @@ class Script(scripts.Script):
             strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.05, value=1.0)
         with gr.Row():
             latent_mode = gr.Checkbox(label='Latent mode', value=True, visible=False)
-        with gr.Row():
-            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
         with gr.Accordion('FreeInit', open=False):
             with gr.Row():
                 fi_method = gr.Dropdown(label='Method', choices=['none', 'butterworth', 'ideal', 'gaussian'], value='none')
@@ -231,10 +220,8 @@ class Script(scripts.Script):
                 fi_spatial = gr.Slider(label='Spatial frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
                 fi_temporal = gr.Slider(label='Temporal frequency', minimum=0.0, maximum=1.0, step=0.05, value=0.25)
         with gr.Row():
-            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
+            from modules.ui_sections import create_video_inputs
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs()
         return [adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal]
 
     def run(self, p: processing.StableDiffusionProcessing, adapter_index, frames, lora_index, strength, latent_mode, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, override_scheduler, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal): # pylint: disable=arguments-differ, unused-argument

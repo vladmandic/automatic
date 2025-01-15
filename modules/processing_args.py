@@ -179,6 +179,9 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         p.extra_generation_params["CHI"] = chi
         if not chi:
             args['complex_human_instruction'] = None
+    if 'use_resolution_binning' in possible:
+        args['use_resolution_binning'] = True
+        p.extra_generation_params["Binning"] = True
     if prompt_parser_diffusers.embedder is not None and not prompt_parser_diffusers.embedder.scheduled_prompt: # not scheduled so we dont need it anymore
         prompt_parser_diffusers.embedder = None
 

@@ -29,14 +29,6 @@ class Script(scripts.Script):
 
 
     def ui(self, _is_img2img):
-        def video_type_change(video_type):
-            return [
-                gr.update(visible=video_type != 'None'),
-                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-                gr.update(visible=video_type == 'MP4'),
-                gr.update(visible=video_type == 'MP4'),
-            ]
-
         with gr.Row():
             gr.HTML("<span>&nbsp CogVideoX</span><br>")
         with gr.Row():
@@ -48,18 +40,13 @@ class Script(scripts.Script):
         with gr.Row():
             offload = gr.Dropdown(label='Offload', choices=['none', 'balanced', 'model', 'sequential'], value='balanced')
             override = gr.Checkbox(label='Override resolution', value=True)
-        with gr.Row():
-            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-            duration = gr.Slider(label='Duration', minimum=0.25, maximum=30, step=0.25, value=8, visible=False)
         with gr.Accordion('Optional init image or video', open=False):
             with gr.Row():
                 image = gr.Image(value=None, label='Image', type='pil', source='upload', width=256, height=256)
                 video = gr.Video(value=None, label='Video', source='upload', width=256, height=256)
         with gr.Row():
-            loop = gr.Checkbox(label='Loop', value=True, visible=False)
-            pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-            interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, loop, pad, interpolate])
+            from modules.ui_sections import create_video_inputs
+            video_type, duration, loop, pad, interpolate = create_video_inputs()
         return [model, sampler, frames, guidance, offload, override, video_type, duration, loop, pad, interpolate, image, video]
 
     def load(self, model):
