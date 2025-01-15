@@ -80,6 +80,11 @@ def load() -> None:
     os.environ["ZLUDA_COMGR_LOG_LEVEL"] = "1"
     os.environ["ZLUDA_NVRTC_LIB"] = os.path.join([v for v in site.getsitepackages() if v.endswith("site-packages")][0], "torch", "lib", "nvrtc64_112_0.dll")
 
+    try: # for compatibility. will be removed in next release
+        ctypes.windll.LoadLibrary(f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll')
+    except Exception:
+        pass
+
     for v in HIPSDK_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
     for v in ZLUDA_TARGETS:
