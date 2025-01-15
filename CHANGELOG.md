@@ -5,7 +5,8 @@
 ### Highlights for 2025-01-15
 
 Two weeks since last release, time for update!  
-This time a bit shorter highligh reel as this is primarily a service release, but still there is more than few updates
+This time a bit shorter highligh reel as this is primarily a service release, but still there is more than few updates  
+*(actually, there are ~60 commits, so its not that tiny)*  
 
 *What's New?"  
 - Large [Wiki](https://github.com/vladmandic/automatic/wiki)/[Docs](https://vladmandic.github.io/sdnext-docs/) updates  
