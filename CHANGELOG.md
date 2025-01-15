@@ -12,14 +12,12 @@
   - select from *scripts -> pixelsmith*  
 - [Hunyuan Video](https://github.com/Tencent/HunyuanVideo) LoRA support
   - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
-- ZLUDA v3.8.6
-  - new runtime compiler implementation: complex types, JIT are now available
+- ZLUDA v3.8.7
+  - new runtime compiler implementation: complex types, JIT are now available  
+  - fast fourier transformation is implemented  
   - experimental BLASLt support via nightly build
     - set `ZLUDA_NIGHTLY=1` to install nightly ZLUDA: newer torch such as 2.4.x (default) and 2.5.x are now available  
     - requirements: unofficial hipBLASLt
-  - **Important**
-    - the support for older version of ZLUDA will be removed in next release
-    - see [upgrading ZLUDA](https://github.com/vladmandic/automatic/wiki/ZLUDA#upgrading-zluda) for more information
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  

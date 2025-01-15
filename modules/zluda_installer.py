@@ -12,9 +12,11 @@ from modules import rocm
 DLL_MAPPING = {
     'cublas.dll': 'cublas64_11.dll',
     'cusparse.dll': 'cusparse64_11.dll',
+    'cufft.dll': 'cufft64_10.dll',
+    'cufftw.dll': 'cufftw64_10.dll',
     'nvrtc.dll': 'nvrtc64_112_0.dll',
 }
-HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll']
+HIPSDK_TARGETS = ['rocblas.dll', 'rocsolver.dll', 'hipfft.dll',]
 ZLUDA_TARGETS = ('nvcuda.dll', 'nvml.dll',)
 
 path = os.path.abspath(os.environ.get('ZLUDA', '.zluda'))
@@ -28,12 +30,16 @@ def set_default_agent(agent: rocm.Agent):
     default_agent = agent
 
 
+def is_old_zluda() -> bool: # ZLUDA<3.8.7
+    return not os.path.exists(os.path.join(path, "cufftw.dll"))
+
+
 def install() -> None:
     if os.path.exists(path):
         return
 
     platform = "windows"
-    commit = os.environ.get("ZLUDA_HASH", "d60bddbc870827566b3d2d417e00e1d2d8acc026")
+    commit = os.environ.get("ZLUDA_HASH", "c4994b3093e02231339d22e12be08418b2af781f")
     if nightly:
         platform = "nightly-" + platform
     urllib.request.urlretrieve(f'https://github.com/lshqqytiger/ZLUDA/releases/download/rel.{commit}/ZLUDA-{platform}-rocm{rocm.version[0]}-amd64.zip', '_zluda')
@@ -79,11 +85,6 @@ def make_copy() -> None:
 def load() -> None:
     os.environ["ZLUDA_COMGR_LOG_LEVEL"] = "1"
     os.environ["ZLUDA_NVRTC_LIB"] = os.path.join([v for v in site.getsitepackages() if v.endswith("site-packages")][0], "torch", "lib", "nvrtc64_112_0.dll")
-
-    try: # for compatibility. will be removed in next release
-        ctypes.windll.LoadLibrary(f'hiprtc{"".join([v.zfill(2) for v in rocm.version.split(".")])}.dll')
-    except Exception:
-        pass
 
     for v in HIPSDK_TARGETS:
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', v))
