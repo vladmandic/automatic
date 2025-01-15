@@ -160,6 +160,7 @@ class Script(scripts.Script):
         shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         shared.sd_model.vae.enable_slicing()
         shared.sd_model.vae.enable_tiling()
+        shared.sd_model.vae.use_framewise_decoding = True
         devices.torch_gc(force=True)
 
         shared.sd_model.transformer.cnt = 0

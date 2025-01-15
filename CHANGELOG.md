@@ -2,6 +2,18 @@
 
 ## Update for 2025-01-13
 
+Two weeks since last release, time for update!  
+*What's New?"  
+- Large [Wiki](https://github.com/vladmandic/automatic/wiki)/[Docs](https://vladmandic.github.io/sdnext-docs/) updates  
+- New models: **Allegro Video**, new pipelines: **PixelSmith**, updates: **Hunyuan-Video**, **LTX-Video**  
+- New schedulers (TDD)  
+- Improvements to **Detailer**, **XYZ grid**, **Sysinfo**, **Logging**  
+- And a tons of hotfixes...  
+
+### Details for 2025-01-13
+
+- [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
+  - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
   - *reference values*: width 1280 height 720 frames 88 steps 100 guidance 7.5  
@@ -12,12 +24,8 @@
   - select from *scripts -> pixelsmith*  
 - [Hunyuan Video](https://github.com/Tencent/HunyuanVideo) LoRA support
   - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
-- ZLUDA v3.8.7
-  - new runtime compiler implementation: complex types, JIT are now available  
-  - fast fourier transformation is implemented  
-  - experimental BLASLt support via nightly build
-    - set `ZLUDA_NIGHTLY=1` to install nightly ZLUDA: newer torch such as 2.4.x (default) and 2.5.x are now available  
-    - requirements: unofficial hipBLASLt
+- [LTX Video](https://github.com/Lightricks/LTX-Video) framewise decoding  
+  - enabled by default, allows generating longer videos with reduced memory requirements  
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
@@ -43,11 +51,15 @@
   - since different TAESD versions produce different results and latest is not necessarily greatest  
     you can choose TAESD version in settings -> live preview  
     also added is support for another finetuned version of TAESD [Hybrid TinyVAE](https://huggingface.co/cqyan/hybrid-sd-tinyvae-xl)  
+- **ZLUDA** v3.8.7  
+  - new runtime compiler implementation: complex types, JIT are now available  
+  - fast fourier transformation is implemented  
+  - experimental BLASLt support via nightly build  
+    - set `ZLUDA_NIGHTLY=1` to install nightly ZLUDA: newer torch such as 2.4.x (default) and 2.5.x are now available  
+    - requirements: unofficial hipBLASLt  
 - **Other**
   - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
   - **SysInfo**: update to collected data and benchmarks  
-- [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
-  - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
