@@ -154,6 +154,24 @@ def register_api(app: FastAPI): # register api
             content = { 'error': str(e) }
             return JSONResponse(content=content)
 
+    @app.get("/sdapi/v1/browser/files", response_model=list)
+    async def ht_files(folder: str):
+        try:
+            t0 = time.time()
+            files = files_cache.directory_files(folder, recursive=True)
+            lines = []
+            for f in files:
+                file = os.path.relpath(f, folder)
+                msg = quote(folder) + '##F##' + quote(file)
+                msg = msg[:1] + ":" + msg[4:] if msg[1:4] == "%3A" else msg
+                lines.append(msg)
+            t1 = time.time()
+            shared.log.debug(f'Gallery: type=ht folder="{folder}" files={len(lines)} time={t1-t0:.3f}')
+            return lines
+        except Exception as e:
+            shared.log.error(f'Gallery: {folder} {e}')
+            return []
+
     @app.websocket("/sdapi/v1/browser/files")
     async def ws_files(ws: WebSocket):
         try:
@@ -173,7 +191,7 @@ def register_api(app: FastAPI): # register api
                 await manager.send(ws, msg)
             await manager.send(ws, '#END#')
             t1 = time.time()
-            shared.log.debug(f'Gallery: folder="{folder}" files={numFiles} time={t1-t0:.3f}')
+            shared.log.debug(f'Gallery: type=ws folder="{folder}" files={numFiles} time={t1-t0:.3f}')
         except WebSocketDisconnect:
             debug('Browser WS unexpected disconnect')
         manager.disconnect(ws)

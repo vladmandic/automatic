@@ -2,10 +2,13 @@
 
 ## Update for 2025-01-16
 
+- **Gallery**:  
+  - add http fallback for slow/unreliable links  
 - **Fixes**:
   - non-full vae decode  
   - send-to image transfer  
   - sana vae tiling  
+  - increase gallery timeouts  
 
 ## Update for 2025-01-15
 
