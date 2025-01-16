@@ -71,7 +71,7 @@ class Script(scripts.Script):
                     create_video = gr.Checkbox(label='Create video', value=False, elem_id=self.elem_id("xyz_create_video"), container=False)
 
             with gr.Row(visible=False) as ui_video:
-                video_type, video_duration, video_loop, video_pad, video_interpolate = create_video_inputs()
+                video_type, video_duration, video_loop, video_pad, video_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
                 create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
 
             with gr.Row():

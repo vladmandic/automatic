@@ -36,12 +36,6 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 .gradio-image { min-height: fit-content; }
 .gradio-image img { object-fit: contain; }
 */
-/*
-.gradio-image { min-height: 200px !important; }
-.image-container { height: unset !important; }
-.control-image { height: unset !important; }
-#img2img_sketch, #img2maskimg, #inpaint_sketch { overflow: overlay !important; resize: auto; background: var(--panel-background-fill); z-index: 5; }
-*/
 
 /* color elements */
 .gradio-dropdown, .block.gradio-slider, .block.gradio-checkbox, .block.gradio-textbox, .block.gradio-radio, .block.gradio-checkboxgroup, .block.gradio-number, .block.gradio-colorpicker { border-width: 0 !important; box-shadow: none !important;}

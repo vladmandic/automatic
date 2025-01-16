@@ -65,7 +65,7 @@ class Script(scripts.Script):
         return shared.native
 
     # return signature is array of gradio components
-    def ui(self, _is_img2img):
+    def ui(self, is_img2img):
         def model_change(model):
             return gr.update(visible=model == 'custom')
 
@@ -84,7 +84,7 @@ class Script(scripts.Script):
             model_custom = gr.Textbox(value='', label='Path to model file', visible=False)
         with gr.Row():
             from modules.ui_sections import create_video_inputs
-            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs()
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         model.change(fn=model_change, inputs=[model], outputs=[model_custom])
         return [model, model_custom, decode, sampler, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, teacache_enable, teacache_threshold]
 

@@ -492,7 +492,7 @@ def check_diffusers():
     t_start = time.time()
     if args.skip_all or args.skip_git:
         return
-    sha = 'c944f0651f679728d4ec7b6488120ac49c2f1315' # diffusers commit hash
+    sha = 'b785ddb654e4be3ae0066e231734754bdb2a191c' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -876,7 +876,7 @@ def install_packages():
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
-    log.info('Verifying packages')
+    # log.info('Install: verifying packages')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip', quiet=True)
     install('open-clip-torch', no_deps=True, quiet=True)
