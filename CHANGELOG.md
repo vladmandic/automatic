@@ -1,5 +1,12 @@
 # Change Log for SD.Next
 
+## Update for 2025-01-16
+
+- **Fixes**:
+  - non-full vae decode  
+  - send-to image transfer  
+  - sana vae tiling  
+
 ## Update for 2025-01-15
 
 ### Highlights for 2025-01-15
