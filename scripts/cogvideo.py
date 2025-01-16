@@ -28,7 +28,7 @@ class Script(scripts.Script):
         return shared.native
 
 
-    def ui(self, _is_img2img):
+    def ui(self, is_img2img):
         with gr.Row():
             gr.HTML("<span>&nbsp CogVideoX</span><br>")
         with gr.Row():
@@ -46,7 +46,7 @@ class Script(scripts.Script):
                 video = gr.Video(value=None, label='Video', source='upload', width=256, height=256)
         with gr.Row():
             from modules.ui_sections import create_video_inputs
-            video_type, duration, loop, pad, interpolate = create_video_inputs()
+            video_type, duration, loop, pad, interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         return [model, sampler, frames, guidance, offload, override, video_type, duration, loop, pad, interpolate, image, video]
 
     def load(self, model):

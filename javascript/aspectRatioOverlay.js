@@ -12,7 +12,7 @@ function dimensionChange(e, is_width, is_height) {
   if (tabIndex === 0) targetElement = gradioApp().querySelector('#img2img_image div[data-testid=image] img'); // img2img
   else if (tabIndex === 1) targetElement = gradioApp().querySelector('#img2img_sketch div[data-testid=image] img'); // Sketch
   else if (tabIndex === 2) targetElement = gradioApp().querySelector('#img2maskimg div[data-testid=image] img'); // Inpaint
-  else if (tabIndex === 3) targetElement = gradioApp().querySelector('#inpaint_sketch div[data-testid=image] img'); // Inpaint sketch
+  else if (tabIndex === 3) targetElement = gradioApp().querySelector('#composite div[data-testid=image] img'); // Inpaint sketch
 
   if (targetElement) {
     let arPreviewRect = gradioApp().querySelector('#imageARPreview');

@@ -20,7 +20,7 @@ class Script(scripts.Script):
         # return False
 
     # return signature is array of gradio components
-    def ui(self, _is_img2img):
+    def ui(self, is_img2img):
         def model_change(model_name):
             model = next(m for m in MODELS if m['name'] == model_name)
             return gr.update(value=model['info']), gr.update(visible=model_name == 'PIA'), gr.update(visible=model_name == 'VGen')
@@ -47,7 +47,7 @@ class Script(scripts.Script):
                 vg_fps = gr.Slider(label='Change rate', minimum=0.1, maximum=1.0, step=0.1, value=0.5)
         with gr.Row():
             from modules.ui_sections import create_video_inputs
-            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs()
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         model_name.change(fn=model_change, inputs=[model_name], outputs=[model_info, fi_accordion, vgen_accordion])
         return [model_name, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate, fi_method, fi_iters, fi_order, fi_spatial, fi_temporal, vg_chunks, vg_fps]
 

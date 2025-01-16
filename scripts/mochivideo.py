@@ -16,14 +16,14 @@ class Script(scripts.Script):
         return not is_img2img if shared.native else False
 
     # return signature is array of gradio components
-    def ui(self, _is_img2img):
+    def ui(self, is_img2img):
         with gr.Row():
             gr.HTML('<a href="https://huggingface.co/genmo/mochi-1-preview">&nbsp Mochi.1 Video</a><br>')
         with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=45)
         with gr.Row():
             from modules.ui_sections import create_video_inputs
-            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs()
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         return [num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
     def run(self, p: processing.StableDiffusionProcessing, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument

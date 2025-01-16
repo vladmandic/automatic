@@ -9,6 +9,7 @@
   - send-to image transfer  
   - sana vae tiling  
   - increase gallery timeouts  
+  - update ui element ids  
 
 ## Update for 2025-01-15
 

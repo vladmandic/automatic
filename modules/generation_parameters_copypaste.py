@@ -105,12 +105,12 @@ def create_buttons(tabs_list):
     return buttons
 
 
-def bind_buttons(buttons, send_image, send_generate_info):
+def bind_buttons(buttons, image_component, send_generate_info):
     """old function for backwards compatibility; do not use this, use register_paste_params_button"""
     for tabname, button in buttons.items():
         source_text_component = send_generate_info if isinstance(send_generate_info, gr.components.Component) else None
         source_tabname = send_generate_info if isinstance(send_generate_info, str) else None
-        bindings = ParamBinding(paste_button=button, tabname=tabname, source_text_component=source_text_component, source_image_component=send_image, source_tabname=source_tabname)
+        bindings = ParamBinding(paste_button=button, tabname=tabname, source_text_component=source_text_component, source_image_component=image_component, source_tabname=source_tabname)
         register_paste_params_button(bindings)
 
 
