@@ -124,27 +124,18 @@ def connect_paste_params_buttons():
         if binding.tabname not in paste_fields:
             debug(f"Not not registered: tab={binding.tabname}")
             continue
-        """
-        # legacy code that sets width/height based on image itself instead of metadata
+        fields = paste_fields[binding.tabname]["fields"]
+
         destination_image_component = paste_fields[binding.tabname]["init_img"]
-        destination_width_component = next(iter([field for field, name in fields if name == "Size-1"] if fields else []), None)
-        destination_height_component = next(iter([field for field, name in fields if name == "Size-2"] if fields else []), None)
         if binding.source_image_component and destination_image_component:
-            if isinstance(binding.source_image_component, gr.Gallery):
-                func = send_image_and_dimensions if destination_width_component else image_from_url_text
-                jsfunc = "extract_image_from_gallery"
-            else:
-                func = send_image_and_dimensions if destination_width_component else lambda x: x
-                jsfunc = None
             binding.paste_button.click(
-                fn=func,
-                _js=jsfunc,
+                _js="extract_image_from_gallery" if isinstance(binding.source_image_component, gr.Gallery) else None,
+                fn=send_image,
                 inputs=[binding.source_image_component],
-                outputs=[destination_image_component, destination_width_component, destination_height_component] if destination_width_component else [destination_image_component],
+                outputs=[destination_image_component],
                 show_progress=False,
             )
-        """
-        fields = paste_fields[binding.tabname]["fields"]
+
         override_settings_component = binding.override_settings_component or paste_fields[binding.tabname]["override_settings_component"]
         if binding.source_text_component is not None and fields is not None:
             connect_paste(binding.paste_button, fields, binding.source_text_component, override_settings_component, binding.tabname)
@@ -165,15 +156,20 @@ def connect_paste_params_buttons():
         )
 
 
+def send_image(x):
+    image = x if isinstance(x, Image.Image) else image_from_url_text(x)
+    return image
+
+
 def send_image_and_dimensions(x):
-    img = x if isinstance(x, Image.Image) else image_from_url_text(x)
-    if shared.opts.send_size and isinstance(img, Image.Image):
-        w = img.width
-        h = img.height
+    image = x if isinstance(x, Image.Image) else image_from_url_text(x)
+    if shared.opts.send_size and isinstance(image, Image.Image):
+        w = image.width
+        h = image.height
     else:
         w = gr.update()
         h = gr.update()
-    return img, w, h
+    return image, w, h
 
 
 def create_override_settings_dict(text_pairs):
