@@ -331,13 +331,21 @@ async function fetchFiles(evt) { // fetch file-by-file list over websockets
   el.files.innerHTML = '';
   if (!url) return;
   if (ws && ws.readyState === WebSocket.OPEN) ws.close(); // abort previous request
-  ws = new WebSocket(`${url}/sdapi/v1/browser/files`);
-  await wsConnect(ws);
+  let wsConnected = false;
+  try {
+    ws = new WebSocket(`${url}/sdapi/v1/browser/files`);
+    wsConnected = await wsConnect(ws, 30000);
+  } catch (err) {
+    log('gallery: ws connect error', err);
+    return;
+  }
+  log(`gallery: connected=${wsConnected} state=${ws?.readyState} url=${ws?.url}`);
   el.status.innerText = `Folder | ${evt.target.name}`;
   const t0 = performance.now();
   let numFiles = 0;
   let t1 = performance.now();
   let fragment = document.createDocumentFragment();
+
   ws.onmessage = (event) => {
     numFiles++;
     t1 = performance.now();

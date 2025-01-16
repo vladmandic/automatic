@@ -876,7 +876,7 @@ def install_packages():
     if args.profile:
         pr = cProfile.Profile()
         pr.enable()
-    log.info('Verifying packages')
+    # log.info('Install: verifying packages')
     clip_package = os.environ.get('CLIP_PACKAGE', "git+https://github.com/openai/CLIP.git")
     install(clip_package, 'clip', quiet=True)
     install('open-clip-torch', no_deps=True, quiet=True)
