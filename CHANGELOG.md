@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-16
+## Update for 2025-01-17
 
 - **Gallery**:  
   - add http fallback for slow/unreliable links  
@@ -10,6 +10,7 @@
   - sana vae tiling  
   - increase gallery timeouts  
   - update ui element ids  
+  - modernui use local font  
 
 ## Update for 2025-01-15
 
