@@ -309,7 +309,8 @@ def read_metadata_from_safetensors(filename):
             metadata_len = int.from_bytes(metadata_len, "little")
             json_start = file.read(2)
             if metadata_len <= 2 or json_start not in (b'{"', b"{'"):
-                shared.log.error(f'Model metadata invalid: file="{filename}"')
+                shared.log.error(f'Model metadata invalid: file="{filename}" len={metadata_len} start={json_start}')
+                return res
             json_data = json_start + file.read(metadata_len-2)
             json_obj = json.loads(json_data)
             for k, v in json_obj.get("__metadata__", {}).items():
@@ -332,6 +333,8 @@ def read_metadata_from_safetensors(filename):
                 res[k] = v
         except Exception as e:
             shared.log.error(f'Model metadata: file="{filename}" {e}')
+            from modules import errors
+            errors.display(e, 'Model metadata')
     sd_metadata[filename] = res
     global sd_metadata_pending # pylint: disable=global-statement
     sd_metadata_pending += 1

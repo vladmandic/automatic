@@ -518,9 +518,9 @@ options_templates.update(options_section(('text_encoder', "Text Encoder"), {
 
 options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution Precision</h2>", "", gr.HTML),
-    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
+    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"], "visible": not native}),
     "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
-    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half)", None, None, None),
+    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Force full precision (--no-half)", None, None, None),
     "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling", gr.Checkbox, {"visible": not native}),
     "upcast_attn": OptionInfo(False, "Upcast attention layer", gr.Checkbox, {"visible": not native}),
     "cuda_cast_unet": OptionInfo(False, "Fixed UNet precision", gr.Checkbox, {"visible": not native}),

@@ -11,6 +11,7 @@
   - increase gallery timeouts  
   - update ui element ids  
   - modernui use local font  
+  - unique font family registration
 
 ## Update for 2025-01-15
 
