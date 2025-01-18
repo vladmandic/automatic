@@ -1,19 +1,23 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-17
+## Update for 2025-01-18
 
-- **Other**:
+- **Detailer**:  
+  - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
+  - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
+- **Other**:  
+  - **ipex**: update supported torch versions  
   - **gallery**: add http fallback for slow/unreliable links  
   - **upscale**: code refactor to unify latent, resize and model based upscalers  
   - **splash**: add legacy mode indicator on splash screen  
-- **Fixes**:
+- **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
   - sana vae tiling  
   - increase gallery timeouts  
   - update ui element ids  
   - modernui use local font  
-  - unique font family registration
+  - unique font family registration  
 
 ## Update for 2025-01-15
 

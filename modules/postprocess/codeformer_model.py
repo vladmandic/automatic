@@ -4,7 +4,7 @@ import torch
 import modules.detailer
 from modules import shared, devices, modelloader, errors
 from modules.paths import models_path
-from installer import install
+
 
 # codeformer people made a choice to include modified basicsr library to their project which makes
 # it utterly impossible to use it alongside with other libraries that also use basicsr, like GFPGAN.

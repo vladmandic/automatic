@@ -1172,7 +1172,7 @@ opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibi
 opts.data['uni_pc_order'] = max(2, opts.schedulers_solver_order) # compatibility
 log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.get_optimal_device_name()} attention="{opts.cross_attention_optimization}" mode={devices.inference_context.__name__}')
 if not native:
-    log.warning('Backend=original is in maintainance-only mode')
+    log.warning('Backend=original: legacy mode / maintainance-only')
     opts.data['diffusers_offload_mode'] = 'none'
 
 prompt_styles = modules.styles.StyleDatabase(opts)

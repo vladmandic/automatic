@@ -66,9 +66,10 @@ def get_custom_args():
         installer.log.trace(f'Environment: {installer.print_dict(env)}')
     env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
     installer.log.debug(f'Env flags: {env}')
-    ldd = os.environ.get('LD_PRELOAD', None)
-    if ldd is not None:
-        installer.log.debug(f'Linker flags: "{ldd}"')
+    ldpreload = os.environ.get('LD_PRELOAD', None)
+    ldpath = os.environ.get('LD_LIBRARY_PATH', None)
+    if ldpreload is not None or ldpath is not None:
+        installer.log.debug(f'Linker flags: preload="{ldpreload}" path="{ldpath}"')
     rec('args')
 
 

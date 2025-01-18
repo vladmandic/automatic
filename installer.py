@@ -734,6 +734,17 @@ def install_torch_addons():
     ts('addons', t_start)
 
 
+# check cudnn
+def check_cudnn():
+    import site
+    site_packages = site.getsitepackages()
+    cuda_path = os.environ.get('CUDA_PATH', '')
+    for site_package in site_packages:
+        folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
+        if os.path.exists(folder) and folder not in cuda_path:
+            os.environ['CUDA_PATH'] = f"{cuda_path}:{folder}"
+
+
 # check torch version
 def check_torch():
     t_start = time.time()
@@ -845,6 +856,7 @@ def check_torch():
         return
     if not args.skip_all:
         install_torch_addons()
+    check_cudnn()
     if args.profile:
         pr.disable()
         print_profile(pr, 'Torch')
