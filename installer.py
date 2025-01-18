@@ -668,13 +668,16 @@ def install_ipex(torch_command):
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if os.environ.get("PYTORCH_ENABLE_XPU_FALLBACK", None) is None:
         os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1')
+    if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
+        # Battlemage doesn't support Flash Atten or Memory Atten yet so it goes OOM without this
+        os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
     if "linux" in sys.platform:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/')
         # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.5.0'), 'openvino', ignore=True)
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     ts('ipex', t_start)
