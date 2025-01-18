@@ -15,7 +15,6 @@ import gradio as gr
 import fasteners
 import orjson
 import diffusers
-from rich.console import Console
 from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history, files_cache
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
@@ -26,22 +25,19 @@ import modules.interrogate
 import modules.memmon
 import modules.styles
 import modules.paths as paths
-from installer import print_dict
-from installer import log as central_logger # pylint: disable=E0611
+from installer import log, print_dict, console # pylint: disable=unused-import
 
 
 errors.install([gr])
 demo: gr.Blocks = None
 api = None
-log = central_logger
 progress_print_out = sys.stdout
 parser = cmd_args.parser
 url = 'https://github.com/vladmandic/automatic'
 cmd_opts, _ = parser.parse_known_args()
 hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
-locking_available = True
-clip_model = None
+locking_available = True # used by file read/write locking
 interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
@@ -51,20 +47,7 @@ tab_names = []
 extra_networks = []
 options_templates = {}
 hypernetworks = {}
-loaded_hypernetworks = []
 settings_components = None
-latent_upscale_default_mode = "None"
-latent_upscale_modes = {
-    "Latent Nearest": {"mode": "nearest", "antialias": False},
-    "Latent Nearest-exact": {"mode": "nearest-exact", "antialias": False},
-    "Latent Area": {"mode": "area", "antialias": False},
-    "Latent Bilinear": {"mode": "bilinear", "antialias": False},
-    "Latent Bicubic": {"mode": "bicubic", "antialias": False},
-    "Latent Bilinear antialias": {"mode": "bilinear", "antialias": True},
-    "Latent Bicubic antialias": {"mode": "bicubic", "antialias": True},
-    # "Latent Linear": {"mode": "linear", "antialias": False}, # not supported for latents with channels=4
-    # "Latent Trilinear": {"mode": "trilinear", "antialias": False}, # not supported for latents with channels=4
-}
 restricted_opts = {
     "samples_filename_pattern",
     "directories_filename_pattern",
@@ -80,7 +63,6 @@ restricted_opts = {
 }
 resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint", "Context aware"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
-console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8

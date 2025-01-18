@@ -162,6 +162,7 @@ def full_vae_decode(latents, model):
 
 
 def full_vae_encode(image, model):
+    t0 = time.time()
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and hasattr(model, 'unet'):
         log_debug('Moving to CPU: model=UNet')
         unet_device = model.unet.device
@@ -170,9 +171,25 @@ def full_vae_encode(image, model):
         sd_models.move_model(model.vae, devices.device)
     vae_name = sd_vae.loaded_vae_file if sd_vae.loaded_vae_file is not None else "default"
     log_debug(f'Encode vae="{vae_name}" dtype={model.vae.dtype} upcast={model.vae.config.get("force_upcast", None)}')
+
+    upcast = (model.vae.dtype == torch.float16) and (getattr(model.vae.config, 'force_upcast', False) or shared.opts.no_half_vae)
+    if upcast:
+        if hasattr(model, 'upcast_vae'): # this is done by diffusers automatically if output_type != 'latent'
+            model.upcast_vae()
+        else: # manual upcast and we restore it later
+            model.vae.orig_dtype = model.vae.dtype
+            model.vae = model.vae.to(dtype=torch.float32)
+
     encoded = model.vae.encode(image.to(model.vae.device, model.vae.dtype)).latent_dist.sample()
+
+    if hasattr(model.vae, "orig_dtype"):
+        model.vae = model.vae.to(dtype=model.vae.orig_dtype)
+        del model.vae.orig_dtype
+
     if shared.opts.diffusers_move_unet and not getattr(model, 'has_accelerate', False) and hasattr(model, 'unet'):
         sd_models.move_model(model.unet, unet_device)
+    t1 = time.time()
+    shared.log.debug(f'Encode: vae="{vae_name}" upcast={upcast} slicing={getattr(model.vae, "use_slicing", None)} tiling={getattr(model.vae, "use_tiling", None)} latents={encoded.shape}:{encoded.device}:{encoded.dtype} time={t1-t0:.3f}')
     return encoded
 
 

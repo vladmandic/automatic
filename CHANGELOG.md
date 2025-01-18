@@ -2,6 +2,8 @@
 
 ## Update for 2025-01-17
 
+- **Upscale**
+  - code refactor to unify latent, resize and model based upscalers  
 - **Gallery**:  
   - add http fallback for slow/unreliable links  
 - **Fixes**:

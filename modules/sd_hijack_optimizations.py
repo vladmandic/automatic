@@ -52,7 +52,7 @@ def split_cross_attention_forward_v1(self, x, context=None, mask=None): # pylint
     q_in = self.to_q(x)
     context = default(context, x) # pylint: disable=possibly-used-before-assignment
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k_in = self.to_k(context_k)
     v_in = self.to_v(context_v)
     del context, context_k, context_v, x
@@ -90,7 +90,7 @@ def split_cross_attention_forward(self, x, context=None, mask=None): # pylint: d
     q_in = self.to_q(x)
     context = default(context, x)
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k_in = self.to_k(context_k)
     v_in = self.to_v(context_v)
 
@@ -219,7 +219,7 @@ def split_cross_attention_forward_invokeAI(self, x, context=None, mask=None): # 
     q = self.to_q(x)
     context = default(context, x)
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k = self.to_k(context_k)
     v = self.to_v(context_v)
     del context, context_k, context_v, x
@@ -248,7 +248,7 @@ def sub_quad_attention_forward(self, x, context=None, mask=None):
     q = self.to_q(x)
     context = default(context, x)
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k = self.to_k(context_k)
     v = self.to_v(context_v)
     del context, context_k, context_v, x
@@ -329,7 +329,7 @@ def xformers_attention_forward(self, x, context=None, mask=None): # pylint: disa
     q_in = self.to_q(x)
     context = default(context, x)
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k_in = self.to_k(context_k)
     v_in = self.to_v(context_v)
 
@@ -360,7 +360,7 @@ def scaled_dot_product_attention_forward(self, x, context=None, mask=None):
     q_in = self.to_q(x)
     context = default(context, x)
 
-    context_k, context_v = hypernetwork.apply_hypernetworks(shared.loaded_hypernetworks, context)
+    context_k, context_v = hypernetwork.apply_hypernetworks(hypernetwork.loaded_hypernetworks, context)
     k_in = self.to_k(context_k)
     v_in = self.to_v(context_v)
 
