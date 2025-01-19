@@ -2,15 +2,26 @@
 
 ## Update for 2025-01-19
 
+- **Model Merge**
+  - replace model components and merge LoRAs  
+    in addition to existing model weights merge support  
+    now also having ability to replace model components and merge LoRAs  
+    you can also test merges in-memory without needing to save to disk at all  
+    and you can also use it to convert diffusers to safetensors if you want  
+    *example*: replace vae in your favorite model with a fixed one? replace text encoder? etc.  
+    *note*: limited to sdxl for now, additional models can be added depending on popularity  
 - **Detailer**:  
   - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
   - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
 - **Other**:  
   - **ipex**: update supported torch versions  
   - **gallery**: add http fallback for slow/unreliable links  
-  - **upscale**: code refactor to unify latent, resize and model based upscalers  
   - **splash**: add legacy mode indicator on splash screen  
   - **network**: extract thumbnail from model metadata if present  
+- **Refactor**:  
+  - **upscale**: code refactor to unify latent, resize and model based upscalers  
+  - **loader**: ability to run in-memory models  
+  - **schedulers**: ability to create model-less schedulers  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  

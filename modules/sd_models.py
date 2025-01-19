@@ -437,6 +437,23 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
     return sd_model
 
 
+def set_defaults(sd_model, checkpoint_info):
+    sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
+    sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
+    sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
+    if hasattr(sd_model, "prior_pipe"):
+        sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
+    else:
+        sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
+    sd_model.is_sdxl = False # a1111 compatibility item
+    sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
+    sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
+    sd_model.logvar = sd_model.logvar.to(devices.device) if hasattr(sd_model, 'logvar') else None # fix for training
+    shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
+    if hasattr(sd_model, "set_progress_bar_config"):
+        sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
+
+
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model', revision=None): # pylint: disable=unused-argument
     if timer is None:
         timer = Timer()
@@ -515,20 +532,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             shared.log.error(f'Load {op}: name="{checkpoint_info.name if checkpoint_info is not None else None}" not loaded')
             return
 
-        sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
-        sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
-        sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
-        if hasattr(sd_model, "prior_pipe"):
-            sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
-        else:
-            sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
-        sd_model.is_sdxl = False # a1111 compatibility item
-        sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
-        sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
-        sd_model.logvar = sd_model.logvar.to(devices.device) if hasattr(sd_model, 'logvar') else None # fix for training
-        shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
-        if hasattr(sd_model, "set_progress_bar_config"):
-            sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
+        set_defaults(sd_model, checkpoint_info)
 
         if "Kandinsky" in sd_model.__class__.__name__: # need a special case
             sd_model.scheduler.name = 'DDIM'

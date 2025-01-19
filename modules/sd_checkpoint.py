@@ -52,7 +52,12 @@ class CheckpointInfo:
         relname, ext = os.path.splitext(relname)
         ext = ext.lower()[1:]
 
-        if os.path.isfile(filename): # ckpt or safetensor
+        if filename.lower() == 'none':
+            self.name = 'none'
+            self.relname = 'none'
+            self.sha256 = None
+            self.type = 'unknown'
+        elif os.path.isfile(filename): # ckpt or safetensor
             self.name = relname
             self.filename = filename
             self.sha256 = hashes.sha256_from_cache(self.filename, f"checkpoint/{relname}")
@@ -173,7 +178,7 @@ def update_model_hashes():
     return txt
 
 
-def get_closet_checkpoint_match(s: str):
+def get_closet_checkpoint_match(s: str) -> CheckpointInfo:
     if s.startswith('https://huggingface.co/'):
         model_name = s.replace('https://huggingface.co/', '')
         checkpoint_info = CheckpointInfo(model_name) # create a virutal model info

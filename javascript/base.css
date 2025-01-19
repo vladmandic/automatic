@@ -77,7 +77,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #extensions .info { margin: 0; }
 #extensions .date { opacity: 0.85; font-size: 90%; }
 
-/* extra networks */
+/* networks */
 .extra-networks > div { margin: 0; border-bottom: none !important; }
 .extra-networks .second-line { display: flex; width: -moz-available; width: -webkit-fill-available; gap: 0.3em; box-shadow: var(--input-shadow); margin-bottom: 2px; }
 .extra-networks .search { flex: 1; }
