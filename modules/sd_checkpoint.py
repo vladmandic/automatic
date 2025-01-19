@@ -1,8 +1,11 @@
+import io
+import base64
 import os
 import re
 import time
 import json
 import collections
+from PIL import Image
 from modules import shared, paths, modelloader, hashes, sd_hijack_accelerate
 
 
@@ -289,6 +292,21 @@ def init_metadata():
         sd_metadata = shared.readfile(sd_metadata_file, lock=True) if os.path.isfile(sd_metadata_file) else {}
 
 
+def extract_thumbnail(filename, data):
+    try:
+        thumbnail = data.split(",")[1]
+        thumbnail = base64.b64decode(thumbnail)
+        thumbnail = io.BytesIO(thumbnail)
+        thumbnail = Image.open(thumbnail)
+        thumbnail = thumbnail.convert("RGB")
+        thumbnail = thumbnail.resize((512, 512), Image.Resampling.HAMMING)
+        fn = os.path.splitext(filename)[0]
+        print('HERE', thumbnail, fn)
+        thumbnail = thumbnail.save(f"{fn}.thumb.jpg", quality=50)
+    except Exception as e:
+        shared.log.error(f"Error extracting thumbnail: {filename} {e}")
+
+
 def read_metadata_from_safetensors(filename):
     global sd_metadata # pylint: disable=global-statement
     if sd_metadata is None:
@@ -314,6 +332,8 @@ def read_metadata_from_safetensors(filename):
             json_data = json_start + file.read(metadata_len-2)
             json_obj = json.loads(json_data)
             for k, v in json_obj.get("__metadata__", {}).items():
+                if k == 'modelspec.thumbnail' and v.startswith("data:"):
+                    extract_thumbnail(filename, v)
                 if v.startswith("data:"):
                     v = 'data'
                 if k == 'format' and v == 'pt':

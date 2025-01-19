@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-18
+## Update for 2025-01-19
 
 - **Detailer**:  
   - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
@@ -10,6 +10,7 @@
   - **gallery**: add http fallback for slow/unreliable links  
   - **upscale**: code refactor to unify latent, resize and model based upscalers  
   - **splash**: add legacy mode indicator on splash screen  
+  - **network**: extract thumbnail from model metadata if present  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
