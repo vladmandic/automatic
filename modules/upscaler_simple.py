@@ -89,3 +89,31 @@ class UpscalerLatent(Upscaler):
         else:
             raise ValueError(f"Latent upscale: model={selected_model} unknown")
         return F.interpolate(img, size=(h, w), mode=mode, antialias=antialias)
+
+
+class UpscalerAsymmetricVAE(Upscaler):
+    def __init__(self, dirname=None): # pylint: disable=unused-argument
+        super().__init__(False)
+        self.name = "Asymmetric VAE"
+        self.vae = None
+        self.scalers = [
+            UpscalerData("Asymmetric VAE", None, self),
+        ]
+
+    def do_upscale(self, img: Image, selected_model=None):
+        import torchvision.transforms.functional as F
+        import diffusers
+        from modules import shared, devices
+
+        if self.vae is None:
+            self.vae = diffusers.AsymmetricAutoencoderKL.from_pretrained("Heasterian/AsymmetricAutoencoderKLUpscaler", cache_dir=shared.opts.hfcache_dir)
+            self.vae.requires_grad_(False)
+            self.vae = self.vae.to(device=devices.device, dtype=devices.dtype)
+            self.vae.eval()
+        img = img.resize((8 * (img.width // 8), 8 * (img.height // 8)), resample=Image.Resampling.BILINEAR).convert('RGB')
+        tensor = (F.pil_to_tensor(img).unsqueeze(0) / 255.0).to(device=devices.device, dtype=devices.dtype)
+        self.vae = self.vae.to(device=devices.device)
+        tensor = self.vae(tensor).sample
+        upscaled = F.to_pil_image(tensor.squeeze().clamp(0.0, 1.0).float().cpu())
+        self.vae = self.vae.to(device=devices.cpu)
+        return upscaled

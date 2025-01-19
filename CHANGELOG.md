@@ -14,6 +14,7 @@
   - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
   - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
 - **Other**:  
+  - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
   - **ipex**: update supported torch versions  
   - **gallery**: add http fallback for slow/unreliable links  
   - **splash**: add legacy mode indicator on splash screen  
