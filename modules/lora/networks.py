@@ -267,7 +267,8 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
             failed_to_load_networks.append(name)
             shared.log.error(f'Load network: type=LoRA name="{name}" detected={network_on_disk.sd_version if network_on_disk is not None else None} failed')
             continue
-        shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)
+        if hasattr(shared.sd_model, 'embedding_db'):
+            shared.sd_model.embedding_db.load_diffusers_embedding(None, net.bundle_embeddings)
         net.te_multiplier = te_multipliers[i] if te_multipliers else shared.opts.extra_networks_default_multiplier
         net.unet_multiplier = unet_multipliers[i] if unet_multipliers else shared.opts.extra_networks_default_multiplier
         net.dyn_dim = dyn_dims[i] if dyn_dims else shared.opts.extra_networks_default_multiplier
@@ -282,7 +283,7 @@ def network_load(names, te_multipliers=None, unet_multipliers=None, dyn_dims=Non
         try:
             t0 = time.time()
             shared.sd_model.set_adapters(adapter_names=diffuser_loaded, adapter_weights=diffuser_scales)
-            if shared.opts.lora_fuse_diffusers:
+            if shared.opts.lora_fuse_diffusers and not network_overrides.check_fuse():
                 shared.sd_model.fuse_lora(adapter_names=diffuser_loaded, lora_scale=1.0, fuse_unet=True, fuse_text_encoder=True) # fuse uses fixed scale since later apply does the scaling
                 shared.sd_model.unload_lora_weights()
             timer.activate += time.time() - t0

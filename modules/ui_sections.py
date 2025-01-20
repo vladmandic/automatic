@@ -63,21 +63,6 @@ def create_toprow(is_img2img: bool = False, id_part: str = None):
 
 
 def ar_change(ar, width, height):
-    """
-    if ar == 'AR':
-        return gr.update(interactive=True), gr.update(interactive=True)
-    try:
-        (w, h) = [float(x) for x in ar.split(':')]
-    except Exception as e:
-        shared.log.warning(f"Invalid aspect ratio: {ar} {e}")
-        return gr.update(interactive=True), gr.update(interactive=True)
-    if w > h:
-        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=int(width * h / w))
-    elif w < h:
-        return gr.update(interactive=False, value=int(height * w / h)), gr.update(interactive=True, value=height)
-    else:
-        return gr.update(interactive=True, value=width), gr.update(interactive=False, value=width)
-    """
     if ar == 'AR':
         return gr.update(), gr.update()
     try:
@@ -144,6 +129,26 @@ def create_seed_inputs(tab, reuse_visible=True):
         random_seed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[seed])
         random_subseed.click(fn=lambda: -1, show_progress=False, inputs=[], outputs=[subseed])
     return seed, reuse_seed, subseed, reuse_subseed, subseed_strength, seed_resize_from_h, seed_resize_from_w
+
+
+def create_video_inputs(tab:str):
+    def video_type_change(video_type):
+        return [
+            gr.update(visible=video_type != 'None'),
+            gr.update(visible=video_type in ['GIF', 'PNG']),
+            gr.update(visible=video_type not in ['None', 'GIF', 'PNG']),
+            gr.update(visible=video_type not in ['None', 'GIF', 'PNG']),
+        ]
+    with gr.Column():
+        video_codecs = ['None', 'GIF', 'PNG', 'MP4/MP4V', 'MP4/AVC1', 'MP4/JVT3', 'MKV/H264', 'AVI/DIVX', 'AVI/RGBA', 'MJPEG/MJPG', 'MPG/MPG1', 'AVR/AVR1']
+        video_type = gr.Dropdown(label='Video type', choices=video_codecs, value='None', elem_id=f"{tab}_video_type")
+    with gr.Column():
+        video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False, elem_id=f"{tab}_video_duration")
+        video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id=f"{tab}_video_loop")
+        video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False, elem_id=f"{tab}_video_pad")
+        video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False, elem_id=f"{tab}_video_interpolate")
+    video_type.change(fn=video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
+    return video_type, video_duration, video_loop, video_pad, video_interpolate
 
 
 def create_cfg_inputs(tab):

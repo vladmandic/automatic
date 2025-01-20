@@ -53,8 +53,8 @@ class Processed:
         self.batch_size = max(1, p.batch_size)
         self.restore_faces = p.restore_faces or False
         self.face_restoration_model = shared.opts.face_restoration_model if p.restore_faces else None
-        self.detailer = p.detailer or False
-        self.detailer_model = shared.opts.detailer_model if p.detailer else None
+        self.detailer = p.detailer_enabled or False
+        self.detailer_model = shared.opts.detailer_model if p.detailer_enabled else None
         self.sd_model_hash = getattr(shared.sd_model, 'sd_model_hash', '') if model_data.sd_model is not None else ''
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
@@ -280,19 +280,22 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     output_images = []
 
     process_init(p)
-    if os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings and not shared.native:
+    if not shared.native and os.path.exists(shared.opts.embeddings_dir) and not p.do_not_reload_embeddings:
         modules.sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=False)
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.process(p)
 
     ema_scope_context = p.sd_model.ema_scope if not shared.native else nullcontext
-    shared.state.job_count = p.n_iter
+    if not shared.native:
+        shared.state.job_count = p.n_iter
     with devices.inference_context(), ema_scope_context():
         t0 = time.time()
         if not hasattr(p, 'skip_init'):
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         debug(f'Processing inner: args={vars(p)}')
         for n in range(p.n_iter):
+            # if hasattr(p, 'skip_processing'):
+            #     continue
             pag.apply(p)
             debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
             p.iteration = n
@@ -371,7 +374,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     sample = face_restoration.restore_faces(sample, p)
                     if sample is not None:
                         image = Image.fromarray(sample)
-                if p.detailer:
+                if p.detailer_enabled:
                     p.ops.append('detailer')
                     if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)

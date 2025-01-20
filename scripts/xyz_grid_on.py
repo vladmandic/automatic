@@ -14,11 +14,12 @@ from scripts.xyz_grid_classes import axis_options, AxisOption, SharedSettingsSta
 from scripts.xyz_grid_draw import draw_xyz_grid # pylint: disable=no-name-in-module
 from modules import shared, errors, scripts, images, processing
 from modules.ui_components import ToolButton
+from modules.ui_sections import create_video_inputs
 import modules.ui_symbols as symbols
 
 
 active = False
-cache = None
+xyz_results_cache = None
 debug = shared.log.trace if os.environ.get('SD_XYZ_DEBUG', None) is not None else lambda *args, **kwargs: None
 
 
@@ -70,23 +71,8 @@ class Script(scripts.Script):
                     create_video = gr.Checkbox(label='Create video', value=False, elem_id=self.elem_id("xyz_create_video"), container=False)
 
             with gr.Row(visible=False) as ui_video:
-                def video_type_change(video_type):
-                    return [
-                        gr.update(visible=video_type != 'None'),
-                        gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-                        gr.update(visible=video_type == 'MP4'),
-                        gr.update(visible=video_type == 'MP4'),
-                    ]
-
-                with gr.Column():
-                    video_type = gr.Dropdown(label='Video type', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-                with gr.Column():
-                    video_duration = gr.Slider(label='Duration', minimum=0.25, maximum=300, step=0.25, value=2, visible=False)
-                    video_loop = gr.Checkbox(label='Loop', value=True, visible=False, elem_id="control_video_loop")
-                    video_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-                    video_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-                video_type.change(fn=video_type_change, inputs=[video_type], outputs=[video_duration, video_loop, video_pad, video_interpolate])
-            create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
+                video_type, video_duration, video_loop, video_pad, video_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
+                create_video.change(fn=lambda x: gr.update(visible=x), inputs=[create_video], outputs=[ui_video])
 
             with gr.Row():
                 margin_size = gr.Slider(label="Grid margins", minimum=0, maximum=500, value=0, step=2, elem_id=self.elem_id("margin_size"))
@@ -188,8 +174,8 @@ class Script(scripts.Script):
                 include_time, include_text, margin_size,
                 create_video, video_type, video_duration, video_loop, video_pad, video_interpolate,
                ): # pylint: disable=W0221
-        global active, cache # pylint: disable=W0603
-        cache = None
+        global active, xyz_results_cache # pylint: disable=W0603
+        xyz_results_cache = None
         if not enabled or active:
             return
         active = True
@@ -266,6 +252,7 @@ class Script(scripts.Script):
             ys = fix_axis_seeds(y_opt, ys)
             zs = fix_axis_seeds(z_opt, zs)
 
+        total_jobs = len(xs) * len(ys) * len(zs)
         if x_opt.label == 'Steps':
             total_steps = sum(xs) * len(ys) * len(zs)
         elif y_opt.label == 'Steps':
@@ -273,8 +260,8 @@ class Script(scripts.Script):
         elif z_opt.label == 'Steps':
             total_steps = sum(zs) * len(xs) * len(ys)
         else:
-            total_steps = p.steps * len(xs) * len(ys) * len(zs)
-        if isinstance(p, processing.StableDiffusionProcessingTxt2Img) and p.enable_hr:
+            total_steps = p.steps * total_jobs
+        if p.enable_hr:
             if x_opt.label == "Hires steps":
                 total_steps += sum(xs) * len(ys) * len(zs)
             elif y_opt.label == "Hires steps":
@@ -282,10 +269,16 @@ class Script(scripts.Script):
             elif z_opt.label == "Hires steps":
                 total_steps += sum(zs) * len(xs) * len(ys)
             elif p.hr_second_pass_steps:
-                total_steps += p.hr_second_pass_steps * len(xs) * len(ys) * len(zs)
+                total_steps += p.hr_second_pass_steps * total_jobs
             else:
                 total_steps *= 2
+        if p.detailer_enabled:
+            total_steps += p.detailer_steps * total_jobs
+
         total_steps *= p.n_iter
+        total_jobs *= p.n_iter
+        shared.state.update('Grid', total_steps, total_jobs)
+
         image_cell_count = p.n_iter * p.batch_size
         shared.log.info(f"XYZ grid start: images={len(xs)*len(ys)*len(zs)*image_cell_count} grid={len(zs)} shape={len(xs)}x{len(ys)} cells={len(zs)} steps={total_steps}")
         AxisInfo = namedtuple('AxisInfo', ['axis', 'values'])
@@ -360,7 +353,7 @@ class Script(scripts.Script):
             return processed
 
         with SharedSettingsStackHelper():
-            processed = draw_xyz_grid(
+            processed: processing.Processed = draw_xyz_grid(
                 p,
                 xs=xs,
                 ys=ys,
@@ -418,19 +411,15 @@ class Script(scripts.Script):
         p.do_not_save_samples = True
         p.disable_extra_networks = True
         active = False
-        cache = processed
+        xyz_results_cache = processed
         return processed
 
 
     def process_images(self, p, *args): # pylint: disable=W0221, W0613
-        if hasattr(cache, 'used'):
-            cache.images.clear()
-            cache.used = False
-        elif cache is not None and len(cache.images) > 0:
-            cache.used = True
+        if xyz_results_cache is not None and len(xyz_results_cache.images) > 0:
             p.restore_faces = False
-            p.detailer = False
+            p.detailer_enabled = False
             p.color_corrections = None
-            p.scripts = None
-            return cache
+            # p.scripts = None
+            return xyz_results_cache
         return None

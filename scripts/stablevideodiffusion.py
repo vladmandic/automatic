@@ -22,15 +22,7 @@ class Script(scripts.Script):
         return is_img2img if shared.native else False
 
     # return signature is array of gradio components
-    def ui(self, _is_img2img):
-        def video_type_change(video_type):
-            return [
-                gr.update(visible=video_type != 'None'),
-                gr.update(visible=video_type == 'GIF' or video_type == 'PNG'),
-                gr.update(visible=video_type == 'MP4'),
-                gr.update(visible=video_type == 'MP4'),
-            ]
-
+    def ui(self, is_img2img):
         with gr.Row():
             gr.HTML('<a href="https://huggingface.co/stabilityai/stable-video-diffusion-img2vid">&nbsp Stable Video Diffusion</a><br>')
         with gr.Row():
@@ -46,13 +38,8 @@ class Script(scripts.Script):
         with gr.Row():
             override_resolution = gr.Checkbox(label='Override resolution', value=True)
         with gr.Row():
-            video_type = gr.Dropdown(label='Video file', choices=['None', 'GIF', 'PNG', 'MP4'], value='None')
-            duration = gr.Slider(label='Duration', minimum=0.25, maximum=10, step=0.25, value=2, visible=False)
-        with gr.Row():
-            gif_loop = gr.Checkbox(label='Loop', value=True, visible=False)
-            mp4_pad = gr.Slider(label='Pad frames', minimum=0, maximum=24, step=1, value=1, visible=False)
-            mp4_interpolate = gr.Slider(label='Interpolate frames', minimum=0, maximum=24, step=1, value=0, visible=False)
-        video_type.change(fn=video_type_change, inputs=[video_type], outputs=[duration, gif_loop, mp4_pad, mp4_interpolate])
+            from modules.ui_sections import create_video_inputs
+            video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
         return [model, num_frames, override_resolution, min_guidance_scale, max_guidance_scale, decode_chunk_size, motion_bucket_id, noise_aug_strength, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
     def run(self, p: processing.StableDiffusionProcessing, model, num_frames, override_resolution, min_guidance_scale, max_guidance_scale, decode_chunk_size, motion_bucket_id, noise_aug_strength, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
@@ -75,7 +62,7 @@ class Script(scripts.Script):
         if model_name != model_loaded or c != 'StableVideoDiffusionPipeline':
             shared.opts.sd_model_checkpoint = model_path
             sd_models.reload_model_weights()
-            shared.sd_model = shared.sd_model.to(torch.float32) # TODO svd: runs in fp32 causing dtype mismatch
+            shared.sd_model = shared.sd_model.to(torch.float32) # TODO svd: runs in fp32 due to dtype mismatch
 
         # set params
         if override_resolution:

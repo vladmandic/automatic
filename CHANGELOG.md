@@ -1,22 +1,91 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-02
+## Update for 2025-01-16
 
+- **Gallery**:  
+  - add http fallback for slow/unreliable links  
+- **Fixes**:
+  - non-full vae decode  
+  - send-to image transfer  
+  - sana vae tiling  
+  - increase gallery timeouts  
+  - update ui element ids  
+
+## Update for 2025-01-15
+
+### Highlights for 2025-01-15
+
+Two weeks since last release, time for update!  
+This time a bit shorter highligh reel as this is primarily a service release, but still there is more than few updates  
+*(actually, there are ~60 commits, so its not that tiny)*  
+
+*What's New?"  
+- Large [Wiki](https://github.com/vladmandic/automatic/wiki)/[Docs](https://vladmandic.github.io/sdnext-docs/) updates  
+- New models: **Allegro Video**, new pipelines: **PixelSmith**, updates: **Hunyuan-Video**, **LTX-Video**, **Sana 4k**  
+- New version for **ZLUDA**  
+- New features in **Detailer**, **XYZ grid**, **Sysinfo**, **Logging**, **Schedulers**, **Video save/create**  
+- And a tons of hotfixes...  
+
+### Details for 2025-01-15
+
+- [Wiki/Docs](https://vladmandic.github.io/sdnext-docs/):
+  - updated: Detailer, Install, Update, Debug, Control-HowTo, ZLUDA  
 - [Allegro Video](https://huggingface.co/rhymes-ai/Allegro)  
   - optimizations: full offload and quantization support  
   - *reference values*: width 1280 height 720 frames 88 steps 100 guidance 7.5  
   - *note*: allegro model is really sensitive to input width/height/frames/steps  
     and may result in completely corrupt output if those are not within expected range  
+- [PixelSmith](https://github.com/Thanos-DB/Pixelsmith/)
+  - available for SD-XL in txt2img and img2img workflows
+  - select from *scripts -> pixelsmith*  
+- [Hunyuan Video](https://github.com/Tencent/HunyuanVideo) LoRA support
+  - example: <https://huggingface.co/Cseti/HunyuanVideo-LoRA-Arcane_Jinx-v1>
+- [LTX Video](https://github.com/Lightricks/LTX-Video) framewise decoding  
+  - enabled by default, allows generating longer videos with reduced memory requirements  
+- [Sana 4k](https://huggingface.co/Efficient-Large-Model/Sana_1600M_4Kpx_BF16_diffusers)  
+  - new Sana variation with support of directly generating 4k images  
+  - simply select from *networks -> models -> reference*  
+  - tip: enable vae tiling when generating very large images  
 - **Logging**:
   - reverted enable debug by default  
   - updated [debug wiki](https://github.com/vladmandic/automatic/wiki/debug)  
   - sort logged timers by duration  
   - allow min duration env variable for timers: `SD_MIN_TIMER=0.1` (default)  
   - update installer messages  
+- **Refactor**:
+  - refactored progress monitoring, job updates and live preview  
+  - improved metadata save and restore  
+  - startup tracing and optimizations  
+  - threading load locks on model loads  
+  - refactor native vs legacy model loader  
+  - video save/create
+- **Schedulers**:
+  - [TDD](https://github.com/RedAIGC/Target-Driven-Distillation) new super-fast scheduler that can generate images in 4-8 steps  
+    recommended to use with [TDD LoRA](https://huggingface.co/RED-AIGC/TDD/tree/main)  
 - **Detailer**:
+  - add explicit detailer prompt and negative prompt  
   - add explicit detailer steps setting  
-- **SysInfo**:
-  - update to collected data and benchmarks  
+  - move steps, strength, prompt, negative from settings into ui params  
+  - set/restore detailer metadata  
+  - new [detailer wiki](https://github.com/vladmandic/automatic/wiki/Detailer)
+- **Preview**
+  - since different TAESD versions produce different results and latest is not necessarily greatest  
+    you can choose TAESD version in settings -> live preview  
+    also added is support for another finetuned version of TAESD [Hybrid TinyVAE](https://huggingface.co/cqyan/hybrid-sd-tinyvae-xl)  
+- **Video**  
+  - all video create/save code is now unified  
+  - add support for video formats: GIF, PNG, MP4/MP4V, MP4/AVC1, MP4/JVT3, MKV/H264, AVI/DIVX, AVI/RGBA, MJPEG/MJPG, MPG/MPG1, AVR/AVR1
+  - *note*: video format support is platform dependent and not all formats may be available on all platforms
+  - *note*: avc1 and h264 need custom opencv due to oss licensing issues  
+- **ZLUDA** v3.8.7  
+  - new runtime compiler implementation: complex types, JIT are now available  
+  - fast fourier transformation is implemented  
+  - experimental BLASLt support via nightly build  
+    - set `ZLUDA_NIGHTLY=1` to install nightly ZLUDA: newer torch such as 2.4.x (default) and 2.5.x are now available  
+    - requirements: unofficial hipBLASLt  
+- **Other**
+  - **XYZ Grid**: add prompt search&replace options: *primary, refine, detailer, all*
+  - **SysInfo**: update to collected data and benchmarks  
 - **Fixes**:
   - explict clear caches on model load  
   - lock adetailer commit: `#a89c01d`  
@@ -26,6 +95,21 @@
   - sd35 img2img
   - samplers test for scale noise before using  
   - scheduler api  
+  - sampler create error handling  
+  - controlnet with hires  
+  - controlnet with batch count  
+  - apply settings skip hidden settings  
+  - lora diffusers method apply only once  
+  - lora diffusers method set prompt tags and metadata  
+  - flux support on-the-fly quantization for bnb of unet only  
+  - control restore pipeline before running hires  
+  - restore args after batch run  
+  - flux controlnet  
+  - zluda installer  
+  - control inherit parent pipe settings  
+  - control logging  
+  - hf cache folder settings  
+  - fluxfill should not require base model
 
 ## Update for 2024-12-31
 

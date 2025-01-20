@@ -25,9 +25,12 @@ class Timer:
 
     def add(self, name, t):
         if name not in self.records:
-            self.records[name] = t
-        else:
-            self.records[name] += t
+            self.records[name] = 0
+        self.records[name] += t
+
+    def ts(self, name, t):
+        elapsed = time.time() - t
+        self.add(name, elapsed)
 
     def record(self, category=None, extra_time=0, reset=True):
         e = self.elapsed(reset)
@@ -41,6 +44,8 @@ class Timer:
     def summary(self, min_time=default_min_time, total=True):
         if self.profile:
             min_time = -1
+        if self.total <= 0:
+            self.total = sum(self.records.values())
         res = f"total={self.total:.2f} " if total else ''
         additions = [x for x in self.records.items() if x[1] >= min_time]
         additions = sorted(additions, key=lambda x: x[1], reverse=True)
@@ -49,11 +54,14 @@ class Timer:
         res += " ".join([f"{category}={time_taken:.2f}" for category, time_taken in additions])
         return res
 
+    def get_total(self):
+        return sum(self.records.values())
+
     def dct(self, min_time=default_min_time):
         if self.profile:
             res = {k: round(v, 4) for k, v in self.records.items()}
         res = {k: round(v, 2) for k, v in self.records.items() if v >= min_time}
-        res = {k: v for k, v in sorted(res.items(), key=lambda x: x[1], reverse=True)} # noqa: C416
+        res = {k: v for k, v in sorted(res.items(), key=lambda x: x[1], reverse=True)} # noqa: C416 # pylint: disable=unnecessary-comprehension
         return res
 
     def reset(self):
@@ -61,3 +69,5 @@ class Timer:
 
 startup = Timer()
 process = Timer()
+launch = Timer()
+init = Timer()

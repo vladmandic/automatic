@@ -29,10 +29,15 @@ force_models = [ # forced always
     # 'sd3',
     'kandinsky',
     'hunyuandit',
+    'hunyuanvideo',
     'auraflow',
 ]
 
 force_classes = [ # forced always
+]
+
+fuse_ignore = [
+    'hunyuanvideo',
 ]
 
 
@@ -47,3 +52,6 @@ def check_override(shorthash=''):
     if force and shared.opts.lora_maybe_diffusers:
         shared.log.debug('LoRA override: force diffusers')
     return force
+
+def check_fuse():
+    return shared.sd_model_type in fuse_ignore

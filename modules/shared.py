@@ -84,15 +84,7 @@ console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8
-if os.environ.get("SD_HFCACHEDIR", None) is not None:
-    hfcache_dir = os.environ.get("SD_HFCACHEDIR")
-if os.environ.get("HF_HUB_CACHE", None) is not None:
-    hfcache_dir = os.environ.get("HF_HUB_CACHE")
-elif os.environ.get("HF_HUB", None) is not None:
-    hfcache_dir = os.path.join(os.environ.get("HF_HUB"), '.cache')
-else:
-    hfcache_dir = os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
-    os.environ["HF_HUB_CACHE"] = hfcache_dir
+default_hfcache_dir = os.environ.get("SD_HFCACHEDIR", None) or os.path.join(os.path.expanduser('~'), '.cache', 'huggingface', 'hub')
 
 
 class Backend(Enum):
@@ -211,14 +203,12 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
 
 
 # early select backend
-default_backend = 'diffusers'
 early_opts = readfile(cmd_opts.config, silent=True)
-early_backend = early_opts.get('sd_backend', default_backend)
-backend = Backend.DIFFUSERS if early_backend.lower() == 'diffusers' else Backend.ORIGINAL
+early_backend = early_opts.get('sd_backend', 'diffusers')
+backend = Backend.ORIGINAL if early_backend.lower() == 'original' else Backend.DIFFUSERS
 if cmd_opts.backend is not None: # override with args
-    backend = Backend.DIFFUSERS if cmd_opts.backend.lower() == 'diffusers' else Backend.ORIGINAL
+    backend = Backend.ORIGINAL if cmd_opts.backend.lower() == 'original' else Backend.DIFFUSERS
 if cmd_opts.use_openvino: # override for openvino
-    backend = Backend.DIFFUSERS
     from modules.intel.openvino import get_device_list as get_openvino_device_list # pylint: disable=ungrouped-imports
 elif cmd_opts.use_ipex or devices.has_xpu():
     from modules.intel.ipex import ipex_init
@@ -226,15 +216,14 @@ elif cmd_opts.use_ipex or devices.has_xpu():
     if not ok:
         log.error(f'IPEX initialization failed: {e}')
 elif cmd_opts.use_directml:
-    name = 'directml'
     from modules.dml import directml_init
     ok, e = directml_init()
     if not ok:
         log.error(f'DirectML initialization failed: {e}')
 devices.backend = devices.get_backend(cmd_opts)
 devices.device = devices.get_optimal_device()
-cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 mem_stat = memory_stats()
+cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
 native = backend == Backend.DIFFUSERS
 if not files_cache.do_cache_folders:
@@ -438,14 +427,14 @@ def get_default_modes():
             if gpu_memory <= 4:
                 cmd_opts.lowvram = True
                 default_offload_mode = "sequential"
-                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=lowvram")
+                log.info(f"Device detect: memory={gpu_memory:.1f} default=sequential optimization=lowvram")
             # elif gpu_memory <= 8:
             #     cmd_opts.medvram = True
             #     default_offload_mode = "model"
             #     log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
             else:
                 default_offload_mode = "balanced"
-                log.info(f"Device detect: memory={gpu_memory:.1f} optimization=balanced")
+                log.info(f"Device detect: memory={gpu_memory:.1f} default=balanced")
     elif cmd_opts.medvram:
         default_offload_mode = "balanced"
     elif cmd_opts.lowvram:
@@ -475,7 +464,7 @@ def get_default_modes():
 startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Models & Loading"), {
-    "sd_backend": OptionInfo(default_backend, "Execution backend", gr.Radio, {"choices": ["diffusers", "original"] }),
+    "sd_backend": OptionInfo('diffusers', "Execution backend", gr.Radio, {"choices": ['diffusers', 'original'] }),
     "diffusers_pipeline": OptionInfo('Autodetect', 'Model pipeline', gr.Dropdown, lambda: {"choices": list(shared_items.get_pipelines()), "visible": native}),
     "sd_model_checkpoint": OptionInfo(default_checkpoint, "Base model", DropdownEditable, lambda: {"choices": list_checkpoint_titles()}, refresh=refresh_checkpoints),
     "sd_model_refiner": OptionInfo('None', "Refiner model", gr.Dropdown, lambda: {"choices": ['None'] + list_checkpoint_titles()}, refresh=refresh_checkpoints),
@@ -513,7 +502,7 @@ options_templates.update(options_section(('vae_encoder', "Variable Auto Encoder"
     "diffusers_vae_tile_overlap": OptionInfo(0.25, "VAE tile overlap", gr.Slider, {"minimum": 0, "maximum": 0.95, "step": 0.05 }),
     "sd_vae_sliced_encode": OptionInfo(False, "VAE sliced encode", gr.Checkbox, {"visible": not native}),
     "nan_skip": OptionInfo(False, "Skip Generation if NaN found in latents", gr.Checkbox),
-    "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values"),
+    "rollback_vae": OptionInfo(False, "Attempt VAE roll back for NaN values", gr.Checkbox, {"visible": not native}),
 }))
 
 options_templates.update(options_section(('text_encoder', "Text Encoder"), {
@@ -665,11 +654,13 @@ options_templates.update(options_section(('compile', "Model Compile"), {
 }))
 
 options_templates.update(options_section(('system-paths', "System Paths"), {
+    "clean_temp_dir_at_start": OptionInfo(True, "Cleanup temporary folder on startup"),
     "models_paths_sep_options": OptionInfo("<h2>Models Paths</h2>", "", gr.HTML),
-    "models_dir": OptionInfo('models', "Base path where all models are stored", folder=True),
+    "models_dir": OptionInfo('models', "Root model folder", folder=True),
+    "model_paths_sep_options": OptionInfo("<h2>Paths for specific models</h2>", "", gr.HTML),
     "ckpt_dir": OptionInfo(os.path.join(paths.models_path, 'Stable-diffusion'), "Folder with stable diffusion models", folder=True),
     "diffusers_dir": OptionInfo(os.path.join(paths.models_path, 'Diffusers'), "Folder with Huggingface models", folder=True),
-    "hfcache_dir": OptionInfo(hfcache_dir, "Folder for Huggingface cache", folder=True),
+    "hfcache_dir": OptionInfo(default_hfcache_dir, "Folder for Huggingface cache", folder=True),
     "vae_dir": OptionInfo(os.path.join(paths.models_path, 'VAE'), "Folder with VAE files", folder=True),
     "unet_dir": OptionInfo(os.path.join(paths.models_path, 'UNET'), "Folder with UNET files", folder=True),
     "te_dir": OptionInfo(os.path.join(paths.models_path, 'Text-encoder'), "Folder with Text encoder files", folder=True),
@@ -689,19 +680,18 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "swinir_models_path": OptionInfo(os.path.join(paths.models_path, 'SwinIR'), "Folder with SwinIR models", folder=True),
     "ldsr_models_path": OptionInfo(os.path.join(paths.models_path, 'LDSR'), "Folder with LDSR models", folder=True),
     "clip_models_path": OptionInfo(os.path.join(paths.models_path, 'CLIP'), "Folder with CLIP models", folder=True),
-    "other_paths_sep_options": OptionInfo("<h2>Other paths</h2>", "", gr.HTML),
-    "openvino_cache_path": OptionInfo('cache', "Directory for OpenVINO cache", folder=True),
-    "accelerate_offload_path": OptionInfo('cache/accelerate', "Directory for disk offload with Accelerate", folder=True),
-    "onnx_cached_models_path": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'cache'), "Folder with ONNX cached models", folder=True),
-    "onnx_temp_dir": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'temp'), "Directory for ONNX conversion and Olive optimization process", folder=True),
+    "other_paths_sep_options": OptionInfo("<h2>Cache folders</h2>", "", gr.HTML),
     "temp_dir": OptionInfo("", "Directory for temporary images; leave empty for default", folder=True),
-    "clean_temp_dir_at_start": OptionInfo(True, "Cleanup non-default temporary directory when starting webui"),
+    "accelerate_offload_path": OptionInfo('cache/accelerate', "Folder for disk offload", folder=True),
+    "openvino_cache_path": OptionInfo('cache', "Folder for OpenVINO cache", folder=True),
+    "onnx_cached_models_path": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'cache'), "Folder for ONNX cached models", folder=True),
+    "onnx_temp_dir": OptionInfo(os.path.join(paths.models_path, 'ONNX', 'temp'), "Folder for ONNX conversion", folder=True),
 }))
 
 options_templates.update(options_section(('saving-images', "Image Options"), {
     "keep_incomplete": OptionInfo(True, "Keep incomplete images"),
     "samples_save": OptionInfo(True, "Save all generated images"),
-    "samples_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
+    "samples_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2", "jxl"]}),
     "jpeg_quality": OptionInfo(90, "Image quality", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "img_max_size_mp": OptionInfo(1000, "Maximum image size (MP)", gr.Slider, {"minimum": 100, "maximum": 2000, "step": 1}),
     "webp_lossless": OptionInfo(False, "WebP lossless compression"),
@@ -716,7 +706,7 @@ options_templates.update(options_section(('saving-images', "Image Options"), {
     "save_log_fn": OptionInfo("", "Append image info JSON file", component_args=hide_dirs),
     "image_sep_grid": OptionInfo("<h2>Grid Options</h2>", "", gr.HTML),
     "grid_save": OptionInfo(True, "Save all generated image grids"),
-    "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2"]}),
+    "grid_format": OptionInfo('jpg', 'File format', gr.Dropdown, {"choices": ["jpg", "png", "webp", "tiff", "jp2", "jxl"]}),
     "n_rows": OptionInfo(-1, "Row count", gr.Slider, {"minimum": -1, "maximum": 16, "step": 1}),
     "grid_background": OptionInfo("#000000", "Grid background color", gr.ColorPicker, {}),
     "font": OptionInfo("", "Font file"),
@@ -778,14 +768,16 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "autolaunch": OptionInfo(False, "Autolaunch browser upon startup"),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "aspect_ratios": OptionInfo("1:1, 4:3, 3:2, 16:9, 16:10, 21:9, 2:3, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
+    "logmonitor_show": OptionInfo(True, "Show log view"),
+    "logmonitor_refresh_period": OptionInfo(5000, "Log view update period", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
     "motd": OptionInfo(False, "Show MOTD"),
     "compact_view": OptionInfo(False, "Compact view"),
     "return_grid": OptionInfo(True, "Show grid in results"),
     "return_mask": OptionInfo(False, "Inpainting include greyscale mask in results"),
     "return_mask_composite": OptionInfo(False, "Inpainting include masked composite in results"),
     "disable_weights_auto_swap": OptionInfo(True, "Do not change selected model when reading generation parameters"),
-    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface"),
-    "send_size": OptionInfo(True, "Send size when sending prompt or image to another interface"),
+    "send_seed": OptionInfo(True, "Send seed when sending prompt or image to other interface", gr.Checkbox, {"visible": False}),
+    "send_size": OptionInfo(False, "Send size when sending prompt or image to another interface", gr.Checkbox, {"visible": False}),
     "quicksettings_list": OptionInfo(["sd_model_checkpoint"], "Quicksettings list", gr.Dropdown, lambda: {"multiselect":True, "choices": list(opts.data_labels.keys())}),
 }))
 
@@ -793,10 +785,10 @@ options_templates.update(options_section(('live-preview', "Live Previews"), {
     "show_progress_every_n_steps": OptionInfo(1, "Live preview display period", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
     "show_progress_type": OptionInfo("Approximate", "Live preview method", gr.Radio, {"choices": ["Simple", "Approximate", "TAESD", "Full VAE"]}),
     "live_preview_refresh_period": OptionInfo(500, "Progress update period", gr.Slider, {"minimum": 0, "maximum": 5000, "step": 25}),
-    "live_preview_taesd_layers": OptionInfo(3, "TAESD decode layers", gr.Slider, {"minimum": 1, "maximum": 3, "step": 1}),
+    "taesd_variant": OptionInfo(shared_items.sd_taesd_items()[0], "TAESD variant", gr.Dropdown, {"choices": shared_items.sd_taesd_items()}),
+    "taesd_layers": OptionInfo(3, "TAESD decode layers", gr.Slider, {"minimum": 1, "maximum": 3, "step": 1}),
     "live_preview_downscale": OptionInfo(True, "Downscale high resolution live previews"),
-    "logmonitor_show": OptionInfo(True, "Show log view"),
-    "logmonitor_refresh_period": OptionInfo(5000, "Log view update period", gr.Slider, {"minimum": 0, "maximum": 30000, "step": 25}),
+
     "notification_audio_enable": OptionInfo(False, "Play a notification upon completion"),
     "notification_audio_path": OptionInfo("html/notification.mp3","Path to notification sound", component_args=hide_dirs, folder=True),
 }))
@@ -865,8 +857,6 @@ options_templates.update(options_section(('postprocessing', "Postprocessing"), {
     "detailer_max_size": OptionInfo(1.0, "Max object size", gr.Slider, {"minimum": 0.1, "maximum": 1, "step": 0.05, "visible": False}),
     "detailer_padding": OptionInfo(20, "Item padding", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": False}),
     "detailer_blur": OptionInfo(10, "Item edge blur", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1, "visible": False}),
-    "detailer_steps": OptionInfo(10, "Detailer steps", gr.Slider, {"minimum": 0, "maximum": 99, "step": 1, "visible": False}),
-    "detailer_strength": OptionInfo(0.5, "Detailer strength", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False}),
     "detailer_models": OptionInfo(['face-yolo8n'], "Detailer models", gr.Dropdown, lambda: {"multiselect":True, "choices": list(yolo.list), "visible": False}),
     "detailer_unload": OptionInfo(False, "Move detailer model to CPU when complete"),
     "detailer_augment": OptionInfo(True, "Detailer use model augment"),
@@ -1011,6 +1001,7 @@ class Options:
     data_labels = options_templates
     filename = None
     typemap = {int: float}
+    debug = os.environ.get('SD_CONFIG_DEBUG', None) is not None
 
     def __init__(self):
         self.data = {k: v.default for k, v in self.data_labels.items()}
@@ -1024,6 +1015,8 @@ class Options:
                 if cmd_opts.hide_ui_dir_config and key in restricted_opts:
                     log.warning(f'Settings key is restricted: {key}')
                     return
+                if self.debug:
+                    log.trace(f'Settings set: {key}={value}')
                 self.data[key] = value
                 return
         return super(Options, self).__setattr__(key, value) # pylint: disable=super-with-arguments
@@ -1077,17 +1070,13 @@ class Options:
             log.warning(f'Setting: fn="{filename}" save disabled')
             return
         try:
-            # output = json.dumps(self.data, indent=2)
             diff = {}
             unused_settings = []
 
-            if os.environ.get('SD_CONFIG_DEBUG', None) is not None:
+            if self.debug:
                 log.debug('Settings: user')
                 for k, v in self.data.items():
                     log.trace(f'  Config: item={k} value={v} default={self.data_labels[k].default if k in self.data_labels else None}')
-                log.debug('Settings: defaults')
-                for k in self.data_labels.keys():
-                    log.trace(f'  Setting: item={k} default={self.data_labels[k].default}')
 
             for k, v in self.data.items():
                 if k in self.data_labels:
@@ -1101,6 +1090,8 @@ class Options:
                         if not k.startswith('uiux_'):
                             unused_settings.append(k)
             writefile(diff, filename, silent=silent)
+            if self.debug:
+                log.trace(f'Settings save: {diff}')
             if len(unused_settings) > 0:
                 log.debug(f"Settings: unused={unused_settings}")
         except Exception as err:
