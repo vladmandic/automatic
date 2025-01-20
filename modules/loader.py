@@ -52,7 +52,9 @@ import accelerate # pylint: disable=W0611,C0411
 timer.startup.record("accelerate")
 
 import onnxruntime # pylint: disable=W0611,C0411
-onnxruntime.set_default_logger_severity(3)
+onnxruntime.set_default_logger_severity(4)
+onnxruntime.set_default_logger_verbosity(1)
+onnxruntime.disable_telemetry_events()
 timer.startup.record("onnx")
 
 from fastapi import FastAPI # pylint: disable=W0611,C0411
