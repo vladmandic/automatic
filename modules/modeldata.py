@@ -29,6 +29,8 @@ def get_model_type(pipe):
         model_type = 'auraflow'
     elif "Flux" in name:
         model_type = 'f1'
+    elif "Mochi" in name:
+        model_type = 'mochi'
     elif "Lumina" in name:
         model_type = 'lumina'
     elif "OmniGen" in name:

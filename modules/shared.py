@@ -597,6 +597,10 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "pag_sep": OptionInfo("<h2>Perturbed-Attention Guidance</h2>", "", gr.HTML),
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
 
+    "para_sep": OptionInfo("<h2>Para-Attention</h2>", "", gr.HTML),
+    "para_cache_enabled": OptionInfo(False, "First-block cache enabled"),
+    "para_diff_threshold": OptionInfo(0.1, "Residual diff threshold", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
+
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
     "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
     "hypertile_hires_only": OptionInfo(False, "HiRes pass only"),

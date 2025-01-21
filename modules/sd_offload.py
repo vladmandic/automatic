@@ -10,7 +10,7 @@ from modules.timer import process as process_timer
 
 
 debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not None else lambda *args, **kwargs: None
-should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen']
+should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen', 'hunyuanvideo', 'cogvideox', 'mochi']
 offload_hook_instance = None
 
 
