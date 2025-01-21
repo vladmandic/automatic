@@ -28,7 +28,7 @@ class Script(scripts.Script):
 
     def run(self, p: processing.StableDiffusionProcessing, num_frames, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
         # set params
-        num_frames = int(num_frames // 8)
+        num_frames = int(num_frames)
         p.width = 32 * int(p.width // 32)
         p.height = 32 * int(p.height // 32)
         p.task_args['output_type'] = 'pil'
