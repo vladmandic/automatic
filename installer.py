@@ -658,6 +658,7 @@ def install_rocm_zluda():
 
 
 def install_ipex(torch_command):
+    t_start = time.time()
     # https://pytorch-extension.intel.com/installation?platform=gpu&version=v2.5.10%2Bxpu&os=linux%2Fwsl2&package=pip
     check_python(supported_minors=[9,10,11,12], reason='IPEX backend requires Python 3.9 - 3.12')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
