@@ -1,4 +1,4 @@
-@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
+@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSansNerd'), url('notosans-nerdfont-regular.ttf') }
 :root {
   --left-column: 530px;
   --color-trace: #666666;
@@ -207,7 +207,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #extensions .info { margin: 0; }
 #extensions .date { opacity: 0.85; font-size: var(--text-sm); }
 
-/* extra networks */
+/* networks */
 .extra_networks_root { width: 0; position: absolute; height: auto; right: 0; top: 13em; z-index: 100; } /* default is sidebar view */
 .extra-networks { background: var(--background-color); padding: var(--block-label-padding); }
 .extra-networks > div { margin: 0; border-bottom: none !important; gap: 0.3em 0; }
@@ -269,11 +269,14 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 .ar-dropdown div { margin: 0; background: var(--background-color)}
 #txt2img_sampler_timesteps, #img2img_sampler_timesteps { max-width: calc(var(--left-column) - 50px); }
 
-/* extras */
+/* models */
 .extras { gap: 0.2em 1em !important }
 #extras_generate, #extras_interrupt, #extras_skip { display: block !important; position: relative; height: 36px; }
 #extras_upscale { margin-top: 10px }
 #pnginfo_html_info .gradio-html > div { margin: 0.5em; }
+#models_image, #models_image > div { min-height: 0; }
+#models_error { font-family: monospace; color: var(--body-text-color-subdued) }
+
 
 /* log monitor */
 .log-monitor { display: none; justify-content: unset !important; overflow: hidden; padding: 0; margin-top: auto; font-family: monospace; font-size: var(--text-xxs); }

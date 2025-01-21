@@ -4,17 +4,15 @@ import json
 import inspect
 from datetime import datetime
 import gradio as gr
-from modules import sd_models, sd_vae, extras
+from modules import errors, sd_models, sd_vae, extras, sd_samplers, ui_symbols, hashes
 from modules.ui_components import ToolButton
 from modules.ui_common import create_refresh_button
 from modules.call_queue import wrap_gradio_gpu_call
 from modules.shared import opts, log, req, readfile, max_workers, native
-import modules.ui_symbols
-import modules.errors
-import modules.hashes
 from modules.merging import merge_methods
 from modules.merging.merge_utils import BETA_METHODS, TRIPLE_METHODS, interpolate
 from modules.merging.merge_presets import BLOCK_WEIGHTS_PRESETS, SDXL_BLOCK_WEIGHTS_PRESETS
+
 
 search_metadata_civit = None
 extra_ui = []
@@ -31,9 +29,6 @@ def create_ui():
             models_outcome = gr.HTML(elem_id="models_error", value="")
 
         with gr.Column(elem_id='models_input_container', scale=3):
-
-            def gr_show(visible=True):
-                return {"visible": visible, "__type__": "update"}
 
             with gr.Tab(label="Current"):
                 def analyze():
@@ -56,45 +51,6 @@ def create_ui():
                     model_meta = gr.JSON(label="Metadata", value={}, elem_id="model_meta")
 
                 model_analyze.click(fn=analyze, inputs=[], outputs=[model_desc, model_modules, model_meta])
-
-            with gr.Tab(label="Convert"):
-                with gr.Row():
-                    model_name = gr.Dropdown(sd_models.checkpoint_titles(), label="Original model")
-                    create_refresh_button(model_name, sd_models.list_models, lambda: {"choices": sd_models.checkpoint_titles()}, "refresh_checkpoint_Z")
-                with gr.Row():
-                    custom_name = gr.Textbox(label="Output model name")
-                with gr.Row():
-                    precision = gr.Radio(choices=["fp32", "fp16", "bf16"], value="fp16", label="Model precision")
-                    m_type = gr.Radio(choices=["disabled", "no-ema", "ema-only"], value="disabled", label="Model pruning methods")
-                with gr.Row():
-                    checkpoint_formats = gr.CheckboxGroup(choices=["ckpt", "safetensors"], value=["safetensors"], label="Model Format")
-                with gr.Row():
-                    show_extra_options = gr.Checkbox(label="Show extra options", value=False)
-                    fix_clip = gr.Checkbox(label="Fix clip", value=False)
-                with gr.Row(visible=False) as extra_options:
-                    specific_part_conv = ["copy", "convert", "delete"]
-                    unet_conv = gr.Dropdown(specific_part_conv, value="convert", label="unet")
-                    text_encoder_conv = gr.Dropdown(specific_part_conv, value="convert", label="text encoder")
-                    vae_conv = gr.Dropdown(specific_part_conv, value="convert", label="vae")
-                    others_conv = gr.Dropdown(specific_part_conv, value="convert", label="others")
-
-                show_extra_options.change(fn=lambda x: gr_show(x), inputs=[show_extra_options], outputs=[extra_options])
-
-                model_converter_convert = gr.Button(label="Convert", variant='primary')
-                model_converter_convert.click(
-                    fn=extras.run_modelconvert,
-                    inputs=[
-                        model_name,
-                        checkpoint_formats,
-                        precision, m_type, custom_name,
-                        unet_conv,
-                        text_encoder_conv,
-                        vae_conv,
-                        others_conv,
-                        fix_clip
-                    ],
-                    outputs=[models_outcome]
-                )
 
             with gr.Tab(label="Merge"):
                 def sd_model_choices():
@@ -222,7 +178,7 @@ def create_ui():
                         try:
                             results = extras.run_modelmerger(dummy_component, **kwargs)
                         except Exception as e:
-                            modules.errors.display(e, 'Merge')
+                            errors.display(e, 'Merge')
                             sd_models.list_models()  # to remove the potentially missing models from the list
                             return [*[gr.Dropdown.update(choices=sd_models.checkpoint_titles()) for _ in range(4)], f"Error merging checkpoints: {e}"]
                         return results
@@ -334,6 +290,76 @@ def create_ui():
                     ]
                 )
 
+            with gr.Tab(label="Modules"):
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        model_type = gr.Dropdown(label="Model type", choices=['sd15', 'sdxl', 'sd21', 'sd35', 'flux.1'], value='sdxl', interactive=False)
+                    with gr.Column(scale=5):
+                        with gr.Row():
+                            model_name = gr.Dropdown(sd_models.checkpoint_titles(), label="Input model")
+                            create_refresh_button(model_name, sd_models.list_models, lambda: {"choices": sd_models.checkpoint_titles()}, "refresh_checkpoint_Z")
+                    with gr.Column(scale=5):
+                        custom_name = gr.Textbox(label="Output model", placeholder="Output model path")
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        gr.HTML('Model components<br><span style="color: var(--body-text-color-subdued)">Specify the components to include<br>Paths can be relative or absolute</span><br>')
+                    with gr.Column(scale=5):
+                        comp_unet = gr.Textbox(placeholder="UNet model", show_label=False)
+                        comp_vae = gr.Textbox(placeholder="VAE model", show_label=False)
+                    with gr.Column(scale=5):
+                        comp_te1 = gr.Textbox(placeholder="Text encoder 1", show_label=False)
+                        comp_te2 = gr.Textbox(placeholder="Text encoder 2", show_label=False)
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        gr.HTML('Model settings<br>')
+                    with gr.Column(scale=10):
+                        with gr.Row():
+                            precision = gr.Dropdown(label="Model precision", choices=["fp32", "fp16", "bf16"], value="fp16")
+                            comp_scheduler = gr.Dropdown(label="Sampler", choices=[s.name for s in sd_samplers.samplers if s.constructor is not None])
+                            comp_prediction = gr.Dropdown(Label="Prediction type", choices=["epsilon", "v"], value="epsilon")
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        gr.HTML('Merge LoRA<br>')
+                    with gr.Column(scale=9):
+                        comp_lora = gr.Textbox(label="Comma separated list with optional strength per LoRA", placeholder="LoRA models")
+                    with gr.Column(scale=1):
+                        comp_fuse = gr.Number(label="Fuse strength", value=1.0)
+
+                with gr.Row():
+                    gr.HTML('<br>')
+                with gr.Row():
+                    with gr.Column(scale=2):
+                        gr.HTML('Model metadata<br>')
+                    with gr.Column(scale=5):
+                        meta_author = gr.Textbox(placeholder="Author name", show_label=False)
+                        meta_version = gr.Textbox(placeholder="Model version", show_label=False)
+                        meta_license = gr.Textbox(placeholder="Model license", show_label=False)
+                    with gr.Column(scale=5):
+                        meta_desc = gr.Textbox(placeholder="Model description", lines=3, show_label=False)
+                        meta_hint = gr.Textbox(placeholder="Model hint", lines=3, show_label=False)
+                    with gr.Column(scale=3):
+                        meta_thumbnail = gr.Image(label="Thumbnail", type='pil', source='upload')
+                with gr.Row():
+                    gr.HTML('Note: Save is optional as you can merge in-memory and use newly created model immediately')
+                with gr.Row():
+                    create_diffusers = gr.Checkbox(label="Save diffusers", value=True)
+                    create_safetensors = gr.Checkbox(label="Save safetensors", value=True)
+                    debug = gr.Checkbox(label="Debug info", value=False)
+
+                model_modules_btn = gr.Button(label="Modules", variant='primary')
+                model_modules_btn.click(
+                    fn=extras.run_model_modules,
+                    inputs=[
+                        model_type, model_name, custom_name,
+                        comp_unet, comp_vae, comp_te1, comp_te2,
+                        precision, comp_scheduler, comp_prediction,
+                        comp_lora, comp_fuse,
+                        meta_author, meta_version, meta_license, meta_desc, meta_hint, meta_thumbnail,
+                        create_diffusers, create_safetensors, debug,
+                    ],
+                    outputs=[models_outcome]
+                )
+
             with gr.Tab(label="Validate"):
                 model_headers = ['name', 'type', 'filename', 'hash', 'added', 'size', 'metadata']
                 model_data = []
@@ -407,7 +433,7 @@ def create_ui():
                     gr.HTML('<h2>Search for models</h2>Select a model from the search results to download<br><br>')
                     with gr.Row():
                         hf_search_text = gr.Textbox('', label='Search models', placeholder='search huggingface models')
-                        hf_search_btn = ToolButton(value=modules.ui_symbols.search, label="Search")
+                        hf_search_btn = ToolButton(value=ui_symbols.search, label="Search")
                     with gr.Row():
                         with gr.Column(scale=2):
                             with gr.Row():
@@ -562,7 +588,7 @@ def create_ui():
                                             found = True
                                             break
                         if not found and rehash and os.stat(item['filename']).st_size < (1024 * 1024 * 1024):
-                            sha = modules.hashes.calculate_sha256(item['filename'], quiet=True)[:10]
+                            sha = hashes.calculate_sha256(item['filename'], quiet=True)[:10]
                             r = req(f'https://civitai.com/api/v1/model-versions/by-hash/{sha}')
                             log.debug(f'CivitAI search: name="{item["name"]}" hash={sha} status={r.status_code}')
                             if r.status_code == 200:
@@ -622,7 +648,7 @@ def create_ui():
                         with gr.Row():
                             civit_search_text = gr.Textbox('', label='Search models', placeholder='keyword')
                             civit_search_tag = gr.Textbox('', label='', placeholder='tags')
-                            civit_search_btn = ToolButton(value=modules.ui_symbols.search, label="Search", interactive=True)
+                            civit_search_btn = ToolButton(value=ui_symbols.search, label="Search", interactive=True)
                         with gr.Row():
                             civit_search_res = gr.HTML('')
                 with gr.Row():
@@ -718,13 +744,12 @@ def create_ui():
                 def civit_update_metadata():
                     nonlocal update_data
                     log.debug('CivitAI update metadata: models')
-                    from modules.ui_extra_networks import get_pages
-                    from modules.modelloader import download_civit_meta
+                    from modules import ui_extra_networks, modelloader
                     res = []
-                    pages = get_pages('Model')
+                    pages = ui_extra_networks.get_pages('Model')
                     if len(pages) == 0:
                         return 'CivitAI update metadata: no models found'
-                    page: modules.ui_extra_networks.ExtraNetworksPage = pages[0]
+                    page: ui_extra_networks.ExtraNetworksPage = pages[0]
                     table_data = []
                     update_data.clear()
                     all_hashes = [(item.get('hash', None) or 'XXXXXXXX').upper()[:8] for item in page.list_items()]
@@ -738,7 +763,7 @@ def create_ui():
                             if r.status_code == 200:
                                 d = r.json()
                                 model.id = d['modelId']
-                                download_civit_meta(model.fn, model.id)
+                                modelloader.download_civit_meta(model.fn, model.id)
                                 fn = os.path.splitext(item['filename'])[0] + '.json'
                                 model.meta = readfile(fn, silent=True)
                                 model.name = model.meta.get('name', model.name)

@@ -29,6 +29,7 @@ import modules.ui
 import modules.txt2img
 import modules.img2img
 import modules.upscaler
+import modules.upscaler_simple
 import modules.extra_networks
 import modules.ui_extra_networks
 import modules.textual_inversion.textual_inversion

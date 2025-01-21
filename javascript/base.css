@@ -1,4 +1,4 @@
-@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSans'), url('notosans-nerdfont-regular.ttf') }
+@font-face { font-family: 'NotoSans'; font-display: swap; font-style: normal; font-weight: 100; src: local('NotoSansNerd'), url('notosans-nerdfont-regular.ttf') }
 
 /* toolbutton */
 .gradio-button.tool { max-width: min-content; min-width: min-content !important; align-self: end; font-size: 1.4em; color: var(--body-text-color) !important; }
@@ -77,7 +77,7 @@ table.settings-value-table td { padding: 0.4em; border: 1px solid #ccc; max-widt
 #extensions .info { margin: 0; }
 #extensions .date { opacity: 0.85; font-size: 90%; }
 
-/* extra networks */
+/* networks */
 .extra-networks > div { margin: 0; border-bottom: none !important; }
 .extra-networks .second-line { display: flex; width: -moz-available; width: -webkit-fill-available; gap: 0.3em; box-shadow: var(--input-shadow); margin-bottom: 2px; }
 .extra-networks .search { flex: 1; }

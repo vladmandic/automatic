@@ -178,9 +178,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             output.images = resize_hires(p, latents=output.images) if output is not None else []
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
-        latent_upscale = shared.latent_upscale_modes.get(p.hr_upscaler, None)
         strength = p.hr_denoising_strength if p.hr_denoising_strength > 0 else p.denoising_strength
-        if (latent_upscale is not None or p.hr_force) and strength > 0:
+        if (p.hr_upscaler.lower().startswith('latent') or p.hr_force) and strength > 0:
             p.ops.append('hires')
             sd_models_compile.openvino_recompile_model(p, hires=True, refiner=False)
             if shared.sd_model.__class__.__name__ == "OnnxRawPipeline":

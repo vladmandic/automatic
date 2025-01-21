@@ -15,7 +15,6 @@ import gradio as gr
 import fasteners
 import orjson
 import diffusers
-from rich.console import Console
 from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history, files_cache
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
@@ -26,22 +25,19 @@ import modules.interrogate
 import modules.memmon
 import modules.styles
 import modules.paths as paths
-from installer import print_dict
-from installer import log as central_logger # pylint: disable=E0611
+from installer import log, print_dict, console # pylint: disable=unused-import
 
 
 errors.install([gr])
 demo: gr.Blocks = None
 api = None
-log = central_logger
 progress_print_out = sys.stdout
 parser = cmd_args.parser
 url = 'https://github.com/vladmandic/automatic'
 cmd_opts, _ = parser.parse_known_args()
 hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
-locking_available = True
-clip_model = None
+locking_available = True # used by file read/write locking
 interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
@@ -51,20 +47,7 @@ tab_names = []
 extra_networks = []
 options_templates = {}
 hypernetworks = {}
-loaded_hypernetworks = []
 settings_components = None
-latent_upscale_default_mode = "None"
-latent_upscale_modes = {
-    "Latent Nearest": {"mode": "nearest", "antialias": False},
-    "Latent Nearest-exact": {"mode": "nearest-exact", "antialias": False},
-    "Latent Area": {"mode": "area", "antialias": False},
-    "Latent Bilinear": {"mode": "bilinear", "antialias": False},
-    "Latent Bicubic": {"mode": "bicubic", "antialias": False},
-    "Latent Bilinear antialias": {"mode": "bilinear", "antialias": True},
-    "Latent Bicubic antialias": {"mode": "bicubic", "antialias": True},
-    # "Latent Linear": {"mode": "linear", "antialias": False}, # not supported for latents with channels=4
-    # "Latent Trilinear": {"mode": "trilinear", "antialias": False}, # not supported for latents with channels=4
-}
 restricted_opts = {
     "samples_filename_pattern",
     "directories_filename_pattern",
@@ -80,7 +63,6 @@ restricted_opts = {
 }
 resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint", "Context aware"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
-console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8
@@ -357,7 +339,7 @@ def list_samplers():
 
 
 def temp_disable_extensions():
-    disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
+    disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-images-browser']
     disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
     disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
@@ -518,9 +500,9 @@ options_templates.update(options_section(('text_encoder', "Text Encoder"), {
 
 options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution Precision</h2>", "", gr.HTML),
-    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
+    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"], "visible": not native}),
     "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
-    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half)", None, None, None),
+    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Force full precision (--no-half)", None, None, None),
     "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling", gr.Checkbox, {"visible": not native}),
     "upcast_attn": OptionInfo(False, "Upcast attention layer", gr.Checkbox, {"visible": not native}),
     "cuda_cast_unet": OptionInfo(False, "Fixed UNet precision", gr.Checkbox, {"visible": not native}),
@@ -1190,7 +1172,7 @@ opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibi
 opts.data['uni_pc_order'] = max(2, opts.schedulers_solver_order) # compatibility
 log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.get_optimal_device_name()} attention="{opts.cross_attention_optimization}" mode={devices.inference_context.__name__}')
 if not native:
-    log.warning('Backend=original is in maintainance-only mode')
+    log.warning('Backend=original: legacy mode / maintainance-only')
     opts.data['diffusers_offload_mode'] = 'none'
 
 prompt_styles = modules.styles.StyleDatabase(opts)

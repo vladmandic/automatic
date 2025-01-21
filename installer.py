@@ -669,6 +669,9 @@ def install_ipex(torch_command):
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
     if os.environ.get("PYTORCH_ENABLE_XPU_FALLBACK", None) is None:
         os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1')
+    if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
+        # Battlemage doesn't support Flash Atten or Memory Atten yet so it goes OOM without this
+        os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
     if "linux" in sys.platform:
         ipex_svr = 'https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/'
         if os.environ.get("SD_IPEX_USE_US_SERVER", None) is not None:
@@ -678,8 +681,8 @@ def install_ipex(torch_command):
         # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu') # torchvision doesn't exist on test/stable branch for windows
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.5.0'), 'openvino', ignore=True)
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     ts('ipex', t_start)
@@ -734,6 +737,17 @@ def install_torch_addons():
     if triton_command is not None:
         install(triton_command, 'triton', quiet=True)
     ts('addons', t_start)
+
+
+# check cudnn
+def check_cudnn():
+    import site
+    site_packages = site.getsitepackages()
+    cuda_path = os.environ.get('CUDA_PATH', '')
+    for site_package in site_packages:
+        folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
+        if os.path.exists(folder) and folder not in cuda_path:
+            os.environ['CUDA_PATH'] = f"{cuda_path}:{folder}"
 
 
 # check torch version
@@ -847,6 +861,7 @@ def check_torch():
         return
     if not args.skip_all:
         install_torch_addons()
+    check_cudnn()
     if args.profile:
         pr.disable()
         print_profile(pr, 'Torch')

@@ -4,7 +4,8 @@ from PIL import Image
 from modules import shared, devices
 from modules.upscaler import Upscaler, UpscalerData
 
-class UpscalerSD(Upscaler):
+
+class UpscalerDiffusion(Upscaler):
     def __init__(self, dirname): # pylint: disable=super-init-not-called
         self.name = "SDUpscale"
         self.user_path = dirname
@@ -12,8 +13,8 @@ class UpscalerSD(Upscaler):
             super().__init__()
             return
         self.scalers = [
-            UpscalerData(name="SD Latent 2x", path="stabilityai/sd-x2-latent-upscaler", upscaler=self, model=None, scale=4),
-            UpscalerData(name="SD Latent 4x", path="stabilityai/stable-diffusion-x4-upscaler", upscaler=self, model=None, scale=4),
+            UpscalerData(name="Diffusion Latent Upscaler 2x", path="stabilityai/sd-x2-latent-upscaler", upscaler=self, model=None, scale=4),
+            UpscalerData(name="Diffusion Latent Upscaler 4x", path="stabilityai/stable-diffusion-x4-upscaler", upscaler=self, model=None, scale=4),
         ]
         self.pipelines = [
             None,
