@@ -23,4 +23,5 @@ Procedure for contributing:
   - Make sure that PR does NOT include any unrelated edits  
   - Make sure that PR does not include changes to submodules  
 
-Your pull request will be reviewed and pending review results, merged into main branch
+Your pull request will be reviewed and pending review results, merged into `dev` branch  
+Dev merges to main are performed regularly and any PRs that are merged to `dev` will be included in the next main release  

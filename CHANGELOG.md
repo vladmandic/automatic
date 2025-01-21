@@ -2,6 +2,8 @@
 
 ## Update for 2025-01-21
 
+- **Contributing**:  
+  - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
 - **Model Merge**
   - replace model components and merge LoRAs  
     in addition to existing model weights merge support  
