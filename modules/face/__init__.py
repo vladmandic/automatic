@@ -88,6 +88,7 @@ class Script(scripts.Script):
             with gr.Row():
                 gr.HTML('<a href="https://photo-maker.github.io/" target="_blank">&nbsp Tenecent ARC Lab PhotoMaker</a><br>')
             with gr.Row():
+                pm_model = gr.Dropdown(label='PhotoMaker Model', choices=['PhotoMaker v1', 'PhotoMaker v2'], value='PhotoMaker v2')
                 pm_trigger = gr.Text(label='Trigger word', value="person")
                 pm_strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.01, value=1.0)
                 pm_start = gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
@@ -98,9 +99,9 @@ class Script(scripts.Script):
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
         mode.change(fn=self.mode_change, inputs=[mode], outputs=[cfg_reswapper, cfg_faceid, cfg_faceswap, cfg_instantid, cfg_photomaker])
 
-        return [mode, gallery, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache]
+        return [mode, gallery, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_model, pm_trigger, pm_strength, pm_start, fs_cache]
 
-    def run(self, p: processing.StableDiffusionProcessing, mode, input_images, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, mode, input_images, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_model, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
         if not shared.native:
             return None
         if mode == 'None':
@@ -130,8 +131,10 @@ class Script(scripts.Script):
             processed_images = face_id(p, app=app, source_images=input_images, model=ip_model, override=ip_override, cache=ip_cache, scale=ip_strength, structure=ip_structure) # run faceid pipeline
             processed = processing.Processed(p, images_list=processed_images, seed=p.seed, subseed=p.subseed, index_of_first_image=0) # manually created processed object
         elif mode == 'PhotoMaker': # photomaker creates pipeline and triggers original process_images
+            from modules.face.insightface import get_app
+            app = get_app('buffalo_l')
             from modules.face.photomaker import photo_maker
-            processed = photo_maker(p, input_images=input_images, trigger=pm_trigger, strength=pm_strength, start=pm_start)
+            processed = photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
         elif mode == 'InstantID':
             from modules.face.insightface import get_app
             app=get_app('antelopev2')

@@ -306,7 +306,6 @@ def extract_thumbnail(filename, data):
         thumbnail = thumbnail.convert("RGB")
         thumbnail = thumbnail.resize((512, 512), Image.Resampling.HAMMING)
         fn = os.path.splitext(filename)[0]
-        print('HERE', thumbnail, fn)
         thumbnail = thumbnail.save(f"{fn}.thumb.jpg", quality=50)
     except Exception as e:
         shared.log.error(f"Error extracting thumbnail: {filename} {e}")
