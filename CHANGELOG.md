@@ -14,11 +14,15 @@
   - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
   - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
 - **Face**:  
-  - new [photomaker v2](https://huggingface.co/TencentARC/PhotoMaker-V2) and reimplemented [photomaker v1](https://huggingface.co/TencentARC/PhotoMaker)  
+  - new [PhotoMaker v2](https://huggingface.co/TencentARC/PhotoMaker-V2) and reimplemented [PhotoMaker v1](https://huggingface.co/TencentARC/PhotoMaker)  
     compatible with sdxl models, generates pretty good results and its faster than most other methods  
     select under *scripts -> face -> photomaker*  
-  - new [reswapper](https://github.com/somanchiu/ReSwapper)  
+  - new [ReSwapper](https://github.com/somanchiu/ReSwapper)  
     todo: experimental-only and unfinished, only noting in changelog for future reference  
+- **Video**  
+  - **hunyuan video** support for [FastHunyuan](https://huggingface.co/FastVideo/FastHunyuan)  
+    simply select model variant and set appropriate parameters  
+    recommended: sampler-shift=17, steps=6, resolution=720x1280, frames=125, guidance>6.0  
 - **Other**:  
   - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
   - **ipex**: update supported torch versions  
