@@ -36,6 +36,9 @@
   - enable fp64 emulation and sycl jit cache  
   - switch to pytorch test branch on windows  
   - update the supported python versions  
+- [PerFlow](https://github.com/magic-research/piecewise-rectified-flow)  
+  - piecewise rectified flow as model acceleration  
+  - use `perflow` scheduler combined with one of the available pre-trained [models](https://huggingface.co/hansyan)  
 - **Other**:  
   - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
   - **gallery**: add http fallback for slow/unreliable links  
