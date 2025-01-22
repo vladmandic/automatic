@@ -6,7 +6,6 @@ from diffusers.models.attention_processor import Attention
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long
 
-device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
 attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
 
 
@@ -342,10 +341,10 @@ class AttnProcessor:
         return hidden_states
 
 
-def ipex_diffusers():
+def ipex_diffusers(device_supports_fp64=False, can_allocate_plus_4gb=False):
     diffusers.utils.torch_utils.fourier_filter = fourier_filter
     #ARC GPUs can't allocate more than 4GB to a single block:
-    if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '1' or (not device_supports_fp64 and os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '0'):
+    if not can_allocate_plus_4gb:
         diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
         diffusers.models.attention_processor.AttnProcessor = AttnProcessor
     if not device_supports_fp64:

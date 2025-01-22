@@ -678,13 +678,11 @@ def install_ipex(torch_command):
         os.environ.setdefault('IGC_EnableDPEmulation', '1') # FP64 Emulation
     if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
         # XPU PyTorch doesn't support Flash Atten or Memory Atten yet so Battlemage goes OOM without this
-        # Also force enabled because of FP64 emulation making auto-detect based on the GPU invalid
         os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
 
     if "linux" in sys.platform:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/')
-        # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
-        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
+        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
 
