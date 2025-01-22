@@ -345,7 +345,7 @@ class AttnProcessor:
 def ipex_diffusers():
     diffusers.utils.torch_utils.fourier_filter = fourier_filter
     #ARC GPUs can't allocate more than 4GB to a single block:
-    if not device_supports_fp64 or os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is not None:
+    if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '1' or (not device_supports_fp64 and os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '0'):
         diffusers.models.attention_processor.SlicedAttnProcessor = SlicedAttnProcessor
         diffusers.models.attention_processor.AttnProcessor = AttnProcessor
     if not device_supports_fp64:
