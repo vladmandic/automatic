@@ -19,12 +19,21 @@ console = Console(log_time=True, tab_size=4, log_time_format='%H:%M:%S-%f', soft
 pretty_install(console=console)
 traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, max_frames=16)
 already_displayed = {}
+opts = None
 
 
 def install(suppress=[]):
     warnings.filterwarnings("ignore", category=UserWarning)
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, width=console.width, word_wrap=False, indent_guides=False, suppress=suppress)
+
+    if opts:
+        trace_width = opts.get("trace_width", console.width)
+        traceback_install(console=console, indent_guides=False, show_locals=opts.get("trace_show_locals", False),
+            word_wrap=opts.get("trace_word_wrap", False), extra_lines=opts.get("trace_extra_lines", 1), suppress=suppress,
+            max_frames=opts.get("trace_max_frames", 100), width=trace_width if trace_width else console.width)
+    else:
+        traceback_install(console=console, extra_lines=1, width=console.width, indent_guides=False, suppress=suppress)
+
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(levelname)s | %(pathname)s | %(message)s')
     # for handler in logging.getLogger().handlers:
     #    handler.setLevel(logging.INFO)
@@ -36,9 +45,15 @@ def print_error_explanation(message):
         log.error(line)
 
 
-def display(e: Exception, task: str, suppress=[]):
+def display(e: Exception, task: str, suppress=[]): # Consider theme support?...
     log.error(f"{task or 'error'}: {type(e).__name__}")
-    console.print_exception(show_locals=False, max_frames=16, extra_lines=1, suppress=suppress, theme="ansi_dark", word_wrap=False, width=console.width)
+    if opts:
+        trace_width = opts.get("trace_width", console.width)
+        console.print_exception(suppress=suppress, theme="ansi_dark", max_frames=opts.get("trace_max_frames", 16),
+            word_wrap=opts.get("trace_word_wrap", False), show_locals=opts.get("trace_show_locals", False),
+            extra_lines=opts.get("trace_extra_lines", 1), width=trace_width if trace_width else console.width)
+    else:
+        console.print_exception(max_frames=16, extra_lines=1, suppress=suppress, theme="ansi_dark", width=console.width)
 
 
 def display_once(e: Exception, task):
@@ -56,7 +71,12 @@ def run(code, task: str):
 
 
 def exception(suppress=[]):
-    console.print_exception(show_locals=False, max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", word_wrap=False, width=min([console.width, 200]))
+    if opts:
+        console.print_exception(suppress=suppress, theme="ansi_dark", max_frames=opts.get("trace_max_frames", 16),
+            word_wrap=opts.get("trace_word_wrap", False), show_locals=opts.get("trace_show_locals", False),
+            extra_lines=opts.get("trace_extra_lines", 1), width=min([trace_width if trace_width else console.width, 200]))
+    else:
+        console.print_exception(max_frames=16, extra_lines=2, suppress=suppress, theme="ansi_dark", width=console.width)
 
 
 def profile(profiler, msg: str, n: int = 16):

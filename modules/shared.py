@@ -203,7 +203,7 @@ def writefile(data, filename, mode='w', silent=False, atomic=False):
 
 
 # early select backend
-early_opts = readfile(cmd_opts.config, silent=True)
+errors.opts = early_opts = readfile(cmd_opts.config, silent=True)
 early_backend = early_opts.get('sd_backend', 'diffusers')
 backend = Backend.ORIGINAL if early_backend.lower() == 'original' else Backend.DIFFUSERS
 if cmd_opts.backend is not None: # override with args
@@ -993,6 +993,15 @@ options_templates.update(options_section((None, "Hidden options"), {
     "use_upscaler_name_as_suffix": OptionInfo(True, "Use upscaler as suffix", gr.Checkbox, {"visible": False}),
 }))
 
+# Console / debugging behavior overrides (for debugging purposes).
+options_templates.update(options_section(('trace_overrides', "Exception trace overrides (development)"), {
+    "trace_width": OptionInfo(0, "Trace Line Width (0 for console width)", gr.Number, {"precision": 0, "minimum": 0, "maximum": 320}),
+    "trace_extra_lines": OptionInfo(3, "Extra Trace Lines", gr.Number, {"precision": 0, "minimum": 0, "maximum": 255}),
+    "trace_word_wrap": OptionInfo(False, "Trace Word Wrap", gr.Checkbox),
+    "trace_show_locals": OptionInfo(False, "Show Local Variables", gr.Checkbox),
+    "trace_max_frames": OptionInfo(16, "Maximum Stack Frames (0 for no limit)", gr.Number, {"precision": 0, "minimum": 0}),
+}))
+
 options_templates.update()
 
 
@@ -1179,11 +1188,14 @@ class Options:
             value = expected_type(value)
         return value
 
+
 profiler = None
 opts = Options()
 config_filename = cmd_opts.config
 opts.load(config_filename)
 cmd_opts = cmd_args.settings_args(opts, cmd_opts)
+errors.tracing = opts.data # Make debugging parameters available to error module.
+
 if cmd_opts.use_xformers:
     opts.data['cross_attention_optimization'] = 'xFormers'
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility
