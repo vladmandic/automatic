@@ -70,10 +70,13 @@ def load_torchao(msg='', silent=False):
 
 
 def load_bnb(msg='', silent=False):
+    from modules import devices
     global bnb # pylint: disable=global-statement
     if bnb is not None:
         return bnb
-    install('bitsandbytes==0.45.0', quiet=True)
+    if devices.backend == 'cuda':
+        # forcing a version will uninstall the multi-backend-refactor branch of bnb
+        install('bitsandbytes==0.45.0', quiet=True)
     try:
         import bitsandbytes
         bnb = bitsandbytes
