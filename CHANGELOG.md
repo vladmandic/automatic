@@ -31,9 +31,13 @@
   - enable in *settings -> pipeline modifiers -> para-attention*  
   - adjust residual diff threshold to balance the speedup and the accuracy:  
     higher values leads to more cache hits and speedups, but might also lead to a higher accuracy drop  
+- **IPEX**
+  - enable force attention slicing for all GPUs  
+  - enable fp64 emulation and sycl jit cache  
+  - switch to pytorch test branch on windows  
+  - update the supported python versions  
 - **Other**:  
   - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
-  - **ipex**: update supported torch versions  
   - **gallery**: add http fallback for slow/unreliable links  
   - **splash**: add legacy mode indicator on splash screen  
   - **network**: extract thumbnail from model metadata if present  
