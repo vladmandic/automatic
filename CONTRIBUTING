@@ -15,6 +15,6 @@ Procedure for contributing:
   - `ruff check`
   - `pylint <folder>/<filename>.py`
 - Push changes to your fork  
-- Submit a PR (pull request) against the dev branch.
+- Submit a PR (pull request)
 
 Your pull request will be reviewed and pending review results, merged into main branch
