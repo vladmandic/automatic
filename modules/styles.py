@@ -135,7 +135,7 @@ def apply_styles_to_extra(p, style: Style):
         'size',
     ]
     reference_style = get_reference_style()
-    extra = infotext.parse(reference_style) if shared.opts.extra_network_reference else {}
+    extra = infotext.parse(reference_style) if shared.opts.extra_network_reference_values else {}
 
     style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards], silent=True)
     extra.update(infotext.parse(style_extra))

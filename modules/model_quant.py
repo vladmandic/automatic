@@ -223,7 +223,7 @@ def nncf_compress_model(model, op=None, sd_model=None):
     nncf_send_to_device(model, devices.device)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
-    if op is not None and shared.opts.quant_shuffle_weights:
+    if op is not None and shared.opts.nncf_quantize_shuffle_weights:
         if quant_last_model_name is not None:
             if "." in quant_last_model_name:
                 last_model_names = quant_last_model_name.split(".")
@@ -290,7 +290,7 @@ def optimum_quanto_model(model, op=None, sd_model=None, weights=None, activation
     quanto.freeze(model)
     if hasattr(model, "set_input_embeddings") and backup_embeddings is not None:
         model.set_input_embeddings(backup_embeddings)
-    if op is not None and shared.opts.quant_shuffle_weights:
+    if op is not None and shared.opts.optimum_quanto_shuffle_weights:
         if quant_last_model_name is not None:
             if "." in quant_last_model_name:
                 last_model_names = quant_last_model_name.split(".")

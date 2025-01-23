@@ -49,7 +49,7 @@ class PFODESolver():
         timestep_cond = None
         if unet.config.time_cond_proj_dim is not None:
             guidance_scale_tensor = torch.tensor(guidance_scale - 1).repeat(bsz)
-            timestep_cond = self.get_guidance_scale_embedding(
+            timestep_cond = self.get_guidance_scale_embedding( # pylint: disable=no-member
                 guidance_scale_tensor, embedding_dim=unet.config.time_cond_proj_dim
             ).to(device=latents.device, dtype=latents.dtype)
 
@@ -124,7 +124,7 @@ class PFODESolverSDXL():
         self.t_terminal = t_terminal
         self.scheduler = scheduler
 
-        train_step_terminal = 0 
+        train_step_terminal = 0
         train_step_initial = train_step_terminal + self.scheduler.config.num_train_timesteps # 0+1000
 
         self.stepsize  = (t_terminal-t_initial) / (train_step_terminal - train_step_initial) #1/1000
@@ -186,7 +186,7 @@ class PFODESolverSDXL():
         timestep_cond = None
         if unet.config.time_cond_proj_dim is not None:
             guidance_scale_tensor = torch.tensor(guidance_scale - 1).repeat(bsz)
-            timestep_cond = self.get_guidance_scale_embedding(
+            timestep_cond = self.get_guidance_scale_embedding( # pylint: disable=no-member
                 guidance_scale_tensor, embedding_dim=unet.config.time_cond_proj_dim
             ).to(device=latents.device, dtype=latents.dtype)
 

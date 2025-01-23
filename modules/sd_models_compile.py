@@ -1,9 +1,8 @@
-import copy
 import time
 import logging
 import torch
-from modules import shared, devices, sd_models, model_quant
-from installer import install, setup_logging
+from modules import shared, devices, sd_models
+from installer import setup_logging
 
 
 #Used by OpenVINO, can be used with TensorRT or Olive

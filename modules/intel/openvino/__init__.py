@@ -221,10 +221,10 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         for idx, _ in enumerate(example_inputs):
             new_inputs.append(example_inputs[idx].detach().cpu().numpy())
         new_inputs = [new_inputs]
-        if shared.opts.nncf_quant_mode == "INT8":
+        if shared.opts.nncf_quantize_mode == "INT8":
             om = nncf.quantize(om, nncf.Dataset(new_inputs))
         else:
-            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quant_mode),
+            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quantize_mode),
                 advanced_parameters=nncf.quantization.advanced_parameters.AdvancedQuantizationParameters(
                 overflow_fix=nncf.quantization.advanced_parameters.OverflowFix.DISABLE, backend_params=None))
 
@@ -281,10 +281,10 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
         for idx, _ in enumerate(example_inputs):
             new_inputs.append(example_inputs[idx].detach().cpu().numpy())
         new_inputs = [new_inputs]
-        if shared.opts.nncf_quant_mode == "INT8":
+        if shared.opts.nncf_quantize_mode == "INT8":
             om = nncf.quantize(om, nncf.Dataset(new_inputs))
         else:
-            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quant_mode),
+            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quantize_mode),
                 advanced_parameters=nncf.quantization.advanced_parameters.AdvancedQuantizationParameters(
                 overflow_fix=nncf.quantization.advanced_parameters.OverflowFix.DISABLE, backend_params=None))
 

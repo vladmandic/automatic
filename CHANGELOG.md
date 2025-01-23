@@ -48,10 +48,12 @@
   - **gallery**: add http fallback for slow/unreliable links  
   - **splash**: add legacy mode indicator on splash screen  
   - **network**: extract thumbnail from model metadata if present  
+  - **network**: setting value to disable use of reference models  
 - **Refactor**:  
   - **upscale**: code refactor to unify latent, resize and model based upscalers  
   - **loader**: ability to run in-memory models  
   - **schedulers**: ability to create model-less schedulers  
+  - **quantiation**: code refactor into dedicated module  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
