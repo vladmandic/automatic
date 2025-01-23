@@ -31,18 +31,20 @@ class UpscalerResize(Upscaler):
     def do_upscale(self, img: Image, selected_model=None):
         if selected_model is None:
             return img
-        if selected_model == "Resize Nearest":
+        elif selected_model == "Resize Nearest":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.NEAREST)
-        if selected_model == "Resize Lanczos":
+        elif selected_model == "Resize Lanczos":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.LANCZOS)
-        if selected_model == "Resize Bicubic":
+        elif selected_model == "Resize Bicubic":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.BICUBIC)
-        if selected_model == "Resize Bilinear":
+        elif selected_model == "Resize Bilinear":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.BILINEAR)
-        if selected_model == "Resize Hamming":
+        elif selected_model == "Resize Hamming":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.HAMMING)
-        if selected_model == "Resize Box":
+        elif selected_model == "Resize Box":
             return img.resize((int(img.width * self.scale), int(img.height * self.scale)), resample=Image.Resampling.BOX)
+        else:
+            return img
 
 
     def load_model(self, _):

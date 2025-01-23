@@ -67,13 +67,13 @@ def load_base(override:str=None):
         pipeline = diffusers.StableDiffusionXLPipeline.from_pretrained(fn, cache_dir=shared.opts.hfcache_dir, torch_dtype=recipe.dtype, add_watermarker=False)
     else:
         yield msg('base: not found')
-        return None
+        return
     pipeline.vae.register_to_config(force_upcast = False)
 
 
 def load_unet(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
     if (recipe.unet is None or len(recipe.unet) == 0) and override is None:
-        return None
+        return
     fn = override or recipe.unet
     if not os.path.isabs(fn):
         fn = os.path.join(shared.opts.unet_dir, fn)
@@ -92,7 +92,7 @@ def load_unet(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
 
 def load_scheduler(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
     if recipe.scheduler is None and override is None:
-        return None
+        return
     config = pipe.scheduler.config.__dict__
     scheduler = override or recipe.scheduler
     yield msg(f'scheduler={scheduler}')
@@ -107,7 +107,7 @@ def load_scheduler(pipe: diffusers.StableDiffusionXLPipeline, override:str=None)
 
 def load_vae(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
     if (recipe.vae is None or len(recipe.vae) == 0)and override is None:
-        return None
+        return
     fn = override or recipe.vae
     if not os.path.isabs(fn):
         fn = os.path.join(shared.opts.vae_dir, fn)
@@ -128,7 +128,7 @@ def load_vae(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
 
 def load_te1(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
     if (recipe.te1 is None or len(recipe.te1) == 0) and override is None:
-        return None
+        return
     config = pipe.text_encoder.config.__dict__
     pretrained_config = transformers.PretrainedConfig.from_dict(config)
     fn = override or recipe.te1
@@ -149,7 +149,7 @@ def load_te1(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
 
 def load_te2(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
     if (recipe.te2 is None or len(recipe.te2) == 0) and override is None:
-        return None
+        return
     config = pipe.text_encoder_2.config.__dict__
     pretrained_config = transformers.PretrainedConfig.from_dict(config)
     fn = override or recipe.te2
@@ -170,7 +170,7 @@ def load_te2(pipe: diffusers.StableDiffusionXLPipeline, override:str=None):
 
 def load_lora(pipe: diffusers.StableDiffusionXLPipeline, override: dict=None, fuse: float=None):
     if recipe.lora is None and override is None:
-        return None
+        return
     names = []
     pipe.unfuse_lora()
     pipe.unload_lora_weights()
