@@ -8,6 +8,24 @@ quanto = None
 ao = None
 
 
+def get_quant(name):
+    if "qint8" in name.lower():
+        return 'qint8'
+    if "qint4" in name.lower():
+        return 'qint4'
+    if "fp8" in name.lower():
+        return 'fp8'
+    if "fp4" in name.lower():
+        return 'fp4'
+    if "nf4" in name.lower():
+        return 'nf4'
+    if name.endswith('.gguf'):
+        return 'gguf'
+    return 'none'
+
+
+
+
 def create_bnb_config(kwargs = None, allow_bnb: bool = True):
     from modules import shared, devices
     if len(shared.opts.bnb_quantization) > 0 and allow_bnb:
@@ -117,17 +135,43 @@ def load_quanto(msg='', silent=False):
     return None
 
 
-def get_quant(name):
-    if "qint8" in name.lower():
-        return 'qint8'
-    if "qint4" in name.lower():
-        return 'qint4'
-    if "fp8" in name.lower():
-        return 'fp8'
-    if "fp4" in name.lower():
-        return 'fp4'
-    if "nf4" in name.lower():
-        return 'nf4'
-    if name.endswith('.gguf'):
-        return 'gguf'
-    return 'none'
+def apply_layerwise(sd_model, quiet:bool=False):
+    import torch
+    from diffusers.quantizers import quantization_config
+    from modules import shared, devices, sd_models
+    if shared.opts.layerwise_quantization_storage == 'float8_e4m3fn' and hasattr(torch, 'float8_e4m3fn'):
+        storage_dtype = torch.float8_e4m3fn
+    elif shared.opts.layerwise_quantization_storage == 'float8_e5m2' and hasattr(torch, 'float8_e5m2'):
+        storage_dtype = torch.float8_e5m2
+    else:
+        storage_dtype = None
+        shared.log.warning(f'Quantization: type=layerwise storage={shared.opts.layerwise_quantization_storage} not supported')
+        return
+    non_blocking = False
+    if not hasattr(quantization_config.QuantizationMethod, 'LAYERWISE'):
+        setattr(quantization_config.QuantizationMethod, 'LAYERWISE', 'layerwise') # noqa: B010
+    for module in sd_models.get_signature(sd_model).keys():
+        if not hasattr(sd_model, module):
+            continue
+        try:
+            cls = getattr(sd_model, module).__class__.__name__
+            if module.startswith('unet') and ('Model' in shared.opts.layerwise_quantization):
+                m = getattr(sd_model, module)
+                if hasattr(m, 'enable_layerwise_casting'):
+                    m.enable_layerwise_casting(compute_dtype=devices.dtype, storage_dtype=storage_dtype, non_blocking=non_blocking)
+                    m.quantization_method = 'LayerWise'
+                    log.quiet(quiet, f'Quantization: type=layerwise module={module} cls={cls} storage={storage_dtype} compute={devices.dtype} blocking={not non_blocking}')
+            if module.startswith('transformer') and ('Model' in shared.opts.layerwise_quantization or 'Transformer' in shared.opts.layerwise_quantization):
+                m = getattr(sd_model, module)
+                if hasattr(m, 'enable_layerwise_casting'):
+                    m.enable_layerwise_casting(compute_dtype=devices.dtype, storage_dtype=storage_dtype, non_blocking=non_blocking)
+                    m.quantization_method = 'LayerWise'
+                    log.quiet(quiet, f'Quantization: type=layerwise module={module} cls={cls} storage={storage_dtype} compute={devices.dtype} blocking={not non_blocking}')
+            if module.startswith('text_encoder') and ('Model' in shared.opts.layerwise_quantization or 'Text Encoder' in shared.opts.layerwise_quantization) and ('clip' not in cls.lower()):
+                m = getattr(sd_model, module)
+                if hasattr(m, 'enable_layerwise_casting'):
+                    m.enable_layerwise_casting(compute_dtype=devices.dtype, storage_dtype=storage_dtype, non_blocking=non_blocking)
+                    m.quantization_method = quantization_config.QuantizationMethod.LAYERWISE # pylint: disable=no-member
+                    log.quiet(quiet, f'Quantization: type=layerwise module={module} cls={cls} storage={storage_dtype} compute={devices.dtype} blocking={not non_blocking}')
+        except Exception as e:
+            shared.log.error(f'Quantization: type=layerwise {e}')
