@@ -54,6 +54,10 @@
   - **loader**: ability to run in-memory models  
   - **schedulers**: ability to create model-less schedulers  
   - **quantiation**: code refactor into dedicated module  
+- **Authentication**:
+  - perform auth check on ui startup  
+  - unified standard and modern-ui authentication method  
+  - cleanup auth logging  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
