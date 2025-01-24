@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-23
+## Update for 2025-01-24
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
@@ -66,6 +66,7 @@
   - mark large models that should offload  
   - avoid repeated optimum-quanto installation  
   - avoid reinstalling bnb if not cuda  
+  - image metadata civitai compatibility  
 
 ## Update for 2025-01-15
 

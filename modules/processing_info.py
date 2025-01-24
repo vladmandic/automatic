@@ -39,9 +39,9 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
     ops = list(set(p.ops))
     args = {
         # basic
+        "Steps": p.steps,
         "Size": f"{p.width}x{p.height}" if hasattr(p, 'width') and hasattr(p, 'height') else None,
         "Sampler": p.sampler_name if p.sampler_name != 'Default' else None,
-        "Steps": p.steps,
         "Seed": all_seeds[index],
         "Seed resize from": None if p.seed_resize_from_w == 0 or p.seed_resize_from_h == 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}",
         "CFG scale": p.cfg_scale if p.cfg_scale > 1.0 else None,
@@ -179,7 +179,7 @@ def create_infotext(p: StableDiffusionProcessing, all_prompts=None, all_seeds=No
                 del args[k]
     debug(f'Infotext: args={args}')
     params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in args.items()])
-    negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index]}" if all_negative_prompts[index] else ""
+    negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index] if all_negative_prompts[index] else ''}"
     infotext = f"{all_prompts[index]}{negative_prompt_text}\n{params_text}".strip()
     debug(f'Infotext: "{infotext}"')
     return infotext
