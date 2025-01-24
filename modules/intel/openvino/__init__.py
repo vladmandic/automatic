@@ -221,10 +221,10 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         for idx, _ in enumerate(example_inputs):
             new_inputs.append(example_inputs[idx].detach().cpu().numpy())
         new_inputs = [new_inputs]
-        if shared.opts.nncf_quant_mode == "INT8":
+        if shared.opts.nncf_quantize_mode == "INT8":
             om = nncf.quantize(om, nncf.Dataset(new_inputs))
         else:
-            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quant_mode),
+            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quantize_mode),
                 advanced_parameters=nncf.quantization.advanced_parameters.AdvancedQuantizationParameters(
                 overflow_fix=nncf.quantization.advanced_parameters.OverflowFix.DISABLE, backend_params=None))
 
@@ -232,7 +232,9 @@ def openvino_compile(gm: GraphModule, *example_inputs, model_hash_str: str = Non
         if dont_use_4bit_nncf or shared.opts.nncf_compress_weights_mode == "INT8":
             om = nncf.compress_weights(om)
         else:
-            om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=8, ratio=shared.opts.nncf_compress_weights_raito)
+            compress_group_size = shared.opts.nncf_compress_weights_group_size if shared.opts.nncf_compress_weights_group_size != 0 else None
+            compress_ratio = shared.opts.nncf_compress_weights_raito if shared.opts.nncf_compress_weights_raito != 0 else None
+            om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=compress_group_size, ratio=compress_ratio)
 
     hints = {}
     if shared.opts.openvino_accuracy == "performance":
@@ -279,10 +281,10 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
         for idx, _ in enumerate(example_inputs):
             new_inputs.append(example_inputs[idx].detach().cpu().numpy())
         new_inputs = [new_inputs]
-        if shared.opts.nncf_quant_mode == "INT8":
+        if shared.opts.nncf_quantize_mode == "INT8":
             om = nncf.quantize(om, nncf.Dataset(new_inputs))
         else:
-            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quant_mode),
+            om = nncf.quantize(om, nncf.Dataset(new_inputs), mode=getattr(nncf.QuantizationMode, shared.opts.nncf_quantize_mode),
                 advanced_parameters=nncf.quantization.advanced_parameters.AdvancedQuantizationParameters(
                 overflow_fix=nncf.quantization.advanced_parameters.OverflowFix.DISABLE, backend_params=None))
 
@@ -290,7 +292,9 @@ def openvino_compile_cached_model(cached_model_path, *example_inputs):
         if dont_use_4bit_nncf or shared.opts.nncf_compress_weights_mode == "INT8":
             om = nncf.compress_weights(om)
         else:
-            om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=8, ratio=shared.opts.nncf_compress_weights_raito)
+            compress_group_size = shared.opts.nncf_compress_weights_group_size if shared.opts.nncf_compress_weights_group_size != 0 else None
+            compress_ratio = shared.opts.nncf_compress_weights_raito if shared.opts.nncf_compress_weights_raito != 0 else None
+            om = nncf.compress_weights(om, mode=getattr(nncf.CompressWeightsMode, shared.opts.nncf_compress_weights_mode), group_size=compress_group_size, ratio=compress_ratio)
 
     hints = {'CACHE_DIR': shared.opts.openvino_cache_path + '/blob'}
     if shared.opts.openvino_accuracy == "performance":

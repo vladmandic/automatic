@@ -3,10 +3,9 @@ import torch
 import gradio as gr
 import transformers
 import diffusers
-from modules import scripts, processing, shared, images, devices, sd_models, sd_checkpoint, model_quant, timer
+from modules import scripts, processing, shared, images, devices, sd_models, sd_checkpoint, sd_samplers, model_quant, timer
 
 
-repo_id = 'tencent/HunyuanVideo'
 default_template = """Describe the video by detailing the following aspects:
 1. The main content and theme of the video.
 2. The color, shape, size, texture, quantity, text, and spatial relationships of the objects.
@@ -64,26 +63,23 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML('<a href="https://huggingface.co/tencent/HunyuanVideo">&nbsp Hunyuan Video</a><br>')
         with gr.Row():
+            repo_id = gr.Dropdown(label='Model', choices=['tencent/HunyuanVideo', 'FastVideo/FastHunyuan'], value='tencent/HunyuanVideo')
+        with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=45)
             tile_frames = gr.Slider(label='Tile frames', minimum=1, maximum=64, step=1, value=16)
         with gr.Row():
-            override_scheduler = gr.Checkbox(label='Override scheduler', value=True)
+            with gr.Column():
+                override_scheduler = gr.Checkbox(label='Override sampler', value=True)
+            with gr.Column():
+                scheduler_shift = gr.Slider(label='Sampler shift', minimum=0.0, maximum=20.0, step=0.1, value=7.0)
         with gr.Row():
-            template = gr.TextArea(label='Prompt processor', lines=3, value=default_template)
+            template = gr.TextArea(label='Prompt processor', lines=3, value=default_template, visible=False)
         with gr.Row():
             from modules.ui_sections import create_video_inputs
             video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
-        return [num_frames, tile_frames, override_scheduler, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
+        return [repo_id, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
-    def run(self, p: processing.StableDiffusionProcessing, num_frames, tile_frames, override_scheduler, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
-        # set params
-        num_frames = int(num_frames)
-        p.width = 16 * int(p.width // 16)
-        p.height = 16 * int(p.height // 16)
-        p.do_not_save_grid = True
-        p.ops.append('video')
-
-        # load model
+    def load(self, repo_id:str):
         if shared.sd_model.__class__ != diffusers.HunyuanVideoPipeline:
             sd_models.unload_model_weights()
             t0 = time.time()
@@ -134,12 +130,27 @@ class Script(scripts.Script):
             shared.sd_model.vae.enable_slicing()
             shared.sd_model.vae.enable_tiling()
 
+    def run(self, p: processing.StableDiffusionProcessing, repo_id, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
+        # set params
+        num_frames = int(num_frames)
+        p.width = 16 * int(p.width // 16)
+        p.height = 16 * int(p.height // 16)
+        p.do_not_save_grid = True
+        p.ops.append('video')
+
+        # load model
+        self.load(repo_id)
+
         shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         devices.torch_gc(force=True)
 
         if override_scheduler:
             p.sampler_name = 'Default'
-            shared.sd_model.scheduler._shift = 7.0 # pylint: disable=protected-access
+        else:
+            shared.sd_model.scheduler = sd_samplers.create_sampler(p.sampler_name, shared.sd_model)
+            p.sampler_name = 'Default' # avoid double creation
+        if hasattr(shared.sd_model.scheduler, '_shift'):
+            shared.sd_model.scheduler._shift = scheduler_shift # pylint: disable=protected-access
 
         # encode prompt
         processing.fix_seed(p)

@@ -492,7 +492,7 @@ def check_diffusers():
     t_start = time.time()
     if args.skip_all or args.skip_git:
         return
-    sha = 'b785ddb654e4be3ae0066e231734754bdb2a191c' # diffusers commit hash
+    sha = '78bc824729f76a14ff2f211fc7f9a31e5500a41e' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -666,22 +666,31 @@ def install_ipex(torch_command):
     check_python(supported_minors=[9, 10, 11], reason='IPEX full component compatibility requires Python 3.9 - 3.11')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('IPEX: Intel OneAPI toolkit detected')
+
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+    if os.environ.get("SYCL_CACHE_PERSISTENT", None) is None:
+        os.environ.setdefault('SYCL_CACHE_PERSISTENT', '1') # Jit cache
+
     if os.environ.get("PYTORCH_ENABLE_XPU_FALLBACK", None) is None:
-        os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1')
+        os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1') # CPU fallback for unsupported ops
+    if os.environ.get("OverrideDefaultFP64Settings", None) is None:
+        os.environ.setdefault('OverrideDefaultFP64Settings', '1')
+    if os.environ.get("IGC_EnableDPEmulation", None) is None:
+        os.environ.setdefault('IGC_EnableDPEmulation', '1') # FP64 Emulation
     if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
-        # Battlemage doesn't support Flash Atten or Memory Atten yet so it goes OOM without this
+        # XPU PyTorch doesn't support Flash Atten or Memory Atten yet so Battlemage goes OOM without this
         os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
+
     if "linux" in sys.platform:
         # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-        # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
-        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
+        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
+
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
@@ -1077,7 +1086,7 @@ def install_optional():
     install('gfpgan')
     install('clean-fid')
     install('pillow-jxl-plugin==1.3.1', ignore=True)
-    install('optimum-quanto=0.2.6', ignore=True)
+    install('optimum-quanto==0.2.6', ignore=True)
     install('bitsandbytes==0.45.0', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)

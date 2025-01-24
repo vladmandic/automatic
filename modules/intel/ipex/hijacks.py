@@ -6,6 +6,16 @@ import numpy as np
 from modules import devices, errors
 
 device_supports_fp64 = torch.xpu.has_fp64_dtype() if hasattr(torch.xpu, "has_fp64_dtype") else torch.xpu.get_device_properties("xpu").has_fp64
+if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '0' and (torch.xpu.get_device_properties("xpu").total_memory / 1024 / 1024 / 1024) > 4.1:
+    try:
+        x = torch.ones((33000,33000), dtype=torch.float32, device="xpu")
+        del x
+        torch.xpu.empty_cache()
+        can_allocate_plus_4gb = True
+    except Exception:
+        can_allocate_plus_4gb = False
+else:
+    can_allocate_plus_4gb = bool(os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '-1')
 
 # pylint: disable=protected-access, missing-function-docstring, line-too-long, unnecessary-lambda, no-else-return
 
@@ -75,7 +85,7 @@ def as_tensor(data, dtype=None, device=None):
         return original_as_tensor(data, dtype=dtype, device=device)
 
 
-if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '-1' or (device_supports_fp64 and os.environ.get('IPEX_FORCE_ATTENTION_SLICE', '0') == '0'):
+if can_allocate_plus_4gb:
     original_torch_bmm = torch.bmm
     original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_attention
 else:
@@ -190,6 +200,7 @@ def functional_pad(input, pad, mode='constant', value=None):
 original_torch_tensor = torch.tensor
 @wraps(torch.tensor)
 def torch_tensor(data, *args, dtype=None, device=None, **kwargs):
+    global device_supports_fp64
     if check_device(device):
         device = return_xpu(device)
     if not device_supports_fp64:
@@ -313,6 +324,7 @@ def torch_load(f, map_location=None, *args, **kwargs):
 
 # Hijack Functions:
 def ipex_hijacks(legacy=True):
+    global device_supports_fp64, can_allocate_plus_4gb
     if legacy and float(torch.__version__[:3]) < 2.5:
         torch.nn.functional.interpolate = interpolate
     torch.tensor = torch_tensor
@@ -350,3 +362,4 @@ def ipex_hijacks(legacy=True):
     if not device_supports_fp64:
         torch.from_numpy = from_numpy
         torch.as_tensor = as_tensor
+    return device_supports_fp64, can_allocate_plus_4gb

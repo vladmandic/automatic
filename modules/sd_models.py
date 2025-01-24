@@ -9,14 +9,14 @@ import diffusers
 import diffusers.loaders.single_file_utils
 import torch
 
-from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
+from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect, model_quant
 from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
 from modules.sd_offload import disable_offload, set_diffuser_offload, apply_balanced_offload, set_accelerate # pylint: disable=unused-import
 from modules.sd_models_legacy import get_checkpoint_state_dict, load_model_weights, load_model, repair_config # pylint: disable=unused-import
-from modules.sd_models_utils import NoWatermark, get_signature, get_call, path_to_repo, patch_diffuser_config, convert_to_faketensors, read_state_dict, get_state_dict_from_checkpoint # pylint: disable=unused-import
+from modules.sd_models_utils import NoWatermark, get_signature, get_call, path_to_repo, patch_diffuser_config, convert_to_faketensors, read_state_dict, get_state_dict_from_checkpoint, apply_function_to_model # pylint: disable=unused-import
 
 
 model_dir = "Stable-diffusion"
@@ -130,9 +130,9 @@ def set_diffuser_options(sd_model, vae=None, op:str='model', offload:bool=True, 
                 model.requires_grad_(False)
                 model.eval()
             return model
-        sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
+        sd_model = apply_function_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
     if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode == 'post':
-        sd_model = sd_models_compile.torchao_quantization(sd_model)
+        sd_model = model_quant.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.quiet(quiet, f'Setting {op}: channels-last=True')
@@ -567,12 +567,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         set_diffuser_options(sd_model, vae, op, offload=False)
         if shared.opts.nncf_compress_weights and not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-            sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
+            sd_model = model_quant.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
         if shared.opts.optimum_quanto_weights:
-            sd_model = sd_models_compile.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
+            sd_model = model_quant.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
+        if shared.opts.layerwise_quantization:
+            model_quant.apply_layerwise(sd_model)
         timer.record("options")
 
         set_diffuser_offload(sd_model, op)
+
         if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
             if getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None and vae_file is not None:
                 sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)

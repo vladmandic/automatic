@@ -7,7 +7,7 @@ insightface_app = None
 instightface_mp = None
 
 
-def get_app(mp_name):
+def get_app(mp_name, threshold=0.5, resolution=640):
     global insightface_app, instightface_mp # pylint: disable=global-statement
 
     from installer import install, installed
@@ -19,7 +19,10 @@ def get_app(mp_name):
         install('git+https://github.com/tencent-ailab/IP-Adapter.git', 'ip_adapter', ignore=False)
 
     if insightface_app is None or mp_name != instightface_mp:
-        from insightface.app import FaceAnalysis
+        from insightface.model_zoo import model_zoo
+        from insightface.app import face_analysis
+        model_zoo.print = lambda *args, **kwargs: None
+        face_analysis.print = lambda *args, **kwargs: None
         import huggingface_hub as hf
         import zipfile
         log.debug(f"InsightFace: mp={mp_name} provider={devices.onnx}")
@@ -45,7 +48,7 @@ def get_app(mp_name):
             'download': False,
             'download_zip': False,
         }
-        insightface_app = FaceAnalysis(name=mp_name, providers=devices.onnx, **kwargs)
+        insightface_app = face_analysis.FaceAnalysis(name=mp_name, providers=devices.onnx, **kwargs)
         instightface_mp = mp_name
-        insightface_app.prepare(ctx_id=0, det_thresh=0.5, det_size=(640, 640))
+        insightface_app.prepare(ctx_id=0, det_thresh=threshold, det_size=(resolution, resolution))
     return insightface_app

@@ -560,25 +560,35 @@ options_templates.update(options_section(('backends', "Backend Settings"), {
 }))
 
 options_templates.update(options_section(('quantization', "Quantization Settings"), {
-    "bnb_sep": OptionInfo("<h2>BitsAndBytes</h2>", "", gr.HTML),
+    "bnb_quantization_sep": OptionInfo("<h2>BitsAndBytes</h2>", "", gr.HTML),
     "bnb_quantization": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
     "bnb_quantization_type": OptionInfo("nf4", "Quantization type", gr.Dropdown, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
     "bnb_quantization_storage": OptionInfo("uint8", "Backend storage", gr.Dropdown, {"choices": ["float16", "float32", "int8", "uint8", "float64", "bfloat16"], "visible": native}),
+
     "optimum_quanto_sep": OptionInfo("<h2>Optimum Quanto</h2>", "", gr.HTML),
     "optimum_quanto_weights": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights_type": OptionInfo("qint8", "Quantization weights type", gr.Dropdown, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
     "optimum_quanto_activations_type": OptionInfo("none", "Quantization activations type ", gr.Dropdown, {"choices": ['none', 'qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2'], "visible": native}),
+    "optimum_quanto_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+
     "torchao_sep": OptionInfo("<h2>TorchAO</h2>", "", gr.HTML),
     "torchao_quantization": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
     "torchao_quantization_mode": OptionInfo("pre", "Quantization mode", gr.Dropdown, {"choices": ['pre', 'post'], "visible": native}),
     "torchao_quantization_type": OptionInfo("int8_weight_only", "Quantization type", gr.Dropdown, {"choices": ['int4_weight_only', 'int8_dynamic_activation_int4_weight', 'int8_weight_only', 'int8_dynamic_activation_int8_weight', 'float8_weight_only', 'float8_dynamic_activation_float8_weight', 'float8_static_activation_float8_weight'], "visible": native}),
-    "nncf_sep": OptionInfo("<h2>NNCF</h2>", "", gr.HTML),
+
+    "nncf_compress_sep": OptionInfo("<h2>NNCF</h2>", "", gr.HTML),
     "nncf_compress_weights": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "nncf_compress_weights_mode": OptionInfo("INT8", "Quantization type", gr.Dropdown, {"choices": ['INT8', 'INT8_SYM', 'INT4_ASYM', 'INT4_SYM', 'NF4'] if cmd_opts.use_openvino else ['INT8']}),
-    "nncf_compress_weights_raito": OptionInfo(1.0, "Compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
+    "nncf_compress_weights_raito": OptionInfo(0, "Compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
+    "nncf_compress_weights_group_size": OptionInfo(0, "Group size", gr.Slider, {"minimum": -1, "maximum": 512, "step": 1, "visible": cmd_opts.use_openvino}),
     "nncf_quantize": OptionInfo([], "OpenVINO enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": cmd_opts.use_openvino}),
-    "nncf_quant_mode": OptionInfo("INT8", "OpenVINO mode", gr.Dropdown, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
-    "quant_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+    "nncf_quantize_mode": OptionInfo("INT8", "OpenVINO mode", gr.Dropdown, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
+    "nncf_quantize_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+
+    "layerwise_quantization_sep": OptionInfo("<h2>Layerwise Casting</h2>", "", gr.HTML),
+    "layerwise_quantization": OptionInfo([], "Layerwise casting enabled", gr.CheckboxGroup, {"choices": ["Model", "Transformer", "Text Encoder"], "visible": native}),
+    "layerwise_quantization_storage": OptionInfo("float8_e4m3fn", "Layerwise casting storage", gr.Dropdown, {"choices": ["float8_e4m3fn", "float8_e5m2"], "visible": native}),
+    "layerwise_quantization_nonblocking": OptionInfo(False, "Layerwise non-blocking operations", gr.Checkbox, {"visible": native}),
 }))
 
 options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
@@ -596,6 +606,10 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
 
     "pag_sep": OptionInfo("<h2>Perturbed-Attention Guidance</h2>", "", gr.HTML),
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
+
+    "para_sep": OptionInfo("<h2>Para-Attention</h2>", "", gr.HTML),
+    "para_cache_enabled": OptionInfo(False, "First-block cache enabled"),
+    "para_diff_threshold": OptionInfo(0.1, "Residual diff threshold", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
     "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
@@ -897,8 +911,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_fetch": OptionInfo(True, "UI fetch network info on mouse-over"),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
 
-    "extra_networks_model_sep": OptionInfo("<h2>Models</h2>", "", gr.HTML),
-    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
+    "extra_networks_model_sep": OptionInfo("<h2>Rerefence models</h2>", "", gr.HTML),
+    "extra_network_reference_enable": OptionInfo(True, "Enable use of reference models", gr.Checkbox),
+    "extra_network_reference_values": OptionInfo(False, "Use reference values when available", gr.Checkbox),
 
     "extra_networks_lora_sep": OptionInfo("<h2>LoRA</h2>", "", gr.HTML),
     "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
@@ -1176,7 +1191,7 @@ if not native:
     opts.data['diffusers_offload_mode'] = 'none'
 
 prompt_styles = modules.styles.StyleDatabase(opts)
-reference_models = readfile(os.path.join('html', 'reference.json'))
+reference_models = readfile(os.path.join('html', 'reference.json')) if opts.extra_network_reference_enable else {}
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
 devices.args = cmd_opts
 devices.opts = opts
