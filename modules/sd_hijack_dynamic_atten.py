@@ -115,12 +115,12 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
                     attn_mask=attn_mask[start_idx:end_idx, :, :, :] if attn_mask is not None else attn_mask,
                     dropout_p=dropout_p, is_causal=is_causal, **kwargs
                 )
-        if is_unsqueezed:
-            hidden_states.squeeze(0)
         if devices.backend != "directml":
             getattr(torch, query.device.type).synchronize()
     else:
         return devices.sdpa_pre_dyanmic_atten(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
+    if is_unsqueezed:
+        hidden_states.squeeze(0)
     return hidden_states
 
 
