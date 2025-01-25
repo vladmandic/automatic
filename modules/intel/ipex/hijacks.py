@@ -86,24 +86,13 @@ def as_tensor(data, dtype=None, device=None):
 
 
 if can_allocate_plus_4gb:
-    original_torch_bmm = torch.bmm
     original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_attention
 else:
     # 32 bit attention workarounds for Alchemist:
     try:
-        from .attention import torch_bmm_32_bit as original_torch_bmm
-        from .attention import scaled_dot_product_attention_32_bit as original_scaled_dot_product_attention
+        from .attention import dynamic_scaled_dot_product_attention as original_scaled_dot_product_attention
     except Exception: # pylint: disable=broad-exception-caught
-        original_torch_bmm = torch.bmm
         original_scaled_dot_product_attention = torch.nn.functional.scaled_dot_product_attention
-
-
-# Data Type Errors:
-@wraps(torch.bmm)
-def torch_bmm(input, mat2, *, out=None):
-    if input.dtype != mat2.dtype:
-        mat2 = mat2.to(input.dtype)
-    return original_torch_bmm(input, mat2, out=out)
 
 @wraps(torch.nn.functional.scaled_dot_product_attention)
 def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
@@ -114,6 +103,14 @@ def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.
     if attn_mask is not None and query.dtype != attn_mask.dtype:
         attn_mask = attn_mask.to(dtype=query.dtype)
     return original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
+
+# Data Type Errors:
+original_torch_bmm = torch.bmm
+@wraps(torch.bmm)
+def torch_bmm(input, mat2, *, out=None):
+    if input.dtype != mat2.dtype:
+        mat2 = mat2.to(input.dtype)
+    return original_torch_bmm(input, mat2, out=out)
 
 # Diffusers FreeU
 original_fft_fftn = torch.fft.fftn

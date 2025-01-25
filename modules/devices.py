@@ -421,8 +421,8 @@ def set_sdpa_params():
                 try:
                     global sdpa_pre_dyanmic_atten # pylint: disable=global-statement
                     sdpa_pre_dyanmic_atten = torch.nn.functional.scaled_dot_product_attention
-                    from modules.sd_hijack_dynamic_atten import sliced_scaled_dot_product_attention
-                    torch.nn.functional.scaled_dot_product_attention = sliced_scaled_dot_product_attention
+                    from modules.sd_hijack_dynamic_atten import dynamic_scaled_dot_product_attention
+                    torch.nn.functional.scaled_dot_product_attention = dynamic_scaled_dot_product_attention
                     log.debug('SDPA Dynamic Attention Hijacked')
                 except Exception as err:
                     log.error(f'SDPA Dynamic Attention failed: {err}')
