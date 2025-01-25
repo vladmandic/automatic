@@ -455,6 +455,7 @@ def get_platform():
         return { 'error': e }
 
 
+# TODO Requires pydantic 2.x before fully supporting python 3.12
 # check python version
 def check_python(supported_minors=[9, 10, 11, 12], reason=None):
     t_start = time.time()
@@ -537,7 +538,7 @@ def install_rocm_zluda():
         log.info('Using CPU-only torch')
         return os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
-    # TODO Requires pydantic 2.x before supporting python 3.12
+    # TODO Requires pydantic 2.x before fully supporting python 3.12
     check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
     log.info('ROCm: AMD toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
@@ -662,8 +663,8 @@ def install_ipex(torch_command):
     t_start = time.time()
     # https://pytorch-extension.intel.com/installation?platform=gpu&version=v2.5.10%2Bxpu&os=linux%2Fwsl2&package=pip
     # while IPEX supports 3.12, other components (such as pydantic 1.x) do not. Capping at 3.11 still.
-    # TODO Requires pydantic 2.x before supporting python 3.12
-    check_python(supported_minors=[9, 10, 11], reason='IPEX full component compatibility requires Python 3.9 - 3.11')
+    # TODO Requires pydantic 2.x before fully supporting python 3.12
+    check_python(supported_minors=[9, 10, 11, 12], reason='IPEX backend requires Python 3.9, 3.10 or 3.11')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('IPEX: Intel OneAPI toolkit detected')
 
@@ -700,8 +701,8 @@ def install_ipex(torch_command):
 
 def install_openvino(torch_command):
     t_start = time.time()
-    # TODO Requires pydantic 2.x before supporting python 3.12
-    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
+    # TODO Requires pydantic 2.x before fully supporting python 3.12
+    check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1')
