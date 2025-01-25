@@ -120,7 +120,7 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
                     value[start_idx:end_idx, :, :, :],
                     attn_mask=attn_mask[start_idx:end_idx, :, :, :] if attn_mask is not None else attn_mask,
                     dropout_p=dropout_p, is_causal=is_causal, **kwargs
-                )    
+                )
         torch.xpu.synchronize(query.device)
     else:
         hidden_states = original_scaled_dot_product_attention(query, key, value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, **kwargs)
