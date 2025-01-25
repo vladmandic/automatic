@@ -1050,27 +1050,27 @@ def unload_model_weights(op='model'):
         shared.compiled_model_state.compiled_cache.clear()
         shared.compiled_model_state.req_cache.clear()
         shared.compiled_model_state.partitioned_modules.clear()
-    if op == 'model' or op == 'dict':
-        if model_data.sd_model:
-            if not shared.native:
-                from modules import sd_hijack
-                move_model(model_data.sd_model, devices.cpu)
-                sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
-            elif not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-                disable_offload(model_data.sd_model)
-                move_model(model_data.sd_model, 'meta')
-            model_data.sd_model = None
-            devices.torch_gc(force=True)
-            shared.log.debug(f'Unload weights {op}: {memory_stats()}')
-    elif op == 'refiner':
-        if model_data.sd_refiner:
-            if not shared.native:
-                from modules import sd_hijack
-                move_model(model_data.sd_refiner, devices.cpu)
-                sd_hijack.model_hijack.undo_hijack(model_data.sd_refiner)
-            else:
-                disable_offload(model_data.sd_refiner)
-                move_model(model_data.sd_refiner, 'meta')
-            model_data.sd_refiner = None
-            devices.torch_gc(force=True)
-            shared.log.debug(f'Unload weights {op}: {memory_stats()}')
+    if (op == 'model' or op == 'dict') and model_data.sd_model:
+        shared.log.debug(f'Current {op}: {memory_stats()}')
+        if not shared.native:
+            from modules import sd_hijack
+            move_model(model_data.sd_model, devices.cpu)
+            sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
+        elif not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            disable_offload(model_data.sd_model)
+            move_model(model_data.sd_model, 'meta')
+        model_data.sd_model = None
+        devices.torch_gc(force=True)
+        shared.log.debug(f'Unload {op}: {memory_stats()} after')
+    elif (op == 'refiner') and model_data.sd_refiner:
+        shared.log.debug(f'Current {op}: {memory_stats()}')
+        if not shared.native:
+            from modules import sd_hijack
+            move_model(model_data.sd_refiner, devices.cpu)
+            sd_hijack.model_hijack.undo_hijack(model_data.sd_refiner)
+        else:
+            disable_offload(model_data.sd_refiner)
+            move_model(model_data.sd_refiner, 'meta')
+        model_data.sd_refiner = None
+        devices.torch_gc(force=True)
+        shared.log.debug(f'Unload {op}: {memory_stats()}')

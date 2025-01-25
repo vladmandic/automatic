@@ -1,3 +1,5 @@
+import re
+import sys
 import os
 import psutil
 import torch
@@ -56,3 +58,48 @@ def ram_stats():
         return ram
     except Exception:
         return { 'used': 0, 'total': 0 }
+
+
+class Object:
+    pattern = r"'(.*?)'"
+
+    def __init__(self, name, obj):
+        self.id = id(obj)
+        self.name = name
+        self.fn = sys._getframe(2).f_code.co_name
+        self.size = sys.getsizeof(obj)
+        self.refcount = sys.getrefcount(obj)
+        if torch.is_tensor(obj):
+            self.type = obj.dtype
+            self.size = obj.element_size() * obj.nelement()
+        else:
+            self.type = re.findall(self.pattern, str(type(obj)))[0]
+            self.size = sys.getsizeof(obj)
+    def __str__(self):
+        return f'{self.fn}.{self.name} type={self.type} size={self.size} ref={self.refcount}'
+
+
+def get_objects(gcl={}, threshold:int=0):
+    objects = []
+    seen = []
+
+    for name, obj in gcl.items():
+        if id(obj) in seen:
+            continue
+        seen.append(id(obj))
+        if name == '__name__':
+            name = obj
+        elif name.startswith('__'):
+            continue
+        try:
+            o = Object(name, obj)
+            if o.size >= threshold:
+                objects.append(o)
+        except Exception:
+            pass
+
+    objects = sorted(objects, key=lambda x: x.size, reverse=True)
+    for obj in objects:
+        shared.log.trace(obj)
+
+    return objects
