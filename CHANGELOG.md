@@ -71,6 +71,7 @@
   - avoid repeated optimum-quanto installation  
   - avoid reinstalling bnb if not cuda  
   - image metadata civitai compatibility  
+  - xyz grid handle invalid values  
 
 ## Update for 2025-01-15
 
