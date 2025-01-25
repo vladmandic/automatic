@@ -33,8 +33,10 @@
     higher values leads to more cache hits and speedups, but might also lead to a higher accuracy drop  
 - **IPEX**
   - enable force attention slicing, fp64 emulation, jit cache  
+  - use the us server by default on linux  
   - use pytorch test branch on windows  
   - extend the supported python versions  
+  - removed diffusers attention hijack as it is a duplicate of dynamic attention bmm  
 - **Torch FP8**
   - uses torch `float8_e4m3fn` or `float8_e5m2` as data storage and performs dynamic upcasting to compute `dtype` as needed  
   - compatible with most `unet` and `transformer` models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
@@ -54,6 +56,7 @@
   - **loader**: ability to run in-memory models  
   - **schedulers**: ability to create model-less schedulers  
   - **quantiation**: code refactor into dedicated module  
+  - **dynamic attention sdpa**: more correct implementation  
 - **Authentication**:
   - perform auth check on ui startup  
   - unified standard and modern-ui authentication method  
@@ -72,6 +75,8 @@
   - avoid reinstalling bnb if not cuda  
   - image metadata civitai compatibility  
   - xyz grid handle invalid values  
+  - omnigen pipeline handle float seeds  
+  - correct logging of docker status on logs, thanks @kmscode  
 
 ## Update for 2025-01-15
 

@@ -160,7 +160,7 @@ class OmniGenPipeline():
         latent_size_h, latent_size_w = height//8, width//8
 
         if seed is not None:
-            generator = torch.Generator(device=self.device).manual_seed(seed)
+            generator = torch.Generator(device=self.device).manual_seed(int(seed))
         else:
             generator = None
         latents = torch.randn(num_prompt, 4, latent_size_h, latent_size_w, device=self.device, generator=generator)
