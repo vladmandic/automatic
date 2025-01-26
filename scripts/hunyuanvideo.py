@@ -124,7 +124,7 @@ class Script(scripts.Script):
                 **quant_args
             )
             t1 = time.time()
-            shared.log.debug(f'Video: load cls={shared.sd_model.__class__.__name__} model="{model}" repo={models.get(model)['repo']} dtype={devices.dtype} time={t1-t0:.2f}')
+            shared.log.debug(f'Video: load cls={shared.sd_model.__class__.__name__} model="{model}" repo={models.get(model)["repo"]} dtype={devices.dtype} time={t1-t0:.2f}')
             sd_models.set_diffuser_options(shared.sd_model)
             shared.sd_model.sd_checkpoint_info = sd_checkpoint.CheckpointInfo(models.get(model)['repo'])
             shared.sd_model.sd_model_hash = None
