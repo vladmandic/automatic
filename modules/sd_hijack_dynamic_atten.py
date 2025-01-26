@@ -28,7 +28,7 @@ def find_query_size(query_size, slice_query_size, slice_rate=4):
 
 # Find slice sizes for SDPA
 @cache
-def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_size, slice_rate=4):
+def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_size, slice_rate=4, trigger_rate=6):
     batch_size, attn_heads, query_len, _ = query_shape
     _, _, key_len, _ = key_shape
     _, _, _, head_dim = value_shape
@@ -43,7 +43,7 @@ def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_siz
     do_head_split = False
     do_query_split = False
 
-    if batch_size * slice_batch_size > slice_rate:
+    if batch_size * slice_batch_size > trigger_rate:
         do_batch_split = True
         split_batch_size = find_split_size(split_batch_size, slice_batch_size, slice_rate=slice_rate)
 
@@ -72,7 +72,7 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
         key = key.unsqueeze(0)
     if len(value.shape) == 3:
         value = value.unsqueeze(0)
-    do_batch_split, do_head_split, do_query_split, split_batch_size, split_head_size, split_query_size = find_sdpa_slice_sizes(query.shape, key.shape, value.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate)
+    do_batch_split, do_head_split, do_query_split, split_batch_size, split_head_size, split_query_size = find_sdpa_slice_sizes(query.shape, key.shape, value.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate, trigger_rate=shared.opts.dynamic_attention_trigger_rate)
 
     # Slice SDPA
     if do_batch_split:
@@ -125,7 +125,7 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
 
 
 @cache
-def find_bmm_slice_sizes(query_shape, query_element_size, slice_rate=4):
+def find_bmm_slice_sizes(query_shape, query_element_size, slice_rate=4, trigger_rate=6):
     if len(query_shape) == 3:
         batch_size_attention, query_tokens, shape_three = query_shape
         shape_four = 1
@@ -143,7 +143,7 @@ def find_bmm_slice_sizes(query_shape, query_element_size, slice_rate=4):
     do_split_2 = False
     do_split_3 = False
 
-    if block_size > slice_rate:
+    if block_size > trigger_rate:
         do_split = True
         split_slice_size = find_split_size(split_slice_size, slice_block_size, slice_rate=slice_rate)
         if split_slice_size * slice_block_size > slice_rate:
@@ -206,7 +206,7 @@ class DynamicAttnProcessorBMM:
         # Slicing parts:
         batch_size_attention, query_tokens, shape_three = query.shape[0], query.shape[1], query.shape[2]
         hidden_states = torch.zeros(query.shape, device=query.device, dtype=query.dtype)
-        do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_bmm_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate)
+        do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_bmm_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate, trigger_rate=shared.opts.dynamic_attention_trigger_rate)
 
         if do_split:
             for i in range(batch_size_attention // split_slice_size):

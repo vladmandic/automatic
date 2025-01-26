@@ -56,7 +56,7 @@
   - **loader**: ability to run in-memory models  
   - **schedulers**: ability to create model-less schedulers  
   - **quantiation**: code refactor into dedicated module  
-  - **dynamic attention sdpa**: more correct implementation  
+  - **dynamic attention sdpa**: more correct implementation and new trigger rate control  
 - **Authentication**:
   - perform auth check on ui startup  
   - unified standard and modern-ui authentication method  
