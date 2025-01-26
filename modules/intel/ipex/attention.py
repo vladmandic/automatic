@@ -7,38 +7,29 @@ from functools import cache, wraps
 
 # ARC GPUs can't allocate more than 4GB to a single block so we slice the attetion layers
 
-sdpa_slice_trigger_rate = float(os.environ.get('IPEX_SDPA_SLICE_TRIGGER_RATE', 4))
-attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
+sdpa_slice_trigger_rate = float(os.environ.get('IPEX_SDPA_SLICE_TRIGGER_RATE', 3))
+attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 2))
 
 # Find something divisible with the input_tokens
 @cache
-def find_split_size(split_size, slice_block_size):
-    while (split_size * slice_block_size) > attention_slice_rate:
-        split_size = split_size // 2
+def find_split_size(original_size, slice_block_size, slice_rate=2):
+    split_size = original_size
+    while True:
+        if (split_size * slice_block_size) <= slice_rate and original_size % split_size == 0:
+            return split_size
+        split_size = split_size - 1
         if split_size <= 1:
-            split_size = 1
-            break
+            return 1
     return split_size
-
-
-@cache
-def find_query_size(query_size, slice_query_size):
-    while (math.sqrt(query_size) * slice_query_size) > attention_slice_rate:
-        query_size = query_size // 2
-        if query_size <= 1:
-            query_size = 1
-            break
-    return query_size
 
 
 # Find slice sizes for SDPA
 @cache
-def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_size):
+def find_sdpa_slice_sizes(query_shape, key_shape, query_element_size, slice_rate=2, trigger_rate=3):
     batch_size, attn_heads, query_len, _ = query_shape
     _, _, key_len, _ = key_shape
-    _, _, _, head_dim = value_shape
 
-    slice_batch_size = attn_heads * math.sqrt(query_len * key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
+    slice_batch_size = attn_heads * (query_len * key_len) * query_element_size / 1024 / 1024 / 1024
 
     split_batch_size = batch_size
     split_head_size = attn_heads
@@ -48,19 +39,19 @@ def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_siz
     do_head_split = False
     do_query_split = False
 
-    if batch_size * slice_batch_size > sdpa_slice_trigger_rate:
+    if batch_size * slice_batch_size >= trigger_rate:
         do_batch_split = True
-        split_batch_size = find_split_size(split_batch_size, slice_batch_size)
+        split_batch_size = find_split_size(batch_size, slice_batch_size, slice_rate=slice_rate)
 
-        if split_batch_size * slice_batch_size > attention_slice_rate:
-            slice_head_size = split_batch_size * math.sqrt(query_len * key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
+        if split_batch_size * slice_batch_size > slice_rate:
+            slice_head_size = split_batch_size * (query_len * key_len) * query_element_size / 1024 / 1024 / 1024
             do_head_split = True
-            split_head_size = find_split_size(split_head_size, slice_head_size)
+            split_head_size = find_split_size(attn_heads, slice_head_size, slice_rate=slice_rate)
 
-            if split_batch_size * slice_batch_size > attention_slice_rate:
-                slice_query_size = split_batch_size * attn_heads * math.sqrt(key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
+            if split_head_size * slice_head_size > slice_rate:
+                slice_query_size = split_batch_size * split_head_size * (key_len) * query_element_size / 1024 / 1024 / 1024
                 do_query_split = True
-                split_query_size = find_query_size(split_query_size, slice_query_size)
+                split_query_size = find_split_size(query_len, slice_query_size, slice_rate=slice_rate)
 
     return do_batch_split, do_head_split, do_query_split, split_batch_size, split_head_size, split_query_size
 
@@ -78,7 +69,7 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
         key = key.unsqueeze(0)
     if len(value.shape) == 3:
         value = value.unsqueeze(0)
-    do_batch_split, do_head_split, do_query_split, split_batch_size, split_head_size, split_query_size = find_sdpa_slice_sizes(query.shape, key.shape, value.shape, query.element_size())
+    do_batch_split, do_head_split, do_query_split, split_batch_size, split_head_size, split_query_size = find_sdpa_slice_sizes(query.shape, key.shape, query.element_size(), slice_rate=attention_slice_rate, trigger_rate=sdpa_slice_trigger_rate)
 
     # Slice SDPA
     if do_batch_split:
