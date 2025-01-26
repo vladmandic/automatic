@@ -291,7 +291,7 @@ class ControlNet():
                         log.debug(f'Control {what} model NNCF Compress: id="{model_id}"')
                         from installer import install
                         install('nncf==2.7.0', quiet=True)
-                        from modules.sd_models_compile import nncf_compress_model
+                        from modules.model_quant import nncf_compress_model
                         self.model = nncf_compress_model(self.model)
                     except Exception as e:
                         log.error(f'Control {what} model NNCF Compression failed: id="{model_id}" {e}')
@@ -299,7 +299,7 @@ class ControlNet():
                     try:
                         log.debug(f'Control {what} model Optimum Quanto: id="{model_id}"')
                         model_quant.load_quanto('Load model: type=ControlNet')
-                        from modules.sd_models_compile import optimum_quanto_model
+                        from modules.model_quant import optimum_quanto_model
                         self.model = optimum_quanto_model(self.model)
                     except Exception as e:
                         log.error(f'Control {what} model Optimum Quanto: id="{model_id}" {e}')
@@ -335,9 +335,15 @@ class ControlNetPipeline():
             return
         elif detect.is_sdxl(pipeline) and len(controlnets) > 0:
             from diffusers import StableDiffusionXLControlNetPipeline, StableDiffusionXLControlNetUnionPipeline
-            if controlnet.__class__.__name__ == 'ControlNetUnionModel':
+            classes = [c.__class__.__name__ for c in controlnets]
+            if any(c == 'ControlNetUnionModel' for c in classes):
+                if not all(c == 'ControlNetUnionModel' for c in classes):
+                    log.warning(f'Control {what}: units={classes} mixed type')
                 cls = StableDiffusionXLControlNetUnionPipeline
-                controlnets = controlnets[0] # using only first one
+                if len(controlnets) > 1:
+                    # TODO controlnet-union multi-unit
+                    log.warning(f'Control {what}: units={classes} supports single unit only')
+                controlnets = controlnets[0]
             else:
                 cls = StableDiffusionXLControlNetPipeline
             self.pipeline = cls(

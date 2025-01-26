@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-24
+## Update for 2025-01-26
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
@@ -36,7 +36,7 @@
   - use the us server by default on linux  
   - use pytorch test branch on windows  
   - extend the supported python versions  
-  - removed diffusers attention hijack as it is a duplicate of dynamic attention bmm  
+  - improve sdpa dynamic attention  
 - **Torch FP8**
   - uses torch `float8_e4m3fn` or `float8_e5m2` as data storage and performs dynamic upcasting to compute `dtype` as needed  
   - compatible with most `unet` and `transformer` models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
@@ -77,6 +77,10 @@
   - xyz grid handle invalid values  
   - omnigen pipeline handle float seeds  
   - correct logging of docker status on logs, thanks @kmscode  
+  - fix omnigen  
+  - fix docker status reporting  
+  - vlm/vqa with moondream2  
+  - rocm do not override triton installation  
 
 ## Update for 2025-01-15
 
