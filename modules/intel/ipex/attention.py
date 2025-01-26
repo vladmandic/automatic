@@ -7,7 +7,7 @@ from functools import cache, wraps
 
 # ARC GPUs can't allocate more than 4GB to a single block so we slice the attetion layers
 
-sdpa_slice_trigger_rate = float(os.environ.get('IPEX_SDPA_SLICE_TRIGGER_RATE', 6))
+sdpa_slice_trigger_rate = float(os.environ.get('IPEX_SDPA_SLICE_TRIGGER_RATE', 4))
 attention_slice_rate = float(os.environ.get('IPEX_ATTENTION_SLICE_RATE', 4))
 
 # Find something divisible with the input_tokens
@@ -38,7 +38,7 @@ def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_siz
     _, _, key_len, _ = key_shape
     _, _, _, head_dim = value_shape
 
-    slice_batch_size = attn_heads * math.sqrt(query_len * key_len) * head_dim * query_element_size / 1024 / 1024 / 2
+    slice_batch_size = attn_heads * math.sqrt(query_len * key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
 
     split_batch_size = batch_size
     split_head_size = attn_heads
@@ -53,12 +53,12 @@ def find_sdpa_slice_sizes(query_shape, key_shape, value_shape, query_element_siz
         split_batch_size = find_split_size(split_batch_size, slice_batch_size)
 
         if split_batch_size * slice_batch_size > attention_slice_rate:
-            slice_head_size = split_batch_size * math.sqrt(query_len * key_len) * head_dim * query_element_size / 1024 / 1024 / 2
+            slice_head_size = split_batch_size * math.sqrt(query_len * key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
             do_head_split = True
             split_head_size = find_split_size(split_head_size, slice_head_size)
 
             if split_batch_size * slice_batch_size > attention_slice_rate:
-                slice_query_size = split_batch_size * attn_heads * math.sqrt(key_len) * head_dim * query_element_size / 1024 / 1024 / 2
+                slice_query_size = split_batch_size * attn_heads * math.sqrt(key_len) * math.sqrt(head_dim) * 2 * query_element_size / 1024 / 1024
                 do_query_split = True
                 split_query_size = find_query_size(split_query_size, slice_query_size)
 
