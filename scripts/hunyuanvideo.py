@@ -15,6 +15,11 @@ default_template = """Describe the video by detailing the following aspects:
 6. Thematic and aesthetic concepts associated with the scene, i.e. realistic, futuristic, fairy tale, etc.
 """
 
+models = {
+    'HunyuanVideo': { 'repo': 'tencent/HunyuanVideo', 'revision': 'refs/pr/18' },
+    'FastHunyuan': { 'repo': 'FastVideo/FastHunyuan', 'revision': None },
+}
+
 def get_template(template: str = None):
     # diffusers.pipelines.hunyuan_video.pipeline_hunyuan_video.DEFAULT_PROMPT_TEMPLATE
     base_template_pre = "<|start_header_id|>system<|end_header_id|>\n\n"
@@ -63,7 +68,7 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML('<a href="https://huggingface.co/tencent/HunyuanVideo">&nbsp Hunyuan Video</a><br>')
         with gr.Row():
-            repo_id = gr.Dropdown(label='Model', choices=['tencent/HunyuanVideo', 'FastVideo/FastHunyuan'], value='tencent/HunyuanVideo')
+            model = gr.Dropdown(label='Model', choices=list(models.keys()), value=list(models.keys())[0])
         with gr.Row():
             num_frames = gr.Slider(label='Frames', minimum=9, maximum=257, step=1, value=45)
             tile_frames = gr.Slider(label='Tile frames', minimum=1, maximum=64, step=1, value=16)
@@ -77,9 +82,9 @@ class Script(scripts.Script):
         with gr.Row():
             from modules.ui_sections import create_video_inputs
             video_type, duration, gif_loop, mp4_pad, mp4_interpolate = create_video_inputs(tab='img2img' if is_img2img else 'txt2img')
-        return [repo_id, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
+        return [model, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
-    def load(self, repo_id:str):
+    def load(self, model:str):
         if shared.sd_model.__class__ != diffusers.HunyuanVideoPipeline:
             sd_models.unload_model_weights()
             t0 = time.time()
@@ -92,36 +97,36 @@ class Script(scripts.Script):
                 if quant_args:
                     model_quant.load_torchao(f'Load model: type=HunyuanVideo quant={quant_args}')
             transformer = diffusers.HunyuanVideoTransformer3DModel.from_pretrained(
-                repo_id,
+                pretrained_model_name_or_path='tencent/HunyuanVideo',
                 subfolder="transformer",
                 torch_dtype=devices.dtype,
-                revision="refs/pr/18",
-                cache_dir = shared.opts.hfcache_dir,
+                revision='refs/pr/18',
+                cache_dir=shared.opts.hfcache_dir,
                 **quant_args
             )
             shared.log.debug(f'Video: module={transformer.__class__.__name__}')
             text_encoder = transformers.LlamaModel.from_pretrained(
-                repo_id,
+                pretrained_model_name_or_path=models.get(model)['repo'],
                 subfolder="text_encoder",
-                revision="refs/pr/18",
+                revision=models.get(model)['revision'],
                 cache_dir = shared.opts.hfcache_dir,
                 torch_dtype=devices.dtype,
                 **quant_args
             )
             shared.log.debug(f'Video: module={text_encoder.__class__.__name__}')
             shared.sd_model = diffusers.HunyuanVideoPipeline.from_pretrained(
-                repo_id,
+                pretrained_model_name_or_path=models.get(model)['repo'],
                 transformer=transformer,
                 text_encoder=text_encoder,
-                revision="refs/pr/18",
+                revision=models.get(model)['revision'],
                 cache_dir = shared.opts.hfcache_dir,
                 torch_dtype=devices.dtype,
                 **quant_args
             )
             t1 = time.time()
-            shared.log.debug(f'Video: load cls={shared.sd_model.__class__.__name__} repo="{repo_id}" dtype={devices.dtype} time={t1-t0:.2f}')
+            shared.log.debug(f'Video: load cls={shared.sd_model.__class__.__name__} model="{model}" repo={models.get(model)['repo']} dtype={devices.dtype} time={t1-t0:.2f}')
             sd_models.set_diffuser_options(shared.sd_model)
-            shared.sd_model.sd_checkpoint_info = sd_checkpoint.CheckpointInfo(repo_id)
+            shared.sd_model.sd_checkpoint_info = sd_checkpoint.CheckpointInfo(models.get(model)['repo'])
             shared.sd_model.sd_model_hash = None
             shared.sd_model.vae.orig_decode = shared.sd_model.vae.decode
             shared.sd_model.vae.orig_encode_prompt = shared.sd_model.encode_prompt
@@ -130,7 +135,7 @@ class Script(scripts.Script):
             shared.sd_model.vae.enable_slicing()
             shared.sd_model.vae.enable_tiling()
 
-    def run(self, p: processing.StableDiffusionProcessing, repo_id, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, model, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
         # set params
         num_frames = int(num_frames)
         p.width = 16 * int(p.width // 16)
@@ -139,7 +144,7 @@ class Script(scripts.Script):
         p.ops.append('video')
 
         # load model
-        self.load(repo_id)
+        self.load(model)
 
         shared.sd_model = sd_models.apply_balanced_offload(shared.sd_model)
         devices.torch_gc(force=True)
