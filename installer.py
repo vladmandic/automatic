@@ -625,6 +625,9 @@ def install_rocm_zluda():
         else:
             torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
+        if os.environ.get('TRITON_COMMAND', None) is None:
+            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-rocm as a dependency instead
+
         if sys.version_info < (3, 11):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             if rocm.version is None or float(rocm.version) > 6.0:
@@ -745,7 +748,7 @@ def install_torch_addons():
         install('optimum-quanto==0.2.6', 'optimum-quanto')
     if not args.experimental:
         uninstall('wandb', quiet=True)
-    if triton_command is not None:
+    if triton_command is not None and triton_command != 'skip':
         install(triton_command, 'triton', quiet=True)
     ts('addons', t_start)
 
