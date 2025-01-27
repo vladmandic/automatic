@@ -400,6 +400,8 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
             diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
             diffusers_load_config['use_safetensors'] = True
             diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
+            if shared.opts.stream_load:
+                diffusers_load_config['disable_mmap '] = True
             if shared.opts.disable_accelerate:
                 from diffusers.utils import import_utils
                 import_utils._accelerate_available = False # pylint: disable=protected-access

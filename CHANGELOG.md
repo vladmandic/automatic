@@ -81,6 +81,7 @@
   - fix docker status reporting  
   - vlm/vqa with moondream2  
   - rocm do not override triton installation  
+  - port streaming model load to diffusers  
 
 ## Update for 2025-01-15
 
