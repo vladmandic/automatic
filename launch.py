@@ -151,13 +151,9 @@ def run_extension_installer(ext_dir): # compatbility function
 
 
 def get_memory_stats():
-    import psutil
-    def gb(val: float):
-        return round(val / 1024 / 1024 / 1024, 2)
-    process = psutil.Process(os.getpid())
-    res = process.memory_info()
-    ram_total = 100 * res.rss / process.memory_percent()
-    return f'{gb(res.rss)}/{gb(ram_total)}'
+    from modules.memstats import ram_stats
+    res = ram_stats()
+    return f'{res["used"]}/{res["total"]}'
 
 
 def start_server(immediate=True, server=None):

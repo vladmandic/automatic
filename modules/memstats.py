@@ -7,10 +7,32 @@ from modules import shared, errors
 
 fail_once = False
 mem = {}
+docker_limit = None
+runpod_limit = None
 
 
 def gb(val: float):
     return round(val / 1024 / 1024 / 1024, 2)
+
+
+def get_docker_limit():
+    global docker_limit # pylint: disable=global-statement
+    if docker_limit is not None:
+        return docker_limit
+    try:
+        with open('/sys/fs/cgroup/memory/memory.limit_in_bytes', 'r', encoding='utf8') as f:
+            docker_limit = float(f.read())
+    except Exception:
+        docker_limit = sys.float_info.max
+    return docker_limit
+
+
+def get_runpod_limit():
+    global runpod_limit # pylint: disable=global-statement
+    if runpod_limit is not None:
+        return runpod_limit
+    runpod_limit = float(os.environ.get('RUNPOD_MEM_GB', sys.float_info.max))
+    return runpod_limit
 
 
 def memory_stats():
@@ -20,6 +42,7 @@ def memory_stats():
         process = psutil.Process(os.getpid())
         res = process.memory_info()
         ram_total = 100 * res.rss / process.memory_percent()
+        ram_total = min(ram_total, get_docker_limit(), get_runpod_limit())
         ram = { 'used': gb(res.rss), 'total': gb(ram_total) }
         mem.update({ 'ram': ram })
     except Exception as e:
@@ -54,6 +77,7 @@ def ram_stats():
         process = psutil.Process(os.getpid())
         res = process.memory_info()
         ram_total = 100 * res.rss / process.memory_percent()
+        ram_total = min(ram_total, docker_limit(), runpod_limit())
         ram = { 'used': gb(res.rss), 'total': gb(ram_total) }
         return ram
     except Exception:

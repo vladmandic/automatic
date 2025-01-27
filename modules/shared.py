@@ -7,9 +7,7 @@ import json
 import threading
 import contextlib
 from types import SimpleNamespace
-from urllib.parse import urlparse
 from enum import Enum
-import psutil
 import requests
 import gradio as gr
 import fasteners
@@ -205,7 +203,7 @@ elif cmd_opts.use_directml:
 devices.backend = devices.get_backend(cmd_opts)
 devices.device = devices.get_optimal_device()
 mem_stat = memory_stats()
-cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
+cpu_memory = mem_stat['ram']['total'] if "ram" in mem_stat else 0
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
 native = backend == Backend.DIFFUSERS
 if not files_cache.do_cache_folders:
@@ -307,6 +305,7 @@ default_checkpoint = list_checkpoint_titles()[0] if len(list_checkpoint_titles()
 
 
 def is_url(string):
+    from urllib.parse import urlparse
     parsed_url = urlparse(string)
     return all([parsed_url.scheme, parsed_url.netloc])
 
