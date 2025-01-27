@@ -57,10 +57,11 @@
   - **schedulers**: ability to create model-less schedulers  
   - **quantiation**: code refactor into dedicated module  
   - **dynamic attention sdpa**: more correct implementation and new trigger rate control  
-- **Authentication**:
+- **Remote access**:  
   - perform auth check on ui startup  
-  - unified standard and modern-ui authentication method  
-  - cleanup auth logging  
+  - unified standard and modern-ui authentication method & cleanup auth logging  
+  - detect & report local/external/public ip addresses if using `listen` mode  
+  - detect *docker* enforced limits instead of system limits if running in a container  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
