@@ -19,6 +19,8 @@ models = {
     'HunyuanVideo': { 'repo': 'tencent/HunyuanVideo', 'revision': 'refs/pr/18' },
     'FastHunyuan': { 'repo': 'FastVideo/FastHunyuan', 'revision': None },
 }
+loaded_model = None
+
 
 def get_template(template: str = None):
     # diffusers.pipelines.hunyuan_video.pipeline_hunyuan_video.DEFAULT_PROMPT_TEMPLATE
@@ -85,7 +87,8 @@ class Script(scripts.Script):
         return [model, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate]
 
     def load(self, model:str):
-        if shared.sd_model.__class__ != diffusers.HunyuanVideoPipeline:
+        global loaded_model # pylint: disable=global-statement
+        if shared.sd_model.__class__ != diffusers.HunyuanVideoPipeline or model != loaded_model:
             sd_models.unload_model_weights()
             t0 = time.time()
             quant_args = {}
@@ -113,12 +116,20 @@ class Script(scripts.Script):
                 torch_dtype=devices.dtype,
                 **quant_args
             )
+            text_encoder_2 = transformers.CLIPTextModel.from_pretrained(
+                pretrained_model_name_or_path=models.get(model)['repo'],
+                subfolder="text_encoder_2",
+                revision=models.get(model)['revision'],
+                cache_dir = shared.opts.hfcache_dir,
+                torch_dtype=devices.dtype,
+            )
             shared.log.debug(f'Video: module={text_encoder.__class__.__name__}')
             shared.sd_model = diffusers.HunyuanVideoPipeline.from_pretrained(
-                pretrained_model_name_or_path=models.get(model)['repo'],
+                pretrained_model_name_or_path='tencent/HunyuanVideo',
                 transformer=transformer,
                 text_encoder=text_encoder,
-                revision=models.get(model)['revision'],
+                text_encoder_2=text_encoder_2,
+                revision='refs/pr/18',
                 cache_dir = shared.opts.hfcache_dir,
                 torch_dtype=devices.dtype,
                 **quant_args
@@ -134,6 +145,7 @@ class Script(scripts.Script):
             shared.sd_model.encode_prompt = hijack_encode_prompt
             shared.sd_model.vae.enable_slicing()
             shared.sd_model.vae.enable_tiling()
+            loaded_model = model
 
     def run(self, p: processing.StableDiffusionProcessing, model, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument
         # set params
