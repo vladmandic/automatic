@@ -306,6 +306,8 @@ def start_ui():
         gr_tempdir.register_tmp_file(shared.demo, os.path.join(shared.cmd_opts.data_dir, 'x'))
     shared.log.info(f'Local URL: {local_url}')
     if shared.cmd_opts.listen:
+        if not gradio_auth_creds:
+            shared.log.warning('Public interface enabled without authentication')
         proto = 'https' if shared.cmd_opts.tls_keyfile is not None else 'http'
         external_ip = get_external_ip()
         if external_ip is not None:

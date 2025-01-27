@@ -62,6 +62,7 @@
   - unified standard and modern-ui authentication method & cleanup auth logging  
   - detect & report local/external/public ip addresses if using `listen` mode  
   - detect *docker* enforced limits instead of system limits if running in a container  
+  - warn if using public interface without authentication  
 - **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
