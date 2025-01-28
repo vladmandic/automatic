@@ -213,7 +213,7 @@ def list_lora():
     import sys
     lora = [v for k, v in sys.modules.items() if k == 'networks' or k == 'modules.lora.networks'][0]
     loras = [v.fullname for v in lora.available_networks.values()]
-    return ['None'] + loras
+    return ['None'] + sorted(loras)
 
 
 def apply_lora(p, x, xs):

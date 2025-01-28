@@ -179,11 +179,14 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             networks.previously_loaded_networks = networks.loaded_networks.copy()
             debug_log(f'Load network: type=LoRA active={[n.name for n in networks.previously_loaded_networks]} deactivate')
         if shared.native and len(networks.diffuser_loaded) > 0:
-            if hasattr(shared.sd_model, "unload_lora_weights") and hasattr(shared.sd_model, "text_encoder"):
-                if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
+            if not (shared.compiled_model_state is not None and shared.compiled_model_state.is_compiled is True):
+                if hasattr(shared.sd_model, "unfuse_lora"):
                     try:
-                        if shared.opts.lora_fuse_diffusers:
-                            shared.sd_model.unfuse_lora()
+                        shared.sd_model.unfuse_lora()
+                    except Exception:
+                        pass
+                if hasattr(shared.sd_model, "unload_lora_weights"):
+                    try:
                         shared.sd_model.unload_lora_weights() # fails for non-CLIP models
                     except Exception:
                         pass
