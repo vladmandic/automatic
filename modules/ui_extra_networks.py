@@ -227,7 +227,7 @@ class ExtraNetworksPage:
         for parentdir, dirs in {d: files_cache.walk(d, cached=True, recurse=files_cache.not_hidden) for d in allowed_folders}.items():
             for tgt in dirs:
                 tgt = tgt.path
-                if os.path.join(paths.models_path, 'Reference') in tgt:
+                if os.path.join(paths.models_path, 'Reference') in tgt and shared.opts.extra_network_reference_enable:
                     subdirs['Reference'] = 1
                 if shared.native and shared.opts.diffusers_dir in tgt:
                     subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
@@ -242,7 +242,7 @@ class ExtraNetworksPage:
                 subdirs[subdir] = 1
         debug(f"Networks: page='{self.name}' subfolders={list(subdirs)}")
         subdirs = OrderedDict(sorted(subdirs.items()))
-        if self.name == 'model':
+        if self.name == 'model' and shared.opts.extra_network_reference_enable:
             subdirs['Reference'] = 1
             subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
             subdirs.move_to_end(os.path.basename(shared.opts.diffusers_dir))

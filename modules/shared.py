@@ -7,15 +7,12 @@ import json
 import threading
 import contextlib
 from types import SimpleNamespace
-from urllib.parse import urlparse
 from enum import Enum
-import psutil
 import requests
 import gradio as gr
 import fasteners
 import orjson
 import diffusers
-from rich.console import Console
 from modules import errors, devices, shared_items, shared_state, cmd_args, theme, history, files_cache
 from modules.paths import models_path, script_path, data_path, sd_configs_path, sd_default_config, sd_model_file, default_sd_model_file, extensions_dir, extensions_builtin_dir # pylint: disable=W0611
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
@@ -26,22 +23,19 @@ import modules.interrogate
 import modules.memmon
 import modules.styles
 import modules.paths as paths
-from installer import print_dict
-from installer import log as central_logger # pylint: disable=E0611
+from installer import log, print_dict, console # pylint: disable=unused-import
 
 
 errors.install([gr])
 demo: gr.Blocks = None
 api = None
-log = central_logger
 progress_print_out = sys.stdout
 parser = cmd_args.parser
 url = 'https://github.com/vladmandic/automatic'
 cmd_opts, _ = parser.parse_known_args()
 hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
-locking_available = True
-clip_model = None
+locking_available = True # used by file read/write locking
 interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
@@ -51,20 +45,7 @@ tab_names = []
 extra_networks = []
 options_templates = {}
 hypernetworks = {}
-loaded_hypernetworks = []
 settings_components = None
-latent_upscale_default_mode = "None"
-latent_upscale_modes = {
-    "Latent Nearest": {"mode": "nearest", "antialias": False},
-    "Latent Nearest-exact": {"mode": "nearest-exact", "antialias": False},
-    "Latent Area": {"mode": "area", "antialias": False},
-    "Latent Bilinear": {"mode": "bilinear", "antialias": False},
-    "Latent Bicubic": {"mode": "bicubic", "antialias": False},
-    "Latent Bilinear antialias": {"mode": "bilinear", "antialias": True},
-    "Latent Bicubic antialias": {"mode": "bicubic", "antialias": True},
-    # "Latent Linear": {"mode": "linear", "antialias": False}, # not supported for latents with channels=4
-    # "Latent Trilinear": {"mode": "trilinear", "antialias": False}, # not supported for latents with channels=4
-}
 restricted_opts = {
     "samples_filename_pattern",
     "directories_filename_pattern",
@@ -80,7 +61,6 @@ restricted_opts = {
 }
 resize_modes = ["None", "Fixed", "Crop", "Fill", "Outpaint", "Context aware"]
 compatibility_opts = ['clip_skip', 'uni_pc_lower_order_final', 'uni_pc_order']
-console = Console(log_time=True, log_time_format='%H:%M:%S-%f')
 dir_timestamps = {}
 dir_cache = {}
 max_workers = 8
@@ -223,7 +203,7 @@ elif cmd_opts.use_directml:
 devices.backend = devices.get_backend(cmd_opts)
 devices.device = devices.get_optimal_device()
 mem_stat = memory_stats()
-cpu_memory = round(psutil.virtual_memory().total / 1024 / 1024 / 1024, 2)
+cpu_memory = mem_stat['ram']['total'] if "ram" in mem_stat else 0
 gpu_memory = mem_stat['gpu']['total'] if "gpu" in mem_stat else 0
 native = backend == Backend.DIFFUSERS
 if not files_cache.do_cache_folders:
@@ -325,6 +305,7 @@ default_checkpoint = list_checkpoint_titles()[0] if len(list_checkpoint_titles()
 
 
 def is_url(string):
+    from urllib.parse import urlparse
     parsed_url = urlparse(string)
     return all([parsed_url.scheme, parsed_url.netloc])
 
@@ -357,7 +338,7 @@ def list_samplers():
 
 
 def temp_disable_extensions():
-    disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-rembg', 'sd-extension-chainner', 'stable-diffusion-webui-images-browser']
+    disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-images-browser']
     disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
     disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
     disable_original = []
@@ -518,9 +499,9 @@ options_templates.update(options_section(('text_encoder', "Text Encoder"), {
 
 options_templates.update(options_section(('cuda', "Compute Settings"), {
     "math_sep": OptionInfo("<h2>Execution Precision</h2>", "", gr.HTML),
-    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"]}),
+    "precision": OptionInfo("Autocast", "Precision type", gr.Radio, {"choices": ["Autocast", "Full"], "visible": not native}),
     "cuda_dtype": OptionInfo("Auto", "Device precision type", gr.Radio, {"choices": ["Auto", "FP32", "FP16", "BF16"]}),
-    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Full precision (--no-half)", None, None, None),
+    "no_half": OptionInfo(False if not cmd_opts.use_openvino else True, "Force full precision (--no-half)", None, None, None),
     "upcast_sampling": OptionInfo(False if sys.platform != "darwin" else True, "Upcast sampling", gr.Checkbox, {"visible": not native}),
     "upcast_attn": OptionInfo(False, "Upcast attention layer", gr.Checkbox, {"visible": not native}),
     "cuda_cast_unet": OptionInfo(False, "Fixed UNet precision", gr.Checkbox, {"visible": not native}),
@@ -532,7 +513,8 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cross_attention_optimization": OptionInfo(startup_cross_attention, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native)}),
     "sdp_options": OptionInfo(startup_sdp_options, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention', 'Sage attention'], "visible": native}),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(4, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
+    "dynamic_attention_slice_rate": OptionInfo(2, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory, "step": 0.1, "visible": native}),
+    "dynamic_attention_trigger_rate": OptionInfo(3, "Dynamic Attention trigger rate in GB", gr.Slider, {"minimum": 0.1, "maximum": gpu_memory*2, "step": 0.1, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
@@ -578,25 +560,35 @@ options_templates.update(options_section(('backends', "Backend Settings"), {
 }))
 
 options_templates.update(options_section(('quantization', "Quantization Settings"), {
-    "bnb_sep": OptionInfo("<h2>BitsAndBytes</h2>", "", gr.HTML),
+    "bnb_quantization_sep": OptionInfo("<h2>BitsAndBytes</h2>", "", gr.HTML),
     "bnb_quantization": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
     "bnb_quantization_type": OptionInfo("nf4", "Quantization type", gr.Dropdown, {"choices": ['nf4', 'fp8', 'fp4'], "visible": native}),
     "bnb_quantization_storage": OptionInfo("uint8", "Backend storage", gr.Dropdown, {"choices": ["float16", "float32", "int8", "uint8", "float64", "bfloat16"], "visible": native}),
+
     "optimum_quanto_sep": OptionInfo("<h2>Optimum Quanto</h2>", "", gr.HTML),
     "optimum_quanto_weights": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "optimum_quanto_weights_type": OptionInfo("qint8", "Quantization weights type", gr.Dropdown, {"choices": ['qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2', 'qint4', 'qint2'], "visible": native}),
     "optimum_quanto_activations_type": OptionInfo("none", "Quantization activations type ", gr.Dropdown, {"choices": ['none', 'qint8', 'qfloat8_e4m3fn', 'qfloat8_e5m2'], "visible": native}),
+    "optimum_quanto_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+
     "torchao_sep": OptionInfo("<h2>TorchAO</h2>", "", gr.HTML),
     "torchao_quantization": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": native}),
     "torchao_quantization_mode": OptionInfo("pre", "Quantization mode", gr.Dropdown, {"choices": ['pre', 'post'], "visible": native}),
     "torchao_quantization_type": OptionInfo("int8_weight_only", "Quantization type", gr.Dropdown, {"choices": ['int4_weight_only', 'int8_dynamic_activation_int4_weight', 'int8_weight_only', 'int8_dynamic_activation_int8_weight', 'float8_weight_only', 'float8_dynamic_activation_float8_weight', 'float8_static_activation_float8_weight'], "visible": native}),
-    "nncf_sep": OptionInfo("<h2>NNCF</h2>", "", gr.HTML),
+
+    "nncf_compress_sep": OptionInfo("<h2>NNCF</h2>", "", gr.HTML),
     "nncf_compress_weights": OptionInfo([], "Quantization enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "ControlNet"], "visible": native}),
     "nncf_compress_weights_mode": OptionInfo("INT8", "Quantization type", gr.Dropdown, {"choices": ['INT8', 'INT8_SYM', 'INT4_ASYM', 'INT4_SYM', 'NF4'] if cmd_opts.use_openvino else ['INT8']}),
-    "nncf_compress_weights_raito": OptionInfo(1.0, "Compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
+    "nncf_compress_weights_raito": OptionInfo(0, "Compress ratio", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": cmd_opts.use_openvino}),
+    "nncf_compress_weights_group_size": OptionInfo(0, "Group size", gr.Slider, {"minimum": -1, "maximum": 512, "step": 1, "visible": cmd_opts.use_openvino}),
     "nncf_quantize": OptionInfo([], "OpenVINO enabled", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder"], "visible": cmd_opts.use_openvino}),
-    "nncf_quant_mode": OptionInfo("INT8", "OpenVINO mode", gr.Dropdown, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
-    "quant_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+    "nncf_quantize_mode": OptionInfo("INT8", "OpenVINO mode", gr.Dropdown, {"choices": ['INT8', 'FP8_E4M3', 'FP8_E5M2'], "visible": cmd_opts.use_openvino}),
+    "nncf_quantize_shuffle_weights": OptionInfo(False, "Shuffle weights", gr.Checkbox, {"visible": native}),
+
+    "layerwise_quantization_sep": OptionInfo("<h2>Layerwise Casting</h2>", "", gr.HTML),
+    "layerwise_quantization": OptionInfo([], "Layerwise casting enabled", gr.CheckboxGroup, {"choices": ["Model", "Transformer", "Text Encoder"], "visible": native}),
+    "layerwise_quantization_storage": OptionInfo("float8_e4m3fn", "Layerwise casting storage", gr.Dropdown, {"choices": ["float8_e4m3fn", "float8_e5m2"], "visible": native}),
+    "layerwise_quantization_nonblocking": OptionInfo(False, "Layerwise non-blocking operations", gr.Checkbox, {"visible": native}),
 }))
 
 options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
@@ -612,8 +604,18 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
     "freeu_s1": OptionInfo(0.9, "1st stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
     "freeu_s2": OptionInfo(0.2, "2nd stage skip", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
-    "pag_sep": OptionInfo("<h2>Perturbed-Attention Guidance</h2>", "", gr.HTML),
+    "pag_sep": OptionInfo("<h2>PAG: Perturbed attention guidance</h2>", "", gr.HTML),
     "pag_apply_layers": OptionInfo("m0", "PAG layer names"),
+
+    "pab_sep": OptionInfo("<h2>PAB: Pyramid attention broadcast </h2>", "", gr.HTML),
+    "pab_enabled": OptionInfo(False, "Attention cache enabled"),
+    "pab_block_skip_range": OptionInfo(2, "Block skip range", gr.Slider, {"minimum": 1, "maximum": 4, "step": 1}),
+    "pab_timestep_skip_start": OptionInfo(0.1, "Timestep skip start", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
+    "pab_timestep_skip_end": OptionInfo(0.8, "Timestep skip end", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.05}),
+
+    "para_sep": OptionInfo("<h2>Para-attention</h2>", "", gr.HTML),
+    "para_cache_enabled": OptionInfo(False, "First-block cache enabled"),
+    "para_diff_threshold": OptionInfo(0.1, "Residual diff threshold", gr.Slider, {"minimum": 0.0, "maximum": 1.0, "step": 0.01}),
 
     "hypertile_sep": OptionInfo("<h2>HyperTile</h2>", "", gr.HTML),
     "hypertile_unet_enabled": OptionInfo(False, "UNet Enabled"),
@@ -915,8 +917,9 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "extra_networks_fetch": OptionInfo(True, "UI fetch network info on mouse-over"),
     "extra_network_skip_indexing": OptionInfo(False, "Build info on first access", gr.Checkbox),
 
-    "extra_networks_model_sep": OptionInfo("<h2>Models</h2>", "", gr.HTML),
-    "extra_network_reference": OptionInfo(False, "Use reference values when available", gr.Checkbox),
+    "extra_networks_model_sep": OptionInfo("<h2>Rerefence models</h2>", "", gr.HTML),
+    "extra_network_reference_enable": OptionInfo(True, "Enable use of reference models", gr.Checkbox),
+    "extra_network_reference_values": OptionInfo(False, "Use reference values when available", gr.Checkbox),
 
     "extra_networks_lora_sep": OptionInfo("<h2>LoRA</h2>", "", gr.HTML),
     "extra_networks_default_multiplier": OptionInfo(1.0, "Default strength", gr.Slider, {"minimum": 0.0, "maximum": 2.0, "step": 0.01}),
@@ -1202,11 +1205,11 @@ opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibi
 opts.data['uni_pc_order'] = max(2, opts.schedulers_solver_order) # compatibility
 log.info(f'Engine: backend={backend} compute={devices.backend} device={devices.get_optimal_device_name()} attention="{opts.cross_attention_optimization}" mode={devices.inference_context.__name__}')
 if not native:
-    log.warning('Backend=original is in maintainance-only mode')
+    log.warning('Backend=original: legacy mode / maintainance-only')
     opts.data['diffusers_offload_mode'] = 'none'
 
 prompt_styles = modules.styles.StyleDatabase(opts)
-reference_models = readfile(os.path.join('html', 'reference.json'))
+reference_models = readfile(os.path.join('html', 'reference.json')) if opts.extra_network_reference_enable else {}
 cmd_opts.disable_extension_access = (cmd_opts.share or cmd_opts.listen or (cmd_opts.server_name or False)) and not cmd_opts.insecure
 devices.args = cmd_opts
 devices.opts = opts

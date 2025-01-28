@@ -1,15 +1,94 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-16
+## Update for 2025-01-28
 
-- **Gallery**:  
-  - add http fallback for slow/unreliable links  
-- **Fixes**:
+- **Contributing**:  
+  - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
+- **Model Merge**
+  - replace model components and merge LoRAs  
+    in addition to existing model weights merge support  
+    now also having ability to replace model components and merge LoRAs  
+    you can also test merges in-memory without needing to save to disk at all  
+    and you can also use it to convert diffusers to safetensors if you want  
+    *example*: replace vae in your favorite model with a fixed one? replace text encoder? etc.  
+    *note*: limited to sdxl for now, additional models can be added depending on popularity  
+- **Detailer**:  
+  - in addition as standard behavior of detect & run-generate, it can now also run face-restore models  
+  - included models are: *CodeFormer, RestoreFormer, GFPGan, GPEN-BFR*  
+- **Face**:  
+  - new [PhotoMaker v2](https://huggingface.co/TencentARC/PhotoMaker-V2) and reimplemented [PhotoMaker v1](https://huggingface.co/TencentARC/PhotoMaker)  
+    compatible with sdxl models, generates pretty good results and its faster than most other methods  
+    select under *scripts -> face -> photomaker*  
+  - new [ReSwapper](https://github.com/somanchiu/ReSwapper)  
+    todo: experimental-only and unfinished, only noting in changelog for future reference  
+- **Video**  
+  - **hunyuan video** support for [FastHunyuan](https://huggingface.co/FastVideo/FastHunyuan)  
+    simply select model variant and set appropriate parameters  
+    recommended: sampler-shift=17, steps=6, resolution=720x1280, frames=125, guidance>6.0  
+- [PAB: Pyramid Attention Broadcast](https://oahzxl.github.io/PAB/)  
+  - speed up generation by caching attention results between steps  
+  - enable in *settings -> pipeline modifiers -> pab*  
+  - adjust settings as needed: wider timestep range means more acceleration, but higher accuracy drop  
+  - compatible with most `transformer` based models: e.g. flux.1, hunyuan-video, lyx-video, mochi, etc.
+- [ParaAttention](https://github.com/chengzeyi/ParaAttention)
+  - first-block caching that can significantly speed up generation by dynamically reusing partial outputs between steps  
+  - available for: flux, hunyuan-video, ltx-video, mochi  
+  - enable in *settings -> pipeline modifiers -> para-attention*  
+  - adjust residual diff threshold to balance the speedup and the accuracy:  
+    higher values leads to more cache hits and speedups, but might also lead to a higher accuracy drop  
+- **IPEX**
+  - enable force attention slicing, fp64 emulation, jit cache  
+  - use the us server by default on linux  
+  - use pytorch test branch on windows  
+  - extend the supported python versions  
+  - improve sdpa dynamic attention  
+- **Torch FP8**
+  - uses torch `float8_e4m3fn` or `float8_e5m2` as data storage and performs dynamic upcasting to compute `dtype` as needed  
+  - compatible with most `unet` and `transformer` based models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
+    this is alternative to `bnb`/`quanto`/`torchao` quantization on models/platforms/gpus where those libraries are not available  
+  - enable in *settings -> quantization -> layerwise casting*  
+- [PerFlow](https://github.com/magic-research/piecewise-rectified-flow)  
+  - piecewise rectified flow as model acceleration  
+  - use `perflow` scheduler combined with one of the available pre-trained [models](https://huggingface.co/hansyan)  
+- **Other**:  
+  - **upscale**: new [asymmetric vae](Heasterian/AsymmetricAutoencoderKLUpscaler) upscaling method
+  - **gallery**: add http fallback for slow/unreliable links  
+  - **splash**: add legacy mode indicator on splash screen  
+  - **network**: extract thumbnail from model metadata if present  
+  - **network**: setting value to disable use of reference models  
+- **Refactor**:  
+  - **upscale**: code refactor to unify latent, resize and model based upscalers  
+  - **loader**: ability to run in-memory models  
+  - **schedulers**: ability to create model-less schedulers  
+  - **quantiation**: code refactor into dedicated module  
+  - **dynamic attention sdpa**: more correct implementation and new trigger rate control  
+- **Remote access**:  
+  - perform auth check on ui startup  
+  - unified standard and modern-ui authentication method & cleanup auth logging  
+  - detect & report local/external/public ip addresses if using `listen` mode  
+  - detect *docker* enforced limits instead of system limits if running in a container  
+  - warn if using public interface without authentication  
+- **Fixes**:  
   - non-full vae decode  
   - send-to image transfer  
   - sana vae tiling  
   - increase gallery timeouts  
   - update ui element ids  
+  - modernui use local font  
+  - unique font family registration  
+  - mochi video number of frames  
+  - mark large models that should offload  
+  - avoid repeated optimum-quanto installation  
+  - avoid reinstalling bnb if not cuda  
+  - image metadata civitai compatibility  
+  - xyz grid handle invalid values  
+  - omnigen pipeline handle float seeds  
+  - correct logging of docker status on logs, thanks @kmscode  
+  - fix omnigen  
+  - fix docker status reporting  
+  - vlm/vqa with moondream2  
+  - rocm do not override triton installation  
+  - port streaming model load to diffusers  
 
 ## Update for 2025-01-15
 

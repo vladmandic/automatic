@@ -194,29 +194,35 @@ class Script(scripts.Script):
             if opt.type == int:
                 valslist_ext = []
                 for val in valslist:
-                    m = re_range.fullmatch(val)
-                    if m is not None:
-                        start_val = int(m.group(1)) if m.group(1) is not None else val
-                        end_val = int(m.group(2)) if m.group(2) is not None else val
-                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
-                        valslist_ext += [int(x) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
-                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
-                    else:
-                        valslist_ext.append(int(val))
+                    try:
+                        m = re_range.fullmatch(val)
+                        if m is not None:
+                            start_val = int(m.group(1)) if m.group(1) is not None else val
+                            end_val = int(m.group(2)) if m.group(2) is not None else val
+                            num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                            valslist_ext += [int(x) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                            shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
+                        else:
+                            valslist_ext.append(int(val))
+                    except Exception as e:
+                        shared.log.error(f"XYZ grid: value={val} {e}")
                 valslist.clear()
                 valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == float:
                 valslist_ext = []
                 for val in valslist:
-                    m = re_range.fullmatch(val)
-                    if m is not None:
-                        start_val = float(m.group(1)) if m.group(1) is not None else val
-                        end_val = float(m.group(2)) if m.group(2) is not None else val
-                        num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
-                        valslist_ext += [round(float(x), 2) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
-                        shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
-                    else:
-                        valslist_ext.append(float(val))
+                    try:
+                        m = re_range.fullmatch(val)
+                        if m is not None:
+                            start_val = float(m.group(1)) if m.group(1) is not None else val
+                            end_val = float(m.group(2)) if m.group(2) is not None else val
+                            num = int(m.group(3)) if m.group(3) is not None else int(end_val-start_val)
+                            valslist_ext += [round(float(x), 2) for x in np.linspace(start=start_val, stop=end_val, num=max(2, num)).tolist()]
+                            shared.log.debug(f'XYZ grid range: start={start_val} end={end_val} num={max(2, num)} list={valslist}')
+                        else:
+                            valslist_ext.append(float(val))
+                    except Exception as e:
+                        shared.log.error(f"XYZ grid: value={val} {e}")
                 valslist.clear()
                 valslist = [x for x in valslist_ext if x not in valslist]
             elif opt.type == str_permutations: # pylint: disable=comparison-with-callable
@@ -227,18 +233,24 @@ class Script(scripts.Script):
                 opt.confirm(p, valslist)
             return valslist
 
-        x_opt = self.current_axis_options[x_type]
-        if x_opt.choices is not None and not csv_mode:
-            x_values = list_to_csv_string(x_values_dropdown)
-        xs = process_axis(x_opt, x_values, x_values_dropdown)
-        y_opt = self.current_axis_options[y_type]
-        if y_opt.choices is not None and not csv_mode:
-            y_values = list_to_csv_string(y_values_dropdown)
-        ys = process_axis(y_opt, y_values, y_values_dropdown)
-        z_opt = self.current_axis_options[z_type]
-        if z_opt.choices is not None and not csv_mode:
-            z_values = list_to_csv_string(z_values_dropdown)
-        zs = process_axis(z_opt, z_values, z_values_dropdown)
+        try:
+            x_opt = self.current_axis_options[x_type]
+            if x_opt.choices is not None and not csv_mode:
+                x_values = list_to_csv_string(x_values_dropdown)
+            xs = process_axis(x_opt, x_values, x_values_dropdown)
+            y_opt = self.current_axis_options[y_type]
+            if y_opt.choices is not None and not csv_mode:
+                y_values = list_to_csv_string(y_values_dropdown)
+            ys = process_axis(y_opt, y_values, y_values_dropdown)
+            z_opt = self.current_axis_options[z_type]
+            if z_opt.choices is not None and not csv_mode:
+                z_values = list_to_csv_string(z_values_dropdown)
+            zs = process_axis(z_opt, z_values, z_values_dropdown)
+        except Exception as e:
+            shared.log.error(f"XYZ grid: invalid axis values {e}")
+            active = False
+            return None
+
         Image.MAX_IMAGE_PIXELS = None # disable check in Pillow and rely on check below to allow large custom image sizes
 
         def fix_axis_seeds(axis_opt, axis_list):

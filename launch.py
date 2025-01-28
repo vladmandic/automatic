@@ -66,9 +66,10 @@ def get_custom_args():
         installer.log.trace(f'Environment: {installer.print_dict(env)}')
     env = [f'{k}={v}' for k, v in os.environ.items() if k.startswith('SD_')]
     installer.log.debug(f'Env flags: {env}')
-    ldd = os.environ.get('LD_PRELOAD', None)
-    if ldd is not None:
-        installer.log.debug(f'Linker flags: "{ldd}"')
+    ldpreload = os.environ.get('LD_PRELOAD', None)
+    ldpath = os.environ.get('LD_LIBRARY_PATH', None)
+    if ldpreload is not None or ldpath is not None:
+        installer.log.debug(f'Linker flags: preload="{ldpreload}" path="{ldpath}"')
     rec('args')
 
 
@@ -150,13 +151,9 @@ def run_extension_installer(ext_dir): # compatbility function
 
 
 def get_memory_stats():
-    import psutil
-    def gb(val: float):
-        return round(val / 1024 / 1024 / 1024, 2)
-    process = psutil.Process(os.getpid())
-    res = process.memory_info()
-    ram_total = 100 * res.rss / process.memory_percent()
-    return f'{gb(res.rss)}/{gb(ram_total)}'
+    from modules.memstats import ram_stats
+    res = ram_stats()
+    return f'{res["used"]}/{res["total"]}'
 
 
 def start_server(immediate=True, server=None):

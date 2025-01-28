@@ -17,12 +17,13 @@ def webpath(fn):
 def html_head():
     head = ''
     main = ['script.js']
+    skip = ['login.js']
     for js in main:
         script_js = os.path.join(script_path, "javascript", js)
         head += f'<script type="text/javascript" src="{webpath(script_js)}"></script>\n'
     added = []
     for script in modules.scripts.list_scripts("javascript", ".js"):
-        if script.filename in main:
+        if script.filename in main or script.filename in skip:
             continue
         head += f'<script type="text/javascript" src="{webpath(script.path)}"></script>\n'
         added.append(script.path)
@@ -41,6 +42,14 @@ def html_body():
         inline += f"set_theme('{shared.opts.theme_style.lower()}');"
     body += f'<script type="text/javascript">{inline}</script>\n'
     return body
+
+
+def html_login():
+    fn = os.path.join(script_path, "javascript", "login.js")
+    with open(fn, 'r', encoding='utf8') as f:
+        inline = f.read()
+    js = f'<script type="text/javascript">{inline}</script>\n'
+    return js
 
 
 def html_css(css: str):
@@ -78,17 +87,19 @@ def html_css(css: str):
 
 def reload_javascript():
     base_css = theme.reload_gradio_theme()
-    head = html_head()
-    css = html_css(base_css)
-    body = html_body()
     title = '<title>SD.Next</title>'
     manifest = f'<link rel="manifest" href="{webpath(os.path.join(script_path, "html", "manifest.json"))}">'
+    login = html_login()
+    js = html_head()
+    css = html_css(base_css)
+    body = html_body()
 
     def template_response(*args, **kwargs):
         res = shared.GradioTemplateResponseOriginal(*args, **kwargs)
         res.body = res.body.replace(b'<head>', f'<head>{title}'.encode("utf8"))
-        res.body = res.body.replace(b'</head>', f'{head}</head>'.encode("utf8"))
         res.body = res.body.replace(b'</head>', f'{manifest}</head>'.encode("utf8"))
+        res.body = res.body.replace(b'</head>', f'{login}</head>'.encode("utf8"))
+        res.body = res.body.replace(b'</head>', f'{js}</head>'.encode("utf8"))
         res.body = res.body.replace(b'</body>', f'{css}{body}</body>'.encode("utf8"))
         lines = res.body.decode("utf8").split('\n')
         for line in lines:

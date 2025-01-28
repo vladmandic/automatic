@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_checkpoint, sd_vae, processing_helpers, timer, face_restoration, token_merge
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_models, sd_checkpoint, sd_vae, processing_helpers, timer, face_restoration, token_merge
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -168,7 +168,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         shared.prompt_styles.extract_comments(p)
         if shared.opts.cuda_compile_backend == 'none':
             token_merge.apply_token_merging(p.sd_model)
+            from modules import sd_hijack_freeu, para_attention
             sd_hijack_freeu.apply_freeu(p, not shared.native)
+            para_attention.apply_first_block_cache(p)
 
         if p.width is not None:
             p.width = 8 * int(p.width / 8)

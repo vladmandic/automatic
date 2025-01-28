@@ -323,14 +323,6 @@ def create_hires_inputs(tab):
         with gr.Group():
             with gr.Row(elem_id=f"{tab}_hires_row1"):
                 enable_hr = gr.Checkbox(label='Enable refine pass', value=False, elem_id=f"{tab}_enable_hr")
-            """
-            with gr.Row(elem_id=f"{tab}_hires_fix_row1", variant="compact"):
-                hr_upscaler = gr.Dropdown(label="Upscaler", elem_id=f"{tab}_hr_upscaler", choices=[*shared.latent_upscale_modes, *[x.name for x in shared.sd_upscalers]], value=shared.latent_upscale_default_mode)
-                hr_scale = gr.Slider(minimum=0.1, maximum=8.0, step=0.05, label="Rescale by", value=2.0, elem_id=f"{tab}_hr_scale")
-            with gr.Row(elem_id=f"{tab}_hires_fix_row3", variant="compact"):
-                hr_resize_x = gr.Slider(minimum=0, maximum=4096, step=8, label="Width resize", value=0, elem_id=f"{tab}_hr_resize_x")
-                hr_resize_y = gr.Slider(minimum=0, maximum=4096, step=8, label="Height resize", value=0, elem_id=f"{tab}_hr_resize_y")
-            """
             hr_resize_mode, hr_upscaler, hr_resize_context, hr_resize_x, hr_resize_y, hr_scale, _selected_scale_tab = create_resize_inputs(tab, None, accordion=False, latent=True, non_zero=False)
             with gr.Row(elem_id=f"{tab}_hires_fix_row2", variant="compact"):
                 hr_force = gr.Checkbox(label='Force HiRes', value=False, elem_id=f"{tab}_hr_force")
@@ -355,8 +347,11 @@ def create_resize_inputs(tab, images, accordion=True, latent=False, non_zero=Tru
         prefix = f' {prefix}'
     with gr.Accordion(open=False, label="Resize", elem_classes=["small-accordion"], elem_id=f"{tab}_resize_group") if accordion else gr.Group():
         with gr.Row():
+            available_upscalers = [x.name for x in shared.sd_upscalers]
+            if not latent:
+                available_upscalers = [x for x in available_upscalers if not x.lower().startswith('latent')]
             resize_mode = gr.Dropdown(label=f"Mode{prefix}" if non_zero else "Resize mode", elem_id=f"{tab}_resize_mode", choices=shared.resize_modes, type="index", value='Fixed')
-            resize_name = gr.Dropdown(label=f"Method{prefix}", elem_id=f"{tab}_resize_name", choices=([] if not latent else list(shared.latent_upscale_modes)) + [x.name for x in shared.sd_upscalers], value=shared.latent_upscale_default_mode, visible=True)
+            resize_name = gr.Dropdown(label=f"Method{prefix}", elem_id=f"{tab}_resize_name", choices=available_upscalers, value=available_upscalers[0], visible=True)
             resize_context_choices = ["Add with forward", "Remove with forward", "Add with backward", "Remove with backward"]
             resize_context = gr.Dropdown(label=f"Context{prefix}", elem_id=f"{tab}_resize_context", choices=resize_context_choices, value=resize_context_choices[0], visible=False)
             ui_common.create_refresh_button(resize_name, modelloader.load_upscalers, lambda: {"choices": modelloader.load_upscalers()}, 'refresh_upscalers')

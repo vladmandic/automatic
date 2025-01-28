@@ -117,7 +117,12 @@ def pix(question: str, image: Image.Image, repo: str = None):
 def moondream(question: str, image: Image.Image, repo: str = None):
     global processor, model, loaded # pylint: disable=global-statement
     if model is None or loaded != repo:
-        model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, cache_dir=shared.opts.hfcache_dir) # revision = "2024-03-05"
+        model = transformers.AutoModelForCausalLM.from_pretrained(
+            repo,
+            revision="2024-08-26",
+            trust_remote_code=True,
+            cache_dir=shared.opts.hfcache_dir
+        )
         processor = transformers.AutoTokenizer.from_pretrained(repo, cache_dir=shared.opts.hfcache_dir)
         loaded = repo
         model.eval()

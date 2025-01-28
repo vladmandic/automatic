@@ -15,26 +15,20 @@ try:
         CMStochasticIterativeScheduler,
         UniPCMultistepScheduler,
         DDIMScheduler,
-
         EulerDiscreteScheduler,
         EulerAncestralDiscreteScheduler,
         EDMEulerScheduler,
         FlowMatchEulerDiscreteScheduler,
-
         DEISMultistepScheduler,
         SASolverScheduler,
-
         DPMSolverSinglestepScheduler,
         DPMSolverMultistepScheduler,
         EDMDPMSolverMultistepScheduler,
         CosineDPMSolverMultistepScheduler,
         DPMSolverSDEScheduler,
-
         HeunDiscreteScheduler,
         FlowMatchHeunDiscreteScheduler,
-
         LCMScheduler,
-
         PNDMScheduler,
         IPNDMScheduler,
         DDPMScheduler,
@@ -54,6 +48,7 @@ try:
     from modules.schedulers.scheduler_dpm_flowmatch import FlowMatchDPMSolverMultistepScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_bdia import BDIA_DDIMScheduler # pylint: disable=ungrouped-imports
     from modules.schedulers.scheduler_ufogen import UFOGenScheduler # pylint: disable=ungrouped-imports
+    from modules.perflow import PeRFlowScheduler # pylint: disable=ungrouped-imports
 except Exception as e:
     shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
@@ -100,6 +95,7 @@ config = {
     'LCM': { 'beta_start': 0.00085, 'beta_end': 0.012, 'beta_schedule': "scaled_linear", 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'thresholding': False, 'timestep_spacing': 'linspace' },
     'TCD': { 'set_alpha_to_one': True, 'rescale_betas_zero_snr': False, 'beta_schedule': 'scaled_linear' },
     'TDD': { },
+    'PeRFlow': { 'prediction_type': 'ddim_eps' },
     'UFOGen': { },
     'BDIA DDIM': { 'clip_sample': False, 'set_alpha_to_one': True, 'steps_offset': 0, 'clip_sample_range': 1.0, 'sample_max_value': 1.0, 'timestep_spacing': 'leading', 'rescale_betas_zero_snr': False, 'thresholding': False, 'gamma': 1.0 },
 
@@ -160,6 +156,7 @@ samplers_data_diffusers = [
     SamplerData('LCM', lambda model: DiffusionSampler('LCM', LCMScheduler, model), [], {}),
     SamplerData('TCD', lambda model: DiffusionSampler('TCD', TCDScheduler, model), [], {}),
     SamplerData('TDD', lambda model: DiffusionSampler('TDD', TDDScheduler, model), [], {}),
+    SamplerData('PeRFlow', lambda model: DiffusionSampler('PeRFlow', PeRFlowScheduler, model), [], {}),
     SamplerData('UFOGen', lambda model: DiffusionSampler('UFOGen', UFOGenScheduler, model), [], {}),
 
     SamplerData('Same as primary', None, [], {}),
@@ -172,14 +169,17 @@ class DiffusionSampler:
             return
         self.name = name
         self.config = {}
-        if not hasattr(model, 'scheduler'):
-            return
-        if getattr(model, "default_scheduler", None) is None: # sanity check
+        self.sampler = None
+        # if not hasattr(model, 'scheduler'):
+        #    return
+        if getattr(model, "default_scheduler", None) is None and (model is not None): # sanity check
             model.default_scheduler = copy.deepcopy(model.scheduler)
         for key, value in config.get('All', {}).items(): # apply global defaults
             self.config[key] = value
         debug_log(f'Sampler: all="{self.config}"')
-        if hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
+        if model is None:
+            orig_config = {}
+        elif hasattr(model.default_scheduler, 'scheduler_config'): # find model defaults
             orig_config = model.default_scheduler.scheduler_config
         else:
             orig_config = model.default_scheduler.config

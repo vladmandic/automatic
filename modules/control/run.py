@@ -148,7 +148,9 @@ def check_active(p, unit_type, units):
             active_end.append(float(u.end))
             p.guess_mode = u.guess
             if isinstance(u.mode, str):
-                p.control_mode = u.choices.index(u.mode) if u.mode in u.choices else 0
+                if not hasattr(p, 'control_mode'):
+                    p.control_mode = []
+                p.control_mode.append(u.choices.index(u.mode) if u.mode in u.choices else 0)
                 p.is_tile = p.is_tile or 'tile' in u.mode.lower()
                 p.control_tile = u.tile
                 p.extra_generation_params["Control mode"] = u.mode
@@ -427,8 +429,6 @@ def control_run(state: str = '',
     else:
         original_pipeline = None
 
-    possible = sd_models.get_call(pipe).keys()
-
     try:
         with devices.inference_context():
             if isinstance(inputs, str): # only video, the rest is a list
@@ -460,6 +460,7 @@ def control_run(state: str = '',
                 if pipe is None: # pipe may have been reset externally
                     pipe = set_pipe(p, has_models, unit_type, selected_models, active_model, active_strength, control_conditioning, control_guidance_start, control_guidance_end, inits)
                     debug_log(f'Control pipeline reinit: class={pipe.__class__.__name__}')
+                possible = sd_models.get_call(pipe).keys()
                 processed_image = None
                 if frame is not None:
                     inputs = [Image.fromarray(frame)] # cv2 to pil

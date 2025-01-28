@@ -15,7 +15,7 @@ class ExtraNetworksPageCheckpoints(ui_extra_networks.ExtraNetworksPage):
         shared.refresh_checkpoints()
 
     def list_reference(self): # pylint: disable=inconsistent-return-statements
-        if not shared.opts.sd_checkpoint_autodownload:
+        if not shared.opts.sd_checkpoint_autodownload or not shared.opts.extra_network_reference_enable:
             return []
         for k, v in shared.reference_models.items():
             if not shared.native:
