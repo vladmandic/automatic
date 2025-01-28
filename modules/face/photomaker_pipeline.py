@@ -373,8 +373,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
                     f" {prompt} has batch size {batch_size}. Please make sure that passed `negative_prompt` matches"
                     " the batch size of `prompt`."
                 )
-            else:
-                uncond_tokens = [negative_prompt, negative_prompt_2]
+            uncond_tokens = [negative_prompt, negative_prompt_2]
 
             negative_prompt_embeds_list = []
             for negative_prompt, tokenizer, text_encoder in zip(uncond_tokens, tokenizers, text_encoders): # pylint: disable=redefined-argument-from-local

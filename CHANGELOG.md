@@ -1,6 +1,21 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-28
+## Highlights for 2025-01-28
+
+Two weeks since last release, time for update!  
+
+*What's New?*
+- New **Detailer** functionality including ability to use several new face-restore models  
+- Support for new models/pipelines:  
+  face-swapper with **Photomaker-v2** and video with **Fast-Hunyuan**  
+- Support for several new optimizations and accelerations:  
+  Many **IPEX** improvements, native *torch fp8* support,  
+  support for **PAB:Pyramid-attention-broadcast**, **ParaAttention** and **PerFlow**  
+- Fully built-in both model **weights merge** as well as model **component merge**  
+- Improved remote access control and reliability as well as running inside containers  
+- And of course, hotfixes for all reported issues...
+
+## Details for 2025-01-28
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
@@ -60,7 +75,7 @@
   - **upscale**: code refactor to unify latent, resize and model based upscalers  
   - **loader**: ability to run in-memory models  
   - **schedulers**: ability to create model-less schedulers  
-  - **quantiation**: code refactor into dedicated module  
+  - **quantization**: code refactor into dedicated module  
   - **dynamic attention sdpa**: more correct implementation and new trigger rate control  
 - **Remote access**:  
   - perform auth check on ui startup  

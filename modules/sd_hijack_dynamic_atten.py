@@ -1,6 +1,5 @@
 
 from functools import cache, wraps
-import math
 import torch
 from diffusers.utils import USE_PEFT_BACKEND # pylint: disable=unused-import
 from modules import shared, devices
