@@ -145,6 +145,7 @@ class Script(scripts.Script):
             shared.sd_model.encode_prompt = hijack_encode_prompt
             shared.sd_model.vae.enable_slicing()
             shared.sd_model.vae.enable_tiling()
+            shared.sd_model.vae.use_framewise_decoding = True
             loaded_model = model
 
     def run(self, p: processing.StableDiffusionProcessing, model, num_frames, tile_frames, override_scheduler, scheduler_shift, template, video_type, duration, gif_loop, mp4_pad, mp4_interpolate): # pylint: disable=arguments-differ, unused-argument

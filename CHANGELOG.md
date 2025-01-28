@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-26
+## Update for 2025-01-28
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
@@ -25,6 +25,11 @@
   - **hunyuan video** support for [FastHunyuan](https://huggingface.co/FastVideo/FastHunyuan)  
     simply select model variant and set appropriate parameters  
     recommended: sampler-shift=17, steps=6, resolution=720x1280, frames=125, guidance>6.0  
+- [PAB: Pyramid Attention Broadcast](https://oahzxl.github.io/PAB/)  
+  - speed up generation by caching attention results between steps  
+  - enable in *settings -> pipeline modifiers -> pab*  
+  - adjust settings as needed: wider timestep range means more acceleration, but higher accuracy drop  
+  - compatible with most `transformer` based models: e.g. flux.1, hunyuan-video, lyx-video, mochi, etc.
 - [ParaAttention](https://github.com/chengzeyi/ParaAttention)
   - first-block caching that can significantly speed up generation by dynamically reusing partial outputs between steps  
   - available for: flux, hunyuan-video, ltx-video, mochi  
@@ -39,7 +44,7 @@
   - improve sdpa dynamic attention  
 - **Torch FP8**
   - uses torch `float8_e4m3fn` or `float8_e5m2` as data storage and performs dynamic upcasting to compute `dtype` as needed  
-  - compatible with most `unet` and `transformer` models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
+  - compatible with most `unet` and `transformer` based models: e.g. *sd15, sdxl, sd35, flux.1, hunyuan-video, ltx-video, etc.*  
     this is alternative to `bnb`/`quanto`/`torchao` quantization on models/platforms/gpus where those libraries are not available  
   - enable in *settings -> quantization -> layerwise casting*  
 - [PerFlow](https://github.com/magic-research/piecewise-rectified-flow)  
