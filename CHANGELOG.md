@@ -1,6 +1,12 @@
 # Change Log for SD.Next
 
-## Highlights for 2025-01-29
+## Update for 2025-01-30
+
+TBD
+
+## Update for 2025-01-29
+
+### Highlights for 2025-01-29
 
 Two weeks since last release, time for update!  
 
@@ -17,7 +23,7 @@ Two weeks since last release, time for update!
 - Improved remote access control and reliability as well as running inside containers  
 - And of course, hotfixes for all reported issues...  
 
-## Details for 2025-01-28
+### Details for 2025-01-29
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines
