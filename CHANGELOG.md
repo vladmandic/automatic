@@ -1,19 +1,21 @@
 # Change Log for SD.Next
 
-## Highlights for 2025-01-28
+## Highlights for 2025-01-29
 
 Two weeks since last release, time for update!  
 
-*What's New?*
-- New **Detailer** functionality including ability to use several new face-restore models  
+*What's New?*  
+- New **Detailer** functionality including ability to use several new  
+  face-restore models: *RestoreFormer, CodeFormer, GFPGan, GPEN-BFR*
 - Support for new models/pipelines:  
   face-swapper with **Photomaker-v2** and video with **Fast-Hunyuan**  
 - Support for several new optimizations and accelerations:  
   Many **IPEX** improvements, native *torch fp8* support,  
   support for **PAB:Pyramid-attention-broadcast**, **ParaAttention** and **PerFlow**  
-- Fully built-in both model **weights merge** as well as model **component merge**  
+- Fully built-in both model **merge weights** as well as model **merge component**  
+  Finally replace that pesky VAE in your favorite model with a fixed one!  
 - Improved remote access control and reliability as well as running inside containers  
-- And of course, hotfixes for all reported issues...
+- And of course, hotfixes for all reported issues...  
 
 ## Details for 2025-01-28
 
