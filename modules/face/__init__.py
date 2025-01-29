@@ -36,6 +36,7 @@ class Script(scripts.Script):
 
     def mode_change(self, mode):
         return [
+            gr.update(visible=mode=='ReSwapper'),
             gr.update(visible=mode=='FaceID'),
             gr.update(visible=mode=='FaceSwap'),
             gr.update(visible=mode=='InstantID'),
@@ -47,7 +48,17 @@ class Script(scripts.Script):
         with gr.Row():
             gr.HTML("<span>&nbsp Face: Multiple ID Transfers</span><br>")
         with gr.Row():
+            models = ['None', 'FaceID', 'FaceSwap', 'InstantID', 'PhotoMaker']
+            if shared.cmd_opts.experimental:
+                models.append('ReSwapper')
             mode = gr.Dropdown(label='Mode', choices=['None', 'FaceID', 'FaceSwap', 'InstantID', 'PhotoMaker'], value='None')
+        with gr.Group(visible=False) as cfg_reswapper:
+            with gr.Row():
+                gr.HTML('<a href="https://github.com/somanchiu/ReSwapper" target="_blank">&nbsp ReSwapper</a><br>')
+            with gr.Row():
+                from modules.face.reswapper import RESWAPPER_MODELS
+                reswapper_model = gr.Dropdown(choices=list(RESWAPPER_MODELS), label='ReSwapper Model', value='ReSwapper 256 0.2')
+                reswapper_original = gr.Checkbox(label='Return original images', value=False)
         with gr.Group(visible=False) as cfg_faceid:
             with gr.Row():
                 gr.HTML('<a href="https://huggingface.co/h94/IP-Adapter-FaceID" target="_blank">&nbsp Tencent AI Lab IP-Adapter FaceID</a><br>')
@@ -77,6 +88,7 @@ class Script(scripts.Script):
             with gr.Row():
                 gr.HTML('<a href="https://photo-maker.github.io/" target="_blank">&nbsp Tenecent ARC Lab PhotoMaker</a><br>')
             with gr.Row():
+                pm_model = gr.Dropdown(label='PhotoMaker Model', choices=['PhotoMaker v1', 'PhotoMaker v2'], value='PhotoMaker v2')
                 pm_trigger = gr.Text(label='Trigger word', value="person")
                 pm_strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.01, value=1.0)
                 pm_start = gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
@@ -85,11 +97,11 @@ class Script(scripts.Script):
         with gr.Row():
             gallery = gr.Gallery(show_label=False, value=[])
         files.change(fn=self.load_images, inputs=[files], outputs=[gallery])
-        mode.change(fn=self.mode_change, inputs=[mode], outputs=[cfg_faceid, cfg_faceswap, cfg_instantid, cfg_photomaker])
+        mode.change(fn=self.mode_change, inputs=[mode], outputs=[cfg_reswapper, cfg_faceid, cfg_faceswap, cfg_instantid, cfg_photomaker])
 
-        return [mode, gallery, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache]
+        return [mode, gallery, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_model, pm_trigger, pm_strength, pm_start, fs_cache]
 
-    def run(self, p: processing.StableDiffusionProcessing, mode, input_images, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
+    def run(self, p: processing.StableDiffusionProcessing, mode, input_images, reswapper_model, reswapper_original, ip_model, ip_override, ip_cache, ip_strength, ip_structure, id_strength, id_conditioning, id_cache, pm_model, pm_trigger, pm_strength, pm_start, fs_cache): # pylint: disable=arguments-differ, unused-argument
         if not shared.native:
             return None
         if mode == 'None':
@@ -119,8 +131,10 @@ class Script(scripts.Script):
             processed_images = face_id(p, app=app, source_images=input_images, model=ip_model, override=ip_override, cache=ip_cache, scale=ip_strength, structure=ip_structure) # run faceid pipeline
             processed = processing.Processed(p, images_list=processed_images, seed=p.seed, subseed=p.subseed, index_of_first_image=0) # manually created processed object
         elif mode == 'PhotoMaker': # photomaker creates pipeline and triggers original process_images
+            from modules.face.insightface import get_app
+            app = get_app('buffalo_l')
             from modules.face.photomaker import photo_maker
-            processed = photo_maker(p, input_images=input_images, trigger=pm_trigger, strength=pm_strength, start=pm_start)
+            processed = photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
         elif mode == 'InstantID':
             from modules.face.insightface import get_app
             app=get_app('antelopev2')
@@ -134,11 +148,12 @@ class Script(scripts.Script):
             from modules.face.insightface import get_app
             app=get_app('buffalo_l')
             from modules.face.faceswap import face_swap
-            if shared.opts.save_images_before_detailer and not p.do_not_save_samples:
-                for i, image in enumerate(processed.images):
-                    info = processing.create_infotext(p, index=i)
-                    images.save_image(image, path=p.outpath_samples, seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, p=p, suffix="-before-faceswap")
             processed.images = face_swap(p, app=app, input_images=processed.images, source_image=input_images[0], cache=fs_cache)
+        elif mode == 'ReSwapper':
+            from modules.face.insightface import get_app
+            app = get_app('buffalo_l', resolution=512)
+            from modules.face.reswapper import reswapper
+            processed.images = reswapper(p, app=app, source_images=processed.images, target_images=input_images, model_name=reswapper_model, original=reswapper_original)
 
         processed.info = processed.infotext(p, 0)
         processed.infotexts = [processed.info]

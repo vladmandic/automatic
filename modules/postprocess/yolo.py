@@ -9,13 +9,17 @@ from modules import shared, processing, devices, processing_class, ui_common
 from modules.detailer import Detailer
 
 
-PREDEFINED = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
+predefined = [ # <https://huggingface.co/vladmandic/yolo-detailers/tree/main>
     'https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/face-yolo8n.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/hand_yolov8n.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/person_yolov8n-seg.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-v1.pt',
     'https://huggingface.co/vladmandic/yolo-detailers/resolve/main/eyes-full-v1.pt',
+    'https://huggingface.co/netrunner-exe/Face-Upscalers-onnx/resolve/main/codeformer.fp16.onnx',
+    'https://huggingface.co/netrunner-exe/Face-Upscalers-onnx/resolve/main/restoreformer.fp16.onnx',
+    'https://huggingface.co/netrunner-exe/Face-Upscalers-onnx/resolve/main/GFPGANv1.4.fp16.onnx',
+    'https://huggingface.co/netrunner-exe/Face-Upscalers-onnx/resolve/main/GPEN-BFR-512.fp16.onnx',
 ]
 load_lock = threading.Lock()
 
@@ -50,7 +54,7 @@ class YoloRestorer(Detailer):
         self.list.clear()
         files = []
         downloaded = 0
-        for m in PREDEFINED:
+        for m in predefined:
             name = os.path.splitext(os.path.basename(m))[0]
             self.list[name] = m
             files.append(name)
@@ -61,7 +65,7 @@ class YoloRestorer(Detailer):
                     name = os.path.splitext(os.path.basename(f))[0]
                     if name not in files:
                         self.list[name] = os.path.join(shared.opts.yolo_dir, f)
-        shared.log.info(f'Available Yolo: path="{shared.opts.yolo_dir}" items={len(list(self.list))} downloaded={downloaded}')
+        shared.log.info(f'Available Detailer: path="{shared.opts.yolo_dir}" items={len(list(self.list))} downloaded={downloaded}')
         return self.list
 
     def dependencies(self):
@@ -156,18 +160,30 @@ class YoloRestorer(Detailer):
         with load_lock:
             from modules import modelloader
             model = None
-            self.dependencies()
             if model_name is None:
                 model_name = list(self.list)[0]
             if model_name in self.models:
                 return model_name, self.models[model_name]
             else:
-                model_url = self.list.get(model_name)
+                model_url = self.list.get(model_name, None)
+                if model_url is None:
+                    shared.log.error(f'Load: type=Detailer name="{model_name}" error="model not found"')
+                    return None, None
                 file_name = os.path.basename(model_url)
                 model_file = None
                 try:
                     model_file = modelloader.load_file_from_url(url=model_url, model_dir=shared.opts.yolo_dir, file_name=file_name)
-                    if model_file is not None:
+                    if model_file is None:
+                        shared.log.error(f'Load: type=Detailer name="{model_name}" url="{model_url}" error="failed to fetch model"')
+                    elif model_file.endswith('.onnx'):
+                        import onnxruntime as ort
+                        options = ort.SessionOptions()
+                        # options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+                        session = ort.InferenceSession(model_file, sess_options=options, providers=devices.onnx)
+                        self.models[model_name] = session
+                        return model_name, session
+                    else:
+                        self.dependencies()
                         import ultralytics
                         model = ultralytics.YOLO(model_file)
                         classes = list(model.names.values())
@@ -198,6 +214,11 @@ class YoloRestorer(Detailer):
             name, model = self.load(model_name)
             if model is None:
                 shared.log.warning(f'Detailer: model="{name}" not loaded')
+                continue
+
+            if name.endswith('.fp16'):
+                from modules.postprocess import restorer
+                np_image = restorer.restore(np_image, name, model, p.detailer_strength)
                 continue
 
             image = Image.fromarray(np_image)
@@ -262,8 +283,7 @@ class YoloRestorer(Detailer):
                 p.steps = orig_p.get('steps', 0)
 
             report = [{'label': i.label, 'score': i.score, 'size': f'{i.width}x{i.height}' } for i in items]
-            shared.log.info(f'Detailer: model="{name}" items={report} args={items[0].args} denoise={p.denoising_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
-            # shared.log.debug(f'Detailer: prompt="{prompt}" negative="{negative}"')
+            shared.log.info(f'Detailer: model="{name}" items={report} args={items[0].args} strength={p.detailer_strength} blur={p.mask_blur} width={p.width} height={p.height} padding={p.inpaint_full_res_padding}')
             models_used.append(name)
 
             mask_all = []
@@ -304,8 +324,6 @@ class YoloRestorer(Detailer):
                 p.image_mask = blend([np.array(m) for m in mask_all])
                 p.image_mask = Image.fromarray(p.image_mask)
 
-        # if len(models_used) > 0:
-        #     shared.log.debug(f'Detailer processed: models={models_used}')
         return np_image
 
     def ui(self, tab: str):

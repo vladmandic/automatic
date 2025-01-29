@@ -3,14 +3,14 @@ import sys
 import time
 import inspect
 import torch
-import accelerate
-
-from modules import shared, devices, errors
+import diffusers
+import accelerate.hooks
+from modules import shared, devices, errors, model_quant
 from modules.timer import process as process_timer
 
 
 debug_move = shared.log.trace if os.environ.get('SD_MOVE_DEBUG', None) is not None else lambda *args, **kwargs: None
-should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen']
+should_offload = ['sc', 'sd3', 'f1', 'hunyuandit', 'auraflow', 'omnigen', 'hunyuanvideo', 'cogvideox', 'mochi']
 offload_hook_instance = None
 
 
@@ -20,7 +20,6 @@ def get_signature(cls):
 
 
 def disable_offload(sd_model):
-    from accelerate.hooks import remove_hook_from_module
     if not getattr(sd_model, 'has_accelerate', False):
         return
     if hasattr(sd_model, "_internal_dict"):
@@ -31,7 +30,7 @@ def disable_offload(sd_model):
         module = getattr(sd_model, module_name, None)
         if isinstance(module, torch.nn.Module):
             network_layer_name = getattr(module, "network_layer_name", None)
-            module = remove_hook_from_module(module, recurse=True)
+            module = accelerate.hooks.remove_hook_from_module(module, recurse=True)
             if network_layer_name:
                 module.network_layer_name = network_layer_name
     sd_model.has_accelerate = False
@@ -188,7 +187,7 @@ def apply_balanced_offload(sd_model, exclude=[]):
     checkpoint_name = sd_model.sd_checkpoint_info.name if getattr(sd_model, "sd_checkpoint_info", None) is not None else None
     if checkpoint_name is None:
         checkpoint_name = sd_model.__class__.__name__
-    if offload_hook_instance is None or offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory or offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory or checkpoint_name != offload_hook_instance.checkpoint_name:
+    if (offload_hook_instance is None) or (offload_hook_instance.min_watermark != shared.opts.diffusers_offload_min_gpu_memory) or (offload_hook_instance.max_watermark != shared.opts.diffusers_offload_max_gpu_memory) or (checkpoint_name != offload_hook_instance.checkpoint_name):
         cached = False
         offload_hook_instance = OffloadHook(checkpoint_name)
 
@@ -241,9 +240,11 @@ def apply_balanced_offload(sd_model, exclude=[]):
                 if do_offload:
                     module = module.to(devices.cpu, non_blocking=True)
                     used_gpu -= module_size
+                cls = module.__class__.__name__
+                quant = getattr(module, "quantization_method", None)
                 if not cached:
-                    shared.log.debug(f'Model module={module_name} type={module.__class__.__name__} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
-                debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={getattr(module, "quantization_method", None)} module={module.__class__.__name__} size={module_size:.3f}')
+                    shared.log.debug(f'Model module={module_name} type={cls} dtype={module.dtype} quant={quant} params={offload_hook_instance.param_map[module_name]:.3f} size={offload_hook_instance.offload_map[module_name]:.3f}')
+                debug_move(f'Offload: type=balanced op={"move" if do_offload else "skip"} gpu={prev_gpu:.3f}:{used_gpu:.3f} perc={perc_gpu:.2f} ram={used_ram:.3f} current={module.device} dtype={module.dtype} quant={quant} module={cls} size={module_size:.3f}')
             except Exception as e:
                 if 'out of memory' in str(e):
                     devices.torch_gc(fast=True, force=True, reason='oom')
@@ -270,6 +271,22 @@ def apply_balanced_offload(sd_model, exclude=[]):
         apply_balanced_offload_to_module(sd_model.prior_pipe)
     if hasattr(sd_model, "decoder_pipe"):
         apply_balanced_offload_to_module(sd_model.decoder_pipe)
+
+    if shared.opts.layerwise_quantization:
+        model_quant.apply_layerwise(sd_model, quiet=True) # need to reapply since hooks were removed/readded
+    if shared.opts.pab_enabled and hasattr(sd_model, 'transformer'):
+        pab_config = diffusers.PyramidAttentionBroadcastConfig(
+            spatial_attention_block_skip_range=shared.opts.pab_block_skip_range,
+            spatial_attention_timestep_skip_range=(int(100 * shared.opts.pab_timestep_skip_start), int(100 * shared.opts.pab_timestep_skip_end)),
+            current_timestep_callback=lambda: sd_model.current_timestep, # pylint: disable=protected-access
+        )
+        try:
+            diffusers.apply_pyramid_attention_broadcast(sd_model.transformer, pab_config)
+        except Exception: # hook may already exist
+            pass
+        if not cached:
+            shared.log.info(f'Applying PAB: cls={sd_model.transformer.__class__.__name__} block={shared.opts.pab_block_skip_range} start={shared.opts.pab_timestep_skip_start} end={shared.opts.pab_timestep_skip_end}')
+
     set_accelerate(sd_model)
     t = time.time() - t0
     process_timer.add('offload', t)

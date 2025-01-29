@@ -447,7 +447,7 @@ def get_platform():
             'system': platform.system(),
             'release': release,
             'python': platform.python_version(),
-            'docker': os.environ.get('SD_INSTALL_DEBUG', None) is not None,
+            'docker': os.environ.get('SD_DOCKER', None) is not None,
             # 'host': platform.node(),
             # 'version': platform.version(),
         }
@@ -492,7 +492,7 @@ def check_diffusers():
     t_start = time.time()
     if args.skip_all or args.skip_git:
         return
-    sha = 'b785ddb654e4be3ae0066e231734754bdb2a191c' # diffusers commit hash
+    sha = '7b100ce589b917d4c116c9e61a6ec46d4f2ab062' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -625,6 +625,9 @@ def install_rocm_zluda():
         else:
             torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
+        if os.environ.get('TRITON_COMMAND', None) is None:
+            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-rocm as a dependency instead
+
         if sys.version_info < (3, 11):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             if rocm.version is None or float(rocm.version) > 6.0:
@@ -659,22 +662,39 @@ def install_rocm_zluda():
 
 def install_ipex(torch_command):
     t_start = time.time()
-    check_python(supported_minors=[10,11], reason='IPEX backend requires Python 3.10 or 3.11')
+    # Python 3.12 will cause compatibility issues with other dependencies
+    # IPEX supports Python 3.12 so don't block it but don't advertise it in the error message
+    check_python(supported_minors=[9, 10, 11, 12], reason='IPEX backend requires Python 3.9, 3.10 or 3.11')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('IPEX: Intel OneAPI toolkit detected')
+
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
     if os.environ.get("ClDeviceGlobalMemSizeAvailablePercent", None) is None:
         os.environ.setdefault('ClDeviceGlobalMemSizeAvailablePercent', '100')
+    if os.environ.get("SYCL_CACHE_PERSISTENT", None) is None:
+        os.environ.setdefault('SYCL_CACHE_PERSISTENT', '1') # Jit cache
+
     if os.environ.get("PYTORCH_ENABLE_XPU_FALLBACK", None) is None:
-        os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1')
+        os.environ.setdefault('PYTORCH_ENABLE_XPU_FALLBACK', '1') # CPU fallback for unsupported ops
+    if os.environ.get("OverrideDefaultFP64Settings", None) is None:
+        os.environ.setdefault('OverrideDefaultFP64Settings', '1')
+    if os.environ.get("IGC_EnableDPEmulation", None) is None:
+        os.environ.setdefault('IGC_EnableDPEmulation', '1') # FP64 Emulation
+    if os.environ.get('IPEX_FORCE_ATTENTION_SLICE', None) is None:
+        # XPU PyTorch doesn't support Flash Atten or Memory Atten yet so Battlemage goes OOM without this
+        os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
+
     if "linux" in sys.platform:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/')
-        # torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/test/xpu') # test wheels are stable previews, significantly slower than IPEX
-        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.1')
+        # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+        if os.environ.get('TRITON_COMMAND', None) is None:
+            os.environ.setdefault('TRITON_COMMAND', '--pre pytorch-triton-xpu==3.1.0+91b14bf559 --index-url https://download.pytorch.org/whl/nightly/xpu')
+        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu') # torchvision doesn't exist on test/stable branch for windows
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.5.0'), 'openvino', ignore=True)
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
+
+    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     ts('ipex', t_start)
@@ -683,6 +703,8 @@ def install_ipex(torch_command):
 
 def install_openvino(torch_command):
     t_start = time.time()
+    # Python 3.12 will cause compatibility issues with other dependencies.
+    # OpenVINO supports Python 3.12 so don't block it but don't advertise it in the error message
     check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
@@ -726,9 +748,20 @@ def install_torch_addons():
         install('optimum-quanto==0.2.6', 'optimum-quanto')
     if not args.experimental:
         uninstall('wandb', quiet=True)
-    if triton_command is not None:
+    if triton_command is not None and triton_command != 'skip':
         install(triton_command, 'triton', quiet=True)
     ts('addons', t_start)
+
+
+# check cudnn
+def check_cudnn():
+    import site
+    site_packages = site.getsitepackages()
+    cuda_path = os.environ.get('CUDA_PATH', '')
+    for site_package in site_packages:
+        folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
+        if os.path.exists(folder) and folder not in cuda_path:
+            os.environ['CUDA_PATH'] = f"{cuda_path}:{folder}"
 
 
 # check torch version
@@ -842,6 +875,7 @@ def check_torch():
         return
     if not args.skip_all:
         install_torch_addons()
+    check_cudnn()
     if args.profile:
         pr.disable()
         print_profile(pr, 'Torch')
@@ -1056,7 +1090,7 @@ def install_optional():
     install('gfpgan')
     install('clean-fid')
     install('pillow-jxl-plugin==1.3.1', ignore=True)
-    install('optimum-quanto=0.2.6', ignore=True)
+    install('optimum-quanto==0.2.6', ignore=True)
     install('bitsandbytes==0.45.0', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)

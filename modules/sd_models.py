@@ -9,14 +9,14 @@ import diffusers
 import diffusers.loaders.single_file_utils
 import torch
 
-from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect
+from modules import paths, shared, shared_state, modelloader, devices, script_callbacks, sd_vae, sd_unet, errors, sd_models_config, sd_models_compile, sd_hijack_accelerate, sd_detect, model_quant
 from modules.timer import Timer, process as process_timer
 from modules.memstats import memory_stats
 from modules.modeldata import model_data
 from modules.sd_checkpoint import CheckpointInfo, select_checkpoint, list_models, checkpoints_list, checkpoint_titles, get_closet_checkpoint_match, model_hash, update_model_hashes, setup_model, write_metadata, read_metadata_from_safetensors # pylint: disable=unused-import
 from modules.sd_offload import disable_offload, set_diffuser_offload, apply_balanced_offload, set_accelerate # pylint: disable=unused-import
 from modules.sd_models_legacy import get_checkpoint_state_dict, load_model_weights, load_model, repair_config # pylint: disable=unused-import
-from modules.sd_models_utils import NoWatermark, get_signature, get_call, path_to_repo, patch_diffuser_config, convert_to_faketensors, read_state_dict, get_state_dict_from_checkpoint # pylint: disable=unused-import
+from modules.sd_models_utils import NoWatermark, get_signature, get_call, path_to_repo, patch_diffuser_config, convert_to_faketensors, read_state_dict, get_state_dict_from_checkpoint, apply_function_to_model # pylint: disable=unused-import
 
 
 model_dir = "Stable-diffusion"
@@ -130,9 +130,9 @@ def set_diffuser_options(sd_model, vae=None, op:str='model', offload:bool=True, 
                 model.requires_grad_(False)
                 model.eval()
             return model
-        sd_model = sd_models_compile.apply_compile_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
+        sd_model = apply_function_to_model(sd_model, eval_model, ["Model", "VAE", "Text Encoder"], op="eval")
     if len(shared.opts.torchao_quantization) > 0 and shared.opts.torchao_quantization_mode == 'post':
-        sd_model = sd_models_compile.torchao_quantization(sd_model)
+        sd_model = model_quant.torchao_quantization(sd_model)
 
     if shared.opts.opt_channelslast and hasattr(sd_model, 'unet'):
         shared.log.quiet(quiet, f'Setting {op}: channels-last=True')
@@ -400,6 +400,8 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
             diffusers.loaders.single_file_utils.CHECKPOINT_KEY_NAMES["clip"] = "cond_stage_model.transformer.text_model.embeddings.position_embedding.weight" # patch for diffusers==0.28.0
             diffusers_load_config['use_safetensors'] = True
             diffusers_load_config['cache_dir'] = shared.opts.hfcache_dir # use hfcache instead of diffusers dir as this is for config only in case of single-file
+            if shared.opts.stream_load:
+                diffusers_load_config['disable_mmap'] = True
             if shared.opts.disable_accelerate:
                 from diffusers.utils import import_utils
                 import_utils._accelerate_available = False # pylint: disable=protected-access
@@ -435,6 +437,23 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
             errors.display(e, 'Load')
         return None
     return sd_model
+
+
+def set_defaults(sd_model, checkpoint_info):
+    sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
+    sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
+    sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
+    if hasattr(sd_model, "prior_pipe"):
+        sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
+    else:
+        sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
+    sd_model.is_sdxl = False # a1111 compatibility item
+    sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
+    sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
+    sd_model.logvar = sd_model.logvar.to(devices.device) if hasattr(sd_model, 'logvar') else None # fix for training
+    shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
+    if hasattr(sd_model, "set_progress_bar_config"):
+        sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
 
 
 def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=None, op='model', revision=None): # pylint: disable=unused-argument
@@ -515,20 +534,7 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
             shared.log.error(f'Load {op}: name="{checkpoint_info.name if checkpoint_info is not None else None}" not loaded')
             return
 
-        sd_model.sd_model_hash = checkpoint_info.calculate_shorthash() # pylint: disable=attribute-defined-outside-init
-        sd_model.sd_checkpoint_info = checkpoint_info # pylint: disable=attribute-defined-outside-init
-        sd_model.sd_model_checkpoint = checkpoint_info.filename # pylint: disable=attribute-defined-outside-init
-        if hasattr(sd_model, "prior_pipe"):
-            sd_model.default_scheduler = copy.deepcopy(sd_model.prior_pipe.scheduler) if hasattr(sd_model.prior_pipe, "scheduler") else None
-        else:
-            sd_model.default_scheduler = copy.deepcopy(sd_model.scheduler) if hasattr(sd_model, "scheduler") else None
-        sd_model.is_sdxl = False # a1111 compatibility item
-        sd_model.is_sd2 = hasattr(sd_model, 'cond_stage_model') and hasattr(sd_model.cond_stage_model, 'model') # a1111 compatibility item
-        sd_model.is_sd1 = not sd_model.is_sd2 # a1111 compatibility item
-        sd_model.logvar = sd_model.logvar.to(devices.device) if hasattr(sd_model, 'logvar') else None # fix for training
-        shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
-        if hasattr(sd_model, "set_progress_bar_config"):
-            sd_model.set_progress_bar_config(bar_format='Progress {rate_fmt}{postfix} {bar} {percentage:3.0f}% {n_fmt}/{total_fmt} {elapsed} {remaining}', ncols=80, colour='#327fba')
+        set_defaults(sd_model, checkpoint_info)
 
         if "Kandinsky" in sd_model.__class__.__name__: # need a special case
             sd_model.scheduler.name = 'DDIM'
@@ -563,12 +569,15 @@ def load_diffuser(checkpoint_info=None, already_loaded_state_dict=None, timer=No
 
         set_diffuser_options(sd_model, vae, op, offload=False)
         if shared.opts.nncf_compress_weights and not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-            sd_model = sd_models_compile.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
+            sd_model = model_quant.nncf_compress_weights(sd_model) # run this before move model so it can be compressed in CPU
         if shared.opts.optimum_quanto_weights:
-            sd_model = sd_models_compile.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
+            sd_model = model_quant.optimum_quanto_weights(sd_model) # run this before move model so it can be compressed in CPU
+        if shared.opts.layerwise_quantization:
+            model_quant.apply_layerwise(sd_model)
         timer.record("options")
 
         set_diffuser_offload(sd_model, op)
+
         if op == 'model' and not (os.path.isdir(checkpoint_info.path) or checkpoint_info.type == 'huggingface'):
             if getattr(shared.sd_model, 'sd_checkpoint_info', None) is not None and vae_file is not None:
                 sd_vae.apply_vae_config(shared.sd_model.sd_checkpoint_info.filename, vae_file, sd_model)
@@ -1043,27 +1052,27 @@ def unload_model_weights(op='model'):
         shared.compiled_model_state.compiled_cache.clear()
         shared.compiled_model_state.req_cache.clear()
         shared.compiled_model_state.partitioned_modules.clear()
-    if op == 'model' or op == 'dict':
-        if model_data.sd_model:
-            if not shared.native:
-                from modules import sd_hijack
-                move_model(model_data.sd_model, devices.cpu)
-                sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
-            elif not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
-                disable_offload(model_data.sd_model)
-                move_model(model_data.sd_model, 'meta')
-            model_data.sd_model = None
-            devices.torch_gc(force=True)
-            shared.log.debug(f'Unload weights {op}: {memory_stats()}')
-    elif op == 'refiner':
-        if model_data.sd_refiner:
-            if not shared.native:
-                from modules import sd_hijack
-                move_model(model_data.sd_refiner, devices.cpu)
-                sd_hijack.model_hijack.undo_hijack(model_data.sd_refiner)
-            else:
-                disable_offload(model_data.sd_refiner)
-                move_model(model_data.sd_refiner, 'meta')
-            model_data.sd_refiner = None
-            devices.torch_gc(force=True)
-            shared.log.debug(f'Unload weights {op}: {memory_stats()}')
+    if (op == 'model' or op == 'dict') and model_data.sd_model:
+        shared.log.debug(f'Current {op}: {memory_stats()}')
+        if not shared.native:
+            from modules import sd_hijack
+            move_model(model_data.sd_model, devices.cpu)
+            sd_hijack.model_hijack.undo_hijack(model_data.sd_model)
+        elif not ('Model' in shared.opts.cuda_compile and shared.opts.cuda_compile_backend == "openvino_fx"):
+            disable_offload(model_data.sd_model)
+            move_model(model_data.sd_model, 'meta')
+        model_data.sd_model = None
+        devices.torch_gc(force=True)
+        shared.log.debug(f'Unload {op}: {memory_stats()} after')
+    elif (op == 'refiner') and model_data.sd_refiner:
+        shared.log.debug(f'Current {op}: {memory_stats()}')
+        if not shared.native:
+            from modules import sd_hijack
+            move_model(model_data.sd_refiner, devices.cpu)
+            sd_hijack.model_hijack.undo_hijack(model_data.sd_refiner)
+        else:
+            disable_offload(model_data.sd_refiner)
+            move_model(model_data.sd_refiner, 'meta')
+        model_data.sd_refiner = None
+        devices.torch_gc(force=True)
+        shared.log.debug(f'Unload {op}: {memory_stats()}')

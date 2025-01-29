@@ -354,7 +354,8 @@ class StableDiffusionProcessing:
         raise NotImplementedError
 
     def close(self):
-        self.sampler = None # pylint: disable=attribute-defined-outside-init
+        self.sampler = None
+        self.scripts = None
 
 
 class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):

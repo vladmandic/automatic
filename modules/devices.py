@@ -82,7 +82,12 @@ def get_backend(shared_cmd_opts):
 def get_gpu_info():
     def get_driver():
         import subprocess
-        if torch.cuda.is_available() and torch.version.cuda:
+        if torch.xpu.is_available():
+            try:
+                return torch.xpu.get_device_properties(torch.xpu.current_device()).driver_version
+            except Exception:
+                return ''
+        elif torch.cuda.is_available() and torch.version.cuda:
             try:
                 result = subprocess.run('nvidia-smi --query-gpu=driver_version --format=csv,noheader', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 version = result.stdout.decode(encoding="utf8", errors="ignore").strip()
@@ -121,6 +126,7 @@ def get_gpu_info():
                 return {
                     'device': f'{torch.xpu.get_device_name(torch.xpu.current_device())} n={torch.xpu.device_count()}',
                     'ipex': get_package_version('intel-extension-for-pytorch'),
+                    'driver': get_driver(),
                 }
             elif backend == 'cuda' or backend == 'zluda':
                 return {
@@ -415,8 +421,8 @@ def set_sdpa_params():
                 try:
                     global sdpa_pre_dyanmic_atten # pylint: disable=global-statement
                     sdpa_pre_dyanmic_atten = torch.nn.functional.scaled_dot_product_attention
-                    from modules.sd_hijack_dynamic_atten import sliced_scaled_dot_product_attention
-                    torch.nn.functional.scaled_dot_product_attention = sliced_scaled_dot_product_attention
+                    from modules.sd_hijack_dynamic_atten import dynamic_scaled_dot_product_attention
+                    torch.nn.functional.scaled_dot_product_attention = dynamic_scaled_dot_product_attention
                     log.debug('SDPA Dynamic Attention Hijacked')
                 except Exception as err:
                     log.error(f'SDPA Dynamic Attention failed: {err}')
