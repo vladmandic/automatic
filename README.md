@@ -17,7 +17,7 @@
 
 - [Documentation](https://vladmandic.github.io/sdnext-docs/)
 - [SD.Next Features](#sdnext-features)
-- [Model support](#model-support) and [Specifications]()
+- [Model support](#model-support)
 - [Platform support](#platform-support)
 - [Getting started](#getting-started)
 
@@ -32,7 +32,7 @@ All individual features are not listed here, instead check [ChangeLog](CHANGELOG
  ▹ **Windows | Linux | MacOS | nVidia | AMD | IntelArc/IPEX | DirectML | OpenVINO | ONNX+Olive | ZLUDA**
 - Platform specific autodetection and tuning performed on install  
 - Optimized processing with latest `torch` developments with built-in support for model compile, quantize and compress  
-  Compile backends: *Triton | StableFast | DeepCache | OneDiff*  
+  Compile backends: *Triton | StableFast | DeepCache | OneDiff | TeaCache | etc.*  
   Quantization and compression methods: *BitsAndBytes | TorchAO | Optimum-Quanto | NNCF*  
 - Built-in queue management  
 - Built in installer with automatic updates and dependency management  
@@ -82,6 +82,11 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 > [!WARNING]
 > If you run into issues, check out [troubleshooting](https://vladmandic.github.io/sdnext-docs/Troubleshooting/) and [debugging](https://vladmandic.github.io/sdnext-docs/Debug/) guides  
 
+### Contributing
+
+Please see [Contributing](CONTRIBUTING) for details on how to contribute to this project  
+And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or open an [issue](https://github.com/vladmandic/automatic/issues) or [discussion](https://github.com/vladmandic/automatic/discussions)  
+
 ### Credits
 
 - Main credit goes to [Automatic1111 WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) for the original codebase  
@@ -103,11 +108,5 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 
 If you're unsure how to use a feature, best place to start is [Docs](https://vladmandic.github.io/sdnext-docs/) and if its not there,  
 check [ChangeLog](https://vladmandic.github.io/sdnext-docs/CHANGELOG/) for when feature was first introduced as it will always have a short note on how to use it  
-
-### Sponsors
-
-<div align="center">
-<!-- sponsors --><a href="https://github.com/allangrant"><img src="https://github.com/allangrant.png" width="60px" alt="Allan Grant" /></a><a href="https://github.com/mantzaris"><img src="https://github.com/mantzaris.png" width="60px" alt="a.v.mantzaris" /></a><a href="https://github.com/CurseWave"><img src="https://github.com/CurseWave.png" width="60px" alt="" /></a><a href="https://github.com/smlbiobot"><img src="https://github.com/smlbiobot.png" width="60px" alt="SML (See-ming Lee)" /></a><!-- sponsors -->
-</div>
 
 <br>
