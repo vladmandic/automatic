@@ -54,7 +54,7 @@ pytorch_lightning==1.9.4
 tokenizers==0.21.0
 transformers==4.48.1
 urllib3==1.26.19
-Pillow==11.1.0
+Pillow==10.4.0
 timm==0.9.16
 pydantic==1.10.15
 pyparsing==3.1.4
