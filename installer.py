@@ -611,18 +611,21 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
-            # torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
-        elif rocm.version == "6.1": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
-        elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
+        if rocm.version is None or float(rocm.version) >= 6.2: # assume the latest if version check fails
+            # use rocm 6.2.4 instead of 6.2 as torch==2.6.0+rocm6.2 doesn't exists
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.2.4 torchvision==0.21.0+rocm6.2.4 --index-url https://download.pytorch.org/whl/rocm6.2.4')
+        elif rocm.version == "6.1":
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.1 torchvision==0.21.0+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+        elif rocm.version == "6.0":
+            # lock to 2.4.1 instead of 2.5.1 for performance reasons
+            # there are no support for torch 2.6.0 for rocm 6.0
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
         elif float(rocm.version) < 5.5: # oldest supported version is 5.5
             log.warning(f"ROCm: unsupported version={rocm.version}")
             log.warning("ROCm: minimum supported version=5.5")
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
         else:
+            # older rocm (5.7) uses torch 2.3 or older
             torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
         if os.environ.get('TRITON_COMMAND', None) is None:
@@ -692,7 +695,7 @@ def install_ipex(torch_command):
             os.environ.setdefault('TRITON_COMMAND', '--pre pytorch-triton-xpu==3.1.0+91b14bf559 --index-url https://download.pytorch.org/whl/nightly/xpu')
         # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
