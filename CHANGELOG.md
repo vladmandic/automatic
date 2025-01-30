@@ -4,8 +4,8 @@
 
 - **Torch**:
   - for cuda environemnts set default to `torch==2.6.0+cu126`  
-  - add torch tunable ops and their max duration  
-    *set in settings -> backend settings -> torch*
+  - add support for torch **tunable ops**, this can speed up operations by up to 10-30% on some platforms  
+    *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
 - **Fixes**:  
   - photomaker with offloading  
   - photomaker with refine  

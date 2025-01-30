@@ -295,9 +295,12 @@ def set_cuda_tunable():
         if opts.torch_tunable_ops != 'default':
             torch.cuda.tunable.enable(opts.torch_tunable_ops == 'true')
             torch.cuda.tunable.tuning_enable(opts.torch_tunable_ops == 'true')
-            # torch.cuda.tunable.set_max_tuning_duration(100)
+            torch.cuda.tunable.set_max_tuning_duration(1000) # set to high value as actual is min(duration, iterations)
             torch.cuda.tunable.set_max_tuning_iterations(opts.torch_tunable_limit)
-            # log.debug(f'Torce tunable: enabled={torch.cuda.tunable.is_enabled()} tuning={torch.cuda.tunable.tuning_is_enabled()} iterations={torch.cuda.tunable.get_max_tuning_iterations()} duration={torch.cuda.tunable.get_max_tuning_duration()}')
+            fn = os.path.join(opts.tunable_dir, 'tunable.csv')
+            torch.cuda.tunable.set_filename(fn)
+            if torch.cuda.tunable.is_enabled():
+                log.debug(f'Torce tunable: enabled={torch.cuda.tunable.is_enabled()} tuning={torch.cuda.tunable.tuning_is_enabled()} iterations={torch.cuda.tunable.get_max_tuning_iterations()} duration={torch.cuda.tunable.get_max_tuning_duration()} fn="{fn}"')
     except Exception:
         pass
 
