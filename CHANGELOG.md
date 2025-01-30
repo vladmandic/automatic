@@ -4,7 +4,8 @@
 
 - **Fixes**:  
   - photomaker with offloading  
-  - photomaker with refine/detailer  
+  - photomaker with refine  
+  - detailer with faceid modules  
   - detailer restore pipeline before run  
   - fix python 3.9 compatibility  
 
