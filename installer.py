@@ -537,7 +537,6 @@ def install_rocm_zluda():
         log.info('Using CPU-only torch')
         return os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
-    check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
     log.info('ROCm: AMD toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
     # if not is_windows:
@@ -575,8 +574,8 @@ def install_rocm_zluda():
     log.info(msg)
     torch_command = ''
 
-    if sys.platform == "win32":
-        # TODO install: enable ROCm for windows when available
+    if sys.platform == "win32": # TODO install: enable ROCm for windows when available
+        check_python(supported_minors=[10, 11], reason='ZLUDA backend requires Python 3.10 or 3.11')
 
         if args.device_id is not None:
             if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:
@@ -611,6 +610,10 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
+        # Python 3.12 will cause compatibility issues with other dependencies
+        # ROCm supports Python 3.12 so don't block it but don't advertise it in the error message
+        check_python(supported_minors=[9, 10, 11, 12], reason='ROCm backend requires Python 3.9, 3.10 or 3.11')
+
         if rocm.version is None or float(rocm.version) >= 6.2: # assume the latest if version check fails
             # use rocm 6.2.4 instead of 6.2 as torch==2.6.0+rocm6.2 doesn't exists
             torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.2.4 torchvision==0.21.0+rocm6.2.4 --index-url https://download.pytorch.org/whl/rocm6.2.4')
