@@ -34,7 +34,7 @@ def check_dependencies():
     global checked_ok, busy # pylint: disable=global-statement
     busy = True
     debug = log.trace if os.environ.get('SD_DWPOSE_DEBUG', None) is not None else lambda *args, **kwargs: None
-    # pip install --upgrade --no-deps --force-reinstall termcolor xtcocotools terminaltables pycocotools munkres shapely openmim==0.3.9 mmengine==0.10.5 mmcv==2.2.0 mmpose==1.3.2 mmdet==3.3.0
+    # pip install --upgrade --no-deps --force-reinstall termcolor xtcocotools terminaltables pycocotools munkres shapely openmim==0.3.9 mmengine==0.10.5 mmcv==2.1.0 mmpose==1.3.2 mmdet==3.3.0
     packages = [
         'termcolor',
         'xtcocotools',
@@ -44,7 +44,7 @@ def check_dependencies():
         'shapely',
         'openmim==0.3.9',
         'mmengine==0.10.5',
-        'mmcv==2.2.0',
+        'mmcv==2.1.0',
         'mmpose==1.3.2',
         'mmdet==3.3.0',
     ]
