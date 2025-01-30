@@ -116,7 +116,7 @@ def dynamic_scaled_dot_product_attention(query, key, value, attn_mask=None, drop
 
 
 @cache
-def find_bmm_slice_sizes(query_shape, query_element_size, slice_rate=4, trigger_rate=6):
+def find_bmm_slice_sizes(query_shape, query_element_size, slice_rate=2, trigger_rate=4):
     if len(query_shape) == 3:
         batch_size_attention, query_tokens, shape_three = query_shape
         shape_four = 1
@@ -197,7 +197,7 @@ class DynamicAttnProcessorBMM:
         # Slicing parts:
         batch_size_attention, query_tokens, shape_three = query.shape[0], query.shape[1], query.shape[2]
         hidden_states = torch.zeros(query.shape, device=query.device, dtype=query.dtype)
-        do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_bmm_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate, trigger_rate=shared.opts.dynamic_attention_trigger_rate)
+        do_split, do_split_2, do_split_3, split_slice_size, split_2_slice_size, split_3_slice_size = find_bmm_slice_sizes(query.shape, query.element_size(), slice_rate=shared.opts.dynamic_attention_slice_rate*4, trigger_rate=shared.opts.dynamic_attention_trigger_rate*4)
 
         if do_split:
             for i in range(batch_size_attention // split_slice_size):

@@ -707,7 +707,7 @@ def install_ipex(torch_command):
     if args.use_nightly:
         torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu')
         if os.environ.get('TRITON_COMMAND', None) is None:
-            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-rocm as a dependency instead
+            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-xpu as a dependency instead
     else:
         if "linux" in sys.platform:
             # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
