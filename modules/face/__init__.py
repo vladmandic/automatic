@@ -89,7 +89,8 @@ class Script(scripts.Script):
                 gr.HTML('<a href="https://photo-maker.github.io/" target="_blank">&nbsp Tenecent ARC Lab PhotoMaker</a><br>')
             with gr.Row():
                 pm_model = gr.Dropdown(label='PhotoMaker Model', choices=['PhotoMaker v1', 'PhotoMaker v2'], value='PhotoMaker v2')
-                pm_trigger = gr.Text(label='Trigger word', value="person")
+                pm_trigger = gr.Text(label='Trigger word', placeholder="enter one word in prompt")
+            with gr.Row():
                 pm_strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.01, value=1.0)
                 pm_start = gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
         with gr.Row():

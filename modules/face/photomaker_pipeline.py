@@ -115,6 +115,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
         subfolder: str = '',
         trigger_word: str = 'img',
         pm_version: str = 'v2',
+        device: torch.device = None,
         **kwargs,
     ):
         """
@@ -197,7 +198,7 @@ class PhotoMakerStableDiffusionXLPipeline(StableDiffusionXLPipeline):
             raise NotImplementedError(f"The PhotoMaker version [{pm_version}] does not support")
 
         id_encoder.load_state_dict(state_dict["id_encoder"], strict=True)
-        id_encoder = id_encoder.to(self.device, dtype=self.unet.dtype)
+        id_encoder = id_encoder.to(device, dtype=self.unet.dtype)
         self.id_encoder = id_encoder # pylint: disable=attribute-defined-outside-init
 
         # load lora into models

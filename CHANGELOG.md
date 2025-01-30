@@ -2,7 +2,8 @@
 
 ## Update for 2025-01-30
 
-TBD
+- **Fixes**:  
+  - photomaker with offloading
 
 ## Update for 2025-01-29
 

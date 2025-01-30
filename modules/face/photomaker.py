@@ -13,6 +13,10 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
         shared.log.warning('PhotoMaker: no input images')
         return None
 
+    if len(trigger) == 0:
+        shared.log.warning('PhotoMaker: no trigger word')
+        return None
+
     c = shared.sd_model.__class__.__name__ if shared.sd_loaded else ''
     if c != 'StableDiffusionXLPipeline':
         shared.log.warning(f'PhotoMaker invalid base model: current={c} required=StableDiffusionXLPipeline')
@@ -35,20 +39,10 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
 
     # create new pipeline
     orig_pipeline = shared.sd_model # backup current pipeline definition
-    shared.sd_model = PhotoMakerStableDiffusionXLPipeline(
-        vae = shared.sd_model.vae,
-        text_encoder=shared.sd_model.text_encoder,
-        text_encoder_2=shared.sd_model.text_encoder_2,
-        tokenizer=shared.sd_model.tokenizer,
-        tokenizer_2=shared.sd_model.tokenizer_2,
-        unet=shared.sd_model.unet,
-        scheduler=shared.sd_model.scheduler,
-        force_zeros_for_empty_prompt=shared.opts.diffusers_force_zeros,
-    )
+    shared.sd_model = sd_models.switch_pipe(PhotoMakerStableDiffusionXLPipeline, shared.sd_model)
     sd_models.copy_diffuser_options(shared.sd_model, orig_pipeline) # copy options from original pipeline
     sd_models.set_diffuser_options(shared.sd_model) # set all model options such as fp16, offload, etc.
-    sd_models.move_model(shared.sd_model, devices.device) # move pipeline to device
-    shared.sd_model.to(dtype=devices.dtype)
+    sd_models.apply_balanced_offload(shared.sd_model) # apply balanced offload
 
     orig_prompt_attention = shared.opts.prompt_attention
     shared.opts.data['prompt_attention'] = 'fixed' # otherwise need to deal with class_tokens_mask
@@ -71,6 +65,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
         trigger_word=trigger,
         weight_name='photomaker-v2.bin' if is_v2 else 'photomaker-v1.bin',
         pm_version='v2' if is_v2 else 'v1',
+        device=devices.device,
         cache_dir=shared.opts.hfcache_dir,
     )
     shared.sd_model.set_adapters(["photomaker"], adapter_weights=[strength])
@@ -83,7 +78,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
             face = sorted(faces, key=lambda x:(x['bbox'][2]-x['bbox'][0])*x['bbox'][3]-x['bbox'][1])[-1]  # only use the maximum face
             id_embed_list.append(torch.from_numpy(face['embedding']))
             shared.log.debug(f'PhotoMaker: face={i+1} score={face.det_score:.2f} gender={"female" if face.gender==0 else "male"} age={face.age} bbox={face.bbox}')
-        p.task_args['id_embeds'] = torch.stack(id_embed_list)
+        p.task_args['id_embeds'] = torch.stack(id_embed_list).to(device=devices.device, dtype=devices.dtype)
 
     # run processing
     processed: processing.Processed = processing.process_images(p)
