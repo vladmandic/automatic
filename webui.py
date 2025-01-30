@@ -9,8 +9,8 @@ import logging
 import importlib
 import contextlib
 from threading import Thread
-import modules.hashes
 import modules.loader
+import modules.hashes
 
 from installer import log, git_commit, custom_excepthook
 from modules import timer, paths, shared, extensions, gr_tempdir, modelloader

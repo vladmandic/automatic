@@ -8,6 +8,9 @@
   - detailer with faceid modules  
   - detailer restore pipeline before run  
   - fix python 3.9 compatibility  
+  - handle invalid `triton` with `torch==2.6.0`  
+  - correct library import order  
+  - update requirements  
 
 ## Update for 2025-01-29
 

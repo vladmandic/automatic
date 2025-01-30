@@ -42,6 +42,11 @@ if ".dev" in torch.__version__ or "+git" in torch.__version__:
     torch.__long_version__ = torch.__version__
     torch.__version__ = re.search(r'[\d.]+[\d]', torch.__version__).group(0)
 timer.startup.record("torch")
+try:
+    import bitsandbytes # pylint: disable=W0611,C0411
+except Exception:
+    from diffusers.utils import import_utils
+    import_utils._bitsandbytes_available = False # pylint: disable=protected-access
 
 import transformers # pylint: disable=W0611,C0411
 from transformers import logging as transformers_logging # pylint: disable=W0611,C0411

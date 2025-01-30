@@ -524,7 +524,13 @@ def install_cuda():
     t_start = time.time()
     log.info('CUDA: nVidia toolkit detected')
     ts('cuda', t_start)
-    return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+    if args.use_nightly:
+        cmd = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu126')
+    else:
+        cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+        # TODO torch no triton for torch==2.6
+        # TODO blackwell requires cuda==12.8
+    return cmd
 
 
 def install_rocm_zluda():
@@ -1429,6 +1435,7 @@ def add_args(parser):
     group_compute.add_argument("--use-openvino", default=os.environ.get("SD_USEOPENVINO",False), action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
     group_compute.add_argument("--use-ipex", default=os.environ.get("SD_USEIPEX",False), action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
     group_compute.add_argument("--use-cuda", default=os.environ.get("SD_USECUDA",False), action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
+    group_compute.add_argument("--use-nightly", default=os.environ.get("SD_USENIGHLY",False), action='store_true', help="Force use nightly torch builds, default: %(default)s")
     group_compute.add_argument("--use-rocm", default=os.environ.get("SD_USEROCM",False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
     group_compute.add_argument('--use-zluda', default=os.environ.get("SD_USEZLUDA", False), action='store_true', help="Force use ZLUDA, AMD GPUs only, default: %(default)s")
     group_compute.add_argument("--use-xformers", default=os.environ.get("SD_USEXFORMERS",False), action='store_true', help="Force use xFormers cross-optimization, default: %(default)s")
