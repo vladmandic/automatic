@@ -5,7 +5,18 @@ import huggingface_hub as hf
 from modules import shared, processing, sd_models, devices
 
 
+original_pipeline = None
+
+
+def restore_pipeline():
+    global original_pipeline # pylint: disable=global-statement
+    if original_pipeline is not None:
+        shared.sd_model = original_pipeline
+        original_pipeline = None
+
+
 def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_images, trigger, strength, start): # pylint: disable=arguments-differ
+    global original_pipeline # pylint: disable=global-statement
     from modules.face.photomaker_pipeline import PhotoMakerStableDiffusionXLPipeline
 
     # prepare pipeline
@@ -38,9 +49,11 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
             return None
 
     # create new pipeline
-    orig_pipeline = shared.sd_model # backup current pipeline definition
+    original_pipeline = shared.sd_model # backup current pipeline definition
+    # orig_pipeline = shared.sd_model # backup current pipeline definition
     shared.sd_model = sd_models.switch_pipe(PhotoMakerStableDiffusionXLPipeline, shared.sd_model)
-    sd_models.copy_diffuser_options(shared.sd_model, orig_pipeline) # copy options from original pipeline
+    shared.sd_model.restore_pipeline = restore_pipeline
+    # sd_models.copy_diffuser_options(shared.sd_model, orig_pipeline) # copy options from original pipeline
     sd_models.set_diffuser_options(shared.sd_model) # set all model options such as fp16, offload, etc.
     sd_models.apply_balanced_offload(shared.sd_model) # apply balanced offload
 
@@ -81,7 +94,7 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
         p.task_args['id_embeds'] = torch.stack(id_embed_list).to(device=devices.device, dtype=devices.dtype)
 
     # run processing
-    processed: processing.Processed = processing.process_images(p)
+    # processed: processing.Processed = processing.process_images(p)
     p.extra_generation_params['PhotoMaker'] = f'{strength}'
 
     # unload photomaker adapter
@@ -89,5 +102,6 @@ def photo_maker(p: processing.StableDiffusionProcessing, app, model: str, input_
 
     # restore original pipeline
     shared.opts.data['prompt_attention'] = orig_prompt_attention
-    shared.sd_model = orig_pipeline
-    return processed
+    # shared.sd_model = orig_pipeline
+    return None
+    # return processed

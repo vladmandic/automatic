@@ -277,6 +277,8 @@ class YoloRestorer(Detailer):
                 run.restore_pipeline()
 
             p = processing_class.switch_class(p, processing.StableDiffusionProcessingImg2Img, args)
+            if hasattr(shared.sd_model, 'restore_pipeline'):
+                shared.sd_model.restore_pipeline()
             p.detailer_active += 1 # set flag to avoid recursion
 
             if p.steps < 1:

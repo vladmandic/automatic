@@ -15,7 +15,7 @@ offload_hook_instance = None
 
 
 def get_signature(cls):
-    signature = inspect.signature(cls.__init__, follow_wrapped=True, eval_str=True)
+    signature = inspect.signature(cls.__init__, follow_wrapped=True)
     return signature.parameters
 
 

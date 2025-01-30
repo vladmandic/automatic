@@ -3,7 +3,10 @@
 ## Update for 2025-01-30
 
 - **Fixes**:  
-  - photomaker with offloading
+  - photomaker with offloading  
+  - photomaker with refine/detailer  
+  - detailer restore pipeline before run  
+  - fix python 3.9 compatibility  
 
 ## Update for 2025-01-29
 

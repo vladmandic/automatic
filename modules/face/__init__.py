@@ -8,6 +8,9 @@ debug = shared.log.trace if os.environ.get('SD_FACE_DEBUG', None) is not None el
 
 
 class Script(scripts.Script):
+    original_pipeline = None
+    original_prompt_attention = None
+
     def title(self):
         return 'Face: Multiple ID Transfers'
 
@@ -125,6 +128,9 @@ class Script(scripts.Script):
                 input_images[i] = Image.open(image['name'])
 
         processed = None
+        self.original_pipeline = shared.sd_model
+        self.original_prompt_attention = shared.opts.prompt_attention
+        shared.opts.data['prompt_attention'] = 'fixed'
         if mode == 'FaceID': # faceid runs as ipadapter in its own pipeline
             from modules.face.insightface import get_app
             app = get_app('buffalo_l')
@@ -135,7 +141,7 @@ class Script(scripts.Script):
             from modules.face.insightface import get_app
             app = get_app('buffalo_l')
             from modules.face.photomaker import photo_maker
-            processed = photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
+            photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
         elif mode == 'InstantID':
             from modules.face.insightface import get_app
             app=get_app('antelopev2')
@@ -163,4 +169,13 @@ class Script(scripts.Script):
                 info = processing.create_infotext(p, index=i)
                 images.save_image(image, path=p.outpath_samples, seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, p=p)
 
+        return processed
+
+    def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
+        if self.original_pipeline is not None:
+            shared.sd_model = self.original_pipeline
+            self.original_pipeline = None
+        if self.original_prompt_attention is not None:
+            shared.opts.data['prompt_attention'] = self.original_prompt_attention
+            self.original_prompt_attention = None
         return processed

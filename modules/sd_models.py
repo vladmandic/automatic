@@ -756,6 +756,7 @@ def set_diffuser_pipe(pipe, new_pipe_type):
         'FluxControlPipeline',
         'StableVideoDiffusionPipeline',
         'PixelSmithXLPipeline',
+        'PhotoMakerStableDiffusionXLPipeline',
     ]
 
     has_errors = False

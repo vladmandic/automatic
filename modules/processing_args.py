@@ -128,7 +128,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
 
     parser = 'fixed'
     prompt_attention = prompt_attention or shared.opts.prompt_attention
-    if prompt_attention != 'fixed' and 'Onnx' not in model.__class__.__name__ and (
+    if (prompt_attention != 'fixed') and ('Onnx' not in model.__class__.__name__) and ('prompt' not in p.task_args) and (
         'StableDiffusion' in model.__class__.__name__ or
         'StableCascade' in model.__class__.__name__ or
         'Flux' in model.__class__.__name__
