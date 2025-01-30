@@ -2,6 +2,10 @@
 
 ## Update for 2025-01-30
 
+- **Torch**:
+  - for cuda environemnts set default to `torch==2.6.0+cu126`  
+  - add torch tunable ops and their max duration  
+    *set in settings -> backend settings -> torch*
 - **Fixes**:  
   - photomaker with offloading  
   - photomaker with refine  
@@ -11,6 +15,8 @@
   - handle invalid `triton` with `torch==2.6.0`  
   - correct library import order  
   - update requirements  
+  - calculate dyn atten bmm slice rate  
+  - dwpose update and patch `mmengine` installer  
 
 ## Update for 2025-01-29
 

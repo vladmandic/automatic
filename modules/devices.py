@@ -288,6 +288,20 @@ def set_cuda_memory_limit():
         log.warning(f'Torch CUDA memory limit: fraction={opts.cuda_mem_fraction:.2f} {e}')
 
 
+def set_cuda_tunable():
+    if not cuda_ok:
+        return
+    try:
+        if opts.torch_tunable_ops != 'default':
+            torch.cuda.tunable.enable(opts.torch_tunable_ops == 'true')
+            torch.cuda.tunable.tuning_enable(opts.torch_tunable_ops == 'true')
+            # torch.cuda.tunable.set_max_tuning_duration(100)
+            torch.cuda.tunable.set_max_tuning_iterations(opts.torch_tunable_limit)
+            # log.debug(f'Torce tunable: enabled={torch.cuda.tunable.is_enabled()} tuning={torch.cuda.tunable.tuning_is_enabled()} iterations={torch.cuda.tunable.get_max_tuning_iterations()} duration={torch.cuda.tunable.get_max_tuning_duration()}')
+    except Exception:
+        pass
+
+
 def test_fp16():
     global fp16_ok # pylint: disable=global-statement
     if fp16_ok is not None:
@@ -484,6 +498,7 @@ def set_dtype():
 def set_cuda_params():
     override_ipex_math()
     set_cuda_memory_limit()
+    set_cuda_tunable()
     set_cudnn_params()
     set_sdpa_params()
     set_dtype()
@@ -492,7 +507,12 @@ def set_cuda_params():
         device_name = get_raw_openvino_device()
     else:
         device_name = torch.device(get_optimal_device_name())
-    log.info(f'Torch parameters: backend={backend} device={device_name} config={opts.cuda_dtype} dtype={dtype} context={inference_context.__name__} nohalf={opts.no_half} nohalfvae={opts.no_half_vae} upcast={opts.upcast_sampling} deterministic={opts.cudnn_deterministic} fp16={"pass" if fp16_ok else "fail"} bf16={"pass" if bf16_ok else "fail"} optimization="{opts.cross_attention_optimization}"')
+    try:
+        # tunable = torch._C._jit_get_tunable_op_enabled() # pylint: disable=protected-access
+        tunable = [torch.cuda.tunable.is_enabled(), torch.cuda.tunable.tuning_is_enabled()]
+    except Exception:
+        tunable = [False, False]
+    log.info(f'Torch parameters: backend={backend} device={device_name} config={opts.cuda_dtype} dtype={dtype} context={inference_context.__name__} nohalf={opts.no_half} nohalfvae={opts.no_half_vae} upcast={opts.upcast_sampling} deterministic={opts.cudnn_deterministic} tunable={tunable} fp16={"pass" if fp16_ok else "fail"} bf16={"pass" if bf16_ok else "fail"} optimization="{opts.cross_attention_optimization}"')
 
 
 def cond_cast_unet(tensor):

@@ -527,9 +527,10 @@ def install_cuda():
     if args.use_nightly:
         cmd = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu126')
     else:
-        cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
-        # TODO torch no triton for torch==2.6
-        # TODO blackwell requires cuda==12.8
+        # cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+        cmd = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cu126 torchvision==0.21.0+cu126 --index-url https://download.pytorch.org/whl/cu126')
+        os.environ.setdefault('TRITON_COMMAND', 'skip')
+        # TODO blackwell requires cuda==12.8 torch release is pending
     return cmd
 
 
@@ -782,10 +783,14 @@ def check_cudnn():
     import site
     site_packages = site.getsitepackages()
     cuda_path = os.environ.get('CUDA_PATH', '')
-    for site_package in site_packages:
-        folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
-        if os.path.exists(folder) and folder not in cuda_path:
-            os.environ['CUDA_PATH'] = f"{cuda_path}:{folder}"
+    if cuda_path == '':
+        for site_package in site_packages:
+            folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
+            if os.path.exists(folder) and folder not in cuda_path:
+                cuda_path = f"{cuda_path}:{folder}"
+                if cuda_path.startswith(':'):
+                    cuda_path = cuda_path[1:]
+                os.environ['CUDA_PATH'] = cuda_path
 
 
 # check torch version
@@ -1115,7 +1120,7 @@ def install_optional():
     install('clean-fid')
     install('pillow-jxl-plugin==1.3.1', ignore=True)
     install('optimum-quanto==0.2.6', ignore=True)
-    install('bitsandbytes==0.45.0', ignore=True)
+    install('bitsandbytes==0.45.1', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
@@ -1447,7 +1452,7 @@ def add_args(parser):
     group_compute.add_argument("--use-openvino", default=os.environ.get("SD_USEOPENVINO",False), action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
     group_compute.add_argument("--use-ipex", default=os.environ.get("SD_USEIPEX",False), action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
     group_compute.add_argument("--use-cuda", default=os.environ.get("SD_USECUDA",False), action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
-    group_compute.add_argument("--use-nightly", default=os.environ.get("SD_USENIGHLY",False), action='store_true', help="Force use nightly torch builds, default: %(default)s")
+    group_compute.add_argument("--use-nightly", default=os.environ.get("SD_USENIGHTLY",False), action='store_true', help="Force use nightly torch builds, default: %(default)s")
     group_compute.add_argument("--use-rocm", default=os.environ.get("SD_USEROCM",False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
     group_compute.add_argument('--use-zluda', default=os.environ.get("SD_USEZLUDA", False), action='store_true', help="Force use ZLUDA, AMD GPUs only, default: %(default)s")
     group_compute.add_argument("--use-xformers", default=os.environ.get("SD_USEXFORMERS",False), action='store_true', help="Force use xFormers cross-optimization, default: %(default)s")

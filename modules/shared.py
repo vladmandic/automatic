@@ -528,6 +528,8 @@ options_templates.update(options_section(('backends', "Backend Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_expandable_segments": OptionInfo(False, "Expandable segments"),
+    "torch_tunable_ops": OptionInfo("default", "Tunable ops", gr.Radio, {"choices": ["default", "true", "false"]}),
+    "torch_tunable_limit": OptionInfo(30, "Tunable ops limit", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "cuda_mem_fraction": OptionInfo(0.0, "Memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
     "torch_gc_threshold": OptionInfo(70, "GC threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "inference_mode": OptionInfo("no-grad", "Inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
