@@ -44,13 +44,13 @@ def apply_styles_to_prompt(prompt, styles):
 
 def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, seed=-1):
     def check_wildcard_files(prompt, wildcard, files, file_only=True):
-        trimmed = wildcard.replace('\\', '').replace('/', '').strip().lower()
+        trimmed = wildcard.replace('\\', os.path.sep).strip().lower()
         for file in files:
             if file_only:
-                paths = [os.path.splitext(os.path.basename(file).lower())[0]]
+                paths = [os.path.splitext(file)[0].lower(), os.path.splitext(os.path.basename(file).lower())[0]] # fullname and basename
             else:
-                paths = [os.path.splitext(p.lower())[0] for p in os.path.normpath(file).split(os.path.sep)]
-            if trimmed in paths:
+                paths = [os.path.splitext(p.lower())[0] for p in os.path.normpath(file).split(os.path.sep)] # every path component
+            if (trimmed in paths) or (os.path.sep in trimmed and trimmed in paths[0]):
                 try:
                     with open(file, 'r', encoding='utf-8') as f:
                         lines = f.readlines()
@@ -77,6 +77,8 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, see
     if len(matches) == 0:
         return prompt, replaced, not_found
     files = list(files_cache.list_files(shared.opts.wildcards_dir, ext_filter=[".txt"], recursive=True))
+    if len(files) == 0:
+        return prompt, replaced, not_found
     for wildcard in matches:
         prompt, found = check_wildcard_files(prompt, wildcard, files)
         if found and wildcard in not_found:
