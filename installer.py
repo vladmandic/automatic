@@ -67,6 +67,14 @@ except Exception:
     ts = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
 
 
+def get_console():
+    return console
+
+
+def get_log():
+    return log
+
+
 def install_traceback(suppress: list = []):
     from rich.traceback import install as traceback_install
     from rich.pretty import install as pretty_install
