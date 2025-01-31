@@ -35,6 +35,7 @@
   - ipex device wrapper with adetailer  
   - openvino error handling  
   - relax python version checks for rocm  
+  - simplify and improve file wildcard matching
 
 ## Update for 2025-01-29
 
