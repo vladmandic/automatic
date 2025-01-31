@@ -20,7 +20,7 @@ def get_motd():
         motd += "<span style='color: orange'>Legacy mode</span><br>"
     if shared.opts.motd:
         try:
-            res = requests.get('https://vladmandic.github.io/automatic/motd', timeout=3)
+            res = requests.get('https://vladmandic.github.io/sdnext/motd', timeout=3)
             if res.status_code == 200:
                 msg = (res.text or '').strip()
                 shared.log.info(f'MOTD: {msg if len(msg) > 0 else "N/A"}')

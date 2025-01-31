@@ -1383,7 +1383,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
         return
     commits = None
     try:
-        commits = requests.get('https://api.github.com/repos/vladmandic/automatic/branches/master', timeout=10).json()
+        commits = requests.get('https://api.github.com/repos/vladmandic/sdnext/branches/master', timeout=10).json()
         if commits['commit']['sha'] != commit:
             if args.upgrade:
                 global quick_allowed # pylint: disable=global-statement

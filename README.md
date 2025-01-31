@@ -1,14 +1,14 @@
 <div align="center">
-<img src="https://github.com/vladmandic/automatic/raw/master/html/logo-transparent.png" width=200 alt="SD.Next">
+<img src="https://github.com/vladmandic/sdnext/raw/master/html/logo-transparent.png" width=200 alt="SD.Next">
 
 **Image Diffusion implementation with advanced features**
 
-![Last update](https://img.shields.io/github/last-commit/vladmandic/automatic?svg=true)
-![License](https://img.shields.io/github/license/vladmandic/automatic?svg=true)
+![Last update](https://img.shields.io/github/last-commit/vladmandic/sdnext?svg=true)
+![License](https://img.shields.io/github/license/vladmandic/sdnext?svg=true)
 [![Discord](https://img.shields.io/discord/1101998836328697867?logo=Discord&svg=true)](https://discord.gg/VjvR2tabEX)
 [![Sponsors](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/vladmandic)
 
-[Docs](https://vladmandic.github.io/sdnext-docs/) | [Wiki](https://github.com/vladmandic/automatic/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
+[Docs](https://vladmandic.github.io/sdnext-docs/) | [Wiki](https://github.com/vladmandic/sdnext/wiki) | [Discord](https://discord.gg/VjvR2tabEX) | [Changelog](CHANGELOG.md)
 
 </div>
 </br>
@@ -85,7 +85,7 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 ### Contributing
 
 Please see [Contributing](CONTRIBUTING) for details on how to contribute to this project  
-And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or open an [issue](https://github.com/vladmandic/automatic/issues) or [discussion](https://github.com/vladmandic/automatic/discussions)  
+And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or open an [issue](https://github.com/vladmandic/sdnext/issues) or [discussion](https://github.com/vladmandic/sdnext/discussions)  
 
 ### Credits
 
@@ -95,14 +95,14 @@ And for any question, reach out on [Discord](https://discord.gg/VjvR2tabEX) or o
 
 ### Evolution
 
-<a href="https://star-history.com/#vladmandic/automatic&Date">
+<a href="https://star-history.com/#vladmandic/sdnext&Date">
   <picture width=640>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date&theme=dark" />
-    <img src="https://api.star-history.com/svg?repos=vladmandic/automatic&type=Date" alt="starts" width="320">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=vladmandic/sdnext&type=Date&theme=dark" />
+    <img src="https://api.star-history.com/svg?repos=vladmandic/sdnext&type=Date" alt="starts" width="320">
   </picture>
 </a>
 
-- [OSS Stats](https://ossinsight.io/analyze/vladmandic/automatic#overview)
+- [OSS Stats](https://ossinsight.io/analyze/vladmandic/sdnext#overview)
 
 ### Docs
 

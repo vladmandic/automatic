@@ -4,6 +4,8 @@
 
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
+    all internal links have been updated  
+    old repo url should automatically redirect to new one for seamless transition  
 - **Docs**:
   - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
