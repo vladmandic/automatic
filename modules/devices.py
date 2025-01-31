@@ -228,6 +228,9 @@ def torch_gc(force:bool=False, fast:bool=False, reason:str=None):
         force = True
         if reason is None:
             reason = 'oom'
+    if debug:
+        fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
+        log.trace(f'GC: run={force} fast={fast} used={used_gpu} threshold={threshold} fn={fn}')
     if force:
         # actual gc
         collected = gc.collect() if not fast else 0 # python gc
