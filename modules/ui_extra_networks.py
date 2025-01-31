@@ -238,19 +238,31 @@ class ExtraNetworksPage:
                     subdir = subdir[1:]
                 if not subdir:
                     continue
-                # if not self.is_empty(tgt):
                 subdirs[subdir] = 1
         debug(f"Networks: page='{self.name}' subfolders={list(subdirs)}")
         subdirs = OrderedDict(sorted(subdirs.items()))
         if self.name == 'model' and shared.opts.extra_network_reference_enable:
+            subdirs['Local'] = 1
             subdirs['Reference'] = 1
             subdirs[os.path.basename(shared.opts.diffusers_dir)] = 1
-            subdirs.move_to_end(os.path.basename(shared.opts.diffusers_dir))
-            subdirs.move_to_end('Reference')
         if self.name == 'style' and shared.opts.extra_networks_styles:
-            subdirs['built-in'] = 1
-        subdirs_html = "<button class='lg secondary gradio-button custom-button search-all' onclick='extraNetworksSearchButton(event)'>All</button><br>"
-        subdirs_html += "".join([f"<button class='lg secondary gradio-button custom-button' onclick='extraNetworksSearchButton(event)'>{html.escape(subdir)}</button><br>" for subdir in subdirs if subdir != ''])
+            subdirs['Local'] = 1
+            subdirs['Reference'] = 1
+        subdirs['All'] = 1
+        if 'All' in subdirs:
+            subdirs.move_to_end('All', last=False)
+        if 'Local' in subdirs:
+            subdirs.move_to_end('Local', last=True)
+        if os.path.basename(shared.opts.diffusers_dir) in subdirs:
+            subdirs.move_to_end(os.path.basename(shared.opts.diffusers_dir), last=True)
+        if 'Reference' in subdirs:
+            subdirs.move_to_end('Reference', last=True)
+        subdirs_html = ''
+        for subdir in subdirs:
+            if len(subdir) == 0:
+                continue
+            style = 'color: var(--color-accent)' if subdir in ['All', 'Local', 'Diffusers', 'Reference'] else ''
+            subdirs_html += f'<button class="lg secondary gradio-button custom-button" onclick="extraNetworksSearchButton(event)" style="{style}">{html.escape(subdir)}</button><br>'
         self.html = ''
         self.create_items(tabname)
         self.create_xyz_grid()

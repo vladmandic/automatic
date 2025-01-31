@@ -240,7 +240,7 @@ class StyleDatabase:
                 self.styles = dict(sorted(self.styles.items(), key=lambda style: style[1].filename))
                 if self.built_in:
                     fn = os.path.join('html', 'art-styles.json')
-                    future_items[executor.submit(self.load_style, fn, 'built-in')] = fn
+                    future_items[executor.submit(self.load_style, fn, 'Reference')] = fn
                 for future in concurrent.futures.as_completed(future_items):
                     future.result()
 

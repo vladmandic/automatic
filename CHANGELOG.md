@@ -11,6 +11,8 @@
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
     *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
   - enhanced error logging
+- **Other**:
+  - **Networks**: imporove search/filter and add visual indicators for types  
 - **Refactor**:
   - unified trace handler with configurable tracebacks  
 - **Fixes**:  

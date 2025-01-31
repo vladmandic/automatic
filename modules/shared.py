@@ -937,7 +937,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_quant": OptionInfo("NF4","LoRA precision when quantized", gr.Radio, {"choices": ["NF4", "FP4"]}),
 
     "extra_networks_styles_sep": OptionInfo("<h2>Styles</h2>", "", gr.HTML),
-    "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
+    "extra_networks_styles": OptionInfo(True, "Show reference styles"),
 
     "extra_networks_embed_sep": OptionInfo("<h2>Embeddings</h2>", "", gr.HTML),
     "diffusers_enable_embed": OptionInfo(True, "Enable embeddings support", gr.Checkbox, {"visible": native}),
