@@ -2,6 +2,8 @@
 
 ## Update for 2025-01-31
 
+- **Docs**:
+  - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
   - for cuda environemnts set default to `torch==2.6.0+cu126`  
     *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
