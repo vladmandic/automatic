@@ -563,7 +563,6 @@ def install_cuda():
     else:
         # cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
         cmd = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cu126 torchvision==0.21.0+cu126 --index-url https://download.pytorch.org/whl/cu126')
-        os.environ.setdefault('TRITON_COMMAND', 'skip')
         # TODO blackwell requires cuda==12.8 torch release is pending
     return cmd
 
@@ -679,9 +678,6 @@ def install_rocm_zluda():
                 # older rocm (5.7) uses torch 2.3 or older
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
-        if os.environ.get('TRITON_COMMAND', None) is None:
-            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-rocm as a dependency instead
-
         if sys.version_info < (3, 11):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
             if rocm.version is None or float(rocm.version) > 6.0:
@@ -741,8 +737,6 @@ def install_ipex(torch_command):
 
     if args.use_nightly:
         torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu')
-        if os.environ.get('TRITON_COMMAND', None) is None:
-            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-xpu as a dependency instead
     else:
         if "linux" in sys.platform:
             # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
@@ -784,8 +778,10 @@ def install_openvino(torch_command):
 
 def install_torch_addons():
     t_start = time.time()
+    triton_command = os.environ.get('TRITON_COMMAND', None)
+    if triton_command is not None and triton_command != 'skip':
+        install(triton_command, 'triton', quiet=True)
     xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers') if opts.get('cross_attention_optimization', '') == 'xFormers' or args.use_xformers else 'none'
-    triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
     if 'xformers' in xformers_package:
         try:
             install(xformers_package, ignore=True, no_deps=True)
@@ -807,8 +803,6 @@ def install_torch_addons():
         install('optimum-quanto==0.2.6', 'optimum-quanto')
     if not args.experimental:
         uninstall('wandb', quiet=True)
-    if triton_command is not None and triton_command != 'skip':
-        install(triton_command, 'triton', quiet=True)
     ts('addons', t_start)
 
 
