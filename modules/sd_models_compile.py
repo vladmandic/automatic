@@ -1,7 +1,7 @@
 import time
 import logging
 import torch
-from modules import shared, devices, sd_models
+from modules import shared, devices, sd_models, errors
 from installer import setup_logging
 
 
@@ -208,6 +208,7 @@ def compile_torch(sd_model):
         shared.log.info(f"Model compile: task=torch time={t1-t0:.2f}")
     except Exception as e:
         shared.log.warning(f"Model compile: task=torch {e}")
+        errors.display(e, 'Compile')
     return sd_model
 
 
