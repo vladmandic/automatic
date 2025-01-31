@@ -233,9 +233,9 @@ def get_remote_ip():
 def start_common():
     log.debug('Entering start sequence')
     if shared.cmd_opts.data_dir is not None and len(shared.cmd_opts.data_dir) > 0:
-        log.info(f'Using data path: {shared.cmd_opts.data_dir}')
+        log.info(f'Base path: data="{shared.cmd_opts.data_dir}"')
     if shared.cmd_opts.models_dir is not None and len(shared.cmd_opts.models_dir) > 0 and shared.cmd_opts.models_dir != 'models':
-        log.info(f'Models path: {shared.cmd_opts.models_dir}')
+        log.info(f'Base path: models="{shared.cmd_opts.models_dir}"')
     paths.create_paths(shared.opts)
     async_policy()
     initialize()

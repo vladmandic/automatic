@@ -24,13 +24,13 @@ def initialize():
     from modules.control.units import xs # vislearn ControlNet-XS
     from modules.control.units import lite # vislearn ControlNet-XS
     from modules.control.units import t2iadapter # TencentARC T2I-Adapter
-    shared.log.debug(f'UI initialize: control models={shared.opts.control_dir}')
+    shared.log.debug(f'UI initialize: control models="{shared.opts.control_dir}"')
     controlnet.cache_dir = os.path.join(shared.opts.control_dir, 'controlnet')
     xs.cache_dir = os.path.join(shared.opts.control_dir, 'xs')
     lite.cache_dir = os.path.join(shared.opts.control_dir, 'lite')
     t2iadapter.cache_dir = os.path.join(shared.opts.control_dir, 'adapter')
     processors.cache_dir = os.path.join(shared.opts.control_dir, 'processor')
-    masking.cache_dir   = os.path.join(shared.opts.control_dir, 'segment')
+    masking.cache_dir = os.path.join(shared.opts.control_dir, 'segment')
     unit.default_device = devices.device
     unit.default_dtype = devices.dtype
     try:
