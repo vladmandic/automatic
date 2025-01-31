@@ -307,7 +307,7 @@ def set_cuda_tunable():
                 pass
             torch.cuda.tunable.set_filename(fn)
             if torch.cuda.tunable.is_enabled():
-                log.debug(f'Torche tunable: enabled={torch.cuda.tunable.is_enabled()} tuning={torch.cuda.tunable.tuning_is_enabled()} iterations={torch.cuda.tunable.get_max_tuning_iterations()} duration={torch.cuda.tunable.get_max_tuning_duration()} fn="{fn}" entries={lines}')
+                log.debug(f'Torch tunable: enabled={torch.cuda.tunable.is_enabled()} tuning={torch.cuda.tunable.tuning_is_enabled()} iterations={torch.cuda.tunable.get_max_tuning_iterations()} duration={torch.cuda.tunable.get_max_tuning_duration()} fn="{fn}" entries={lines}')
     except Exception as e:
         log.warning(f'Torch tunable: {e}')
 

@@ -9,7 +9,8 @@
 - **Docs**:
   - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
-  - for cuda environemnts set default to `torch==2.6.0+cu126`  
+  - for cuda environments set default to `torch==2.6.0+cu126`  
+    for rocm environments set default to `torch==2.6.0+rocm6.2.4`  
     *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
@@ -25,12 +26,12 @@
   - detailer with faceid modules  
   - detailer restore pipeline before run  
   - fix `python==3.9` compatibility  
-  - handle invalid `triton` with `torch==2.6.0`  
+  - handle invalid `triton` on Linux  
   - correct library import order  
   - update requirements  
   - calculate dyn atten bmm slice rate  
   - dwpose update and patch `mmengine` installer  
-  - wrap extensions using incorrect device  
+  - ipex device wrapper with adetailer  
   - openvino error handling  
   - relax python version checks for rocm  
 
