@@ -300,14 +300,6 @@ def torch_linspace(*args, device=None, **kwargs):
     else:
         return original_torch_linspace(*args, device=device, **kwargs)
 
-original_torch_Generator = torch.Generator
-@wraps(torch.Generator)
-def torch_Generator(device=None):
-    if check_device(device):
-        return original_torch_Generator(return_xpu(device))
-    else:
-        return original_torch_Generator(device)
-
 original_torch_load = torch.load
 @wraps(torch.load)
 def torch_load(f, map_location=None, *args, **kwargs):
@@ -317,6 +309,21 @@ def torch_load(f, map_location=None, *args, **kwargs):
         return original_torch_load(f, *args, map_location=return_xpu(map_location), **kwargs)
     else:
         return original_torch_load(f, *args, map_location=map_location, **kwargs)
+
+original_torch_Generator = torch.Generator
+@wraps(torch.Generator)
+def torch_Generator(device=None):
+    if check_device(device):
+        return original_torch_Generator(return_xpu(device))
+    else:
+        return original_torch_Generator(device)
+
+@wraps(torch.cuda.synchronize)
+def torch_cuda_synchronize(device=None):
+    if check_device(device):
+        return torch.xpu.synchronize(return_xpu(device))
+    else:
+        return torch.xpu.synchronize(device)
 
 
 # Hijack Functions:
@@ -336,8 +343,9 @@ def ipex_hijacks(legacy=True):
     torch.zeros = torch_zeros
     torch.full = torch_full
     torch.linspace = torch_linspace
-    torch.Generator = torch_Generator
     torch.load = torch_load
+    torch.Generator = torch_Generator
+    torch.cuda.synchronize = torch_cuda_synchronize
 
     torch.backends.cuda.sdp_kernel = return_null_context
     torch.nn.DataParallel = DummyDataParallel

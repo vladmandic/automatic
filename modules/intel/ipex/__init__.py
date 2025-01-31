@@ -37,7 +37,6 @@ def ipex_init(): # pylint: disable=too-many-statements
             torch.cuda.is_current_stream_capturing = lambda: False
             torch.cuda.set_device = torch.xpu.set_device
             torch.cuda.stream = torch.xpu.stream
-            torch.cuda.synchronize = torch.xpu.synchronize
             torch.cuda.Event = torch.xpu.Event
             torch.cuda.Stream = torch.xpu.Stream
             torch.Tensor.cuda = torch.Tensor.xpu
