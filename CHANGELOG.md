@@ -2,6 +2,8 @@
 
 ## Update for 2025-01-31
 
+- **GitHub**
+  - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
 - **Docs**:
   - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
@@ -10,7 +12,7 @@
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
     *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
-  - enhanced error logging
+  - enhanced error logging  
 - **Other**:
   - **Networks**: imporove search/filter and add visual indicators for types  
 - **Refactor**:
@@ -20,12 +22,15 @@
   - photomaker with refine  
   - detailer with faceid modules  
   - detailer restore pipeline before run  
-  - fix python 3.9 compatibility  
+  - fix `python==3.9` compatibility  
   - handle invalid `triton` with `torch==2.6.0`  
   - correct library import order  
   - update requirements  
   - calculate dyn atten bmm slice rate  
   - dwpose update and patch `mmengine` installer  
+  - wrap extensions using incorrect device  
+  - openvino error handling  
+  - relax python version checks for rocm  
 
 ## Update for 2025-01-29
 
