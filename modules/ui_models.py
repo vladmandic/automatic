@@ -643,7 +643,7 @@ def create_ui():
                     gr.HTML('<h2>Search for models</h2>')
                 with gr.Row():
                     with gr.Column(scale=1):
-                        civit_model_type = gr.Dropdown(label='Model type', choices=['Model', 'LoRA', 'Embedding', 'VAE', 'Other'], value='Model')
+                        civit_model_type = gr.Dropdown(label='CivitAI model type', choices=['Model', 'LoRA', 'Embedding', 'VAE', 'Other'], value='Model')
                     with gr.Column(scale=15):
                         with gr.Row():
                             civit_search_text = gr.Textbox('', label='Search models', placeholder='keyword')
