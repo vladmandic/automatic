@@ -67,6 +67,25 @@ except Exception:
     ts = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
 
 
+def install_traceback(suppress: list = []):
+    from rich.traceback import install as traceback_install
+    from rich.pretty import install as pretty_install
+    traceback_install(
+        console=console,
+        extra_lines=os.environ.get('SD_TRACELINES', 1),
+        max_frames=os.environ.get('SD_TRACEFRAMES', 16),
+        width=os.environ.get('SD_TRACEWIDTH', console.width),
+        code_width=os.environ.get('SD_TRACEWIDTH', console.width) - 12,
+        word_wrap=os.environ.get('SD_TRACEWRAP', False),
+        indent_guides=os.environ.get('SD_TRACEINDENT', False),
+        show_locals=os.environ.get('SD_TRACELOCALS', False),
+        locals_hide_dunder=os.environ.get('SD_TRACEDUNDER', True),
+        locals_hide_sunder=os.environ.get('SD_TRACESUNDER', None),
+        suppress=suppress,
+    )
+    pretty_install(console=console)
+
+
 # setup console and file logging
 def setup_logging():
 
@@ -101,7 +120,6 @@ def setup_logging():
     from rich.console import Console
     from rich import print as rprint
     from rich.pretty import install as pretty_install
-    from rich.traceback import install as traceback_install
 
     if args.log:
         global log_file # pylint: disable=global-statement
@@ -116,17 +134,25 @@ def setup_logging():
     log.setLevel(logging.DEBUG) # log to file is always at level debug for facility `sd`
     log.print = rprint
     global console # pylint: disable=global-statement
-    console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
+    theme = Theme({
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",
         "inspect.value.border": "black",
         "logging.level.info": "blue_violet",
         "logging.level.debug": "purple4",
         "logging.level.trace": "dark_blue",
-    }))
+    })
+    console = Console(
+        log_time=True,
+        log_time_format='%H:%M:%S-%f',
+        tab_size=4,
+        soft_wrap=True,
+        safe_box=True,
+        theme=theme,
+    )
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, max_frames=16, width=console.width, word_wrap=False, indent_guides=False, suppress=[])
+    install_traceback()
     while log.hasHandlers() and len(log.handlers) > 0:
         log.removeHandler(log.handlers[0])
 

@@ -1,11 +1,16 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-30
+## Update for 2025-01-31
 
 - **Torch**:
   - for cuda environemnts set default to `torch==2.6.0+cu126`  
-  - add support for torch **tunable ops**, this can speed up operations by up to 10-30% on some platforms  
+    *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
+    to force torch upgrade, either start with new installation or use `--reinstall` flag  
+  - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
     *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
+  - enhanced error logging
+- **Refactor**:
+  - unified trace handler with configurable tracebacks  
 - **Fixes**:  
   - photomaker with offloading  
   - photomaker with refine  
