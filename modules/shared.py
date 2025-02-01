@@ -18,8 +18,8 @@ from modules.paths import models_path, script_path, data_path, sd_configs_path, 
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
 from modules.memstats import memory_stats, ram_stats # pylint: disable=unused-import
+from modules.interrogate.legacy import category_types
 from modules.ui_components import DropdownEditable
-import modules.interrogate
 import modules.memmon
 import modules.styles
 import modules.paths as paths
@@ -36,7 +36,6 @@ cmd_opts, _ = parser.parse_known_args()
 hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
 locking_available = True # used by file read/write locking
-interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
 face_restorers = []
@@ -896,7 +895,7 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
     "interrogate_clip_num_beams": OptionInfo(1, "Interrogate: num_beams for BLIP", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
     "interrogate_clip_min_length": OptionInfo(32, "Interrogate: minimum description length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
     "interrogate_clip_max_length": OptionInfo(192, "Interrogate: maximum description length", gr.Slider, {"minimum": 1, "maximum": 256, "step": 1}),
-    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "Interrogate: skip categories", gr.CheckboxGroup, lambda: {"choices": modules.interrogate.category_types()}, refresh=modules.interrogate.category_types),
+    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "Interrogate: skip categories", gr.CheckboxGroup, lambda: {"choices": category_types()}, refresh=category_types),
     "interrogate_deepbooru_score_threshold": OptionInfo(0.65, "Interrogate: deepbooru score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
     "deepbooru_sort_alpha": OptionInfo(False, "Interrogate: deepbooru sort alphabetically"),
     "deepbooru_use_spaces": OptionInfo(False, "Use spaces for tags in deepbooru"),

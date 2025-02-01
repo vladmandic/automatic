@@ -221,19 +221,20 @@ def open_folder(result_gallery, gallery_index = 0):
             subprocess.Popen(["xdg-open", path]) # pylint: disable=consider-using-with
 
 
-def interrogate_clip(image):
+def interrogate_clip(image): # legacy function
     if image is None:
         shared.log.error("Interrogate: no image selected")
         return gr.update()
-    prompt = shared.interrogator.interrogate(image)
+    from modules.interrogate import legacy
+    prompt = legacy.interrogator.interrogate(image)
     return gr.update() if prompt is None else prompt
 
 
-def interrogate_booru(image):
+def interrogate_booru(image): # legacy function
     if image is None:
         shared.log.error("Interrogate: no image selected")
         return gr.update()
-    from modules import deepbooru
+    from modules.interrogate import deepbooru
     prompt = deepbooru.model.tag(image)
     return gr.update() if prompt is None else prompt
 
@@ -258,7 +259,7 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                                         elem_classes=["gallery_main"],
                                        )
             if prompt is not None:
-                ui_sections.create_interrogate_button(tab=tabname, inputs=result_gallery, output=prompt)
+                ui_sections.create_interrogate_button(tab=tabname, inputs=result_gallery, outputs=prompt)
                 # interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons(tabname)
                 # interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])
                 # interrogate_booru_btn.click(fn=interrogate_booru, inputs=[result_gallery], outputs=[prompt])

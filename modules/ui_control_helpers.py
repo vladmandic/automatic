@@ -47,19 +47,20 @@ def initialize():
     scripts.scripts_control.initialize_scripts(is_img2img=False, is_control=True)
 
 
-def interrogate_clip():
+def interrogate_clip(): # legacy function
     prompt = None
     try:
-        prompt = shared.interrogator.interrogate(input_source[0])
+        from modules.interrogate import legacy
+        prompt = legacy.interrogator.interrogate(input_source[0])
     except Exception:
         pass
     return gr.update() if prompt is None else prompt
 
 
-def interrogate_booru():
+def interrogate_booru(): # legacy function
     prompt = None
     try:
-        from modules import deepbooru
+        from modules.interrogate import deepbooru
         prompt = deepbooru.model.tag(input_source[0])
     except Exception:
         pass

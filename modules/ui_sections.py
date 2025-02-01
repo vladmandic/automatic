@@ -1,6 +1,7 @@
 import gradio as gr
 from modules import shared, modelloader, ui_symbols, ui_common, sd_samplers
 from modules.ui_components import ToolButton
+from modules.interrogate import interrogate
 
 
 def create_toprow(is_img2img: bool = False, id_part: str = None):
@@ -92,11 +93,10 @@ def create_resolution_inputs(tab):
 
 def create_interrogate_button(tab: str, inputs: list, outputs: str):
     button_interrogate = gr.Button(ui_symbols.interrogate, elem_id=f"{tab}_interrogate", elem_classes=['interrogate'])
-    button_interrogate.click(fn=lambda: None, _js='() => quickInterrogate()', inputs=[], outputs=[])
-    return button_interrogate
+    button_interrogate.click(fn=interrogate.interrogate, inputs=inputs, outputs=[outputs])
 
 
-def create_interrogate_buttons(tab):
+def create_interrogate_buttons(tab): # legacy function
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])
     return button_interrogate, button_deepbooru

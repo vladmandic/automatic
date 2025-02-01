@@ -4,7 +4,7 @@ import threading
 import torch
 import numpy as np
 from PIL import Image
-from modules import modelloader, paths, deepbooru_model, devices, images, shared
+from modules import modelloader, paths, devices, images, shared
 
 re_special = re.compile(r'([\\()])')
 load_lock = threading.Lock()
@@ -27,7 +27,8 @@ class DeepDanbooru:
                 download_name='model-resnet_custom_v3.pt',
             )
 
-            self.model = deepbooru_model.DeepDanbooruModel()
+            from modules.interrogate.deepbooru_model import DeepDanbooruModel
+            self.model = DeepDanbooruModel()
             self.model.load_state_dict(torch.load(files[0], map_location="cpu"))
 
             self.model.eval()

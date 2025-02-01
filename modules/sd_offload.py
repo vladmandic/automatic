@@ -179,6 +179,12 @@ def apply_balanced_offload(sd_model, exclude=[]):
     global offload_hook_instance # pylint: disable=global-statement
     if shared.opts.diffusers_offload_mode != "balanced":
         return sd_model
+    if sd_model is None:
+        if not shared.sd_loaded:
+            return sd_model
+        sd_model = shared.sd_model
+    if sd_model is None:
+        return sd_model
     t0 = time.time()
     excluded = ['OmniGenPipeline']
     if sd_model.__class__.__name__ in excluded:

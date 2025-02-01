@@ -10,7 +10,7 @@ import torch.hub # pylint: disable=ungrouped-imports
 from PIL import Image
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
-from modules import devices, paths, shared, lowvram, errors
+from modules import devices, paths, shared, lowvram, errors, sd_models
 
 
 config = {
@@ -39,7 +39,7 @@ load_lock = threading.Lock()
 
 
 def category_types():
-    return [f.stem for f in Path(shared.interrogator.content_dir).glob('*.txt')]
+    return [f.stem for f in Path(interrogator.content_dir).glob('*.txt')]
 
 
 def download_default_clip_interrogate_categories(content_dir):
@@ -65,10 +65,10 @@ class InterrogateModels:
     dtype = None
     running_on_cpu = None
 
-    def __init__(self, content_dir):
+    def __init__(self, content_dir: str = None):
         self.loaded_categories = None
         self.skip_categories = []
-        self.content_dir = content_dir
+        self.content_dir = content_dir or os.path.join(paths.models_path, "interrogate")
         self.running_on_cpu = False
 
     def categories(self):
@@ -327,6 +327,8 @@ def interrogate_image(image, clip_model, blip_model, mode):
         if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
             lowvram.send_everything_to_cpu()
             devices.torch_gc()
+        if shared.native:
+            sd_models.apply_balanced_offload(shared.sd_model)
         load_interrogator(clip_model, blip_model)
         image = image.convert('RGB')
         prompt = interrogate(image, mode)
@@ -410,3 +412,6 @@ def analyze_image(image, clip_model, blip_model):
     trending_ranks = dict(zip(top_trendings, ci.similarities(image_features, top_trendings)))
     flavor_ranks = dict(zip(top_flavors, ci.similarities(image_features, top_flavors)))
     return medium_ranks, artist_ranks, movement_ranks, trending_ranks, flavor_ranks
+
+
+interrogator = InterrogateModels()

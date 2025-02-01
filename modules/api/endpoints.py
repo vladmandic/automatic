@@ -74,7 +74,7 @@ def get_extra_networks(page: Optional[str] = None, name: Optional[str] = None, f
     return res
 
 def get_interrogate():
-    from modules.interrogate import get_clip_models
+    from modules.interrogate.legacy import get_clip_models
     return ['clip', 'deepdanbooru'] + get_clip_models()
 
 def post_interrogate(req: models.ReqInterrogate):
@@ -84,16 +84,17 @@ def post_interrogate(req: models.ReqInterrogate):
     image = image.convert('RGB')
     if req.model == "clip":
         try:
-            caption = shared.interrogator.interrogate(image)
+            from modules.interrogate import legacy
+            caption = legacy.interrogator.interrogate(image)
         except Exception as e:
             caption = str(e)
         return models.ResInterrogate(caption=caption)
     elif req.model == "deepdanbooru" or req.model == 'deepbooru':
-        from modules import deepbooru
+        from modules.interrogate import deepbooru
         caption = deepbooru.model.tag(image)
         return models.ResInterrogate(caption=caption)
     else:
-        from modules.interrogate import interrogate_image, analyze_image, get_clip_models
+        from modules.interrogate.legacy import interrogate_image, analyze_image, get_clip_models
         if req.model not in get_clip_models():
             raise HTTPException(status_code=404, detail="Model not found")
         try:
@@ -111,7 +112,7 @@ def post_vqa(req: models.ReqVQA):
         raise HTTPException(status_code=404, detail="Image not found")
     image = helpers.decode_base64_to_image(req.image)
     image = image.convert('RGB')
-    from modules import vqa
+    from modules.interrogate import vqa
     answer = vqa.interrogate(req.question, image, req.model)
     return models.ResVQA(answer=answer)
 

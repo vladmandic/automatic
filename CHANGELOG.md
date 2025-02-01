@@ -30,6 +30,7 @@
     > python modules/api/nvml.py  
 - **Refactor**:
   - unified trace handler with configurable tracebacks  
+  - refactor interrogate/analyze/vqa code  
 - **Fixes**:  
   - photomaker with offloading  
   - photomaker with refine  
