@@ -403,23 +403,29 @@ def temp_disable_extensions():
 
 def get_default_modes():
     default_offload_mode = "none"
+    default_diffusers_offload_min_gpu_memory = 0.25
     if not (cmd_opts.lowvram or cmd_opts.medvram):
         if "gpu" in mem_stat:
             if gpu_memory <= 4:
                 cmd_opts.lowvram = True
                 default_offload_mode = "sequential"
+                default_diffusers_offload_min_gpu_memory = 0
                 log.info(f"Device detect: memory={gpu_memory:.1f} default=sequential optimization=lowvram")
-            # elif gpu_memory <= 8:
-            #     cmd_opts.medvram = True
-            #     default_offload_mode = "model"
-            #     log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
+            elif gpu_memory <= 8:
+                cmd_opts.medvram = True # VAE Tiling and other stuff
+                default_offload_mode = "balanced"
+                default_diffusers_offload_min_gpu_memory = 0
+                log.info(f"Device detect: memory={gpu_memory:.1f} default=balanced optimization=medvram")
             else:
                 default_offload_mode = "balanced"
+                default_diffusers_offload_min_gpu_memory = 0.25
                 log.info(f"Device detect: memory={gpu_memory:.1f} default=balanced")
     elif cmd_opts.medvram:
         default_offload_mode = "balanced"
+        default_diffusers_offload_min_gpu_memory = 0
     elif cmd_opts.lowvram:
         default_offload_mode = "sequential"
+        default_diffusers_offload_min_gpu_memory = 0
 
     if devices.backend == "directml": # Force BMM for DirectML instead of SDP
         default_cross_attention = "Dynamic Attention BMM" if native else "Sub-quadratic"
@@ -439,10 +445,10 @@ def get_default_modes():
     if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options and 'Dynamic attention' not in default_sdp_options):
         default_sdp_options.append('Dynamic attention')
 
-    return default_offload_mode, default_cross_attention, default_sdp_options
+    return default_offload_mode, default_diffusers_offload_min_gpu_memory, default_cross_attention, default_sdp_options
 
 
-startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
+startup_offload_mode, startup_diffusers_offload_min_gpu_memory, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Models & Loading"), {
     "sd_backend": OptionInfo('diffusers', "Execution backend", gr.Radio, {"choices": ['diffusers', 'original'] }),
@@ -458,7 +464,7 @@ options_templates.update(options_section(('sd', "Models & Loading"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use", gr.Checkbox, {"visible": False }),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible", gr.Checkbox, {"visible": False }),
     "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_min_gpu_memory": OptionInfo(startup_diffusers_offload_min_gpu_memory, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0.1, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_cpu_memory": OptionInfo(0.90, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False }),
 
