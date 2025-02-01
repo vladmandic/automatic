@@ -90,6 +90,12 @@ def create_resolution_inputs(tab):
     return width, height
 
 
+def create_interrogate_button(tab: str, inputs: list, outputs: str):
+    button_interrogate = gr.Button(ui_symbols.interrogate, elem_id=f"{tab}_interrogate", elem_classes=['interrogate'])
+    button_interrogate.click(fn=lambda: None, _js='() => quickInterrogate()', inputs=[], outputs=[])
+    return button_interrogate
+
+
 def create_interrogate_buttons(tab):
     button_interrogate = gr.Button(ui_symbols.int_clip, elem_id=f"{tab}_interrogate", elem_classes=['interrogate-clip'])
     button_deepbooru = gr.Button(ui_symbols.int_blip, elem_id=f"{tab}_deepbooru", elem_classes=['interrogate-blip'])

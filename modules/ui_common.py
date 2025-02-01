@@ -258,9 +258,10 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                                         elem_classes=["gallery_main"],
                                        )
             if prompt is not None:
-                interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons('control')
-                interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])
-                interrogate_booru_btn.click(fn=interrogate_booru, inputs=[result_gallery], outputs=[prompt])
+                ui_sections.create_interrogate_button(tab=tabname, inputs=result_gallery, output=prompt)
+                # interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons(tabname)
+                # interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])
+                # interrogate_booru_btn.click(fn=interrogate_booru, inputs=[result_gallery], outputs=[prompt])
 
 
         with gr.Column(elem_id=f"{tabname}_footer", elem_classes="gallery_footer"):

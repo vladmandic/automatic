@@ -113,6 +113,7 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 
 .interrogate-clip { position: absolute; right: 6em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-blip { position: absolute; right: 4em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
+.interrogate { position: absolute; right: 4em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-col { min-width: 0 !important; max-width: fit-content; margin-right: var(--spacing-xxl); }
 .interrogate-col>button { flex: 1; width: 7em; max-height: 84px; }
 #sampler_selection_img2img { margin-top: 1em; }
