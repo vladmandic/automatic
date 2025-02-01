@@ -18,7 +18,8 @@ from modules.paths import models_path, script_path, data_path, sd_configs_path, 
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
 from modules.memstats import memory_stats, ram_stats # pylint: disable=unused-import
-from modules.interrogate.legacy import category_types
+from modules.interrogate.openclip import caption_models, caption_types, get_clip_models, refresh_clip_models, category_types
+from modules.interrogate.vqa import vlm_models, vlm_prompts
 from modules.ui_components import DropdownEditable
 import modules.memmon
 import modules.styles
@@ -890,17 +891,35 @@ options_templates.update(options_section(('control', "Control Options"), {
 }))
 
 options_templates.update(options_section(('interrogate', "Interrogate"), {
-    "interrogate_keep_models_in_memory": OptionInfo(False, "Interrogate: keep models in VRAM"),
-    "interrogate_return_ranks": OptionInfo(True, "Interrogate: include ranks of model tags matches in results"),
-    "interrogate_clip_num_beams": OptionInfo(1, "Interrogate: num_beams for BLIP", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
-    "interrogate_clip_min_length": OptionInfo(32, "Interrogate: minimum description length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
-    "interrogate_clip_max_length": OptionInfo(192, "Interrogate: maximum description length", gr.Slider, {"minimum": 1, "maximum": 256, "step": 1}),
-    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "Interrogate: skip categories", gr.CheckboxGroup, lambda: {"choices": category_types()}, refresh=category_types),
-    "interrogate_deepbooru_score_threshold": OptionInfo(0.65, "Interrogate: deepbooru score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
-    "deepbooru_sort_alpha": OptionInfo(False, "Interrogate: deepbooru sort alphabetically"),
-    "deepbooru_use_spaces": OptionInfo(False, "Use spaces for tags in deepbooru"),
-    "deepbooru_escape": OptionInfo(True, "Escape brackets in deepbooru"),
-    "deepbooru_filter_tags": OptionInfo("", "Filter out tags from deepbooru output"),
+    "interrogate_default_type": OptionInfo("OpenCLiP", "Default type", gr.Radio, {"choices": ["OpenCLiP", "VLM", "DeepBooru"]}),
+    "interrogate_offload": OptionInfo(True, "Interrogate: offload models "),
+
+    "interrogate_clip_sep": OptionInfo("<h2>OpenCLiP</h2>", "", gr.HTML),
+    "interrogate_clip_model": OptionInfo("ViT-L-14/openai", "CLiP: default model", gr.Dropdown, lambda: {"choices": get_clip_models()}, refresh=refresh_clip_models),
+    "interrogate_clip_mode": OptionInfo(caption_types[0], "CLiP: default mode", gr.Dropdown, {"choices": caption_types}),
+    "interrogate_blip_model": OptionInfo(list(caption_models)[0], "CLiP: default captioner", gr.Dropdown, {"choices": list(caption_models)}),
+    "interrogate_clip_score": OptionInfo(False, "CLiP: include scores in results"),
+    "interrogate_clip_num_beams": OptionInfo(1, "CLiP: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
+    "interrogate_clip_min_length": OptionInfo(32, "CLiP: min length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
+    "interrogate_clip_max_length": OptionInfo(74, "CLiP: max length", gr.Slider, {"minimum": 1, "maximum": 512, "step": 1}),
+    "interrogate_clip_min_flavors": OptionInfo(2, "CLiP: min flavors", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
+    "interrogate_clip_max_flavors": OptionInfo(8, "CLiP: max flavors", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
+    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "CLiP: skip categories", gr.CheckboxGroup, lambda: {"choices": category_types()}, refresh=category_types),
+
+    "interrogate_vlm_sep": OptionInfo("<h2>VLM</h2>", "", gr.HTML),
+    "interrogate_vlm_model": OptionInfo(list(vlm_models)[0], "VLM: default model", gr.Dropdown, {"choices": list(vlm_models)}),
+    "interrogate_vlm_prompt": OptionInfo(vlm_prompts[2], "VLM: default prompt", DropdownEditable, {"choices": vlm_prompts }),
+    "interrogate_vlm_num_beams": OptionInfo(3, "VLM: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
+    "interrogate_vlm_max_length": OptionInfo(512, "VLM: max length", gr.Slider, {"minimum": 1, "maximum": 4096, "step": 1}),
+
+    "deepbooru_sep": OptionInfo("<h2>DeepBooru</h2>", "", gr.HTML),
+    "deepbooru_score_threshold": OptionInfo(0.65, "DeepBooru: score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "deepbooru_max_tags": OptionInfo(74, "DeepBooru: max tags", gr.Slider, {"minimum": 1, "maximum": 512, "step": 1}),
+    "deepbooru_clip_score": OptionInfo(False, "DeepBooru: include scores in results"),
+    "deepbooru_sort_alpha": OptionInfo(False, "DeepBooru: sort alphabetically"),
+    "deepbooru_use_spaces": OptionInfo(False, "DeepBooru: use spaces for tags"),
+    "deepbooru_escape": OptionInfo(True, "DeepBooru: escape brackets"),
+    "deepbooru_filter_tags": OptionInfo("", "DeepBooru: exclude tags"),
 }))
 
 options_templates.update(options_section(('huggingface', "Huggingface"), {

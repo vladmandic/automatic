@@ -19,6 +19,11 @@
   - add support for stream-loading, this can speed up model loading when models are located on network drives  
     *set in settings -> models & loading -> model load using streams*  
   - enhanced error logging  
+- **Interrogate/Captioning**  
+  - single interrogate button for every input or output image  
+  - behavior of interrogate configurable in *settings -> interrogate*  
+    with detailed defaults for each model type also configurable  
+  - select between 100+ *OpenCLiP* supported models, 10+ built-in *VLMs*, *DeepDanbooru*  
 - **Other**:
   - **Networks**: imporove search/filter and add visual indicators for types  
   - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
@@ -45,7 +50,8 @@
   - ipex device wrapper with adetailer  
   - openvino error handling  
   - relax python version checks for rocm  
-  - simplify and improve file wildcard matching
+  - simplify and improve file wildcard matching  
+  - fix `rich` version  
 
 ## Update for 2025-01-29
 

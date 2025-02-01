@@ -90,8 +90,8 @@ class Script(scripts.Script):
                 if append_interrogation != "None":
                     p.prompt = f"{original_prompt}, " if original_prompt else ""
                     if append_interrogation == "CLIP":
-                        from modules.interrogate import legacy
-                        p.prompt += legacy.interrogator.interrogate(p.init_images[0])
+                        from modules.interrogate import openclip
+                        p.prompt += openclip.interrogator.interrogate(p.init_images[0])
                     elif append_interrogation == "DeepBooru":
                         from modules.interrogate import deepbooru
                         p.prompt += deepbooru.model.tag(p.init_images[0])

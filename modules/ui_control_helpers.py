@@ -47,11 +47,21 @@ def initialize():
     scripts.scripts_control.initialize_scripts(is_img2img=False, is_control=True)
 
 
+def interrogate():
+    prompt = None
+    try:
+        from modules.interrogate.interrogate import interrogate
+        prompt = interrogate(input_source[0])
+    except Exception:
+        pass
+    return prompt
+
+
 def interrogate_clip(): # legacy function
     prompt = None
     try:
-        from modules.interrogate import legacy
-        prompt = legacy.interrogator.interrogate(input_source[0])
+        from modules.interrogate import openclip
+        prompt = openclip.interrogator.interrogate(input_source[0])
     except Exception:
         pass
     return gr.update() if prompt is None else prompt

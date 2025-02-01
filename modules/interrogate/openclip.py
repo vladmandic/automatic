@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 from collections import namedtuple
 from pathlib import Path
 import threading
@@ -14,7 +13,7 @@ from modules import devices, paths, shared, lowvram, errors, sd_models
 
 
 config = {
-    "caption_max_length": 64,
+    "caption_max_length": 74,
     "chunk_size": 1024,
     "flavor_intermediate_count": 1024,
     "min_flavors": 2,
@@ -30,6 +29,14 @@ caption_models = {
     'blip2-flip-t5-xl': 'Salesforce/blip2-flan-t5-xl',
     'blip2-flip-t5-xxl': 'Salesforce/blip2-flan-t5-xxl',
 }
+caption_types = [
+    'best',
+    'fast',
+    'classic',
+    'caption',
+    'negative',
+]
+clip_models = []
 ci = None
 blip_image_eval_size = 384
 clip_model_name = 'ViT-L/14'
@@ -43,7 +50,7 @@ def category_types():
 
 
 def download_default_clip_interrogate_categories(content_dir):
-    shared.log.info("Downloading CLIP categories...")
+    shared.log.info("Interrogate: downloading CLIP categories...")
     tmpdir = f"{content_dir}_tmp"
     cat_types = ["artists", "flavors", "mediums", "movements"]
     try:
@@ -106,7 +113,7 @@ class InterrogateModels:
             import modules.modelloader as modelloader
             model_path = os.path.join(paths.models_path, "BLIP")
             download_name='model_base_caption_capfilt_large.pth'
-            shared.log.debug(f'Model interrogate load: type=BLiP model={download_name} path={model_path}')
+            shared.log.debug(f'Interrogate load: module=BLiP model="{download_name}" path="{model_path}"')
             files = modelloader.load_models(
                 model_path=model_path,
                 model_url='https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_caption_capfilt_large.pth',
@@ -119,7 +126,7 @@ class InterrogateModels:
 
     def load_clip_model(self):
         with load_lock:
-            shared.log.debug(f'Model interrogate load: type=CLiP model={clip_model_name} path={shared.opts.clip_models_path}')
+            shared.log.debug(f'Interrogate load: module=CLiP model="{clip_model_name}" path="{shared.opts.clip_models_path}"')
             import clip
             if self.running_on_cpu:
                 model, preprocess = clip.load(clip_model_name, device="cpu", download_root=shared.opts.clip_models_path)
@@ -143,12 +150,12 @@ class InterrogateModels:
         self.dtype = next(self.clip_model.parameters()).dtype
 
     def send_clip_to_ram(self):
-        if not shared.opts.interrogate_keep_models_in_memory:
+        if shared.opts.interrogate_offload:
             if self.clip_model is not None:
                 self.clip_model = self.clip_model.to(devices.cpu)
 
     def send_blip_to_ram(self):
-        if not shared.opts.interrogate_keep_models_in_memory:
+        if shared.opts.interrogate_offload:
             if self.blip_model is not None:
                 self.blip_model = self.blip_model.to(devices.cpu)
 
@@ -180,36 +187,33 @@ class InterrogateModels:
             transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
         ])(pil_image).unsqueeze(0).type(self.dtype).to(devices.device)
         with devices.inference_context():
-            caption = self.blip_model.generate(gpu_image, sample=False, num_beams=shared.opts.interrogate_clip_num_beams, min_length=shared.opts.interrogate_clip_min_length, max_length=shared.opts.interrogate_clip_max_length)
+            min_length = min(shared.opts.interrogate_clip_min_length, shared.opts.interrogate_clip_max_length)
+            max_length = max(shared.opts.interrogate_clip_min_length, shared.opts.interrogate_clip_max_length)
+            caption = self.blip_model.generate(gpu_image, sample=False, num_beams=shared.opts.interrogate_clip_num_beams, min_length=min_length, max_length=max_length)
         return caption[0]
 
-    def interrogate(self, pil_image):
+    def interrogate(self, image):
         res = ""
         shared.state.begin('Interrogate')
         try:
-            if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
-                lowvram.send_everything_to_cpu()
-                devices.torch_gc()
             self.load()
-            if isinstance(pil_image, list):
-                pil_image = pil_image[0] if len(pil_image) > 0 else None
-            if isinstance(pil_image, dict) and 'name' in pil_image:
-                pil_image = Image.open(pil_image['name'])
-            if pil_image is None:
+            if isinstance(image, list):
+                image = image[0] if len(image) > 0 else None
+            if isinstance(image, dict) and 'name' in image:
+                image = Image.open(image['name'])
+            if image is None:
                 return ''
-            pil_image = pil_image.convert("RGB")
-            caption = self.generate_caption(pil_image)
-            self.send_blip_to_ram()
-            devices.torch_gc()
+            image = image.convert("RGB")
+            caption = self.generate_caption(image)
             res = caption
-            clip_image = self.clip_preprocess(pil_image).unsqueeze(0).type(self.dtype).to(devices.device)
+            clip_image = self.clip_preprocess(image).unsqueeze(0).type(self.dtype).to(devices.device)
             with devices.inference_context(), devices.autocast():
                 image_features = self.clip_model.encode_image(clip_image).type(self.dtype)
                 image_features /= image_features.norm(dim=-1, keepdim=True)
                 for _name, topn, items in self.categories():
                     matches = self.rank(image_features, items, top_count=topn)
                     for match, score in matches:
-                        if shared.opts.interrogate_return_ranks:
+                        if shared.opts.interrogate_clip_score:
                             res += f", ({match}:{score/100:.3f})"
                         else:
                             res += f", {match}"
@@ -237,23 +241,34 @@ class BatchWriter:
             self.file.close()
 
 
-def update_interrogate_params(caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count):
-    config["caption_max_length"] = int(caption_max_length)
-    config["chunk_size"] = int(chunk_size)
-    config["min_flavors"] = int(min_flavors)
-    config["max_flavors"] = int(max_flavors)
-    config["flavor_intermediate_count"] = int(flavor_intermediate_count)
+def update_interrogate_params(caption_max_length:int=None, chunk_size:int=None, min_flavors:int=None, max_flavors:int=None, flavor_intermediate_count:int=None):
+    config["caption_max_length"] = int(caption_max_length or shared.opts.interrogate_clip_max_length)
+    config["clip_offload"] = shared.opts.interrogate_offload
+    config["caption_offload"] = shared.opts.interrogate_offload
+    config["min_flavors"] = int(min_flavors or shared.opts.interrogate_clip_min_flavors)
+    config["max_flavors"] = int(max_flavors or shared.opts.interrogate_clip_max_flavors)
+    if chunk_size is not None:
+        config["chunk_size"] = int(chunk_size)
+    if flavor_intermediate_count is not None:
+        config["flavor_intermediate_count"] = int(flavor_intermediate_count)
     if ci is not None:
         ci.config.caption_max_length = config["caption_max_length"]
         ci.config.chunk_size = config["chunk_size"]
         ci.config.flavor_intermediate_count = config["flavor_intermediate_count"]
-    shared.log.debug(f'Interrogate params: {config}')
+    shared.log.debug(f'Interrogate: type={shared.opts.interrogate_default_type} config={config}')
+
 
 def get_clip_models():
+    return clip_models
+
+
+def refresh_clip_models():
+    global clip_models # pylint: disable=global-statement
     import open_clip
     models = sorted(open_clip.list_pretrained())
-    shared.log.info(f'Interrogate: pkg=openclip version={open_clip.__version__} models={len(models)}')
-    return ['/'.join(x) for x in models]
+    shared.log.debug(f'Interrogate: pkg=openclip version={open_clip.__version__} models={len(models)}')
+    clip_models = ['/'.join(x) for x in models]
+    return clip_models
 
 
 def load_interrogator(clip_model, blip_model):
@@ -263,6 +278,7 @@ def load_interrogator(clip_model, blip_model):
     clip_interrogator.clip_interrogator.CAPTION_MODELS = caption_models
     global ci # pylint: disable=global-statement
     if ci is None:
+        shared.log.debug(f'Interrogate load: clip="{clip_model}" blip="{blip_model}"')
         interrogator_config = clip_interrogator.Config(
             device=devices.get_optimal_device(),
             cache_path=os.path.join(paths.models_path, 'Interrogator'),
@@ -275,25 +291,18 @@ def load_interrogator(clip_model, blip_model):
             clip_offload=config['clip_offload'],
             caption_offload=config['caption_offload'],
         )
-        t0 = time.time()
         ci = clip_interrogator.Interrogator(interrogator_config)
-        t1 = time.time()
-        shared.log.info(f'Interrogate load: config={ci.config} min_flavors={config["min_flavors"]} max_flavors={config["max_flavors"]} time={t1-t0:.2f}')
     elif clip_model != ci.config.clip_model_name or blip_model != ci.config.caption_model_name:
-        t0 = time.time()
         ci.config.clip_model_name = clip_model
         ci.config.clip_model = None
         ci.load_clip_model()
         ci.config.caption_model_name = blip_model
         ci.config.caption_model = None
         ci.load_caption_model()
-        t1 = time.time()
-        shared.log.info(f'Interrogate reload: config={ci.config} min_flavors={config["min_flavors"]} max_flavors={config["max_flavors"]} time={t1-t0:.2f}')
 
 
 def unload_clip_model():
-    if ci is not None:
-        shared.log.debug('Interrogate offload')
+    if ci is not None and shared.opts.interrogate_offload:
         ci.caption_model = ci.caption_model.to(devices.cpu)
         ci.clip_model = ci.clip_model.to(devices.cpu)
         ci.caption_offloaded = True
@@ -302,8 +311,13 @@ def unload_clip_model():
 
 
 def interrogate(image, mode, caption=None):
-    shared.log.info(f'Interrogate: mode={mode} image={image}')
-    t0 = time.time()
+    if isinstance(image, list):
+        image = image[0] if len(image) > 0 else None
+    if isinstance(image, dict) and 'name' in image:
+        image = Image.open(image['name'])
+    if image is None:
+        return ''
+    image = image.convert("RGB")
     if mode == 'best':
         prompt = ci.interrogate(image, caption=caption, min_flavors=config["min_flavors"], max_flavors=config["max_flavors"])
     elif mode == 'caption':
@@ -316,8 +330,6 @@ def interrogate(image, mode, caption=None):
         prompt = ci.interrogate_negative(image, max_flavors=config["max_flavors"])
     else:
         raise RuntimeError(f"Unknown mode {mode}")
-    t1 = time.time()
-    shared.log.debug(f'Interrogate: prompt="{prompt}" time={t1-t0:.2f}')
     return prompt
 
 

@@ -5,12 +5,13 @@ from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call
 from modules import timer, shared, ui_common, ui_sections, generation_parameters_copypaste, processing_vae
 
 
-def process_interrogate(interrogation_function, mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
+def process_interrogate(mode, ii_input_files, ii_input_dir, ii_output_dir, *ii_singles):
+    from modules.interrogate.interrogate import interrogate
     mode = int(mode)
     if mode in {0, 1, 3, 4}:
-        return [interrogation_function(ii_singles[mode]), None]
+        return [interrogate(ii_singles[mode]), None]
     if mode == 2:
-        return [interrogation_function(ii_singles[mode]["image"]), None]
+        return [interrogate(ii_singles[mode]["image"]), None]
     if mode == 5:
         if len(ii_input_files) > 0:
             images = [f.name for f in ii_input_files]
@@ -27,7 +28,7 @@ def process_interrogate(interrogation_function, mode, ii_input_files, ii_input_d
             img = Image.open(image)
             filename = os.path.basename(image)
             left, _ = os.path.splitext(filename)
-            print(interrogation_function(img), file=open(os.path.join(ii_output_dir, f"{left}.txt"), 'a', encoding='utf-8')) # pylint: disable=consider-using-with
+            print(interrogate(img), file=open(os.path.join(ii_output_dir, f"{left}.txt"), 'a', encoding='utf-8')) # pylint: disable=consider-using-with
     return [gr.update(), None]
 
 
@@ -68,7 +69,7 @@ def create_ui():
                     state = gr.Textbox(value='', visible=False)
                     with gr.TabItem('Image', id='img2img_image', elem_id="img2img_image_tab") as tab_img2img:
                         img_init = gr.Image(label="", elem_id="img2img_image", show_label=False, source="upload", interactive=True, type="pil", tool="editor", image_mode="RGBA", height=512)
-                        interrogate_clip, interrogate_booru = ui_sections.create_interrogate_buttons('img2img')
+                        interrogate_btn = ui_sections.create_interrogate_button(tab='img2img')
                         add_copy_image_controls('img2img', img_init)
 
                     with gr.TabItem('Inpaint', id='img2img_inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
@@ -227,8 +228,7 @@ def create_ui():
                 ],
                 outputs=[img2img_prompt, dummy_component],
             )
-            interrogate_clip.click(fn=lambda *args: process_interrogate(ui_common.interrogate_clip, *args), **interrogate_args)
-            interrogate_booru.click(fn=lambda *args: process_interrogate(ui_common.interrogate_booru, *args), **interrogate_args)
+            interrogate_btn.click(fn=lambda *args: process_interrogate(*args), **interrogate_args)
 
             img2img_token_button.click(fn=wrap_queued_call(ui_common.update_token_counter), inputs=[img2img_prompt, steps], outputs=[img2img_token_counter])
             img2img_negative_token_button.click(fn=wrap_queued_call(ui_common.update_token_counter), inputs=[img2img_negative_prompt, steps], outputs=[img2img_negative_token_counter])

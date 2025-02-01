@@ -225,8 +225,8 @@ def interrogate_clip(image): # legacy function
     if image is None:
         shared.log.error("Interrogate: no image selected")
         return gr.update()
-    from modules.interrogate import legacy
-    prompt = legacy.interrogator.interrogate(image)
+    from modules.interrogate import openclip
+    prompt = openclip.interrogator.interrogate(image)
     return gr.update() if prompt is None else prompt
 
 
@@ -260,10 +260,6 @@ def create_output_panel(tabname, preview=True, prompt=None, height=None):
                                        )
             if prompt is not None:
                 ui_sections.create_interrogate_button(tab=tabname, inputs=result_gallery, outputs=prompt)
-                # interrogate_clip_btn, interrogate_booru_btn = ui_sections.create_interrogate_buttons(tabname)
-                # interrogate_clip_btn.click(fn=interrogate_clip, inputs=[result_gallery], outputs=[prompt])
-                # interrogate_booru_btn.click(fn=interrogate_booru, inputs=[result_gallery], outputs=[prompt])
-
 
         with gr.Column(elem_id=f"{tabname}_footer", elem_classes="gallery_footer"):
             dummy_component = gr.Label(visible=False)
