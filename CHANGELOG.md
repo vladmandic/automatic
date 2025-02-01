@@ -14,6 +14,9 @@
     for rocm environments set default to `torch==2.6.0+rocm6.2.4`  
     *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
+  - support for torch nightly builds and nvidia blackwell gpus!  
+    use `--use-nightly` flag to install torch nightly builds  
+    *note*: nightly builds are required for blackwell gpus  
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
     *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
   - add support for stream-loading, this can speed up model loading when models are located on network drives  
