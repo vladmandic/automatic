@@ -86,6 +86,9 @@ def get_nvml():
 
 
 if __name__ == '__main__':
+    nvml_initialized = True
+    import pynvml # pylint: disable=redefined-outer-name
+    pynvml.nvmlInit()
     from rich import print as rprint
     for gpu in get_nvml():
         rprint(gpu)
