@@ -28,7 +28,7 @@
     with detailed defaults for each model type also configurable  
   - select between 100+ *OpenCLiP* supported models, 10+ built-in *VLMs*, *DeepDanbooru*  
 - **Other**:
-  - **Networks**: imporove search/filter and add visual indicators for types  
+  - **networks**: imporove search/filter and add visual indicators for types  
   - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
   - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
   - **prompt parser**: add setting to ignore line breaks in prompt  
