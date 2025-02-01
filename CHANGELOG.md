@@ -33,6 +33,7 @@
   - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
   - **prompt parser**: add setting to ignore line breaks in prompt  
     set in *settings -> prompt settings -> use line breaks*  
+  - **visual query**: add list of predefined system prompts  
   - **nvml cli**: run nvidia-management-lib interrogate from cli  
     already available in ui in generate -> right click -> nvidia  
     > python modules/api/nvml.py  
