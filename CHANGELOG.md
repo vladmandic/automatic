@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-01-31
+## Update for 2025-02-01
 
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
@@ -16,9 +16,15 @@
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
     *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
+  - add support for stream-loading, this can speed up model loading when models are located on network drives  
+    *set in settings -> models & loading -> model load using streams*  
   - enhanced error logging  
 - **Other**:
   - **Networks**: imporove search/filter and add visual indicators for types  
+  - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
+  - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
+  - **prompt parser**: add setting to ignore line breaks in prompt  
+    set in *settings -> prompt settings -> use line breaks*  
 - **Refactor**:
   - unified trace handler with configurable tracebacks  
 - **Fixes**:  
