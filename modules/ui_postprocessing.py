@@ -92,7 +92,7 @@ def create_ui():
                     with gr.Row():
                         vqa_question = gr.Dropdown(label="Question", allow_custom_value=True, choices=vqa.vlm_prompts, value=vqa.vlm_prompts[2])
                     with gr.Row():
-                        vqa_answer = gr.Textbox(label="Answer", lines=3)
+                        vqa_answer = gr.Textbox(label="Answer", lines=5)
                     with gr.Row(elem_id='interrogate_buttons_query'):
                         vqa_model = gr.Dropdown(list(vqa.vlm_models), value=list(vqa.vlm_models)[0], label='VLM Model')
                         vqa_submit = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')

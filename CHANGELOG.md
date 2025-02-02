@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-01
+## Update for 2025-02-02
 
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
@@ -27,7 +27,9 @@
   - single interrogate button for every input or output image  
   - behavior of interrogate configurable in *settings -> interrogate*  
     with detailed defaults for each model type also configurable  
-  - select between 100+ *OpenCLiP* supported models, 10+ built-in *VLMs*, *DeepDanbooru*  
+  - select between 150+ *OpenCLiP* supported models, 20+ built-in *VLMs*, *DeepDanbooru*  
+  - **VLM**: now that we can use VLMs freely, we've also added support for few more out-of-the-box  
+    *Alibaba Qwen VL2*, *Huggingface Smol VL2*, *ToriiGate 0.4*  
 - **Other**:
   - **networks**: imporove search/filter and add visual indicators for types  
   - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
