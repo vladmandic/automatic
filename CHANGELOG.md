@@ -10,18 +10,18 @@
 - **Docs**:
   - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
-  - for cuda environments set default to `torch==2.6.0+cu126`  
-    for rocm environments set default to `torch==2.6.0+rocm6.2.4`  
+  - for **cuda** environments set default to `torch==2.6.0+cu126`  
+    for **rocm** environments set default to `torch==2.6.0+rocm6.2.4`  
     *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
-  - support for torch nightly builds and nvidia blackwell gpus!  
+  - support for torch **nightly** builds and nvidia **blackwell** gpus!  
     use `--use-nightly` flag to install torch nightly builds  
     current defaults to `torch==2.7.0+cu128` prerelease  
     *note*: nightly builds are required for blackwell gpus  
   - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
-    *set in settings -> backend settings -> torch* and *paths -> tunable ops cache*  
+    set in *settings -> backend settings -> torch options* and *settings -> system paths -> tunable ops cache*  
   - add support for stream-loading, this can speed up model loading when models are located on network drives  
-    *set in settings -> models & loading -> model load using streams*  
+    set in *settings -> models & loading -> model load using streams*  
   - enhanced error logging  
 - **Interrogate/Captioning**  
   - single interrogate button for every input or output image  
@@ -33,7 +33,7 @@
   - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
   - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
   - **prompt parser**: add setting to ignore line breaks in prompt  
-    set in *settings -> prompt settings -> use line breaks*  
+    set in *settings -> text encoder -> use line breaks*  
   - **visual query**: add list of predefined system prompts  
   - **nvml cli**: run nvidia-management-lib interrogate from cli  
     already available in ui in generate -> right click -> nvidia  
