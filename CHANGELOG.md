@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-02
+## Update for 2025-02-03
 
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
@@ -29,7 +29,10 @@
     with detailed defaults for each model type also configurable  
   - select between 150+ *OpenCLiP* supported models, 20+ built-in *VLMs*, *DeepDanbooru*  
   - **VLM**: now that we can use VLMs freely, we've also added support for few more out-of-the-box  
-    *Alibaba Qwen VL2*, *Huggingface Smol VL2*, *ToriiGate 0.4*  
+    [Alibaba Qwen VL2](https://huggingface.co/Qwen/Qwen2-VL-2B), [Huggingface Smol VL2](HuggingFaceTB/SmolVLM-Instruct), [ToriiGate 0.4](Minthy/ToriiGate-v0.4-2B)  
+- **Postprocess**  
+  - new sota remove background model: [BEN2](https://huggingface.co/PramaLLC/BEN2)  
+    select in *process -> remove background* or enable postprocessing for txt2img/img2img operations  
 - **Other**:
   - **networks**: imporove search/filter and add visual indicators for types  
   - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  

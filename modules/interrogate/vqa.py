@@ -9,8 +9,8 @@ from PIL import Image
 from modules import shared, devices, errors
 
 # TODO add additional vlmn
-# https://huggingface.co/nvidia/Eagle2-1B
-# https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
+# https://huggingface.co/nvidia/Eagle2-1B not compatible with latest transformers
+# https://huggingface.co/deepseek-ai/deepseek-vl2-tiny requires custom code
 
 
 processor = None
@@ -35,7 +35,7 @@ vlm_models = {
     "Microsoft GIT TextCaps Base": "microsoft/git-base-textcaps", # 0.7GB
     "Microsoft GIT VQA Base": "microsoft/git-base-vqav2", # 0.7GB
     "Microsoft GIT VQA Large": "microsoft/git-large-vqav2", # 1.6GB
-    "ToriiGate 0.4 2B": "Minthy/ToriiGate-v0.4-2B", # TODO
+    "ToriiGate 0.4 2B": "Minthy/ToriiGate-v0.4-2B",
     "ViLT Base": "dandelin/vilt-b32-finetuned-vqa", # 0.5GB
 }
 vlm_prompts = [
@@ -120,10 +120,6 @@ def qwen(question: str, image: Image.Image, repo: str = None):
     ]
     response = processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
     return response
-
-
-def deepseek(question: str, image: Image.Image, repo: str = None):
-    return ''
 
 
 def smol(question: str, image: Image.Image, repo: str = None):
@@ -347,8 +343,6 @@ def interrogate(question, image, model_name):
             answer = qwen(question, image, vqa_model)
         elif 'smol' in vqa_model.lower():
             answer = smol(question, image, vqa_model)
-        elif 'deepseek' in vqa_model.lower():
-            answer = deepseek(question, image, vqa_model)
         else:
             answer = 'unknown model'
     except Exception as e:
