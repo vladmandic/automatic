@@ -2,6 +2,20 @@
 
 ## Update for 2025-02-03
 
+Just one week after latest release and what a week it was with over 50 commits!  
+
+*What's New?*  
+- Rehosted core repo to new [home](https://github.com/vladmandic/sdnext)  
+- Switched to using `torch==2.6.0` and added support for nightly builds required for **nVidia Blackwell** GPUs  
+- Completely new **interrogate/captioning**, now supporting 150+ **OpenCLiP** models and 20+ built-in **VLMs**  
+- Support for **new VLMs**, New SOTA **background removal**  
+- Other: *torch tunable ops, extra networks search/filter, balanced offload, prompt parser, configurable tracebacks, etc.*  
+- Cumulative fixes...  
+
+### Highlights for 2025-02-03
+
+### Details for 2025-02-03
+
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
     old repo url should automatically redirect to new one for seamless transition and in-place upgrades   

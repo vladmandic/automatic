@@ -50,8 +50,8 @@ def initialize():
 def interrogate():
     prompt = None
     try:
-        from modules.interrogate.interrogate import interrogate
-        prompt = interrogate(input_source[0])
+        from modules.interrogate.interrogate import interrogate as interrogate_fn
+        prompt = interrogate_fn(input_source[0])
     except Exception:
         pass
     return prompt
