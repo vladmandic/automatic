@@ -669,29 +669,6 @@ def install_rocm_zluda():
                 # older rocm (5.7) uses torch 2.3 or older
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
-        if os.environ.get('ONNXRUNTIME_COMMAND', None) is None:
-            py_minor_ver = int(sys.version_info.minor)
-            if py_minor_ver == 11: # no Python 3.11 support
-                os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime")
-            elif rocm.version is None or float(rocm.version) >= 6.3: # assume the latest if version check fails
-                if py_minor_ver in {10,12}:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.3.2/")
-                elif py_minor_ver in {8,9}:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.2/")
-            elif rocm.version == "6.2":
-                if py_minor_ver == 10:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.2.4/")
-                elif py_minor_ver in {8,9}:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.2/")
-            elif rocm.version == "6.1":
-                if py_minor_ver == 10:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.1.3/")
-                elif py_minor_ver in {8,9}:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', f"https://repo.radeon.com/rocm/manylinux/rocm-rel-6.1/onnxruntime_rocm-inference-1.17.0-cp3{py_minor_ver}-cp3{py_minor_ver}-linux_x86_64.whl")
-            elif rocm.version == "6.0":
-                if py_minor_ver == 10:
-                    os.environ.setdefault('ONNXRUNTIME_COMMAND', "https://repo.radeon.com/rocm/manylinux/rocm-rel-6.0.2/onnxruntime_rocm-inference-1.17.0-cp310-cp310-linux_x86_64.whl")
-
         if installed("torch") and device is not None:
             if 'Flash attention' in opts.get('sdp_options', ''):
                 if not installed('flash-attn'):
@@ -744,8 +721,6 @@ def install_ipex(torch_command):
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
-    if os.environ.get('ONNXRUNTIME_COMMAND', None) is None:
-        os.environ.setdefault('ONNXRUNTIME_COMMAND', 'onnxruntime-openvino')
     install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     ts('ipex', t_start)
@@ -761,8 +736,6 @@ def install_openvino(torch_command):
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
 
-    if os.environ.get('ONNXRUNTIME_COMMAND', None) is None:
-        os.environ.setdefault('ONNXRUNTIME_COMMAND', 'onnxruntime-openvino')
     install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino')
     install('nncf==2.14.1', 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
