@@ -99,7 +99,7 @@ def task_specific_kwargs(p, model):
             'output_type': 'pil',
         }
     if debug_enabled:
-        debug_log(f'Diffusers task specific args: {task_args}')
+        debug_log(f'Process task specific args: {task_args}')
     return task_args
 
 
@@ -121,7 +121,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
     possible = list(signature.parameters)
 
     if debug_enabled:
-        debug_log(f'Diffusers pipeline possible: {possible}')
+        debug_log(f'Process pipeline possible: {possible}')
     prompts, negative_prompts, prompts_2, negative_prompts_2 = fix_prompts(p, prompts, negative_prompts, prompts_2, negative_prompts_2)
     steps = kwargs.get("num_inference_steps", None) or len(getattr(p, 'timesteps', ['1']))
     clip_skip = kwargs.pop("clip_skip", 1)
@@ -300,15 +300,15 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
             args[arg] = task_kwargs[arg]
     task_args = getattr(p, 'task_args', {})
     if debug_enabled:
-        debug_log(f'Diffusers task args: {task_args}')
+        debug_log(f'Process task args: {task_args}')
     for k, v in task_args.items():
         if k in possible:
             args[k] = v
         else:
-            debug_log(f'Diffusers unknown task args: {k}={v}')
+            debug_log(f'Process unknown task args: {k}={v}')
     cross_attention_args = getattr(p, 'cross_attention_kwargs', {})
     if debug_enabled:
-        debug_log(f'Diffusers cross-attention args: {cross_attention_args}')
+        debug_log(f'Process cross-attention args: {cross_attention_args}')
     for k, v in cross_attention_args.items():
         if args.get('cross_attention_kwargs', None) is None:
             args['cross_attention_kwargs'] = {}
@@ -329,7 +329,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
 
     # handle implicit controlnet
     if 'control_image' in possible and 'control_image' not in args and 'image' in args:
-        debug_log('Diffusers: set control image')
+        debug_log('Process: set control image')
         args['control_image'] = args['image']
 
     sd_hijack_hypertile.hypertile_set(p, hr=len(getattr(p, 'init_images', [])) > 0)
@@ -365,7 +365,7 @@ def set_pipeline_args(p, model, prompts:list, negative_prompts:list, prompts_2:t
         t1 = time.time()
         shared.log.debug(f'Profile: pipeline args: {t1-t0:.2f}')
     if debug_enabled:
-        debug_log(f'Diffusers pipeline args: {args}')
+        debug_log(f'Process pipeline args: {args}')
 
     _args = {}
     for k, v in args.items(): # pipeline may modify underlying args

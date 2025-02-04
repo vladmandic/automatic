@@ -406,7 +406,7 @@ def load_diffuser_file(model_type, pipeline, checkpoint_info, diffusers_load_con
                 from diffusers.utils import import_utils
                 import_utils._accelerate_available = False # pylint: disable=protected-access
             if shared.opts.diffusers_to_gpu and model_type.startswith('Stable Diffusion'):
-                shared.log.debug(f'Diffusers accelerate: direct={shared.opts.diffusers_to_gpu}')
+                shared.log.debug(f'Setting {op}: component=accelerate: direct={shared.opts.diffusers_to_gpu}')
                 sd_hijack_accelerate.hijack_accelerate()
             else:
                 sd_hijack_accelerate.restore_accelerate()
