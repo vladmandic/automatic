@@ -37,7 +37,7 @@ try:
         KDPM2AncestralDiscreteScheduler,
     )
 except Exception as e:
-    shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+    shared.log.error(f'Sampler import: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
         errors.display(e, 'Samplers')
 try:
@@ -50,7 +50,7 @@ try:
     from modules.schedulers.scheduler_ufogen import UFOGenScheduler # pylint: disable=ungrouped-imports
     from modules.perflow import PeRFlowScheduler # pylint: disable=ungrouped-imports
 except Exception as e:
-    shared.log.error(f'Diffusers import error: version={diffusers.__version__} error: {e}')
+    shared.log.error(f'Sampler import: version={diffusers.__version__} error: {e}')
     if os.environ.get('SD_SAMPLER_DEBUG', None) is not None:
         errors.display(e, 'Samplers')
 

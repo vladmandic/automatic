@@ -84,7 +84,7 @@ fi
 # Add venv lib folder to PATH
 if [ -d "$(realpath "$venv_dir")/lib/" ] && [[ -z "${DISABLE_VENV_LIBS}" ]]
 then
-    if [[ -v LD_LIBRARY_PATH ]]
+    if [ -z "${LD_LIBRARY_PATH+x}" ]
     then
       export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath "$venv_dir")/lib/
     else

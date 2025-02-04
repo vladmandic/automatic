@@ -18,8 +18,9 @@ from modules.paths import models_path, script_path, data_path, sd_configs_path, 
 from modules.dml import memory_providers, default_memory_provider, directml_do_hijack
 from modules.onnx_impl import initialize_onnx, execution_providers
 from modules.memstats import memory_stats, ram_stats # pylint: disable=unused-import
+from modules.interrogate.openclip import caption_models, caption_types, get_clip_models, refresh_clip_models, category_types
+from modules.interrogate.vqa import vlm_models, vlm_prompts
 from modules.ui_components import DropdownEditable
-import modules.interrogate
 import modules.memmon
 import modules.styles
 import modules.paths as paths
@@ -31,12 +32,11 @@ demo: gr.Blocks = None
 api = None
 progress_print_out = sys.stdout
 parser = cmd_args.parser
-url = 'https://github.com/vladmandic/automatic'
+url = 'https://github.com/vladmandic/sdnext'
 cmd_opts, _ = parser.parse_known_args()
 hide_dirs = {"visible": not cmd_opts.hide_ui_dir_config}
 xformers_available = False
 locking_available = True # used by file read/write locking
-interrogator = modules.interrogate.InterrogateModels(os.path.join("models", "interrogate"))
 sd_upscalers = []
 detailers = []
 face_restorers = []
@@ -403,23 +403,29 @@ def temp_disable_extensions():
 
 def get_default_modes():
     default_offload_mode = "none"
+    default_diffusers_offload_min_gpu_memory = 0.25
     if not (cmd_opts.lowvram or cmd_opts.medvram):
         if "gpu" in mem_stat:
             if gpu_memory <= 4:
                 cmd_opts.lowvram = True
                 default_offload_mode = "sequential"
+                default_diffusers_offload_min_gpu_memory = 0
                 log.info(f"Device detect: memory={gpu_memory:.1f} default=sequential optimization=lowvram")
-            # elif gpu_memory <= 8:
-            #     cmd_opts.medvram = True
-            #     default_offload_mode = "model"
-            #     log.info(f"Device detect: memory={gpu_memory:.1f} optimization=medvram")
+            elif gpu_memory <= 8:
+                cmd_opts.medvram = True # VAE Tiling and other stuff
+                default_offload_mode = "balanced"
+                default_diffusers_offload_min_gpu_memory = 0
+                log.info(f"Device detect: memory={gpu_memory:.1f} default=balanced optimization=medvram")
             else:
                 default_offload_mode = "balanced"
+                default_diffusers_offload_min_gpu_memory = 0.25
                 log.info(f"Device detect: memory={gpu_memory:.1f} default=balanced")
     elif cmd_opts.medvram:
         default_offload_mode = "balanced"
+        default_diffusers_offload_min_gpu_memory = 0
     elif cmd_opts.lowvram:
         default_offload_mode = "sequential"
+        default_diffusers_offload_min_gpu_memory = 0
 
     if devices.backend == "directml": # Force BMM for DirectML instead of SDP
         default_cross_attention = "Dynamic Attention BMM" if native else "Sub-quadratic"
@@ -439,10 +445,10 @@ def get_default_modes():
     if (cmd_opts.lowvram or cmd_opts.medvram) and ('Flash attention' not in default_sdp_options and 'Dynamic attention' not in default_sdp_options):
         default_sdp_options.append('Dynamic attention')
 
-    return default_offload_mode, default_cross_attention, default_sdp_options
+    return default_offload_mode, default_diffusers_offload_min_gpu_memory, default_cross_attention, default_sdp_options
 
 
-startup_offload_mode, startup_cross_attention, startup_sdp_options = get_default_modes()
+startup_offload_mode, startup_diffusers_offload_min_gpu_memory, startup_cross_attention, startup_sdp_options = get_default_modes()
 
 options_templates.update(options_section(('sd', "Models & Loading"), {
     "sd_backend": OptionInfo('diffusers', "Execution backend", gr.Radio, {"choices": ['diffusers', 'original'] }),
@@ -458,7 +464,7 @@ options_templates.update(options_section(('sd', "Models & Loading"), {
     "diffusers_move_refiner": OptionInfo(False, "Move refiner model to CPU when not in use", gr.Checkbox, {"visible": False }),
     "diffusers_extract_ema": OptionInfo(False, "Use model EMA weights when possible", gr.Checkbox, {"visible": False }),
     "diffusers_offload_mode": OptionInfo(startup_offload_mode, "Model offload mode", gr.Radio, {"choices": ['none', 'balanced', 'model', 'sequential']}),
-    "diffusers_offload_min_gpu_memory": OptionInfo(0.25, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
+    "diffusers_offload_min_gpu_memory": OptionInfo(startup_diffusers_offload_min_gpu_memory, "Balanced offload GPU low watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_gpu_memory": OptionInfo(0.70, "Balanced offload GPU high watermark", gr.Slider, {"minimum": 0.1, "maximum": 1, "step": 0.01 }),
     "diffusers_offload_max_cpu_memory": OptionInfo(0.90, "Balanced offload CPU high watermark", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01, "visible": False }),
 
@@ -493,6 +499,7 @@ options_templates.update(options_section(('text_encoder', "Text Encoder"), {
     "sd_textencoder_cache": OptionInfo(True, "Cache text encoder results", gr.Checkbox, {"visible": False}),
     "sd_textencoder_cache_size": OptionInfo(4, "Text encoder cache size", gr.Slider, {"minimum": 0, "maximum": 16, "step": 1}),
     "comma_padding_backtrack": OptionInfo(20, "Prompt padding", gr.Slider, {"minimum": 0, "maximum": 74, "step": 1, "visible": not native }),
+    "sd_textencder_linebreak": OptionInfo(True, "Use line break as prompt segment marker", gr.Checkbox),
     "diffusers_zeros_prompt_pad": OptionInfo(False, "Use zeros for prompt padding", gr.Checkbox),
     "diffusers_pooled": OptionInfo("default", "Diffusers SDXL pooled embeds", gr.Radio, {"choices": ['default', 'weighted']}),
 }))
@@ -528,6 +535,8 @@ options_templates.update(options_section(('backends', "Backend Settings"), {
     "cudnn_benchmark": OptionInfo(False, "Full-depth cuDNN benchmark"),
     "diffusers_fuse_projections": OptionInfo(False, "Fused projections"),
     "torch_expandable_segments": OptionInfo(False, "Expandable segments"),
+    "torch_tunable_ops": OptionInfo("default", "Tunable ops", gr.Radio, {"choices": ["default", "true", "false"]}),
+    "torch_tunable_limit": OptionInfo(30, "Tunable ops limit", gr.Slider, {"minimum": 1, "maximum": 100, "step": 1}),
     "cuda_mem_fraction": OptionInfo(0.0, "Memory limit", gr.Slider, {"minimum": 0, "maximum": 2.0, "step": 0.05}),
     "torch_gc_threshold": OptionInfo(70, "GC threshold", gr.Slider, {"minimum": 0, "maximum": 100, "step": 1}),
     "inference_mode": OptionInfo("no-grad", "Inference mode", gr.Radio, {"choices": ["no-grad", "inference-mode", "none"]}),
@@ -663,6 +672,7 @@ options_templates.update(options_section(('system-paths', "System Paths"), {
     "ckpt_dir": OptionInfo(os.path.join(paths.models_path, 'Stable-diffusion'), "Folder with stable diffusion models", folder=True),
     "diffusers_dir": OptionInfo(os.path.join(paths.models_path, 'Diffusers'), "Folder with Huggingface models", folder=True),
     "hfcache_dir": OptionInfo(default_hfcache_dir, "Folder for Huggingface cache", folder=True),
+    "tunable_dir": OptionInfo(os.path.join(paths.models_path, 'tunable'), "Folder for Tunable ops cache", folder=True),
     "vae_dir": OptionInfo(os.path.join(paths.models_path, 'VAE'), "Folder with VAE files", folder=True),
     "unet_dir": OptionInfo(os.path.join(paths.models_path, 'UNET'), "Folder with UNET files", folder=True),
     "te_dir": OptionInfo(os.path.join(paths.models_path, 'Text-encoder'), "Folder with Text encoder files", folder=True),
@@ -881,17 +891,35 @@ options_templates.update(options_section(('control', "Control Options"), {
 }))
 
 options_templates.update(options_section(('interrogate', "Interrogate"), {
-    "interrogate_keep_models_in_memory": OptionInfo(False, "Interrogate: keep models in VRAM"),
-    "interrogate_return_ranks": OptionInfo(True, "Interrogate: include ranks of model tags matches in results"),
-    "interrogate_clip_num_beams": OptionInfo(1, "Interrogate: num_beams for BLIP", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
-    "interrogate_clip_min_length": OptionInfo(32, "Interrogate: minimum description length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
-    "interrogate_clip_max_length": OptionInfo(192, "Interrogate: maximum description length", gr.Slider, {"minimum": 1, "maximum": 256, "step": 1}),
-    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "Interrogate: skip categories", gr.CheckboxGroup, lambda: {"choices": modules.interrogate.category_types()}, refresh=modules.interrogate.category_types),
-    "interrogate_deepbooru_score_threshold": OptionInfo(0.65, "Interrogate: deepbooru score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
-    "deepbooru_sort_alpha": OptionInfo(False, "Interrogate: deepbooru sort alphabetically"),
-    "deepbooru_use_spaces": OptionInfo(False, "Use spaces for tags in deepbooru"),
-    "deepbooru_escape": OptionInfo(True, "Escape brackets in deepbooru"),
-    "deepbooru_filter_tags": OptionInfo("", "Filter out tags from deepbooru output"),
+    "interrogate_default_type": OptionInfo("OpenCLiP", "Default type", gr.Radio, {"choices": ["OpenCLiP", "VLM", "DeepBooru"]}),
+    "interrogate_offload": OptionInfo(True, "Interrogate: offload models "),
+
+    "interrogate_clip_sep": OptionInfo("<h2>OpenCLiP</h2>", "", gr.HTML),
+    "interrogate_clip_model": OptionInfo("ViT-L-14/openai", "CLiP: default model", gr.Dropdown, lambda: {"choices": get_clip_models()}, refresh=refresh_clip_models),
+    "interrogate_clip_mode": OptionInfo(caption_types[0], "CLiP: default mode", gr.Dropdown, {"choices": caption_types}),
+    "interrogate_blip_model": OptionInfo(list(caption_models)[0], "CLiP: default captioner", gr.Dropdown, {"choices": list(caption_models)}),
+    "interrogate_clip_score": OptionInfo(False, "CLiP: include scores in results"),
+    "interrogate_clip_num_beams": OptionInfo(1, "CLiP: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
+    "interrogate_clip_min_length": OptionInfo(32, "CLiP: min length", gr.Slider, {"minimum": 1, "maximum": 128, "step": 1}),
+    "interrogate_clip_max_length": OptionInfo(74, "CLiP: max length", gr.Slider, {"minimum": 1, "maximum": 512, "step": 1}),
+    "interrogate_clip_min_flavors": OptionInfo(2, "CLiP: min flavors", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
+    "interrogate_clip_max_flavors": OptionInfo(8, "CLiP: max flavors", gr.Slider, {"minimum": 0, "maximum": 32, "step": 1}),
+    "interrogate_clip_skip_categories": OptionInfo(["artists", "movements", "flavors"], "CLiP: skip categories", gr.CheckboxGroup, lambda: {"choices": category_types()}, refresh=category_types),
+
+    "interrogate_vlm_sep": OptionInfo("<h2>VLM</h2>", "", gr.HTML),
+    "interrogate_vlm_model": OptionInfo(list(vlm_models)[0], "VLM: default model", gr.Dropdown, {"choices": list(vlm_models)}),
+    "interrogate_vlm_prompt": OptionInfo(vlm_prompts[2], "VLM: default prompt", DropdownEditable, {"choices": vlm_prompts }),
+    "interrogate_vlm_num_beams": OptionInfo(3, "VLM: num beams", gr.Slider, {"minimum": 1, "maximum": 16, "step": 1}),
+    "interrogate_vlm_max_length": OptionInfo(512, "VLM: max length", gr.Slider, {"minimum": 1, "maximum": 4096, "step": 1}),
+
+    "deepbooru_sep": OptionInfo("<h2>DeepBooru</h2>", "", gr.HTML),
+    "deepbooru_score_threshold": OptionInfo(0.65, "DeepBooru: score threshold", gr.Slider, {"minimum": 0, "maximum": 1, "step": 0.01}),
+    "deepbooru_max_tags": OptionInfo(74, "DeepBooru: max tags", gr.Slider, {"minimum": 1, "maximum": 512, "step": 1}),
+    "deepbooru_clip_score": OptionInfo(False, "DeepBooru: include scores in results"),
+    "deepbooru_sort_alpha": OptionInfo(False, "DeepBooru: sort alphabetically"),
+    "deepbooru_use_spaces": OptionInfo(False, "DeepBooru: use spaces for tags"),
+    "deepbooru_escape": OptionInfo(True, "DeepBooru: escape brackets"),
+    "deepbooru_filter_tags": OptionInfo("", "DeepBooru: exclude tags"),
 }))
 
 options_templates.update(options_section(('huggingface', "Huggingface"), {
@@ -934,7 +962,7 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
     "lora_quant": OptionInfo("NF4","LoRA precision when quantized", gr.Radio, {"choices": ["NF4", "FP4"]}),
 
     "extra_networks_styles_sep": OptionInfo("<h2>Styles</h2>", "", gr.HTML),
-    "extra_networks_styles": OptionInfo(True, "Show built-in styles"),
+    "extra_networks_styles": OptionInfo(True, "Show reference styles"),
 
     "extra_networks_embed_sep": OptionInfo("<h2>Embeddings</h2>", "", gr.HTML),
     "diffusers_enable_embed": OptionInfo(True, "Enable embeddings support", gr.Checkbox, {"visible": native}),

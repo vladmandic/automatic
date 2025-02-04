@@ -191,7 +191,7 @@ def create_ui(_blocks: gr.Blocks=None):
                             input_image = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=True, tool="editor", height=gr_height, visible=True, image_mode='RGB', elem_id='control_input_select', elem_classes=['control-image'])
                             input_resize = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=True, tool="select", height=gr_height, visible=False, image_mode='RGB', elem_id='control_input_resize', elem_classes=['control-image'])
                             input_inpaint = gr.Image(label="Input", show_label=False, type="pil", source="upload", interactive=True, tool="sketch", height=gr_height, visible=False, image_mode='RGB', elem_id='control_input_inpaint', brush_radius=32, mask_opacity=0.6, elem_classes=['control-image'])
-                            btn_interrogate_clip, btn_interrogate_booru = ui_sections.create_interrogate_buttons('control')
+                            btn_interrogate = ui_sections.create_interrogate_button('control')
                             with gr.Row():
                                 input_buttons = [gr.Button('Select', visible=True, interactive=False), gr.Button('Inpaint', visible=True, interactive=True), gr.Button('Outpaint', visible=True, interactive=True)]
                         with gr.Tab('Video', id='in-video') as tab_video:
@@ -530,8 +530,7 @@ def create_ui(_blocks: gr.Blocks=None):
             input_type.change(fn=lambda x: gr.update(visible=x == 2), inputs=[input_type], outputs=[column_init])
             btn_prompt_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[prompt, steps], outputs=[prompt_counter])
             btn_negative_counter.click(fn=call_queue.wrap_queued_call(ui_common.update_token_counter), inputs=[negative, steps], outputs=[negative_counter])
-            btn_interrogate_clip.click(fn=helpers.interrogate_clip, inputs=[], outputs=[prompt])
-            btn_interrogate_booru.click(fn=helpers.interrogate_booru, inputs=[], outputs=[prompt])
+            btn_interrogate.click(fn=helpers.interrogate, inputs=[], outputs=[prompt])
 
             select_fields = [input_mode, input_image, init_image, input_type, input_resize, input_inpaint, input_video, input_batch, input_folder]
             select_output = [output_tabs, preview_process, result_txt]

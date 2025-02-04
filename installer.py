@@ -67,6 +67,33 @@ except Exception:
     ts = lambda *args, **kwargs: None # pylint: disable=unnecessary-lambda-assignment
 
 
+def get_console():
+    return console
+
+
+def get_log():
+    return log
+
+
+def install_traceback(suppress: list = []):
+    from rich.traceback import install as traceback_install
+    from rich.pretty import install as pretty_install
+    traceback_install(
+        console=console,
+        extra_lines=os.environ.get('SD_TRACELINES', 1),
+        max_frames=os.environ.get('SD_TRACEFRAMES', 16),
+        width=os.environ.get('SD_TRACEWIDTH', console.width),
+        code_width=os.environ.get('SD_TRACEWIDTH', console.width) - 12,
+        word_wrap=os.environ.get('SD_TRACEWRAP', False),
+        indent_guides=os.environ.get('SD_TRACEINDENT', False),
+        show_locals=os.environ.get('SD_TRACELOCALS', False),
+        locals_hide_dunder=os.environ.get('SD_TRACEDUNDER', True),
+        locals_hide_sunder=os.environ.get('SD_TRACESUNDER', None),
+        suppress=suppress,
+    )
+    pretty_install(console=console)
+
+
 # setup console and file logging
 def setup_logging():
 
@@ -101,7 +128,6 @@ def setup_logging():
     from rich.console import Console
     from rich import print as rprint
     from rich.pretty import install as pretty_install
-    from rich.traceback import install as traceback_install
 
     if args.log:
         global log_file # pylint: disable=global-statement
@@ -116,17 +142,25 @@ def setup_logging():
     log.setLevel(logging.DEBUG) # log to file is always at level debug for facility `sd`
     log.print = rprint
     global console # pylint: disable=global-statement
-    console = Console(log_time=True, log_time_format='%H:%M:%S-%f', theme=Theme({
+    theme = Theme({
         "traceback.border": "black",
         "traceback.border.syntax_error": "black",
         "inspect.value.border": "black",
         "logging.level.info": "blue_violet",
         "logging.level.debug": "purple4",
         "logging.level.trace": "dark_blue",
-    }))
+    })
+    console = Console(
+        log_time=True,
+        log_time_format='%H:%M:%S-%f',
+        tab_size=4,
+        soft_wrap=True,
+        safe_box=True,
+        theme=theme,
+    )
     logging.basicConfig(level=logging.ERROR, format='%(asctime)s | %(name)s | %(levelname)s | %(module)s | %(message)s', handlers=[logging.NullHandler()]) # redirect default logger to null
     pretty_install(console=console)
-    traceback_install(console=console, extra_lines=1, max_frames=16, width=console.width, word_wrap=False, indent_guides=False, suppress=[])
+    install_traceback()
     while log.hasHandlers() and len(log.handlers) > 0:
         log.removeHandler(log.handlers[0])
 
@@ -461,12 +495,6 @@ def check_python(supported_minors=[9, 10, 11, 12], reason=None):
     if args.quick:
         return
     log.info(f'Python: version={platform.python_version()} platform={platform.system()} bin="{sys.executable}" venv="{sys.prefix}"')
-    if int(sys.version_info.major) == 3 and int(sys.version_info.minor) == 12 and int(sys.version_info.micro) > 3: # TODO install: python 3.12.4 or higher cause a mess with pydantic
-        log.error(f"Python version incompatible: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.12.3 or lower")
-        if reason is not None:
-            log.error(reason)
-        if not args.ignore:
-            sys.exit(1)
     if not (int(sys.version_info.major) == 3 and int(sys.version_info.minor) in supported_minors):
         log.error(f"Python version incompatible: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} required 3.{supported_minors}")
         if reason is not None:
@@ -492,7 +520,7 @@ def check_diffusers():
     t_start = time.time()
     if args.skip_all or args.skip_git:
         return
-    sha = '7b100ce589b917d4c116c9e61a6ec46d4f2ab062' # diffusers commit hash
+    sha = 'f63d32233f402bd603da8f3aa385aecb9c3d8809' # diffusers commit hash
     pkg = pkg_resources.working_set.by_key.get('diffusers', None)
     minor = int(pkg.version.split('.')[1] if pkg is not None else 0)
     cur = opts.get('diffusers_version', '') if minor > 0 else ''
@@ -524,7 +552,12 @@ def install_cuda():
     t_start = time.time()
     log.info('CUDA: nVidia toolkit detected')
     ts('cuda', t_start)
-    return os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+    if args.use_nightly:
+        cmd = os.environ.get('TORCH_COMMAND', 'pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu128 --extra-index-url https://download.pytorch.org/whl/nightly/cu126')
+    else:
+        # cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
+        cmd = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cu126 torchvision==0.21.0+cu126 --index-url https://download.pytorch.org/whl/cu126')
+    return cmd
 
 
 def install_rocm_zluda():
@@ -537,7 +570,6 @@ def install_rocm_zluda():
         log.info('Using CPU-only torch')
         return os.environ.get('TORCH_COMMAND', 'torch torchvision')
 
-    check_python(supported_minors=[10, 11], reason='ROCm or ZLUDA backends require Python 3.10 or 3.11')
     log.info('ROCm: AMD toolkit detected')
     os.environ.setdefault('PYTORCH_HIP_ALLOC_CONF', 'garbage_collection_threshold:0.8,max_split_size_mb:512')
     # if not is_windows:
@@ -575,8 +607,8 @@ def install_rocm_zluda():
     log.info(msg)
     torch_command = ''
 
-    if sys.platform == "win32":
-        # TODO install: enable ROCm for windows when available
+    if sys.platform == "win32": # TODO install: enable ROCm for windows when available
+        check_python(supported_minors=[10, 11], reason='ZLUDA backend requires Python 3.10 or 3.11')
 
         if args.device_id is not None:
             if os.environ.get('HIP_VISIBLE_DEVICES', None) is not None:
@@ -611,22 +643,33 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        if rocm.version is None or float(rocm.version) > 6.1: # assume the latest if version check fails
-            # torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+rocm6.2 torchvision==0.20.1+rocm6.2 --index-url https://download.pytorch.org/whl/rocm6.2')
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
-        elif rocm.version == "6.1": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.1 torchvision==0.19.1+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
-        elif rocm.version == "6.0": # lock to 2.4.1, older rocm (5.7) uses torch 2.3
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
-        elif float(rocm.version) < 5.5: # oldest supported version is 5.5
-            log.warning(f"ROCm: unsupported version={rocm.version}")
-            log.warning("ROCm: minimum supported version=5.5")
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+        # Python 3.12 will cause compatibility issues with other dependencies
+        # ROCm supports Python 3.12 so don't block it but don't advertise it in the error message
+        check_python(supported_minors=[9, 10, 11, 12], reason='ROCm backend requires Python 3.9, 3.10 or 3.11')
+        if args.use_nightly:
+            if rocm.version is None or float(rocm.version) >= 6.3: # assume the latest if version check fails
+                torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm6.3')
+            elif rocm.version == "6.2": # use rocm 6.2.4 instead of 6.2 as torch+rocm6.2 doesn't exists
+                torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm6.2.4')
+            else: # oldest rocm version on nightly is 6.1
+                torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm6.1')
         else:
-            torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
-
-        if os.environ.get('TRITON_COMMAND', None) is None:
-            os.environ.setdefault('TRITON_COMMAND', 'skip') # pytorch auto installs pytorch-triton-rocm as a dependency instead
+            if rocm.version is None or float(rocm.version) >= 6.2: # assume the latest if version check fails
+                # use rocm 6.2.4 instead of 6.2 as torch==2.6.0+rocm6.2 doesn't exists
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.2.4 torchvision==0.21.0+rocm6.2.4 --index-url https://download.pytorch.org/whl/rocm6.2.4')
+            elif rocm.version == "6.1":
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.1 torchvision==0.21.0+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
+            elif rocm.version == "6.0":
+                # lock to 2.4.1 instead of 2.5.1 for performance reasons
+                # there are no support for torch 2.6.0 for rocm 6.0
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
+            elif float(rocm.version) < 5.5: # oldest supported version is 5.5
+                log.warning(f"ROCm: unsupported version={rocm.version}")
+                log.warning("ROCm: minimum supported version=5.5")
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision --index-url https://download.pytorch.org/whl/rocm5.5')
+            else:
+                # older rocm (5.7) uses torch 2.3 or older
+                torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
 
         if sys.version_info < (3, 11):
             ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
@@ -685,14 +728,17 @@ def install_ipex(torch_command):
         # XPU PyTorch doesn't support Flash Atten or Memory Atten yet so Battlemage goes OOM without this
         os.environ.setdefault('IPEX_FORCE_ATTENTION_SLICE', '1')
 
-    if "linux" in sys.platform:
-        # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-        if os.environ.get('TRITON_COMMAND', None) is None:
-            os.environ.setdefault('TRITON_COMMAND', '--pre pytorch-triton-xpu==3.1.0+91b14bf559 --index-url https://download.pytorch.org/whl/nightly/xpu')
-        # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
+    if args.use_nightly:
+        torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/test/xpu')
+        if "linux" in sys.platform:
+            # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
+            if os.environ.get('TRITON_COMMAND', None) is None:
+                os.environ.setdefault('TRITON_COMMAND', '--pre pytorch-triton-xpu==3.1.0+91b14bf559 --index-url https://download.pytorch.org/whl/nightly/xpu')
+            # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
+        else:
+            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
     install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
@@ -725,8 +771,10 @@ def install_openvino(torch_command):
 
 def install_torch_addons():
     t_start = time.time()
+    triton_command = os.environ.get('TRITON_COMMAND', None)
+    if triton_command is not None and triton_command != 'skip':
+        install(triton_command, 'triton', quiet=True)
     xformers_package = os.environ.get('XFORMERS_PACKAGE', '--pre xformers') if opts.get('cross_attention_optimization', '') == 'xFormers' or args.use_xformers else 'none'
-    triton_command = os.environ.get('TRITON_COMMAND', 'triton') if sys.platform == 'linux' else None
     if 'xformers' in xformers_package:
         try:
             install(xformers_package, ignore=True, no_deps=True)
@@ -748,8 +796,6 @@ def install_torch_addons():
         install('optimum-quanto==0.2.6', 'optimum-quanto')
     if not args.experimental:
         uninstall('wandb', quiet=True)
-    if triton_command is not None and triton_command != 'skip':
-        install(triton_command, 'triton', quiet=True)
     ts('addons', t_start)
 
 
@@ -758,10 +804,14 @@ def check_cudnn():
     import site
     site_packages = site.getsitepackages()
     cuda_path = os.environ.get('CUDA_PATH', '')
-    for site_package in site_packages:
-        folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
-        if os.path.exists(folder) and folder not in cuda_path:
-            os.environ['CUDA_PATH'] = f"{cuda_path}:{folder}"
+    if cuda_path == '':
+        for site_package in site_packages:
+            folder = os.path.join(site_package, 'nvidia', 'cudnn', 'lib')
+            if os.path.exists(folder) and folder not in cuda_path:
+                cuda_path = f"{cuda_path}:{folder}"
+                if cuda_path.startswith(':'):
+                    cuda_path = cuda_path[1:]
+                os.environ['CUDA_PATH'] = cuda_path
 
 
 # check torch version
@@ -1091,7 +1141,7 @@ def install_optional():
     install('clean-fid')
     install('pillow-jxl-plugin==1.3.1', ignore=True)
     install('optimum-quanto==0.2.6', ignore=True)
-    install('bitsandbytes==0.45.0', ignore=True)
+    install('bitsandbytes==0.45.1', ignore=True)
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
@@ -1326,7 +1376,7 @@ def check_version(offline=False, reset=True): # pylint: disable=unused-argument
         return
     commits = None
     try:
-        commits = requests.get('https://api.github.com/repos/vladmandic/automatic/branches/master', timeout=10).json()
+        commits = requests.get('https://api.github.com/repos/vladmandic/sdnext/branches/master', timeout=10).json()
         if commits['commit']['sha'] != commit:
             if args.upgrade:
                 global quick_allowed # pylint: disable=global-statement
@@ -1423,6 +1473,7 @@ def add_args(parser):
     group_compute.add_argument("--use-openvino", default=os.environ.get("SD_USEOPENVINO",False), action='store_true', help="Use Intel OpenVINO backend, default: %(default)s")
     group_compute.add_argument("--use-ipex", default=os.environ.get("SD_USEIPEX",False), action='store_true', help="Force use Intel OneAPI XPU backend, default: %(default)s")
     group_compute.add_argument("--use-cuda", default=os.environ.get("SD_USECUDA",False), action='store_true', help="Force use nVidia CUDA backend, default: %(default)s")
+    group_compute.add_argument("--use-nightly", default=os.environ.get("SD_USENIGHTLY",False), action='store_true', help="Force use nightly torch builds, default: %(default)s")
     group_compute.add_argument("--use-rocm", default=os.environ.get("SD_USEROCM",False), action='store_true', help="Force use AMD ROCm backend, default: %(default)s")
     group_compute.add_argument('--use-zluda', default=os.environ.get("SD_USEZLUDA", False), action='store_true', help="Force use ZLUDA, AMD GPUs only, default: %(default)s")
     group_compute.add_argument("--use-xformers", default=os.environ.get("SD_USEXFORMERS",False), action='store_true', help="Force use xFormers cross-optimization, default: %(default)s")

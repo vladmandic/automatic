@@ -4,6 +4,7 @@
 # 3rd Edited by ControlNet
 # 4th Edited by ControlNet (added face and correct hands)
 
+from typing import Type, Optional, Union, List
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import cv2
@@ -16,37 +17,61 @@ checked_ok = False
 busy = False
 
 
+def _register_module(self, module: Type, module_name: Optional[Union[str, List[str]]] = None, force: bool = False) -> None:
+    if not callable(module):
+        raise TypeError(f'module must be Callable, but got {type(module)}')
+    if module_name is None:
+        module_name = module.__name__
+    if isinstance(module_name, str):
+        module_name = [module_name]
+    for name in module_name:
+        if not force and name in self._module_dict: # pylint: disable=protected-access
+            pass # patch for 'Adafactor is already registered in optimizer at torch.optim'
+        self._module_dict[name] = module # pylint: disable=protected-access
+
+
 def check_dependencies():
     global checked_ok, busy # pylint: disable=global-statement
+    busy = True
     debug = log.trace if os.environ.get('SD_DWPOSE_DEBUG', None) is not None else lambda *args, **kwargs: None
+    # pip install --upgrade --no-deps --force-reinstall termcolor xtcocotools terminaltables pycocotools munkres shapely openmim==0.3.9 mmengine==0.10.5 mmcv==2.1.0 mmpose==1.3.2 mmdet==3.3.0
     packages = [
         'termcolor',
+        'xtcocotools',
+        'terminaltables',
+        'pycocotools',
+        'munkres',
+        'shapely',
         'openmim==0.3.9',
-        'mmengine==0.10.4',
+        'mmengine==0.10.5',
         'mmcv==2.1.0',
-        'mmpose==1.3.1',
+        'mmpose==1.3.2',
         'mmdet==3.3.0',
     ]
-    status = [installed(p, reload=False, quiet=False) for p in packages]
+    status = [installed(p, reload=False, quiet=True) for p in packages]
     debug(f'DWPose required={packages} status={status}')
     if not all(status):
-        log.info(f'Installing DWPose dependencies: {[packages]}')
+        log.info(f'Installing DWPose dependencies: {packages}')
         cmd = 'install --upgrade --no-deps --force-reinstall '
         pkgs = ' '.join(packages)
-        res = pip(cmd + pkgs, ignore=False, quiet=False)
-        debug(f'DWPose pip install: {res}')
+        pip(cmd + pkgs, ignore=False, quiet=True, uv=False)
     try:
         import pkg_resources
         import imp # pylint: disable=deprecated-module
         imp.reload(pkg_resources)
         import mmcv # pylint: disable=unused-import
         import mmengine # pylint: disable=unused-import
+        from mmengine.registry import Registry
+        Registry._register_module = _register_module # pylint: disable=protected-access
         import mmpose # pylint: disable=unused-import
         import mmdet # pylint: disable=unused-import
         debug('DWPose import ok')
         checked_ok = True
     except Exception as e:
         log.error(f'DWPose: {e}')
+        # from modules import errors
+        # errors.display(e, 'DWPose')
+    busy = False
     return checked_ok
 
 

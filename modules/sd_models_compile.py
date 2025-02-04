@@ -1,7 +1,7 @@
 import time
 import logging
 import torch
-from modules import shared, devices, sd_models
+from modules import shared, devices, sd_models, errors
 from installer import setup_logging
 
 
@@ -208,6 +208,7 @@ def compile_torch(sd_model):
         shared.log.info(f"Model compile: task=torch time={t1-t0:.2f}")
     except Exception as e:
         shared.log.warning(f"Model compile: task=torch {e}")
+        errors.display(e, 'Compile')
     return sd_model
 
 
@@ -288,9 +289,12 @@ def openvino_recompile_model(p, hires=False, refiner=False): # recompile if a pa
                 sd_models.unload_model_weights(op='model')
                 sd_models.reload_model_weights(op='model')
         """
-        shared.compiled_model_state.height = compile_height
-        shared.compiled_model_state.width = compile_width
-        shared.compiled_model_state.batch_size = p.batch_size
+        if shared.compiled_model_state is None:
+            shared.log.warning("OpenVINO: Compile Model State is not found, model is not compiled!")
+        else:
+            shared.compiled_model_state.height = compile_height
+            shared.compiled_model_state.width = compile_width
+            shared.compiled_model_state.batch_size = p.batch_size
 
 
 def openvino_post_compile(op="base"): # delete unet after OpenVINO compile

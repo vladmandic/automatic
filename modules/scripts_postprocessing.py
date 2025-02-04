@@ -4,9 +4,9 @@ from modules import errors, shared
 
 
 class PostprocessedImage:
-    def __init__(self, image):
+    def __init__(self, image, info = {}):
         self.image = image
-        self.info = {}
+        self.info = info
 
 
 class ScriptPostprocessing:

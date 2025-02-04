@@ -1,6 +1,86 @@
 # Change Log for SD.Next
 
-## Highlights for 2025-01-29
+## Update for 2025-02-04
+
+### Highlights for 2025-02-04
+
+Just one week after latest release and what a week it was with over 50 commits!  
+
+*What's New?*  
+- Rehosted core repo to new [home](https://github.com/vladmandic/sdnext)  
+- Switched to using `torch==2.6.0` and added support for `nightly` builds required for **nVidia Blackwell** GPUs  
+- Completely new **interrogate/captioning**, now supporting 150+ **OpenCLiP** models and 20+ built-in **VLMs**  
+- Support for **new VLMs**, New SOTA **background removal**  
+- Other: *torch tunable ops, extra networks search/filter, balanced offload, prompt parser, configurable tracebacks, etc.*  
+- Cumulative fixes...  
+
+### Details for 2025-02-04
+
+- **GitHub**
+  - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
+    old repo url should automatically redirect to new one for seamless transition and in-place upgrades   
+    all internal links have been updated  
+    wiki content and docs site have been updated  
+- **Docs**:
+  - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
+- **Torch**:
+  - for **cuda** environments set default to `torch==2.6.0+cu126`  
+    for **rocm** environments set default to `torch==2.6.0+rocm6.2.4`  
+    *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
+    to force torch upgrade, either start with new installation or use `--reinstall` flag  
+  - support for torch **nightly** builds and nvidia **blackwell** gpus!  
+    use `--use-nightly` flag to install torch nightly builds  
+    current defaults to `torch==2.7.0+cu128` prerelease  
+    *note*: nightly builds are required for blackwell gpus  
+  - add support for torch **tunable ops**, this can speed up operations by up to *10-30%* on some platforms  
+    set in *settings -> backend settings -> torch options* and *settings -> system paths -> tunable ops cache*  
+  - add support for stream-loading, this can speed up model loading when models are located on network drives  
+    set in *settings -> models & loading -> model load using streams*  
+  - enhanced error logging  
+- **Interrogate/Captioning**  
+  - single interrogate button for every input or output image  
+  - behavior of interrogate configurable in *settings -> interrogate*  
+    with detailed defaults for each model type also configurable  
+  - select between 150+ *OpenCLiP* supported models, 20+ built-in *VLMs*, *DeepDanbooru*  
+  - **VLM**: now that we can use VLMs freely, we've also added support for few more out-of-the-box  
+    [Alibaba Qwen VL2](https://huggingface.co/Qwen/Qwen2-VL-2B), [Huggingface Smol VL2](HuggingFaceTB/SmolVLM-Instruct), [ToriiGate 0.4](Minthy/ToriiGate-v0.4-2B)  
+- **Postprocess**  
+  - new sota remove background model: [BEN2](https://huggingface.co/PramaLLC/BEN2)  
+    select in *process -> remove background* or enable postprocessing for txt2img/img2img operations  
+- **Other**:
+  - **networks**: imporove search/filter and add visual indicators for types  
+  - **balanced offload** new defaults: *lowvram/4gb min threshold: 0, medvram/8gb min threshold: 0, default min threshold 0.25*  
+  - **prompt parser**: log stats with tokens, sections and min/avg/max weights  
+  - **prompt parser**: add setting to ignore line breaks in prompt  
+    set in *settings -> text encoder -> use line breaks*  
+  - **visual query**: add list of predefined system prompts  
+  - **nvml cli**: run nvidia-management-lib interrogate from cli  
+    already available in ui in generate -> right click -> nvidia  
+    > python modules/api/nvml.py  
+- **Refactor**:
+  - unified trace handler with configurable tracebacks  
+  - refactor interrogate/analyze/vqa code  
+- **Fixes**:  
+  - photomaker with offloading  
+  - photomaker with refine  
+  - detailer with faceid modules  
+  - detailer restore pipeline before run  
+  - fix `python==3.9` compatibility  
+  - improve `python>=3.12.3` compatibility
+  - handle invalid `triton` on Linux  
+  - correct library import order  
+  - update requirements  
+  - calculate dyn atten bmm slice rate  
+  - dwpose update and patch `mmengine` installer  
+  - ipex device wrapper with adetailer  
+  - openvino error handling  
+  - relax python version checks for rocm  
+  - simplify and improve file wildcard matching  
+  - fix `rich` version  
+
+## Update for 2025-01-29
+
+### Highlights for 2025-01-29
 
 Two weeks since last release, time for update!  
 
@@ -17,7 +97,7 @@ Two weeks since last release, time for update!
 - Improved remote access control and reliability as well as running inside containers  
 - And of course, hotfixes for all reported issues...  
 
-## Details for 2025-01-28
+### Details for 2025-01-29
 
 - **Contributing**:  
   - if you'd like to contribute, please see updated [contributing](https://github.com/vladmandic/automatic/blob/dev/CONTRIBUTING) guidelines

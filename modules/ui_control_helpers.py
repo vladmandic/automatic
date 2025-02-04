@@ -24,13 +24,13 @@ def initialize():
     from modules.control.units import xs # vislearn ControlNet-XS
     from modules.control.units import lite # vislearn ControlNet-XS
     from modules.control.units import t2iadapter # TencentARC T2I-Adapter
-    shared.log.debug(f'UI initialize: control models={shared.opts.control_dir}')
+    shared.log.debug(f'UI initialize: control models="{shared.opts.control_dir}"')
     controlnet.cache_dir = os.path.join(shared.opts.control_dir, 'controlnet')
     xs.cache_dir = os.path.join(shared.opts.control_dir, 'xs')
     lite.cache_dir = os.path.join(shared.opts.control_dir, 'lite')
     t2iadapter.cache_dir = os.path.join(shared.opts.control_dir, 'adapter')
     processors.cache_dir = os.path.join(shared.opts.control_dir, 'processor')
-    masking.cache_dir   = os.path.join(shared.opts.control_dir, 'segment')
+    masking.cache_dir = os.path.join(shared.opts.control_dir, 'segment')
     unit.default_device = devices.device
     unit.default_dtype = devices.dtype
     try:
@@ -47,19 +47,30 @@ def initialize():
     scripts.scripts_control.initialize_scripts(is_img2img=False, is_control=True)
 
 
-def interrogate_clip():
+def interrogate():
     prompt = None
     try:
-        prompt = shared.interrogator.interrogate(input_source[0])
+        from modules.interrogate.interrogate import interrogate as interrogate_fn
+        prompt = interrogate_fn(input_source[0])
+    except Exception:
+        pass
+    return prompt
+
+
+def interrogate_clip(): # legacy function
+    prompt = None
+    try:
+        from modules.interrogate import openclip
+        prompt = openclip.interrogator.interrogate(input_source[0])
     except Exception:
         pass
     return gr.update() if prompt is None else prompt
 
 
-def interrogate_booru():
+def interrogate_booru(): # legacy function
     prompt = None
     try:
-        from modules import deepbooru
+        from modules.interrogate import deepbooru
         prompt = deepbooru.model.tag(input_source[0])
     except Exception:
         pass

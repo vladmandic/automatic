@@ -109,6 +109,7 @@ def create_paths(opts):
     create_path(fix_path('unet_dir'))
     create_path(fix_path('te_dir'))
     create_path(fix_path('lora_dir'))
+    create_path(fix_path('tunable_dir'))
     create_path(fix_path('embeddings_dir'))
     create_path(fix_path('hypernetwork_dir'))
     create_path(fix_path('onnx_temp_dir'))

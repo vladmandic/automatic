@@ -46,6 +46,7 @@ body:
         - If issue cannot be clearly seen in the provided log, run SD.Next with debug logging enabled by adding `--debug` to your command line parameters
         - If issue is setup, installation or startup related, please check `sdnext.log` before reporting  
           And if possible, perform reinstallation of required dependencies by running SD.Next with `--reinstall` command line flag  
+        - If issue is a full crash, please see [Debug guide]([Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug) on how to collect additional data  
         - If issue is after recent update of SD.Next, try to reproduce it using clean installation to avoid issues due to old configuration  
         - If you have additional extensions installed, try to reproduce the issue with user extensions disabled  
           And if the issue is with compatibility with specific extension, mark it as such when creating the issue  

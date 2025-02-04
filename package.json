@@ -1,19 +1,19 @@
 {
-  "name": "@vladmandic/automatic",
+  "name": "@vladmandic/sdnext",
   "version": "dev",
   "description": "SD.Next: Opinionated implementation of Stable Diffusion",
   "author": "Vladimir Mandic <mandic00@live.com>",
   "bugs": {
-    "url": "https://github.com/vladmandic/automatic/issues"
+    "url": "https://github.com/vladmandic/sdnext/issues"
   },
-  "homepage": "https://github.com/vladmandic/automatic",
+  "homepage": "https://github.com/vladmandic/sdnext",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vladmandic/automatic.git"
+    "url": "git+https://github.com/vladmandic/sdnext.git"
   },
   "scripts": {
     "venv": ". venv/bin/activate",

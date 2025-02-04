@@ -8,6 +8,9 @@ debug = shared.log.trace if os.environ.get('SD_FACE_DEBUG', None) is not None el
 
 
 class Script(scripts.Script):
+    original_pipeline = None
+    original_prompt_attention = None
+
     def title(self):
         return 'Face: Multiple ID Transfers'
 
@@ -89,7 +92,8 @@ class Script(scripts.Script):
                 gr.HTML('<a href="https://photo-maker.github.io/" target="_blank">&nbsp Tenecent ARC Lab PhotoMaker</a><br>')
             with gr.Row():
                 pm_model = gr.Dropdown(label='PhotoMaker Model', choices=['PhotoMaker v1', 'PhotoMaker v2'], value='PhotoMaker v2')
-                pm_trigger = gr.Text(label='Trigger word', value="person")
+                pm_trigger = gr.Text(label='Trigger word', placeholder="enter one word in prompt")
+            with gr.Row():
                 pm_strength = gr.Slider(label='Strength', minimum=0.0, maximum=2.0, step=0.01, value=1.0)
                 pm_start = gr.Slider(label='Start', minimum=0.0, maximum=1.0, step=0.01, value=0.5)
         with gr.Row():
@@ -124,6 +128,9 @@ class Script(scripts.Script):
                 input_images[i] = Image.open(image['name'])
 
         processed = None
+        self.original_pipeline = shared.sd_model
+        self.original_prompt_attention = shared.opts.prompt_attention
+        shared.opts.data['prompt_attention'] = 'fixed'
         if mode == 'FaceID': # faceid runs as ipadapter in its own pipeline
             from modules.face.insightface import get_app
             app = get_app('buffalo_l')
@@ -134,7 +141,7 @@ class Script(scripts.Script):
             from modules.face.insightface import get_app
             app = get_app('buffalo_l')
             from modules.face.photomaker import photo_maker
-            processed = photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
+            photo_maker(p, app=app, input_images=input_images, model=pm_model, trigger=pm_trigger, strength=pm_strength, start=pm_start)
         elif mode == 'InstantID':
             from modules.face.insightface import get_app
             app=get_app('antelopev2')
@@ -162,4 +169,13 @@ class Script(scripts.Script):
                 info = processing.create_infotext(p, index=i)
                 images.save_image(image, path=p.outpath_samples, seed=p.all_seeds[i], prompt=p.all_prompts[i], info=info, p=p)
 
+        return processed
+
+    def after(self, p: processing.StableDiffusionProcessing, processed: processing.Processed, *args): # pylint: disable=unused-argument
+        if self.original_pipeline is not None:
+            shared.sd_model = self.original_pipeline
+            self.original_pipeline = None
+        if self.original_prompt_attention is not None:
+            shared.opts.data['prompt_attention'] = self.original_prompt_attention
+            self.original_prompt_attention = None
         return processed

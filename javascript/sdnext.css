@@ -111,6 +111,8 @@ button.custom-button { border-radius: var(--button-large-radius); padding: var(-
 #txt2img_prompt, #txt2img_neg_prompt, #img2img_prompt, #img2img_neg_prompt, #control_prompt, #control_neg_prompt { display: contents; }
 #txt2img_actions_column, #img2img_actions_column, #control_actions { flex-flow: wrap; justify-content: space-between; }
 
+.interrogate { position: absolute; right: 2.8em; top: 0.2em; max-width: fit-content; background: none !important; z-index: 50; font-size: 1.5em !important; }
+.interrogate:hover { background: var(--button-primary-background-fill-hover) !important; }
 .interrogate-clip { position: absolute; right: 6em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-blip { position: absolute; right: 4em; top: 8px; max-width: fit-content; background: none !important; z-index: 50; }
 .interrogate-col { min-width: 0 !important; max-width: fit-content; margin-right: var(--spacing-xxl); }

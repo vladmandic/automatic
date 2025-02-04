@@ -17,7 +17,6 @@ Main ToDo list can be found at [GitHub projects](https://github.com/users/vladma
 
 ## Code TODO
 
-- TODO install: python 3.12.4 or higher cause a mess with pydantic
 - TODO install: enable ROCm for windows when available
 - TODO resize image: enable full VAE mode for resize-latent
 - TODO processing: remove duplicate mask params

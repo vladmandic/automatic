@@ -1,7 +1,8 @@
 import json
 import gradio as gr
-from modules import scripts, shared, ui_common, postprocessing, call_queue, interrogate, generation_parameters_copypaste
+from modules import scripts, shared, ui_common, postprocessing, call_queue, generation_parameters_copypaste
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call, wrap_gradio_call # pylint: disable=unused-import
+from modules.interrogate import openclip
 
 
 def submit_info(image):
@@ -45,31 +46,31 @@ def create_ui():
                         trending = gr.Label(elem_id="interrogate_label_trending", label="Trending", num_top_classes=5)
                         flavor = gr.Label(elem_id="interrogate_label_flavor", label="Flavor", num_top_classes=5)
                     with gr.Row():
-                        clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLiP model')
-                        ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
-                        blip_model = gr.Dropdown(list(interrogate.caption_models), value='blip-base', label='Caption model')
-                        mode = gr.Dropdown(['best', 'fast', 'classic', 'caption', 'negative'], label='Mode', value='fast')
+                        clip_model = gr.Dropdown([], value=shared.opts.interrogate_clip_model, label='CLiP model')
+                        ui_common.create_refresh_button(clip_model, openclip.refresh_clip_models, lambda: {"choices": openclip.refresh_clip_models()}, 'refresh_interrogate_models')
+                        blip_model = gr.Dropdown(list(openclip.caption_models), value=shared.opts.interrogate_blip_model, label='Caption model')
+                        mode = gr.Dropdown(openclip.caption_types, label='Mode', value='fast')
                     with gr.Accordion(label='Advanced', open=False, visible=True):
                         with gr.Row():
-                            caption_max_length = gr.Number(label='Max length', value=64, minimum=16, maximum=512, min_width=300)
+                            caption_max_length = gr.Number(label='Max length', value=shared.opts.interrogate_clip_max_length, minimum=16, maximum=512, min_width=300)
                             chunk_size = gr.Number(label='Chunk size', value=1024, minimum=256, maximum=4096, min_width=300)
                             min_flavors = gr.Number(label='Min flavors', value=2, minimum=1, maximum=16, min_width=300)
                             max_flavors = gr.Number(label='Max flavors', value=8, minimum=1, maximum=64, min_width=300)
                             flavor_intermediate_count = gr.Number(label='Intermediates', value=1024, minimum=256, maximum=4096)
-                            caption_max_length.change(fn=interrogate.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
-                            chunk_size.change(fn=interrogate.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
-                            min_flavors.change(fn=interrogate.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
-                            max_flavors.change(fn=interrogate.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
-                            flavor_intermediate_count.change(fn=interrogate.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
+                            caption_max_length.change(fn=openclip.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
+                            chunk_size.change(fn=openclip.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
+                            min_flavors.change(fn=openclip.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
+                            max_flavors.change(fn=openclip.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
+                            flavor_intermediate_count.change(fn=openclip.update_interrogate_params, inputs=[caption_max_length, chunk_size, min_flavors, max_flavors, flavor_intermediate_count], outputs=[])
                     with gr.Row(elem_id='interrogate_buttons_image'):
                         btn_interrogate_img = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                         btn_analyze_img = gr.Button("Analyze", elem_id="interrogate_btn_analyze", variant='primary')
                         btn_unload = gr.Button("Unload", elem_id="interrogate_btn_unload")
                     with gr.Row(elem_id='copy_buttons_interrogate'):
                         copy_interrogate_buttons = generation_parameters_copypaste.create_buttons(["txt2img", "img2img", "extras", "control"])
-                    btn_interrogate_img.click(interrogate.interrogate_image, inputs=[image, clip_model, blip_model, mode], outputs=prompt)
-                    btn_analyze_img.click(interrogate.analyze_image, inputs=[image, clip_model, blip_model], outputs=[medium, artist, movement, trending, flavor])
-                    btn_unload.click(interrogate.unload_clip_model)
+                    btn_interrogate_img.click(openclip.interrogate_image, inputs=[image, clip_model, blip_model, mode], outputs=prompt)
+                    btn_analyze_img.click(openclip.analyze_image, inputs=[image, clip_model, blip_model], outputs=[medium, artist, movement, trending, flavor])
+                    btn_unload.click(openclip.unload_clip_model)
                 with gr.Tab("Interrogate Batch"):
                     with gr.Row():
                         batch_files = gr.File(label="Files", show_label=True, file_count='multiple', file_types=['image'], type='file', interactive=True, height=100)
@@ -81,19 +82,19 @@ def create_ui():
                         batch = gr.Text(label="Prompts", lines=10)
                     with gr.Row():
                         clip_model = gr.Dropdown([], value='ViT-L-14/openai', label='CLiP Batch Model')
-                        ui_common.create_refresh_button(clip_model, interrogate.get_clip_models, lambda: {"choices": interrogate.get_clip_models()}, 'refresh_interrogate_models')
+                        ui_common.create_refresh_button(clip_model, openclip.refresh_clip_models, lambda: {"choices": openclip.refresh_clip_models()}, 'refresh_interrogate_models')
                     with gr.Row(elem_id='interrogate_buttons_batch'):
                         btn_interrogate_batch = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                 with gr.Tab("Visual Query"):
-                    from modules import vqa
+                    from modules.interrogate import vqa
                     with gr.Row():
                         vqa_image = gr.Image(type='pil', label="Image")
                     with gr.Row():
-                        vqa_question = gr.Textbox(label="Question", placeholder="Describe the image")
+                        vqa_question = gr.Dropdown(label="Question", allow_custom_value=True, choices=vqa.vlm_prompts, value=vqa.vlm_prompts[2])
                     with gr.Row():
-                        vqa_answer = gr.Textbox(label="Answer", lines=3)
+                        vqa_answer = gr.Textbox(label="Answer", lines=5)
                     with gr.Row(elem_id='interrogate_buttons_query'):
-                        vqa_model = gr.Dropdown(list(vqa.MODELS), value='MS Florence 2 Base', label='VQA Model')
+                        vqa_model = gr.Dropdown(list(vqa.vlm_models), value=list(vqa.vlm_models)[0], label='VLM Model')
                         vqa_submit = gr.Button("Interrogate", elem_id="interrogate_btn_interrogate", variant='primary')
                     vqa_submit.click(vqa.interrogate, inputs=[vqa_question, vqa_image, vqa_model], outputs=[vqa_answer])
 
@@ -148,7 +149,7 @@ def create_ui():
         ]
     )
     btn_interrogate_batch.click(
-        fn=interrogate.interrogate_batch,
+        fn=openclip.interrogate_batch,
         inputs=[batch_files, batch_folder, batch_str, clip_model, blip_model, mode, save_output],
         outputs=[batch],
     )

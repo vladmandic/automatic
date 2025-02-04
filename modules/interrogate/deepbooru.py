@@ -4,7 +4,7 @@ import threading
 import torch
 import numpy as np
 from PIL import Image
-from modules import modelloader, paths, deepbooru_model, devices, images, shared
+from modules import modelloader, paths, devices, shared
 
 re_special = re.compile(r'([\\()])')
 load_lock = threading.Lock()
@@ -19,7 +19,7 @@ class DeepDanbooru:
             if self.model is not None:
                 return
             model_path = os.path.join(paths.models_path, "DeepDanbooru")
-            shared.log.debug(f'Load interrogate model: type=DeepDanbooru folder="{model_path}"')
+            shared.log.debug(f'Interrogate load: module=DeepDanbooru folder="{model_path}"')
             files = modelloader.load_models(
                 model_path=model_path,
                 model_url='https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt',
@@ -27,9 +27,9 @@ class DeepDanbooru:
                 download_name='model-resnet_custom_v3.pt',
             )
 
-            self.model = deepbooru_model.DeepDanbooruModel()
+            from modules.interrogate.deepbooru_model import DeepDanbooruModel
+            self.model = DeepDanbooruModel()
             self.model.load_state_dict(torch.load(files[0], map_location="cpu"))
-
             self.model.eval()
             self.model.to(devices.cpu, devices.dtype)
 
@@ -38,9 +38,9 @@ class DeepDanbooru:
         self.model.to(devices.device)
 
     def stop(self):
-        if not shared.opts.interrogate_keep_models_in_memory:
+        if shared.opts.interrogate_offload:
             self.model.to(devices.cpu)
-            devices.torch_gc()
+        devices.torch_gc()
 
     def tag(self, pil_image):
         self.start()
@@ -56,14 +56,14 @@ class DeepDanbooru:
             pil_image = Image.open(pil_image['name'])
         if pil_image is None:
             return ''
-        pic = images.resize_image(2, pil_image.convert("RGB"), 512, 512)
+        pic = pil_image.resize((512, 512), resample=Image.Resampling.LANCZOS).convert("RGB")
         a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
         with devices.inference_context(), devices.autocast():
             x = torch.from_numpy(a).to(devices.device)
             y = self.model(x)[0].detach().float().cpu().numpy()
         probability_dict = {}
         for tag, probability in zip(self.model.tags, y):
-            if probability < shared.opts.interrogate_deepbooru_score_threshold:
+            if probability < shared.opts.deepbooru_score_threshold:
                 continue
             if tag.startswith("rating:"):
                 continue
@@ -81,9 +81,11 @@ class DeepDanbooru:
                 tag_outformat = tag_outformat.replace('_', ' ')
             if shared.opts.deepbooru_escape:
                 tag_outformat = re.sub(re_special, r'\\\1', tag_outformat)
-            if shared.opts.interrogate_return_ranks and not force_disable_ranks:
+            if shared.opts.deepbooru_clip_score and not force_disable_ranks:
                 tag_outformat = f"({tag_outformat}:{probability:.3f})"
             res.append(tag_outformat)
+        if len(res) > shared.opts.deepbooru_max_tags:
+            res = res[:shared.opts.deepbooru_max_tags]
         return ", ".join(res)
 
 

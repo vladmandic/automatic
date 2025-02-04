@@ -100,7 +100,7 @@ def load_bnb(msg='', silent=False):
         return bnb
     if devices.backend == 'cuda':
         # forcing a version will uninstall the multi-backend-refactor branch of bnb
-        install('bitsandbytes==0.45.0', quiet=True)
+        install('bitsandbytes==0.45.1', quiet=True)
     try:
         import bitsandbytes
         bnb = bitsandbytes
