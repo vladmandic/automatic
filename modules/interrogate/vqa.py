@@ -270,12 +270,11 @@ def florence(question: str, image: Image.Image, repo: str = None, revision: str 
         if "flash_attn" in R:
             R.remove("flash_attn") # flash_attn is optional
         return R
-    if '@' in model:
-        model, revision = model.split('@')
-    else:
-        revision = None
+    revision = None
+    if '@' in repo:
+        repo, revision = model.split('@')
     if model is None or loaded != repo:
-        shared.log.debug(f'Interrogate load: vlm="{repo}"')
+        shared.log.debug(f'Interrogate load: vlm="{repo}" path="{shared.opts.hfcache_dir}"')
         transformers.dynamic_module_utils.get_imports = get_imports
         model = transformers.AutoModelForCausalLM.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)
         processor = transformers.AutoProcessor.from_pretrained(repo, trust_remote_code=True, revision=revision, cache_dir=shared.opts.hfcache_dir)

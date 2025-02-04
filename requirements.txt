@@ -56,7 +56,7 @@ transformers==4.48.2
 urllib3==1.26.19
 Pillow==10.4.0
 timm==0.9.16
-pydantic==1.10.15
+pydantic==1.10.21
 pyparsing==3.1.4
 typing-extensions==4.12.2
 

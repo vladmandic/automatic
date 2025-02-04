@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-03
+## Update for 2025-02-04
 
 Just one week after latest release and what a week it was with over 50 commits!  
 
@@ -12,9 +12,9 @@ Just one week after latest release and what a week it was with over 50 commits!
 - Other: *torch tunable ops, extra networks search/filter, balanced offload, prompt parser, configurable tracebacks, etc.*  
 - Cumulative fixes...  
 
-### Highlights for 2025-02-03
+### Highlights for 2025-02-04
 
-### Details for 2025-02-03
+### Details for 2025-02-04
 
 - **GitHub**
   - rename core repo from <https://github.com/vladmandic/automatic> to <https://github.com/vladmandic/sdnext>  
@@ -66,6 +66,7 @@ Just one week after latest release and what a week it was with over 50 commits!
   - detailer with faceid modules  
   - detailer restore pipeline before run  
   - fix `python==3.9` compatibility  
+  - improve `python>=3.12.3` compatibility
   - handle invalid `triton` on Linux  
   - correct library import order  
   - update requirements  

@@ -32,7 +32,7 @@ class Script(scripts.Script):
         if not installed('insightface', reload=False, quiet=True):
             install('insightface', 'insightface', ignore=False)
             install('albumentations==1.4.3', 'albumentations', ignore=False, reinstall=True)
-            install('pydantic==1.10.15', 'pydantic', ignore=False, reinstall=True)
+            install('pydantic==1.10.21', 'pydantic', ignore=False, reinstall=True)
 
     def register(self): # register xyz grid elements
         global registered # pylint: disable=global-statement
