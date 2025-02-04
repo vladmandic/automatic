@@ -219,7 +219,7 @@ def load_transformer(file_path): # triggered by opts.sd_unet change
         _transformer, _text_encoder_2 = load_flux_bnb(file_path, diffusers_load_config)
         if _transformer is not None:
             transformer = _transformer
-    elif 'nf4' in quant: # TODO flux: fix loader for civitai nf4 models
+    elif 'nf4' in quant: # TODO flux: loader for civitai nf4 models
         from modules.model_flux_nf4 import load_flux_nf4
         _transformer, _text_encoder_2 = load_flux_nf4(file_path, prequantized=True)
         if _transformer is not None:

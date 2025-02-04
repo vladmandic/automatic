@@ -8,7 +8,7 @@ import transformers.dynamic_module_utils
 from PIL import Image
 from modules import shared, devices, errors
 
-# TODO add additional vlmn
+# TODO vlm: add additional models
 # https://huggingface.co/nvidia/Eagle2-1B not compatible with latest transformers
 # https://huggingface.co/deepseek-ai/deepseek-vl2-tiny requires custom code
 
