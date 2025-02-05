@@ -24,8 +24,9 @@ Just one week after latest release and what a week it was with over 50 commits!
 - **Docs**:
   - Updated [Debugging guide](https://github.com/vladmandic/automatic/wiki/Debug)  
 - **Torch**:
-  - for **cuda** environments set default to `torch==2.6.0+cu126`  
-    for **rocm** environments set default to `torch==2.6.0+rocm6.2.4`  
+  - for **cuda** set default to `torch==2.6.0+cu126`  
+    for **rocm** set default to `torch==2.6.0+rocm6.2.4`  
+    for **ipex** set default to `torch==2.6.0+xpu`  
     *note*: to avoid disruptions sdnext does not perform torch install during in-place upgrades  
     to force torch upgrade, either start with new installation or use `--reinstall` flag  
   - support for torch **nightly** builds and nvidia **blackwell** gpus!  
@@ -54,6 +55,8 @@ Just one week after latest release and what a week it was with over 50 commits!
   - **prompt parser**: add setting to ignore line breaks in prompt  
     set in *settings -> text encoder -> use line breaks*  
   - **visual query**: add list of predefined system prompts  
+  - **onnx**: allow manually specifying `onnxruntime` package
+    set env variable `ONNXRUNTIME_COMMAND` to override default package installation  
   - **nvml cli**: run nvidia-management-lib interrogate from cli  
     already available in ui in generate -> right click -> nvidia  
     > python modules/api/nvml.py  
