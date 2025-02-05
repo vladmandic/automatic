@@ -544,7 +544,7 @@ def check_onnx():
     if not installed('onnx', quiet=True):
         install('onnx', 'onnx', ignore=True)
     if not installed('onnxruntime', quiet=True) and not (installed('onnxruntime-gpu', quiet=True) or installed('onnxruntime-openvino', quiet=True) or installed('onnxruntime-training', quiet=True)): # allow either
-        install('onnxruntime', 'onnxruntime', ignore=True)
+        install(os.environ.get('ONNXRUNTIME_COMMAND', 'onnxruntime'), ignore=True)
     ts('onnx', t_start)
 
 
@@ -555,7 +555,6 @@ def install_cuda():
     if args.use_nightly:
         cmd = os.environ.get('TORCH_COMMAND', 'pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu128 --extra-index-url https://download.pytorch.org/whl/nightly/cu126')
     else:
-        # cmd = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cu124 torchvision==0.20.1+cu124 --index-url https://download.pytorch.org/whl/cu124')
         cmd = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cu126 torchvision==0.21.0+cu126 --index-url https://download.pytorch.org/whl/cu126')
     return cmd
 
@@ -643,9 +642,7 @@ def install_rocm_zluda():
             log.info('Using CPU-only torch')
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
-        # Python 3.12 will cause compatibility issues with other dependencies
-        # ROCm supports Python 3.12 so don't block it but don't advertise it in the error message
-        check_python(supported_minors=[9, 10, 11, 12], reason='ROCm backend requires Python 3.9, 3.10 or 3.11')
+        check_python(supported_minors=[9, 10, 11, 12], reason='ROCm backend requires a Python version between 3.9 and 3.12')
         if args.use_nightly:
             if rocm.version is None or float(rocm.version) >= 6.3: # assume the latest if version check fails
                 torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm6.3')
@@ -660,8 +657,7 @@ def install_rocm_zluda():
             elif rocm.version == "6.1":
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+rocm6.1 torchvision==0.21.0+rocm6.1 --index-url https://download.pytorch.org/whl/rocm6.1')
             elif rocm.version == "6.0":
-                # lock to 2.4.1 instead of 2.5.1 for performance reasons
-                # there are no support for torch 2.6.0 for rocm 6.0
+                # lock to 2.4.1 instead of 2.5.1 for performance reasons there are no support for torch 2.6.0 for rocm 6.0
                 torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.4.1+rocm6.0 torchvision==0.19.1+rocm6.0 --index-url https://download.pytorch.org/whl/rocm6.0')
             elif float(rocm.version) < 5.5: # oldest supported version is 5.5
                 log.warning(f"ROCm: unsupported version={rocm.version}")
@@ -670,14 +666,6 @@ def install_rocm_zluda():
             else:
                 # older rocm (5.7) uses torch 2.3 or older
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
-
-        if sys.version_info < (3, 11):
-            ort_version = os.environ.get('ONNXRUNTIME_VERSION', None)
-            if rocm.version is None or float(rocm.version) > 6.0:
-                ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/60 --extra-index-url https://pypi.org/simple")
-            else:
-                ort_package = os.environ.get('ONNXRUNTIME_PACKAGE', f"--pre onnxruntime-training{'' if ort_version is None else ('==' + ort_version)} --index-url https://pypi.lsh.sh/{rocm.version[0]}{rocm.version[2]} --extra-index-url https://pypi.org/simple")
-            install(ort_package, 'onnxruntime-training')
 
         if installed("torch") and device is not None:
             if 'Flash attention' in opts.get('sdp_options', ''):
@@ -705,9 +693,7 @@ def install_rocm_zluda():
 
 def install_ipex(torch_command):
     t_start = time.time()
-    # Python 3.12 will cause compatibility issues with other dependencies
-    # IPEX supports Python 3.12 so don't block it but don't advertise it in the error message
-    check_python(supported_minors=[9, 10, 11, 12], reason='IPEX backend requires Python 3.9, 3.10 or 3.11')
+    check_python(supported_minors=[9, 10, 11, 12], reason='IPEX backend requires a Python version between 3.9 and 3.12')
     args.use_ipex = True # pylint: disable=attribute-defined-outside-init
     log.info('IPEX: Intel OneAPI toolkit detected')
 
@@ -731,34 +717,24 @@ def install_ipex(torch_command):
     if args.use_nightly:
         torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/xpu')
     else:
-        if "linux" in sys.platform:
-            # default to US server. If The China server is needed, change .../release-whl/stable/xpu/us/ to .../release-whl/stable/xpu/cn/
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu oneccl_bind_pt==2.5.0+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/')
-            if os.environ.get('TRITON_COMMAND', None) is None:
-                os.environ.setdefault('TRITON_COMMAND', '--pre pytorch-triton-xpu==3.1.0+91b14bf559 --index-url https://download.pytorch.org/whl/nightly/xpu')
-            # os.environ.setdefault('TENSORFLOW_PACKAGE', 'tensorflow==2.15.1 intel-extension-for-tensorflow[xpu]==2.15.0.2')
-        else:
-            torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino', ignore=True)
+    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino', ignore=True)
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
-    install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
     ts('ipex', t_start)
     return torch_command
 
 
 def install_openvino(torch_command):
     t_start = time.time()
-    # Python 3.12 will cause compatibility issues with other dependencies.
-    # OpenVINO supports Python 3.12 so don't block it but don't advertise it in the error message
-    check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires Python 3.9, 3.10 or 3.11')
+    check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires a Python version between 3.9 and 3.12')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
-    install(os.environ.get('OPENVINO_PACKAGE', 'openvino==2024.6.0'), 'openvino')
-    install(os.environ.get('ONNXRUNTIME_PACKAGE', 'onnxruntime-openvino'), 'onnxruntime-openvino', ignore=True)
+
+    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino')
     install('nncf==2.14.1', 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if os.environ.get("NEOReadDebugKeys", None) is None:
