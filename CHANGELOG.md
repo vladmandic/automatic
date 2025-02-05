@@ -1,5 +1,9 @@
 # Change Log for SD.Next
 
+## Update for 2025-02-05
+
+- refresh dev/master branches
+
 ## Update for 2025-02-04
 
 ### Highlights for 2025-02-04
@@ -80,6 +84,7 @@ Just one week after latest release and what a week it was with over 50 commits!
   - relax python version checks for rocm  
   - simplify and improve file wildcard matching  
   - fix `rich` version  
+  - add cn active label
 
 ## Update for 2025-01-29
 
