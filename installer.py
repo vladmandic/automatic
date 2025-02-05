@@ -560,9 +560,10 @@ def install_cuda():
 
 
 def install_rocm_zluda():
+    torch_command = ''
     t_start = time.time()
     if args.skip_all or args.skip_requirements:
-        return None
+        return torch_command
     from modules import rocm
     if not rocm.is_installed:
         log.warning('ROCm: could not find ROCm toolkit installed')
@@ -604,7 +605,6 @@ def install_rocm_zluda():
     if device is not None:
         msg += f', using agent {device.name}'
     log.info(msg)
-    torch_command = ''
 
     if sys.platform == "win32": # TODO install: enable ROCm for windows when available
         check_python(supported_minors=[10, 11], reason='ZLUDA backend requires Python 3.10 or 3.11')
@@ -824,14 +824,12 @@ def check_torch():
             torch_command = install_ipex(torch_command)
         elif allow_openvino and args.use_openvino: # prioritize openvino
             torch_command = install_openvino(torch_command)
-
         elif is_cuda_available:
             torch_command = install_cuda()
         elif is_rocm_available:
             torch_command = install_rocm_zluda()
         elif is_ipex_available:
             torch_command = install_ipex(torch_command)
-
         else:
             machine = platform.machine()
             if sys.platform == 'darwin':
