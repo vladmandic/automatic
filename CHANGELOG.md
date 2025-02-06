@@ -11,6 +11,7 @@
   - force browser cache-invalidate on page load  
   - use correct timezone for log display  
   - improve settings search behavior  
+  - log scroll to bottom  
 
 ## Update for 2025-02-05
 
