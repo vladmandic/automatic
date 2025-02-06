@@ -38,14 +38,18 @@ async function logMonitor() {
     while (logMonitorEl.childElementCount > 100) logMonitorEl.removeChild(logMonitorEl.firstChild);
     if (atBottom) logMonitorEl.scrollTop = logMonitorEl.scrollHeight;
     else logMonitorEl.parentElement.style = 'border-bottom: 2px solid var(--highlight-color);';
-    document.getElementById('logWarnings').innerText = logWarnings;
-    document.getElementById('logErrors').innerText = logErrors;
+    const elWarn = document.getElementById('logWarnings');
+    const elErr = document.getElementById('logErrors');
     const modenUIBtn = document.getElementById('btn_console');
+    if (elWarn) elWarn.innerText = logWarnings;
+    if (elErr) elErr.innerText = logErrors;
     if (modenUIBtn) modenUIBtn.setAttribute('error-count', logErrors > 0 ? logErrors : '');
   };
 
-  document.getElementById('txt2img_gallery').style.height = opts.logmonitor_show ? '50vh' : '55vh';
-  document.getElementById('img2img_gallery').style.height = opts.logmonitor_show ? '50vh' : '55vh';
+  const txtGallery = document.getElementById('txt2img_gallery');
+  if (txtGallery) txtGallery.style.height = opts.logmonitor_show ? '50vh' : '55vh';
+  const imgGallery = document.getElementById('img2img_gallery');
+  if (imgGallery) imgGallery.style.height = opts.logmonitor_show ? '50vh' : '55vh';
 
   if (!opts.logmonitor_show) {
     Array.from(document.getElementsByClassName('log-monitor')).forEach((el) => el.style.display = 'none');
