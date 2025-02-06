@@ -1,5 +1,13 @@
 # Change Log for SD.Next
 
+## Update for 2025-02-06
+
+- **Other**:  
+  - asymmetric tiling  
+    allows for configurable image tiling for x/y axis separately  
+    enable in *scripts -> asymmetric tiling*  
+    *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
+
 ## Update for 2025-02-05
 
 - refresh dev/master branches
