@@ -29,4 +29,3 @@ if __name__ == "__main__":
     print('=== BEGIN ===')
     print(f'{b64}')
     print('=== END ===')
-
