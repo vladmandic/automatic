@@ -175,7 +175,6 @@
   {"id":"","label":"Image Options","localized":"이미지 설정","hint":""},
   {"id":"","label":"Image Processing","localized":"이미지 프로세싱","hint":""},
   {"id":"","label":"Image Paths","localized":"이미지 위치","hint":""},
-  {"id":"","label":"User Interface","localized":"유저 인터페이스","hint":""},
   {"id":"","label":"Live Previews","localized":"라이브 프리뷰","hint":""},
   {"id":"","label":"Sampler Settings","localized":"샘플러 설정","hint":""},
   {"id":"","label":"Postprocessing","localized":"후처리","hint":""},

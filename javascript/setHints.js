@@ -33,17 +33,42 @@ async function tooltipHide(e) {
   localeData.el.classList.remove('tooltip-show');
 }
 
-async function validateHints(elements, data) {
-  let original = elements.map((e) => e.textContent.toLowerCase().trim()).sort((a, b) => a > b);
+async function validateHints(json, elements) {
+  json.missing = [];
+  const data = Object.values(json).flat().filter((e) => e.hint.length > 0);
+  for (const e of data) e.label = e.label.toLowerCase().trim();
+  let original = elements.map((e) => e.textContent.toLowerCase().trim()).sort();
+  let duplicateUI = original.filter((e, i, a) => a.indexOf(e) !== i).sort();
   original = [...new Set(original)]; // remove duplicates
-  const current = data.map((e) => e.label.toLowerCase().trim()).sort((a, b) => a > b);
+  duplicateUI = [...new Set(duplicateUI)]; // remove duplicates
+  const current = data.map((e) => e.label.toLowerCase().trim()).sort();
   log('all elements:', original);
   log('all hints:', current);
   log('hints-differences', { elements: original.length, hints: current.length });
-  const missingLocale = original.filter((e) => !current.includes(e));
-  log('missing in locale:', missingLocale);
-  const missingUI = current.filter((e) => !original.includes(e));
-  log('in locale but not ui:', missingUI);
+  const missingHints = original.filter((e) => !current.includes(e)).sort();
+  const orphanedHints = current.filter((e) => !original.includes(e)).sort();
+  const duplicateHints = current.filter((e, i, a) => a.indexOf(e) !== i).sort();
+  log('duplicate hints:', duplicateHints);
+  log('duplicate labels:', duplicateUI);
+  return [missingHints, orphanedHints];
+}
+
+async function addMissingHints(json, missingHints) {
+  if (missingHints.length === 0) return;
+  json.missing = [];
+  for (const h of missingHints.sort()) {
+    if (h.length <= 1) continue;
+    json.missing.push({ id: '', label: h, localized: '', hint: h });
+  }
+  log('missing hints', missingHints);
+  log('added missing hints:', { missing: json.missing });
+}
+
+async function removeOrphanedHints(json, orphanedHints) {
+  const data = Object.values(json).flat().filter((e) => e.hint.length > 0);
+  for (const e of data) e.label = e.label.toLowerCase().trim();
+  const orphaned = data.filter((e) => orphanedHints.includes(e.label));
+  log('orphaned hints:', { orphaned });
 }
 
 async function replaceButtonText(el) {
@@ -65,11 +90,12 @@ async function replaceButtonText(el) {
   }
 }
 
-async function setHints() {
+async function setHints(analyze = false) {
+  let json = {};
   if (localeData.finished) return;
   if (localeData.data.length === 0) {
     const res = await fetch('/file=html/locale_en.json');
-    const json = await res.json();
+    json = await res.json();
     localeData.data = Object.values(json).flat().filter((e) => e.hint.length > 0);
     for (const e of localeData.data) e.label = e.label.toLowerCase().trim();
   }
@@ -107,8 +133,18 @@ async function setHints() {
   const t1 = performance.now();
   log('setHints', { type: localeData.type, elements: elements.length, localized, hints, data: localeData.data.length, time: t1 - t0 });
   // sortUIElements();
-  // validateHints(elements, localeData.data);
+  if (analyze) {
+    const [missingHints, orphanedHints] = await validateHints(json, elements);
+    await addMissingHints(json, missingHints);
+    await removeOrphanedHints(json, orphanedHints);
+  }
 }
+
+const analyzeHints = async () => {
+  localeData.finished = false;
+  localeData.data = [];
+  await setHints(true);
+};
 
 /*
 onAfterUiUpdate(async () => {
