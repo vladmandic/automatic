@@ -1,13 +1,15 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-06
+## Update for 2025-02-07  
 
+- **Torch**:  
+  - for **zluda** set default to `torch==2.6.0+cu126`  
 - **Other**:  
   - asymmetric tiling  
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
-- **UI**:
+- **UI**:  
   - force browser cache-invalidate on page load  
   - use correct timezone for log display  
   - improve settings search behavior  
