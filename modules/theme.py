@@ -36,6 +36,10 @@ def refresh_themes(no_update=False):
     return res
 
 
+def list_locales():
+    return ['Auto', 'en: English', 'hr: Croatian', 'de: German', 'es: Spanish', 'fr: French', 'it: Italian', 'pt: Portuguese', 'zh: Chinese', 'ja: Japanese', 'ko: Korean', 'ru: Russian']
+
+
 def list_themes():
     extensions = [e.name for e in modules.extensions.extensions if e.enabled]
     if 'sd-webui-lobe-theme' in extensions and modules.shared.opts.gradio_theme == 'lobe':
@@ -99,8 +103,8 @@ def reload_gradio_theme():
             modules.shared.opts.theme_type = 'Standard'
             theme_name = 'black-teal'
 
-
     modules.shared.opts.data['gradio_theme'] = theme_name
+    modules.shared.log.info(f'UI locale: name="{modules.shared.opts.ui_locale}"')
 
     if theme_name.lower() in ['lobe', 'cozy-nest']:
         modules.shared.log.info(f'UI theme extension: name="{theme_name}"')

@@ -132,6 +132,7 @@ div#extras_scale_to_tab div.form { flex-direction: row; }
   width: 22em; min-height: 1.3em; font-size: var(--text-xs); transition: opacity 0.2s ease-in; pointer-events: none; opacity: 0; z-index: 999; }
 .tooltip-show { opacity: 0.9; }
 .toolbutton-selected { background: var(--background-fill-primary) !important; }
+.locale { position: fixed; top: 1em; right: 1em; background-color: none; padding: 0.1em; width: 1.2em; height: 1.2em; cursor: pointer; font-size: 0.8em; font-weight: 800; font-family: monospace; }
 #txt2img_hdr_color_row > div { min-width: unset !important; max-width: unset !important; }
 #txt2img_advanced_options, #img2img_advanced_options, #control_advanced_options { min-width: 100%; }
 #txt2img_advanced_options .gradio-checkbox, #img2img_advanced_options .gradio-checkbox, #control_advanced_options .gradio-checkbox { min-width: unset !important; max-width: fit-content; }

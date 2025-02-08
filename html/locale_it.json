@@ -1,0 +1,6872 @@
+{
+  "icons": [
+    {
+      "id": "",
+      "label": "🎲️",
+      "localized": "🎲️",
+      "hint": "Usa un seed casuale"
+    },
+    {
+      "id": "",
+      "label": "🔄",
+      "localized": "🔄",
+      "hint": "Reimposta i valori"
+    },
+    {
+      "id": "",
+      "label": "⬆️",
+      "localized": "⬆️",
+      "hint": "Carica immagine"
+    },
+    {
+      "id": "",
+      "label": "⬅️",
+      "localized": "⬅️",
+      "hint": "Riutilizza immagine"
+    },
+    {
+      "id": "",
+      "label": "⇅",
+      "localized": "⇅",
+      "hint": "Scambia i valori"
+    },
+    {
+      "id": "",
+      "label": "⇨",
+      "localized": "⇨",
+      "hint": "Applica il preset alla scheda Manual Block Merge"
+    },
+    {
+      "id": "",
+      "label": "🕮",
+      "localized": "🕮",
+      "hint": "Salva i parametri dall'ultima immagine generata come modello di stile"
+    },
+    {
+      "id": "",
+      "label": "⇕",
+      "localized": "⇕",
+      "hint": "Ordina per: Nome asc/disc, Dimensione maggiore/minore, Tempo più recente/meno recente"
+    },
+    {
+      "id": "",
+      "label": "⟲",
+      "localized": "⟲",
+      "hint": "Aggiorna"
+    },
+    {
+      "id": "",
+      "label": "✕",
+      "localized": "✕",
+      "hint": "Chiudi"
+    },
+    {
+      "id": "",
+      "label": "⊜",
+      "localized": "⊜",
+      "hint": "Riempi"
+    },
+    {
+      "id": "",
+      "label": "⌾",
+      "localized": "⌾",
+      "hint": "Carica il modello come modello di rifinitura quando selezionato, altrimenti carica come modello base"
+    },
+    {
+      "id": "",
+      "label": "🔎︎",
+      "localized": "🔎︎",
+      "hint": "Scansiona CivitAI per metadati e anteprime mancanti"
+    },
+    {
+      "id": "",
+      "label": "☲",
+      "localized": "☲",
+      "hint": "Cambia tipo di visualizzazione"
+    },
+    {
+      "id": "",
+      "label": "📐",
+      "localized": "📐",
+      "hint": "Misura"
+    },
+    {
+      "id": "",
+      "label": "🔍",
+      "localized": "🔍",
+      "hint": "Cerca"
+    },
+    {
+      "id": "",
+      "label": "🖌️",
+      "localized": "🖌️",
+      "hint": "LaMa rimuove l'oggetto selezionato dall'immagine"
+    },
+    {
+      "id": "",
+      "label": "🖼️",
+      "localized": "🖼️",
+      "hint": "Mostra anteprima"
+    },
+    {
+      "id": "",
+      "label": "♻",
+      "localized": "♻",
+      "hint": "Interroga immagine"
+    },
+    {
+      "id": "",
+      "label": "↶",
+      "localized": "↶",
+      "hint": "Applica lo stile selezionato al prompt"
+    },
+    {
+      "id": "",
+      "label": "↷",
+      "localized": "↷",
+      "hint": "Salva il prompt corrente come stile"
+    }
+  ],
+  "main": [
+    {
+      "id": "",
+      "label": "Prompt",
+      "localized": "Prompt",
+      "hint": "Descrivi l'immagine che vuoi generare"
+    },
+    {
+      "id": "",
+      "label": "Negative prompt",
+      "localized": "Prompt negativo",
+      "hint": "Descrivi cosa non vuoi vedere nell'immagine generata"
+    },
+    {
+      "id": "",
+      "label": "Text",
+      "localized": "Testo",
+      "hint": "Crea immagine dal testo"
+    },
+    {
+      "id": "",
+      "label": "Image",
+      "localized": "Immagine",
+      "hint": "Crea immagine da immagine"
+    },
+    {
+      "id": "",
+      "label": "Control",
+      "localized": "Controllo",
+      "hint": "Crea immagine con controllo aggiuntivo"
+    },
+    {
+      "id": "",
+      "label": "Process",
+      "localized": "Processo",
+      "hint": "Elabora immagine esistente"
+    },
+    {
+      "id": "",
+      "label": "Interrogate",
+      "localized": "Interroga",
+      "hint": "Esegui l'interrogazione per ottenere la descrizione della tua immagine"
+    },
+    {
+      "id": "",
+      "label": "Models",
+      "localized": "Modelli",
+      "hint": "Scarica, converti o unisci i tuoi modelli e gestisci i metadati dei modelli"
+    },
+    {
+      "id": "",
+      "label": "Agent Scheduler",
+      "localized": "Pianificatore Agente",
+      "hint": "Accoda le tue richieste di generazione ed eseguile in background"
+    },
+    {
+      "id": "",
+      "label": "System",
+      "localized": "Sistema",
+      "hint": "Impostazioni e informazioni del sistema"
+    },
+    {
+      "id": "",
+      "label": "System Info",
+      "localized": "Informazioni di Sistema",
+      "hint": "Informazioni di sistema"
+    },
+    {
+      "id": "",
+      "label": "Settings",
+      "localized": "Impostazioni",
+      "hint": "Impostazioni dell'applicazione"
+    },
+    {
+      "id": "",
+      "label": "Script",
+      "localized": "Script",
+      "hint": "Script aggiuntivi da utilizzare"
+    },
+    {
+      "id": "",
+      "label": "Extensions",
+      "localized": "Estensioni",
+      "hint": "Estensioni dell'applicazione"
+    },
+    {
+      "id": "",
+      "label": "Generate",
+      "localized": "Genera",
+      "hint": "Avvia l'elaborazione"
+    },
+    {
+      "id": "",
+      "label": "Enqueue",
+      "localized": "Accoda",
+      "hint": "Aggiungi l'attività alla coda in background in Pianificatore Agente"
+    },
+    {
+      "id": "",
+      "label": "reprocess",
+      "localized": "rielabora",
+      "hint": "Rielabora le generazioni precedenti utilizzando parametri diversi"
+    },
+    {
+      "id": "",
+      "label": "Stop",
+      "localized": "Ferma",
+      "hint": "Interrompi l'elaborazione"
+    },
+    {
+      "id": "",
+      "label": "Skip",
+      "localized": "Salta",
+      "hint": "Interrompi l'elaborazione del processo corrente e continua l'elaborazione"
+    },
+    {
+      "id": "",
+      "label": "Pause",
+      "localized": "Pausa",
+      "hint": "Metti in pausa l'elaborazione"
+    },
+    {
+      "id": "",
+      "label": "Restore",
+      "localized": "Ripristina",
+      "hint": "Ripristina i parametri dal prompt corrente o dall'ultima immagine generata conosciuta"
+    },
+    {
+      "id": "",
+      "label": "Clear",
+      "localized": "Pulisci",
+      "hint": "Cancella i prompt"
+    },
+    {
+      "id": "",
+      "label": "Networks",
+      "localized": "Reti",
+      "hint": "Interfaccia utente per le reti"
+    },
+    {
+      "id": "",
+      "label": "cover",
+      "localized": "copertura",
+      "hint": "copri l'intera area"
+    },
+    {
+      "id": "",
+      "label": "inline",
+      "localized": "in linea",
+      "hint": "in linea con tutti gli elementi aggiuntivi (scorrevole)"
+    },
+    {
+      "id": "",
+      "label": "sidebar",
+      "localized": "barra laterale",
+      "hint": "barra laterale sul lato destro dello schermo"
+    },
+    {
+      "id": "",
+      "label": "Default strength",
+      "localized": "Forza predefinita",
+      "hint": "Quando aggiungi una rete extra come Lora al prompt, usa questo moltiplicatore"
+    },
+    {
+      "id": "",
+      "label": "Model",
+      "localized": "Modello",
+      "hint": "Modello base"
+    },
+    {
+      "id": "",
+      "label": "Style",
+      "localized": "Stile",
+      "hint": "Stili aggiuntivi da applicare ai parametri di generazione selezionati"
+    },
+    {
+      "id": "",
+      "label": "Styles",
+      "localized": "Stili",
+      "hint": "Stili aggiuntivi da applicare ai parametri di generazione selezionati"
+    },
+    {
+      "id": "",
+      "label": "Lora",
+      "localized": "Lora",
+      "hint": "LoRA: Adattamento a Basso Rango. Modello fine-tuned che viene applicato sopra un modello caricato"
+    },
+    {
+      "id": "",
+      "label": "Embedding",
+      "localized": "Incorporamento",
+      "hint": "L'incorporamento di inversione testuale è un'informazione incorporata addestrata sul soggetto"
+    },
+    {
+      "id": "",
+      "label": "Hypernetwork",
+      "localized": "Iperrete",
+      "hint": "Piccola rete neurale addestrata che modifica il comportamento del modello caricato"
+    },
+    {
+      "id": "",
+      "label": "vae",
+      "localized": "vae",
+      "hint": "Variable Auto Encoder: modello utilizzato per eseguire la decodifica dell'immagine alla fine della generazione"
+    },
+    {
+      "id": "",
+      "label": "history",
+      "localized": "cronologia",
+      "hint": "Elenco delle generazioni precedenti che possono essere ulteriormente rielaborate"
+    },
+    {
+      "id": "",
+      "label": "UI disable variable aspect ratio",
+      "localized": "UI disabilita le proporzioni variabili",
+      "hint": "Quando è disabilitato, tutte le miniature appaiono come immagini quadrate"
+    },
+    {
+      "id": "",
+      "label": "Build info on first access",
+      "localized": "Costruisci informazioni al primo accesso",
+      "hint": "Impedisce al server di costruire la pagina EN all'avvio e invece la costruisce quando richiesta"
+    },
+    {
+      "id": "",
+      "label": "Show reference styles",
+      "localized": "Mostra stili di riferimento",
+      "hint": "Mostra o nascondi gli stili integrati"
+    },
+    {
+      "id": "",
+      "label": "LoRA load using Diffusers method",
+      "localized": "Caricamento LoRA usando il metodo Diffusers",
+      "hint": "Il metodo alternativo utilizza le capacità LoRA integrate di Diffusers invece dell'implementazione nativa di SD.Next (potrebbe ridurre la compatibilità LoRA)"
+    },
+    {
+      "id": "",
+      "label": "LoRA fuse directly to model",
+      "localized": "LoRA si fonde direttamente con il modello",
+      "hint": "Durante il caricamento delle LoRA, unisci immediatamente i pesi con il modello sottostante invece di applicarli al volo"
+    },
+    {
+      "id": "",
+      "label": "LoRA memory cache",
+      "localized": "Cache di memoria LoRA",
+      "hint": "Quante LoRA mantenere in rete per un uso futuro prima di richiedere il ricaricamento dallo storage"
+    },
+    {
+      "id": "",
+      "label": "local",
+      "localized": "locale",
+      "hint": "Modelli scaricati e pronti all'uso"
+    },
+    {
+      "id": "",
+      "label": "reference",
+      "localized": "riferimento",
+      "hint": "Elenco dei modelli di riferimento che possono essere scaricati automaticamente al primo utilizzo"
+    },
+    {
+      "id": "",
+      "label": "sd15",
+      "localized": "sd15",
+      "hint": "StableDiffusion 1.5"
+    },
+    {
+      "id": "",
+      "label": "sd21",
+      "localized": "sd21",
+      "hint": "StableDiffusion 2.1"
+    },
+    {
+      "id": "",
+      "label": "sd35",
+      "localized": "sd35",
+      "hint": "StableDiffusion 3.5"
+    },
+    {
+      "id": "",
+      "label": "sdxl",
+      "localized": "sdxl",
+      "hint": "StableDiffusion XL"
+    },
+    {
+      "id": "",
+      "label": "sc",
+      "localized": "sc",
+      "hint": "StableCascade"
+    },
+    {
+      "id": "",
+      "label": "flux",
+      "localized": "flux",
+      "hint": "FLUX.1"
+    },
+    {
+      "id": "",
+      "label": "show",
+      "localized": "mostra",
+      "hint": "Mostra posizione immagine"
+    },
+    {
+      "id": "",
+      "label": "save",
+      "localized": "salva",
+      "hint": "Salva immagine"
+    },
+    {
+      "id": "",
+      "label": "delete",
+      "localized": "cancella",
+      "hint": "Cancella immagine"
+    },
+    {
+      "id": "",
+      "label": "replace",
+      "localized": "sostituisci",
+      "hint": "Sostituisci immagine"
+    },
+    {
+      "id": "",
+      "label": "➠ text",
+      "localized": "➠ testo",
+      "hint": "Trasferisci immagine all'interfaccia di testo"
+    },
+    {
+      "id": "",
+      "label": "➠ image",
+      "localized": "➠ immagine",
+      "hint": "Trasferisci immagine all'interfaccia immagine"
+    },
+    {
+      "id": "",
+      "label": "➠ inpaint",
+      "localized": "➠ inpaint",
+      "hint": "Trasferisci immagine all'interfaccia inpaint"
+    },
+    {
+      "id": "",
+      "label": "➠ sketch",
+      "localized": "➠ schizzo",
+      "hint": "Trasferisci immagine all'interfaccia schizzo"
+    },
+    {
+      "id": "",
+      "label": "➠ composite",
+      "localized": "➠ composito",
+      "hint": "Trasferisci immagine all'interfaccia schizzo inpaint"
+    },
+    {
+      "id": "",
+      "label": "➠ process",
+      "localized": "➠ processo",
+      "hint": "Trasferisci immagine all'interfaccia processo"
+    }
+  ],
+  "generate": [
+    {
+      "id": "",
+      "label": "Sampling method",
+      "localized": "Metodo di campionamento",
+      "hint": "Quale algoritmo utilizzare per produrre l'immagine"
+    },
+    {
+      "id": "",
+      "label": "Steps",
+      "localized": "Passaggi",
+      "hint": "Quante volte migliorare iterativamente l'immagine generata; valori più alti richiedono più tempo; valori molto bassi possono produrre risultati scadenti"
+    },
+    {
+      "id": "",
+      "label": "Tiling",
+      "localized": "Affiancamento",
+      "hint": "Produci un'immagine che può essere affiancata"
+    },
+    {
+      "id": "",
+      "label": "full quality",
+      "localized": "Qualità massima",
+      "hint": "Usa VAE di qualità massima per decodificare i campioni latenti"
+    },
+    {
+      "id": "",
+      "label": "hidiffusion",
+      "localized": "hidiffusion",
+      "hint": "HiDiffusion consente la creazione di immagini ad alta risoluzione utilizzando i tuoi modelli standard senza duplicati/distorsioni e prestazioni migliorate"
+    },
+    {
+      "id": "",
+      "label": "HDR Clamp",
+      "localized": "Blocco HDR",
+      "hint": "Regola il livello di dettagli insensati eliminando i valori che si discostano significativamente dalla media della distribuzione. È particolarmente utile per migliorare la generazione a scale di guida più elevate, identificare i valori anomali nelle prime fasi del processo e applicare modifiche matematiche in base alle impostazioni di Intervallo (Confine) e Soglia. Pensalo come l'impostazione dell'intervallo entro il quale vuoi che siano i valori della tua immagine e la regolazione della soglia determina quali valori devono essere riportati in tale intervallo"
+    },
+    {
+      "id": "",
+      "label": "HDR Maximize",
+      "localized": "Massimizza HDR",
+      "hint": "Calcola un 'fattore di normalizzazione' dividendo il valore massimo del tensore per l'intervallo specificato moltiplicato per 4. Questo fattore viene quindi utilizzato per spostare i canali all'interno del limite specificato, garantendo la massima gamma dinamica per l'elaborazione successiva. L'obiettivo è ottimizzare la gamma dinamica per applicazioni esterne come Photoshop, in particolare per la regolazione di livelli, contrasto e luminosità"
+    },
+    {
+      "id": "",
+      "label": "Enable refine pass",
+      "localized": "Abilita pass di rifinitura",
+      "hint": "Utilizza un processo simile a image to image per aumentare la risoluzione e/o aggiungere dettagli all'immagine finale. Facoltativamente, utilizza un modello di rifinitura per migliorare i dettagli dell'immagine."
+    },
+    {
+      "id": "",
+      "label": "enable detailer pass",
+      "localized": "Abilita passaggi di dettaglio",
+      "hint": "Rileva oggetti target come il viso ed elaboralo nuovamente a una risoluzione più alta"
+    },
+    {
+      "id": "",
+      "label": "Denoising strength",
+      "localized": "Forza di denoising",
+      "hint": "Determina quanto poco rispetto l'algoritmo dovrebbe avere per il contenuto dell'immagine. A 0, nulla cambierà e a 1 otterrai un'immagine non correlata. Con valori inferiori a 1.0, l'elaborazione richiederà meno passaggi di quanto specificato dal cursore Passaggi di campionamento"
+    },
+    {
+      "id": "",
+      "label": "Denoise start",
+      "localized": "Inizio denoising",
+      "hint": "Sovrascrivi la forza di denoising indicando quando il modello base dovrebbe terminare e quando il rifinitore dovrebbe iniziare. Applicabile solo all'uso del rifinitore. Se impostato su 0 o 1, verrà utilizzata la forza di denoising"
+    },
+    {
+      "id": "",
+      "label": "Hires steps",
+      "localized": "Passaggi Hires",
+      "hint": "Numero di passaggi di campionamento per l'immagine ad alta risoluzione. Se 0, usa lo stesso dell'originale"
+    },
+    {
+      "id": "",
+      "label": "strength",
+      "localized": "Forza",
+      "hint": "La forza di denoising durante l'operazione sull'immagine controlla quanto dell'immagine originale può cambiare durante la generazione"
+    },
+    {
+      "id": "",
+      "label": "Upscaler",
+      "localized": "Upscaler",
+      "hint": "Quale modello pre-addestrato usare per il processo di upscaling."
+    },
+    {
+      "id": "",
+      "label": "Force Hires",
+      "localized": "Forza Hires",
+      "hint": "Hires viene eseguito automaticamente quando è selezionato Latent upscale, ma viene saltato quando si utilizzano upscaler non latenti. Abilita force hires per eseguire hires con upscaler non latenti"
+    },
+    {
+      "id": "",
+      "label": "Resize width",
+      "localized": "Larghezza ridimensionata",
+      "hint": "Ridimensiona l'immagine a questa larghezza. Se 0, la larghezza viene dedotta da uno dei due cursori vicini"
+    },
+    {
+      "id": "",
+      "label": "Resize height",
+      "localized": "Altezza ridimensionata",
+      "hint": "Ridimensiona l'immagine a questa altezza. Se 0, l'altezza viene dedotta da uno dei due cursori vicini"
+    },
+    {
+      "id": "",
+      "label": "Refine sampler",
+      "localized": "Campionatore di rifinitura",
+      "hint": "Usa un campionatore specifico come campionatore di fallback se quello primario non è supportato per un'operazione specifica"
+    },
+    {
+      "id": "",
+      "label": "Refiner start",
+      "localized": "Inizio rifinitore",
+      "hint": "Il pass di rifinitura inizierà quando il modello base è completo di questa quantità (impostato su un valore maggiore di 0 e inferiore a 1 per essere eseguito dopo l'esecuzione completa del modello base)"
+    },
+    {
+      "id": "",
+      "label": "Refiner steps",
+      "localized": "Passaggi rifinitore",
+      "hint": "Numero di passaggi da utilizzare per il pass di rifinitura"
+    },
+    {
+      "id": "",
+      "label": "Refine guidance",
+      "localized": "Guida rifinitura",
+      "hint": "Scala CFG utilizzata per il pass di rifinitura"
+    },
+    {
+      "id": "",
+      "label": "Attention guidance",
+      "localized": "Guida dell'attenzione",
+      "hint": "Scala CFG utilizzata con PAG: Perturbed-Attention Guidance"
+    },
+    {
+      "id": "",
+      "label": "Adaptive scaling",
+      "localized": "Ridimensionamento adattivo",
+      "hint": "Modificatore adattivo per la scala della guida dell'attenzione"
+    },
+    {
+      "id": "",
+      "label": "Rescale guidance",
+      "localized": "Ridimensiona la guida",
+      "hint": "Ridimensiona il rumore generato da CFG per evitare immagini sovraesposte"
+    },
+    {
+      "id": "",
+      "label": "Refine Prompt",
+      "localized": "Prompt di rifinitura",
+      "hint": "Prompt utilizzato sia per il secondo encoder nel modello base (se esiste) sia per il pass di rifinitura (se abilitato)"
+    },
+    {
+      "id": "",
+      "label": "Refine negative prompt",
+      "localized": "Prompt negativo di rifinitura",
+      "hint": "Prompt negativo utilizzato sia per il secondo encoder nel modello base (se esiste) sia per il pass di rifinitura (se abilitato)"
+    },
+    {
+      "id": "",
+      "label": "Width",
+      "localized": "Larghezza",
+      "hint": "Larghezza immagine"
+    },
+    {
+      "id": "",
+      "label": "Height",
+      "localized": "Altezza",
+      "hint": "Altezza immagine"
+    },
+    {
+      "id": "",
+      "label": "Batch count",
+      "localized": "Conteggio batch",
+      "hint": "Quanti batch di immagini creare (non ha alcun impatto sulle prestazioni di generazione o sull'utilizzo della VRAM)"
+    },
+    {
+      "id": "",
+      "label": "Batch size",
+      "localized": "Dimensione batch",
+      "hint": "Quante immagini creare in un singolo batch (aumenta le prestazioni di generazione a costo di un maggiore utilizzo della VRAM)"
+    },
+    {
+      "id": "",
+      "label": "guidance scale",
+      "localized": "Scala di guida",
+      "hint": "Scala Classifier Free Guidance: quanto l'immagine dovrebbe conformarsi al prompt. Valori più bassi producono risultati più creativi, valori più alti fanno sì che segua il prompt più rigorosamente; valori consigliati tra 5-10"
+    },
+    {
+      "id": "",
+      "label": "Guidance End",
+      "localized": "Fine della guida",
+      "hint": "Termina l'effetto di CFG e PAG in anticipo: un valore di 1 agisce normalmente, 0.5 interrompe la guida al 50% dei passaggi"
+    },
+    {
+      "id": "",
+      "label": "Initial seed",
+      "localized": "Seed iniziale",
+      "hint": "Un valore che determina l'output del generatore di numeri casuali: se crei un'immagine con gli stessi parametri e seed di un'altra immagine, otterrai lo stesso risultato"
+    },
+    {
+      "id": "",
+      "label": "Variation",
+      "localized": "Variazione",
+      "hint": "Secondo seed da mescolare con il seed primario"
+    },
+    {
+      "id": "",
+      "label": "Variation strength",
+      "localized": "Forza della variazione",
+      "hint": "Quanto forte produrre una variazione. A 0, non ci sarà alcun effetto. A 1, otterrai l'immagine completa con il seed di variazione (eccetto per i campionatori ancestrali, dove otterrai solo qualcosa)"
+    },
+    {
+      "id": "",
+      "label": "Resize seed from width",
+      "localized": "Ridimensiona il seed dalla larghezza",
+      "hint": "Tenta di produrre un'immagine simile a quella che sarebbe stata prodotta con lo stesso seed alla risoluzione specificata"
+    },
+    {
+      "id": "",
+      "label": "Resize seed from height",
+      "localized": "Ridimensiona il seed dall'altezza",
+      "hint": "Tenta di produrre un'immagine simile a quella che sarebbe stata prodotta con lo stesso seed alla risoluzione specificata"
+    },
+    {
+      "id": "",
+      "label": "Fixed",
+      "localized": "Fisso",
+      "hint": "Ridimensiona l'immagine alla risoluzione target. A meno che l'altezza e la larghezza non corrispondano, otterrai proporzioni errate"
+    },
+    {
+      "id": "",
+      "label": "scale",
+      "localized": "Scala",
+      "hint": "Ridimensiona l'immagine alla scala target. Se sono impostate la larghezza/altezza fisse di ridimensionamento, questa opzione viene ignorata"
+    },
+    {
+      "id": "",
+      "label": "Crop",
+      "localized": "Ritaglia",
+      "hint": "Ridimensiona l'immagine in modo che l'intera risoluzione target sia riempita con l'immagine. Ritaglia le parti che sporgono"
+    },
+    {
+      "id": "",
+      "label": "Fill",
+      "localized": "Riempi",
+      "hint": "Ridimensiona l'immagine in modo che l'intera immagine sia all'interno della risoluzione target. Riempi lo spazio vuoto con i colori dell'immagine"
+    },
+    {
+      "id": "",
+      "label": "Mask blur",
+      "localized": "Sfocatura maschera",
+      "hint": "Quanto sfocare la maschera prima dell'elaborazione, in pixel"
+    },
+    {
+      "id": "",
+      "label": "latent noise",
+      "localized": "Rumore latente",
+      "hint": "Riempilo con rumore nello spazio latente"
+    },
+    {
+      "id": "",
+      "label": "latent nothing",
+      "localized": "Latente niente",
+      "hint": "Riempilo con zeri nello spazio latente"
+    },
+    {
+      "id": "",
+      "label": "Guess Mode",
+      "localized": "Modalità Indovina",
+      "hint": "Rimuove il requisito di fornire un prompt a un ControlNet. Forza l'encoder Controlnet a fare la sua 'migliore ipotesi' in base al contenuto della mappa di controllo di input."
+    },
+    {
+      "id": "",
+      "label": "Control Only",
+      "localized": "Solo Controllo",
+      "hint": "Questo utilizza solo l'input di Controllo di seguito come fonte per qualsiasi attività di tipo ControlNet o IP Adapter basata su una qualsiasi delle nostre varie opzioni."
+    },
+    {
+      "id": "",
+      "label": "Init Image Same As Control",
+      "localized": "Immagine Iniziale Uguale a Controllo",
+      "hint": "Tratterà inoltre qualsiasi immagine inserita nella finestra di input di Controllo come fonte per attività di tipo img2img, ad esempio un'immagine da modificare."
+    },
+    {
+      "id": "",
+      "label": "Separate Init Image",
+      "localized": "Immagine Iniziale Separata",
+      "hint": "Crea una finestra aggiuntiva accanto all'input di Controllo etichettata come input Init, in modo da poter avere un'immagine separata sia per le operazioni di Controllo che per una fonte init."
+    },
+    {
+      "id": "",
+      "label": "Override settings",
+      "localized": "Sovrascrivi impostazioni",
+      "hint": "Se i parametri di generazione si discostano dalle impostazioni di sistema, sovrascrivi le impostazioni popolate con quelle impostazioni per sovrascrivere la configurazione di sistema per questo flusso di lavoro"
+    }
+  ],
+  "other": [
+    {
+      "id": "",
+      "label": "Install",
+      "localized": "Installa",
+      "hint": "Installa"
+    },
+    {
+      "id": "",
+      "label": "Search",
+      "localized": "Cerca",
+      "hint": "Cerca"
+    },
+    {
+      "id": "",
+      "label": "Sort by",
+      "localized": "Ordina per",
+      "hint": "Ordina per"
+    },
+    {
+      "id": "",
+      "label": "Manage extensions",
+      "localized": "Gestisci estensioni",
+      "hint": "Gestisci estensioni"
+    },
+    {
+      "id": "",
+      "label": "Manual install",
+      "localized": "Installazione manuale",
+      "hint": "Installa manualmente l'estensione"
+    },
+    {
+      "id": "",
+      "label": "Extension GIT repository URL",
+      "localized": "URL del repository GIT dell'estensione",
+      "hint": "Specifica l'URL del repository dell'estensione su GitHub"
+    },
+    {
+      "id": "",
+      "label": "Specific branch name",
+      "localized": "Nome specifico del branch",
+      "hint": "Specifica il nome del branch dell'estensione, lascia vuoto per il valore predefinito"
+    },
+    {
+      "id": "",
+      "label": "Local directory name",
+      "localized": "Nome della directory locale",
+      "hint": "Directory in cui installare l'estensione, lascia vuoto per il valore predefinito"
+    },
+    {
+      "id": "",
+      "label": "Refresh extension list",
+      "localized": "Aggiorna l'elenco delle estensioni",
+      "hint": "Aggiorna l'elenco delle estensioni disponibili"
+    },
+    {
+      "id": "",
+      "label": "Update all installed",
+      "localized": "Aggiorna tutto ciò che è installato",
+      "hint": "Aggiorna le estensioni installate alla loro ultima versione disponibile"
+    },
+    {
+      "id": "",
+      "label": "Apply changes",
+      "localized": "Applica modifiche",
+      "hint": "Applica tutte le modifiche e riavvia il server"
+    },
+    {
+      "id": "",
+      "label": "uninstall",
+      "localized": "disinstalla",
+      "hint": "disinstalla questa estensione"
+    },
+    {
+      "id": "",
+      "label": "User interface",
+      "localized": "Interfaccia utente",
+      "hint": "Controlla e imposta le preferenze dell'interfaccia utente"
+    },
+    {
+      "id": "",
+      "label": "Set ui defaults",
+      "localized": "Imposta le impostazioni predefinite dell'interfaccia utente",
+      "hint": "Imposta i valori correnti come valori predefiniti per l'interfaccia utente"
+    },
+    {
+      "id": "",
+      "label": "Benchmark",
+      "localized": "Benchmark",
+      "hint": "Esegui benchmark"
+    },
+    {
+      "id": "",
+      "label": "Models & Networks",
+      "localized": "Modelli e reti",
+      "hint": "Visualizza elenchi di tutti i modelli e le reti disponibili"
+    },
+    {
+      "id": "",
+      "label": "Restore UI defaults",
+      "localized": "Ripristina le impostazioni predefinite dell'interfaccia utente",
+      "hint": "Ripristina i valori predefiniti dell'interfaccia utente"
+    },
+    {
+      "id": "",
+      "label": "detailer",
+      "localized": "dettagliatore",
+      "hint": "Esegui l'immagine elaborata tramite un modello di dettagli aggiuntivo"
+    },
+    {
+      "id": "",
+      "label": "detailer classes",
+      "localized": "classi del dettagliatore",
+      "hint": "Specifica classi specifiche da utilizzare se il modello del dettagliatore selezionato è un modello multiclasse"
+    },
+    {
+      "id": "",
+      "label": "detailer models",
+      "localized": "modelli del dettagliatore",
+      "hint": "Seleziona i modelli di rilevamento da utilizzare per il dettaglio"
+    },
+    {
+      "id": "",
+      "label": "detailer negative prompt",
+      "localized": "prompt negativo del dettagliatore",
+      "hint": "Usa un prompt negativo separato per il dettagliatore. Se non presente, utilizzerà il prompt negativo principale"
+    },
+    {
+      "id": "",
+      "label": "detailer prompt",
+      "localized": "prompt del dettagliatore",
+      "hint": "Usa un prompt separato per il dettagliatore. Se non presente, utilizzerà il prompt principale"
+    },
+    {
+      "id": "",
+      "label": "detailer steps",
+      "localized": "passaggi del dettagliatore",
+      "hint": "Numero di passaggi da eseguire per il processo del dettagliatore"
+    },
+    {
+      "id": "",
+      "label": "detailer strength",
+      "localized": "forza del dettagliatore",
+      "hint": "Forza di denoising del processo del dettagliatore"
+    },
+    {
+      "id": "",
+      "label": "detailer use model augment",
+      "localized": "dettagliatore utilizza l'aumento del modello",
+      "hint": "Esegui modelli di rilevamento del dettagliatore con una precisione extra"
+    },
+    {
+      "id": "",
+      "label": "max detected",
+      "localized": "massimo rilevato",
+      "hint": "Numero massimo di oggetti rilevati su cui eseguire il dettagliatore"
+    },
+    {
+      "id": "",
+      "label": "edge blur",
+      "localized": "sfocatura del bordo",
+      "hint": "Sfoca il bordo dell'area mascherata di questa percentuale"
+    },
+    {
+      "id": "",
+      "label": "edge padding",
+      "localized": "padding del bordo",
+      "hint": "Espandi il bordo dell'area mascherata di questa percentuale"
+    },
+    {
+      "id": "",
+      "label": "min confidence",
+      "localized": "confidenza minima",
+      "hint": "Confidenza minima nell'elemento rilevato"
+    },
+    {
+      "id": "",
+      "label": "max overlap",
+      "localized": "sovrapposizione massima",
+      "hint": "Massima sovrapposizione tra due elementi rilevati prima che uno venga scartato"
+    },
+    {
+      "id": "",
+      "label": "min size",
+      "localized": "dimensione minima",
+      "hint": "Dimensione minima dell'oggetto rilevato come percentuale dell'immagine complessiva"
+    },
+    {
+      "id": "",
+      "label": "max size",
+      "localized": "dimensione massima",
+      "hint": "Dimensione massima dell'oggetto rilevato come percentuale dell'immagine complessiva"
+    },
+    {
+      "id": "",
+      "label": "Process Image",
+      "localized": "Elabora immagine",
+      "hint": "Elabora una singola immagine"
+    },
+    {
+      "id": "",
+      "label": "Process Batch",
+      "localized": "Elabora Batch",
+      "hint": "Elabora un batch di immagini"
+    },
+    {
+      "id": "",
+      "label": "Process Folder",
+      "localized": "Elabora cartella",
+      "hint": "Elabora tutte le immagini in una cartella"
+    },
+    {
+      "id": "",
+      "label": "Scale by",
+      "localized": "Scala di",
+      "hint": "Usa questa scheda per ridimensionare le immagini sorgente di un fattore scelto"
+    },
+    {
+      "id": "",
+      "label": "Scale to",
+      "localized": "Scala a",
+      "hint": "Usa questa scheda per ridimensionare le immagini sorgente a una dimensione di destinazione scelta"
+    },
+    {
+      "id": "",
+      "label": "Input directory",
+      "localized": "Directory di input",
+      "hint": "Cartella in cui si trovano le immagini che si desidera elaborare"
+    },
+    {
+      "id": "",
+      "label": "Output directory",
+      "localized": "Directory di output",
+      "hint": "Cartella in cui salvare le immagini elaborate"
+    },
+    {
+      "id": "",
+      "label": "Show result images",
+      "localized": "Mostra immagini dei risultati",
+      "hint": "Abilita per mostrare le immagini elaborate nel riquadro dell'immagine"
+    },
+    {
+      "id": "",
+      "label": "Resize",
+      "localized": "Ridimensiona",
+      "hint": "Dettagli sul ridimensionamento. Risoluzioni più elevate richiedono una memoria di elaborazione aggiuntiva."
+    },
+    {
+      "id": "",
+      "label": "Crop to fit",
+      "localized": "Ritaglia per adattare",
+      "hint": "Se le dimensioni dell'immagine sorgente (es. 512x510) si discostano dalle dimensioni di destinazione (es. 1024x768) questa funzione adatterà l'immagine ridimensionata alla dimensione dell'immagine di destinazione. L'eccesso verrà ritagliato"
+    },
+    {
+      "id": "",
+      "label": "Refine Upscaler",
+      "localized": "Raffina Upscaler",
+      "hint": "Seleziona l'upscaler secondario da eseguire dopo l'upscaler iniziale"
+    },
+    {
+      "id": "",
+      "label": "Upscaler 2 visibility",
+      "localized": "Visibilità Upscaler 2",
+      "hint": "Forza dell'upscaler secondario"
+    },
+    {
+      "id": "",
+      "label": "Calculate hash for all models",
+      "localized": "Calcola l'hash per tutti i modelli",
+      "hint": "Calcola l'hash per tutti i modelli disponibili, il che potrebbe richiedere molto tempo"
+    },
+    {
+      "id": "",
+      "label": "Weights Clip",
+      "localized": "Clip dei pesi",
+      "hint": "Forza i pesi uniti a non essere più pesanti del modello originale, prevenendo il burn-in e i modelli eccessivamente saturi"
+    },
+    {
+      "id": "",
+      "label": "ReBasin",
+      "localized": "Ri-Bacino",
+      "hint": "Esegue più unioni con permutazioni per conservare più caratteristiche da entrambi i modelli"
+    },
+    {
+      "id": "",
+      "label": "Number of ReBasin Iterations",
+      "localized": "Numero di iterazioni di Ri-Bacino",
+      "hint": "Numero di volte in cui unire e permutare il modello prima di salvarlo"
+    },
+    {
+      "id": "",
+      "label": "cpu",
+      "localized": "cpu",
+      "hint": "Utilizza solo CPU e RAM: più lento ma meno probabile che vada in OOM"
+    },
+    {
+      "id": "",
+      "label": "shuffle",
+      "localized": "mescola",
+      "hint": "Carica il modello completo in RAM e calcola sulla VRAM: Meno accelerazione, suggerito per le unioni SDXL"
+    },
+    {
+      "id": "",
+      "label": "In Blocks",
+      "localized": "In Blocks",
+      "hint": "Blocchi di downsampling dell'UNet (12 valori per SD1.5, 9 valori per SDXL)"
+    },
+    {
+      "id": "",
+      "label": "Mid Block",
+      "localized": "Blocco centrale",
+      "hint": "Blocco centrale dell'UNet (1 valore)"
+    },
+    {
+      "id": "",
+      "label": "Out Block",
+      "localized": "Out Block",
+      "hint": "Blocchi di upsampling dell'UNet (12 valori per SD1.5, 9 valori per SDXL)"
+    },
+    {
+      "id": "",
+      "label": "Preset Interpolation Ratio",
+      "localized": "Rapporto di interpolazione preimpostato",
+      "hint": "Se sono selezionati due preset, interpola tra loro"
+    },
+    {
+      "id": "",
+      "label": "adapter",
+      "localized": "adattatore",
+      "hint": "Modello adattatore IP"
+    },
+    {
+      "id": "",
+      "label": "active ip adapters",
+      "localized": "adattatori ip attivi",
+      "hint": "Numero di adattatori IP attivi"
+    },
+    {
+      "id": "",
+      "label": "unload adapter",
+      "localized": "scarica adattatore",
+      "hint": "Scarica l'adattatore IP immediatamente dopo la generazione. Altrimenti, l'adattatore IP rimarrà caricato per un uso più rapido nel processo di generazione successivo"
+    },
+    {
+      "id": "",
+      "label": "crop to portrait",
+      "localized": "ritaglia in verticale",
+      "hint": "Ritaglia l'immagine di input solo in verticale prima di utilizzarla come input dell'adattatore IP"
+    },
+    {
+      "id": "",
+      "label": "layer options",
+      "localized": "opzioni livello",
+      "hint": "Specifica manualmente le opzioni avanzate del livello dell'adattatore IP"
+    },
+    {
+      "id": "",
+      "label": "X values",
+      "localized": "Valori X",
+      "hint": "Separa i valori per l'asse X usando le virgole"
+    },
+    {
+      "id": "",
+      "label": "Y values",
+      "localized": "Valori Y",
+      "hint": "Separa i valori per l'asse Y usando le virgole"
+    },
+    {
+      "id": "",
+      "label": "Z values",
+      "localized": "Valori Z",
+      "hint": "Separa i valori per l'asse Z usando le virgole"
+    },
+    {
+      "id": "",
+      "label": "Loops",
+      "localized": "Cicli",
+      "hint": "Quante volte elaborare un'immagine. Ogni output viene utilizzato come input del ciclo successivo. Se impostato su 1, il comportamento sarà come se questo script non fosse stato utilizzato"
+    },
+    {
+      "id": "",
+      "label": "Final denoising strength",
+      "localized": "Forza di denoising finale",
+      "hint": "La forza di denoising per il ciclo finale di ogni immagine nel batch"
+    },
+    {
+      "id": "",
+      "label": "Denoising strength curve",
+      "localized": "Curva della forza di denoising",
+      "hint": "La curva di denoising controlla la velocità di variazione della forza di denoising ad ogni ciclo. Aggressivo: la maggior parte del cambiamento avverrà all'inizio dei cicli. Lineare: il cambiamento sarà costante in tutti i cicli. Lento: la maggior parte del cambiamento avverrà verso la fine dei cicli"
+    },
+    {
+      "id": "",
+      "label": "Tile overlap",
+      "localized": "Sovrapposizione delle tile",
+      "hint": "Per l'upscaling SD, quanta sovrapposizione in pixel dovrebbe esserci tra le tile. Le tile si sovrappongono in modo che quando vengono riunite in un'unica immagine, non ci sia una cucitura chiaramente visibile"
+    }
+  ],
+  "settings": [
+    {
+      "id": "settings_submit",
+      "label": "Apply settings",
+      "localized": "Applica impostazioni",
+      "hint": "Salva le impostazioni correnti, si raccomanda il riavvio del server"
+    },
+    {
+      "id": "restart_submit",
+      "label": "Restart server",
+      "localized": "Riavvia il server",
+      "hint": "Riavvia il server"
+    },
+    {
+      "id": "shutdown_submit",
+      "label": "Shutdown server",
+      "localized": "Spegni il server",
+      "hint": "Spegni il server"
+    },
+    {
+      "id": "settings_preview_theme",
+      "label": "Preview theme",
+      "localized": "Anteprima tema",
+      "hint": "Mostra l'anteprima del tema"
+    },
+    {
+      "id": "defaults_submit",
+      "label": "Restore defaults",
+      "localized": "Ripristina impostazioni predefinite",
+      "hint": "Ripristina le impostazioni predefinite del server"
+    },
+    {
+      "id": "sett_unload_sd_model",
+      "label": "Unload model",
+      "localized": "Scarica modello",
+      "hint": "Scarica il modello attualmente caricato"
+    },
+    {
+      "id": "sett_reload_sd_model",
+      "label": "Reload model",
+      "localized": "Ricarica modello",
+      "hint": "Ricarica il modello attualmente selezionato"
+    },
+    {
+      "id": "",
+      "label": "Models & Loading",
+      "localized": "Modelli e caricamento",
+      "hint": "Impostazioni relative ai modelli di base, al backend primario e al comportamento di caricamento dei modelli"
+    },
+    {
+      "id": "",
+      "label": "Variable Auto Encoder",
+      "localized": "Auto Encoder Variabile",
+      "hint": "Impostazioni relative all'auto encoder variabile e al processo di decodifica delle immagini durante la generazione"
+    },
+    {
+      "id": "",
+      "label": "Text encoder",
+      "localized": "Codificatore di testo",
+      "hint": "Impostazioni relative al codificatore di testo e all'elaborazione della codifica dei prompt durante la generazione"
+    },
+    {
+      "id": "",
+      "label": "Compute Settings",
+      "localized": "Impostazioni di calcolo",
+      "hint": "Impostazioni relative alla precisione di calcolo, all'attenzione incrociata e alle ottimizzazioni per le piattaforme di calcolo"
+    },
+    {
+      "id": "",
+      "label": "Backend Settings",
+      "localized": "Impostazioni backend",
+      "hint": "Impostazioni relative ai backend di calcolo: torch, onnx e olive"
+    },
+    {
+      "id": "",
+      "label": "Quantization Settings",
+      "localized": "Impostazioni di quantizzazione",
+      "hint": "Impostazioni relative alla quantizzazione del modello"
+    },
+    {
+      "id": "",
+      "label": "Pipeline modifiers",
+      "localized": "Modificatori pipeline",
+      "hint": "Funzionalità aggiuntive che possono essere abilitate durante la generazione"
+    },
+    {
+      "id": "",
+      "label": "Model compile",
+      "localized": "Compilazione modello",
+      "hint": "Impostazioni relative ai diversi metodi di compilazione del modello"
+    },
+    {
+      "id": "",
+      "label": "System Paths",
+      "localized": "Percorsi di sistema",
+      "hint": "Impostazioni relative alla posizione delle varie directory dei modelli"
+    },
+    {
+      "id": "",
+      "label": "Image Options",
+      "localized": "Opzioni immagine",
+      "hint": "Impostazioni relative al formato dell'immagine, ai metadati e alle griglie di immagini"
+    },
+    {
+      "id": "",
+      "label": "image Paths",
+      "localized": "Percorsi immagini",
+      "hint": "Impostazioni relative ai nomi dei file immagine e alle directory di output"
+    },
+    {
+      "id": "",
+      "label": "Live Previews",
+      "localized": "Anteprime live",
+      "hint": "Impostazioni relative alle anteprime live, notifica audio"
+    },
+    {
+      "id": "",
+      "label": "Sampler Settings",
+      "localized": "Impostazioni sampler",
+      "hint": "Impostazioni relative alla selezione e alla configurazione del sampler e alla configurazione del sampler specifico del diffusore"
+    },
+    {
+      "id": "",
+      "label": "Postprocessing",
+      "localized": "Post-elaborazione",
+      "hint": "Impostazioni relative all'elaborazione successiva alla generazione dell'immagine, al ripristino del viso e all'upscaling"
+    },
+    {
+      "id": "",
+      "label": "Control Options",
+      "localized": "Opzioni controllo",
+      "hint": "Impostazioni relative alla scheda Control"
+    },
+    {
+      "id": "",
+      "label": "Huggingface",
+      "localized": "Huggingface",
+      "hint": "Impostazioni relative all'accesso a huggingface"
+    },
+    {
+      "id": "",
+      "label": "Show all pages",
+      "localized": "Mostra tutte le pagine",
+      "hint": "Mostra tutte le pagine delle impostazioni"
+    },
+    {
+      "id": "",
+      "label": "base model",
+      "localized": "Modello base",
+      "hint": "Modello principale utilizzato per tutte le operazioni"
+    },
+    {
+      "id": "",
+      "label": "refiner model",
+      "localized": "Modello refiner",
+      "hint": "Modello refiner utilizzato per le operazioni di secondo passaggio"
+    },
+    {
+      "id": "",
+      "label": "Cached models",
+      "localized": "Modelli in cache",
+      "hint": "Il numero di modelli da memorizzare nella RAM per un accesso rapido"
+    },
+    {
+      "id": "",
+      "label": "VAE model",
+      "localized": "Modello VAE",
+      "hint": "VAE aiuta con i dettagli fini nell'immagine finale e può anche alterare i colori"
+    },
+    {
+      "id": "",
+      "label": "Model load using streams",
+      "localized": "Caricamento modello tramite stream",
+      "hint": "Quando si caricano modelli, tenta di caricare stream ottimizzati per archiviazione lenta o di rete"
+    },
+    {
+      "id": "",
+      "label": "xFormers",
+      "localized": "xFormers",
+      "hint": "Ottimizzazione della memoria. Non deterministico (risultati diversi ogni volta)"
+    },
+    {
+      "id": "",
+      "label": "Scaled-Dot-Product",
+      "localized": "Scaled-Dot-Product",
+      "hint": "Ottimizzazione della memoria. Non deterministico a meno che l'attenzione della memoria SDP non sia disabilitata."
+    },
+    {
+      "id": "",
+      "label": "Prompt padding",
+      "localized": "Riempimento prompt",
+      "hint": "Aumenta la coerenza riempiendo dall'ultima virgola entro n token quando si utilizzano più di 75 token"
+    },
+    {
+      "id": "",
+      "label": "Original",
+      "localized": "Originale",
+      "hint": "Backend LDM originale"
+    },
+    {
+      "id": "",
+      "label": "Autocast",
+      "localized": "Autocast",
+      "hint": "Determina automaticamente la precisione durante il runtime"
+    },
+    {
+      "id": "",
+      "label": "Full",
+      "localized": "Completa",
+      "hint": "Utilizza sempre la precisione completa"
+    },
+    {
+      "id": "",
+      "label": "FP32",
+      "localized": "FP32",
+      "hint": "Utilizza la precisione in virgola mobile a 32 bit per i calcoli"
+    },
+    {
+      "id": "",
+      "label": "FP16",
+      "localized": "FP16",
+      "hint": "Utilizza la precisione in virgola mobile a 16 bit per i calcoli"
+    },
+    {
+      "id": "",
+      "label": "BF16",
+      "localized": "BF16",
+      "hint": "Utilizza la precisione in virgola mobile a 16 bit modificata per i calcoli"
+    },
+    {
+      "id": "",
+      "label": "Full precision (--no-half-vae)",
+      "localized": "Precisione completa (--no-half-vae)",
+      "hint": "Utilizza FP32 per il VAE. Può produrre risultati migliori durante l'utilizzo di più VRAM e una generazione più lenta"
+    },
+    {
+      "id": "",
+      "label": "Force full precision (--no-half)",
+      "localized": "Forza la precisione completa (--no-half)",
+      "hint": "Utilizza FP32 per il modello. Può produrre risultati migliori durante l'utilizzo di più VRAM e una generazione più lenta"
+    },
+    {
+      "id": "",
+      "label": "Upcast sampling",
+      "localized": "Upcast sampling",
+      "hint": "Di solito produce risultati simili a --no-half con prestazioni migliori durante l'utilizzo di meno memoria"
+    },
+    {
+      "id": "",
+      "label": "Attempt VAE roll back for NaN values",
+      "localized": "Tentativo di rollback VAE per valori NaN",
+      "hint": "Richiede Torch 2.1 e il controllo NaN abilitato"
+    },
+    {
+      "id": "",
+      "label": "Olive use FP16 on optimization",
+      "localized": "Olive usa FP16 sull'ottimizzazione",
+      "hint": "Utilizza la precisione in virgola mobile a 16 bit per il modello di output del processo di ottimizzazione Olive. Utilizza la precisione in virgola mobile a 32 bit se disabilitato"
+    },
+    {
+      "id": "",
+      "label": "Olive force FP32 for VAE Encoder",
+      "localized": "Olive forza FP32 per VAE Encoder",
+      "hint": "Utilizza la precisione in virgola mobile a 32 bit per VAE Encoder del modello di output. Questo sovrascrive l'opzione 'usa FP16 sull'ottimizzazione'. Se si ottengono immagini NaN o nere da Img2Img, abilita questa opzione e rimuovi la cache"
+    },
+    {
+      "id": "",
+      "label": "Olive use static dimensions",
+      "localized": "Olive usa dimensioni statiche",
+      "hint": "Rendi l'inferenza con i modelli ottimizzati Olive molto più veloce. (OrtTransformersOptimization)"
+    },
+    {
+      "id": "",
+      "label": "Olive cache optimized models",
+      "localized": "Olive memorizza nella cache i modelli ottimizzati",
+      "hint": "Salva i modelli elaborati Olive come cache. Puoi gestirli nella scheda ONNX"
+    },
+    {
+      "id": "",
+      "label": "File format",
+      "localized": "Formato file",
+      "hint": "Seleziona il formato file per le immagini"
+    },
+    {
+      "id": "",
+      "label": "Include metadata",
+      "localized": "Includi metadati",
+      "hint": "Salva i parametri di creazione dell'immagine come tag di metadati all'interno del file immagine"
+    },
+    {
+      "id": "",
+      "label": "Images filename pattern",
+      "localized": "Modello nome file immagini",
+      "hint": "Utilizza i seguenti tag per definire come vengono scelti i nomi dei file per le immagini:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
+    },
+    {
+      "id": "",
+      "label": "Row count",
+      "localized": "Numero di righe",
+      "hint": "Usa -1 per il rilevamento automatico e 0 per renderlo uguale alla dimensione del batch"
+    },
+    {
+      "id": "",
+      "label": "Directory name pattern",
+      "localized": "Modello nome directory",
+      "hint": "Utilizza i seguenti tag per definire come vengono scelte le sottodirectory per immagini e griglie: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; lascia vuoto per impostazione predefinita"
+    },
+    {
+      "id": "",
+      "label": "Inpainting conditioning mask strength",
+      "localized": "Forza maschera di condizionamento inpainting",
+      "hint": "Determina con quanta forza mascherare l'immagine originale per l'inpainting e img2img. 1.0 significa completamente mascherato (predefinito). 0.0 significa un condizionamento completamente smascherato. Valori inferiori aiuteranno a preservare la composizione generale dell'immagine, ma avranno difficoltà con grandi cambiamenti"
+    },
+    {
+      "id": "",
+      "label": "Clip skip",
+      "localized": "Clip skip",
+      "hint": "Parametro di arresto anticipato per il modello CLIP; 1 è fermarsi all'ultimo livello come al solito, 2 è fermarsi al penultimo livello, ecc"
+    },
+    {
+      "id": "",
+      "label": "Images folder",
+      "localized": "Cartella immagini",
+      "hint": "Se vuoto, il valore predefinito è tre directory sotto"
+    },
+    {
+      "id": "",
+      "label": "Grids folder",
+      "localized": "Cartella griglie",
+      "hint": "Se vuoto, il valore predefinito è due directory sotto"
+    },
+    {
+      "id": "",
+      "label": "Quicksettings list",
+      "localized": "Elenco impostazioni rapide",
+      "hint": "Elenco di nomi di impostazioni, separati da virgole, per le impostazioni che devono andare nella barra di accesso rapido nella parte superiore invece della scheda delle impostazioni"
+    },
+    {
+      "id": "",
+      "label": "Live preview display period",
+      "localized": "Periodo visualizzazione anteprima live",
+      "hint": "Richiedi l'immagine di anteprima ogni n passaggi, imposta su 0 per disabilitare"
+    },
+    {
+      "id": "",
+      "label": "Approximate",
+      "localized": "Approssimativo",
+      "hint": "Approssimazione economica della rete neurale. Molto veloce rispetto a VAE, ma produce immagini con una risoluzione orizzontale/verticale 4 volte inferiore e una qualità inferiore"
+    },
+    {
+      "id": "",
+      "label": "Simple",
+      "localized": "Semplice",
+      "hint": "Approssimazione molto economica. Molto veloce rispetto a VAE, ma produce immagini con una risoluzione orizzontale/verticale 8 volte inferiore e una qualità estremamente bassa"
+    },
+    {
+      "id": "",
+      "label": "Progress update period",
+      "localized": "Periodo aggiornamento progresso",
+      "hint": "Periodo di aggiornamento per la barra di avanzamento dell'interfaccia utente e i controlli di anteprima, in millisecondi"
+    },
+    {
+      "id": "",
+      "label": "Euler a",
+      "localized": "Euler a",
+      "hint": "Euler Ancestral - molto creativo, ognuno può ottenere un'immagine completamente diversa a seconda del numero di passaggi, impostare i passaggi superiori a 30-40 non aiuta"
+    },
+    {
+      "id": "",
+      "label": "DDIM",
+      "localized": "DDIM",
+      "hint": "Denoising Diffusion Implicit Models - migliore nell'inpainting"
+    },
+    {
+      "id": "",
+      "label": "UniPC",
+      "localized": "UniPC",
+      "hint": "Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models"
+    },
+    {
+      "id": "",
+      "label": "sigma negative guidance minimum",
+      "localized": "sigma guida negativa minima",
+      "hint": "Salta il prompt negativo per alcuni passaggi quando l'immagine è quasi pronta, 0=disabilita"
+    },
+    {
+      "id": "",
+      "label": "Upscaler tile size",
+      "localized": "Dimensione tile upscaler",
+      "hint": "0 = nessuna suddivisione in tile"
+    },
+    {
+      "id": "",
+      "label": "Upscaler tile overlap",
+      "localized": "Sovrapposizione tile upscaler",
+      "hint": "Valori bassi = cucitura visibile"
+    },
+    {
+      "id": "",
+      "label": "GFPGAN",
+      "localized": "GFPGAN",
+      "hint": "Ripristina i volti di bassa qualità utilizzando la rete neurale GFPGAN"
+    },
+    {
+      "id": "",
+      "label": "CodeFormer weight parameter",
+      "localized": "Parametro peso CodeFormer",
+      "hint": "0 = effetto massimo; 1 = effetto minimo"
+    },
+    {
+      "id": "",
+      "label": "ToMe token merging ratio",
+      "localized": "Rapporto unione token ToMe",
+      "hint": "Abilita l'unione di token ridondanti tramite tomesd per miglioramenti di velocità e memoria, 0=disabilitato"
+    },
+    {
+      "id": "",
+      "label": "Todo token merging ratio",
+      "localized": "Rapporto unione token Todo",
+      "hint": "Abilita l'unione di token ridondanti tramite todo per miglioramenti di velocità e memoria, 0=disabilitato"
+    },
+    {
+      "id": "",
+      "label": "Model pipeline",
+      "localized": "Pipeline modello",
+      "hint": "Se il rilevamento automatico non rileva automaticamente il modello, seleziona il tipo di modello prima di caricare un modello"
+    },
+    {
+      "id": "",
+      "label": "VAE slicing",
+      "localized": "Slicing VAE",
+      "hint": "Decodifica i latenti batch un'immagine alla volta con VRAM limitata. Piccolo aumento delle prestazioni nella decodifica VAE su batch multi-immagine"
+    },
+    {
+      "id": "",
+      "label": "VAE tiling",
+      "localized": "Tiling VAE",
+      "hint": "Divide le immagini di grandi dimensioni in tile sovrapposte con VRAM limitata. Risultati in un piccolo aumento dei tempi di elaborazione"
+    },
+    {
+      "id": "",
+      "label": "Dynamic attention BMM",
+      "localized": "Attenzione dinamica BMM",
+      "hint": "Esegue il calcolo dell'attenzione in passaggi invece che tutto in una volta. Tempi di inferenza più lenti, ma utilizzo della memoria notevolmente ridotto"
+    },
+    {
+      "id": "",
+      "label": "ONNX Execution Provider",
+      "localized": "Provider esecuzione ONNX",
+      "hint": "Provider esecuzione ONNX"
+    },
+    {
+      "id": "",
+      "label": "ONNX allow fallback to CPU",
+      "localized": "ONNX consente fallback a CPU",
+      "hint": "Consente il fallback alla CPU quando il provider di esecuzione selezionato non è riuscito"
+    },
+    {
+      "id": "",
+      "label": "ONNX cache converted models",
+      "localized": "ONNX memorizza nella cache i modelli convertiti",
+      "hint": "Salva i modelli convertiti in formato ONNX come cache. Puoi gestirli nella scheda ONNX"
+    },
+    {
+      "id": "",
+      "label": "ONNX unload base model when processing refiner",
+      "localized": "ONNX scarica il modello base durante l'elaborazione del refiner",
+      "hint": "Scarica il modello base quando il refiner viene convertito/ottimizzato/elaborato"
+    },
+    {
+      "id": "",
+      "label": "inference-mode",
+      "localized": "modalità-inferenza",
+      "hint": "Usa torch.inference_mode"
+    },
+    {
+      "id": "",
+      "label": "no-grad",
+      "localized": "no-grad",
+      "hint": "Usa torch.no_grad"
+    },
+    {
+      "id": "",
+      "label": "model compile precompile",
+      "localized": "modello compila precompila",
+      "hint": "Esegui la compilazione del modello immediatamente sul caricamento del modello anziché al primo utilizzo"
+    },
+    {
+      "id": "",
+      "label": "Use zeros for prompt padding",
+      "localized": "Usa zeri per il riempimento del prompt",
+      "hint": "Forza il tensore zero completo quando il prompt è vuoto per rimuovere qualsiasi rumore residuo"
+    },
+    {
+      "id": "",
+      "label": "Include invisible watermark",
+      "localized": "Includi filigrana invisibile",
+      "hint": "Aggiungi una filigrana invisibile all'immagine alterando alcuni valori dei pixel"
+    },
+    {
+      "id": "",
+      "label": "invisible watermark string",
+      "localized": "stringa filigrana invisibile",
+      "hint": "Stringa filigrana da aggiungere all'immagine. Mantieni molto corto per evitare il danneggiamento dell'immagine."
+    },
+    {
+      "id": "",
+      "label": "show log view",
+      "localized": "mostra vista registro",
+      "hint": "Mostra la vista del registro nella parte inferiore della finestra principale"
+    },
+    {
+      "id": "",
+      "label": "Log view update period",
+      "localized": "Periodo aggiornamento vista registro",
+      "hint": "Periodo aggiornamento vista registro, in millisecondi"
+    },
+    {
+      "id": "",
+      "label": "PAG layer names",
+      "localized": "Nomi livelli PAG",
+      "hint": "Elenco di livelli separati da spazi<br>Disponibile: d[0-5], m[0], u[0-8]<br>Predefinito: m0"
+    }
+  ],
+  "missing": [
+    {
+      "id": "",
+      "label": "1st stage",
+      "localized": "1ª fase",
+      "hint": "1ª fase"
+    },
+    {
+      "id": "",
+      "label": "1st stage backbone",
+      "localized": "Backbone della 1ª fase",
+      "hint": "Backbone della 1ª fase"
+    },
+    {
+      "id": "",
+      "label": "1st stage skip",
+      "localized": "Salto della 1ª fase",
+      "hint": "Salto della 1ª fase"
+    },
+    {
+      "id": "",
+      "label": "2nd restart step",
+      "localized": "2° passo di riavvio",
+      "hint": "2° passo di riavvio"
+    },
+    {
+      "id": "",
+      "label": "2nd scale",
+      "localized": "2ª scala",
+      "hint": "2ª scala"
+    },
+    {
+      "id": "",
+      "label": "2nd stage",
+      "localized": "2ª fase",
+      "hint": "2ª fase"
+    },
+    {
+      "id": "",
+      "label": "2nd stage backbone",
+      "localized": "Backbone della 2ª fase",
+      "hint": "Backbone della 2ª fase"
+    },
+    {
+      "id": "",
+      "label": "2nd stage skip",
+      "localized": "Salto della 2ª fase",
+      "hint": "Salto della 2ª fase"
+    },
+    {
+      "id": "",
+      "label": "3rd restart step",
+      "localized": "3° passo di riavvio",
+      "hint": "3° passo di riavvio"
+    },
+    {
+      "id": "",
+      "label": "3rd scale",
+      "localized": "3ª scala",
+      "hint": "3ª scala"
+    },
+    {
+      "id": "",
+      "label": "3rd stage",
+      "localized": "3ª fase",
+      "hint": "3ª fase"
+    },
+    {
+      "id": "",
+      "label": "4th restart step",
+      "localized": "4° passo di riavvio",
+      "hint": "4° passo di riavvio"
+    },
+    {
+      "id": "",
+      "label": "4th scale",
+      "localized": "4ª scala",
+      "hint": "4ª scala"
+    },
+    {
+      "id": "",
+      "label": "4th stage",
+      "localized": "4ª fase",
+      "hint": "4ª fase"
+    },
+    {
+      "id": "",
+      "label": "a1111",
+      "localized": "a1111",
+      "hint": "a1111"
+    },
+    {
+      "id": "",
+      "label": "accuracy",
+      "localized": "Accuratezza",
+      "hint": "Accuratezza"
+    },
+    {
+      "id": "",
+      "label": "active",
+      "localized": "Attivo",
+      "hint": "Attivo"
+    },
+    {
+      "id": "",
+      "label": "adain",
+      "localized": "AdaIN",
+      "hint": "AdaIN"
+    },
+    {
+      "id": "",
+      "label": "adaptive restore",
+      "localized": "Ripristino adattivo",
+      "hint": "Ripristino adattivo"
+    },
+    {
+      "id": "",
+      "label": "add text info",
+      "localized": "Aggiungi info testo",
+      "hint": "Aggiungi info testo"
+    },
+    {
+      "id": "",
+      "label": "add time info",
+      "localized": "Aggiungi info tempo",
+      "hint": "Aggiungi info tempo"
+    },
+    {
+      "id": "",
+      "label": "additional image browser folders",
+      "localized": "Cartelle aggiuntive per il browser di immagini",
+      "hint": "Cartelle aggiuntive per il browser di immagini"
+    },
+    {
+      "id": "",
+      "label": "additional postprocessing operations",
+      "localized": "Operazioni di post-elaborazione aggiuntive",
+      "hint": "Operazioni di post-elaborazione aggiuntive"
+    },
+    {
+      "id": "",
+      "label": "after",
+      "localized": "Dopo",
+      "hint": "Dopo"
+    },
+    {
+      "id": "",
+      "label": "aggressive at step",
+      "localized": "Aggressivo al passo",
+      "hint": "Aggressivo al passo"
+    },
+    {
+      "id": "",
+      "label": "alias",
+      "localized": "Alias",
+      "hint": "Alias"
+    },
+    {
+      "id": "",
+      "label": "allowed aspect ratios",
+      "localized": "Proporzioni consentite",
+      "hint": "Proporzioni consentite"
+    },
+    {
+      "id": "",
+      "label": "alpha",
+      "localized": "Alfa",
+      "hint": "Alfa"
+    },
+    {
+      "id": "",
+      "label": "alpha block weight preset",
+      "localized": "Preimpostazione del peso del blocco alfa",
+      "hint": "Preimpostazione del peso del blocco alfa"
+    },
+    {
+      "id": "",
+      "label": "alpha matting",
+      "localized": "Matting alfa",
+      "hint": "Matting alfa"
+    },
+    {
+      "id": "",
+      "label": "alpha preset",
+      "localized": "Preimpostazione alfa",
+      "hint": "Preimpostazione alfa"
+    },
+    {
+      "id": "",
+      "label": "alpha ratio",
+      "localized": "Rapporto alfa",
+      "hint": "Rapporto alfa"
+    },
+    {
+      "id": "",
+      "label": "amplify lut",
+      "localized": "Amplifica LUT",
+      "hint": "Amplifica LUT"
+    },
+    {
+      "id": "",
+      "label": "analyze",
+      "localized": "Analizza",
+      "hint": "Analizza"
+    },
+    {
+      "id": "",
+      "label": "anchor settings",
+      "localized": "Impostazioni di ancoraggio",
+      "hint": "Impostazioni di ancoraggio"
+    },
+    {
+      "id": "",
+      "label": "answer",
+      "localized": "Risposta",
+      "hint": "Risposta"
+    },
+    {
+      "id": "",
+      "label": "aot_ts_nvfuser",
+      "localized": "aot_ts_nvfuser",
+      "hint": "aot_ts_nvfuser"
+    },
+    {
+      "id": "",
+      "label": "append image info json file",
+      "localized": "Allega file JSON con informazioni sull'immagine",
+      "hint": "Allega file JSON con informazioni sull'immagine"
+    },
+    {
+      "id": "",
+      "label": "append interrogated prompt at each iteration",
+      "localized": "Allega prompt interrogato a ogni iterazione",
+      "hint": "Allega prompt interrogato a ogni iterazione"
+    },
+    {
+      "id": "",
+      "label": "apply color correction",
+      "localized": "Applica correzione colore",
+      "hint": "Applica correzione colore"
+    },
+    {
+      "id": "",
+      "label": "apply filter",
+      "localized": "Applica filtro",
+      "hint": "Applica filtro"
+    },
+    {
+      "id": "",
+      "label": "apply linfusion distillation on load",
+      "localized": "Applica la distillazione linfusion al caricamento",
+      "hint": "Applica la distillazione linfusion al caricamento"
+    },
+    {
+      "id": "",
+      "label": "apply mask as overlay",
+      "localized": "Applica la maschera come sovrapposizione",
+      "hint": "Applica la maschera come sovrapposizione"
+    },
+    {
+      "id": "",
+      "label": "apply msw-msa",
+      "localized": "Applica msw-msa",
+      "hint": "Applica msw-msa"
+    },
+    {
+      "id": "",
+      "label": "apply rau-net",
+      "localized": "Applica rau-net",
+      "hint": "Applica rau-net"
+    },
+    {
+      "id": "",
+      "label": "apply to model",
+      "localized": "Applica al modello",
+      "hint": "Applica al modello"
+    },
+    {
+      "id": "",
+      "label": "artists",
+      "localized": "Artisti",
+      "hint": "Artisti"
+    },
+    {
+      "id": "",
+      "label": "atiadlxx (amd only)",
+      "localized": "atiadlxx (solo amd)",
+      "hint": "atiadlxx (solo amd)"
+    },
+    {
+      "id": "",
+      "label": "attention",
+      "localized": "Attenzione",
+      "hint": "Attenzione"
+    },
+    {
+      "id": "",
+      "label": "attention adain",
+      "localized": "Attenzione AdaIN",
+      "hint": "Attenzione AdaIN"
+    },
+    {
+      "id": "",
+      "label": "attention cache enabled",
+      "localized": "Cache dell'attenzione abilitata",
+      "hint": "Cache dell'attenzione abilitata"
+    },
+    {
+      "id": "",
+      "label": "attention chunking threshold",
+      "localized": "Soglia di chunking dell'attenzione",
+      "hint": "Soglia di chunking dell'attenzione"
+    },
+    {
+      "id": "",
+      "label": "attention kv chunk size",
+      "localized": "Dimensione chunk KV dell'attenzione",
+      "hint": "Dimensione chunk KV dell'attenzione"
+    },
+    {
+      "id": "",
+      "label": "attention query chunk size",
+      "localized": "Dimensione chunk query dell'attenzione",
+      "hint": "Dimensione chunk query dell'attenzione"
+    },
+    {
+      "id": "",
+      "label": "auto",
+      "localized": "Automatico",
+      "hint": "Automatico"
+    },
+    {
+      "id": "",
+      "label": "auto apply",
+      "localized": "Applica automaticamente",
+      "hint": "Applica automaticamente"
+    },
+    {
+      "id": "",
+      "label": "auto-convert sd15 embeddings to sdxl",
+      "localized": "Converti automaticamente gli embedding SD15 in SDXL",
+      "hint": "Converti automaticamente gli embedding SD15 in SDXL"
+    },
+    {
+      "id": "",
+      "label": "auto-mask",
+      "localized": "Auto-maschera",
+      "hint": "Auto-maschera"
+    },
+    {
+      "id": "",
+      "label": "auto-segment",
+      "localized": "Auto-segmentazione",
+      "hint": "Auto-segmentazione"
+    },
+    {
+      "id": "",
+      "label": "autolaunch browser upon startup",
+      "localized": "Avvia automaticamente il browser all'avvio",
+      "hint": "Avvia automaticamente il browser all'avvio"
+    },
+    {
+      "id": "",
+      "label": "automatically determine rank",
+      "localized": "Determina automaticamente il rank",
+      "hint": "Determina automaticamente il rank"
+    },
+    {
+      "id": "",
+      "label": "autorank ratio",
+      "localized": "Rapporto autorank",
+      "hint": "Rapporto autorank"
+    },
+    {
+      "id": "",
+      "label": "available networks",
+      "localized": "Reti disponibili",
+      "hint": "Reti disponibili"
+    },
+    {
+      "id": "",
+      "label": "backend",
+      "localized": "Backend",
+      "hint": "Backend"
+    },
+    {
+      "id": "",
+      "label": "backend settings",
+      "localized": "Impostazioni del backend",
+      "hint": "Impostazioni del backend"
+    },
+    {
+      "id": "",
+      "label": "backend storage",
+      "localized": "Archiviazione backend",
+      "hint": "Archiviazione backend"
+    },
+    {
+      "id": "",
+      "label": "background threshold",
+      "localized": "Soglia dello sfondo",
+      "hint": "Soglia dello sfondo"
+    },
+    {
+      "id": "",
+      "label": "balanced",
+      "localized": "Bilanciato",
+      "hint": "Bilanciato"
+    },
+    {
+      "id": "",
+      "label": "balanced offload cpu high watermark",
+      "localized": "Watermark alto per l'offload bilanciato della CPU",
+      "hint": "Watermark alto per l'offload bilanciato della CPU"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu high watermark",
+      "localized": "Watermark alto per l'offload bilanciato della GPU",
+      "hint": "Watermark alto per l'offload bilanciato della GPU"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu low watermark",
+      "localized": "Watermark basso per l'offload bilanciato della GPU",
+      "hint": "Watermark basso per l'offload bilanciato della GPU"
+    },
+    {
+      "id": "",
+      "label": "batch",
+      "localized": "Batch",
+      "hint": "Batch"
+    },
+    {
+      "id": "",
+      "label": "batch input directory",
+      "localized": "Directory di input batch",
+      "hint": "Directory di input batch"
+    },
+    {
+      "id": "",
+      "label": "batch mask directory",
+      "localized": "Directory delle maschere batch",
+      "hint": "Directory delle maschere batch"
+    },
+    {
+      "id": "",
+      "label": "batch matrix-matrix",
+      "localized": "Batch matrice-matrice",
+      "hint": "Batch matrice-matrice"
+    },
+    {
+      "id": "",
+      "label": "batch mode uses sequential seeds",
+      "localized": "La modalità batch utilizza seed sequenziali",
+      "hint": "La modalità batch utilizza seed sequenziali"
+    },
+    {
+      "id": "",
+      "label": "batch output directory",
+      "localized": "Directory di output batch",
+      "hint": "Directory di output batch"
+    },
+    {
+      "id": "",
+      "label": "batch uses original name",
+      "localized": "Il batch utilizza il nome originale",
+      "hint": "Il batch utilizza il nome originale"
+    },
+    {
+      "id": "",
+      "label": "bdia ddim",
+      "localized": "BDIA DDIM",
+      "hint": "BDIA DDIM"
+    },
+    {
+      "id": "",
+      "label": "before",
+      "localized": "Prima",
+      "hint": "Prima"
+    },
+    {
+      "id": "",
+      "label": "benchmark level",
+      "localized": "Livello di benchmark",
+      "hint": "Livello di benchmark"
+    },
+    {
+      "id": "",
+      "label": "benchmark steps",
+      "localized": "Passi di benchmark",
+      "hint": "Passi di benchmark"
+    },
+    {
+      "id": "",
+      "label": "beta block weight preset",
+      "localized": "Preimpostazione del peso del blocco beta",
+      "hint": "Preimpostazione del peso del blocco beta"
+    },
+    {
+      "id": "",
+      "label": "beta end",
+      "localized": "Beta fine",
+      "hint": "Beta fine"
+    },
+    {
+      "id": "",
+      "label": "beta ratio",
+      "localized": "Rapporto beta",
+      "hint": "Rapporto beta"
+    },
+    {
+      "id": "",
+      "label": "beta schedule",
+      "localized": "Pianificazione beta",
+      "hint": "Pianificazione beta"
+    },
+    {
+      "id": "",
+      "label": "beta start",
+      "localized": "Beta inizio",
+      "hint": "Beta inizio"
+    },
+    {
+      "id": "",
+      "label": "bh1",
+      "localized": "BH1",
+      "hint": "BH1"
+    },
+    {
+      "id": "",
+      "label": "bh2",
+      "localized": "BH2",
+      "hint": "BH2"
+    },
+    {
+      "id": "",
+      "label": "block",
+      "localized": "Blocco",
+      "hint": "Blocco"
+    },
+    {
+      "id": "",
+      "label": "block skip range",
+      "localized": "Intervallo di salto blocco",
+      "hint": "Intervallo di salto blocco"
+    },
+    {
+      "id": "",
+      "label": "blur",
+      "localized": "Sfocatura",
+      "hint": "Sfocatura"
+    },
+    {
+      "id": "",
+      "label": "body",
+      "localized": "Corpo",
+      "hint": "Corpo"
+    },
+    {
+      "id": "",
+      "label": "boost",
+      "localized": "Potenzia",
+      "hint": "Potenzia"
+    },
+    {
+      "id": "",
+      "label": "brightness",
+      "localized": "Luminosità",
+      "hint": "Luminosità"
+    },
+    {
+      "id": "",
+      "label": "cache model",
+      "localized": "Modello cache",
+      "hint": "Modello cache"
+    },
+    {
+      "id": "",
+      "label": "cache text encoder results",
+      "localized": "Memorizza nella cache i risultati del text encoder",
+      "hint": "Memorizza nella cache i risultati del text encoder"
+    },
+    {
+      "id": "",
+      "label": "caption model",
+      "localized": "Modello di didascalia",
+      "hint": "Modello di didascalia"
+    },
+    {
+      "id": "",
+      "label": "center",
+      "localized": "Centro",
+      "hint": "Centro"
+    },
+    {
+      "id": "",
+      "label": "change log",
+      "localized": "Registro delle modifiche",
+      "hint": "Registro delle modifiche"
+    },
+    {
+      "id": "",
+      "label": "change model",
+      "localized": "cambia modello",
+      "hint": "cambia modello"
+    },
+    {
+      "id": "",
+      "label": "change rate",
+      "localized": "cambia frequenza",
+      "hint": "cambia frequenza"
+    },
+    {
+      "id": "",
+      "label": "change reference",
+      "localized": "cambia riferimento",
+      "hint": "cambia riferimento"
+    },
+    {
+      "id": "",
+      "label": "change refiner",
+      "localized": "cambia rifinitore",
+      "hint": "cambia rifinitore"
+    },
+    {
+      "id": "",
+      "label": "change vae",
+      "localized": "cambia vae",
+      "hint": "cambia vae"
+    },
+    {
+      "id": "",
+      "label": "channels last",
+      "localized": "canali ultimi",
+      "hint": "canali ultimi"
+    },
+    {
+      "id": "",
+      "label": "check alternative hash",
+      "localized": "controlla hash alternativo",
+      "hint": "controlla hash alternativo"
+    },
+    {
+      "id": "",
+      "label": "check for updates",
+      "localized": "controlla aggiornamenti",
+      "hint": "controlla aggiornamenti"
+    },
+    {
+      "id": "",
+      "label": "check status",
+      "localized": "controlla stato",
+      "hint": "controlla stato"
+    },
+    {
+      "id": "",
+      "label": "chunk size",
+      "localized": "dimensione chunk",
+      "hint": "dimensione chunk"
+    },
+    {
+      "id": "",
+      "label": "civitai",
+      "localized": "civitai",
+      "hint": "civitai"
+    },
+    {
+      "id": "",
+      "label": "civitai model type",
+      "localized": "tipo di modello civitai",
+      "hint": "tipo di modello civitai"
+    },
+    {
+      "id": "",
+      "label": "civitai token",
+      "localized": "token civitai",
+      "hint": "token civitai"
+    },
+    {
+      "id": "",
+      "label": "ckpt",
+      "localized": "ckpt",
+      "hint": "ckpt"
+    },
+    {
+      "id": "",
+      "label": "classes",
+      "localized": "classi",
+      "hint": "classi"
+    },
+    {
+      "id": "",
+      "label": "cleanup temporary folder on startup",
+      "localized": "pulisci cartella temporanea all'avvio",
+      "hint": "pulisci cartella temporanea all'avvio"
+    },
+    {
+      "id": "",
+      "label": "clip batch model",
+      "localized": "modello batch clip",
+      "hint": "modello batch clip"
+    },
+    {
+      "id": "",
+      "label": "clip model",
+      "localized": "modello clip",
+      "hint": "modello clip"
+    },
+    {
+      "id": "",
+      "label": "clip: default captioner",
+      "localized": "clip: captioner predefinito",
+      "hint": "clip: captioner predefinito"
+    },
+    {
+      "id": "",
+      "label": "clip: default mode",
+      "localized": "clip: modalità predefinita",
+      "hint": "clip: modalità predefinita"
+    },
+    {
+      "id": "",
+      "label": "clip: default model",
+      "localized": "clip: modello predefinito",
+      "hint": "clip: modello predefinito"
+    },
+    {
+      "id": "",
+      "label": "clip: include scores in results",
+      "localized": "clip: includi punteggi nei risultati",
+      "hint": "clip: includi punteggi nei risultati"
+    },
+    {
+      "id": "",
+      "label": "clip: max flavors",
+      "localized": "clip: numero massimo di varianti",
+      "hint": "clip: numero massimo di varianti"
+    },
+    {
+      "id": "",
+      "label": "clip: max length",
+      "localized": "clip: lunghezza massima",
+      "hint": "clip: lunghezza massima"
+    },
+    {
+      "id": "",
+      "label": "clip: min flavors",
+      "localized": "clip: numero minimo di varianti",
+      "hint": "clip: numero minimo di varianti"
+    },
+    {
+      "id": "",
+      "label": "clip: min length",
+      "localized": "clip: lunghezza minima",
+      "hint": "clip: lunghezza minima"
+    },
+    {
+      "id": "",
+      "label": "clip: num beams",
+      "localized": "clip: numero di raggi",
+      "hint": "clip: numero di raggi"
+    },
+    {
+      "id": "",
+      "label": "close",
+      "localized": "chiudi",
+      "hint": "chiudi"
+    },
+    {
+      "id": "",
+      "label": "cmsi",
+      "localized": "cmsi",
+      "hint": "cmsi"
+    },
+    {
+      "id": "",
+      "label": "cn end",
+      "localized": "cn fine",
+      "hint": "cn fine"
+    },
+    {
+      "id": "",
+      "label": "cn mode",
+      "localized": "cn modalità",
+      "hint": "cn modalità"
+    },
+    {
+      "id": "",
+      "label": "cn start",
+      "localized": "cn inizio",
+      "hint": "cn inizio"
+    },
+    {
+      "id": "",
+      "label": "cn strength",
+      "localized": "cn forza",
+      "hint": "cn forza"
+    },
+    {
+      "id": "",
+      "label": "cn tiles",
+      "localized": "cn tiles",
+      "hint": "cn tiles"
+    },
+    {
+      "id": "",
+      "label": "coarse",
+      "localized": "grossolano",
+      "hint": "grossolano"
+    },
+    {
+      "id": "",
+      "label": "codeformer",
+      "localized": "codeformer",
+      "hint": "codeformer"
+    },
+    {
+      "id": "",
+      "label": "color",
+      "localized": "colore",
+      "hint": "colore"
+    },
+    {
+      "id": "",
+      "label": "color grading",
+      "localized": "correzione colore",
+      "hint": "correzione colore"
+    },
+    {
+      "id": "",
+      "label": "color map",
+      "localized": "mappa colore",
+      "hint": "mappa colore"
+    },
+    {
+      "id": "",
+      "label": "color variation",
+      "localized": "variazione colore",
+      "hint": "variazione colore"
+    },
+    {
+      "id": "",
+      "label": "colormap",
+      "localized": "colormap",
+      "hint": "colormap"
+    },
+    {
+      "id": "",
+      "label": "columns",
+      "localized": "colonne",
+      "hint": "colonne"
+    },
+    {
+      "id": "",
+      "label": "comma",
+      "localized": "virgola",
+      "hint": "virgola"
+    },
+    {
+      "id": "",
+      "label": "comma separated list with optional strength per lora",
+      "localized": "lista separata da virgole con forza opzionale per lora",
+      "hint": "lista separata da virgole con forza opzionale per lora"
+    },
+    {
+      "id": "",
+      "label": "compact view",
+      "localized": "vista compatta",
+      "hint": "vista compatta"
+    },
+    {
+      "id": "",
+      "label": "compel",
+      "localized": "compel",
+      "hint": "compel"
+    },
+    {
+      "id": "",
+      "label": "composite",
+      "localized": "composito",
+      "hint": "composito"
+    },
+    {
+      "id": "",
+      "label": "compress ratio",
+      "localized": "rapporto di compressione",
+      "hint": "rapporto di compressione"
+    },
+    {
+      "id": "",
+      "label": "concept tokens",
+      "localized": "token concettuali",
+      "hint": "token concettuali"
+    },
+    {
+      "id": "",
+      "label": "context",
+      "localized": "contesto",
+      "hint": "contesto"
+    },
+    {
+      "id": "",
+      "label": "context after",
+      "localized": "contesto dopo",
+      "hint": "contesto dopo"
+    },
+    {
+      "id": "",
+      "label": "context before",
+      "localized": "contesto prima",
+      "hint": "contesto prima"
+    },
+    {
+      "id": "",
+      "label": "context mask",
+      "localized": "maschera contesto",
+      "hint": "maschera contesto"
+    },
+    {
+      "id": "",
+      "label": "contrast",
+      "localized": "contrasto",
+      "hint": "contrasto"
+    },
+    {
+      "id": "",
+      "label": "control factor",
+      "localized": "fattore di controllo",
+      "hint": "fattore di controllo"
+    },
+    {
+      "id": "",
+      "label": "control override denoise strength",
+      "localized": "controllo sovrascrittura forza di denoising",
+      "hint": "controllo sovrascrittura forza di denoising"
+    },
+    {
+      "id": "",
+      "label": "control preprocess input images",
+      "localized": "controllo pre-elaborazione immagini di input",
+      "hint": "controllo pre-elaborazione immagini di input"
+    },
+    {
+      "id": "",
+      "label": "controlnet",
+      "localized": "controlnet",
+      "hint": "controlnet"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs",
+      "localized": "controlnet-xs",
+      "hint": "controlnet-xs"
+    },
+    {
+      "id": "",
+      "label": "correction mode",
+      "localized": "modalità di correzione",
+      "hint": "modalità di correzione"
+    },
+    {
+      "id": "",
+      "label": "cosine background",
+      "localized": "sfondo coseno",
+      "hint": "sfondo coseno"
+    },
+    {
+      "id": "",
+      "label": "cosine scale",
+      "localized": "scala coseno",
+      "hint": "scala coseno"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 1",
+      "localized": "scala coseno 1",
+      "hint": "scala coseno 1"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 2",
+      "localized": "scala coseno 2",
+      "hint": "scala coseno 2"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 3",
+      "localized": "scala coseno 3",
+      "hint": "scala coseno 3"
+    },
+    {
+      "id": "",
+      "label": "create image info text file",
+      "localized": "crea file di testo con informazioni sull'immagine",
+      "hint": "crea file di testo con informazioni sull'immagine"
+    },
+    {
+      "id": "",
+      "label": "create video",
+      "localized": "crea video",
+      "hint": "crea video"
+    },
+    {
+      "id": "",
+      "label": "create zip archive",
+      "localized": "crea archivio zip",
+      "hint": "crea archivio zip"
+    },
+    {
+      "id": "",
+      "label": "cross-attention",
+      "localized": "cross-attention",
+      "hint": "cross-attention"
+    },
+    {
+      "id": "",
+      "label": "cudagraphs",
+      "localized": "cudagraphs",
+      "hint": "cudagraphs"
+    },
+    {
+      "id": "",
+      "label": "cudamallocasync",
+      "localized": "cudamallocasync",
+      "hint": "cudamallocasync"
+    },
+    {
+      "id": "",
+      "label": "current",
+      "localized": "corrente",
+      "hint": "corrente"
+    },
+    {
+      "id": "",
+      "label": "custom pipeline",
+      "localized": "pipeline personalizzata",
+      "hint": "pipeline personalizzata"
+    },
+    {
+      "id": "",
+      "label": "dark",
+      "localized": "scuro",
+      "hint": "scuro"
+    },
+    {
+      "id": "",
+      "label": "dc solver",
+      "localized": "solutore dc",
+      "hint": "solutore dc"
+    },
+    {
+      "id": "",
+      "label": "ddpm",
+      "localized": "ddpm",
+      "hint": "ddpm"
+    },
+    {
+      "id": "",
+      "label": "debug info",
+      "localized": "informazioni di debug",
+      "hint": "informazioni di debug"
+    },
+    {
+      "id": "",
+      "label": "decode",
+      "localized": "decodifica",
+      "hint": "decodifica"
+    },
+    {
+      "id": "",
+      "label": "decode chunks",
+      "localized": "decodifica chunk",
+      "hint": "decodifica chunk"
+    },
+    {
+      "id": "",
+      "label": "deep-cache",
+      "localized": "deep-cache",
+      "hint": "deep-cache"
+    },
+    {
+      "id": "",
+      "label": "deepbooru",
+      "localized": "deepbooru",
+      "hint": "deepbooru"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: escape brackets",
+      "localized": "deepbooru: sfuggi parentesi",
+      "hint": "deepbooru: sfuggi parentesi"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: exclude tags",
+      "localized": "deepbooru: escludi tag",
+      "hint": "deepbooru: escludi tag"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: include scores in results",
+      "localized": "deepbooru: includi punteggi nei risultati",
+      "hint": "deepbooru: includi punteggi nei risultati"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: max tags",
+      "localized": "deepbooru: numero massimo di tag",
+      "hint": "deepbooru: numero massimo di tag"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: score threshold",
+      "localized": "deepbooru: soglia punteggio",
+      "hint": "deepbooru: soglia punteggio"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: sort alphabetically",
+      "localized": "deepbooru: ordina alfabeticamente",
+      "hint": "deepbooru: ordina alfabeticamente"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: use spaces for tags",
+      "localized": "deepbooru: usa spazi per i tag",
+      "hint": "deepbooru: usa spazi per i tag"
+    },
+    {
+      "id": "",
+      "label": "deepcache cache interval",
+      "localized": "intervallo cache deepcache",
+      "hint": "intervallo cache deepcache"
+    },
+    {
+      "id": "",
+      "label": "default",
+      "localized": "predefinito",
+      "hint": "predefinito"
+    },
+    {
+      "id": "",
+      "label": "default strength",
+      "localized": "forza predefinita",
+      "hint": "forza predefinita"
+    },
+    {
+      "id": "",
+      "label": "deis",
+      "localized": "deis",
+      "hint": "deis"
+    },
+    {
+      "id": "",
+      "label": "denoising batch size",
+      "localized": "dimensione batch denoising",
+      "hint": "dimensione batch denoising"
+    },
+    {
+      "id": "",
+      "label": "denoising steps",
+      "localized": "passi di denoising",
+      "hint": "passi di denoising"
+    },
+    {
+      "id": "",
+      "label": "depth and normal",
+      "localized": "profondità e normale",
+      "hint": "profondità e normale"
+    },
+    {
+      "id": "",
+      "label": "depth map",
+      "localized": "mappa di profondità",
+      "hint": "mappa di profondità"
+    },
+    {
+      "id": "",
+      "label": "depth threshold",
+      "localized": "soglia di profondità",
+      "hint": "soglia di profondità"
+    },
+    {
+      "id": "",
+      "label": "description",
+      "localized": "descrizione",
+      "hint": "descrizione"
+    },
+    {
+      "id": "",
+      "label": "details",
+      "localized": "dettagli",
+      "hint": "dettagli"
+    },
+    {
+      "id": "",
+      "label": "deterministic mode",
+      "localized": "modalità deterministica",
+      "hint": "modalità deterministica"
+    },
+    {
+      "id": "",
+      "label": "device info",
+      "localized": "Informazioni sul dispositivo",
+      "hint": "Informazioni sul dispositivo"
+    },
+    {
+      "id": "",
+      "label": "dilate",
+      "localized": "Dilata",
+      "hint": "Dilata"
+    },
+    {
+      "id": "",
+      "label": "dilate tau",
+      "localized": "Dilata tau",
+      "hint": "Dilata tau"
+    },
+    {
+      "id": "",
+      "label": "directory for temporary images; leave empty for default",
+      "localized": "Directory per le immagini temporanee; lasciare vuoto per il valore predefinito",
+      "hint": "Directory per le immagini temporanee; lasciare vuoto per il valore predefinito"
+    },
+    {
+      "id": "",
+      "label": "disable accelerate",
+      "localized": "Disabilita accelerate",
+      "hint": "Disabilita accelerate"
+    },
+    {
+      "id": "",
+      "label": "disable conditional batching",
+      "localized": "Disabilita il batching condizionale",
+      "hint": "Disabilita il batching condizionale"
+    },
+    {
+      "id": "",
+      "label": "disabled",
+      "localized": "Disabilitato",
+      "hint": "Disabilitato"
+    },
+    {
+      "id": "",
+      "label": "discard penultimate sigma",
+      "localized": "Scarta l'ultimo sigma penultimo",
+      "hint": "Scarta l'ultimo sigma penultimo"
+    },
+    {
+      "id": "",
+      "label": "distance threshold",
+      "localized": "Soglia di distanza",
+      "hint": "Soglia di distanza"
+    },
+    {
+      "id": "",
+      "label": "do not change selected model when reading generation parameters",
+      "localized": "Non modificare il modello selezionato durante la lettura dei parametri di generazione",
+      "hint": "Non modificare il modello selezionato durante la lettura dei parametri di generazione"
+    },
+    {
+      "id": "",
+      "label": "do not display video output in ui",
+      "localized": "Non visualizzare l'output video nell'interfaccia utente",
+      "hint": "Non visualizzare l'output video nell'interfaccia utente"
+    },
+    {
+      "id": "",
+      "label": "down",
+      "localized": "Giù",
+      "hint": "Giù"
+    },
+    {
+      "id": "",
+      "label": "download",
+      "localized": "Scarica",
+      "hint": "Scarica"
+    },
+    {
+      "id": "",
+      "label": "download model",
+      "localized": "Scarica modello",
+      "hint": "Scarica modello"
+    },
+    {
+      "id": "",
+      "label": "download path",
+      "localized": "Percorso di download",
+      "hint": "Percorso di download"
+    },
+    {
+      "id": "",
+      "label": "download updates",
+      "localized": "Scarica aggiornamenti",
+      "hint": "Scarica aggiornamenti"
+    },
+    {
+      "id": "",
+      "label": "downscale high resolution live previews",
+      "localized": "Riduci la risoluzione delle anteprime live ad alta risoluzione",
+      "hint": "Riduci la risoluzione delle anteprime live ad alta risoluzione"
+    },
+    {
+      "id": "",
+      "label": "dpm sde",
+      "localized": "dpm sde",
+      "hint": "dpm sde"
+    },
+    {
+      "id": "",
+      "label": "dpm++",
+      "localized": "dpm++",
+      "hint": "dpm++"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s",
+      "localized": "dpm++ 1s",
+      "hint": "dpm++ 1s"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s inverse",
+      "localized": "dpm++ 1s inverso",
+      "hint": "dpm++ 1s inverso"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m",
+      "localized": "dpm++ 2m",
+      "hint": "dpm++ 2m"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m edm",
+      "localized": "dpm++ 2m edm",
+      "hint": "dpm++ 2m edm"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m inverse",
+      "localized": "dpm++ 2m inverso",
+      "hint": "dpm++ 2m inverso"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m sde",
+      "localized": "dpm++ 2m sde",
+      "hint": "dpm++ 2m sde"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m",
+      "localized": "dpm++ 3m",
+      "hint": "dpm++ 3m"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m inverse",
+      "localized": "dpm++ 3m inverso",
+      "hint": "dpm++ 3m inverso"
+    },
+    {
+      "id": "",
+      "label": "dpm++ cosine",
+      "localized": "dpm++ coseno",
+      "hint": "dpm++ coseno"
+    },
+    {
+      "id": "",
+      "label": "dpm2 flowmatch",
+      "localized": "dpm2 flowmatch",
+      "hint": "dpm2 flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m flowmatch",
+      "localized": "dpm2++ 2m flowmatch",
+      "hint": "dpm2++ 2m flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m sde flowmatch",
+      "localized": "dpm2++ 2m sde flowmatch",
+      "hint": "dpm2++ 2m sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2s flowmatch",
+      "localized": "dpm2++ 2s flowmatch",
+      "hint": "dpm2++ 2s flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 3m sde flowmatch",
+      "localized": "dpm2++ 3m sde flowmatch",
+      "hint": "dpm2++ 3m sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ sde flowmatch",
+      "localized": "dpm2++ sde flowmatch",
+      "hint": "dpm2++ sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2a flowmatch",
+      "localized": "dpm2a flowmatch",
+      "hint": "dpm2a flowmatch"
+    },
+    {
+      "id": "",
+      "label": "draw legend",
+      "localized": "Disegna legenda",
+      "hint": "Disegna legenda"
+    },
+    {
+      "id": "",
+      "label": "dropdown",
+      "localized": "Menu a tendina",
+      "hint": "Menu a tendina"
+    },
+    {
+      "id": "",
+      "label": "duration",
+      "localized": "Durata",
+      "hint": "Durata"
+    },
+    {
+      "id": "",
+      "label": "dynamic",
+      "localized": "Dinamico",
+      "hint": "Dinamico"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention",
+      "localized": "Attenzione dinamica",
+      "hint": "Attenzione dinamica"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention slicing rate in gb",
+      "localized": "Tasso di suddivisione dell'attenzione dinamica in GB",
+      "hint": "Tasso di suddivisione dell'attenzione dinamica in GB"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention trigger rate in gb",
+      "localized": "Tasso di trigger dell'attenzione dinamica in GB",
+      "hint": "Tasso di trigger dell'attenzione dinamica in GB"
+    },
+    {
+      "id": "",
+      "label": "edge",
+      "localized": "Bordo",
+      "hint": "Bordo"
+    },
+    {
+      "id": "",
+      "label": "edit start",
+      "localized": "Modifica inizio",
+      "hint": "Modifica inizio"
+    },
+    {
+      "id": "",
+      "label": "edit stop",
+      "localized": "Modifica fine",
+      "hint": "Modifica fine"
+    },
+    {
+      "id": "",
+      "label": "embedded metadata",
+      "localized": "Metadati incorporati",
+      "hint": "Metadati incorporati"
+    },
+    {
+      "id": "",
+      "label": "enable embeddings support",
+      "localized": "Abilita il supporto per gli embeddings",
+      "hint": "Abilita il supporto per gli embeddings"
+    },
+    {
+      "id": "",
+      "label": "enable file wildcards support",
+      "localized": "Abilita il supporto per i caratteri jolly nei file",
+      "hint": "Abilita il supporto per i caratteri jolly nei file"
+    },
+    {
+      "id": "",
+      "label": "enable freeu",
+      "localized": "Abilita freeu",
+      "hint": "Abilita freeu"
+    },
+    {
+      "id": "",
+      "label": "enable teacache",
+      "localized": "Abilita teacache",
+      "hint": "Abilita teacache"
+    },
+    {
+      "id": "",
+      "label": "enable tonemap",
+      "localized": "Abilita tonemap",
+      "hint": "Abilita tonemap"
+    },
+    {
+      "id": "",
+      "label": "enable use of reference models",
+      "localized": "Abilita l'uso di modelli di riferimento",
+      "hint": "Abilita l'uso di modelli di riferimento"
+    },
+    {
+      "id": "",
+      "label": "enabled",
+      "localized": "Abilitato",
+      "hint": "Abilitato"
+    },
+    {
+      "id": "",
+      "label": "encoder",
+      "localized": "Encoder",
+      "hint": "Encoder"
+    },
+    {
+      "id": "",
+      "label": "end",
+      "localized": "Fine",
+      "hint": "Fine"
+    },
+    {
+      "id": "",
+      "label": "enhance prompt",
+      "localized": "Migliora il prompt",
+      "hint": "Migliora il prompt"
+    },
+    {
+      "id": "",
+      "label": "ensemble size",
+      "localized": "Dimensione dell'insieme",
+      "hint": "Dimensione dell'insieme"
+    },
+    {
+      "id": "",
+      "label": "epsilon",
+      "localized": "Epsilon",
+      "hint": "Epsilon"
+    },
+    {
+      "id": "",
+      "label": "erode",
+      "localized": "Erodi",
+      "hint": "Erodi"
+    },
+    {
+      "id": "",
+      "label": "erode size",
+      "localized": "Dimensione dell'erosione",
+      "hint": "Dimensione dell'erosione"
+    },
+    {
+      "id": "",
+      "label": "eta",
+      "localized": "Eta",
+      "hint": "Eta"
+    },
+    {
+      "id": "",
+      "label": "euler",
+      "localized": "Eulero",
+      "hint": "Eulero"
+    },
+    {
+      "id": "",
+      "label": "euler edm",
+      "localized": "Eulero EDM",
+      "hint": "Eulero EDM"
+    },
+    {
+      "id": "",
+      "label": "euler flowmatch",
+      "localized": "Eulero Flowmatch",
+      "hint": "Eulero Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "euler sgm",
+      "localized": "Eulero SGM",
+      "hint": "Eulero SGM"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cpu",
+      "localized": "ExecutionProvider.CPU",
+      "hint": "ExecutionProvider.CPU"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cuda",
+      "localized": "ExecutionProvider.CUDA",
+      "hint": "ExecutionProvider.CUDA"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.directml",
+      "localized": "ExecutionProvider.DirectML",
+      "hint": "ExecutionProvider.DirectML"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.migraphx",
+      "localized": "ExecutionProvider.MIGraphX",
+      "hint": "ExecutionProvider.MIGraphX"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.openvino",
+      "localized": "ExecutionProvider.OpenVINO",
+      "hint": "ExecutionProvider.OpenVINO"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.rocm",
+      "localized": "ExecutionProvider.ROCm",
+      "hint": "ExecutionProvider.ROCm"
+    },
+    {
+      "id": "",
+      "label": "expandable segments",
+      "localized": "Segmenti espandibili",
+      "hint": "Segmenti espandibili"
+    },
+    {
+      "id": "",
+      "label": "exponential",
+      "localized": "Esponenziale",
+      "hint": "Esponenziale"
+    },
+    {
+      "id": "",
+      "label": "exposure",
+      "localized": "Esposizione",
+      "hint": "Esposizione"
+    },
+    {
+      "id": "",
+      "label": "extra noise multiplier for img2img",
+      "localized": "Moltiplicatore di rumore extra per img2img",
+      "hint": "Moltiplicatore di rumore extra per img2img"
+    },
+    {
+      "id": "",
+      "label": "extract lora",
+      "localized": "Estrai LoRA",
+      "hint": "Estrai LoRA"
+    },
+    {
+      "id": "",
+      "label": "face",
+      "localized": "Faccia",
+      "hint": "Faccia"
+    },
+    {
+      "id": "",
+      "label": "face confidence",
+      "localized": "Confidenza del viso",
+      "hint": "Confidenza del viso"
+    },
+    {
+      "id": "",
+      "label": "faceid model",
+      "localized": "Modello FaceID",
+      "hint": "Modello FaceID"
+    },
+    {
+      "id": "",
+      "label": "fall-off exponent (lower=higher detail)",
+      "localized": "Esponente di attenuazione (inferiore = dettaglio maggiore)",
+      "hint": "Esponente di attenuazione (inferiore = dettaglio maggiore)"
+    },
+    {
+      "id": "",
+      "label": "false",
+      "localized": "Falso",
+      "hint": "Falso"
+    },
+    {
+      "id": "",
+      "label": "file or folder with user-defined styles",
+      "localized": "File o cartella con stili definiti dall'utente",
+      "hint": "File o cartella con stili definiti dall'utente"
+    },
+    {
+      "id": "",
+      "label": "filename",
+      "localized": "Nome del file",
+      "hint": "Nome del file"
+    },
+    {
+      "id": "",
+      "label": "first-block cache enabled",
+      "localized": "Cache del primo blocco abilitata",
+      "hint": "Cache del primo blocco abilitata"
+    },
+    {
+      "id": "",
+      "label": "fixed unet precision",
+      "localized": "Precisione UNet fissa",
+      "hint": "Precisione UNet fissa"
+    },
+    {
+      "id": "",
+      "label": "flash attention",
+      "localized": "Flash Attention",
+      "hint": "Flash Attention"
+    },
+    {
+      "id": "",
+      "label": "flavors",
+      "localized": "Varianti",
+      "hint": "Varianti"
+    },
+    {
+      "id": "",
+      "label": "flow shift",
+      "localized": "Spostamento del flusso",
+      "hint": "Spostamento del flusso"
+    },
+    {
+      "id": "",
+      "label": "folder",
+      "localized": "Cartella",
+      "hint": "Cartella"
+    },
+    {
+      "id": "",
+      "label": "folder for control generate",
+      "localized": "Cartella per la generazione di controllo",
+      "hint": "Cartella per la generazione di controllo"
+    },
+    {
+      "id": "",
+      "label": "folder for control grids",
+      "localized": "Cartella per griglie di controllo",
+      "hint": "Cartella per griglie di controllo"
+    },
+    {
+      "id": "",
+      "label": "folder for disk offload",
+      "localized": "Cartella per lo scarico su disco",
+      "hint": "Cartella per lo scarico su disco"
+    },
+    {
+      "id": "",
+      "label": "folder for huggingface cache",
+      "localized": "Cartella per la cache di Hugging Face",
+      "hint": "Cartella per la cache di Hugging Face"
+    },
+    {
+      "id": "",
+      "label": "folder for image generate",
+      "localized": "Cartella per la generazione di immagini",
+      "hint": "Cartella per la generazione di immagini"
+    },
+    {
+      "id": "",
+      "label": "folder for img2img grids",
+      "localized": "Cartella per griglie img2img",
+      "hint": "Cartella per griglie img2img"
+    },
+    {
+      "id": "",
+      "label": "folder for init images",
+      "localized": "Cartella per immagini iniziali",
+      "hint": "Cartella per immagini iniziali"
+    },
+    {
+      "id": "",
+      "label": "folder for manually saved images",
+      "localized": "Cartella per immagini salvate manualmente",
+      "hint": "Cartella per immagini salvate manualmente"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx cached models",
+      "localized": "Cartella per modelli ONNX in cache",
+      "hint": "Cartella per modelli ONNX in cache"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx conversion",
+      "localized": "Cartella per la conversione ONNX",
+      "hint": "Cartella per la conversione ONNX"
+    },
+    {
+      "id": "",
+      "label": "folder for openvino cache",
+      "localized": "Cartella per la cache OpenVINO",
+      "hint": "Cartella per la cache OpenVINO"
+    },
+    {
+      "id": "",
+      "label": "folder for processed images",
+      "localized": "cartella per le immagini elaborate",
+      "hint": "cartella per le immagini elaborate"
+    },
+    {
+      "id": "",
+      "label": "folder for text generate",
+      "localized": "cartella per la generazione di testo",
+      "hint": "cartella per la generazione di testo"
+    },
+    {
+      "id": "",
+      "label": "folder for tunable ops cache",
+      "localized": "cartella per la cache delle operazioni regolabili",
+      "hint": "cartella per la cache delle operazioni regolabili"
+    },
+    {
+      "id": "",
+      "label": "folder for txt2img grids",
+      "localized": "cartella per le griglie txt2img",
+      "hint": "cartella per le griglie txt2img"
+    },
+    {
+      "id": "",
+      "label": "folder for videos",
+      "localized": "cartella per i video",
+      "hint": "cartella per i video"
+    },
+    {
+      "id": "",
+      "label": "folder with bsrgan models",
+      "localized": "cartella con i modelli BSRGAN",
+      "hint": "cartella con i modelli BSRGAN"
+    },
+    {
+      "id": "",
+      "label": "folder with chainner models",
+      "localized": "cartella con i modelli Chainner",
+      "hint": "cartella con i modelli Chainner"
+    },
+    {
+      "id": "",
+      "label": "folder with clip models",
+      "localized": "cartella con i modelli CLIP",
+      "hint": "cartella con i modelli CLIP"
+    },
+    {
+      "id": "",
+      "label": "folder with codeformer models",
+      "localized": "cartella con i modelli CodeFormer",
+      "hint": "cartella con i modelli CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "folder with control models",
+      "localized": "cartella con i modelli ControlNet",
+      "hint": "cartella con i modelli ControlNet"
+    },
+    {
+      "id": "",
+      "label": "folder with esrgan models",
+      "localized": "cartella con i modelli ESRGAN",
+      "hint": "cartella con i modelli ESRGAN"
+    },
+    {
+      "id": "",
+      "label": "folder with gfpgan models",
+      "localized": "cartella con i modelli GFPGAN",
+      "hint": "cartella con i modelli GFPGAN"
+    },
+    {
+      "id": "",
+      "label": "folder with huggingface models",
+      "localized": "cartella con i modelli di Hugging Face",
+      "hint": "cartella con i modelli di Hugging Face"
+    },
+    {
+      "id": "",
+      "label": "folder with hypernetwork models",
+      "localized": "cartella con i modelli Hypernetwork",
+      "hint": "cartella con i modelli Hypernetwork"
+    },
+    {
+      "id": "",
+      "label": "folder with ldsr models",
+      "localized": "cartella con i modelli LDSR",
+      "hint": "cartella con i modelli LDSR"
+    },
+    {
+      "id": "",
+      "label": "folder with lora network(s)",
+      "localized": "cartella con la/le rete/i LoRA",
+      "hint": "cartella con la/le rete/i LoRA"
+    },
+    {
+      "id": "",
+      "label": "folder with realesrgan models",
+      "localized": "cartella con i modelli RealESRGAN",
+      "hint": "cartella con i modelli RealESRGAN"
+    },
+    {
+      "id": "",
+      "label": "folder with scunet models",
+      "localized": "cartella con i modelli SCUNet",
+      "hint": "cartella con i modelli SCUNet"
+    },
+    {
+      "id": "",
+      "label": "folder with stable diffusion models",
+      "localized": "cartella con i modelli Stable Diffusion",
+      "hint": "cartella con i modelli Stable Diffusion"
+    },
+    {
+      "id": "",
+      "label": "folder with swinir models",
+      "localized": "cartella con i modelli SwinIR",
+      "hint": "cartella con i modelli SwinIR"
+    },
+    {
+      "id": "",
+      "label": "folder with text encoder files",
+      "localized": "cartella con i file del text encoder",
+      "hint": "cartella con i file del text encoder"
+    },
+    {
+      "id": "",
+      "label": "folder with textual inversion embeddings",
+      "localized": "cartella con gli embedding di inversione testuale",
+      "hint": "cartella con gli embedding di inversione testuale"
+    },
+    {
+      "id": "",
+      "label": "folder with unet files",
+      "localized": "cartella con i file UNet",
+      "hint": "cartella con i file UNet"
+    },
+    {
+      "id": "",
+      "label": "folder with user-defined wildcards",
+      "localized": "cartella con wildcard definiti dall'utente",
+      "hint": "cartella con wildcard definiti dall'utente"
+    },
+    {
+      "id": "",
+      "label": "folder with vae files",
+      "localized": "cartella con i file VAE",
+      "hint": "cartella con i file VAE"
+    },
+    {
+      "id": "",
+      "label": "folder with yolo models",
+      "localized": "cartella con i modelli YOLO",
+      "hint": "cartella con i modelli YOLO"
+    },
+    {
+      "id": "",
+      "label": "font color",
+      "localized": "colore del font",
+      "hint": "colore del font"
+    },
+    {
+      "id": "",
+      "label": "font file",
+      "localized": "file del font",
+      "hint": "file del font"
+    },
+    {
+      "id": "",
+      "label": "font size",
+      "localized": "dimensione del font",
+      "hint": "dimensione del font"
+    },
+    {
+      "id": "",
+      "label": "force model eval",
+      "localized": "forza la valutazione del modello",
+      "hint": "forza la valutazione del modello"
+    },
+    {
+      "id": "",
+      "label": "foreground threshold",
+      "localized": "soglia di primo piano",
+      "hint": "soglia di primo piano"
+    },
+    {
+      "id": "",
+      "label": "fp4",
+      "localized": "fp4",
+      "hint": "fp4"
+    },
+    {
+      "id": "",
+      "label": "frame change sensitivity",
+      "localized": "sensibilità al cambio di fotogramma",
+      "hint": "sensibilità al cambio di fotogramma"
+    },
+    {
+      "id": "",
+      "label": "frames",
+      "localized": "fotogrammi",
+      "hint": "fotogrammi"
+    },
+    {
+      "id": "",
+      "label": "freeu enabled",
+      "localized": "FreeU abilitato",
+      "hint": "FreeU abilitato"
+    },
+    {
+      "id": "",
+      "label": "freeu preset",
+      "localized": "preset FreeU",
+      "hint": "preset FreeU"
+    },
+    {
+      "id": "",
+      "label": "full vae",
+      "localized": "VAE completo",
+      "hint": "VAE completo"
+    },
+    {
+      "id": "",
+      "label": "full-depth cudnn benchmark",
+      "localized": "benchmark CUDNN a profondità completa",
+      "hint": "benchmark CUDNN a profondità completa"
+    },
+    {
+      "id": "",
+      "label": "fuse strength",
+      "localized": "intensità della fusione",
+      "hint": "intensità della fusione"
+    },
+    {
+      "id": "",
+      "label": "fused projections",
+      "localized": "proiezioni fuse",
+      "hint": "proiezioni fuse"
+    },
+    {
+      "id": "",
+      "label": "Gallery",
+      "localized": "Galleria",
+      "hint": "galleria di immagini"
+    },
+    {
+      "id": "",
+      "label": "gamma",
+      "localized": "gamma",
+      "hint": "gamma"
+    },
+    {
+      "id": "",
+      "label": "gamma corrected",
+      "localized": "correzione gamma",
+      "hint": "correzione gamma"
+    },
+    {
+      "id": "",
+      "label": "gate step",
+      "localized": "step gate",
+      "hint": "step gate"
+    },
+    {
+      "id": "",
+      "label": "gc threshold",
+      "localized": "soglia GC",
+      "hint": "soglia GC"
+    },
+    {
+      "id": "",
+      "label": "get changelog",
+      "localized": "ottieni changelog",
+      "hint": "ottieni changelog"
+    },
+    {
+      "id": "",
+      "label": "gpu",
+      "localized": "GPU",
+      "hint": "GPU"
+    },
+    {
+      "id": "",
+      "label": "gradient",
+      "localized": "gradiente",
+      "hint": "gradiente"
+    },
+    {
+      "id": "",
+      "label": "grid background color",
+      "localized": "colore di sfondo della griglia",
+      "hint": "colore di sfondo della griglia"
+    },
+    {
+      "id": "",
+      "label": "grid margins",
+      "localized": "margini della griglia",
+      "hint": "margini della griglia"
+    },
+    {
+      "id": "",
+      "label": "grid sections:",
+      "localized": "sezioni della griglia:",
+      "hint": "sezioni della griglia:"
+    },
+    {
+      "id": "",
+      "label": "group size",
+      "localized": "dimensione del gruppo",
+      "hint": "dimensione del gruppo"
+    },
+    {
+      "id": "",
+      "label": "guidance",
+      "localized": "guida",
+      "hint": "guida"
+    },
+    {
+      "id": "",
+      "label": "guidance start",
+      "localized": "inizio guida",
+      "hint": "inizio guida"
+    },
+    {
+      "id": "",
+      "label": "guidance stop",
+      "localized": "fine guida",
+      "hint": "fine guida"
+    },
+    {
+      "id": "",
+      "label": "guidance strength",
+      "localized": "intensità della guida",
+      "hint": "intensità della guida"
+    },
+    {
+      "id": "",
+      "label": "hands",
+      "localized": "mani",
+      "hint": "mani"
+    },
+    {
+      "id": "",
+      "label": "hdr range",
+      "localized": "intervallo HDR",
+      "hint": "intervallo HDR"
+    },
+    {
+      "id": "",
+      "label": "height  after",
+      "localized": "altezza  dopo",
+      "hint": "altezza  dopo"
+    },
+    {
+      "id": "",
+      "label": "height  before",
+      "localized": "altezza  prima",
+      "hint": "altezza  prima"
+    },
+    {
+      "id": "",
+      "label": "height  mask",
+      "localized": "altezza  maschera",
+      "hint": "altezza  maschera"
+    },
+    {
+      "id": "",
+      "label": "heun",
+      "localized": "Heun",
+      "hint": "Heun"
+    },
+    {
+      "id": "",
+      "label": "heun flowmatch",
+      "localized": "Heun Flowmatch",
+      "hint": "Heun Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "hidet",
+      "localized": "hidet",
+      "hint": "hidet"
+    },
+    {
+      "id": "",
+      "label": "high threshold",
+      "localized": "soglia alta",
+      "hint": "soglia alta"
+    },
+    {
+      "id": "",
+      "label": "hires pass only",
+      "localized": "solo passaggi ad alta risoluzione",
+      "hint": "solo passaggi ad alta risoluzione"
+    },
+    {
+      "id": "",
+      "label": "hq init latents",
+      "localized": "latenti HQ init",
+      "hint": "latenti HQ init"
+    },
+    {
+      "id": "",
+      "label": "hue",
+      "localized": "tonalità",
+      "hint": "tonalità"
+    },
+    {
+      "id": "",
+      "label": "huggingface",
+      "localized": "Hugging Face",
+      "hint": "Hugging Face"
+    },
+    {
+      "id": "",
+      "label": "huggingface mirror",
+      "localized": "mirror Hugging Face",
+      "hint": "mirror Hugging Face"
+    },
+    {
+      "id": "",
+      "label": "huggingface token",
+      "localized": "token Hugging Face",
+      "hint": "token Hugging Face"
+    },
+    {
+      "id": "",
+      "label": "image height",
+      "localized": "altezza immagine",
+      "hint": "altezza immagine"
+    },
+    {
+      "id": "",
+      "label": "image paths",
+      "localized": "percorsi immagine",
+      "hint": "percorsi immagine"
+    },
+    {
+      "id": "",
+      "label": "image quality",
+      "localized": "qualità immagine",
+      "hint": "qualità immagine"
+    },
+    {
+      "id": "",
+      "label": "image transparent color fill",
+      "localized": "riempimento del colore trasparente dell'immagine",
+      "hint": "riempimento del colore trasparente dell'immagine"
+    },
+    {
+      "id": "",
+      "label": "image watermark file",
+      "localized": "file watermark immagine",
+      "hint": "file watermark immagine"
+    },
+    {
+      "id": "",
+      "label": "image watermark position",
+      "localized": "posizione watermark immagine",
+      "hint": "posizione watermark immagine"
+    },
+    {
+      "id": "",
+      "label": "image width",
+      "localized": "larghezza immagine",
+      "hint": "larghezza immagine"
+    },
+    {
+      "id": "",
+      "label": "include images",
+      "localized": "includi immagini",
+      "hint": "includi immagini"
+    },
+    {
+      "id": "",
+      "label": "include main grid",
+      "localized": "includi la griglia principale",
+      "hint": "includi la griglia principale"
+    },
+    {
+      "id": "",
+      "label": "include mask in outputs",
+      "localized": "includi la maschera negli output",
+      "hint": "includi la maschera negli output"
+    },
+    {
+      "id": "",
+      "label": "include original image",
+      "localized": "includi l'immagine originale",
+      "hint": "includi l'immagine originale"
+    },
+    {
+      "id": "",
+      "label": "include sub grids",
+      "localized": "includi le sottogriglie",
+      "hint": "includi le sottogriglie"
+    },
+    {
+      "id": "",
+      "label": "inductor",
+      "localized": "Inductor",
+      "hint": "Inductor"
+    },
+    {
+      "id": "",
+      "label": "info",
+      "localized": "Informazioni",
+      "hint": "Changelog e documentazione dell'applicazione"
+    },
+    {
+      "id": "",
+      "label": "inpaint",
+      "localized": "Inpaint",
+      "hint": "Inpaint"
+    },
+    {
+      "id": "",
+      "label": "inpaint masked only",
+      "localized": "inpaint solo la maschera",
+      "hint": "inpaint solo la maschera"
+    },
+    {
+      "id": "",
+      "label": "inpainting include greyscale mask in results",
+      "localized": "l'inpainting include la maschera in scala di grigi nei risultati",
+      "hint": "l'inpainting include la maschera in scala di grigi nei risultati"
+    },
+    {
+      "id": "",
+      "label": "inpainting include masked composite in results",
+      "localized": "l'inpainting include il composito mascherato nei risultati",
+      "hint": "l'inpainting include il composito mascherato nei risultati"
+    },
+    {
+      "id": "",
+      "label": "input model",
+      "localized": "modello di input",
+      "hint": "modello di input"
+    },
+    {
+      "id": "",
+      "label": "intermediates",
+      "localized": "intermedi",
+      "hint": "intermedi"
+    },
+    {
+      "id": "",
+      "label": "interpolate frames",
+      "localized": "interpola i fotogrammi",
+      "hint": "interpola i fotogrammi"
+    },
+    {
+      "id": "",
+      "label": "interpolation method",
+      "localized": "metodo di interpolazione",
+      "hint": "metodo di interpolazione"
+    },
+    {
+      "id": "",
+      "label": "interrogate batch",
+      "localized": "interroga batch",
+      "hint": "interroga batch"
+    },
+    {
+      "id": "",
+      "label": "interrogate image",
+      "localized": "interroga immagine",
+      "hint": "interroga immagine"
+    },
+    {
+      "id": "",
+      "label": "interrogate: offload models",
+      "localized": "interroga: scarica i modelli",
+      "hint": "interroga: scarica i modelli"
+    },
+    {
+      "id": "",
+      "label": "invert",
+      "localized": "inverti",
+      "hint": "inverti"
+    },
+    {
+      "id": "",
+      "label": "invert mask",
+      "localized": "inverti la maschera",
+      "hint": "inverti la maschera"
+    },
+    {
+      "id": "",
+      "label": "iou",
+      "localized": "IOU",
+      "hint": "IOU"
+    },
+    {
+      "id": "",
+      "label": "ipex",
+      "localized": "IPEX",
+      "hint": "IPEX"
+    },
+    {
+      "id": "",
+      "label": "ipndm",
+      "localized": "ipndm",
+      "hint": "ipndm"
+    },
+    {
+      "id": "",
+      "label": "item edge blur",
+      "localized": "sfocatura bordo elemento",
+      "hint": "sfocatura bordo elemento"
+    },
+    {
+      "id": "",
+      "label": "item padding",
+      "localized": "riempimento elemento",
+      "hint": "riempimento elemento"
+    },
+    {
+      "id": "",
+      "label": "iterate seed per line",
+      "localized": "itera il seed per riga",
+      "hint": "itera il seed per riga"
+    },
+    {
+      "id": "",
+      "label": "iterations",
+      "localized": "iterazioni",
+      "hint": "iterazioni"
+    },
+    {
+      "id": "",
+      "label": "karras",
+      "localized": "karras",
+      "hint": "karras"
+    },
+    {
+      "id": "",
+      "label": "kdpm2",
+      "localized": "kdpm2",
+      "hint": "kdpm2"
+    },
+    {
+      "id": "",
+      "label": "kdpm2 a",
+      "localized": "kdpm2 a",
+      "hint": "kdpm2 a"
+    },
+    {
+      "id": "",
+      "label": "keep incomplete images",
+      "localized": "mantieni immagini incomplete",
+      "hint": "mantieni immagini incomplete"
+    },
+    {
+      "id": "",
+      "label": "large",
+      "localized": "grande",
+      "hint": "grande"
+    },
+    {
+      "id": "",
+      "label": "latent history size",
+      "localized": "dimensione cronologia latente",
+      "hint": "dimensione cronologia latente"
+    },
+    {
+      "id": "",
+      "label": "latent mode",
+      "localized": "modalità latente",
+      "hint": "modalità latente"
+    },
+    {
+      "id": "",
+      "label": "layer scales",
+      "localized": "scala livelli",
+      "hint": "scala livelli"
+    },
+    {
+      "id": "",
+      "label": "layerwise casting storage",
+      "localized": "archiviazione casting a livello di layer",
+      "hint": "archiviazione casting a livello di layer"
+    },
+    {
+      "id": "",
+      "label": "layerwise non-blocking operations",
+      "localized": "operazioni non bloccanti a livello di layer",
+      "hint": "operazioni non bloccanti a livello di layer"
+    },
+    {
+      "id": "",
+      "label": "lcm",
+      "localized": "lcm",
+      "hint": "lcm"
+    },
+    {
+      "id": "",
+      "label": "ldsr processing steps",
+      "localized": "passaggi di elaborazione ldsr",
+      "hint": "passaggi di elaborazione ldsr"
+    },
+    {
+      "id": "",
+      "label": "left",
+      "localized": "sinistra",
+      "hint": "sinistra"
+    },
+    {
+      "id": "",
+      "label": "legend",
+      "localized": "legenda",
+      "hint": "legenda"
+    },
+    {
+      "id": "",
+      "label": "length",
+      "localized": "lunghezza",
+      "hint": "lunghezza"
+    },
+    {
+      "id": "",
+      "label": "level",
+      "localized": "livello",
+      "hint": "livello"
+    },
+    {
+      "id": "",
+      "label": "libs",
+      "localized": "librerie",
+      "hint": "librerie"
+    },
+    {
+      "id": "",
+      "label": "light",
+      "localized": "leggero",
+      "hint": "leggero"
+    },
+    {
+      "id": "",
+      "label": "list",
+      "localized": "lista",
+      "hint": "lista"
+    },
+    {
+      "id": "",
+      "label": "list model details",
+      "localized": "elenca dettagli del modello",
+      "hint": "elenca dettagli del modello"
+    },
+    {
+      "id": "",
+      "label": "lite",
+      "localized": "leggero",
+      "hint": "leggero"
+    },
+    {
+      "id": "",
+      "label": "live update",
+      "localized": "aggiornamento in tempo reale",
+      "hint": "aggiornamento in tempo reale"
+    },
+    {
+      "id": "",
+      "label": "lmsd",
+      "localized": "lmsd",
+      "hint": "lmsd"
+    },
+    {
+      "id": "",
+      "label": "load custom diffusers pipeline",
+      "localized": "carica pipeline diffusers personalizzata",
+      "hint": "carica pipeline diffusers personalizzata"
+    },
+    {
+      "id": "",
+      "label": "load model directly to gpu",
+      "localized": "carica modello direttamente nella GPU",
+      "hint": "carica modello direttamente nella GPU"
+    },
+    {
+      "id": "",
+      "label": "loaded lora",
+      "localized": "lora caricato",
+      "hint": "lora caricato"
+    },
+    {
+      "id": "",
+      "label": "logsnr",
+      "localized": "logsnr",
+      "hint": "logsnr"
+    },
+    {
+      "id": "",
+      "label": "loop",
+      "localized": "loop",
+      "hint": "loop"
+    },
+    {
+      "id": "",
+      "label": "lora add hash info to metadata",
+      "localized": "lora aggiungi informazioni hash ai metadati",
+      "hint": "lora aggiungi informazioni hash ai metadati"
+    },
+    {
+      "id": "",
+      "label": "lora auto-apply tags",
+      "localized": "lora applica automaticamente i tag",
+      "hint": "lora applica automaticamente i tag"
+    },
+    {
+      "id": "",
+      "label": "lora fuse directly to model",
+      "localized": "lora fondi direttamente al modello",
+      "hint": "lora fondi direttamente al modello"
+    },
+    {
+      "id": "",
+      "label": "lora load using diffusers method",
+      "localized": "carica lora usando il metodo diffusers",
+      "hint": "carica lora usando il metodo diffusers"
+    },
+    {
+      "id": "",
+      "label": "lora load using diffusers method for selected models",
+      "localized": "carica lora usando il metodo diffusers per i modelli selezionati",
+      "hint": "carica lora usando il metodo diffusers per i modelli selezionati"
+    },
+    {
+      "id": "",
+      "label": "lora load using legacy method",
+      "localized": "carica lora usando il metodo legacy",
+      "hint": "carica lora usando il metodo legacy"
+    },
+    {
+      "id": "",
+      "label": "lora target filename",
+      "localized": "nome file di destinazione lora",
+      "hint": "nome file di destinazione lora"
+    },
+    {
+      "id": "",
+      "label": "low order",
+      "localized": "ordine basso",
+      "hint": "ordine basso"
+    },
+    {
+      "id": "",
+      "label": "low threshold",
+      "localized": "soglia bassa",
+      "hint": "soglia bassa"
+    },
+    {
+      "id": "",
+      "label": "ltx model",
+      "localized": "modello ltx",
+      "hint": "modello ltx"
+    },
+    {
+      "id": "",
+      "label": "manual block merge",
+      "localized": "unione blocchi manuale",
+      "hint": "unione blocchi manuale"
+    },
+    {
+      "id": "",
+      "label": "mask",
+      "localized": "maschera",
+      "hint": "maschera"
+    },
+    {
+      "id": "",
+      "label": "mask dropout",
+      "localized": "dropout maschera",
+      "hint": "dropout maschera"
+    },
+    {
+      "id": "",
+      "label": "mask invert",
+      "localized": "inversione maschera",
+      "hint": "inversione maschera"
+    },
+    {
+      "id": "",
+      "label": "mask only",
+      "localized": "solo maschera",
+      "hint": "solo maschera"
+    },
+    {
+      "id": "",
+      "label": "mask strength",
+      "localized": "forza maschera",
+      "hint": "forza maschera"
+    },
+    {
+      "id": "",
+      "label": "masked",
+      "localized": "mascherato",
+      "hint": "mascherato"
+    },
+    {
+      "id": "",
+      "label": "math attention",
+      "localized": "attenzione matematica",
+      "hint": "attenzione matematica"
+    },
+    {
+      "id": "",
+      "label": "max faces",
+      "localized": "massimo di volti",
+      "hint": "massimo di volti"
+    },
+    {
+      "id": "",
+      "label": "max flavors",
+      "localized": "massimo di sapori",
+      "hint": "massimo di sapori"
+    },
+    {
+      "id": "",
+      "label": "max guidance",
+      "localized": "guida massima",
+      "hint": "guida massima"
+    },
+    {
+      "id": "",
+      "label": "max length",
+      "localized": "lunghezza massima",
+      "hint": "lunghezza massima"
+    },
+    {
+      "id": "",
+      "label": "max object size",
+      "localized": "dimensione massima oggetto",
+      "hint": "dimensione massima oggetto"
+    },
+    {
+      "id": "",
+      "label": "max range",
+      "localized": "range massimo",
+      "hint": "range massimo"
+    },
+    {
+      "id": "",
+      "label": "max words",
+      "localized": "numero massimo di parole",
+      "hint": "numero massimo di parole"
+    },
+    {
+      "id": "",
+      "label": "max-autotune",
+      "localized": "max-autotune",
+      "hint": "max-autotune"
+    },
+    {
+      "id": "",
+      "label": "max-autotune-no-cudagraphs",
+      "localized": "max-autotune-no-cudagraphs",
+      "hint": "max-autotune-no-cudagraphs"
+    },
+    {
+      "id": "",
+      "label": "maximum image size (mp)",
+      "localized": "dimensione massima immagine (mp)",
+      "hint": "dimensione massima immagine (mp)"
+    },
+    {
+      "id": "",
+      "label": "maximum number of units",
+      "localized": "numero massimo di unità",
+      "hint": "numero massimo di unità"
+    },
+    {
+      "id": "",
+      "label": "maximum rank",
+      "localized": "rango massimo",
+      "hint": "rango massimo"
+    },
+    {
+      "id": "",
+      "label": "medium",
+      "localized": "medio",
+      "hint": "medio"
+    },
+    {
+      "id": "",
+      "label": "mediums",
+      "localized": "mezzi",
+      "hint": "mezzi"
+    },
+    {
+      "id": "",
+      "label": "memory",
+      "localized": "memoria",
+      "hint": "memoria"
+    },
+    {
+      "id": "",
+      "label": "memory attention",
+      "localized": "attenzione alla memoria",
+      "hint": "attenzione alla memoria"
+    },
+    {
+      "id": "",
+      "label": "memory limit",
+      "localized": "limite di memoria",
+      "hint": "limite di memoria"
+    },
+    {
+      "id": "",
+      "label": "memory optimization",
+      "localized": "ottimizzazione della memoria",
+      "hint": "ottimizzazione della memoria"
+    },
+    {
+      "id": "",
+      "label": "merge",
+      "localized": "unisci",
+      "hint": "unisci"
+    },
+    {
+      "id": "",
+      "label": "merge alpha",
+      "localized": "unisci alpha",
+      "hint": "unisci alpha"
+    },
+    {
+      "id": "",
+      "label": "method",
+      "localized": "metodo",
+      "hint": "metodo"
+    },
+    {
+      "id": "",
+      "label": "method after",
+      "localized": "metodo dopo",
+      "hint": "metodo dopo"
+    },
+    {
+      "id": "",
+      "label": "method before",
+      "localized": "metodo prima",
+      "hint": "metodo prima"
+    },
+    {
+      "id": "",
+      "label": "method mask",
+      "localized": "maschera metodo",
+      "hint": "maschera metodo"
+    },
+    {
+      "id": "",
+      "label": "migraphx",
+      "localized": "migraphx",
+      "hint": "migraphx"
+    },
+    {
+      "id": "",
+      "label": "min flavors",
+      "localized": "minimo di sapori",
+      "hint": "minimo di sapori"
+    },
+    {
+      "id": "",
+      "label": "min guidance",
+      "localized": "guida minima",
+      "hint": "guida minima"
+    },
+    {
+      "id": "",
+      "label": "min object size",
+      "localized": "dimensione minima oggetto",
+      "hint": "dimensione minima oggetto"
+    },
+    {
+      "id": "",
+      "label": "mode",
+      "localized": "modalità",
+      "hint": "modalità"
+    },
+    {
+      "id": "",
+      "label": "mode after",
+      "localized": "modalità dopo",
+      "hint": "modalità dopo"
+    },
+    {
+      "id": "",
+      "label": "mode before",
+      "localized": "modalità prima",
+      "hint": "modalità prima"
+    },
+    {
+      "id": "",
+      "label": "mode mask",
+      "localized": "maschera modalità",
+      "hint": "maschera modalità"
+    },
+    {
+      "id": "",
+      "label": "mode x-axis",
+      "localized": "modalità asse x",
+      "hint": "modalità asse x"
+    },
+    {
+      "id": "",
+      "label": "mode y-axis",
+      "localized": "modalità asse y",
+      "hint": "modalità asse y"
+    },
+    {
+      "id": "",
+      "label": "model auto-download on demand",
+      "localized": "modello auto-download su richiesta",
+      "hint": "modello auto-download su richiesta"
+    },
+    {
+      "id": "",
+      "label": "model autoload on start",
+      "localized": "modello caricamento automatico all'avvio",
+      "hint": "modello caricamento automatico all'avvio"
+    },
+    {
+      "id": "",
+      "label": "model compile",
+      "localized": "compilazione modello",
+      "hint": "compilazione modello"
+    },
+    {
+      "id": "",
+      "label": "model compile fullgraph",
+      "localized": "compilazione modello fullgraph",
+      "hint": "compilazione modello fullgraph"
+    },
+    {
+      "id": "",
+      "label": "model compile suppress errors",
+      "localized": "modello compila sopprimi errori",
+      "hint": "modello compila sopprimi errori"
+    },
+    {
+      "id": "",
+      "label": "model compile verbose mode",
+      "localized": "modalità verbose compilazione modello",
+      "hint": "modalità verbose compilazione modello"
+    },
+    {
+      "id": "",
+      "label": "model info",
+      "localized": "informazioni modello",
+      "hint": "informazioni modello"
+    },
+    {
+      "id": "",
+      "label": "model load using streams",
+      "localized": "carica modello usando stream",
+      "hint": "carica modello usando stream"
+    },
+    {
+      "id": "",
+      "label": "model metadata",
+      "localized": "metadati modello",
+      "hint": "metadati modello"
+    },
+    {
+      "id": "",
+      "label": "model name",
+      "localized": "nome modello",
+      "hint": "nome modello"
+    },
+    {
+      "id": "",
+      "label": "model pipeline",
+      "localized": "pipeline modello",
+      "hint": "pipeline modello"
+    },
+    {
+      "id": "",
+      "label": "model precision",
+      "localized": "precisione modello",
+      "hint": "precisione modello"
+    },
+    {
+      "id": "",
+      "label": "model type",
+      "localized": "tipo modello",
+      "hint": "tipo modello"
+    },
+    {
+      "id": "",
+      "label": "model url",
+      "localized": "URL modello",
+      "hint": "URL modello"
+    },
+    {
+      "id": "",
+      "label": "models & loading",
+      "localized": "modelli & caricamento",
+      "hint": "modelli & caricamento"
+    },
+    {
+      "id": "",
+      "label": "modern",
+      "localized": "moderno",
+      "hint": "moderno"
+    },
+    {
+      "id": "",
+      "label": "modules",
+      "localized": "moduli",
+      "hint": "moduli"
+    },
+    {
+      "id": "",
+      "label": "momentum",
+      "localized": "momentum",
+      "hint": "momentum"
+    },
+    {
+      "id": "",
+      "label": "motion level",
+      "localized": "livello di movimento",
+      "hint": "livello di movimento"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using refiner",
+      "localized": "sposta il modello base sulla CPU quando si usa il refiner",
+      "hint": "sposta il modello base sulla CPU quando si usa il refiner"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using vae",
+      "localized": "sposta il modello base sulla CPU quando si usa il VAE",
+      "hint": "sposta il modello base sulla CPU quando si usa il VAE"
+    },
+    {
+      "id": "",
+      "label": "move detailer model to cpu when complete",
+      "localized": "sposta il modello detailer sulla CPU al termine",
+      "hint": "sposta il modello detailer sulla CPU al termine"
+    },
+    {
+      "id": "",
+      "label": "move refiner model to cpu when not in use",
+      "localized": "sposta il modello refiner sulla CPU quando non in uso",
+      "hint": "sposta il modello refiner sulla CPU quando non in uso"
+    },
+    {
+      "id": "",
+      "label": "movements",
+      "localized": "movimenti",
+      "hint": "movimenti"
+    },
+    {
+      "id": "",
+      "label": "multi decoder",
+      "localized": "decodificatore multiplo",
+      "hint": "decodificatore multiplo"
+    },
+    {
+      "id": "",
+      "label": "multistep restore",
+      "localized": "ripristino multistep",
+      "hint": "ripristino multistep"
+    },
+    {
+      "id": "",
+      "label": "native",
+      "localized": "nativo",
+      "hint": "nativo"
+    },
+    {
+      "id": "",
+      "label": "near threshold",
+      "localized": "soglia di prossimità",
+      "hint": "soglia di prossimità"
+    },
+    {
+      "id": "",
+      "label": "negative",
+      "localized": "negativo",
+      "hint": "negativo"
+    },
+    {
+      "id": "",
+      "label": "network negative prompt",
+      "localized": "prompt negativo di rete",
+      "hint": "prompt negativo di rete"
+    },
+    {
+      "id": "",
+      "label": "network parameters",
+      "localized": "parametri di rete",
+      "hint": "parametri di rete"
+    },
+    {
+      "id": "",
+      "label": "network prompt",
+      "localized": "prompt di rete",
+      "hint": "prompt di rete"
+    },
+    {
+      "id": "",
+      "label": "new model name",
+      "localized": "nuovo nome del modello",
+      "hint": "nuovo nome del modello"
+    },
+    {
+      "id": "",
+      "label": "nf4",
+      "localized": "nf4",
+      "hint": "nf4"
+    },
+    {
+      "id": "",
+      "label": "nms",
+      "localized": "nms",
+      "hint": "nms"
+    },
+    {
+      "id": "",
+      "label": "noise",
+      "localized": "rumore",
+      "hint": "rumore"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier (eta)",
+      "localized": "moltiplicatore del rumore (eta)",
+      "hint": "moltiplicatore del rumore (eta)"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier for image processing",
+      "localized": "moltiplicatore del rumore per l'elaborazione delle immagini",
+      "hint": "moltiplicatore del rumore per l'elaborazione delle immagini"
+    },
+    {
+      "id": "",
+      "label": "noise seed delta (eta)",
+      "localized": "delta del seed del rumore (eta)",
+      "hint": "delta del seed del rumore (eta)"
+    },
+    {
+      "id": "",
+      "label": "noise strength",
+      "localized": "intensità del rumore",
+      "hint": "intensità del rumore"
+    },
+    {
+      "id": "",
+      "label": "none",
+      "localized": "nessuno",
+      "hint": "nessuno"
+    },
+    {
+      "id": "",
+      "label": "note",
+      "localized": "nota",
+      "hint": "nota"
+    },
+    {
+      "id": "",
+      "label": "nothing",
+      "localized": "nulla",
+      "hint": "nulla"
+    },
+    {
+      "id": "",
+      "label": "number",
+      "localized": "numero",
+      "hint": "numero"
+    },
+    {
+      "id": "",
+      "label": "numbered filenames",
+      "localized": "nomi file numerati",
+      "hint": "nomi file numerati"
+    },
+    {
+      "id": "",
+      "label": "offload",
+      "localized": "scarico",
+      "hint": "scarico"
+    },
+    {
+      "id": "",
+      "label": "offload face module",
+      "localized": "scarica il modulo volto",
+      "hint": "scarica il modulo volto"
+    },
+    {
+      "id": "",
+      "label": "olive-ai",
+      "localized": "olive-ai",
+      "hint": "olive-ai"
+    },
+    {
+      "id": "",
+      "label": "onediff",
+      "localized": "onediff",
+      "hint": "onediff"
+    },
+    {
+      "id": "",
+      "label": "onnx",
+      "localized": "onnx",
+      "hint": "onnx"
+    },
+    {
+      "id": "",
+      "label": "onnx execution provider",
+      "localized": "provider di esecuzione ONNX",
+      "hint": "provider di esecuzione ONNX"
+    },
+    {
+      "id": "",
+      "label": "openclip",
+      "localized": "openclip",
+      "hint": "openclip"
+    },
+    {
+      "id": "",
+      "label": "openvino disable memory cleanup after compile",
+      "localized": "openvino disabilita la pulizia della memoria dopo la compilazione",
+      "hint": "openvino disabilita la pulizia della memoria dopo la compilazione"
+    },
+    {
+      "id": "",
+      "label": "openvino disable model caching",
+      "localized": "openvino disabilita la memorizzazione nella cache del modello",
+      "hint": "openvino disabilita la memorizzazione nella cache del modello"
+    },
+    {
+      "id": "",
+      "label": "openvino mode",
+      "localized": "modalità openvino",
+      "hint": "modalità openvino"
+    },
+    {
+      "id": "",
+      "label": "openvino_fx",
+      "localized": "openvino_fx",
+      "hint": "openvino_fx"
+    },
+    {
+      "id": "",
+      "label": "optional image description",
+      "localized": "descrizione immagine opzionale",
+      "hint": "descrizione immagine opzionale"
+    },
+    {
+      "id": "",
+      "label": "order",
+      "localized": "ordine",
+      "hint": "ordine"
+    },
+    {
+      "id": "",
+      "label": "ortho",
+      "localized": "orto",
+      "hint": "orto"
+    },
+    {
+      "id": "",
+      "label": "outpaint",
+      "localized": "outpaint",
+      "hint": "outpaint"
+    },
+    {
+      "id": "",
+      "label": "output model",
+      "localized": "modello di output",
+      "hint": "modello di output"
+    },
+    {
+      "id": "",
+      "label": "override resolution",
+      "localized": "sovrascrivi risoluzione",
+      "hint": "sovrascrivi risoluzione"
+    },
+    {
+      "id": "",
+      "label": "override sampler",
+      "localized": "sovrascrivi campionatore",
+      "hint": "sovrascrivi campionatore"
+    },
+    {
+      "id": "",
+      "label": "override scheduler",
+      "localized": "sovrascrivi scheduler",
+      "hint": "sovrascrivi scheduler"
+    },
+    {
+      "id": "",
+      "label": "override steps",
+      "localized": "sovrascrivi step",
+      "hint": "sovrascrivi step"
+    },
+    {
+      "id": "",
+      "label": "override t1 ratio",
+      "localized": "sovrascrivi rapporto t1",
+      "hint": "sovrascrivi rapporto t1"
+    },
+    {
+      "id": "",
+      "label": "override t2 ratio",
+      "localized": "sovrascrivi rapporto t2",
+      "hint": "sovrascrivi rapporto t2"
+    },
+    {
+      "id": "",
+      "label": "overwrite existing file",
+      "localized": "sovrascrivi file esistente",
+      "hint": "sovrascrivi file esistente"
+    },
+    {
+      "id": "",
+      "label": "overwrite model",
+      "localized": "sovrascrivi modello",
+      "hint": "sovrascrivi modello"
+    },
+    {
+      "id": "",
+      "label": "pad frames",
+      "localized": "aggiungi frame",
+      "hint": "aggiungi frame"
+    },
+    {
+      "id": "",
+      "label": "padding",
+      "localized": "padding",
+      "hint": "padding"
+    },
+    {
+      "id": "",
+      "label": "parallel process images in batch",
+      "localized": "elabora immagini in parallelo in batch",
+      "hint": "elabora immagini in parallelo in batch"
+    },
+    {
+      "id": "",
+      "label": "parameter free",
+      "localized": "senza parametri",
+      "hint": "senza parametri"
+    },
+    {
+      "id": "",
+      "label": "path to model file",
+      "localized": "percorso del file del modello",
+      "hint": "percorso del file del modello"
+    },
+    {
+      "id": "",
+      "label": "path to notification sound",
+      "localized": "percorso del suono di notifica",
+      "hint": "percorso del suono di notifica"
+    },
+    {
+      "id": "",
+      "label": "penalty",
+      "localized": "penalità",
+      "hint": "penalità"
+    },
+    {
+      "id": "",
+      "label": "perflow",
+      "localized": "perflow",
+      "hint": "perflow"
+    },
+    {
+      "id": "",
+      "label": "perform injection",
+      "localized": "esegui iniezione",
+      "hint": "esegui iniezione"
+    },
+    {
+      "id": "",
+      "label": "perform sdsa",
+      "localized": "esegui sdsa",
+      "hint": "esegui sdsa"
+    },
+    {
+      "id": "",
+      "label": "perform warmup",
+      "localized": "esegui warmup",
+      "hint": "esegui warmup"
+    },
+    {
+      "id": "",
+      "label": "performance",
+      "localized": "prestazioni",
+      "hint": "prestazioni"
+    },
+    {
+      "id": "",
+      "label": "photomaker model",
+      "localized": "modello photomaker",
+      "hint": "modello photomaker"
+    },
+    {
+      "id": "",
+      "label": "pipeline",
+      "localized": "pipeline",
+      "hint": "pipeline"
+    },
+    {
+      "id": "",
+      "label": "pipeline modifiers",
+      "localized": "modificatori pipeline",
+      "hint": "modificatori pipeline"
+    },
+    {
+      "id": "",
+      "label": "pixels to expand",
+      "localized": "pixel da espandere",
+      "hint": "pixel da espandere"
+    },
+    {
+      "id": "",
+      "label": "platform",
+      "localized": "piattaforma",
+      "hint": "piattaforma"
+    },
+    {
+      "id": "",
+      "label": "play a notification upon completion",
+      "localized": "riproduce una notifica al completamento",
+      "hint": "riproduce una notifica al completamento"
+    },
+    {
+      "id": "",
+      "label": "pndm",
+      "localized": "pndm",
+      "hint": "pndm"
+    },
+    {
+      "id": "",
+      "label": "polyexponential",
+      "localized": "poliesponenziale",
+      "hint": "poliesponenziale"
+    },
+    {
+      "id": "",
+      "label": "pose confidence",
+      "localized": "confidenza della posa",
+      "hint": "confidenza della posa"
+    },
+    {
+      "id": "",
+      "label": "positive",
+      "localized": "positivo",
+      "hint": "positivo"
+    },
+    {
+      "id": "",
+      "label": "postprocess mask",
+      "localized": "maschera di post-elaborazione",
+      "hint": "maschera di post-elaborazione"
+    },
+    {
+      "id": "",
+      "label": "postprocessing operation order",
+      "localized": "ordine delle operazioni di post-elaborazione",
+      "hint": "ordine delle operazioni di post-elaborazione"
+    },
+    {
+      "id": "",
+      "label": "power",
+      "localized": "potenza",
+      "hint": "potenza"
+    },
+    {
+      "id": "",
+      "label": "prediction method",
+      "localized": "metodo di previsione",
+      "hint": "metodo di previsione"
+    },
+    {
+      "id": "",
+      "label": "preset",
+      "localized": "preimpostazione",
+      "hint": "preimpostazione"
+    },
+    {
+      "id": "",
+      "label": "preset block merge",
+      "localized": "preimpostazione unione blocchi",
+      "hint": "preimpostazione unione blocchi"
+    },
+    {
+      "id": "",
+      "label": "preview",
+      "localized": "anteprima",
+      "hint": "anteprima"
+    },
+    {
+      "id": "",
+      "label": "preview end",
+      "localized": "fine anteprima",
+      "hint": "fine anteprima"
+    },
+    {
+      "id": "",
+      "label": "preview start",
+      "localized": "inizio anteprima",
+      "hint": "inizio anteprima"
+    },
+    {
+      "id": "",
+      "label": "primary model",
+      "localized": "modello primario",
+      "hint": "modello primario"
+    },
+    {
+      "id": "",
+      "label": "processor",
+      "localized": "processore",
+      "hint": "processore"
+    },
+    {
+      "id": "",
+      "label": "processor move to cpu after use",
+      "localized": "sposta il processore sulla CPU dopo l'uso",
+      "hint": "sposta il processore sulla CPU dopo l'uso"
+    },
+    {
+      "id": "",
+      "label": "processor unload after use",
+      "localized": "scarica il processore dopo l'uso",
+      "hint": "scarica il processore dopo l'uso"
+    },
+    {
+      "id": "",
+      "label": "prompt attention normalization",
+      "localized": "normalizzazione dell'attenzione del prompt",
+      "hint": "normalizzazione dell'attenzione del prompt"
+    },
+    {
+      "id": "",
+      "label": "prompt ex",
+      "localized": "prompt ex",
+      "hint": "prompt ex"
+    },
+    {
+      "id": "",
+      "label": "prompt processor",
+      "localized": "processore prompt",
+      "hint": "processore prompt"
+    },
+    {
+      "id": "",
+      "label": "prompt strength",
+      "localized": "forza del prompt",
+      "hint": "forza del prompt"
+    },
+    {
+      "id": "",
+      "label": "prompt thresholds:",
+      "localized": "soglie del prompt:",
+      "hint": "soglie del prompt:"
+    },
+    {
+      "id": "",
+      "label": "prompts",
+      "localized": "prompt",
+      "hint": "prompt"
+    },
+    {
+      "id": "",
+      "label": "provider",
+      "localized": "provider",
+      "hint": "provider"
+    },
+    {
+      "id": "",
+      "label": "prune",
+      "localized": "pota",
+      "hint": "pota"
+    },
+    {
+      "id": "",
+      "label": "quad",
+      "localized": "quad",
+      "hint": "quad"
+    },
+    {
+      "id": "",
+      "label": "quantization activations type",
+      "localized": "tipo di attivazioni di quantizzazione",
+      "hint": "tipo di attivazioni di quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "quantization mode",
+      "localized": "modalità di quantizzazione",
+      "hint": "modalità di quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "quantization settings",
+      "localized": "Impostazioni di quantizzazione",
+      "hint": "Impostazioni di quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "quantization type",
+      "localized": "Tipo di quantizzazione",
+      "hint": "Tipo di quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "quantization weights type",
+      "localized": "Tipo di pesi di quantizzazione",
+      "hint": "Tipo di pesi di quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "question",
+      "localized": "Domanda",
+      "hint": "Domanda"
+    },
+    {
+      "id": "",
+      "label": "random seeds",
+      "localized": "Seed casuali",
+      "hint": "Seed casuali"
+    },
+    {
+      "id": "",
+      "label": "range",
+      "localized": "Intervallo",
+      "hint": "Intervallo"
+    },
+    {
+      "id": "",
+      "label": "rebase",
+      "localized": "Ri-basare",
+      "hint": "Ri-basare"
+    },
+    {
+      "id": "",
+      "label": "reduce-overhead",
+      "localized": "Riduci overhead",
+      "hint": "Riduci overhead"
+    },
+    {
+      "id": "",
+      "label": "redux prompt strength",
+      "localized": "Forza del prompt redux",
+      "hint": "Forza del prompt redux"
+    },
+    {
+      "id": "",
+      "label": "reference adain weight",
+      "localized": "Peso di riferimento Adain",
+      "hint": "Peso di riferimento Adain"
+    },
+    {
+      "id": "",
+      "label": "reference query weight",
+      "localized": "Peso query di riferimento",
+      "hint": "Peso query di riferimento"
+    },
+    {
+      "id": "",
+      "label": "refine foreground",
+      "localized": "Raffina primo piano",
+      "hint": "Raffina primo piano"
+    },
+    {
+      "id": "",
+      "label": "refresh bench",
+      "localized": "Aggiorna benchmark",
+      "hint": "Aggiorna benchmark"
+    },
+    {
+      "id": "",
+      "label": "refresh data",
+      "localized": "Aggiorna dati",
+      "hint": "Aggiorna dati"
+    },
+    {
+      "id": "",
+      "label": "refresh state",
+      "localized": "Aggiorna stato",
+      "hint": "Aggiorna stato"
+    },
+    {
+      "id": "",
+      "label": "refresh ui values",
+      "localized": "Aggiorna valori UI",
+      "hint": "Aggiorna valori UI"
+    },
+    {
+      "id": "",
+      "label": "reinstall",
+      "localized": "Reinstalla",
+      "hint": "Reinstalla"
+    },
+    {
+      "id": "",
+      "label": "repeat x-axis",
+      "localized": "Ripeti asse X",
+      "hint": "Ripeti asse X"
+    },
+    {
+      "id": "",
+      "label": "repeat y-axis",
+      "localized": "Ripeti asse Y",
+      "hint": "Ripeti asse Y"
+    },
+    {
+      "id": "",
+      "label": "replace vae",
+      "localized": "Sostituisci VAE",
+      "hint": "Sostituisci VAE"
+    },
+    {
+      "id": "",
+      "label": "repos",
+      "localized": "Repository",
+      "hint": "Repository"
+    },
+    {
+      "id": "",
+      "label": "reprocess decode",
+      "localized": "Rielabora decodifica",
+      "hint": "Rielabora decodifica"
+    },
+    {
+      "id": "",
+      "label": "reprocess face",
+      "localized": "Rielabora volto",
+      "hint": "Rielabora volto"
+    },
+    {
+      "id": "",
+      "label": "reprocess refine",
+      "localized": "Rielabora affinamento",
+      "hint": "Rielabora affinamento"
+    },
+    {
+      "id": "",
+      "label": "request browser notifications",
+      "localized": "Richiedi notifiche browser",
+      "hint": "Richiedi notifiche browser"
+    },
+    {
+      "id": "",
+      "label": "rescale",
+      "localized": "Ridimensiona",
+      "hint": "Ridimensiona"
+    },
+    {
+      "id": "",
+      "label": "rescale betas with zero terminal snr",
+      "localized": "Ridimensiona i beta con SNR terminale zero",
+      "hint": "Ridimensiona i beta con SNR terminale zero"
+    },
+    {
+      "id": "",
+      "label": "reset anchors",
+      "localized": "Reimposta ancore",
+      "hint": "Reimposta ancore"
+    },
+    {
+      "id": "",
+      "label": "residual diff threshold",
+      "localized": "Soglia differenza residua",
+      "hint": "Soglia differenza residua"
+    },
+    {
+      "id": "",
+      "label": "resize background color",
+      "localized": "Ridimensiona colore sfondo",
+      "hint": "Ridimensiona colore sfondo"
+    },
+    {
+      "id": "",
+      "label": "resize mode",
+      "localized": "Modalità ridimensionamento",
+      "hint": "Modalità ridimensionamento"
+    },
+    {
+      "id": "",
+      "label": "resize scale",
+      "localized": "Scala di ridimensionamento",
+      "hint": "Scala di ridimensionamento"
+    },
+    {
+      "id": "",
+      "label": "restart step",
+      "localized": "Riavvia step",
+      "hint": "Riavvia step"
+    },
+    {
+      "id": "",
+      "label": "restore pipe on end",
+      "localized": "Ripristina pipe alla fine",
+      "hint": "Ripristina pipe alla fine"
+    },
+    {
+      "id": "",
+      "label": "reswapper model",
+      "localized": "Modello reswapper",
+      "hint": "Modello reswapper"
+    },
+    {
+      "id": "",
+      "label": "return original images",
+      "localized": "Restituisci immagini originali",
+      "hint": "Restituisci immagini originali"
+    },
+    {
+      "id": "",
+      "label": "right",
+      "localized": "Destra",
+      "hint": "Destra"
+    },
+    {
+      "id": "",
+      "label": "root model folder",
+      "localized": "Cartella principale modelli",
+      "hint": "Cartella principale modelli"
+    },
+    {
+      "id": "",
+      "label": "rows",
+      "localized": "Righe",
+      "hint": "Righe"
+    },
+    {
+      "id": "",
+      "label": "run",
+      "localized": "Esegui",
+      "hint": "Esegui"
+    },
+    {
+      "id": "",
+      "label": "run benchmark",
+      "localized": "Esegui benchmark",
+      "hint": "Esegui benchmark"
+    },
+    {
+      "id": "",
+      "label": "sa solver",
+      "localized": "Solutore SA",
+      "hint": "Solutore SA"
+    },
+    {
+      "id": "",
+      "label": "safetensors",
+      "localized": "Safetensors",
+      "hint": "Safetensors"
+    },
+    {
+      "id": "",
+      "label": "sage attention",
+      "localized": "Attenzione SAGE",
+      "hint": "Attenzione SAGE"
+    },
+    {
+      "id": "",
+      "label": "same as primary",
+      "localized": "Come principale",
+      "hint": "Come principale"
+    },
+    {
+      "id": "",
+      "label": "same latent",
+      "localized": "Stesso latente",
+      "hint": "Stesso latente"
+    },
+    {
+      "id": "",
+      "label": "sample",
+      "localized": "Campione",
+      "hint": "Campione"
+    },
+    {
+      "id": "",
+      "label": "sampler",
+      "localized": "Campionatore",
+      "hint": "Campionatore"
+    },
+    {
+      "id": "",
+      "label": "sampler dynamic shift",
+      "localized": "Campionatore shift dinamico",
+      "hint": "Campionatore shift dinamico"
+    },
+    {
+      "id": "",
+      "label": "sampler order",
+      "localized": "Ordine campionatore",
+      "hint": "Ordine campionatore"
+    },
+    {
+      "id": "",
+      "label": "sampler shift",
+      "localized": "Shift campionatore",
+      "hint": "Shift campionatore"
+    },
+    {
+      "id": "",
+      "label": "saturation",
+      "localized": "Saturazione",
+      "hint": "Saturazione"
+    },
+    {
+      "id": "",
+      "label": "save all generated image grids",
+      "localized": "Salva tutte le griglie di immagini generate",
+      "hint": "Salva tutte le griglie di immagini generate"
+    },
+    {
+      "id": "",
+      "label": "save all generated images",
+      "localized": "Salva tutte le immagini generate",
+      "hint": "Salva tutte le immagini generate"
+    },
+    {
+      "id": "",
+      "label": "save diffusers",
+      "localized": "Salva diffusers",
+      "hint": "Salva diffusers"
+    },
+    {
+      "id": "",
+      "label": "save hdr image",
+      "localized": "Salva immagine HDR",
+      "hint": "Salva immagine HDR"
+    },
+    {
+      "id": "",
+      "label": "save image before color correction",
+      "localized": "Salva immagine prima della correzione colore",
+      "hint": "Salva immagine prima della correzione colore"
+    },
+    {
+      "id": "",
+      "label": "save image before detailer",
+      "localized": "Salva immagine prima del detailer",
+      "hint": "Salva immagine prima del detailer"
+    },
+    {
+      "id": "",
+      "label": "save image before hires",
+      "localized": "Salva immagine prima dell'hires",
+      "hint": "Salva immagine prima dell'hires"
+    },
+    {
+      "id": "",
+      "label": "save image before refiner",
+      "localized": "Salva immagine prima del refiner",
+      "hint": "Salva immagine prima del refiner"
+    },
+    {
+      "id": "",
+      "label": "save images to a subdirectory",
+      "localized": "Salva immagini in una sottodirectory",
+      "hint": "Salva immagini in una sottodirectory"
+    },
+    {
+      "id": "",
+      "label": "save init images",
+      "localized": "Salva immagini iniziali",
+      "hint": "Salva immagini iniziali"
+    },
+    {
+      "id": "",
+      "label": "save inpainting mask",
+      "localized": "Salva maschera inpainting",
+      "hint": "Salva maschera inpainting"
+    },
+    {
+      "id": "",
+      "label": "save inpainting masked composite",
+      "localized": "Salva composito mascherato inpainting",
+      "hint": "Salva composito mascherato inpainting"
+    },
+    {
+      "id": "",
+      "label": "save metadata",
+      "localized": "Salva metadati",
+      "hint": "Salva metadati"
+    },
+    {
+      "id": "",
+      "label": "save only saves selected image",
+      "localized": "Salva salva solo l'immagine selezionata",
+      "hint": "Salva salva solo l'immagine selezionata"
+    },
+    {
+      "id": "",
+      "label": "save output",
+      "localized": "Salva output",
+      "hint": "Salva output"
+    },
+    {
+      "id": "",
+      "label": "save safetensors",
+      "localized": "Salva safetensors",
+      "hint": "Salva safetensors"
+    },
+    {
+      "id": "",
+      "label": "scale  after",
+      "localized": "Scala dopo",
+      "hint": "Scala dopo"
+    },
+    {
+      "id": "",
+      "label": "scale  before",
+      "localized": "Scala prima",
+      "hint": "Scala prima"
+    },
+    {
+      "id": "",
+      "label": "scale  mask",
+      "localized": "Scala maschera",
+      "hint": "Scala maschera"
+    },
+    {
+      "id": "",
+      "label": "scale factor",
+      "localized": "Fattore di scala",
+      "hint": "Fattore di scala"
+    },
+    {
+      "id": "",
+      "label": "score",
+      "localized": "Punteggio",
+      "hint": "Punteggio"
+    },
+    {
+      "id": "",
+      "label": "score threshold",
+      "localized": "Soglia punteggio",
+      "hint": "Soglia punteggio"
+    },
+    {
+      "id": "",
+      "label": "scribble",
+      "localized": "Scarabocchio",
+      "hint": "Scarabocchio"
+    },
+    {
+      "id": "",
+      "label": "search changelog",
+      "localized": "Cerca changelog",
+      "hint": "Cerca changelog"
+    },
+    {
+      "id": "",
+      "label": "search models",
+      "localized": "Cerca modelli",
+      "hint": "Cerca modelli"
+    },
+    {
+      "id": "",
+      "label": "search wiki pages",
+      "localized": "Cerca pagine wiki",
+      "hint": "Cerca pagine wiki"
+    },
+    {
+      "id": "",
+      "label": "secondary model",
+      "localized": "Modello secondario",
+      "hint": "Modello secondario"
+    },
+    {
+      "id": "",
+      "label": "select",
+      "localized": "Seleziona",
+      "hint": "Seleziona"
+    },
+    {
+      "id": "",
+      "label": "select model",
+      "localized": "Seleziona modello",
+      "hint": "Seleziona modello"
+    },
+    {
+      "id": "",
+      "label": "send interrupt",
+      "localized": "Invia interruzione",
+      "hint": "Invia interruzione"
+    },
+    {
+      "id": "",
+      "label": "send seed when sending prompt or image to other interface",
+      "localized": "Invia seed quando si invia prompt o immagine ad un'altra interfaccia",
+      "hint": "Invia seed quando si invia prompt o immagine ad un'altra interfaccia"
+    },
+    {
+      "id": "",
+      "label": "send size when sending prompt or image to another interface",
+      "localized": "Invia dimensioni quando si invia prompt o immagine ad un'altra interfaccia",
+      "hint": "Invia dimensioni quando si invia prompt o immagine ad un'altra interfaccia"
+    },
+    {
+      "id": "",
+      "label": "sequential",
+      "localized": "Sequenziale",
+      "hint": "Sequenziale"
+    },
+    {
+      "id": "",
+      "label": "server start time",
+      "localized": "Ora di avvio del server",
+      "hint": "Ora di avvio del server"
+    },
+    {
+      "id": "",
+      "label": "set at prompt start",
+      "localized": "Imposta all'inizio del prompt",
+      "hint": "Imposta all'inizio del prompt"
+    },
+    {
+      "id": "",
+      "label": "set ui defaults",
+      "localized": "Imposta valori predefiniti UI",
+      "hint": "Imposta valori predefiniti UI"
+    },
+    {
+      "id": "",
+      "label": "set ui menu states",
+      "localized": "Imposta stati menu UI",
+      "hint": "Imposta stati menu UI"
+    },
+    {
+      "id": "",
+      "label": "share queries",
+      "localized": "Condividi query",
+      "hint": "Condividi query"
+    },
+    {
+      "id": "",
+      "label": "shared options",
+      "localized": "Opzioni condivise",
+      "hint": "Opzioni condivise"
+    },
+    {
+      "id": "",
+      "label": "sharpen",
+      "localized": "Nitidezza",
+      "hint": "Nitidezza"
+    },
+    {
+      "id": "",
+      "label": "shift",
+      "localized": "Shift",
+      "hint": "Shift"
+    },
+    {
+      "id": "",
+      "label": "show grid in results",
+      "localized": "Mostra griglia nei risultati",
+      "hint": "Mostra griglia nei risultati"
+    },
+    {
+      "id": "",
+      "label": "show input",
+      "localized": "Mostra input",
+      "hint": "Mostra input"
+    },
+    {
+      "id": "",
+      "label": "show metadata in full screen image browser",
+      "localized": "Mostra metadati nel browser immagini a schermo intero",
+      "hint": "Mostra metadati nel browser immagini a schermo intero"
+    },
+    {
+      "id": "",
+      "label": "show motd",
+      "localized": "Mostra MOTD",
+      "hint": "Mostra MOTD"
+    },
+    {
+      "id": "",
+      "label": "show preview",
+      "localized": "Mostra anteprima",
+      "hint": "Mostra anteprima"
+    },
+    {
+      "id": "",
+      "label": "shuffle weights",
+      "localized": "Mescola pesi",
+      "hint": "Mescola pesi"
+    },
+    {
+      "id": "",
+      "label": "sigma",
+      "localized": "Sigma",
+      "hint": "Sigma"
+    },
+    {
+      "id": "",
+      "label": "sigma churn",
+      "localized": "Sigma Churn",
+      "hint": "Sigma churn"
+    },
+    {
+      "id": "",
+      "label": "sigma max",
+      "localized": "Sigma Max",
+      "hint": "Sigma max"
+    },
+    {
+      "id": "",
+      "label": "sigma method",
+      "localized": "Metodo Sigma",
+      "hint": "Metodo Sigma"
+    },
+    {
+      "id": "",
+      "label": "sigma min",
+      "localized": "Sigma Min",
+      "hint": "Sigma min"
+    },
+    {
+      "id": "",
+      "label": "sigma noise",
+      "localized": "Rumore Sigma",
+      "hint": "Rumore Sigma"
+    },
+    {
+      "id": "",
+      "label": "sigma tmin",
+      "localized": "Sigma Tmin",
+      "hint": "Sigma tmin"
+    },
+    {
+      "id": "",
+      "label": "simple merge",
+      "localized": "Unione semplice",
+      "hint": "Unione semplice"
+    },
+    {
+      "id": "",
+      "label": "sketch",
+      "localized": "Schizzo",
+      "hint": "Schizzo"
+    },
+    {
+      "id": "",
+      "label": "skip generation if nan found in latents",
+      "localized": "Salta la generazione se vengono trovati NaN nei latenti",
+      "hint": "Salta la generazione se vengono trovati NaN nei latenti"
+    },
+    {
+      "id": "",
+      "label": "skip guidance layers",
+      "localized": "Salta i livelli di guida",
+      "hint": "Salta i livelli di guida"
+    },
+    {
+      "id": "",
+      "label": "skip input frames",
+      "localized": "Salta i fotogrammi di input",
+      "hint": "Salta i fotogrammi di input"
+    },
+    {
+      "id": "",
+      "label": "slider",
+      "localized": "Cursore",
+      "hint": "Cursore"
+    },
+    {
+      "id": "",
+      "label": "smooth mask",
+      "localized": "Maschera liscia",
+      "hint": "Maschera liscia"
+    },
+    {
+      "id": "",
+      "label": "solver order (where",
+      "localized": "Ordine del risolutore (dove",
+      "hint": "Ordine del risolutore (dove"
+    },
+    {
+      "id": "",
+      "label": "sort order",
+      "localized": "Ordinamento",
+      "hint": "Ordinamento"
+    },
+    {
+      "id": "",
+      "label": "source subject",
+      "localized": "Soggetto sorgente",
+      "hint": "Soggetto sorgente"
+    },
+    {
+      "id": "",
+      "label": "space",
+      "localized": "Spazio",
+      "hint": "Spazio"
+    },
+    {
+      "id": "",
+      "label": "spatial frequency",
+      "localized": "Frequenza spaziale",
+      "hint": "Frequenza spaziale"
+    },
+    {
+      "id": "",
+      "label": "specify model revision",
+      "localized": "Specifica la revisione del modello",
+      "hint": "Specifica la revisione del modello"
+    },
+    {
+      "id": "",
+      "label": "specify model variant",
+      "localized": "Specifica la variante del modello",
+      "hint": "Specifica la variante del modello"
+    },
+    {
+      "id": "",
+      "label": "split attention",
+      "localized": "Dividi l'attenzione",
+      "hint": "Dividi l'attenzione"
+    },
+    {
+      "id": "",
+      "label": "stable-fast",
+      "localized": "Stable-fast",
+      "hint": "Stable-fast"
+    },
+    {
+      "id": "",
+      "label": "standard",
+      "localized": "Standard",
+      "hint": "Standard"
+    },
+    {
+      "id": "",
+      "label": "start",
+      "localized": "Inizio",
+      "hint": "Inizio"
+    },
+    {
+      "id": "",
+      "label": "start profiling",
+      "localized": "Inizia la profilazione",
+      "hint": "Inizia la profilazione"
+    },
+    {
+      "id": "",
+      "label": "state",
+      "localized": "Stato",
+      "hint": "Stato"
+    },
+    {
+      "id": "",
+      "label": "stride",
+      "localized": "Passo",
+      "hint": "Passo"
+    },
+    {
+      "id": "",
+      "label": "structure",
+      "localized": "Struttura",
+      "hint": "Struttura"
+    },
+    {
+      "id": "",
+      "label": "style fidelity",
+      "localized": "Fedeltà dello stile",
+      "hint": "Fedeltà dello stile"
+    },
+    {
+      "id": "",
+      "label": "subject",
+      "localized": "Soggetto",
+      "hint": "Soggetto"
+    },
+    {
+      "id": "",
+      "label": "submit results",
+      "localized": "Invia risultati",
+      "hint": "Invia risultati"
+    },
+    {
+      "id": "",
+      "label": "submodules",
+      "localized": "Sottomoduli",
+      "hint": "Sottomoduli"
+    },
+    {
+      "id": "",
+      "label": "swap x/y",
+      "localized": "Scambia x/y",
+      "hint": "Scambia x/y"
+    },
+    {
+      "id": "",
+      "label": "swap x/z",
+      "localized": "Scambia x/z",
+      "hint": "Scambia x/z"
+    },
+    {
+      "id": "",
+      "label": "swap y/z",
+      "localized": "Scambia y/z",
+      "hint": "Scambia y/z"
+    },
+    {
+      "id": "",
+      "label": "t2i adapter",
+      "localized": "Adattatore T2I",
+      "hint": "Adattatore T2I"
+    },
+    {
+      "id": "",
+      "label": "t2i strength",
+      "localized": "Forza T2I",
+      "hint": "Forza T2I"
+    },
+    {
+      "id": "",
+      "label": "taesd",
+      "localized": "TAESD",
+      "hint": "TAESD"
+    },
+    {
+      "id": "",
+      "label": "taesd decode layers",
+      "localized": "Livelli di decodifica TAESD",
+      "hint": "Livelli di decodifica TAESD"
+    },
+    {
+      "id": "",
+      "label": "taesd variant",
+      "localized": "Variante TAESD",
+      "hint": "Variante TAESD"
+    },
+    {
+      "id": "",
+      "label": "target subject",
+      "localized": "Soggetto bersaglio",
+      "hint": "Soggetto bersaglio"
+    },
+    {
+      "id": "",
+      "label": "tcd",
+      "localized": "TCD",
+      "hint": "TCD"
+    },
+    {
+      "id": "",
+      "label": "tdd",
+      "localized": "TDD",
+      "hint": "TDD"
+    },
+    {
+      "id": "",
+      "label": "te",
+      "localized": "TE",
+      "hint": "TE"
+    },
+    {
+      "id": "",
+      "label": "temperature",
+      "localized": "Temperatura",
+      "hint": "Temperatura"
+    },
+    {
+      "id": "",
+      "label": "temporal frequency",
+      "localized": "Frequenza temporale",
+      "hint": "Frequenza temporale"
+    },
+    {
+      "id": "",
+      "label": "tertiary model",
+      "localized": "Modello terziario",
+      "hint": "Modello terziario"
+    },
+    {
+      "id": "",
+      "label": "text encoder",
+      "localized": "Codificatore di testo",
+      "hint": "Codificatore di testo"
+    },
+    {
+      "id": "",
+      "label": "text encoder cache size",
+      "localized": "Dimensione della cache del codificatore di testo",
+      "hint": "Dimensione della cache del codificatore di testo"
+    },
+    {
+      "id": "",
+      "label": "text encoder model",
+      "localized": "Modello del codificatore di testo",
+      "hint": "Modello del codificatore di testo"
+    },
+    {
+      "id": "",
+      "label": "text inputs",
+      "localized": "Input di testo",
+      "hint": "Input di testo"
+    },
+    {
+      "id": "",
+      "label": "textbox",
+      "localized": "Casella di testo",
+      "hint": "Casella di testo"
+    },
+    {
+      "id": "",
+      "label": "threshold",
+      "localized": "Soglia",
+      "hint": "Soglia"
+    },
+    {
+      "id": "",
+      "label": "thresholding",
+      "localized": "Soglia",
+      "hint": "Soglia"
+    },
+    {
+      "id": "",
+      "label": "tile frames",
+      "localized": "Fotogrammi affiancati",
+      "hint": "Fotogrammi affiancati"
+    },
+    {
+      "id": "",
+      "label": "tiling options",
+      "localized": "Opzioni di affiancamento",
+      "hint": "Opzioni di affiancamento"
+    },
+    {
+      "id": "",
+      "label": "time embedding mix",
+      "localized": "Mix di embedding temporale",
+      "hint": "Mix di embedding temporale"
+    },
+    {
+      "id": "",
+      "label": "time_quadratic",
+      "localized": "Time_quadratic",
+      "hint": "Time_quadratic"
+    },
+    {
+      "id": "",
+      "label": "time_uniform",
+      "localized": "Time_uniform",
+      "hint": "Time_uniform"
+    },
+    {
+      "id": "",
+      "label": "timestep",
+      "localized": "Passo temporale",
+      "hint": "Passo temporale"
+    },
+    {
+      "id": "",
+      "label": "timestep skip end",
+      "localized": "Fine salto del passo temporale",
+      "hint": "Fine salto del passo temporale"
+    },
+    {
+      "id": "",
+      "label": "timestep skip start",
+      "localized": "Inizio salto del passo temporale",
+      "hint": "Inizio salto del passo temporale"
+    },
+    {
+      "id": "",
+      "label": "timestep spacing",
+      "localized": "Spaziatura del passo temporale",
+      "hint": "Spaziatura del passo temporale"
+    },
+    {
+      "id": "",
+      "label": "timesteps",
+      "localized": "Passi temporali",
+      "hint": "Passi temporali"
+    },
+    {
+      "id": "",
+      "label": "timesteps override",
+      "localized": "Sovrascrittura dei passi temporali",
+      "hint": "Sovrascrittura dei passi temporali"
+    },
+    {
+      "id": "",
+      "label": "timesteps presets",
+      "localized": "Preimpostazioni dei passi temporali",
+      "hint": "Preimpostazioni dei passi temporali"
+    },
+    {
+      "id": "",
+      "label": "timesteps range",
+      "localized": "Intervallo dei passi temporali",
+      "hint": "Intervallo dei passi temporali"
+    },
+    {
+      "id": "",
+      "label": "tiny",
+      "localized": "Minuscolo",
+      "hint": "Minuscolo"
+    },
+    {
+      "id": "",
+      "label": "todo",
+      "localized": "Da fare",
+      "hint": "Da fare"
+    },
+    {
+      "id": "",
+      "label": "tome",
+      "localized": "Tome",
+      "hint": "Tome"
+    },
+    {
+      "id": "",
+      "label": "tool",
+      "localized": "Strumento",
+      "hint": "Strumento"
+    },
+    {
+      "id": "",
+      "label": "torch",
+      "localized": "Torch",
+      "hint": "Torch"
+    },
+    {
+      "id": "",
+      "label": "transformer",
+      "localized": "Trasformatore",
+      "hint": "Trasformatore"
+    },
+    {
+      "id": "",
+      "label": "trigger word",
+      "localized": "Parola trigger",
+      "hint": "Parola trigger"
+    },
+    {
+      "id": "",
+      "label": "true",
+      "localized": "Vero",
+      "hint": "Vero"
+    },
+    {
+      "id": "",
+      "label": "tunable ops limit",
+      "localized": "Limite delle operazioni sintonizzabili",
+      "hint": "Limite delle operazioni sintonizzabili"
+    },
+    {
+      "id": "",
+      "label": "ufogen",
+      "localized": "UFOGen",
+      "hint": "UFOGen"
+    },
+    {
+      "id": "",
+      "label": "ui card size (px)",
+      "localized": "Dimensione delle schede UI (px)",
+      "hint": "Dimensione delle schede UI (px)"
+    },
+    {
+      "id": "",
+      "label": "ui fetch network info on mouse-over",
+      "localized": "UI: Recupera le informazioni di rete al passaggio del mouse",
+      "hint": "UI: Recupera le informazioni di rete al passaggio del mouse"
+    },
+    {
+      "id": "",
+      "label": "ui height (%)",
+      "localized": "Altezza UI (%)",
+      "hint": "Altezza UI (%)"
+    },
+    {
+      "id": "",
+      "label": "ui show on startup",
+      "localized": "UI: Mostra all'avvio",
+      "hint": "UI: Mostra all'avvio"
+    },
+    {
+      "id": "",
+      "label": "ui sidebar width (%)",
+      "localized": "Larghezza della barra laterale UI (%)",
+      "hint": "Larghezza della barra laterale UI (%)"
+    },
+    {
+      "id": "",
+      "label": "ui theme",
+      "localized": "Tema UI",
+      "hint": "Tema UI"
+    },
+    {
+      "id": "",
+      "label": "unet",
+      "localized": "UNet",
+      "hint": "UNet"
+    },
+    {
+      "id": "",
+      "label": "unet depth",
+      "localized": "Profondità UNet",
+      "hint": "Profondità UNet"
+    },
+    {
+      "id": "",
+      "label": "unet enabled",
+      "localized": "UNet abilitato",
+      "hint": "UNet abilitato"
+    },
+    {
+      "id": "",
+      "label": "unet max tile size",
+      "localized": "Dimensione massima delle tile UNet",
+      "hint": "Dimensione massima delle tile UNet"
+    },
+    {
+      "id": "",
+      "label": "unet min tile size",
+      "localized": "Dimensione minima delle tile UNet",
+      "hint": "Dimensione minima delle tile UNet"
+    },
+    {
+      "id": "",
+      "label": "unet model",
+      "localized": "Modello UNet",
+      "hint": "Modello UNet"
+    },
+    {
+      "id": "",
+      "label": "unet swap size",
+      "localized": "Dimensione di swap UNet",
+      "hint": "Dimensione di swap UNet"
+    },
+    {
+      "id": "",
+      "label": "uniform",
+      "localized": "Uniforme",
+      "hint": "Uniforme"
+    },
+    {
+      "id": "",
+      "label": "units",
+      "localized": "Unità",
+      "hint": "Unità"
+    },
+    {
+      "id": "",
+      "label": "unload",
+      "localized": "Scarica",
+      "hint": "Scarica"
+    },
+    {
+      "id": "",
+      "label": "unload current model from vram",
+      "localized": "Scarica il modello corrente dalla VRAM",
+      "hint": "Scarica il modello corrente dalla VRAM"
+    },
+    {
+      "id": "",
+      "label": "unload upscaler after processing",
+      "localized": "Scarica l'upscaler dopo l'elaborazione",
+      "hint": "Scarica l'upscaler dopo l'elaborazione"
+    },
+    {
+      "id": "",
+      "label": "unset",
+      "localized": "Non impostato",
+      "hint": "Non impostato"
+    },
+    {
+      "id": "",
+      "label": "up",
+      "localized": "Su",
+      "hint": "Su"
+    },
+    {
+      "id": "",
+      "label": "upcast attention layer",
+      "localized": "Upcast del livello di attenzione",
+      "hint": "Upcast del livello di attenzione"
+    },
+    {
+      "id": "",
+      "label": "update",
+      "localized": "Aggiorna",
+      "hint": "Aggiorna"
+    },
+    {
+      "id": "",
+      "label": "upload",
+      "localized": "Carica",
+      "hint": "Carica"
+    },
+    {
+      "id": "",
+      "label": "use brownian noise",
+      "localized": "Usa rumore browniano",
+      "hint": "Usa rumore browniano"
+    },
+    {
+      "id": "",
+      "label": "use cached model config when available",
+      "localized": "Usa la configurazione del modello memorizzata nella cache quando disponibile",
+      "hint": "Usa la configurazione del modello memorizzata nella cache quando disponibile"
+    },
+    {
+      "id": "",
+      "label": "use defaults",
+      "localized": "Usa le impostazioni predefinite",
+      "hint": "Usa le impostazioni predefinite"
+    },
+    {
+      "id": "",
+      "label": "use dynamic thresholding",
+      "localized": "Usa la sogliatura dinamica",
+      "hint": "Usa la sogliatura dinamica"
+    },
+    {
+      "id": "",
+      "label": "use fixed width thumbnails",
+      "localized": "Usa miniature a larghezza fissa",
+      "hint": "Usa miniature a larghezza fissa"
+    },
+    {
+      "id": "",
+      "label": "use image gallery cache",
+      "localized": "Usa la cache della galleria di immagini",
+      "hint": "Usa la cache della galleria di immagini"
+    },
+    {
+      "id": "",
+      "label": "use karras sigmas",
+      "localized": "Usa i sigma di Karras",
+      "hint": "Usa i sigma di Karras"
+    },
+    {
+      "id": "",
+      "label": "use line break as prompt segment marker",
+      "localized": "Usa l'interruzione di riga come marcatore di segmento del prompt",
+      "hint": "Usa l'interruzione di riga come marcatore di segmento del prompt"
+    },
+    {
+      "id": "",
+      "label": "use model ema weights when possible",
+      "localized": "Usa i pesi EMA del modello quando possibile",
+      "hint": "Usa i pesi EMA del modello quando possibile"
+    },
+    {
+      "id": "",
+      "label": "use quantization",
+      "localized": "Usa la quantizzazione",
+      "hint": "Usa la quantizzazione"
+    },
+    {
+      "id": "",
+      "label": "use random seeds",
+      "localized": "Usa seed casuali",
+      "hint": "Usa seed casuali"
+    },
+    {
+      "id": "",
+      "label": "use reference values when available",
+      "localized": "Usa i valori di riferimento quando disponibili",
+      "hint": "Usa i valori di riferimento quando disponibili"
+    },
+    {
+      "id": "",
+      "label": "use same seed",
+      "localized": "Usa lo stesso seed",
+      "hint": "Usa lo stesso seed"
+    },
+    {
+      "id": "",
+      "label": "use separate base dict",
+      "localized": "Usa un dizionario base separato",
+      "hint": "Usa un dizionario base separato"
+    },
+    {
+      "id": "",
+      "label": "use simplified solvers in final steps",
+      "localized": "Usa risolutori semplificati nei passaggi finali",
+      "hint": "Usa risolutori semplificati nei passaggi finali"
+    },
+    {
+      "id": "",
+      "label": "use text inputs",
+      "localized": "Usa input di testo",
+      "hint": "Usa input di testo"
+    },
+    {
+      "id": "",
+      "label": "use zeros for prompt padding",
+      "localized": "Usa zeri per il padding del prompt",
+      "hint": "Usa zeri per il padding del prompt"
+    },
+    {
+      "id": "",
+      "label": "user",
+      "localized": "utente",
+      "hint": "utente"
+    },
+    {
+      "id": "",
+      "label": "username",
+      "localized": "nome utente",
+      "hint": "nome utente"
+    },
+    {
+      "id": "",
+      "label": "v_prediction",
+      "localized": "v_previsione",
+      "hint": "v_previsione"
+    },
+    {
+      "id": "",
+      "label": "vae enabled",
+      "localized": "VAE abilitato",
+      "hint": "VAE abilitato"
+    },
+    {
+      "id": "",
+      "label": "vae sliced encode",
+      "localized": "Codifica a fette VAE",
+      "hint": "Codifica a fette VAE"
+    },
+    {
+      "id": "",
+      "label": "vae swap size",
+      "localized": "Dimensione swap VAE",
+      "hint": "Dimensione swap VAE"
+    },
+    {
+      "id": "",
+      "label": "vae tile overlap",
+      "localized": "Sovrapposizione tile VAE",
+      "hint": "Sovrapposizione tile VAE"
+    },
+    {
+      "id": "",
+      "label": "vae tile size",
+      "localized": "Dimensione tile VAE",
+      "hint": "Dimensione tile VAE"
+    },
+    {
+      "id": "",
+      "label": "validate",
+      "localized": "Convalida",
+      "hint": "Convalida"
+    },
+    {
+      "id": "",
+      "label": "variable auto encoder",
+      "localized": "Autoencoder variabile",
+      "hint": "Autoencoder variabile"
+    },
+    {
+      "id": "",
+      "label": "vary_coeff",
+      "localized": "vary_coeff",
+      "hint": "vary_coeff"
+    },
+    {
+      "id": "",
+      "label": "vdm solver",
+      "localized": "Solutore VDM",
+      "hint": "Solutore VDM"
+    },
+    {
+      "id": "",
+      "label": "version",
+      "localized": "Versione",
+      "hint": "Versione"
+    },
+    {
+      "id": "",
+      "label": "vibrance",
+      "localized": "Vivacità",
+      "hint": "Vivacità"
+    },
+    {
+      "id": "",
+      "label": "video",
+      "localized": "Video",
+      "hint": "Video"
+    },
+    {
+      "id": "",
+      "label": "video file",
+      "localized": "File video",
+      "hint": "File video"
+    },
+    {
+      "id": "",
+      "label": "video type",
+      "localized": "Tipo di video",
+      "hint": "Tipo di video"
+    },
+    {
+      "id": "",
+      "label": "visual query",
+      "localized": "Query visiva",
+      "hint": "Query visiva"
+    },
+    {
+      "id": "",
+      "label": "vlm",
+      "localized": "VLM",
+      "hint": "VLM"
+    },
+    {
+      "id": "",
+      "label": "vlm model",
+      "localized": "Modello VLM",
+      "hint": "Modello VLM"
+    },
+    {
+      "id": "",
+      "label": "vlm: default model",
+      "localized": "VLM: modello predefinito",
+      "hint": "VLM: modello predefinito"
+    },
+    {
+      "id": "",
+      "label": "vlm: default prompt",
+      "localized": "VLM: prompt predefinito",
+      "hint": "VLM: prompt predefinito"
+    },
+    {
+      "id": "",
+      "label": "vlm: max length",
+      "localized": "VLM: lunghezza massima",
+      "hint": "VLM: lunghezza massima"
+    },
+    {
+      "id": "",
+      "label": "vlm: num beams",
+      "localized": "VLM: numero di raggi",
+      "hint": "VLM: numero di raggi"
+    },
+    {
+      "id": "",
+      "label": "warmth",
+      "localized": "Calore",
+      "hint": "Calore"
+    },
+    {
+      "id": "",
+      "label": "webp lossless compression",
+      "localized": "Compressione lossless WebP",
+      "hint": "Compressione lossless WebP"
+    },
+    {
+      "id": "",
+      "label": "weight",
+      "localized": "Peso",
+      "hint": "Peso"
+    },
+    {
+      "id": "",
+      "label": "weighted",
+      "localized": "Ponderato",
+      "hint": "Ponderato"
+    },
+    {
+      "id": "",
+      "label": "width  after",
+      "localized": "Larghezza dopo",
+      "hint": "Larghezza dopo"
+    },
+    {
+      "id": "",
+      "label": "width  before",
+      "localized": "Larghezza prima",
+      "hint": "Larghezza prima"
+    },
+    {
+      "id": "",
+      "label": "width  mask",
+      "localized": "Larghezza maschera",
+      "hint": "Larghezza maschera"
+    },
+    {
+      "id": "",
+      "label": "wiki",
+      "localized": "Wiki",
+      "hint": "Wiki"
+    },
+    {
+      "id": "",
+      "label": "wildcards",
+      "localized": "Jolly",
+      "hint": "Jolly"
+    },
+    {
+      "id": "",
+      "label": "x components",
+      "localized": "Componenti X",
+      "hint": "Componenti X"
+    },
+    {
+      "id": "",
+      "label": "x overlap",
+      "localized": "Sovrapposizione X",
+      "hint": "Sovrapposizione X"
+    },
+    {
+      "id": "",
+      "label": "x type",
+      "localized": "Tipo X",
+      "hint": "Tipo X"
+    },
+    {
+      "id": "",
+      "label": "xhinker",
+      "localized": "xhinker",
+      "hint": "xhinker"
+    },
+    {
+      "id": "",
+      "label": "xs",
+      "localized": "xs",
+      "hint": "xs"
+    },
+    {
+      "id": "",
+      "label": "y components",
+      "localized": "Componenti Y",
+      "hint": "Componenti Y"
+    },
+    {
+      "id": "",
+      "label": "y overlap",
+      "localized": "Sovrapposizione Y",
+      "hint": "Sovrapposizione Y"
+    },
+    {
+      "id": "",
+      "label": "y type",
+      "localized": "Tipo Y",
+      "hint": "Tipo Y"
+    },
+    {
+      "id": "",
+      "label": "z type",
+      "localized": "Tipo Z",
+      "hint": "Tipo Z"
+    },
+    {
+      "id": "",
+      "label": "zero",
+      "localized": "Zero",
+      "hint": "Zero"
+    },
+    {
+      "id": "",
+      "label": "➠ control",
+      "localized": "➠ controllo",
+      "hint": "➠ controllo"
+    }
+  ]
+}

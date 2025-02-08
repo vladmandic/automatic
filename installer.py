@@ -4,6 +4,7 @@ import sys
 import json
 import time
 import shutil
+import locale
 import logging
 import platform
 import subprocess
@@ -366,9 +367,8 @@ def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = Fal
     t_start = time.time()
     if args.skip_git:
         return ''
-    if optional:
-        if 'google.colab' in sys.modules:
-            return ''
+    if 'google.colab' in sys.modules:
+        return ''
     git_cmd = os.environ.get('GIT', "git")
     if git_cmd != "git":
         git_cmd = os.path.abspath(git_cmd)
@@ -481,6 +481,7 @@ def get_platform():
             'system': platform.system(),
             'release': release,
             'python': platform.python_version(),
+            'locale': locale.getlocale(),
             'docker': os.environ.get('SD_DOCKER', None) is not None,
             # 'host': platform.node(),
             # 'version': platform.version(),
@@ -1305,7 +1306,7 @@ def check_venv():
     t_start = time.time()
     import site
     pkg_path = [try_relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
-    log.debug(f'Packages: venv={try_relpath(sys.prefix)} site={pkg_path}')
+    log.debug(f'Packages: prefix={try_relpath(sys.prefix)} site={pkg_path}')
     for p in pkg_path:
         invalid = []
         for f in os.listdir(p):
