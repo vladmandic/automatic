@@ -726,13 +726,12 @@ def install_ipex(torch_command):
 
 def install_openvino(torch_command):
     t_start = time.time()
-    # Python 3.12: RuntimeError: Dynamo is not supported on Python 3.12+
-    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires a Python version from 3.9, 3.10 or 3.11')
+    check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires a Python version between 3.9 and 3.12')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0 torchvision==0.21.0')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cpu torchvision==0.21.0+cpu --index-url https://download.pytorch.org/whl/cpu')
 
     install(os.environ.get('OPENVINO_COMMAND', 'openvino==2025.0.0'), 'openvino')
     install(os.environ.get('NNCF_COMMAND', 'nncf==2.15.0'), 'nncf')

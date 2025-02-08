@@ -11,13 +11,13 @@
   - set in *settings -> user interface -> language*
   - [localization](https://github.com/vladmandic/wiki/Locale) documentation  
 - **Torch**:  
-  - for **zluda** set default to `torch==2.6.0+cu126`  
+  - for **zluda** set default to `torch==2.6.0+cu118`  
+  - for **openvino** set default to `torch==2.6.0+cpu` and `openvino==2025.0.0`  
 - **Other**:  
   - asymmetric tiling  
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
-  - update openvino to `2025.0.0`  
 - **UI**:  
   - force browser cache-invalidate on page load  
   - use correct timezone for log display  
