@@ -1778,5 +1778,5677 @@
       "localized": "PAG nazivi slojeva",
       "hint": "Razmaknuti popis slojeva<br>Dostupno: d[0-5], m[0], u[0-8]<br>Zadano: m0"
     }
+  ],
+  "missing": [
+    {
+      "id": "",
+      "label": "1 day",
+      "localized": "1 dan",
+      "hint": "1 dan"
+    },
+    {
+      "id": "",
+      "label": "14 days",
+      "localized": "14 dana",
+      "hint": "14 dana"
+    },
+    {
+      "id": "",
+      "label": "1st stage",
+      "localized": "Prva faza",
+      "hint": "Prva faza"
+    },
+    {
+      "id": "",
+      "label": "1st stage backbone",
+      "localized": "Osnosnova prve faze",
+      "hint": "Osnosnova prve faze"
+    },
+    {
+      "id": "",
+      "label": "1st stage skip",
+      "localized": "Preskakanje prve faze",
+      "hint": "Preskakanje prve faze"
+    },
+    {
+      "id": "",
+      "label": "2nd restart step",
+      "localized": "2. korak ponovnog pokretanja",
+      "hint": "2. korak ponovnog pokretanja"
+    },
+    {
+      "id": "",
+      "label": "2nd scale",
+      "localized": "2. skala",
+      "hint": "2. skala"
+    },
+    {
+      "id": "",
+      "label": "2nd stage",
+      "localized": "Druga faza",
+      "hint": "Druga faza"
+    },
+    {
+      "id": "",
+      "label": "2nd stage backbone",
+      "localized": "Osnosnova druge faze",
+      "hint": "Osnosnova druge faze"
+    },
+    {
+      "id": "",
+      "label": "2nd stage skip",
+      "localized": "Preskakanje druge faze",
+      "hint": "Preskakanje druge faze"
+    },
+    {
+      "id": "",
+      "label": "3 days",
+      "localized": "3 dana",
+      "hint": "3 dana"
+    },
+    {
+      "id": "",
+      "label": "30 days",
+      "localized": "30 dana",
+      "hint": "30 dana"
+    },
+    {
+      "id": "",
+      "label": "3rd restart step",
+      "localized": "3. korak ponovnog pokretanja",
+      "hint": "3. korak ponovnog pokretanja"
+    },
+    {
+      "id": "",
+      "label": "3rd scale",
+      "localized": "3. skala",
+      "hint": "3. skala"
+    },
+    {
+      "id": "",
+      "label": "3rd stage",
+      "localized": "Treća faza",
+      "hint": "Treća faza"
+    },
+    {
+      "id": "",
+      "label": "4th restart step",
+      "localized": "4. korak ponovnog pokretanja",
+      "hint": "4. korak ponovnog pokretanja"
+    },
+    {
+      "id": "",
+      "label": "4th scale",
+      "localized": "4. skala",
+      "hint": "4. skala"
+    },
+    {
+      "id": "",
+      "label": "4th stage",
+      "localized": "Četvrta faza",
+      "hint": "Četvrta faza"
+    },
+    {
+      "id": "",
+      "label": "7 days",
+      "localized": "7 dana",
+      "hint": "7 dana"
+    },
+    {
+      "id": "",
+      "label": "90 days",
+      "localized": "90 dana",
+      "hint": "90 dana"
+    },
+    {
+      "id": "",
+      "label": "a1111",
+      "localized": "a1111",
+      "hint": "a1111"
+    },
+    {
+      "id": "",
+      "label": "accuracy",
+      "localized": "Preciznost",
+      "hint": "Preciznost"
+    },
+    {
+      "id": "",
+      "label": "active",
+      "localized": "Aktivno",
+      "hint": "Aktivno"
+    },
+    {
+      "id": "",
+      "label": "adain",
+      "localized": "adain",
+      "hint": "adain"
+    },
+    {
+      "id": "",
+      "label": "adapter 1",
+      "localized": "Adapter 1",
+      "hint": "Adapter 1"
+    },
+    {
+      "id": "",
+      "label": "adapter 2",
+      "localized": "Adapter 2",
+      "hint": "Adapter 2"
+    },
+    {
+      "id": "",
+      "label": "adapter 3",
+      "localized": "Adapter 3",
+      "hint": "Adapter 3"
+    },
+    {
+      "id": "",
+      "label": "adapter 4",
+      "localized": "Adapter 4",
+      "hint": "Adapter 4"
+    },
+    {
+      "id": "",
+      "label": "adaptive restore",
+      "localized": "Adaptivni oporavak",
+      "hint": "Adaptivni oporavak"
+    },
+    {
+      "id": "",
+      "label": "add text info",
+      "localized": "Dodaj informacije o tekstu",
+      "hint": "Dodaj informacije o tekstu"
+    },
+    {
+      "id": "",
+      "label": "add time info",
+      "localized": "Dodaj informacije o vremenu",
+      "hint": "Dodaj informacije o vremenu"
+    },
+    {
+      "id": "",
+      "label": "additional image browser folders",
+      "localized": "Dodatne mape preglednika slika",
+      "hint": "Dodatne mape preglednika slika"
+    },
+    {
+      "id": "",
+      "label": "additional postprocessing operations",
+      "localized": "Dodatne operacije naknadne obrade",
+      "hint": "Dodatne operacije naknadne obrade"
+    },
+    {
+      "id": "",
+      "label": "after",
+      "localized": "Nakon",
+      "hint": "Nakon"
+    },
+    {
+      "id": "",
+      "label": "aggressive at step",
+      "localized": "Agresivno u koraku",
+      "hint": "Agresivno u koraku"
+    },
+    {
+      "id": "",
+      "label": "alias",
+      "localized": "Alias",
+      "hint": "Alias"
+    },
+    {
+      "id": "",
+      "label": "all",
+      "localized": "Sve",
+      "hint": "Sve"
+    },
+    {
+      "id": "",
+      "label": "allowed aspect ratios",
+      "localized": "Dopušteni omjeri stranica",
+      "hint": "Dopušteni omjeri stranica"
+    },
+    {
+      "id": "",
+      "label": "alpha",
+      "localized": "Alfa",
+      "hint": "Alfa"
+    },
+    {
+      "id": "",
+      "label": "alpha block weight preset",
+      "localized": "Unaprijed postavljena težina alfa bloka",
+      "hint": "Unaprijed postavljena težina alfa bloka"
+    },
+    {
+      "id": "",
+      "label": "alpha matting",
+      "localized": "Alfa matiranje",
+      "hint": "Alfa matiranje"
+    },
+    {
+      "id": "",
+      "label": "alpha preset",
+      "localized": "Alfa predpostavka",
+      "hint": "Alfa predpostavka"
+    },
+    {
+      "id": "",
+      "label": "alpha ratio",
+      "localized": "Alfa omjer",
+      "hint": "Alfa omjer"
+    },
+    {
+      "id": "",
+      "label": "alt",
+      "localized": "Alt",
+      "hint": "Alt"
+    },
+    {
+      "id": "",
+      "label": "amplify lut",
+      "localized": "Pojačavanje LUT-a",
+      "hint": "Pojačavanje LUT-a"
+    },
+    {
+      "id": "",
+      "label": "analyze",
+      "localized": "Analiziraj",
+      "hint": "Analiziraj"
+    },
+    {
+      "id": "",
+      "label": "anchor settings",
+      "localized": "Postavke sidra",
+      "hint": "Postavke sidra"
+    },
+    {
+      "id": "",
+      "label": "animateddiff",
+      "localized": "animateddiff",
+      "hint": "animateddiff"
+    },
+    {
+      "id": "",
+      "label": "answer",
+      "localized": "Odgovor",
+      "hint": "Odgovor"
+    },
+    {
+      "id": "",
+      "label": "aot_ts_nvfuser",
+      "localized": "aot_ts_nvfuser",
+      "hint": "aot_ts_nvfuser"
+    },
+    {
+      "id": "",
+      "label": "appearance",
+      "localized": "Izgled",
+      "hint": "Izgled"
+    },
+    {
+      "id": "",
+      "label": "append image info json file",
+      "localized": "Dodaj JSON datoteku s informacijama o slici",
+      "hint": "Dodaj JSON datoteku s informacijama o slici"
+    },
+    {
+      "id": "",
+      "label": "append interrogated prompt at each iteration",
+      "localized": "Dodaj ispitani upit pri svakoj iteraciji",
+      "hint": "Dodaj ispitani upit pri svakoj iteraciji"
+    },
+    {
+      "id": "",
+      "label": "append to main ui",
+      "localized": "Dodaj u glavno sučelje",
+      "hint": "Dodaj u glavno sučelje"
+    },
+    {
+      "id": "",
+      "label": "apply color correction",
+      "localized": "Primijeni korekciju boja",
+      "hint": "Primijeni korekciju boja"
+    },
+    {
+      "id": "",
+      "label": "apply filter",
+      "localized": "Primijeni filter",
+      "hint": "Primijeni filter"
+    },
+    {
+      "id": "",
+      "label": "apply linfusion distillation on load",
+      "localized": "Primijeni linfusion destilaciju pri učitavanju",
+      "hint": "Primijeni linfusion destilaciju pri učitavanju"
+    },
+    {
+      "id": "",
+      "label": "apply mask as overlay",
+      "localized": "Primijeni masku kao preklop",
+      "hint": "Primijeni masku kao preklop"
+    },
+    {
+      "id": "",
+      "label": "apply msw-msa",
+      "localized": "Primijeni msw-msa",
+      "hint": "Primijeni msw-msa"
+    },
+    {
+      "id": "",
+      "label": "apply rau-net",
+      "localized": "Primijeni rau-net",
+      "hint": "Primijeni rau-net"
+    },
+    {
+      "id": "",
+      "label": "apply to model",
+      "localized": "Primijeni na model",
+      "hint": "Primijeni na model"
+    },
+    {
+      "id": "",
+      "label": "artists",
+      "localized": "Umjetnici",
+      "hint": "Umjetnici"
+    },
+    {
+      "id": "",
+      "label": "as a tab",
+      "localized": "Kao kartica",
+      "hint": "Kao kartica"
+    },
+    {
+      "id": "",
+      "label": "atiadlxx (amd only)",
+      "localized": "atiadlxx (samo za AMD)",
+      "hint": "atiadlxx (samo za AMD)"
+    },
+    {
+      "id": "",
+      "label": "attention",
+      "localized": "Pažnja",
+      "hint": "Pažnja"
+    },
+    {
+      "id": "",
+      "label": "attention adain",
+      "localized": "Pažnja adain",
+      "hint": "Pažnja adain"
+    },
+    {
+      "id": "",
+      "label": "attention cache enabled",
+      "localized": "Predmemorija pažnje omogućena",
+      "hint": "Predmemorija pažnje omogućena"
+    },
+    {
+      "id": "",
+      "label": "attention chunking threshold",
+      "localized": "Prag razdvajanja pažnje",
+      "hint": "Prag razdvajanja pažnje"
+    },
+    {
+      "id": "",
+      "label": "attention kv chunk size",
+      "localized": "Veličina segmenta pažnje kv",
+      "hint": "Veličina segmenta pažnje kv"
+    },
+    {
+      "id": "",
+      "label": "attention query chunk size",
+      "localized": "Veličina segmenta upita pažnje",
+      "hint": "Veličina segmenta upita pažnje"
+    },
+    {
+      "id": "",
+      "label": "auto",
+      "localized": "Automatski",
+      "hint": "Automatski"
+    },
+    {
+      "id": "",
+      "label": "auto apply",
+      "localized": "Automatski primijeni",
+      "hint": "Automatski primijeni"
+    },
+    {
+      "id": "",
+      "label": "auto requeue failed tasks",
+      "localized": "Automatski ponovno stavi u red neuspjele zadatke",
+      "hint": "Automatski ponovno stavi u red neuspjele zadatke"
+    },
+    {
+      "id": "",
+      "label": "auto-convert sd15 embeddings to sdxl",
+      "localized": "Automatski pretvori sd15 ugradnje u sdxl",
+      "hint": "Automatski pretvori sd15 ugradnje u sdxl"
+    },
+    {
+      "id": "",
+      "label": "auto-mask",
+      "localized": "Automatska maska",
+      "hint": "Automatska maska"
+    },
+    {
+      "id": "",
+      "label": "auto-segment",
+      "localized": "Automatski segment",
+      "hint": "Automatski segment"
+    },
+    {
+      "id": "",
+      "label": "autolaunch browser upon startup",
+      "localized": "Automatski pokreni preglednik pri pokretanju",
+      "hint": "Automatski pokreni preglednik pri pokretanju"
+    },
+    {
+      "id": "",
+      "label": "automatically determine rank",
+      "localized": "Automatski odredi rang",
+      "hint": "Automatski odredi rang"
+    },
+    {
+      "id": "",
+      "label": "autorank ratio",
+      "localized": "Omjer automatskog rangiranja",
+      "hint": "Omjer automatskog rangiranja"
+    },
+    {
+      "id": "",
+      "label": "available networks",
+      "localized": "Dostupne mreže",
+      "hint": "Dostupne mreže"
+    },
+    {
+      "id": "",
+      "label": "backend",
+      "localized": "Pozadina",
+      "hint": "Pozadina"
+    },
+    {
+      "id": "",
+      "label": "backend storage",
+      "localized": "Pohrana u pozadini",
+      "hint": "Pohrana u pozadini"
+    },
+    {
+      "id": "",
+      "label": "background threshold",
+      "localized": "Prag pozadine",
+      "hint": "Prag pozadine"
+    },
+    {
+      "id": "",
+      "label": "balanced",
+      "localized": "Uravnoteženo",
+      "hint": "Uravnoteženo"
+    },
+    {
+      "id": "",
+      "label": "balanced offload cpu high watermark",
+      "localized": "Visoka granica za prebacivanje na CPU",
+      "hint": "Visoka granica za prebacivanje na CPU"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu high watermark",
+      "localized": "Visoka granica za prebacivanje na GPU",
+      "hint": "Visoka granica za prebacivanje na GPU"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu low watermark",
+      "localized": "Niska granica za prebacivanje na GPU",
+      "hint": "Niska granica za prebacivanje na GPU"
+    },
+    {
+      "id": "",
+      "label": "base",
+      "localized": "Baza",
+      "hint": "Baza"
+    },
+    {
+      "id": "",
+      "label": "batch input directory",
+      "localized": "Direktorij ulaznih serija",
+      "hint": "Direktorij ulaznih serija"
+    },
+    {
+      "id": "",
+      "label": "batch mask directory",
+      "localized": "Direktorij maski serija",
+      "hint": "Direktorij maski serija"
+    },
+    {
+      "id": "",
+      "label": "batch matrix-matrix",
+      "localized": "Matrica-matrica serije",
+      "hint": "Matrica-matrica serije"
+    },
+    {
+      "id": "",
+      "label": "batch mode uses sequential seeds",
+      "localized": "Serijski način rada koristi sekvencijalne sjemenke",
+      "hint": "Serijski način rada koristi sekvencijalne sjemenke"
+    },
+    {
+      "id": "",
+      "label": "batch output directory",
+      "localized": "Direktorij izlaznih serija",
+      "hint": "Direktorij izlaznih serija"
+    },
+    {
+      "id": "",
+      "label": "batch uses original name",
+      "localized": "Serija koristi originalno ime",
+      "hint": "Serija koristi originalno ime"
+    },
+    {
+      "id": "",
+      "label": "bdia ddim",
+      "localized": "bdia ddim",
+      "hint": "bdia ddim"
+    },
+    {
+      "id": "",
+      "label": "before",
+      "localized": "Prije",
+      "hint": "Prije"
+    },
+    {
+      "id": "",
+      "label": "benchmark level",
+      "localized": "Razina benchmarka",
+      "hint": "Razina benchmarka"
+    },
+    {
+      "id": "",
+      "label": "benchmark steps",
+      "localized": "Koraci benchmarka",
+      "hint": "Koraci benchmarka"
+    },
+    {
+      "id": "",
+      "label": "beta block weight preset",
+      "localized": "Unaprijed postavljena težina beta bloka",
+      "hint": "Unaprijed postavljena težina beta bloka"
+    },
+    {
+      "id": "",
+      "label": "beta end",
+      "localized": "Beta kraj",
+      "hint": "Beta kraj"
+    },
+    {
+      "id": "",
+      "label": "beta ratio",
+      "localized": "beta omjer",
+      "hint": "beta omjer"
+    },
+    {
+      "id": "",
+      "label": "beta schedule",
+      "localized": "beta raspored",
+      "hint": "beta raspored"
+    },
+    {
+      "id": "",
+      "label": "beta start",
+      "localized": "beta početak",
+      "hint": "beta početak"
+    },
+    {
+      "id": "",
+      "label": "between prompt and generate button",
+      "localized": "između upita i gumba za generiranje",
+      "hint": "između upita i gumba za generiranje"
+    },
+    {
+      "id": "",
+      "label": "bh1",
+      "localized": "bh1",
+      "hint": "bh1"
+    },
+    {
+      "id": "",
+      "label": "bh2",
+      "localized": "bh2",
+      "hint": "bh2"
+    },
+    {
+      "id": "",
+      "label": "block",
+      "localized": "blok",
+      "hint": "blok"
+    },
+    {
+      "id": "",
+      "label": "block skip range",
+      "localized": "raspon preskakanja blokova",
+      "hint": "raspon preskakanja blokova"
+    },
+    {
+      "id": "",
+      "label": "blur",
+      "localized": "zamagljenje",
+      "hint": "zamagljenje"
+    },
+    {
+      "id": "",
+      "label": "body",
+      "localized": "tijelo",
+      "hint": "tijelo"
+    },
+    {
+      "id": "",
+      "label": "boost",
+      "localized": "pojačanje",
+      "hint": "pojačanje"
+    },
+    {
+      "id": "",
+      "label": "brightness",
+      "localized": "svjetlina",
+      "hint": "svjetlina"
+    },
+    {
+      "id": "",
+      "label": "cache model",
+      "localized": "predmemoriraj model",
+      "hint": "predmemoriraj model"
+    },
+    {
+      "id": "",
+      "label": "cache text encoder results",
+      "localized": "predmemoriraj rezultate enkodera teksta",
+      "hint": "predmemoriraj rezultate enkodera teksta"
+    },
+    {
+      "id": "",
+      "label": "canny",
+      "localized": "canny",
+      "hint": "canny"
+    },
+    {
+      "id": "",
+      "label": "caption model",
+      "localized": "model za opisivanje",
+      "hint": "model za opisivanje"
+    },
+    {
+      "id": "",
+      "label": "center",
+      "localized": "centar",
+      "hint": "centar"
+    },
+    {
+      "id": "",
+      "label": "change log",
+      "localized": "dnevnik promjena",
+      "hint": "dnevnik promjena"
+    },
+    {
+      "id": "",
+      "label": "change model",
+      "localized": "promijeni model",
+      "hint": "promijeni model"
+    },
+    {
+      "id": "",
+      "label": "change rate",
+      "localized": "brzina promjene",
+      "hint": "brzina promjene"
+    },
+    {
+      "id": "",
+      "label": "change reference",
+      "localized": "promijeni referencu",
+      "hint": "promijeni referencu"
+    },
+    {
+      "id": "",
+      "label": "change refiner",
+      "localized": "promijeni pročišćivač",
+      "hint": "promijeni pročišćivač"
+    },
+    {
+      "id": "",
+      "label": "change vae",
+      "localized": "promijeni VAE",
+      "hint": "promijeni VAE"
+    },
+    {
+      "id": "",
+      "label": "channels last",
+      "localized": "kanali zadnji",
+      "hint": "kanali zadnji"
+    },
+    {
+      "id": "",
+      "label": "check alternative hash",
+      "localized": "provjeri alternativni hash",
+      "hint": "provjeri alternativni hash"
+    },
+    {
+      "id": "",
+      "label": "check for updates",
+      "localized": "provjeri ažuriranja",
+      "hint": "provjeri ažuriranja"
+    },
+    {
+      "id": "",
+      "label": "check status",
+      "localized": "provjeri status",
+      "hint": "provjeri status"
+    },
+    {
+      "id": "",
+      "label": "chunk size",
+      "localized": "veličina komada",
+      "hint": "veličina komada"
+    },
+    {
+      "id": "",
+      "label": "civitai",
+      "localized": "civitai",
+      "hint": "civitai"
+    },
+    {
+      "id": "",
+      "label": "civitai model type",
+      "localized": "tip civitai modela",
+      "hint": "tip civitai modela"
+    },
+    {
+      "id": "",
+      "label": "civitai token",
+      "localized": "civitai token",
+      "hint": "civitai token"
+    },
+    {
+      "id": "",
+      "label": "ckpt",
+      "localized": "ckpt",
+      "hint": "ckpt"
+    },
+    {
+      "id": "",
+      "label": "cleanup temporary folder on startup",
+      "localized": "očisti privremenu mapu pri pokretanju",
+      "hint": "očisti privremenu mapu pri pokretanju"
+    },
+    {
+      "id": "",
+      "label": "clip batch model",
+      "localized": "clip batch model",
+      "hint": "clip batch model"
+    },
+    {
+      "id": "",
+      "label": "clip model",
+      "localized": "clip model",
+      "hint": "clip model"
+    },
+    {
+      "id": "",
+      "label": "clip: default captioner",
+      "localized": "clip: zadani opisivač",
+      "hint": "clip: zadani opisivač"
+    },
+    {
+      "id": "",
+      "label": "clip: default mode",
+      "localized": "clip: zadani način rada",
+      "hint": "clip: zadani način rada"
+    },
+    {
+      "id": "",
+      "label": "clip: default model",
+      "localized": "clip: zadani model",
+      "hint": "clip: zadani model"
+    },
+    {
+      "id": "",
+      "label": "clip: include scores in results",
+      "localized": "clip: uključi rezultate u rezultate",
+      "hint": "clip: uključi rezultate u rezultate"
+    },
+    {
+      "id": "",
+      "label": "clip: max flavors",
+      "localized": "clip: maks. broj okusa",
+      "hint": "clip: maks. broj okusa"
+    },
+    {
+      "id": "",
+      "label": "clip: max length",
+      "localized": "clip: maks. duljina",
+      "hint": "clip: maks. duljina"
+    },
+    {
+      "id": "",
+      "label": "clip: min flavors",
+      "localized": "clip: min. broj okusa",
+      "hint": "clip: min. broj okusa"
+    },
+    {
+      "id": "",
+      "label": "clip: min length",
+      "localized": "clip: min. duljina",
+      "hint": "clip: min. duljina"
+    },
+    {
+      "id": "",
+      "label": "clip: num beams",
+      "localized": "clip: broj zraka",
+      "hint": "clip: broj zraka"
+    },
+    {
+      "id": "",
+      "label": "close",
+      "localized": "zatvori",
+      "hint": "zatvori"
+    },
+    {
+      "id": "",
+      "label": "cmsi",
+      "localized": "cmsi",
+      "hint": "cmsi"
+    },
+    {
+      "id": "",
+      "label": "cn end",
+      "localized": "cn kraj",
+      "hint": "cn kraj"
+    },
+    {
+      "id": "",
+      "label": "cn mode",
+      "localized": "cn način rada",
+      "hint": "cn način rada"
+    },
+    {
+      "id": "",
+      "label": "cn start",
+      "localized": "cn početak",
+      "hint": "cn početak"
+    },
+    {
+      "id": "",
+      "label": "cn strength",
+      "localized": "cn jačina",
+      "hint": "cn jačina"
+    },
+    {
+      "id": "",
+      "label": "cn tiles",
+      "localized": "cn pločice",
+      "hint": "cn pločice"
+    },
+    {
+      "id": "",
+      "label": "coarse",
+      "localized": "grubo",
+      "hint": "grubo"
+    },
+    {
+      "id": "",
+      "label": "codeformer",
+      "localized": "codeformer",
+      "hint": "codeformer"
+    },
+    {
+      "id": "",
+      "label": "color",
+      "localized": "boja",
+      "hint": "boja"
+    },
+    {
+      "id": "",
+      "label": "color grading",
+      "localized": "korekcija boja",
+      "hint": "korekcija boja"
+    },
+    {
+      "id": "",
+      "label": "color map",
+      "localized": "mapa boja",
+      "hint": "mapa boja"
+    },
+    {
+      "id": "",
+      "label": "color variation",
+      "localized": "varijacija boja",
+      "hint": "varijacija boja"
+    },
+    {
+      "id": "",
+      "label": "colormap",
+      "localized": "colormap",
+      "hint": "colormap"
+    },
+    {
+      "id": "",
+      "label": "columns",
+      "localized": "stupci",
+      "hint": "stupci"
+    },
+    {
+      "id": "",
+      "label": "comma",
+      "localized": "zarez",
+      "hint": "zarez"
+    },
+    {
+      "id": "",
+      "label": "comma separated list with optional strength per lora",
+      "localized": "lista odvojena zarezima s opcionalnom jačinom po lori",
+      "hint": "lista odvojena zarezima s opcionalnom jačinom po lori"
+    },
+    {
+      "id": "",
+      "label": "compact view",
+      "localized": "kompaktni prikaz",
+      "hint": "kompaktni prikaz"
+    },
+    {
+      "id": "",
+      "label": "compel",
+      "localized": "compel",
+      "hint": "compel"
+    },
+    {
+      "id": "",
+      "label": "composite",
+      "localized": "kompozit",
+      "hint": "kompozit"
+    },
+    {
+      "id": "",
+      "label": "compress ratio",
+      "localized": "omjer kompresije",
+      "hint": "omjer kompresije"
+    },
+    {
+      "id": "",
+      "label": "concept tokens",
+      "localized": "tokeni koncepta",
+      "hint": "tokeni koncepta"
+    },
+    {
+      "id": "",
+      "label": "context",
+      "localized": "kontekst",
+      "hint": "kontekst"
+    },
+    {
+      "id": "",
+      "label": "context after",
+      "localized": "kontekst poslije",
+      "hint": "kontekst poslije"
+    },
+    {
+      "id": "",
+      "label": "context before",
+      "localized": "kontekst prije",
+      "hint": "kontekst prije"
+    },
+    {
+      "id": "",
+      "label": "context mask",
+      "localized": "maska konteksta",
+      "hint": "maska konteksta"
+    },
+    {
+      "id": "",
+      "label": "contrast",
+      "localized": "kontrast",
+      "hint": "kontrast"
+    },
+    {
+      "id": "",
+      "label": "control factor",
+      "localized": "faktor kontrole",
+      "hint": "faktor kontrole"
+    },
+    {
+      "id": "",
+      "label": "control override denoise strength",
+      "localized": "kontrola nadjačava jačinu uklanjanja šuma",
+      "hint": "kontrola nadjačava jačinu uklanjanja šuma"
+    },
+    {
+      "id": "",
+      "label": "control preprocess input images",
+      "localized": "kontrola pretprocesira ulazne slike",
+      "hint": "kontrola pretprocesira ulazne slike"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 1",
+      "localized": "control-lllite jedinica 1",
+      "hint": "control-lllite jedinica 1"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 2",
+      "localized": "control-lllite jedinica 2",
+      "hint": "control-lllite jedinica 2"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 3",
+      "localized": "control-lllite jedinica 3",
+      "hint": "control-lllite jedinica 3"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 4",
+      "localized": "control-lllite jedinica 4",
+      "hint": "control-lllite jedinica 4"
+    },
+    {
+      "id": "",
+      "label": "controlnet",
+      "localized": "controlnet",
+      "hint": "controlnet"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 1",
+      "localized": "controlnet jedinica 1",
+      "hint": "controlnet jedinica 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 2",
+      "localized": "controlnet jedinica 2",
+      "hint": "controlnet jedinica 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 3",
+      "localized": "controlnet jedinica 3",
+      "hint": "controlnet jedinica 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 4",
+      "localized": "controlnet jedinica 4",
+      "hint": "controlnet jedinica 4"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs",
+      "localized": "controlnet-xs",
+      "hint": "controlnet-xs"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 1",
+      "localized": "controlnet-xs jedinica 1",
+      "hint": "controlnet-xs jedinica 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 2",
+      "localized": "controlnet-xs jedinica 2",
+      "hint": "controlnet-xs jedinica 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 3",
+      "localized": "controlnet-xs jedinica 3",
+      "hint": "controlnet-xs jedinica 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 4",
+      "localized": "controlnet-xs jedinica 4",
+      "hint": "controlnet-xs jedinica 4"
+    },
+    {
+      "id": "",
+      "label": "correction mode",
+      "localized": "način korekcije",
+      "hint": "način korekcije"
+    },
+    {
+      "id": "",
+      "label": "cosine background",
+      "localized": "kosinusna pozadina",
+      "hint": "kosinusna pozadina"
+    },
+    {
+      "id": "",
+      "label": "cosine scale",
+      "localized": "kosinusna skala",
+      "hint": "kosinusna skala"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 1",
+      "localized": "kosinusna skala 1",
+      "hint": "kosinusna skala 1"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 2",
+      "localized": "kosinusna skala 2",
+      "hint": "kosinusna skala 2"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 3",
+      "localized": "kosinusna skala 3",
+      "hint": "kosinusna skala 3"
+    },
+    {
+      "id": "",
+      "label": "create image info text file",
+      "localized": "stvori tekstualnu datoteku s informacijama o slici",
+      "hint": "stvori tekstualnu datoteku s informacijama o slici"
+    },
+    {
+      "id": "",
+      "label": "create video",
+      "localized": "stvori video",
+      "hint": "stvori video"
+    },
+    {
+      "id": "",
+      "label": "create zip archive",
+      "localized": "stvori zip arhivu",
+      "hint": "stvori zip arhivu"
+    },
+    {
+      "id": "",
+      "label": "cross-attention",
+      "localized": "unakrsna pažnja",
+      "hint": "unakrsna pažnja"
+    },
+    {
+      "id": "",
+      "label": "ctrl",
+      "localized": "ctrl",
+      "hint": "ctrl"
+    },
+    {
+      "id": "",
+      "label": "cudagraphs",
+      "localized": "cudagraphs",
+      "hint": "cudagraphs"
+    },
+    {
+      "id": "",
+      "label": "cudamallocasync",
+      "localized": "cudamallocasync",
+      "hint": "cudamallocasync"
+    },
+    {
+      "id": "",
+      "label": "current",
+      "localized": "trenutno",
+      "hint": "trenutno"
+    },
+    {
+      "id": "",
+      "label": "custom pipeline",
+      "localized": "prilagođeni cjevovod",
+      "hint": "prilagođeni cjevovod"
+    },
+    {
+      "id": "",
+      "label": "dark",
+      "localized": "tamno",
+      "hint": "tamno"
+    },
+    {
+      "id": "",
+      "label": "dc solver",
+      "localized": "dc solver",
+      "hint": "dc solver"
+    },
+    {
+      "id": "",
+      "label": "ddpm",
+      "localized": "ddpm",
+      "hint": "ddpm"
+    },
+    {
+      "id": "",
+      "label": "debug info",
+      "localized": "informacije o otklanjanju pogrešaka",
+      "hint": "informacije o otklanjanju pogrešaka"
+    },
+    {
+      "id": "",
+      "label": "decode",
+      "localized": "dekodiranje",
+      "hint": "dekodiranje"
+    },
+    {
+      "id": "",
+      "label": "decode chunks",
+      "localized": "dekodiranje dijelova",
+      "hint": "dekodiranje dijelova"
+    },
+    {
+      "id": "",
+      "label": "deep-cache",
+      "localized": "deep-cache",
+      "hint": "deep-cache"
+    },
+    {
+      "id": "",
+      "label": "deepbooru",
+      "localized": "deepbooru",
+      "hint": "deepbooru"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: escape brackets",
+      "localized": "deepbooru: izbjegavaj zagrade",
+      "hint": "deepbooru: izbjegavaj zagrade"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: exclude tags",
+      "localized": "deepbooru: isključi oznake",
+      "hint": "deepbooru: isključi oznake"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: include scores in results",
+      "localized": "deepbooru: uključi rezultate u ocjene",
+      "hint": "deepbooru: uključi rezultate u ocjene"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: max tags",
+      "localized": "deepbooru: maksimalno oznaka",
+      "hint": "deepbooru: maksimalno oznaka"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: score threshold",
+      "localized": "deepbooru: prag ocjene",
+      "hint": "deepbooru: prag ocjene"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: sort alphabetically",
+      "localized": "deepbooru: sortiraj abecedno",
+      "hint": "deepbooru: sortiraj abecedno"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: use spaces for tags",
+      "localized": "deepbooru: koristi razmake za oznake",
+      "hint": "deepbooru: koristi razmake za oznake"
+    },
+    {
+      "id": "",
+      "label": "deepcache cache interval",
+      "localized": "deepcache interval predmemorije",
+      "hint": "deepcache interval predmemorije"
+    },
+    {
+      "id": "",
+      "label": "default",
+      "localized": "zadano",
+      "hint": "zadano"
+    },
+    {
+      "id": "",
+      "label": "deis",
+      "localized": "deis",
+      "hint": "deis"
+    },
+    {
+      "id": "",
+      "label": "denoising batch size",
+      "localized": "veličina serije za uklanjanje šuma",
+      "hint": "veličina serije za uklanjanje šuma"
+    },
+    {
+      "id": "",
+      "label": "denoising steps",
+      "localized": "koraci za uklanjanje šuma",
+      "hint": "koraci za uklanjanje šuma"
+    },
+    {
+      "id": "",
+      "label": "depth and normal",
+      "localized": "dubina i normala",
+      "hint": "dubina i normala"
+    },
+    {
+      "id": "",
+      "label": "depth anything",
+      "localized": "dubina bilo što",
+      "hint": "dubina bilo što"
+    },
+    {
+      "id": "",
+      "label": "depth map",
+      "localized": "mapa dubine",
+      "hint": "mapa dubine"
+    },
+    {
+      "id": "",
+      "label": "depth threshold",
+      "localized": "prag dubine",
+      "hint": "prag dubine"
+    },
+    {
+      "id": "",
+      "label": "description",
+      "localized": "opis",
+      "hint": "opis"
+    },
+    {
+      "id": "",
+      "label": "details",
+      "localized": "detalji",
+      "hint": "detalji"
+    },
+    {
+      "id": "",
+      "label": "deterministic mode",
+      "localized": "deterministički način rada",
+      "hint": "deterministički način rada"
+    },
+    {
+      "id": "",
+      "label": "device info",
+      "localized": "informacije o uređaju",
+      "hint": "informacije o uređaju"
+    },
+    {
+      "id": "",
+      "label": "diffusers",
+      "localized": "diffusers",
+      "hint": "diffusers"
+    },
+    {
+      "id": "",
+      "label": "dilate",
+      "localized": "širenje",
+      "hint": "širenje"
+    },
+    {
+      "id": "",
+      "label": "dilate tau",
+      "localized": "širenje tau",
+      "hint": "širenje tau"
+    },
+    {
+      "id": "",
+      "label": "directml retry ops for nan",
+      "localized": "directml ponovno pokušava operacije za nan",
+      "hint": "directml ponovno pokušava operacije za nan"
+    },
+    {
+      "id": "",
+      "label": "directory for temporary images; leave empty for default",
+      "localized": "direktorij za privremene slike; ostavite prazno za zadano",
+      "hint": "direktorij za privremene slike; ostavite prazno za zadano"
+    },
+    {
+      "id": "",
+      "label": "disable accelerate",
+      "localized": "onemogući ubrzanje",
+      "hint": "onemogući ubrzanje"
+    },
+    {
+      "id": "",
+      "label": "disable conditional batching",
+      "localized": "onemogući uvjetno grupiranje",
+      "hint": "onemogući uvjetno grupiranje"
+    },
+    {
+      "id": "",
+      "label": "disable keyboard shortcut",
+      "localized": "onemogući prečac tipkovnice",
+      "hint": "onemogući prečac tipkovnice"
+    },
+    {
+      "id": "",
+      "label": "disable queue auto-processing",
+      "localized": "onemogući automatsku obradu reda čekanja",
+      "hint": "onemogući automatsku obradu reda čekanja"
+    },
+    {
+      "id": "",
+      "label": "disabled",
+      "localized": "onemogućeno",
+      "hint": "onemogućeno"
+    },
+    {
+      "id": "",
+      "label": "discard penultimate sigma",
+      "localized": "odbaci pretposljednju sigmu",
+      "hint": "odbaci pretposljednju sigmu"
+    },
+    {
+      "id": "",
+      "label": "distance threshold",
+      "localized": "prag udaljenosti",
+      "hint": "prag udaljenosti"
+    },
+    {
+      "id": "",
+      "label": "do not change selected model when reading generation parameters",
+      "localized": "ne mijenjaj odabrani model prilikom čitanja parametara generiranja",
+      "hint": "ne mijenjaj odabrani model prilikom čitanja parametara generiranja"
+    },
+    {
+      "id": "",
+      "label": "do not display video output in ui",
+      "localized": "ne prikazuj video izlaz u korisničkom sučelju",
+      "hint": "ne prikazuj video izlaz u korisničkom sučelju"
+    },
+    {
+      "id": "",
+      "label": "do nothing",
+      "localized": "ne radi ništa",
+      "hint": "ne radi ništa"
+    },
+    {
+      "id": "",
+      "label": "down",
+      "localized": "dolje",
+      "hint": "dolje"
+    },
+    {
+      "id": "",
+      "label": "download",
+      "localized": "preuzmi",
+      "hint": "preuzmi"
+    },
+    {
+      "id": "",
+      "label": "download model",
+      "localized": "preuzmi model",
+      "hint": "preuzmi model"
+    },
+    {
+      "id": "",
+      "label": "download path",
+      "localized": "putanja preuzimanja",
+      "hint": "putanja preuzimanja"
+    },
+    {
+      "id": "",
+      "label": "download updates",
+      "localized": "preuzmi ažuriranja",
+      "hint": "preuzmi ažuriranja"
+    },
+    {
+      "id": "",
+      "label": "downscale high resolution live previews",
+      "localized": "smanji razlučivost prikaza uživo visoke rezolucije",
+      "hint": "smanji razlučivost prikaza uživo visoke rezolucije"
+    },
+    {
+      "id": "",
+      "label": "dpm sde",
+      "localized": "dpm sde",
+      "hint": "dpm sde"
+    },
+    {
+      "id": "",
+      "label": "dpm++",
+      "localized": "dpm++",
+      "hint": "dpm++"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s",
+      "localized": "dpm++ 1s",
+      "hint": "dpm++ 1s"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s inverse",
+      "localized": "dpm++ 1s inverzni",
+      "hint": "dpm++ 1s inverzni"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m",
+      "localized": "dpm++ 2m",
+      "hint": "dpm++ 2m"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m edm",
+      "localized": "dpm++ 2m edm",
+      "hint": "dpm++ 2m edm"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m inverse",
+      "localized": "dpm++ 2m inverzni",
+      "hint": "dpm++ 2m inverzni"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m sde",
+      "localized": "dpm++ 2m sde",
+      "hint": "dpm++ 2m sde"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m",
+      "localized": "dpm++ 3m",
+      "hint": "dpm++ 3m"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m inverse",
+      "localized": "dpm++ 3m inverzni",
+      "hint": "dpm++ 3m inverzni"
+    },
+    {
+      "id": "",
+      "label": "dpm++ cosine",
+      "localized": "dpm++ kosinus",
+      "hint": "dpm++ kosinus"
+    },
+    {
+      "id": "",
+      "label": "dpm2 flowmatch",
+      "localized": "dpm2 flowmatch",
+      "hint": "dpm2 flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m flowmatch",
+      "localized": "dpm2++ 2m flowmatch",
+      "hint": "dpm2++ 2m flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m sde flowmatch",
+      "localized": "dpm2++ 2m sde flowmatch",
+      "hint": "dpm2++ 2m sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2s flowmatch",
+      "localized": "dpm2++ 2s flowmatch",
+      "hint": "dpm2++ 2s flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 3m sde flowmatch",
+      "localized": "dpm2++ 3m sde flowmatch",
+      "hint": "dpm2++ 3m sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ sde flowmatch",
+      "localized": "dpm2++ sde flowmatch",
+      "hint": "dpm2++ sde flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2a flowmatch",
+      "localized": "dpm2a flowmatch",
+      "hint": "dpm2a flowmatch"
+    },
+    {
+      "id": "",
+      "label": "draw legend",
+      "localized": "nacrtaj legendu",
+      "hint": "nacrtaj legendu"
+    },
+    {
+      "id": "",
+      "label": "dropdown",
+      "localized": "padajući izbornik",
+      "hint": "padajući izbornik"
+    },
+    {
+      "id": "",
+      "label": "duration",
+      "localized": "trajanje",
+      "hint": "trajanje"
+    },
+    {
+      "id": "",
+      "label": "dwpose",
+      "localized": "dwpose",
+      "hint": "dwpose"
+    },
+    {
+      "id": "",
+      "label": "dynamic",
+      "localized": "dinamički",
+      "hint": "dinamički"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention",
+      "localized": "dinamička pažnja",
+      "hint": "dinamička pažnja"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention slicing rate in gb",
+      "localized": "stopa rezanja dinamičke pažnje u gb",
+      "hint": "stopa rezanja dinamičke pažnje u gb"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention trigger rate in gb",
+      "localized": "stopa okidanja dinamičke pažnje u gb",
+      "hint": "stopa okidanja dinamičke pažnje u gb"
+    },
+    {
+      "id": "",
+      "label": "edge",
+      "localized": "rub",
+      "hint": "rub"
+    },
+    {
+      "id": "",
+      "label": "edit start",
+      "localized": "uredi početak",
+      "hint": "uredi početak"
+    },
+    {
+      "id": "",
+      "label": "edit stop",
+      "localized": "uredi kraj",
+      "hint": "uredi kraj"
+    },
+    {
+      "id": "",
+      "label": "embedded metadata",
+      "localized": "ugrađeni metapodaci",
+      "hint": "ugrađeni metapodaci"
+    },
+    {
+      "id": "",
+      "label": "enable embeddings support",
+      "localized": "omogući podršku za ugradnje",
+      "hint": "omogući podršku za ugradnje"
+    },
+    {
+      "id": "",
+      "label": "enable file wildcards support",
+      "localized": "omogući podršku za zamjenske znakove datoteka",
+      "hint": "omogući podršku za zamjenske znakove datoteka"
+    },
+    {
+      "id": "",
+      "label": "enable freeu",
+      "localized": "omogući freeu",
+      "hint": "omogući freeu"
+    },
+    {
+      "id": "",
+      "label": "enable teacache",
+      "localized": "omogući teacache",
+      "hint": "omogući teacache"
+    },
+    {
+      "id": "",
+      "label": "enable tonemap",
+      "localized": "omogući mapiranje tonova",
+      "hint": "omogući mapiranje tonova"
+    },
+    {
+      "id": "",
+      "label": "enable use of reference models",
+      "localized": "omogući korištenje referentnih modela",
+      "hint": "omogući korištenje referentnih modela"
+    },
+    {
+      "id": "",
+      "label": "enabled",
+      "localized": "omogućeno",
+      "hint": "omogućeno"
+    },
+    {
+      "id": "",
+      "label": "encoder",
+      "localized": "enkoder",
+      "hint": "enkoder"
+    },
+    {
+      "id": "",
+      "label": "end",
+      "localized": "kraj",
+      "hint": "kraj"
+    },
+    {
+      "id": "",
+      "label": "enhance prompt",
+      "localized": "poboljšaj upit",
+      "hint": "poboljšaj upit"
+    },
+    {
+      "id": "",
+      "label": "enqueue keyboard shortcut",
+      "localized": "dodaj u red čekanja prečac tipkovnice",
+      "hint": "dodaj u red čekanja prečac tipkovnice"
+    },
+    {
+      "id": "",
+      "label": "ensemble size",
+      "localized": "veličina ansambla",
+      "hint": "veličina ansambla"
+    },
+    {
+      "id": "",
+      "label": "epsilon",
+      "localized": "epsilon",
+      "hint": "epsilon"
+    },
+    {
+      "id": "",
+      "label": "erode",
+      "localized": "erodiranje",
+      "hint": "erodiranje"
+    },
+    {
+      "id": "",
+      "label": "erode size",
+      "localized": "veličina erodiranja",
+      "hint": "veličina erodiranja"
+    },
+    {
+      "id": "",
+      "label": "eta",
+      "localized": "eta",
+      "hint": "eta"
+    },
+    {
+      "id": "",
+      "label": "euler",
+      "localized": "euler",
+      "hint": "euler"
+    },
+    {
+      "id": "",
+      "label": "euler edm",
+      "localized": "euler edm",
+      "hint": "euler edm"
+    },
+    {
+      "id": "",
+      "label": "euler flowmatch",
+      "localized": "euler flowmatch",
+      "hint": "euler flowmatch"
+    },
+    {
+      "id": "",
+      "label": "euler sgm",
+      "localized": "euler sgm",
+      "hint": "euler sgm"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cpu",
+      "localized": "davatelj izvršenja.cpu",
+      "hint": "davatelj izvršenja.cpu"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cuda",
+      "localized": "davatelj izvršenja.cuda",
+      "hint": "davatelj izvršenja.cuda"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.directml",
+      "localized": "davatelj izvršenja.directml",
+      "hint": "davatelj izvršenja.directml"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.migraphx",
+      "localized": "davatelj izvršenja.migraphx",
+      "hint": "davatelj izvršenja.migraphx"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.openvino",
+      "localized": "davatelj izvršenja.openvino",
+      "hint": "davatelj izvršenja.openvino"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.rocm",
+      "localized": "davatelj izvršenja.rocm",
+      "hint": "davatelj izvršenja.rocm"
+    },
+    {
+      "id": "",
+      "label": "expandable segments",
+      "localized": "proširivi segmenti",
+      "hint": "proširivi segmenti"
+    },
+    {
+      "id": "",
+      "label": "exponential",
+      "localized": "eksponencijalno",
+      "hint": "eksponencijalno"
+    },
+    {
+      "id": "",
+      "label": "export",
+      "localized": "izvoz",
+      "hint": "izvoz"
+    },
+    {
+      "id": "",
+      "label": "exposure",
+      "localized": "ekspozicija",
+      "hint": "ekspozicija"
+    },
+    {
+      "id": "",
+      "label": "extra noise multiplier for img2img",
+      "localized": "dodatni množitelj šuma za img2img",
+      "hint": "dodatni množitelj šuma za img2img"
+    },
+    {
+      "id": "",
+      "label": "extract lora",
+      "localized": "izvuci loru",
+      "hint": "izvuci loru"
+    },
+    {
+      "id": "",
+      "label": "face",
+      "localized": "lice",
+      "hint": "lice"
+    },
+    {
+      "id": "",
+      "label": "face confidence",
+      "localized": "pouzanost lica",
+      "hint": "pouzanost lica"
+    },
+    {
+      "id": "",
+      "label": "faceid model",
+      "localized": "faceid model",
+      "hint": "faceid model"
+    },
+    {
+      "id": "",
+      "label": "fall-off exponent (lower=higher detail)",
+      "localized": "eksponent opadanja (niži=više detalja)",
+      "hint": "eksponent opadanja (niži=više detalja)"
+    },
+    {
+      "id": "",
+      "label": "false",
+      "localized": "netočno",
+      "hint": "netočno"
+    },
+    {
+      "id": "",
+      "label": "fast",
+      "localized": "brzo",
+      "hint": "brzo"
+    },
+    {
+      "id": "",
+      "label": "file or folder with user-defined styles",
+      "localized": "datoteka ili mapa sa stilovima koje definira korisnik",
+      "hint": "datoteka ili mapa sa stilovima koje definira korisnik"
+    },
+    {
+      "id": "",
+      "label": "filename",
+      "localized": "naziv datoteke",
+      "hint": "naziv datoteke"
+    },
+    {
+      "id": "",
+      "label": "first-block cache enabled",
+      "localized": "predmemorija prvog bloka omogućena",
+      "hint": "predmemorija prvog bloka omogućena"
+    },
+    {
+      "id": "",
+      "label": "fixed unet precision",
+      "localized": "fiksna preciznost UNet-a",
+      "hint": "fiksna preciznost UNet-a"
+    },
+    {
+      "id": "",
+      "label": "flash attention",
+      "localized": "flash attention",
+      "hint": "flash attention"
+    },
+    {
+      "id": "",
+      "label": "flavors",
+      "localized": "okusi",
+      "hint": "okusi"
+    },
+    {
+      "id": "",
+      "label": "flow shift",
+      "localized": "pomak toka",
+      "hint": "pomak toka"
+    },
+    {
+      "id": "",
+      "label": "folder",
+      "localized": "mapa",
+      "hint": "mapa"
+    },
+    {
+      "id": "",
+      "label": "folder for control generate",
+      "localized": "mapa za kontrolno generiranje",
+      "hint": "mapa za kontrolno generiranje"
+    },
+    {
+      "id": "",
+      "label": "folder for control grids",
+      "localized": "mapa za kontrolne mreže",
+      "hint": "mapa za kontrolne mreže"
+    },
+    {
+      "id": "",
+      "label": "folder for disk offload",
+      "localized": "mapa za istovar na disk",
+      "hint": "mapa za istovar na disk"
+    },
+    {
+      "id": "",
+      "label": "folder for huggingface cache",
+      "localized": "mapa za Hugging Face predmemoriju",
+      "hint": "mapa za Hugging Face predmemoriju"
+    },
+    {
+      "id": "",
+      "label": "folder for image generate",
+      "localized": "mapa za generiranje slika",
+      "hint": "mapa za generiranje slika"
+    },
+    {
+      "id": "",
+      "label": "folder for img2img grids",
+      "localized": "mapa za img2img mreže",
+      "hint": "mapa za img2img mreže"
+    },
+    {
+      "id": "",
+      "label": "folder for init images",
+      "localized": "mapa za početne slike",
+      "hint": "mapa za početne slike"
+    },
+    {
+      "id": "",
+      "label": "folder for manually saved images",
+      "localized": "mapa za ručno spremljene slike",
+      "hint": "mapa za ručno spremljene slike"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx cached models",
+      "localized": "mapa za ONNX predmemorirane modele",
+      "hint": "mapa za ONNX predmemorirane modele"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx conversion",
+      "localized": "mapa za ONNX konverziju",
+      "hint": "mapa za ONNX konverziju"
+    },
+    {
+      "id": "",
+      "label": "folder for openvino cache",
+      "localized": "mapa za OpenVINO predmemoriju",
+      "hint": "mapa za OpenVINO predmemoriju"
+    },
+    {
+      "id": "",
+      "label": "folder for processed images",
+      "localized": "mapa za obrađene slike",
+      "hint": "mapa za obrađene slike"
+    },
+    {
+      "id": "",
+      "label": "folder for text generate",
+      "localized": "mapa za generiranje teksta",
+      "hint": "mapa za generiranje teksta"
+    },
+    {
+      "id": "",
+      "label": "folder for tunable ops cache",
+      "localized": "mapa za predmemoriju podesivih operacija",
+      "hint": "mapa za predmemoriju podesivih operacija"
+    },
+    {
+      "id": "",
+      "label": "folder for txt2img grids",
+      "localized": "mapa za txt2img mreže",
+      "hint": "mapa za txt2img mreže"
+    },
+    {
+      "id": "",
+      "label": "folder for videos",
+      "localized": "mapa za videozapise",
+      "hint": "mapa za videozapise"
+    },
+    {
+      "id": "",
+      "label": "folder with bsrgan models",
+      "localized": "mapa s BSRGAN modelima",
+      "hint": "mapa s BSRGAN modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with chainner models",
+      "localized": "mapa s Chainner modelima",
+      "hint": "mapa s Chainner modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with clip models",
+      "localized": "mapa s CLIP modelima",
+      "hint": "mapa s CLIP modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with codeformer models",
+      "localized": "mapa s CodeFormer modelima",
+      "hint": "mapa s CodeFormer modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with control models",
+      "localized": "mapa s kontrolnim modelima",
+      "hint": "mapa s kontrolnim modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with esrgan models",
+      "localized": "mapa s ESRGAN modelima",
+      "hint": "mapa s ESRGAN modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with gfpgan models",
+      "localized": "mapa s GFPGAN modelima",
+      "hint": "mapa s GFPGAN modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with huggingface models",
+      "localized": "mapa s Hugging Face modelima",
+      "hint": "mapa s Hugging Face modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with hypernetwork models",
+      "localized": "mapa s modelima hipermreže",
+      "hint": "mapa s modelima hipermreže"
+    },
+    {
+      "id": "",
+      "label": "folder with ldsr models",
+      "localized": "mapa s LDSR modelima",
+      "hint": "mapa s LDSR modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with lora network(s)",
+      "localized": "mapa s Lora mrežom(ama)",
+      "hint": "mapa s Lora mrežom(ama)"
+    },
+    {
+      "id": "",
+      "label": "folder with realesrgan models",
+      "localized": "mapa s RealESRGAN modelima",
+      "hint": "mapa s RealESRGAN modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with scunet models",
+      "localized": "mapa s SCUNet modelima",
+      "hint": "mapa s SCUNet modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with stable diffusion models",
+      "localized": "mapa sa Stable Diffusion modelima",
+      "hint": "mapa sa Stable Diffusion modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with swinir models",
+      "localized": "mapa sa SwinIR modelima",
+      "hint": "mapa sa SwinIR modelima"
+    },
+    {
+      "id": "",
+      "label": "folder with text encoder files",
+      "localized": "mapa s datotekama tekstualnog kodera",
+      "hint": "mapa s datotekama tekstualnog kodera"
+    },
+    {
+      "id": "",
+      "label": "folder with textual inversion embeddings",
+      "localized": "mapa s ugradnjama tekstualne inverzije",
+      "hint": "mapa s ugradnjama tekstualne inverzije"
+    },
+    {
+      "id": "",
+      "label": "folder with unet files",
+      "localized": "mapa s UNet datotekama",
+      "hint": "mapa s UNet datotekama"
+    },
+    {
+      "id": "",
+      "label": "folder with user-defined wildcards",
+      "localized": "mapa s joker znakovima koje definira korisnik",
+      "hint": "mapa s joker znakovima koje definira korisnik"
+    },
+    {
+      "id": "",
+      "label": "folder with vae files",
+      "localized": "mapa s VAE datotekama",
+      "hint": "mapa s VAE datotekama"
+    },
+    {
+      "id": "",
+      "label": "folder with yolo models",
+      "localized": "mapa s YOLO modelima",
+      "hint": "mapa s YOLO modelima"
+    },
+    {
+      "id": "",
+      "label": "font color",
+      "localized": "boja fonta",
+      "hint": "boja fonta"
+    },
+    {
+      "id": "",
+      "label": "font file",
+      "localized": "datoteka fonta",
+      "hint": "datoteka fonta"
+    },
+    {
+      "id": "",
+      "label": "font size",
+      "localized": "veličina fonta",
+      "hint": "veličina fonta"
+    },
+    {
+      "id": "",
+      "label": "force model eval",
+      "localized": "prisili evaluaciju modela",
+      "hint": "prisili evaluaciju modela"
+    },
+    {
+      "id": "",
+      "label": "foreground threshold",
+      "localized": "prag prednjeg plana",
+      "hint": "prag prednjeg plana"
+    },
+    {
+      "id": "",
+      "label": "fp4",
+      "localized": "fp4",
+      "hint": "fp4"
+    },
+    {
+      "id": "",
+      "label": "frame change sensitivity",
+      "localized": "osjetljivost na promjenu okvira",
+      "hint": "osjetljivost na promjenu okvira"
+    },
+    {
+      "id": "",
+      "label": "frames",
+      "localized": "okviri",
+      "hint": "okviri"
+    },
+    {
+      "id": "",
+      "label": "freeinit",
+      "localized": "freeinit",
+      "hint": "freeinit"
+    },
+    {
+      "id": "",
+      "label": "freeu enabled",
+      "localized": "freeu omogućen",
+      "hint": "freeu omogućen"
+    },
+    {
+      "id": "",
+      "label": "freeu preset",
+      "localized": "freeu unaprijed postavljeno",
+      "hint": "freeu unaprijed postavljeno"
+    },
+    {
+      "id": "",
+      "label": "full vae",
+      "localized": "puni vae",
+      "hint": "puni vae"
+    },
+    {
+      "id": "",
+      "label": "full-depth cudnn benchmark",
+      "localized": "CUDNN benchmark pune dubine",
+      "hint": "CUDNN benchmark pune dubine"
+    },
+    {
+      "id": "",
+      "label": "fuse strength",
+      "localized": "jačina fuzije",
+      "hint": "jačina fuzije"
+    },
+    {
+      "id": "",
+      "label": "fused projections",
+      "localized": "fuzirane projekcije",
+      "hint": "fuzirane projekcije"
+    },
+    {
+      "id": "",
+      "label": "gallery",
+      "localized": "galerija",
+      "hint": "galerija"
+    },
+    {
+      "id": "",
+      "label": "gamma",
+      "localized": "gama",
+      "hint": "gama"
+    },
+    {
+      "id": "",
+      "label": "gamma corrected",
+      "localized": "gama korigirana",
+      "hint": "gama korigirana"
+    },
+    {
+      "id": "",
+      "label": "gate step",
+      "localized": "korak vrata",
+      "hint": "korak vrata"
+    },
+    {
+      "id": "",
+      "label": "gc threshold",
+      "localized": "gc prag",
+      "hint": "gc prag"
+    },
+    {
+      "id": "",
+      "label": "generation info",
+      "localized": "informacije o generiranju",
+      "hint": "informacije o generiranju"
+    },
+    {
+      "id": "",
+      "label": "get changelog",
+      "localized": "dohvati dnevnik promjena",
+      "hint": "dohvati dnevnik promjena"
+    },
+    {
+      "id": "",
+      "label": "gpu",
+      "localized": "gpu",
+      "hint": "gpu"
+    },
+    {
+      "id": "",
+      "label": "gradient",
+      "localized": "gradijent",
+      "hint": "gradijent"
+    },
+    {
+      "id": "",
+      "label": "grid background color",
+      "localized": "boja pozadine mreže",
+      "hint": "boja pozadine mreže"
+    },
+    {
+      "id": "",
+      "label": "grid margins",
+      "localized": "margine mreže",
+      "hint": "margine mreže"
+    },
+    {
+      "id": "",
+      "label": "grid sections:",
+      "localized": "odjeljci mreže:",
+      "hint": "odjeljci mreže:"
+    },
+    {
+      "id": "",
+      "label": "group size",
+      "localized": "veličina grupe",
+      "hint": "veličina grupe"
+    },
+    {
+      "id": "",
+      "label": "guidance",
+      "localized": "usmjeravanje",
+      "hint": "usmjeravanje"
+    },
+    {
+      "id": "",
+      "label": "guidance start",
+      "localized": "početak usmjeravanja",
+      "hint": "početak usmjeravanja"
+    },
+    {
+      "id": "",
+      "label": "guidance stop",
+      "localized": "zaustavljanje usmjeravanja",
+      "hint": "zaustavljanje usmjeravanja"
+    },
+    {
+      "id": "",
+      "label": "guidance strength",
+      "localized": "jačina usmjeravanja",
+      "hint": "jačina usmjeravanja"
+    },
+    {
+      "id": "",
+      "label": "hands",
+      "localized": "ruke",
+      "hint": "ruke"
+    },
+    {
+      "id": "",
+      "label": "hdr range",
+      "localized": "hdr raspon",
+      "hint": "hdr raspon"
+    },
+    {
+      "id": "",
+      "label": "hed",
+      "localized": "hed",
+      "hint": "hed"
+    },
+    {
+      "id": "",
+      "label": "height  after",
+      "localized": "Visina nakon",
+      "hint": "Visina nakon"
+    },
+    {
+      "id": "",
+      "label": "height  before",
+      "localized": "Visina prije",
+      "hint": "Visina prije"
+    },
+    {
+      "id": "",
+      "label": "height  mask",
+      "localized": "Visina maske",
+      "hint": "Visina maske"
+    },
+    {
+      "id": "",
+      "label": "heun",
+      "localized": "Heun",
+      "hint": "Heun"
+    },
+    {
+      "id": "",
+      "label": "heun flowmatch",
+      "localized": "Heun Flowmatch",
+      "hint": "Heun Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "hibernate",
+      "localized": "Hibernacija",
+      "hint": "Hibernacija"
+    },
+    {
+      "id": "",
+      "label": "hide the custom checkpoint dropdown",
+      "localized": "Sakrij padajući izbornik prilagođenih kontrolnih točaka",
+      "hint": "Sakrij padajući izbornik prilagođenih kontrolnih točaka"
+    },
+    {
+      "id": "",
+      "label": "hidet",
+      "localized": "Hidet",
+      "hint": "Hidet"
+    },
+    {
+      "id": "",
+      "label": "high threshold",
+      "localized": "Visoki prag",
+      "hint": "Visoki prag"
+    },
+    {
+      "id": "",
+      "label": "hires pass only",
+      "localized": "Samo propusnica visoke rezolucije",
+      "hint": "Samo propusnica visoke rezolucije"
+    },
+    {
+      "id": "",
+      "label": "hq init latents",
+      "localized": "HQ inicijalni latenti",
+      "hint": "HQ inicijalni latenti"
+    },
+    {
+      "id": "",
+      "label": "hue",
+      "localized": "Nijansa",
+      "hint": "Nijansa"
+    },
+    {
+      "id": "",
+      "label": "huggingface mirror",
+      "localized": "Hugging Face ogledalo",
+      "hint": "Hugging Face ogledalo"
+    },
+    {
+      "id": "",
+      "label": "huggingface token",
+      "localized": "Hugging Face token",
+      "hint": "Hugging Face token"
+    },
+    {
+      "id": "",
+      "label": "hunyuan",
+      "localized": "Hunyuan",
+      "hint": "Hunyuan"
+    },
+    {
+      "id": "",
+      "label": "il",
+      "localized": "IL",
+      "hint": "IL"
+    },
+    {
+      "id": "",
+      "label": "image height",
+      "localized": "Visina slike",
+      "hint": "Visina slike"
+    },
+    {
+      "id": "",
+      "label": "image quality",
+      "localized": "Kvaliteta slike",
+      "hint": "Kvaliteta slike"
+    },
+    {
+      "id": "",
+      "label": "image transparent color fill",
+      "localized": "Ispuna prozirne boje slike",
+      "hint": "Ispuna prozirne boje slike"
+    },
+    {
+      "id": "",
+      "label": "image watermark file",
+      "localized": "Datoteka vodenog žiga slike",
+      "hint": "Datoteka vodenog žiga slike"
+    },
+    {
+      "id": "",
+      "label": "image watermark position",
+      "localized": "Položaj vodenog žiga slike",
+      "hint": "Položaj vodenog žiga slike"
+    },
+    {
+      "id": "",
+      "label": "image width",
+      "localized": "Širina slike",
+      "hint": "Širina slike"
+    },
+    {
+      "id": "",
+      "label": "import",
+      "localized": "Uvoz",
+      "hint": "Uvoz"
+    },
+    {
+      "id": "",
+      "label": "include images",
+      "localized": "Uključi slike",
+      "hint": "Uključi slike"
+    },
+    {
+      "id": "",
+      "label": "include main grid",
+      "localized": "Uključi glavnu mrežu",
+      "hint": "Uključi glavnu mrežu"
+    },
+    {
+      "id": "",
+      "label": "include mask in outputs",
+      "localized": "Uključi masku u izlaze",
+      "hint": "Uključi masku u izlaze"
+    },
+    {
+      "id": "",
+      "label": "include original image",
+      "localized": "Uključi originalnu sliku",
+      "hint": "Uključi originalnu sliku"
+    },
+    {
+      "id": "",
+      "label": "include sub grids",
+      "localized": "Uključi pod-mreže",
+      "hint": "Uključi pod-mreže"
+    },
+    {
+      "id": "",
+      "label": "inductor",
+      "localized": "Induktor",
+      "hint": "Induktor"
+    },
+    {
+      "id": "",
+      "label": "info",
+      "localized": "Informacije",
+      "hint": "Informacije"
+    },
+    {
+      "id": "",
+      "label": "info object",
+      "localized": "Info objekt",
+      "hint": "Info objekt"
+    },
+    {
+      "id": "",
+      "label": "inpaint",
+      "localized": "Uslikavanje",
+      "hint": "Uslikavanje"
+    },
+    {
+      "id": "",
+      "label": "inpaint masked only",
+      "localized": "Uslikaj samo maskirano",
+      "hint": "Uslikaj samo maskirano"
+    },
+    {
+      "id": "",
+      "label": "inpainting include greyscale mask in results",
+      "localized": "U slikanje uključi masku sive skale u rezultatima",
+      "hint": "U slikanje uključi masku sive skale u rezultatima"
+    },
+    {
+      "id": "",
+      "label": "inpainting include masked composite in results",
+      "localized": "U slikanje uključi maskirani kompozit u rezultatima",
+      "hint": "U slikanje uključi maskirani kompozit u rezultatima"
+    },
+    {
+      "id": "",
+      "label": "input model",
+      "localized": "Ulazni model",
+      "hint": "Ulazni model"
+    },
+    {
+      "id": "",
+      "label": "intermediates",
+      "localized": "Međuprodukti",
+      "hint": "Međuprodukti"
+    },
+    {
+      "id": "",
+      "label": "interpolate frames",
+      "localized": "Interpoliraj okvire",
+      "hint": "Interpoliraj okvire"
+    },
+    {
+      "id": "",
+      "label": "interpolation method",
+      "localized": "Metoda interpolacije",
+      "hint": "Metoda interpolacije"
+    },
+    {
+      "id": "",
+      "label": "interrogate batch",
+      "localized": "Ispitaj seriju",
+      "hint": "Ispitaj seriju"
+    },
+    {
+      "id": "",
+      "label": "interrogate image",
+      "localized": "Ispitaj sliku",
+      "hint": "Ispitaj sliku"
+    },
+    {
+      "id": "",
+      "label": "interrogate: offload models",
+      "localized": "Ispitivanje: prebaci modele",
+      "hint": "Ispitivanje: prebaci modele"
+    },
+    {
+      "id": "",
+      "label": "invert",
+      "localized": "Invertiraj",
+      "hint": "Invertiraj"
+    },
+    {
+      "id": "",
+      "label": "invert mask",
+      "localized": "Invertiraj masku",
+      "hint": "Invertiraj masku"
+    },
+    {
+      "id": "",
+      "label": "iou",
+      "localized": "IoU",
+      "hint": "IoU"
+    },
+    {
+      "id": "",
+      "label": "ipex",
+      "localized": "IPEX",
+      "hint": "IPEX"
+    },
+    {
+      "id": "",
+      "label": "ipndm",
+      "localized": "IPNDM",
+      "hint": "IPNDM"
+    },
+    {
+      "id": "",
+      "label": "item edge blur",
+      "localized": "Zamućenje rubova stavke",
+      "hint": "Zamućenje rubova stavke"
+    },
+    {
+      "id": "",
+      "label": "item padding",
+      "localized": "Umetanje stavke",
+      "hint": "Umetanje stavke"
+    },
+    {
+      "id": "",
+      "label": "iterate seed per line",
+      "localized": "Iteriraj sjeme po liniji",
+      "hint": "Iteriraj sjeme po liniji"
+    },
+    {
+      "id": "",
+      "label": "iterations",
+      "localized": "Iteracije",
+      "hint": "Iteracije"
+    },
+    {
+      "id": "",
+      "label": "karras",
+      "localized": "Karras",
+      "hint": "Karras"
+    },
+    {
+      "id": "",
+      "label": "kdpm2",
+      "localized": "KDPM2",
+      "hint": "KDPM2"
+    },
+    {
+      "id": "",
+      "label": "kdpm2 a",
+      "localized": "KDPM2 A",
+      "hint": "KDPM2 A"
+    },
+    {
+      "id": "",
+      "label": "keep forever",
+      "localized": "Zadrži zauvijek",
+      "hint": "Zadrži zauvijek"
+    },
+    {
+      "id": "",
+      "label": "keep incomplete images",
+      "localized": "Zadrži nepotpune slike",
+      "hint": "Zadrži nepotpune slike"
+    },
+    {
+      "id": "",
+      "label": "key",
+      "localized": "Ključ",
+      "hint": "Ključ"
+    },
+    {
+      "id": "",
+      "label": "large",
+      "localized": "Veliko",
+      "hint": "Veliko"
+    },
+    {
+      "id": "",
+      "label": "latent history size",
+      "localized": "Veličina povijesti latencije",
+      "hint": "Veličina povijesti latencije"
+    },
+    {
+      "id": "",
+      "label": "latent mode",
+      "localized": "Latentni način",
+      "hint": "Latentni način"
+    },
+    {
+      "id": "",
+      "label": "layer scales",
+      "localized": "Skale slojeva",
+      "hint": "Skale slojeva"
+    },
+    {
+      "id": "",
+      "label": "layerwise casting storage",
+      "localized": "Pohrana s lijevanjem slojeva",
+      "hint": "Pohrana s lijevanjem slojeva"
+    },
+    {
+      "id": "",
+      "label": "layerwise non-blocking operations",
+      "localized": "Operacije bez blokiranja po slojevima",
+      "hint": "Operacije bez blokiranja po slojevima"
+    },
+    {
+      "id": "",
+      "label": "lcm",
+      "localized": "LCM",
+      "hint": "LCM"
+    },
+    {
+      "id": "",
+      "label": "ldsr processing steps",
+      "localized": "LDSR koraci obrade",
+      "hint": "LDSR koraci obrade"
+    },
+    {
+      "id": "",
+      "label": "left",
+      "localized": "Lijevo",
+      "hint": "Lijevo"
+    },
+    {
+      "id": "",
+      "label": "legend",
+      "localized": "Legenda",
+      "hint": "Legenda"
+    },
+    {
+      "id": "",
+      "label": "length",
+      "localized": "Duljina",
+      "hint": "Duljina"
+    },
+    {
+      "id": "",
+      "label": "leres depth",
+      "localized": "LeReS dubina",
+      "hint": "LeReS dubina"
+    },
+    {
+      "id": "",
+      "label": "level",
+      "localized": "Razina",
+      "hint": "Razina"
+    },
+    {
+      "id": "",
+      "label": "libs",
+      "localized": "Biblioteke",
+      "hint": "Biblioteke"
+    },
+    {
+      "id": "",
+      "label": "light",
+      "localized": "Svjetlo",
+      "hint": "Svjetlo"
+    },
+    {
+      "id": "",
+      "label": "lineart",
+      "localized": "Lineart",
+      "hint": "Lineart"
+    },
+    {
+      "id": "",
+      "label": "list",
+      "localized": "Lista",
+      "hint": "Lista"
+    },
+    {
+      "id": "",
+      "label": "list model details",
+      "localized": "Prikaži detalje modela",
+      "hint": "Prikaži detalje modela"
+    },
+    {
+      "id": "",
+      "label": "lite",
+      "localized": "Lite",
+      "hint": "Lite"
+    },
+    {
+      "id": "",
+      "label": "live update",
+      "localized": "Ažuriranje uživo",
+      "hint": "Ažuriranje uživo"
+    },
+    {
+      "id": "",
+      "label": "lmsd",
+      "localized": "LMSD",
+      "hint": "LMSD"
+    },
+    {
+      "id": "",
+      "label": "load custom diffusers pipeline",
+      "localized": "Učitaj prilagođeni Diffusers pipeline",
+      "hint": "Učitaj prilagođeni Diffusers pipeline"
+    },
+    {
+      "id": "",
+      "label": "load model directly to gpu",
+      "localized": "Učitaj model izravno na GPU",
+      "hint": "Učitaj model izravno na GPU"
+    },
+    {
+      "id": "",
+      "label": "loaded lora",
+      "localized": "Učitana LoRA",
+      "hint": "Učitana LoRA"
+    },
+    {
+      "id": "",
+      "label": "logsnr",
+      "localized": "LogSNR",
+      "hint": "LogSNR"
+    },
+    {
+      "id": "",
+      "label": "loop",
+      "localized": "Petlja",
+      "hint": "Petlja"
+    },
+    {
+      "id": "",
+      "label": "lora add hash info to metadata",
+      "localized": "LoRA dodaj hash informacije u metapodatke",
+      "hint": "LoRA dodaj hash informacije u metapodatke"
+    },
+    {
+      "id": "",
+      "label": "lora auto-apply tags",
+      "localized": "LoRA automatski primjeni oznake",
+      "hint": "LoRA automatski primjeni oznake"
+    },
+    {
+      "id": "",
+      "label": "lora load using diffusers method for selected models",
+      "localized": "LoRA učitaj koristeći Diffusers metodu za odabrane modele",
+      "hint": "LoRA učitaj koristeći Diffusers metodu za odabrane modele"
+    },
+    {
+      "id": "",
+      "label": "lora load using legacy method",
+      "localized": "LoRA učitaj koristeći naslijeđenu metodu",
+      "hint": "LoRA učitaj koristeći naslijeđenu metodu"
+    },
+    {
+      "id": "",
+      "label": "lora target filename",
+      "localized": "LoRA ciljna datoteka",
+      "hint": "LoRA ciljna datoteka"
+    },
+    {
+      "id": "",
+      "label": "low order",
+      "localized": "Niski red",
+      "hint": "Niski red"
+    },
+    {
+      "id": "",
+      "label": "low threshold",
+      "localized": "Niski prag",
+      "hint": "Niski prag"
+    },
+    {
+      "id": "",
+      "label": "ltx model",
+      "localized": "LTX model",
+      "hint": "LTX model"
+    },
+    {
+      "id": "",
+      "label": "manual block merge",
+      "localized": "Ručno spajanje blokova",
+      "hint": "Ručno spajanje blokova"
+    },
+    {
+      "id": "",
+      "label": "marigold depth",
+      "localized": "Marigold dubina",
+      "hint": "Marigold dubina"
+    },
+    {
+      "id": "",
+      "label": "mask dropout",
+      "localized": "Ispuštanje maske",
+      "hint": "Ispuštanje maske"
+    },
+    {
+      "id": "",
+      "label": "mask invert",
+      "localized": "Invertiraj masku",
+      "hint": "Invertiraj masku"
+    },
+    {
+      "id": "",
+      "label": "mask only",
+      "localized": "Samo maska",
+      "hint": "Samo maska"
+    },
+    {
+      "id": "",
+      "label": "mask strength",
+      "localized": "Jačina maske",
+      "hint": "Jačina maske"
+    },
+    {
+      "id": "",
+      "label": "masked",
+      "localized": "Maskirano",
+      "hint": "Maskirano"
+    },
+    {
+      "id": "",
+      "label": "math attention",
+      "localized": "Matematička pažnja",
+      "hint": "Matematička pažnja"
+    },
+    {
+      "id": "",
+      "label": "max faces",
+      "localized": "Maksimalno lica",
+      "hint": "Maksimalno lica"
+    },
+    {
+      "id": "",
+      "label": "max flavors",
+      "localized": "maksimalno okusa",
+      "hint": "maksimalno okusa"
+    },
+    {
+      "id": "",
+      "label": "max guidance",
+      "localized": "maksimalno vodstvo",
+      "hint": "maksimalno vodstvo"
+    },
+    {
+      "id": "",
+      "label": "max length",
+      "localized": "maksimalna duljina",
+      "hint": "maksimalna duljina"
+    },
+    {
+      "id": "",
+      "label": "max object size",
+      "localized": "maksimalna veličina objekta",
+      "hint": "maksimalna veličina objekta"
+    },
+    {
+      "id": "",
+      "label": "max range",
+      "localized": "maksimalni raspon",
+      "hint": "maksimalni raspon"
+    },
+    {
+      "id": "",
+      "label": "max words",
+      "localized": "maksimalno riječi",
+      "hint": "maksimalno riječi"
+    },
+    {
+      "id": "",
+      "label": "max-autotune",
+      "localized": "maksimalno automatsko podešavanje",
+      "hint": "maksimalno automatsko podešavanje"
+    },
+    {
+      "id": "",
+      "label": "max-autotune-no-cudagraphs",
+      "localized": "maksimalno automatsko podešavanje bez CudaGraphova",
+      "hint": "maksimalno automatsko podešavanje bez CudaGraphova"
+    },
+    {
+      "id": "",
+      "label": "maximum image size (mp)",
+      "localized": "maksimalna veličina slike (mp)",
+      "hint": "maksimalna veličina slike (mp)"
+    },
+    {
+      "id": "",
+      "label": "maximum number of units",
+      "localized": "maksimalan broj jedinica",
+      "hint": "maksimalan broj jedinica"
+    },
+    {
+      "id": "",
+      "label": "maximum rank",
+      "localized": "maksimalni rang",
+      "hint": "maksimalni rang"
+    },
+    {
+      "id": "",
+      "label": "mediapipe face",
+      "localized": "mediapipe lice",
+      "hint": "mediapipe lice"
+    },
+    {
+      "id": "",
+      "label": "medium",
+      "localized": "medij",
+      "hint": "medij"
+    },
+    {
+      "id": "",
+      "label": "mediums",
+      "localized": "mediji",
+      "hint": "mediji"
+    },
+    {
+      "id": "",
+      "label": "memory",
+      "localized": "memorija",
+      "hint": "memorija"
+    },
+    {
+      "id": "",
+      "label": "memory attention",
+      "localized": "pažnja memorije",
+      "hint": "pažnja memorije"
+    },
+    {
+      "id": "",
+      "label": "memory limit",
+      "localized": "ograničenje memorije",
+      "hint": "ograničenje memorije"
+    },
+    {
+      "id": "",
+      "label": "memory optimization",
+      "localized": "optimizacija memorije",
+      "hint": "optimizacija memorije"
+    },
+    {
+      "id": "",
+      "label": "merge",
+      "localized": "spajanje",
+      "hint": "spajanje"
+    },
+    {
+      "id": "",
+      "label": "merge alpha",
+      "localized": "spajanje alfa",
+      "hint": "spajanje alfa"
+    },
+    {
+      "id": "",
+      "label": "method",
+      "localized": "metoda",
+      "hint": "metoda"
+    },
+    {
+      "id": "",
+      "label": "method after",
+      "localized": "metoda poslije",
+      "hint": "metoda poslije"
+    },
+    {
+      "id": "",
+      "label": "method before",
+      "localized": "metoda prije",
+      "hint": "metoda prije"
+    },
+    {
+      "id": "",
+      "label": "method mask",
+      "localized": "metoda maske",
+      "hint": "metoda maske"
+    },
+    {
+      "id": "",
+      "label": "midas depth",
+      "localized": "midas dubina",
+      "hint": "midas dubina"
+    },
+    {
+      "id": "",
+      "label": "migraphx",
+      "localized": "migraphx",
+      "hint": "migraphx"
+    },
+    {
+      "id": "",
+      "label": "min flavors",
+      "localized": "minimalno okusa",
+      "hint": "minimalno okusa"
+    },
+    {
+      "id": "",
+      "label": "min guidance",
+      "localized": "minimalno vodstvo",
+      "hint": "minimalno vodstvo"
+    },
+    {
+      "id": "",
+      "label": "min object size",
+      "localized": "minimalna veličina objekta",
+      "hint": "minimalna veličina objekta"
+    },
+    {
+      "id": "",
+      "label": "mine",
+      "localized": "moje",
+      "hint": "moje"
+    },
+    {
+      "id": "",
+      "label": "mlsd",
+      "localized": "mlsd",
+      "hint": "mlsd"
+    },
+    {
+      "id": "",
+      "label": "mode",
+      "localized": "način",
+      "hint": "način"
+    },
+    {
+      "id": "",
+      "label": "mode after",
+      "localized": "način poslije",
+      "hint": "način poslije"
+    },
+    {
+      "id": "",
+      "label": "mode before",
+      "localized": "način prije",
+      "hint": "način prije"
+    },
+    {
+      "id": "",
+      "label": "mode mask",
+      "localized": "način maske",
+      "hint": "način maske"
+    },
+    {
+      "id": "",
+      "label": "mode x-axis",
+      "localized": "način x-os",
+      "hint": "način x-os"
+    },
+    {
+      "id": "",
+      "label": "mode y-axis",
+      "localized": "način y-os",
+      "hint": "način y-os"
+    },
+    {
+      "id": "",
+      "label": "model auto-download on demand",
+      "localized": "automatsko preuzimanje modela na zahtjev",
+      "hint": "automatsko preuzimanje modela na zahtjev"
+    },
+    {
+      "id": "",
+      "label": "model autoload on start",
+      "localized": "automatsko učitavanje modela pri pokretanju",
+      "hint": "automatsko učitavanje modela pri pokretanju"
+    },
+    {
+      "id": "",
+      "label": "model compile fullgraph",
+      "localized": "kompiliranje modela punog grafa",
+      "hint": "kompiliranje modela punog grafa"
+    },
+    {
+      "id": "",
+      "label": "model compile suppress errors",
+      "localized": "potiskivanje grešaka pri kompiliranje modela",
+      "hint": "potiskivanje grešaka pri kompiliranje modela"
+    },
+    {
+      "id": "",
+      "label": "model compile verbose mode",
+      "localized": "detaljni način kompiliranje modela",
+      "hint": "detaljni način kompiliranje modela"
+    },
+    {
+      "id": "",
+      "label": "model info",
+      "localized": "informacije o modelu",
+      "hint": "informacije o modelu"
+    },
+    {
+      "id": "",
+      "label": "model metadata",
+      "localized": "metapodaci modela",
+      "hint": "metapodaci modela"
+    },
+    {
+      "id": "",
+      "label": "model name",
+      "localized": "naziv modela",
+      "hint": "naziv modela"
+    },
+    {
+      "id": "",
+      "label": "model precision",
+      "localized": "preciznost modela",
+      "hint": "preciznost modela"
+    },
+    {
+      "id": "",
+      "label": "model type",
+      "localized": "tip modela",
+      "hint": "tip modela"
+    },
+    {
+      "id": "",
+      "label": "model url",
+      "localized": "url modela",
+      "hint": "url modela"
+    },
+    {
+      "id": "",
+      "label": "modern",
+      "localized": "moderno",
+      "hint": "moderno"
+    },
+    {
+      "id": "",
+      "label": "modules",
+      "localized": "moduli",
+      "hint": "moduli"
+    },
+    {
+      "id": "",
+      "label": "momentum",
+      "localized": "momentum",
+      "hint": "momentum"
+    },
+    {
+      "id": "",
+      "label": "motion level",
+      "localized": "razina pokreta",
+      "hint": "razina pokreta"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using refiner",
+      "localized": "premjestite osnovni model na CPU prilikom korištenja pročišćivača",
+      "hint": "premjestite osnovni model na CPU prilikom korištenja pročišćivača"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using vae",
+      "localized": "premjestite osnovni model na CPU prilikom korištenja VAE",
+      "hint": "premjestite osnovni model na CPU prilikom korištenja VAE"
+    },
+    {
+      "id": "",
+      "label": "move detailer model to cpu when complete",
+      "localized": "premjestite model detaljera na CPU po završetku",
+      "hint": "premjestite model detaljera na CPU po završetku"
+    },
+    {
+      "id": "",
+      "label": "move refiner model to cpu when not in use",
+      "localized": "premjestite model pročišćivača na CPU kada nije u upotrebi",
+      "hint": "premjestite model pročišćivača na CPU kada nije u upotrebi"
+    },
+    {
+      "id": "",
+      "label": "movements",
+      "localized": "pokreti",
+      "hint": "pokreti"
+    },
+    {
+      "id": "",
+      "label": "multi decoder",
+      "localized": "višestruki dekoder",
+      "hint": "višestruki dekoder"
+    },
+    {
+      "id": "",
+      "label": "multistep restore",
+      "localized": "višestepeni oporavak",
+      "hint": "višestepeni oporavak"
+    },
+    {
+      "id": "",
+      "label": "native",
+      "localized": "izvorni",
+      "hint": "izvorni"
+    },
+    {
+      "id": "",
+      "label": "near threshold",
+      "localized": "bliski prag",
+      "hint": "bliski prag"
+    },
+    {
+      "id": "",
+      "label": "negative",
+      "localized": "negativno",
+      "hint": "negativno"
+    },
+    {
+      "id": "",
+      "label": "network negative prompt",
+      "localized": "negativni upit mreže",
+      "hint": "negativni upit mreže"
+    },
+    {
+      "id": "",
+      "label": "network parameters",
+      "localized": "parametri mreže",
+      "hint": "parametri mreže"
+    },
+    {
+      "id": "",
+      "label": "network prompt",
+      "localized": "upit mreže",
+      "hint": "upit mreže"
+    },
+    {
+      "id": "",
+      "label": "new model name",
+      "localized": "novi naziv modela",
+      "hint": "novi naziv modela"
+    },
+    {
+      "id": "",
+      "label": "nf4",
+      "localized": "nf4",
+      "hint": "nf4"
+    },
+    {
+      "id": "",
+      "label": "nms",
+      "localized": "nms",
+      "hint": "nms"
+    },
+    {
+      "id": "",
+      "label": "noise",
+      "localized": "šum",
+      "hint": "šum"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier (eta)",
+      "localized": "faktor množenja šuma (eta)",
+      "hint": "faktor množenja šuma (eta)"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier for image processing",
+      "localized": "faktor množenja šuma za obradu slike",
+      "hint": "faktor množenja šuma za obradu slike"
+    },
+    {
+      "id": "",
+      "label": "noise seed delta (eta)",
+      "localized": "delta sjemena šuma (eta)",
+      "hint": "delta sjemena šuma (eta)"
+    },
+    {
+      "id": "",
+      "label": "noise strength",
+      "localized": "jačinu šuma",
+      "hint": "jačinu šuma"
+    },
+    {
+      "id": "",
+      "label": "none",
+      "localized": "nijedan",
+      "hint": "nijedan"
+    },
+    {
+      "id": "",
+      "label": "note",
+      "localized": "napomena",
+      "hint": "napomena"
+    },
+    {
+      "id": "",
+      "label": "nothing",
+      "localized": "ništa",
+      "hint": "ništa"
+    },
+    {
+      "id": "",
+      "label": "number",
+      "localized": "broj",
+      "hint": "broj"
+    },
+    {
+      "id": "",
+      "label": "numbered filenames",
+      "localized": "numerirane datoteke",
+      "hint": "numerirane datoteke"
+    },
+    {
+      "id": "",
+      "label": "offload",
+      "localized": "rasterećenje",
+      "hint": "rasterećenje"
+    },
+    {
+      "id": "",
+      "label": "offload face module",
+      "localized": "rasterećenje modula za lice",
+      "hint": "rasterećenje modula za lice"
+    },
+    {
+      "id": "",
+      "label": "olive-ai",
+      "localized": "olive-ai",
+      "hint": "olive-ai"
+    },
+    {
+      "id": "",
+      "label": "onediff",
+      "localized": "onediff",
+      "hint": "onediff"
+    },
+    {
+      "id": "",
+      "label": "onnx",
+      "localized": "onnx",
+      "hint": "onnx"
+    },
+    {
+      "id": "",
+      "label": "openbody",
+      "localized": "openbody",
+      "hint": "openbody"
+    },
+    {
+      "id": "",
+      "label": "openclip",
+      "localized": "openclip",
+      "hint": "openclip"
+    },
+    {
+      "id": "",
+      "label": "openvino disable memory cleanup after compile",
+      "localized": "openvino onemogući čišćenje memorije nakon kompajliranja",
+      "hint": "openvino onemogući čišćenje memorije nakon kompajliranja"
+    },
+    {
+      "id": "",
+      "label": "openvino disable model caching",
+      "localized": "openvino onemogući predmemoriranje modela",
+      "hint": "openvino onemogući predmemoriranje modela"
+    },
+    {
+      "id": "",
+      "label": "openvino mode",
+      "localized": "openvino način",
+      "hint": "openvino način"
+    },
+    {
+      "id": "",
+      "label": "openvino_fx",
+      "localized": "openvino_fx",
+      "hint": "openvino_fx"
+    },
+    {
+      "id": "",
+      "label": "optional image description",
+      "localized": "izborni opis slike",
+      "hint": "izborni opis slike"
+    },
+    {
+      "id": "",
+      "label": "optional init image or video",
+      "localized": "izborna početna slika ili video",
+      "hint": "izborna početna slika ili video"
+    },
+    {
+      "id": "",
+      "label": "order",
+      "localized": "redoslijed",
+      "hint": "redoslijed"
+    },
+    {
+      "id": "",
+      "label": "ortho",
+      "localized": "orto",
+      "hint": "orto"
+    },
+    {
+      "id": "",
+      "label": "outpaint",
+      "localized": "ispunjavanje okoline",
+      "hint": "ispunjavanje okoline"
+    },
+    {
+      "id": "",
+      "label": "output model",
+      "localized": "izlazni model",
+      "hint": "izlazni model"
+    },
+    {
+      "id": "",
+      "label": "override resolution",
+      "localized": "poništi razlučivost",
+      "hint": "poništi razlučivost"
+    },
+    {
+      "id": "",
+      "label": "override sampler",
+      "localized": "poništi uzorkivač",
+      "hint": "poništi uzorkivač"
+    },
+    {
+      "id": "",
+      "label": "override scheduler",
+      "localized": "poništi raspoređivač",
+      "hint": "poništi raspoređivač"
+    },
+    {
+      "id": "",
+      "label": "override steps",
+      "localized": "poništi korake",
+      "hint": "poništi korake"
+    },
+    {
+      "id": "",
+      "label": "override t1 ratio",
+      "localized": "poništi omjer t1",
+      "hint": "poništi omjer t1"
+    },
+    {
+      "id": "",
+      "label": "override t2 ratio",
+      "localized": "Prepiši omjer t2",
+      "hint": "Prepiši omjer t2"
+    },
+    {
+      "id": "",
+      "label": "overwrite existing file",
+      "localized": "Prepiši postojeću datoteku",
+      "hint": "Prepiši postojeću datoteku"
+    },
+    {
+      "id": "",
+      "label": "overwrite model",
+      "localized": "Prepiši model",
+      "hint": "Prepiši model"
+    },
+    {
+      "id": "",
+      "label": "pad frames",
+      "localized": "Ispuni okvire",
+      "hint": "Ispuni okvire"
+    },
+    {
+      "id": "",
+      "label": "padding",
+      "localized": "Ispunjavanje",
+      "hint": "Ispunjavanje"
+    },
+    {
+      "id": "",
+      "label": "parallel process images in batch",
+      "localized": "Paralelna obrada slika u seriji",
+      "hint": "Paralelna obrada slika u seriji"
+    },
+    {
+      "id": "",
+      "label": "parameter free",
+      "localized": "Bez parametara",
+      "hint": "Bez parametara"
+    },
+    {
+      "id": "",
+      "label": "path to model file",
+      "localized": "Putanja do datoteke modela",
+      "hint": "Putanja do datoteke modela"
+    },
+    {
+      "id": "",
+      "label": "path to notification sound",
+      "localized": "Putanja do zvuka obavijesti",
+      "hint": "Putanja do zvuka obavijesti"
+    },
+    {
+      "id": "",
+      "label": "peft",
+      "localized": "PEFT",
+      "hint": "PEFT"
+    },
+    {
+      "id": "",
+      "label": "penalty",
+      "localized": "Kazna",
+      "hint": "Kazna"
+    },
+    {
+      "id": "",
+      "label": "perflow",
+      "localized": "Perflow",
+      "hint": "Perflow"
+    },
+    {
+      "id": "",
+      "label": "perform injection",
+      "localized": "Izvedi injekciju",
+      "hint": "Izvedi injekciju"
+    },
+    {
+      "id": "",
+      "label": "perform sdsa",
+      "localized": "Izvedi SDSA",
+      "hint": "Izvedi SDSA"
+    },
+    {
+      "id": "",
+      "label": "perform warmup",
+      "localized": "Izvedi zagrijavanje",
+      "hint": "Izvedi zagrijavanje"
+    },
+    {
+      "id": "",
+      "label": "performance",
+      "localized": "Performanse",
+      "hint": "Performanse"
+    },
+    {
+      "id": "",
+      "label": "photomaker model",
+      "localized": "Photomaker model",
+      "hint": "Photomaker model"
+    },
+    {
+      "id": "",
+      "label": "pidinet",
+      "localized": "PIDI Net",
+      "hint": "PIDI Net"
+    },
+    {
+      "id": "",
+      "label": "pipeline",
+      "localized": "Cijevovod",
+      "hint": "Cijevovod"
+    },
+    {
+      "id": "",
+      "label": "pixels to expand",
+      "localized": "Pikseli za proširenje",
+      "hint": "Pikseli za proširenje"
+    },
+    {
+      "id": "",
+      "label": "platform",
+      "localized": "Platforma",
+      "hint": "Platforma"
+    },
+    {
+      "id": "",
+      "label": "play",
+      "localized": "Reproduciraj",
+      "hint": "Reproduciraj"
+    },
+    {
+      "id": "",
+      "label": "play a notification upon completion",
+      "localized": "Reproduciraj obavijest po završetku",
+      "hint": "Reproduciraj obavijest po završetku"
+    },
+    {
+      "id": "",
+      "label": "pndm",
+      "localized": "PNDM",
+      "hint": "PNDM"
+    },
+    {
+      "id": "",
+      "label": "polyexponential",
+      "localized": "Polieksponencijalno",
+      "hint": "Polieksponencijalno"
+    },
+    {
+      "id": "",
+      "label": "pony",
+      "localized": "Pony",
+      "hint": "Pony"
+    },
+    {
+      "id": "",
+      "label": "pose confidence",
+      "localized": "Pouzdanost poze",
+      "hint": "Pouzdanost poze"
+    },
+    {
+      "id": "",
+      "label": "positive",
+      "localized": "Pozitivno",
+      "hint": "Pozitivno"
+    },
+    {
+      "id": "",
+      "label": "postprocess mask",
+      "localized": "Naknadna obrada maske",
+      "hint": "Naknadna obrada maske"
+    },
+    {
+      "id": "",
+      "label": "postprocess upscale",
+      "localized": "Naknadna obrada povećanja rezolucije",
+      "hint": "Naknadna obrada povećanja rezolucije"
+    },
+    {
+      "id": "",
+      "label": "postprocessing operation order",
+      "localized": "Redoslijed operacija naknadne obrade",
+      "hint": "Redoslijed operacija naknadne obrade"
+    },
+    {
+      "id": "",
+      "label": "power",
+      "localized": "Snaga",
+      "hint": "Snaga"
+    },
+    {
+      "id": "",
+      "label": "prediction method",
+      "localized": "Metoda predviđanja",
+      "hint": "Metoda predviđanja"
+    },
+    {
+      "id": "",
+      "label": "preset",
+      "localized": "Pred postavka",
+      "hint": "Pred postavka"
+    },
+    {
+      "id": "",
+      "label": "preset block merge",
+      "localized": "Predpostavljeno spajanje blokova",
+      "hint": "Predpostavljeno spajanje blokova"
+    },
+    {
+      "id": "",
+      "label": "preview",
+      "localized": "Pregled",
+      "hint": "Pregled"
+    },
+    {
+      "id": "",
+      "label": "preview end",
+      "localized": "Kraj pregleda",
+      "hint": "Kraj pregleda"
+    },
+    {
+      "id": "",
+      "label": "preview start",
+      "localized": "Početak pregleda",
+      "hint": "Početak pregleda"
+    },
+    {
+      "id": "",
+      "label": "primary model",
+      "localized": "Primarni model",
+      "hint": "Primarni model"
+    },
+    {
+      "id": "",
+      "label": "processor",
+      "localized": "Procesor",
+      "hint": "Procesor"
+    },
+    {
+      "id": "",
+      "label": "processor move to cpu after use",
+      "localized": "Premjesti procesor na CPU nakon korištenja",
+      "hint": "Premjesti procesor na CPU nakon korištenja"
+    },
+    {
+      "id": "",
+      "label": "processor settings",
+      "localized": "Postavke procesora",
+      "hint": "Postavke procesora"
+    },
+    {
+      "id": "",
+      "label": "processor unload after use",
+      "localized": "Isključi procesor nakon korištenja",
+      "hint": "Isključi procesor nakon korištenja"
+    },
+    {
+      "id": "",
+      "label": "prompt attention normalization",
+      "localized": "Normalizacija pozornosti upita",
+      "hint": "Normalizacija pozornosti upita"
+    },
+    {
+      "id": "",
+      "label": "prompt ex",
+      "localized": "Prompt EX",
+      "hint": "Prompt EX"
+    },
+    {
+      "id": "",
+      "label": "prompt processor",
+      "localized": "Procesor upita",
+      "hint": "Procesor upita"
+    },
+    {
+      "id": "",
+      "label": "prompt strength",
+      "localized": "Jačina upita",
+      "hint": "Jačina upita"
+    },
+    {
+      "id": "",
+      "label": "prompt thresholds:",
+      "localized": "Pragovi upita:",
+      "hint": "Pragovi upita:"
+    },
+    {
+      "id": "",
+      "label": "prompts",
+      "localized": "Upiti",
+      "hint": "Upiti"
+    },
+    {
+      "id": "",
+      "label": "provider",
+      "localized": "Pružatelj",
+      "hint": "Pružatelj"
+    },
+    {
+      "id": "",
+      "label": "prune",
+      "localized": "Obreži",
+      "hint": "Obreži"
+    },
+    {
+      "id": "",
+      "label": "quad",
+      "localized": "Četverokut",
+      "hint": "Četverokut"
+    },
+    {
+      "id": "",
+      "label": "quantization activations type",
+      "localized": "Vrsta kvantizacije aktivacija",
+      "hint": "Vrsta kvantizacije aktivacija"
+    },
+    {
+      "id": "",
+      "label": "quantization mode",
+      "localized": "Način kvantizacije",
+      "hint": "Način kvantizacije"
+    },
+    {
+      "id": "",
+      "label": "quantization type",
+      "localized": "Vrsta kvantizacije",
+      "hint": "Vrsta kvantizacije"
+    },
+    {
+      "id": "",
+      "label": "quantization weights type",
+      "localized": "Vrsta kvantizacije težina",
+      "hint": "Vrsta kvantizacije težina"
+    },
+    {
+      "id": "",
+      "label": "question",
+      "localized": "Pitanje",
+      "hint": "Pitanje"
+    },
+    {
+      "id": "",
+      "label": "random seeds",
+      "localized": "Nasumično sjeme",
+      "hint": "Nasumično sjeme"
+    },
+    {
+      "id": "",
+      "label": "range",
+      "localized": "Raspon",
+      "hint": "Raspon"
+    },
+    {
+      "id": "",
+      "label": "rebase",
+      "localized": "Ponovno baziranje",
+      "hint": "Ponovno baziranje"
+    },
+    {
+      "id": "",
+      "label": "reduce-overhead",
+      "localized": "Smanji opterećenje",
+      "hint": "Smanji opterećenje"
+    },
+    {
+      "id": "",
+      "label": "redux prompt strength",
+      "localized": "Redux jačina upita",
+      "hint": "Redux jačina upita"
+    },
+    {
+      "id": "",
+      "label": "reference adain weight",
+      "localized": "Referentna težina AdaIN-a",
+      "hint": "Referentna težina AdaIN-a"
+    },
+    {
+      "id": "",
+      "label": "reference query weight",
+      "localized": "Referentna težina upita",
+      "hint": "Referentna težina upita"
+    },
+    {
+      "id": "",
+      "label": "reference unit 1",
+      "localized": "Referentna jedinica 1",
+      "hint": "Referentna jedinica 1"
+    },
+    {
+      "id": "",
+      "label": "refine foreground",
+      "localized": "Pročisti prvi plan",
+      "hint": "Pročisti prvi plan"
+    },
+    {
+      "id": "",
+      "label": "refresh",
+      "localized": "Osvježi",
+      "hint": "Osvježi"
+    },
+    {
+      "id": "",
+      "label": "refresh bench",
+      "localized": "Osvježi test",
+      "hint": "Osvježi test"
+    },
+    {
+      "id": "",
+      "label": "refresh data",
+      "localized": "Osvježi podatke",
+      "hint": "Osvježi podatke"
+    },
+    {
+      "id": "",
+      "label": "refresh state",
+      "localized": "Osvježi stanje",
+      "hint": "Osvježi stanje"
+    },
+    {
+      "id": "",
+      "label": "refresh ui values",
+      "localized": "Osvježi vrijednosti UI-a",
+      "hint": "Osvježi vrijednosti UI-a"
+    },
+    {
+      "id": "",
+      "label": "reinstall",
+      "localized": "Ponovno instaliraj",
+      "hint": "Ponovno instaliraj"
+    },
+    {
+      "id": "",
+      "label": "remove background",
+      "localized": "Ukloni pozadinu",
+      "hint": "Ukloni pozadinu"
+    },
+    {
+      "id": "",
+      "label": "repeat x-axis",
+      "localized": "Ponovi x-os",
+      "hint": "Ponovi x-os"
+    },
+    {
+      "id": "",
+      "label": "repeat y-axis",
+      "localized": "Ponovi y-os",
+      "hint": "Ponovi y-os"
+    },
+    {
+      "id": "",
+      "label": "replace vae",
+      "localized": "Zamijeni VAE",
+      "hint": "Zamijeni VAE"
+    },
+    {
+      "id": "",
+      "label": "repos",
+      "localized": "Repozi",
+      "hint": "Repozi"
+    },
+    {
+      "id": "",
+      "label": "reprocess decode",
+      "localized": "Ponovno obradi dekodiranje",
+      "hint": "Ponovno obradi dekodiranje"
+    },
+    {
+      "id": "",
+      "label": "reprocess face",
+      "localized": "Ponovno obradi lice",
+      "hint": "Ponovno obradi lice"
+    },
+    {
+      "id": "",
+      "label": "reprocess refine",
+      "localized": "Ponovno obradi pročišćavanje",
+      "hint": "Ponovno obradi pročišćavanje"
+    },
+    {
+      "id": "",
+      "label": "request browser notifications",
+      "localized": "Zatraži obavijesti preglednika",
+      "hint": "Zatraži obavijesti preglednika"
+    },
+    {
+      "id": "",
+      "label": "requeue failed",
+      "localized": "Ponovno stavi u red čekanja neuspjele",
+      "hint": "Ponovno stavi u red čekanja neuspjele"
+    },
+    {
+      "id": "",
+      "label": "rescale",
+      "localized": "Promijeni mjerilo",
+      "hint": "Promijeni mjerilo"
+    },
+    {
+      "id": "",
+      "label": "rescale betas with zero terminal snr",
+      "localized": "Promijeni mjerilo beta sa SNR-om nula na kraju",
+      "hint": "Promijeni mjerilo beta sa SNR-om nula na kraju"
+    },
+    {
+      "id": "",
+      "label": "reset anchors",
+      "localized": "Resetiraj sidra",
+      "hint": "Resetiraj sidra"
+    },
+    {
+      "id": "",
+      "label": "residual diff threshold",
+      "localized": "Prag rezidualne razlike",
+      "hint": "Prag rezidualne razlike"
+    },
+    {
+      "id": "",
+      "label": "resize background color",
+      "localized": "Promijeni veličinu boje pozadine",
+      "hint": "Promijeni veličinu boje pozadine"
+    },
+    {
+      "id": "",
+      "label": "resize method",
+      "localized": "Metoda promjene veličine",
+      "hint": "Metoda promjene veličine"
+    },
+    {
+      "id": "",
+      "label": "resize mode",
+      "localized": "Način promjene veličine",
+      "hint": "Način promjene veličine"
+    },
+    {
+      "id": "",
+      "label": "resize scale",
+      "localized": "Skala promjene veličine",
+      "hint": "Skala promjene veličine"
+    },
+    {
+      "id": "",
+      "label": "restart",
+      "localized": "Ponovno pokreni",
+      "hint": "Ponovno pokreni"
+    },
+    {
+      "id": "",
+      "label": "restart step",
+      "localized": "Ponovno pokreni korak",
+      "hint": "Ponovno pokreni korak"
+    },
+    {
+      "id": "",
+      "label": "restore faces: codeformer",
+      "localized": "Obnovi lica: CodeFormer",
+      "hint": "Obnovi lica: CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "restore faces: gfpgan",
+      "localized": "Obnovi lica: GFPGAN",
+      "hint": "Obnovi lica: GFPGAN"
+    },
+    {
+      "id": "",
+      "label": "restore pipe on end",
+      "localized": "Vrati cijev na kraju",
+      "hint": "Vrati cijev na kraju"
+    },
+    {
+      "id": "",
+      "label": "resume",
+      "localized": "Nastavi",
+      "hint": "Nastavi"
+    },
+    {
+      "id": "",
+      "label": "reswapper model",
+      "localized": "Reswapper model",
+      "hint": "Reswapper model"
+    },
+    {
+      "id": "",
+      "label": "return original images",
+      "localized": "Vrati originalne slike",
+      "hint": "Vrati originalne slike"
+    },
+    {
+      "id": "",
+      "label": "right",
+      "localized": "Desno",
+      "hint": "Desno"
+    },
+    {
+      "id": "",
+      "label": "root model folder",
+      "localized": "Korijenska mapa modela",
+      "hint": "Korijenska mapa modela"
+    },
+    {
+      "id": "",
+      "label": "rows",
+      "localized": "redovi",
+      "hint": "redovi"
+    },
+    {
+      "id": "",
+      "label": "run",
+      "localized": "pokreni",
+      "hint": "pokreni"
+    },
+    {
+      "id": "",
+      "label": "run benchmark",
+      "localized": "pokreni test",
+      "hint": "pokreni test"
+    },
+    {
+      "id": "",
+      "label": "sa solver",
+      "localized": "sa solver",
+      "hint": "sa solver"
+    },
+    {
+      "id": "",
+      "label": "safetensors",
+      "localized": "safetensors",
+      "hint": "safetensors"
+    },
+    {
+      "id": "",
+      "label": "sage attention",
+      "localized": "sage pažnja",
+      "hint": "sage pažnja"
+    },
+    {
+      "id": "",
+      "label": "same as primary",
+      "localized": "isto kao primarni",
+      "hint": "isto kao primarni"
+    },
+    {
+      "id": "",
+      "label": "same latent",
+      "localized": "isti latentni prostor",
+      "hint": "isti latentni prostor"
+    },
+    {
+      "id": "",
+      "label": "sample",
+      "localized": "uzorak",
+      "hint": "uzorak"
+    },
+    {
+      "id": "",
+      "label": "sampler",
+      "localized": "uzorkivač",
+      "hint": "uzorkivač"
+    },
+    {
+      "id": "",
+      "label": "sampler dynamic shift",
+      "localized": "dinamički pomak uzorkivača",
+      "hint": "dinamički pomak uzorkivača"
+    },
+    {
+      "id": "",
+      "label": "sampler order",
+      "localized": "redoslijed uzorkivača",
+      "hint": "redoslijed uzorkivača"
+    },
+    {
+      "id": "",
+      "label": "sampler shift",
+      "localized": "pomak uzorkivača",
+      "hint": "pomak uzorkivača"
+    },
+    {
+      "id": "",
+      "label": "saturation",
+      "localized": "zasićenje",
+      "hint": "zasićenje"
+    },
+    {
+      "id": "",
+      "label": "save all generated image grids",
+      "localized": "spremi sve generirane mreže slika",
+      "hint": "spremi sve generirane mreže slika"
+    },
+    {
+      "id": "",
+      "label": "save all generated images",
+      "localized": "spremi sve generirane slike",
+      "hint": "spremi sve generirane slike"
+    },
+    {
+      "id": "",
+      "label": "save diffusers",
+      "localized": "spremi diffusers",
+      "hint": "spremi diffusers"
+    },
+    {
+      "id": "",
+      "label": "save hdr image",
+      "localized": "spremi HDR sliku",
+      "hint": "spremi HDR sliku"
+    },
+    {
+      "id": "",
+      "label": "save image before color correction",
+      "localized": "spremi sliku prije korekcije boje",
+      "hint": "spremi sliku prije korekcije boje"
+    },
+    {
+      "id": "",
+      "label": "save image before detailer",
+      "localized": "spremi sliku prije detaljera",
+      "hint": "spremi sliku prije detaljera"
+    },
+    {
+      "id": "",
+      "label": "save image before hires",
+      "localized": "spremi sliku prije razlučivosti",
+      "hint": "spremi sliku prije poboljšanja razlučivosti"
+    },
+    {
+      "id": "",
+      "label": "save image before refiner",
+      "localized": "spremi sliku prije pročišćivača",
+      "hint": "spremi sliku prije pročišćivača"
+    },
+    {
+      "id": "",
+      "label": "save images to a subdirectory",
+      "localized": "spremi slike u poddirektorij",
+      "hint": "spremi slike u poddirektorij"
+    },
+    {
+      "id": "",
+      "label": "save init images",
+      "localized": "spremi početne slike",
+      "hint": "spremi početne slike"
+    },
+    {
+      "id": "",
+      "label": "save inpainting mask",
+      "localized": "spremi masku za popunjavanje",
+      "hint": "spremi masku za popunjavanje"
+    },
+    {
+      "id": "",
+      "label": "save inpainting masked composite",
+      "localized": "spremi kompozit maskiranog popunjavanja",
+      "hint": "spremi kompozit maskiranog popunjavanja"
+    },
+    {
+      "id": "",
+      "label": "save metadata",
+      "localized": "spremi metapodatke",
+      "hint": "spremi metapodatke"
+    },
+    {
+      "id": "",
+      "label": "save only saves selected image",
+      "localized": "spremi sprema samo odabranu sliku",
+      "hint": "spremi sprema samo odabranu sliku"
+    },
+    {
+      "id": "",
+      "label": "save output",
+      "localized": "spremi izlaz",
+      "hint": "spremi izlaz"
+    },
+    {
+      "id": "",
+      "label": "save safetensors",
+      "localized": "spremi safetensors",
+      "hint": "spremi safetensors"
+    },
+    {
+      "id": "",
+      "label": "scale  after",
+      "localized": "skaliraj nakon",
+      "hint": "skaliraj nakon"
+    },
+    {
+      "id": "",
+      "label": "scale  before",
+      "localized": "skaliraj prije",
+      "hint": "skaliraj prije"
+    },
+    {
+      "id": "",
+      "label": "scale  mask",
+      "localized": "skaliraj masku",
+      "hint": "skaliraj masku"
+    },
+    {
+      "id": "",
+      "label": "scale factor",
+      "localized": "faktor skaliranja",
+      "hint": "faktor skaliranja"
+    },
+    {
+      "id": "",
+      "label": "score",
+      "localized": "ocjena",
+      "hint": "ocjena"
+    },
+    {
+      "id": "",
+      "label": "score threshold",
+      "localized": "prag ocjene",
+      "hint": "prag ocjene"
+    },
+    {
+      "id": "",
+      "label": "scribble",
+      "localized": "žvrljotina",
+      "hint": "žvrljotina"
+    },
+    {
+      "id": "",
+      "label": "sd15-attire",
+      "localized": "sd15-attire",
+      "hint": "sd15-attire"
+    },
+    {
+      "id": "",
+      "label": "sd15-likeness",
+      "localized": "sd15-likeness",
+      "hint": "sd15-likeness"
+    },
+    {
+      "id": "",
+      "label": "sd15-navimixu",
+      "localized": "sd15-navimixu",
+      "hint": "sd15-navimixu"
+    },
+    {
+      "id": "",
+      "label": "sd15-sexy",
+      "localized": "sd15-sexy",
+      "hint": "sd15-sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-artstyle",
+      "localized": "sdxl-artstyle",
+      "hint": "sdxl-artstyle"
+    },
+    {
+      "id": "",
+      "label": "sdxl-negative",
+      "localized": "sdxl-negativno",
+      "hint": "sdxl-negativno"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sexy",
+      "localized": "sdxl-sexy",
+      "hint": "sdxl-sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sliders",
+      "localized": "sdxl-klizači",
+      "hint": "sdxl-klizači"
+    },
+    {
+      "id": "",
+      "label": "sdxl-toon",
+      "localized": "sdxl-crtani film",
+      "hint": "sdxl-crtani film"
+    },
+    {
+      "id": "",
+      "label": "search changelog",
+      "localized": "pretraži dnevnik promjena",
+      "hint": "pretraži dnevnik promjena"
+    },
+    {
+      "id": "",
+      "label": "search models",
+      "localized": "pretraži modele",
+      "hint": "pretraži modele"
+    },
+    {
+      "id": "",
+      "label": "search wiki pages",
+      "localized": "pretraži wiki stranice",
+      "hint": "pretraži wiki stranice"
+    },
+    {
+      "id": "",
+      "label": "secondary model",
+      "localized": "sekundarni model",
+      "hint": "sekundarni model"
+    },
+    {
+      "id": "",
+      "label": "segmentanything",
+      "localized": "segmentanything",
+      "hint": "segmentanything"
+    },
+    {
+      "id": "",
+      "label": "select",
+      "localized": "odaberi",
+      "hint": "odaberi"
+    },
+    {
+      "id": "",
+      "label": "select model",
+      "localized": "odaberi model",
+      "hint": "odaberi model"
+    },
+    {
+      "id": "",
+      "label": "send interrupt",
+      "localized": "pošalji prekid",
+      "hint": "pošalji prekid"
+    },
+    {
+      "id": "",
+      "label": "send seed when sending prompt or image to other interface",
+      "localized": "pošalji sjeme prilikom slanja upita ili slike drugom sučelju",
+      "hint": "pošalji sjeme prilikom slanja upita ili slike drugom sučelju"
+    },
+    {
+      "id": "",
+      "label": "send size when sending prompt or image to another interface",
+      "localized": "pošalji veličinu prilikom slanja upita ili slike drugom sučelju",
+      "hint": "pošalji veličinu prilikom slanja upita ili slike drugom sučelju"
+    },
+    {
+      "id": "",
+      "label": "sequential",
+      "localized": "sekvencijalno",
+      "hint": "sekvencijalno"
+    },
+    {
+      "id": "",
+      "label": "server start time",
+      "localized": "vrijeme pokretanja servera",
+      "hint": "vrijeme pokretanja servera"
+    },
+    {
+      "id": "",
+      "label": "set at prompt start",
+      "localized": "postavi na početku upita",
+      "hint": "postavi na početku upita"
+    },
+    {
+      "id": "",
+      "label": "set ui menu states",
+      "localized": "postavi stanja izbornika korisničkog sučelja",
+      "hint": "postavi stanja izbornika korisničkog sučelja"
+    },
+    {
+      "id": "",
+      "label": "share queries",
+      "localized": "dijeli upite",
+      "hint": "dijeli upite"
+    },
+    {
+      "id": "",
+      "label": "shared options",
+      "localized": "dijeljene opcije",
+      "hint": "dijeljene opcije"
+    },
+    {
+      "id": "",
+      "label": "sharpen",
+      "localized": "izoštri",
+      "hint": "izoštri"
+    },
+    {
+      "id": "",
+      "label": "shift",
+      "localized": "pomakni",
+      "hint": "pomakni"
+    },
+    {
+      "id": "",
+      "label": "show grid in results",
+      "localized": "prikaži mrežu u rezultatima",
+      "hint": "prikaži mrežu u rezultatima"
+    },
+    {
+      "id": "",
+      "label": "show input",
+      "localized": "prikaži ulaz",
+      "hint": "prikaži ulaz"
+    },
+    {
+      "id": "",
+      "label": "show metadata in full screen image browser",
+      "localized": "prikaži metapodatke u pregledniku slika preko cijelog zaslona",
+      "hint": "prikaži metapodatke u pregledniku slika preko cijelog zaslona"
+    },
+    {
+      "id": "",
+      "label": "show motd",
+      "localized": "prikaži poruku dana",
+      "hint": "prikaži poruku dana"
+    },
+    {
+      "id": "",
+      "label": "show preview",
+      "localized": "prikaži pregled",
+      "hint": "prikaži pregled"
+    },
+    {
+      "id": "",
+      "label": "shuffle weights",
+      "localized": "promiješaj težine",
+      "hint": "promiješaj težine"
+    },
+    {
+      "id": "",
+      "label": "shut down",
+      "localized": "ugasi",
+      "hint": "ugasi"
+    },
+    {
+      "id": "",
+      "label": "sigma",
+      "localized": "sigma",
+      "hint": "sigma"
+    },
+    {
+      "id": "",
+      "label": "sigma churn",
+      "localized": "sigma fluktuacija",
+      "hint": "sigma fluktuacija"
+    },
+    {
+      "id": "",
+      "label": "sigma max",
+      "localized": "sigma max",
+      "hint": "sigma max"
+    },
+    {
+      "id": "",
+      "label": "sigma method",
+      "localized": "sigma metoda",
+      "hint": "sigma metoda"
+    },
+    {
+      "id": "",
+      "label": "sigma min",
+      "localized": "sigma min",
+      "hint": "sigma min"
+    },
+    {
+      "id": "",
+      "label": "sigma noise",
+      "localized": "sigma šum",
+      "hint": "sigma šum"
+    },
+    {
+      "id": "",
+      "label": "sigma tmin",
+      "localized": "sigma tmin",
+      "hint": "sigma tmin"
+    },
+    {
+      "id": "",
+      "label": "simple merge",
+      "localized": "jednostavno spajanje",
+      "hint": "jednostavno spajanje"
+    },
+    {
+      "id": "",
+      "label": "size",
+      "localized": "veličina",
+      "hint": "veličina"
+    },
+    {
+      "id": "",
+      "label": "sketch",
+      "localized": "skica",
+      "hint": "skica"
+    },
+    {
+      "id": "",
+      "label": "skip generation if nan found in latents",
+      "localized": "preskoči generiranje ako se u latentima pronađe NaN",
+      "hint": "preskoči generiranje ako se u latentima pronađe NaN"
+    },
+    {
+      "id": "",
+      "label": "skip guidance layers",
+      "localized": "preskoči slojeve usmjeravanja",
+      "hint": "preskoči slojeve usmjeravanja"
+    },
+    {
+      "id": "",
+      "label": "skip input frames",
+      "localized": "preskoči ulazne okvire",
+      "hint": "preskoči ulazne okvire"
+    },
+    {
+      "id": "",
+      "label": "sleep",
+      "localized": "spavanje",
+      "hint": "spavanje"
+    },
+    {
+      "id": "",
+      "label": "slider",
+      "localized": "klizač",
+      "hint": "klizač"
+    },
+    {
+      "id": "",
+      "label": "smooth mask",
+      "localized": "zagladi masku",
+      "hint": "zagladi masku"
+    },
+    {
+      "id": "",
+      "label": "solver order (where",
+      "localized": "redoslijed rješavača (gdje",
+      "hint": "redoslijed rješavača (gdje"
+    },
+    {
+      "id": "",
+      "label": "sort order",
+      "localized": "redoslijed sortiranja",
+      "hint": "redoslijed sortiranja"
+    },
+    {
+      "id": "",
+      "label": "source subject",
+      "localized": "izvorni subjekt",
+      "hint": "izvorni subjekt"
+    },
+    {
+      "id": "",
+      "label": "space",
+      "localized": "razmak",
+      "hint": "razmak"
+    },
+    {
+      "id": "",
+      "label": "spatial frequency",
+      "localized": "prostorna frekvencija",
+      "hint": "prostorna frekvencija"
+    },
+    {
+      "id": "",
+      "label": "specify model revision",
+      "localized": "odredi reviziju modela",
+      "hint": "odredi reviziju modela"
+    },
+    {
+      "id": "",
+      "label": "specify model variant",
+      "localized": "odredi varijantu modela",
+      "hint": "odredi varijantu modela"
+    },
+    {
+      "id": "",
+      "label": "split attention",
+      "localized": "podijeljena pažnja",
+      "hint": "podijeljena pažnja"
+    },
+    {
+      "id": "",
+      "label": "stable-fast",
+      "localized": "stable-fast",
+      "hint": "stable-fast"
+    },
+    {
+      "id": "",
+      "label": "standard",
+      "localized": "standardno",
+      "hint": "standardno"
+    },
+    {
+      "id": "",
+      "label": "start",
+      "localized": "pokreni",
+      "hint": "pokreni"
+    },
+    {
+      "id": "",
+      "label": "start profiling",
+      "localized": "započni profiliranje",
+      "hint": "započni profiliranje"
+    },
+    {
+      "id": "",
+      "label": "state",
+      "localized": "stanje",
+      "hint": "stanje"
+    },
+    {
+      "id": "",
+      "label": "stop webui",
+      "localized": "zaustavi webui",
+      "hint": "zaustavi webui"
+    },
+    {
+      "id": "",
+      "label": "stride",
+      "localized": "korak",
+      "hint": "korak"
+    },
+    {
+      "id": "",
+      "label": "structure",
+      "localized": "struktura",
+      "hint": "struktura"
+    },
+    {
+      "id": "",
+      "label": "style fidelity",
+      "localized": "vjernost stilu",
+      "hint": "vjernost stilu"
+    },
+    {
+      "id": "",
+      "label": "subject",
+      "localized": "subjekt",
+      "hint": "subjekt"
+    },
+    {
+      "id": "",
+      "label": "submit results",
+      "localized": "pošalji rezultate",
+      "hint": "pošalji rezultate"
+    },
+    {
+      "id": "",
+      "label": "submodules",
+      "localized": "podmoduli",
+      "hint": "podmoduli"
+    },
+    {
+      "id": "",
+      "label": "swap x/y",
+      "localized": "zamijeni x/y",
+      "hint": "zamijeni x/y"
+    },
+    {
+      "id": "",
+      "label": "swap x/z",
+      "localized": "zamijeni x/z",
+      "hint": "zamijeni x/z"
+    },
+    {
+      "id": "",
+      "label": "swap y/z",
+      "localized": "zamijeni y/z",
+      "hint": "zamijeni y/z"
+    },
+    {
+      "id": "",
+      "label": "t2i adapter",
+      "localized": "t2i adapter",
+      "hint": "t2i adapter"
+    },
+    {
+      "id": "",
+      "label": "t2i strength",
+      "localized": "t2i jačina",
+      "hint": "t2i jačina"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 1",
+      "localized": "t2i-adapter jedinica 1",
+      "hint": "t2i-adapter jedinica 1"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 2",
+      "localized": "t2i-adapter jedinica 2",
+      "hint": "t2i-adapter jedinica 2"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 3",
+      "localized": "t2i-adapter jedinica 3",
+      "hint": "t2i-adapter jedinica 3"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 4",
+      "localized": "t2i-adapter jedinica 4",
+      "hint": "t2i-adapter jedinica 4"
+    },
+    {
+      "id": "",
+      "label": "taesd",
+      "localized": "taesd",
+      "hint": "taesd"
+    },
+    {
+      "id": "",
+      "label": "taesd decode layers",
+      "localized": "taesd slojevi dekodiranja",
+      "hint": "taesd slojevi dekodiranja"
+    },
+    {
+      "id": "",
+      "label": "taesd variant",
+      "localized": "taesd varijanta",
+      "hint": "taesd varijanta"
+    },
+    {
+      "id": "",
+      "label": "target subject",
+      "localized": "ciljani subjekt",
+      "hint": "ciljani subjekt"
+    },
+    {
+      "id": "",
+      "label": "task history",
+      "localized": "povijest zadataka",
+      "hint": "povijest zadataka"
+    },
+    {
+      "id": "",
+      "label": "task list page size (0 for auto)",
+      "localized": "veličina stranice popisa zadataka (0 za automatski)",
+      "hint": "veličina stranice popisa zadataka (0 za automatski)"
+    },
+    {
+      "id": "",
+      "label": "task queue",
+      "localized": "red čekanja zadataka",
+      "hint": "red čekanja zadataka"
+    },
+    {
+      "id": "",
+      "label": "tcd",
+      "localized": "tcd",
+      "hint": "tcd"
+    },
+    {
+      "id": "",
+      "label": "tdd",
+      "localized": "tdd",
+      "hint": "tdd"
+    },
+    {
+      "id": "",
+      "label": "te",
+      "localized": "te",
+      "hint": "te"
+    },
+    {
+      "id": "",
+      "label": "temperature",
+      "localized": "temperatura",
+      "hint": "temperatura"
+    },
+    {
+      "id": "",
+      "label": "temporal frequency",
+      "localized": "vremenska frekvencija",
+      "hint": "vremenska frekvencija"
+    },
+    {
+      "id": "",
+      "label": "tertiary model",
+      "localized": "tercijarni model",
+      "hint": "tercijarni model"
+    },
+    {
+      "id": "",
+      "label": "text encoder cache size",
+      "localized": "veličina predmemorije tekstualnog enkodera",
+      "hint": "veličina predmemorije tekstualnog enkodera"
+    },
+    {
+      "id": "",
+      "label": "text encoder model",
+      "localized": "model tekstualnog enkodera",
+      "hint": "model tekstualnog enkodera"
+    },
+    {
+      "id": "",
+      "label": "text inputs",
+      "localized": "tekstualni unosi",
+      "hint": "tekstualni unosi"
+    },
+    {
+      "id": "",
+      "label": "textbox",
+      "localized": "okvir za tekst",
+      "hint": "okvir za tekst"
+    },
+    {
+      "id": "",
+      "label": "threshold",
+      "localized": "prag",
+      "hint": "prag"
+    },
+    {
+      "id": "",
+      "label": "thresholding",
+      "localized": "pragovanje",
+      "hint": "pragovanje"
+    },
+    {
+      "id": "",
+      "label": "tile frames",
+      "localized": "okvir s pločicama",
+      "hint": "okvir s pločicama"
+    },
+    {
+      "id": "",
+      "label": "tiling options",
+      "localized": "opcije slaganja u pločice",
+      "hint": "opcije slaganja u pločice"
+    },
+    {
+      "id": "",
+      "label": "time embedding mix",
+      "localized": "miješanje vremenskog ugrađivanja",
+      "hint": "miješanje vremenskog ugrađivanja"
+    },
+    {
+      "id": "",
+      "label": "time_quadratic",
+      "localized": "time_quadratic",
+      "hint": "time_quadratic"
+    },
+    {
+      "id": "",
+      "label": "time_uniform",
+      "localized": "time_uniform",
+      "hint": "time_uniform"
+    },
+    {
+      "id": "",
+      "label": "timestep",
+      "localized": "vremenski korak",
+      "hint": "vremenski korak"
+    },
+    {
+      "id": "",
+      "label": "timestep skip end",
+      "localized": "kraj preskakanja vremenskog koraka",
+      "hint": "kraj preskakanja vremenskog koraka"
+    },
+    {
+      "id": "",
+      "label": "timestep skip start",
+      "localized": "početak preskakanja vremenskog koraka",
+      "hint": "početak preskakanja vremenskog koraka"
+    },
+    {
+      "id": "",
+      "label": "timestep spacing",
+      "localized": "razmak vremenskih koraka",
+      "hint": "razmak vremenskih koraka"
+    },
+    {
+      "id": "",
+      "label": "timesteps",
+      "localized": "vremenski koraci",
+      "hint": "vremenski koraci"
+    },
+    {
+      "id": "",
+      "label": "timesteps override",
+      "localized": "nadjačavanje vremenskih koraka",
+      "hint": "nadjačavanje vremenskih koraka"
+    },
+    {
+      "id": "",
+      "label": "timesteps presets",
+      "localized": "unaprijed postavljeni vremenski koraci",
+      "hint": "unaprijed postavljeni vremenski koraci"
+    },
+    {
+      "id": "",
+      "label": "timesteps range",
+      "localized": "raspon vremenskih koraka",
+      "hint": "raspon vremenskih koraka"
+    },
+    {
+      "id": "",
+      "label": "tiny",
+      "localized": "sićušno",
+      "hint": "sićušno"
+    },
+    {
+      "id": "",
+      "label": "todo",
+      "localized": "za obaviti",
+      "hint": "za obaviti"
+    },
+    {
+      "id": "",
+      "label": "tome",
+      "localized": "tome",
+      "hint": "tome"
+    },
+    {
+      "id": "",
+      "label": "tool",
+      "localized": "alat",
+      "hint": "alat"
+    },
+    {
+      "id": "",
+      "label": "torch",
+      "localized": "torch",
+      "hint": "torch"
+    },
+    {
+      "id": "",
+      "label": "transformer",
+      "localized": "transformator",
+      "hint": "transformator"
+    },
+    {
+      "id": "",
+      "label": "trigger word",
+      "localized": "riječ okidač",
+      "hint": "riječ okidač"
+    },
+    {
+      "id": "",
+      "label": "true",
+      "localized": "istinito",
+      "hint": "istinito"
+    },
+    {
+      "id": "",
+      "label": "tunable ops limit",
+      "localized": "granica podesivih operacija",
+      "hint": "granica podesivih operacija"
+    },
+    {
+      "id": "",
+      "label": "ufogen",
+      "localized": "ufogen",
+      "hint": "ufogen"
+    },
+    {
+      "id": "",
+      "label": "ui card size (px)",
+      "localized": "veličina kartice sučelja (px)",
+      "hint": "veličina kartice sučelja (px)"
+    },
+    {
+      "id": "",
+      "label": "ui fetch network info on mouse-over",
+      "localized": "sučelje dohvaća informacije o mreži pri prelasku mišem",
+      "hint": "sučelje dohvaća informacije o mreži pri prelasku mišem"
+    },
+    {
+      "id": "",
+      "label": "ui height (%)",
+      "localized": "visina sučelja (%)",
+      "hint": "visina sučelja (%)"
+    },
+    {
+      "id": "",
+      "label": "ui locale",
+      "localized": "jezik sučelja",
+      "hint": "jezik sučelja"
+    },
+    {
+      "id": "",
+      "label": "ui show on startup",
+      "localized": "prikaži sučelje pri pokretanju",
+      "hint": "prikaži sučelje pri pokretanju"
+    },
+    {
+      "id": "",
+      "label": "ui sidebar width (%)",
+      "localized": "širina bočne trake sučelja (%)",
+      "hint": "širina bočne trake sučelja (%)"
+    },
+    {
+      "id": "",
+      "label": "ui theme",
+      "localized": "tema sučelja",
+      "hint": "tema sučelja"
+    },
+    {
+      "id": "",
+      "label": "under generate button",
+      "localized": "ispod gumba za generiranje",
+      "hint": "ispod gumba za generiranje"
+    },
+    {
+      "id": "",
+      "label": "unet",
+      "localized": "unet",
+      "hint": "unet"
+    },
+    {
+      "id": "",
+      "label": "unet depth",
+      "localized": "dubina unet-a",
+      "hint": "dubina unet-a"
+    },
+    {
+      "id": "",
+      "label": "unet enabled",
+      "localized": "unet omogućen",
+      "hint": "unet omogućen"
+    },
+    {
+      "id": "",
+      "label": "unet max tile size",
+      "localized": "maksimalna veličina pločice unet-a",
+      "hint": "maksimalna veličina pločice unet-a"
+    },
+    {
+      "id": "",
+      "label": "unet min tile size",
+      "localized": "minimalna veličina pločice unet-a",
+      "hint": "minimalna veličina pločice unet-a"
+    },
+    {
+      "id": "",
+      "label": "unet model",
+      "localized": "unet model",
+      "hint": "unet model"
+    },
+    {
+      "id": "",
+      "label": "unet swap size",
+      "localized": "veličina zamjene unet-a",
+      "hint": "veličina zamjene unet-a"
+    },
+    {
+      "id": "",
+      "label": "uniform",
+      "localized": "uniformno",
+      "hint": "uniformno"
+    },
+    {
+      "id": "",
+      "label": "units",
+      "localized": "jedinice",
+      "hint": "jedinice"
+    },
+    {
+      "id": "",
+      "label": "unload",
+      "localized": "istovari",
+      "hint": "istovari"
+    },
+    {
+      "id": "",
+      "label": "unload current model from vram",
+      "localized": "istovari trenutni model iz vram-a",
+      "hint": "istovari trenutni model iz vram-a"
+    },
+    {
+      "id": "",
+      "label": "unload upscaler after processing",
+      "localized": "istovari povećivač rezolucije nakon obrade",
+      "hint": "istovari povećivač rezolucije nakon obrade"
+    },
+    {
+      "id": "",
+      "label": "unset",
+      "localized": "poništi",
+      "hint": "poništi"
+    },
+    {
+      "id": "",
+      "label": "up",
+      "localized": "gore",
+      "hint": "gore"
+    },
+    {
+      "id": "",
+      "label": "upcast attention layer",
+      "localized": "podigni sloj pažnje",
+      "hint": "podigni sloj pažnje"
+    },
+    {
+      "id": "",
+      "label": "update",
+      "localized": "ažuriraj",
+      "hint": "ažuriraj"
+    },
+    {
+      "id": "",
+      "label": "upload",
+      "localized": "učitaj",
+      "hint": "učitaj"
+    },
+    {
+      "id": "",
+      "label": "upscale",
+      "localized": "povećaj rezoluciju",
+      "hint": "povećaj rezoluciju"
+    },
+    {
+      "id": "",
+      "label": "use brownian noise",
+      "localized": "koristi brownovu buku",
+      "hint": "koristi brownovu buku"
+    },
+    {
+      "id": "",
+      "label": "use cached model config when available",
+      "localized": "koristi konfiguraciju predmemoriranog modela kada je dostupna",
+      "hint": "koristi konfiguraciju predmemoriranog modela kada je dostupna"
+    },
+    {
+      "id": "",
+      "label": "use defaults",
+      "localized": "koristi zadane vrijednosti",
+      "hint": "koristi zadane vrijednosti"
+    },
+    {
+      "id": "",
+      "label": "use dynamic thresholding",
+      "localized": "koristi dinamičko pragovanje",
+      "hint": "koristi dinamičko pragovanje"
+    },
+    {
+      "id": "",
+      "label": "use fixed width thumbnails",
+      "localized": "koristi sličice fiksne širine",
+      "hint": "koristi sličice fiksne širine"
+    },
+    {
+      "id": "",
+      "label": "use image gallery cache",
+      "localized": "koristi predmemoriju galerije slika",
+      "hint": "koristi predmemoriju galerije slika"
+    },
+    {
+      "id": "",
+      "label": "use karras sigmas",
+      "localized": "koristi karras sigme",
+      "hint": "koristi karras sigme"
+    },
+    {
+      "id": "",
+      "label": "use line break as prompt segment marker",
+      "localized": "koristi prijelom retka kao oznaku segmenta upita",
+      "hint": "koristi prijelom retka kao oznaku segmenta upita"
+    },
+    {
+      "id": "",
+      "label": "use model ema weights when possible",
+      "localized": "koristi ema utege modela kad god je moguće",
+      "hint": "koristi ema utege modela kad god je moguće"
+    },
+    {
+      "id": "",
+      "label": "use quantization",
+      "localized": "koristi kvantizaciju",
+      "hint": "koristi kvantizaciju"
+    },
+    {
+      "id": "",
+      "label": "use random seeds",
+      "localized": "koristi nasumične sjemene vrijednosti",
+      "hint": "koristi nasumične sjemene vrijednosti"
+    },
+    {
+      "id": "",
+      "label": "use reference values when available",
+      "localized": "koristi referentne vrijednosti kada su dostupne",
+      "hint": "koristi referentne vrijednosti kada su dostupne"
+    },
+    {
+      "id": "",
+      "label": "use same seed",
+      "localized": "koristi isti sjeme",
+      "hint": "koristi isti sjeme"
+    },
+    {
+      "id": "",
+      "label": "use separate base dict",
+      "localized": "koristi zaseban osnovni rječnik",
+      "hint": "koristi zaseban osnovni rječnik"
+    },
+    {
+      "id": "",
+      "label": "use simplified solvers in final steps",
+      "localized": "koristi pojednostavljene rješavače u završnim koracima",
+      "hint": "koristi pojednostavljene rješavače u završnim koracima"
+    },
+    {
+      "id": "",
+      "label": "use text inputs",
+      "localized": "koristi tekstualne unose",
+      "hint": "koristi tekstualne unose"
+    },
+    {
+      "id": "",
+      "label": "user",
+      "localized": "korisnik",
+      "hint": "korisnik"
+    },
+    {
+      "id": "",
+      "label": "username",
+      "localized": "korisničko ime",
+      "hint": "korisničko ime"
+    },
+    {
+      "id": "",
+      "label": "v_prediction",
+      "localized": "v_predviđanje",
+      "hint": "v_predviđanje"
+    },
+    {
+      "id": "",
+      "label": "vae enabled",
+      "localized": "VAE uključen",
+      "hint": "VAE uključen"
+    },
+    {
+      "id": "",
+      "label": "vae sliced encode",
+      "localized": "VAE rezano kodiranje",
+      "hint": "VAE rezano kodiranje"
+    },
+    {
+      "id": "",
+      "label": "vae swap size",
+      "localized": "VAE veličina zamjene",
+      "hint": "VAE veličina zamjene"
+    },
+    {
+      "id": "",
+      "label": "vae tile overlap",
+      "localized": "VAE preklapanje pločica",
+      "hint": "VAE preklapanje pločica"
+    },
+    {
+      "id": "",
+      "label": "vae tile size",
+      "localized": "VAE veličina pločice",
+      "hint": "VAE veličina pločice"
+    },
+    {
+      "id": "",
+      "label": "validate",
+      "localized": "validacija",
+      "hint": "validacija"
+    },
+    {
+      "id": "",
+      "label": "vary_coeff",
+      "localized": "vary_coeff",
+      "hint": "vary_coeff"
+    },
+    {
+      "id": "",
+      "label": "vdm solver",
+      "localized": "VDM rješavač",
+      "hint": "VDM rješavač"
+    },
+    {
+      "id": "",
+      "label": "version",
+      "localized": "verzija",
+      "hint": "verzija"
+    },
+    {
+      "id": "",
+      "label": "vgen params",
+      "localized": "VGen parametri",
+      "hint": "VGen parametri"
+    },
+    {
+      "id": "",
+      "label": "vibrance",
+      "localized": "živost",
+      "hint": "živost"
+    },
+    {
+      "id": "",
+      "label": "video file",
+      "localized": "video datoteka",
+      "hint": "video datoteka"
+    },
+    {
+      "id": "",
+      "label": "video type",
+      "localized": "tip videozapisa",
+      "hint": "tip videozapisa"
+    },
+    {
+      "id": "",
+      "label": "visual query",
+      "localized": "vizualni upit",
+      "hint": "vizualni upit"
+    },
+    {
+      "id": "",
+      "label": "vlm",
+      "localized": "VLM",
+      "hint": "VLM"
+    },
+    {
+      "id": "",
+      "label": "vlm model",
+      "localized": "VLM model",
+      "hint": "VLM model"
+    },
+    {
+      "id": "",
+      "label": "vlm: default model",
+      "localized": "VLM: zadani model",
+      "hint": "VLM: zadani model"
+    },
+    {
+      "id": "",
+      "label": "vlm: default prompt",
+      "localized": "VLM: zadani prompt",
+      "hint": "VLM: zadani prompt"
+    },
+    {
+      "id": "",
+      "label": "vlm: max length",
+      "localized": "VLM: maksimalna duljina",
+      "hint": "VLM: maksimalna duljina"
+    },
+    {
+      "id": "",
+      "label": "vlm: num beams",
+      "localized": "VLM: broj zraka",
+      "hint": "VLM: broj zraka"
+    },
+    {
+      "id": "",
+      "label": "warmth",
+      "localized": "toplina",
+      "hint": "toplina"
+    },
+    {
+      "id": "",
+      "label": "webp lossless compression",
+      "localized": "WebP kompresija bez gubitaka",
+      "hint": "WebP kompresija bez gubitaka"
+    },
+    {
+      "id": "",
+      "label": "weight",
+      "localized": "težina",
+      "hint": "težina"
+    },
+    {
+      "id": "",
+      "label": "weighted",
+      "localized": "ponderirano",
+      "hint": "ponderirano"
+    },
+    {
+      "id": "",
+      "label": "width  after",
+      "localized": "širina poslije",
+      "hint": "širina poslije"
+    },
+    {
+      "id": "",
+      "label": "width  before",
+      "localized": "širina prije",
+      "hint": "širina prije"
+    },
+    {
+      "id": "",
+      "label": "width  mask",
+      "localized": "širina maske",
+      "hint": "širina maske"
+    },
+    {
+      "id": "",
+      "label": "wiki",
+      "localized": "wiki",
+      "hint": "wiki"
+    },
+    {
+      "id": "",
+      "label": "wildcards",
+      "localized": "wildcards",
+      "hint": "wildcards"
+    },
+    {
+      "id": "",
+      "label": "x components",
+      "localized": "x komponente",
+      "hint": "x komponente"
+    },
+    {
+      "id": "",
+      "label": "x overlap",
+      "localized": "x preklapanje",
+      "hint": "x preklapanje"
+    },
+    {
+      "id": "",
+      "label": "x type",
+      "localized": "x tip",
+      "hint": "x tip"
+    },
+    {
+      "id": "",
+      "label": "xhinker",
+      "localized": "xhinker",
+      "hint": "xhinker"
+    },
+    {
+      "id": "",
+      "label": "xs",
+      "localized": "xs",
+      "hint": "xs"
+    },
+    {
+      "id": "",
+      "label": "y components",
+      "localized": "y komponente",
+      "hint": "y komponente"
+    },
+    {
+      "id": "",
+      "label": "y overlap",
+      "localized": "y preklapanje",
+      "hint": "y preklapanje"
+    },
+    {
+      "id": "",
+      "label": "y type",
+      "localized": "y tip",
+      "hint": "y tip"
+    },
+    {
+      "id": "",
+      "label": "z type",
+      "localized": "z tip",
+      "hint": "z tip"
+    },
+    {
+      "id": "",
+      "label": "zero",
+      "localized": "nula",
+      "hint": "nula"
+    },
+    {
+      "id": "",
+      "label": "zoe depth",
+      "localized": "Zoe dubina",
+      "hint": "Zoe dubina"
+    },
+    {
+      "id": "",
+      "label": "➠ control",
+      "localized": "➠ kontrola",
+      "hint": "➠ kontrola"
+    },
+    {
+      "id": "",
+      "label": "💾",
+      "localized": "💾",
+      "hint": "💾"
+    }
   ]
 }

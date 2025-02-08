@@ -16,13 +16,13 @@
       "id": "",
       "label": "⬆️",
       "localized": "⬆️",
-      "hint": "上传图片"
+      "hint": "上传图像"
     },
     {
       "id": "",
       "label": "⬅️",
       "localized": "⬅️",
-      "hint": "重用图片"
+      "hint": "重用图像"
     },
     {
       "id": "",
@@ -70,13 +70,13 @@
       "id": "",
       "label": "⌾",
       "localized": "⌾",
-      "hint": "选中时加载模型作为精炼模型，否则加载为基础模型"
+      "hint": "选中时，将模型加载为精炼模型；否则，加载为基础模型"
     },
     {
       "id": "",
       "label": "🔎︎",
       "localized": "🔎︎",
-      "hint": "在 CivitAI 上扫描缺失的元数据和预览"
+      "hint": "扫描 CivitAI 以查找缺失的元数据和预览"
     },
     {
       "id": "",
@@ -112,7 +112,7 @@
       "id": "",
       "label": "♻",
       "localized": "♻",
-      "hint": "分析图像"
+      "hint": "询问图像"
     },
     {
       "id": "",
@@ -124,7 +124,7 @@
       "id": "",
       "label": "↷",
       "localized": "↷",
-      "hint": "将当前提示保存为样式"
+      "hint": "将当前提示词保存为样式"
     }
   ],
   "main": [
@@ -132,13 +132,13 @@
       "id": "",
       "label": "Prompt",
       "localized": "提示词",
-      "hint": "描述您想要生成的图像"
+      "hint": "描述你想要生成的图像"
     },
     {
       "id": "",
       "label": "Negative prompt",
       "localized": "负面提示词",
-      "hint": "描述您不希望在生成的图像中看到的内容"
+      "hint": "描述你不希望在生成的图像中看到的内容"
     },
     {
       "id": "",
@@ -156,7 +156,7 @@
       "id": "",
       "label": "Control",
       "localized": "控制",
-      "hint": "使用附加控制创建图像"
+      "hint": "使用额外的控制创建图像"
     },
     {
       "id": "",
@@ -208,12 +208,6 @@
     },
     {
       "id": "",
-      "label": "Extensions",
-      "localized": "扩展",
-      "hint": "应用程序扩展"
-    },
-    {
-      "id": "",
       "label": "Generate",
       "localized": "生成",
       "hint": "开始处理"
@@ -226,9 +220,9 @@
     },
     {
       "id": "",
-      "label": "reprocess",
+      "label": "Reprocess",
       "localized": "重新处理",
-      "hint": "使用不同的参数重新处理先前的生成结果"
+      "hint": "使用不同的参数重新处理以前的生成结果"
     },
     {
       "id": "",
@@ -240,7 +234,7 @@
       "id": "",
       "label": "Skip",
       "localized": "跳过",
-      "hint": "停止处理当前作业并继续处理"
+      "hint": "停止处理当前任务并继续处理"
     },
     {
       "id": "",
@@ -252,7 +246,7 @@
       "id": "",
       "label": "Restore",
       "localized": "恢复",
-      "hint": "从当前提示或上次已知的生成图像恢复参数"
+      "hint": "从当前提示词或上次已知的生成的图像恢复参数"
     },
     {
       "id": "",
@@ -268,27 +262,9 @@
     },
     {
       "id": "",
-      "label": "cover",
-      "localized": "覆盖",
-      "hint": "覆盖整个区域"
-    },
-    {
-      "id": "",
-      "label": "inline",
-      "localized": "内联",
-      "hint": "与所有其他元素内联 (可滚动)"
-    },
-    {
-      "id": "",
-      "label": "sidebar",
-      "localized": "侧边栏",
-      "hint": "屏幕右侧的侧边栏"
-    },
-    {
-      "id": "",
       "label": "Default strength",
       "localized": "默认强度",
-      "hint": "将额外的网络（例如 LoRA）添加到提示词时，请使用此乘数"
+      "hint": "当向提示词添加额外的网络（例如LoRA）时，使用此乘数"
     },
     {
       "id": "",
@@ -300,25 +276,25 @@
       "id": "",
       "label": "Style",
       "localized": "风格",
-      "hint": "要应用于所选生成参数的其他风格"
+      "hint": "应用于所选生成参数的其他风格"
     },
     {
       "id": "",
       "label": "Styles",
       "localized": "风格",
-      "hint": "要应用于所选生成参数的其他风格"
+      "hint": "应用于所选生成参数的其他风格"
     },
     {
       "id": "",
       "label": "Lora",
       "localized": "LoRA",
-      "hint": "LoRA：低秩自适应。在已加载的模型之上应用的微调模型"
+      "hint": "LoRA：低秩自适应。在已加载模型之上应用的微调模型"
     },
     {
       "id": "",
       "label": "Embedding",
       "localized": "嵌入",
-      "hint": "文本反演嵌入是关于主题的经过训练的嵌入信息"
+      "hint": "文本反转嵌入是关于主题的训练嵌入信息"
     },
     {
       "id": "",
@@ -328,27 +304,27 @@
     },
     {
       "id": "",
-      "label": "vae",
+      "label": "VAE",
       "localized": "VAE",
       "hint": "可变自动编码器：用于在生成结束时运行图像解码的模型"
     },
     {
       "id": "",
-      "label": "history",
+      "label": "History",
       "localized": "历史记录",
-      "hint": "可以进一步重新处理的先前生成结果的列表"
+      "hint": "可以进一步重新处理的先前生成列表"
     },
     {
       "id": "",
       "label": "UI disable variable aspect ratio",
-      "localized": "禁用 UI 可变宽高比",
-      "hint": "禁用后，所有缩略图都显示为正方形图像"
+      "localized": "UI禁用可变宽高比",
+      "hint": "禁用后，所有缩略图都显示为方形图像"
     },
     {
       "id": "",
       "label": "Build info on first access",
       "localized": "首次访问时构建信息",
-      "hint": "阻止服务器在服务器启动时构建 EN 页面，而是在请求时构建它"
+      "hint": "防止服务器在服务器启动时构建EN页面，而是在请求时构建"
     },
     {
       "id": "",
@@ -359,92 +335,206 @@
     {
       "id": "",
       "label": "LoRA load using Diffusers method",
-      "localized": "使用 Diffusers 方法加载 LoRA",
-      "hint": "替代方法使用 Diffusers 内置的 LoRA 功能，而不是原生的 SD.Next 实现（可能会降低 LoRA 兼容性）"
+      "localized": "使用Diffusers方法加载LoRA",
+      "hint": "替代方法使用diffusers内置的LoRA功能，而不是原生SD.Next实现（可能会降低LoRA兼容性）"
     },
     {
       "id": "",
       "label": "LoRA fuse directly to model",
-      "localized": "将 LoRA 直接融合到模型",
-      "hint": "加载 LoRA 时，立即将权重与底层模型合并，而不是动态应用它们"
+      "localized": "将LoRA直接融合到模型",
+      "hint": "加载LoRA时，立即将权重与底层模型合并，而不是动态应用它们"
     },
     {
       "id": "",
       "label": "LoRA memory cache",
-      "localized": "LoRA 内存缓存",
-      "hint": "在需要从存储重新加载之前，在网络中保留多少个 LoRA 以供将来使用"
+      "localized": "LoRA内存缓存",
+      "hint": "在需要从存储重新加载之前，在网络中保留多少LoRA以供将来使用"
     },
     {
       "id": "",
-      "label": "local",
+      "label": "Local",
       "localized": "本地",
       "hint": "已下载并准备好使用的模型"
     },
     {
       "id": "",
-      "label": "reference",
+      "label": "Reference",
       "localized": "参考",
       "hint": "可以在首次使用时自动下载的参考模型列表"
     },
     {
       "id": "",
+      "label": "Samplers",
+      "localized": "采样器",
+      "hint": "采样器/调度器高级设置"
+    },
+    {
+      "id": "",
+      "label": "Seed",
+      "localized": "种子",
+      "hint": "初始种子和变化"
+    },
+    {
+      "id": "",
+      "label": "Advanced",
+      "localized": "高级",
+      "hint": "高级设置"
+    },
+    {
+      "id": "",
+      "label": "Corrections",
+      "localized": "校正",
+      "hint": "在生成过程中控制图像颜色/锐化/亮度校正"
+    },
+    {
+      "id": "",
+      "label": "Refine",
+      "localized": "精炼",
+      "hint": "与放大、HiRes和精炼处理相关的设置"
+    },
+    {
+      "id": "",
+      "label": "Detailer",
+      "localized": "细节增强",
+      "hint": "细节增强设置"
+    },
+    {
+      "id": "",
+      "label": "Resize",
+      "localized": "调整大小",
+      "hint": "图像调整大小，可以使用固定分辨率或基于比例"
+    },
+    {
+      "id": "",
+      "label": "Batch",
+      "localized": "批处理",
+      "hint": "批处理设置"
+    },
+    {
+      "id": "",
+      "label": "Denoise",
+      "localized": "降噪",
+      "hint": "降噪设置。较高的降噪意味着在生成期间允许更改更多现有图像内容"
+    },
+    {
+      "id": "",
+      "label": "Mask",
+      "localized": "蒙版",
+      "hint": "图像蒙版和蒙版选项"
+    },
+    {
+      "id": "",
+      "label": "Input",
+      "localized": "输入",
+      "hint": "输入媒体选择"
+    },
+    {
+      "id": "",
+      "label": "Video",
+      "localized": "视频",
+      "hint": "与视频生成相关的设置"
+    },
+    {
+      "id": "",
+      "label": "Control elements",
+      "localized": "控制元素",
+      "hint": "控制元素是可以引导生成朝着期望结果发展的高级模型"
+    },
+    {
+      "id": "",
+      "label": "IP adapters",
+      "localized": "IP适配器",
+      "hint": "IP适配器是可以引导生成朝着期望结果发展的插件模型"
+    },
+    {
+      "id": "",
+      "label": "Extensions",
+      "localized": "扩展",
+      "hint": "应用程序扩展"
+    },
+    {
+      "id": "",
+      "label": "XYZ Grid",
+      "localized": "XYZ网格",
+      "hint": "XYZ网格是一个强大的模块，可以根据不同的生成参数创建图像网格"
+    },
+    {
+      "id": "",
+      "label": "cover",
+      "localized": "覆盖",
+      "hint": "覆盖整个区域"
+    },
+    {
+      "id": "",
+      "label": "inline",
+      "localized": "内联",
+      "hint": "与所有其他元素内联（可滚动）"
+    },
+    {
+      "id": "",
+      "label": "sidebar",
+      "localized": "侧边栏",
+      "hint": "屏幕右侧的侧边栏"
+    },
+    {
+      "id": "",
       "label": "sd15",
-      "localized": "SD15",
+      "localized": "sd15",
       "hint": "StableDiffusion 1.5"
     },
     {
       "id": "",
       "label": "sd21",
-      "localized": "SD21",
+      "localized": "sd21",
       "hint": "StableDiffusion 2.1"
     },
     {
       "id": "",
       "label": "sd35",
-      "localized": "SD35",
+      "localized": "sd35",
       "hint": "StableDiffusion 3.5"
     },
     {
       "id": "",
       "label": "sdxl",
-      "localized": "SDXL",
+      "localized": "sdxl",
       "hint": "StableDiffusion XL"
     },
     {
       "id": "",
       "label": "sc",
-      "localized": "SC",
+      "localized": "sc",
       "hint": "StableCascade"
     },
     {
       "id": "",
       "label": "flux",
-      "localized": "FLUX",
+      "localized": "flux",
       "hint": "FLUX.1"
     },
     {
       "id": "",
       "label": "show",
       "localized": "显示",
-      "hint": "显示图片位置"
+      "hint": "显示图像位置"
     },
     {
       "id": "",
       "label": "save",
       "localized": "保存",
-      "hint": "保存图片"
+      "hint": "保存图像"
     },
     {
       "id": "",
       "label": "delete",
       "localized": "删除",
-      "hint": "删除图片"
+      "hint": "删除图像"
     },
     {
       "id": "",
       "label": "replace",
       "localized": "替换",
-      "hint": "替换图片"
+      "hint": "替换图像"
     },
     {
       "id": "",
@@ -488,13 +578,13 @@
       "id": "",
       "label": "Sampling method",
       "localized": "采样方法",
-      "hint": "使用哪种算法来生成图像"
+      "hint": "选择用于生成图像的算法"
     },
     {
       "id": "",
       "label": "Steps",
       "localized": "步数",
-      "hint": "迭代改进生成图像的次数；数值越高，耗时越长；数值过低可能会产生不良结果"
+      "hint": "迭代改进生成图像的次数；值越高，耗时越长；非常低的值会产生不良结果"
     },
     {
       "id": "",
@@ -506,115 +596,115 @@
       "id": "",
       "label": "full quality",
       "localized": "完整质量",
-      "hint": "使用完整质量的 VAE 来解码潜在样本"
+      "hint": "使用完整质量的VAE解码潜在样本"
     },
     {
       "id": "",
       "label": "hidiffusion",
       "localized": "HiDiffusion",
-      "hint": "HiDiffusion 允许使用标准模型创建高分辨率图像，而无需重复/失真，并提高性能"
+      "hint": "HiDiffusion允许您使用标准模型创建高分辨率图像，而不会出现重复/失真并提高性能"
     },
     {
       "id": "",
       "label": "HDR Clamp",
-      "localized": "HDR 钳制",
-      "hint": "通过修剪与分布平均值显着偏离的值来调整无意义细节的级别。 它对于增强更高指导比例的生成、在过程早期识别异常值以及应用基于范围（边界）和阈值设置的数学调整特别有用。 可以将其视为设置您希望图像值所在的范围，并调整阈值以确定应将哪些值带回该范围内"
+      "localized": "HDR钳制",
+      "hint": "通过修剪与分布均值显着偏差的值来调整无意义细节的级别。 它对于增强更高引导比例的生成、在过程早期识别异常值以及应用基于范围（边界）和阈值设置的数学调整特别有用。 可以将其视为设置您想要图像值所在的范围，并调整阈值以确定应将哪些值带回该范围"
     },
     {
       "id": "",
       "label": "HDR Maximize",
-      "localized": "HDR 最大化",
-      "hint": "通过将最大张量值除以指定范围乘以 4 来计算“归一化因子”。 然后使用此因子来移动给定边界内的通道，确保后续处理的最大动态范围。 目标是优化 Photoshop 等外部应用程序的动态范围，特别是用于调整色阶、对比度和亮度"
+      "localized": "HDR最大化",
+      "hint": "通过将最大张量值除以指定范围乘以 4 来计算“归一化因子”。 然后，此因子用于移动给定边界内的通道，从而确保后续处理的最大动态范围。 目标是优化外部应用程序（如 Photoshop）的动态范围，尤其是调整级别、对比度和亮度"
     },
     {
       "id": "",
       "label": "Enable refine pass",
-      "localized": "启用精炼通道",
-      "hint": "使用类似于图像到图像的过程来放大和/或向最终图像添加细节。 可选择使用精炼模型来增强图像细节。"
+      "localized": "启用细化通道",
+      "hint": "使用类似于图像到图像的过程来放大和/或向最终图像添加细节。 可选择使用细化模型来增强图像细节"
     },
     {
       "id": "",
       "label": "enable detailer pass",
-      "localized": "启用细节修复通道",
-      "hint": "检测目标对象（如面部）并以更高的分辨率重新处理它"
+      "localized": "启用细节增强通道",
+      "hint": "检测面部等目标对象，并以更高的分辨率重新处理"
     },
     {
       "id": "",
       "label": "Denoising strength",
       "localized": "降噪强度",
-      "hint": "确定算法应尊重图像内容的程度。 在 0 时，没有任何变化，在 1 时，您将获得一个不相关的图像。 对于低于 1.0 的值，处理将比“采样步数”滑块指定的步数少"
+      "hint": "确定算法应该对图像内容有多少不尊重。 在 0 处，任何内容都不会改变，而在 1 处，您将获得不相关的图像。 对于低于 1.0 的值，处理将采用比“采样步数”滑块指定的步数更少的步骤"
     },
     {
       "id": "",
       "label": "Denoise start",
       "localized": "降噪开始",
-      "hint": "通过声明基本模型应在何时完成以及精炼器应在何时开始来覆盖降噪强度。 仅适用于精炼器使用。 如果设置为 0 或 1，则将使用降噪强度"
+      "hint": "通过声明基本模型应在多早完成以及细化器应在何时开始来覆盖降噪强度。 仅适用于细化器使用。 如果设置为 0 或 1，则将使用降噪强度"
     },
     {
       "id": "",
       "label": "Hires steps",
       "localized": "高分辨率步数",
-      "hint": "放大图片的采样步数。 如果为 0，则与原始图片相同"
+      "hint": "放大图片的采样步数。 如果为 0，则与原始图片使用相同的步数"
     },
     {
       "id": "",
       "label": "strength",
       "localized": "强度",
-      "hint": "图像操作期间的降噪强度控制在生成过程中允许更改原始图像的程度"
+      "hint": "图像操作期间的降噪强度控制在生成过程中允许改变原始图像的程度"
     },
     {
       "id": "",
       "label": "Upscaler",
       "localized": "放大器",
-      "hint": "用于放大过程的预训练模型。"
+      "hint": "用于放大过程的预训练模型"
     },
     {
       "id": "",
       "label": "Force Hires",
       "localized": "强制高分辨率",
-      "hint": "当选择潜在放大时，高分辨率会自动运行，但在使用非潜在放大器时会跳过。 启用强制高分辨率以使用非潜在放大器运行高分辨率"
+      "hint": "当选择潜在放大时，高分辨率会自动运行，但当使用非潜在放大器时，它会被跳过。 启用强制高分辨率以使用非潜在放大器运行高分辨率"
     },
     {
       "id": "",
       "label": "Resize width",
       "localized": "调整宽度",
-      "hint": "将图像调整为此宽度。 如果为 0，则从附近的两个滑块之一推断出宽度"
+      "hint": "将图像调整为该宽度。 如果为 0，则宽度从附近两个滑块中的任何一个推断"
     },
     {
       "id": "",
       "label": "Resize height",
       "localized": "调整高度",
-      "hint": "将图像调整为此高度。 如果为 0，则从附近的两个滑块之一推断出高度"
+      "hint": "将图像调整为该高度。 如果为 0，则高度从附近两个滑块中的任何一个推断"
     },
     {
       "id": "",
       "label": "Refine sampler",
-      "localized": "精炼采样器",
-      "hint": "如果主要采样器不支持特定操作，则使用特定采样器作为后备采样器"
+      "localized": "细化采样器",
+      "hint": "如果主要采样器不支持特定操作，请使用特定采样器作为回退采样器"
     },
     {
       "id": "",
       "label": "Refiner start",
-      "localized": "精炼器开始",
-      "hint": "当基本模型完成此程度时，精炼器通道将开始（设置为大于 0 且小于 1 的值以在完全基本模型运行后运行）"
+      "localized": "细化器启动",
+      "hint": "当基本模型完成此数量时，细化器通道将启动（设置为大于 0 且小于 1 以在完全基本模型运行后运行）"
     },
     {
       "id": "",
       "label": "Refiner steps",
-      "localized": "精炼器步数",
-      "hint": "用于精炼器通道的步数"
+      "localized": "细化器步数",
+      "hint": "用于细化器通道的步数"
     },
     {
       "id": "",
       "label": "Refine guidance",
-      "localized": "精炼器引导",
-      "hint": "用于精炼器通道的 CFG 比例"
+      "localized": "细化引导",
+      "hint": "用于细化器通道的CFG比例"
     },
     {
       "id": "",
       "label": "Attention guidance",
       "localized": "注意力引导",
-      "hint": "与 PAG 一起使用的 CFG 比例：扰动注意力引导"
+      "hint": "与PAG一起使用的CFG比例：扰动注意力引导"
     },
     {
       "id": "",
@@ -626,19 +716,19 @@
       "id": "",
       "label": "Rescale guidance",
       "localized": "重新缩放引导",
-      "hint": "重新缩放 CFG 生成的噪声以避免过度曝光的图像"
+      "hint": "重新缩放CFG生成的噪声以避免过度曝光的图像"
     },
     {
       "id": "",
       "label": "Refine Prompt",
-      "localized": "精炼提示",
-      "hint": "用于基本模型中第二个编码器（如果存在）和精炼器通道（如果启用）的提示"
+      "localized": "细化提示词",
+      "hint": "用于基本模型（如果存在）中第二个编码器和细化器通道（如果已启用）的提示词"
     },
     {
       "id": "",
       "label": "Refine negative prompt",
-      "localized": "精炼负面提示",
-      "hint": "用于基本模型中第二个编码器（如果存在）和精炼器通道（如果启用）的负面提示"
+      "localized": "细化负面提示词",
+      "hint": "用于基本模型（如果存在）中第二个编码器和细化器通道（如果已启用）的负面提示词"
     },
     {
       "id": "",
@@ -656,55 +746,55 @@
       "id": "",
       "label": "Batch count",
       "localized": "批次数",
-      "hint": "要创建的图像批次数（对生成性能或 VRAM 使用没有影响）"
+      "hint": "要创建的图像批次数（对生成性能或VRAM使用量没有影响）"
     },
     {
       "id": "",
       "label": "Batch size",
-      "localized": "批大小",
-      "hint": "在单个批次中创建多少图像（以更高的 VRAM 使用为代价提高生成性能）"
+      "localized": "批次大小",
+      "hint": "在单个批次中创建多少图像（以更高的VRAM使用量为代价提高生成性能）"
     },
     {
       "id": "",
       "label": "guidance scale",
       "localized": "引导比例",
-      "hint": "分类器自由引导比例：图像应与提示一致的程度。 较低的值会产生更具创造性的结果，较高的值会使其更严格地遵循提示； 建议值在 5-10 之间"
+      "hint": "分类器自由引导比例：图像应与提示词一致的程度。 较低的值会产生更具创意的结果，较高的值使其更严格地遵循提示词； 建议值为5-10"
     },
     {
       "id": "",
       "label": "Guidance End",
       "localized": "引导结束",
-      "hint": "提前结束 CFG 和 PAG 的效果：值为 1 时表现正常，0.5 时在 50% 的步数停止引导"
+      "hint": "提前结束 CFG 和 PAG 的效果：值 1 表现正常，0.5 在 50% 的步骤处停止引导"
     },
     {
       "id": "",
       "label": "Initial seed",
       "localized": "初始种子",
-      "hint": "确定随机数生成器输出的值 - 如果您使用与另一个图像相同的参数和种子创建一个图像，您将得到相同的结果"
+      "hint": "一个确定随机数生成器输出的值 - 如果您使用与另一张图像相同的参数和种子创建一张图像，您将得到相同的结果"
     },
     {
       "id": "",
       "label": "Variation",
-      "localized": "变异",
+      "localized": "变化",
       "hint": "要与主种子混合的第二个种子"
     },
     {
       "id": "",
       "label": "Variation strength",
-      "localized": "变异强度",
-      "hint": "产生多强的变异。 在 0 时，将没有效果。 在 1 时，您将获得完整的带有变异种子的图片（除了祖先采样器，您只会得到一些东西）"
+      "localized": "变化强度",
+      "hint": "产生多强的变化。 在 0 处，不会有任何效果。 在 1 处，您将获得带有变化种子的完整图片（除了祖先采样器，您只会得到一些东西）"
     },
     {
       "id": "",
       "label": "Resize seed from width",
       "localized": "从宽度调整种子大小",
-      "hint": "尝试生成类似于在指定分辨率下使用相同种子生成的图片"
+      "hint": "尝试生成一张与在指定分辨率下使用相同种子生成的图片类似的图片"
     },
     {
       "id": "",
       "label": "Resize seed from height",
       "localized": "从高度调整种子大小",
-      "hint": "尝试生成类似于在指定分辨率下使用相同种子生成的图片"
+      "hint": "尝试生成一张与在指定分辨率下使用相同种子生成的图片类似的图片"
     },
     {
       "id": "",
@@ -715,7 +805,7 @@
     {
       "id": "",
       "label": "scale",
-      "localized": "缩放",
+      "localized": "比例",
       "hint": "将图像调整为目标比例。 如果设置了调整固定宽度/高度，则忽略此选项"
     },
     {
@@ -728,13 +818,13 @@
       "id": "",
       "label": "Fill",
       "localized": "填充",
-      "hint": "调整图像大小，使整个图像都在目标分辨率内。 用图像的颜色填充空白区域"
+      "hint": "调整图像大小，使整个图像都位于目标分辨率内。 用图像的颜色填充空白空间"
     },
     {
       "id": "",
       "label": "Mask blur",
       "localized": "蒙版模糊",
-      "hint": "处理前模糊蒙版的程度，以像素为单位"
+      "hint": "在处理之前模糊蒙版的程度，以像素为单位"
     },
     {
       "id": "",
@@ -745,38 +835,38 @@
     {
       "id": "",
       "label": "latent nothing",
-      "localized": "潜在虚无",
+      "localized": "潜在空白",
       "hint": "用潜在空间零填充它"
     },
     {
       "id": "",
       "label": "Guess Mode",
       "localized": "猜测模式",
-      "hint": "消除了向 ControlNet 提供提示的要求。 它强制 Controlnet 编码器根据输入控制贴图的内容进行“最佳猜测”"
+      "hint": "取消了向 ControlNet 提供提示的要求。 它强制 Controlnet 编码器根据输入控制图的内容进行“最佳猜测”"
     },
     {
       "id": "",
       "label": "Control Only",
       "localized": "仅控制",
-      "hint": "这仅使用下面的 Control 输入作为基于我们的各种选项的任何 ControlNet 或 IP Adapter 类型任务的源"
+      "hint": "这仅使用下面的控制输入作为基于我们各种选项的任何 ControlNet 或 IP 适配器类型任务的来源"
     },
     {
       "id": "",
       "label": "Init Image Same As Control",
       "localized": "初始图像与控制相同",
-      "hint": "还会将放置在 Control 输入窗口中的任何图像视为 img2img 类型任务的源，例如要修改的图像"
+      "hint": "还将放置在控制输入窗口中的任何图像视为 img2img 类型任务的来源，例如要修改的图像"
     },
     {
       "id": "",
       "label": "Separate Init Image",
-      "localized": "分离初始图像",
-      "hint": "在 Control 输入旁边创建一个标记为 Init 输入的附加窗口，因此您可以为 Control 操作和 init 源提供单独的图像"
+      "localized": "单独的初始图像",
+      "hint": "在控制输入旁边创建一个额外的窗口，标记为初始输入，以便您可以为控制操作和初始来源提供单独的图像"
     },
     {
       "id": "",
       "label": "Override settings",
       "localized": "覆盖设置",
-      "hint": "如果生成参数与您的系统设置不同，则覆盖使用这些设置填充的设置，以覆盖此工作流程的系统配置"
+      "hint": "如果生成参数偏离您的系统设置，则覆盖设置将填充这些设置，以覆盖此工作流程的系统配置"
     }
   ],
   "other": [
@@ -820,13 +910,13 @@
       "id": "",
       "label": "Specific branch name",
       "localized": "指定分支名称",
-      "hint": "指定扩展分支名称，留空为默认分支"
+      "hint": "指定扩展分支名称，留空则为默认分支"
     },
     {
       "id": "",
       "label": "Local directory name",
       "localized": "本地目录名称",
-      "hint": "安装扩展的目录，留空为默认目录"
+      "hint": "安装扩展的目录，留空则为默认目录"
     },
     {
       "id": "",
@@ -838,7 +928,7 @@
       "id": "",
       "label": "Update all installed",
       "localized": "更新所有已安装的扩展",
-      "hint": "将已安装的扩展更新到其最新可用版本"
+      "hint": "将已安装的扩展更新到最新版本"
     },
     {
       "id": "",
@@ -856,7 +946,7 @@
       "id": "",
       "label": "User interface",
       "localized": "用户界面",
-      "hint": "查看并设置用户界面偏好设置"
+      "hint": "查看和设置用户界面首选项"
     },
     {
       "id": "",
@@ -884,12 +974,6 @@
     },
     {
       "id": "",
-      "label": "detailer",
-      "localized": "细节修复器",
-      "hint": "通过额外的细节修复器模型运行处理后的图像"
-    },
-    {
-      "id": "",
       "label": "detailer classes",
       "localized": "细节修复器类别",
       "hint": "如果选择的细节修复器模型是多类别模型，则指定要使用的特定类别"
@@ -904,25 +988,25 @@
       "id": "",
       "label": "detailer negative prompt",
       "localized": "细节修复器负面提示词",
-      "hint": "为细节修复器使用单独的负面提示词。如果不存在，它将使用主要的负面提示词"
+      "hint": "为细节修复器使用单独的负面提示词。如果未提供，将使用主负面提示词"
     },
     {
       "id": "",
       "label": "detailer prompt",
       "localized": "细节修复器提示词",
-      "hint": "为细节修复器使用单独的提示词。如果不存在，它将使用主要的提示词"
+      "hint": "为细节修复器使用单独的提示词。如果未提供，将使用主提示词"
     },
     {
       "id": "",
       "label": "detailer steps",
       "localized": "细节修复器步数",
-      "hint": "为细节修复器过程运行的步数"
+      "hint": "运行细节修复器流程的步数"
     },
     {
       "id": "",
       "label": "detailer strength",
       "localized": "细节修复器强度",
-      "hint": "细节修复器过程的降噪强度"
+      "hint": "细节修复器流程的去噪强度"
     },
     {
       "id": "",
@@ -940,13 +1024,13 @@
       "id": "",
       "label": "edge blur",
       "localized": "边缘模糊",
-      "hint": "按此百分比模糊蒙版区域的边缘"
+      "hint": "以此百分比模糊蒙版区域的边缘"
     },
     {
       "id": "",
       "label": "edge padding",
       "localized": "边缘填充",
-      "hint": "按此百分比扩大蒙版区域的边缘"
+      "hint": "以此百分比扩展蒙版区域的边缘"
     },
     {
       "id": "",
@@ -958,19 +1042,19 @@
       "id": "",
       "label": "max overlap",
       "localized": "最大重叠",
-      "hint": "在丢弃一个检测到的项目之前，两个检测到的项目之间的最大重叠"
+      "hint": "两个检测到的项目之间的最大重叠，超过此值，则丢弃其中一个"
     },
     {
       "id": "",
       "label": "min size",
       "localized": "最小尺寸",
-      "hint": "检测到的对象的最小尺寸，占总图像的百分比"
+      "hint": "检测到的对象的最小尺寸，以图像总尺寸的百分比表示"
     },
     {
       "id": "",
       "label": "max size",
       "localized": "最大尺寸",
-      "hint": "检测到的对象的最大尺寸，占总图像的百分比"
+      "hint": "检测到的对象的最大尺寸，以图像总尺寸的百分比表示"
     },
     {
       "id": "",
@@ -981,7 +1065,7 @@
     {
       "id": "",
       "label": "Process Batch",
-      "localized": "处理批次",
+      "localized": "批量处理",
       "hint": "处理一批图像"
     },
     {
@@ -994,19 +1078,19 @@
       "id": "",
       "label": "Scale by",
       "localized": "按比例缩放",
-      "hint": "使用此选项卡按所选比例因子调整源图像的大小"
+      "hint": "使用此选项卡按所选因子调整源图像的尺寸"
     },
     {
       "id": "",
       "label": "Scale to",
       "localized": "缩放到",
-      "hint": "使用此选项卡将源图像调整为所选目标大小"
+      "hint": "使用此选项卡将源图像的尺寸调整到所选目标尺寸"
     },
     {
       "id": "",
       "label": "Input directory",
       "localized": "输入目录",
-      "hint": "包含要处理的图像的文件夹"
+      "hint": "要处理的图像所在的文件夹"
     },
     {
       "id": "",
@@ -1018,30 +1102,24 @@
       "id": "",
       "label": "Show result images",
       "localized": "显示结果图像",
-      "hint": "启用以在图像窗格中显示处理后的图像"
-    },
-    {
-      "id": "",
-      "label": "Resize",
-      "localized": "调整大小",
-      "hint": "调整大小的详细信息。更高的分辨率需要额外的处理内存。"
+      "hint": "启用此选项可在图像窗格中显示处理后的图像"
     },
     {
       "id": "",
       "label": "Crop to fit",
       "localized": "裁剪以适应",
-      "hint": "如果源图像的尺寸（例如 512x510）与目标尺寸（例如 1024x768）不同，此功能会将放大的图像调整到目标大小的图像中。 多余的部分将被裁剪"
+      "hint": "如果源图像的尺寸（例如 512x510）与目标尺寸（例如 1024x768）不同，则此功能会将放大后的图像放入目标尺寸图像中。多余的部分将被裁剪"
     },
     {
       "id": "",
       "label": "Refine Upscaler",
-      "localized": "细化放大器",
+      "localized": "优化放大器",
       "hint": "选择在初始放大器之后运行的辅助放大器"
     },
     {
       "id": "",
       "label": "Upscaler 2 visibility",
-      "localized": "放大器 2 可见度",
+      "localized": "放大器 2 可见性",
       "hint": "辅助放大器的强度"
     },
     {
@@ -1053,55 +1131,55 @@
     {
       "id": "",
       "label": "Weights Clip",
-      "localized": "权重剪辑",
-      "hint": "强制合并权重不高于原始模型，防止烧录和过度饱和的模型"
+      "localized": "权重裁剪",
+      "hint": "强制合并的权重不大于原始模型，防止烧毁和过度饱和的模型"
     },
     {
       "id": "",
       "label": "ReBasin",
-      "localized": "重新归一化",
-      "hint": "执行多次带有排列的合并，以便从两个模型中保留更多特征"
+      "localized": "重新定基",
+      "hint": "执行多次与排列的合并，以保留来自两个模型的更多特征"
     },
     {
       "id": "",
       "label": "Number of ReBasin Iterations",
-      "localized": "重新归一化迭代次数",
-      "hint": "在保存之前合并和排列模型的次数"
+      "localized": "重新定基迭代次数",
+      "hint": "在保存模型之前合并和排列模型的次数"
     },
     {
       "id": "",
       "label": "cpu",
       "localized": "CPU",
-      "hint": "仅使用CPU和RAM：最慢，但最不容易发生OOM"
+      "hint": "仅使用 CPU 和 RAM：最慢，但最不容易出现 OOM 错误"
     },
     {
       "id": "",
       "label": "shuffle",
       "localized": "洗牌",
-      "hint": "在RAM中加载完整模型并在VRAM上计算：速度提升较小，建议用于SDXL合并"
+      "hint": "在 RAM 中加载完整模型并在 VRAM 上计算：速度提升较小，建议用于 SDXL 合并"
     },
     {
       "id": "",
       "label": "In Blocks",
       "localized": "输入块",
-      "hint": "UNet的下采样块 (SD1.5 为 12 个值, SDXL 为 9 个值)"
+      "hint": "UNet 的下采样块（SD1.5 为 12 个值，SDXL 为 9 个值）"
     },
     {
       "id": "",
       "label": "Mid Block",
       "localized": "中间块",
-      "hint": "UNet的中心块 (1 个值)"
+      "hint": "UNet 的中心块（1 个值）"
     },
     {
       "id": "",
       "label": "Out Block",
       "localized": "输出块",
-      "hint": "UNet的上采样块 (SD1.5 为 12 个值, SDXL 为 9 个值)"
+      "hint": "UNet 的上采样块（SD1.5 为 12 个值，SDXL 为 9 个值）"
     },
     {
       "id": "",
       "label": "Preset Interpolation Ratio",
-      "localized": "预设插值比率",
+      "localized": "预设插值比例",
       "hint": "如果选择了两个预设，则在它们之间进行插值"
     },
     {
@@ -1113,8 +1191,8 @@
     {
       "id": "",
       "label": "active ip adapters",
-      "localized": "激活的 IP 适配器",
-      "hint": "激活的 IP 适配器的数量"
+      "localized": "活动的 IP 适配器数量",
+      "hint": "活动的 IP 适配器数量"
     },
     {
       "id": "",
@@ -1125,13 +1203,13 @@
     {
       "id": "",
       "label": "crop to portrait",
-      "localized": "裁剪为竖屏",
-      "hint": "在使用它作为 IP 适配器输入之前，将输入图像裁剪为仅纵向"
+      "localized": "裁剪为纵向",
+      "hint": "在使用输入图像作为 IP 适配器输入之前，将其裁剪为仅纵向"
     },
     {
       "id": "",
       "label": "layer options",
-      "localized": "层选项",
+      "localized": "图层选项",
       "hint": "手动指定 IP 适配器高级图层选项"
     },
     {
@@ -1156,25 +1234,25 @@
       "id": "",
       "label": "Loops",
       "localized": "循环次数",
-      "hint": "处理图像的次数。每个输出都用作下一个循环的输入。如果设置为 1，则行为就像未使用此脚本一样"
+      "hint": "处理图像的次数。每个输出都用作下一个循环的输入。如果设置为 1，则行为将如同未使用此脚本"
     },
     {
       "id": "",
       "label": "Final denoising strength",
-      "localized": "最终降噪强度",
-      "hint": "批处理中每个图像的最终循环的降噪强度"
+      "localized": "最终去噪强度",
+      "hint": "批处理中每张图像的最终循环的去噪强度"
     },
     {
       "id": "",
       "label": "Denoising strength curve",
-      "localized": "降噪强度曲线",
-      "hint": "降噪曲线控制每个循环的降噪强度变化率。 激进：大部分变化将在循环开始时发生。 线性：变化将在所有循环中保持恒定。 惰性：大部分变化将在循环结束时发生"
+      "localized": "去噪强度曲线",
+      "hint": "去噪曲线控制每个循环的去噪强度变化率。激进：大部分变化将发生在循环的开始。线性：变化将在所有循环中保持恒定。惰性：大部分变化将发生在循环的末尾"
     },
     {
       "id": "",
       "label": "Tile overlap",
-      "localized": "平铺重叠",
-      "hint": "对于 SD 放大，平铺之间应该有多少像素的重叠。 平铺重叠，因此当它们合并回一张图片时，没有清晰可见的接缝"
+      "localized": "图块重叠",
+      "hint": "对于 SD 放大，图块之间应该有多少像素的重叠。图块重叠，以便当它们合并回一张图片时，没有清晰可见的接缝"
     }
   ],
   "settings": [
@@ -1223,20 +1301,20 @@
     {
       "id": "",
       "label": "Models & Loading",
-      "localized": "模型和加载",
-      "hint": "与基础模型、主要后端和模型加载行为相关的设置"
+      "localized": "模型 & 加载",
+      "hint": "与基础模型、主后端和模型加载行为相关的设置"
     },
     {
       "id": "",
       "label": "Variable Auto Encoder",
       "localized": "可变自动编码器",
-      "hint": "与可变自动编码器以及生成期间的图像解码过程相关的设置"
+      "hint": "与可变自动编码器以及生成过程中图像解码过程相关的设置"
     },
     {
       "id": "",
       "label": "Text encoder",
       "localized": "文本编码器",
-      "hint": "与文本编码器以及生成期间的提示词编码处理相关的设置"
+      "hint": "与文本编码器以及生成过程中提示词编码处理相关的设置"
     },
     {
       "id": "",
@@ -1248,7 +1326,7 @@
       "id": "",
       "label": "Backend Settings",
       "localized": "后端设置",
-      "hint": "与计算后端相关的设置：torch、onnx 和 olive"
+      "hint": "与计算后端相关的设置：torch, onnx 和 olive"
     },
     {
       "id": "",
@@ -1259,8 +1337,8 @@
     {
       "id": "",
       "label": "Pipeline modifiers",
-      "localized": "管线修改器",
-      "hint": "生成期间可以启用的附加功能"
+      "localized": "管道修改器",
+      "hint": "生成过程中可以启用的附加功能"
     },
     {
       "id": "",
@@ -1272,7 +1350,7 @@
       "id": "",
       "label": "System Paths",
       "localized": "系统路径",
-      "hint": "与各种模型目录位置相关的设置"
+      "hint": "与各种模型目录的位置相关的设置"
     },
     {
       "id": "",
@@ -1302,7 +1380,7 @@
       "id": "",
       "label": "Postprocessing",
       "localized": "后处理",
-      "hint": "与图像生成后的处理、人脸修复和放大相关的设置"
+      "hint": "与图像生成后的处理、面部修复和放大相关的设置"
     },
     {
       "id": "",
@@ -1332,19 +1410,19 @@
       "id": "",
       "label": "refiner model",
       "localized": "精炼模型",
-      "hint": "用于第二遍操作的精炼模型"
+      "hint": "用于第二次传递操作的精炼模型"
     },
     {
       "id": "",
       "label": "Cached models",
       "localized": "缓存模型",
-      "hint": "要在 RAM 中存储以便快速访问的模型数量"
+      "hint": "要存储在 RAM 中以便快速访问的模型数量"
     },
     {
       "id": "",
       "label": "VAE model",
       "localized": "VAE 模型",
-      "hint": "VAE 有助于最终图像中的精细细节，并且也可能改变颜色"
+      "hint": "VAE 有助于最终图像中的精细细节，也可能会改变颜色"
     },
     {
       "id": "",
@@ -1356,19 +1434,19 @@
       "id": "",
       "label": "xFormers",
       "localized": "xFormers",
-      "hint": "内存优化。非确定性的（每次结果都不同）"
+      "hint": "内存优化。非确定性（每次的结果都不同）"
     },
     {
       "id": "",
       "label": "Scaled-Dot-Product",
-      "localized": "缩放点积",
-      "hint": "内存优化。除非禁用 SDP 内存注意力，否则是非确定性的。"
+      "localized": "缩放点积注意力",
+      "hint": "内存优化。除非禁用 SDP 内存注意力，否则为非确定性。"
     },
     {
       "id": "",
       "label": "Prompt padding",
       "localized": "提示词填充",
-      "hint": "当使用超过 75 个 tokens 时，通过从最后一个逗号填充 n 个 tokens 来增加一致性"
+      "hint": "当使用超过 75 个令牌时，通过从 n 个令牌内的最后一个逗号填充来提高一致性"
     },
     {
       "id": "",
@@ -1410,19 +1488,19 @@
       "id": "",
       "label": "Full precision (--no-half-vae)",
       "localized": "全精度 (--no-half-vae)",
-      "hint": "VAE 使用 FP32。可能会产生更好的结果，同时使用更多的 VRAM 和更慢的生成速度"
+      "hint": "对 VAE 使用 FP32。可能会产生更好的结果，同时使用更多的 VRAM 和更慢的生成速度"
     },
     {
       "id": "",
       "label": "Force full precision (--no-half)",
       "localized": "强制全精度 (--no-half)",
-      "hint": "模型使用 FP32。可能会产生更好的结果，同时使用更多的 VRAM 和更慢的生成速度"
+      "hint": "对模型使用 FP32。可能会产生更好的结果，同时使用更多的 VRAM 和更慢的生成速度"
     },
     {
       "id": "",
       "label": "Upcast sampling",
       "localized": "向上转换采样",
-      "hint": "通常会产生与 --no-half 相似的结果，同时具有更好的性能且使用更少的内存"
+      "hint": "通常会产生与 --no-half 相似的结果，同时具有更好的性能并使用更少的内存"
     },
     {
       "id": "",
@@ -1434,25 +1512,25 @@
       "id": "",
       "label": "Olive use FP16 on optimization",
       "localized": "Olive 在优化时使用 FP16",
-      "hint": "使用 16 位浮点精度作为 Olive 优化过程的输出模型。如果禁用，则使用 32 位浮点精度"
+      "hint": "对 Olive 优化过程的输出模型使用 16 位浮点精度。如果禁用，则使用 32 位浮点精度"
     },
     {
       "id": "",
       "label": "Olive force FP32 for VAE Encoder",
       "localized": "Olive 强制 VAE 编码器使用 FP32",
-      "hint": "输出模型的 VAE 编码器使用 32 位浮点精度。这会覆盖“优化时使用 FP16”选项。如果您从 Img2Img 获得 NaN 或黑色空白图像，请启用此选项并删除缓存"
+      "hint": "对输出模型的 VAE 编码器使用 32 位浮点精度。 这会覆盖“优化时使用 FP16”选项。 如果您从 Img2Img 获得 NaN 或黑色空白图像，请启用此选项并删除缓存"
     },
     {
       "id": "",
       "label": "Olive use static dimensions",
       "localized": "Olive 使用静态维度",
-      "hint": "使用 Olive 优化的模型进行推理会快得多。(OrtTransformersOptimization)"
+      "hint": "使用 Olive 优化的模型进行推断会快得多。(OrtTransformersOptimization)"
     },
     {
       "id": "",
       "label": "Olive cache optimized models",
       "localized": "Olive 缓存优化模型",
-      "hint": "将 Olive 处理的模型保存为缓存。您可以在 ONNX 选项卡中管理它们"
+      "hint": "将 Olive 处理后的模型另存为缓存。 您可以在 ONNX 选项卡中管理它们"
     },
     {
       "id": "",
@@ -1476,25 +1554,25 @@
       "id": "",
       "label": "Row count",
       "localized": "行数",
-      "hint": "使用 -1 进行自动检测，使用 0 使其与批处理大小相同"
+      "hint": "使用 -1 自动检测，0 表示与批次大小相同"
     },
     {
       "id": "",
       "label": "Directory name pattern",
       "localized": "目录名称模式",
-      "hint": "使用以下标签来定义如何选择图像和网格的子目录：[steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; 留空为默认值"
+      "hint": "使用以下标签来定义如何选择图像和网格的子目录：[steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; 留空使用默认值"
     },
     {
       "id": "",
       "label": "Inpainting conditioning mask strength",
-      "localized": "Inpainting 条件蒙版强度",
-      "hint": "确定在绘画和 img2img 中屏蔽原始图像的强度。 1.0 表示完全屏蔽（默认）。 0.0 表示完全未屏蔽的条件。 较低的值将有助于保持图像的整体构图，但在进行大的更改时会遇到困难"
+      "localized": "修复的条件蒙版强度",
+      "hint": "确定在修复和 img2img 中遮盖原始图像的强度。 1.0 表示完全遮盖（默认）。 0.0 表示完全未遮盖的条件。 较低的值将有助于保持图像的整体构图，但在进行大幅更改时会遇到困难"
     },
     {
       "id": "",
       "label": "Clip skip",
-      "localized": "CLIP 跳过",
-      "hint": "CLIP 模型的提前停止参数；1 是像往常一样在最后一层停止，2 是在倒数第二层停止，等等"
+      "localized": "Clip 跳过",
+      "hint": "CLIP 模型的提前停止参数； 1 是像往常一样在最后一层停止，2 是在倒数第二层停止，依此类推"
     },
     {
       "id": "",
@@ -1512,25 +1590,25 @@
       "id": "",
       "label": "Quicksettings list",
       "localized": "快速设置列表",
-      "hint": "设置名称列表，以逗号分隔，用于应转到顶部快速访问栏而不是设置选项卡的设置"
+      "hint": "设置名称的列表，以逗号分隔，用于应转到顶部快速访问栏而不是设置选项卡的设置"
     },
     {
       "id": "",
       "label": "Live preview display period",
       "localized": "实时预览显示周期",
-      "hint": "每隔 n 步请求预览图像，设置为 0 则禁用"
+      "hint": "每隔 n 步请求预览图像，设置为 0 以禁用"
     },
     {
       "id": "",
       "label": "Approximate",
       "localized": "近似",
-      "hint": "廉价的神经网络近似。 与 VAE 相比非常快，但生成的图片水平/垂直分辨率小 4 倍，质量较低"
+      "hint": "廉价的神经网络近似。 与 VAE 相比非常快，但会生成水平/垂直分辨率小 4 倍且质量较低的图片"
     },
     {
       "id": "",
       "label": "Simple",
       "localized": "简单",
-      "hint": "非常廉价的近似。 与 VAE 相比非常快，但生成的图片水平/垂直分辨率小 8 倍，质量极低"
+      "hint": "非常便宜的近似。 与 VAE 相比非常快，但会生成水平/垂直分辨率小 8 倍且质量极低的图片"
     },
     {
       "id": "",
@@ -1542,25 +1620,25 @@
       "id": "",
       "label": "Euler a",
       "localized": "Euler a",
-      "hint": "Euler Ancestral - 非常有创意，每个都可以根据步数获得完全不同的图片，设置高于 30-40 的步数没有帮助"
+      "hint": "Euler Ancestral - 非常有创意，每个都可以根据步数获得完全不同的图片，将步数设置高于 30-40 无济于事"
     },
     {
       "id": "",
       "label": "DDIM",
       "localized": "DDIM",
-      "hint": "Denoising Diffusion Implicit Models - 最适合绘画"
+      "hint": "Denoising Diffusion Implicit Models - 最适合修复"
     },
     {
       "id": "",
       "label": "UniPC",
       "localized": "UniPC",
-      "hint": "用于扩散模型快速采样的统一预测器-校正器框架"
+      "hint": "用于快速采样扩散模型的统一预测校正器框架"
     },
     {
       "id": "",
       "label": "sigma negative guidance minimum",
-      "localized": "sigma 负引导最小值",
-      "hint": "当图像几乎准备就绪时跳过某些步骤的负面提示，0=禁用"
+      "localized": "sigma 负向引导最小值",
+      "hint": "当图像几乎准备就绪时，跳过某些步骤的负向提示，0=禁用"
     },
     {
       "id": "",
@@ -1578,49 +1656,49 @@
       "id": "",
       "label": "GFPGAN",
       "localized": "GFPGAN",
-      "hint": "使用 GFPGAN 神经网络恢复低质量人脸"
+      "hint": "使用 GFPGAN 神经网络恢复低质量面部"
     },
     {
       "id": "",
       "label": "CodeFormer weight parameter",
       "localized": "CodeFormer 权重参数",
-      "hint": "0 = 最大效果；1 = 最小效果"
+      "hint": "0 = 最大效果； 1 = 最小效果"
     },
     {
       "id": "",
       "label": "ToMe token merging ratio",
       "localized": "ToMe 令牌合并率",
-      "hint": "启用通过 tomesd 的冗余令牌合并以提高速度和内存，0=禁用"
+      "hint": "启用通过 tomesd 进行的冗余令牌合并，以提高速度和内存，0=禁用"
     },
     {
       "id": "",
       "label": "Todo token merging ratio",
       "localized": "Todo 令牌合并率",
-      "hint": "启用通过 todo 的冗余令牌合并以提高速度和内存，0=禁用"
+      "hint": "启用通过 todo 进行的冗余令牌合并，以提高速度和内存，0=禁用"
     },
     {
       "id": "",
       "label": "Model pipeline",
-      "localized": "模型管线",
-      "hint": "如果自动检测无法自动检测模型，请在加载模型之前选择模型类型"
+      "localized": "模型管道",
+      "hint": "如果自动检测无法自动检测到模型，请在加载模型之前选择模型类型"
     },
     {
       "id": "",
       "label": "VAE slicing",
       "localized": "VAE 切片",
-      "hint": "一次解码一个图像的批量潜在变量，VRAM 有限。 在多图像批处理的 VAE 解码中略有性能提升"
+      "hint": "一次解码一批潜在图像，VRAM 有限。 在多图像批次的 VAE 解码中略微提升性能"
     },
     {
       "id": "",
       "label": "VAE tiling",
-      "localized": "VAE 瓦片",
-      "hint": "将大图像分成具有有限 VRAM 的重叠瓦片。 导致处理时间略有增加"
+      "localized": "VAE 平铺",
+      "hint": "将大图像划分为具有有限 VRAM 的重叠平铺。 导致处理时间略有增加"
     },
     {
       "id": "",
       "label": "Dynamic attention BMM",
       "localized": "动态注意力 BMM",
-      "hint": "分步执行注意力计算，而不是一次性执行。 推理时间较慢，但大大减少了内存使用"
+      "hint": "分步执行注意力计算，而不是一次性执行。 推理时间较慢，但大大减少了内存使用量"
     },
     {
       "id": "",
@@ -1632,19 +1710,19 @@
       "id": "",
       "label": "ONNX allow fallback to CPU",
       "localized": "ONNX 允许回退到 CPU",
-      "hint": "当选择的执行提供程序失败时，允许回退到 CPU"
+      "hint": "当选定的执行提供程序失败时，允许回退到 CPU"
     },
     {
       "id": "",
       "label": "ONNX cache converted models",
       "localized": "ONNX 缓存转换后的模型",
-      "hint": "将转换为 ONNX 格式的模型保存为缓存。 您可以在 ONNX 选项卡中管理它们"
+      "hint": "将转换为 ONNX 格式的模型另存为缓存。 您可以在 ONNX 选项卡中管理它们"
     },
     {
       "id": "",
       "label": "ONNX unload base model when processing refiner",
-      "localized": "在处理精炼器时，ONNX 卸载基本模型",
-      "hint": "在转换/优化/处理精炼器时卸载基本模型"
+      "localized": "处理精炼器时 ONNX 卸载基础模型",
+      "hint": "转换/优化/处理精炼器时卸载基础模型"
     },
     {
       "id": "",
@@ -1655,38 +1733,38 @@
     {
       "id": "",
       "label": "no-grad",
-      "localized": "no-grad",
+      "localized": "无梯度",
       "hint": "使用 torch.no_grad"
     },
     {
       "id": "",
       "label": "model compile precompile",
       "localized": "模型编译预编译",
-      "hint": "在模型加载时立即运行模型编译，而不是首次使用时"
+      "hint": "在模型加载时立即运行模型编译，而不是在首次使用时运行"
     },
     {
       "id": "",
       "label": "Use zeros for prompt padding",
-      "localized": "使用零进行提示词填充",
-      "hint": "当提示词为空时，强制执行完整的零张量，以消除任何残留噪声"
+      "localized": "使用零进行提示填充",
+      "hint": "当提示为空时，强制使用完整的零张量，以消除任何残留噪声"
     },
     {
       "id": "",
       "label": "Include invisible watermark",
       "localized": "包含不可见水印",
-      "hint": "通过改变一些像素值来向图像添加不可见水印"
+      "hint": "通过更改某些像素值将不可见水印添加到图像"
     },
     {
       "id": "",
       "label": "invisible watermark string",
       "localized": "不可见水印字符串",
-      "hint": "要添加到图像的水印字符串。 保持非常短，以避免图像损坏。"
+      "hint": "要添加到图像的水印字符串。 保持非常短以避免图像损坏"
     },
     {
       "id": "",
       "label": "show log view",
       "localized": "显示日志视图",
-      "hint": "在主窗口底部显示日志视图"
+      "hint": "在主窗口的底部显示日志视图"
     },
     {
       "id": "",
@@ -1702,6 +1780,18 @@
     }
   ],
   "missing": [
+    {
+      "id": "",
+      "label": "1 day",
+      "localized": "1天",
+      "hint": "1天"
+    },
+    {
+      "id": "",
+      "label": "14 days",
+      "localized": "14天",
+      "hint": "14天"
+    },
     {
       "id": "",
       "label": "1st stage",
@@ -1723,8 +1813,8 @@
     {
       "id": "",
       "label": "2nd restart step",
-      "localized": "第二次重启步骤",
-      "hint": "第二次重启步骤"
+      "localized": "第二次重启步数",
+      "hint": "第二次重启步数"
     },
     {
       "id": "",
@@ -1752,9 +1842,21 @@
     },
     {
       "id": "",
+      "label": "3 days",
+      "localized": "3天",
+      "hint": "3天"
+    },
+    {
+      "id": "",
+      "label": "30 days",
+      "localized": "30天",
+      "hint": "30天"
+    },
+    {
+      "id": "",
       "label": "3rd restart step",
-      "localized": "第三次重启步骤",
-      "hint": "第三次重启步骤"
+      "localized": "第三次重启步数",
+      "hint": "第三次重启步数"
     },
     {
       "id": "",
@@ -1771,8 +1873,8 @@
     {
       "id": "",
       "label": "4th restart step",
-      "localized": "第四次重启步骤",
-      "hint": "第四次重启步骤"
+      "localized": "第四次重启步数",
+      "hint": "第四次重启步数"
     },
     {
       "id": "",
@@ -1785,6 +1887,18 @@
       "label": "4th stage",
       "localized": "第四阶段",
       "hint": "第四阶段"
+    },
+    {
+      "id": "",
+      "label": "7 days",
+      "localized": "7天",
+      "hint": "7天"
+    },
+    {
+      "id": "",
+      "label": "90 days",
+      "localized": "90天",
+      "hint": "90天"
     },
     {
       "id": "",
@@ -1807,14 +1921,38 @@
     {
       "id": "",
       "label": "adain",
-      "localized": "AdaIN",
-      "hint": "AdaIN"
+      "localized": "自适应实例规范化",
+      "hint": "自适应实例规范化"
+    },
+    {
+      "id": "",
+      "label": "adapter 1",
+      "localized": "适配器 1",
+      "hint": "适配器 1"
+    },
+    {
+      "id": "",
+      "label": "adapter 2",
+      "localized": "适配器 2",
+      "hint": "适配器 2"
+    },
+    {
+      "id": "",
+      "label": "adapter 3",
+      "localized": "适配器 3",
+      "hint": "适配器 3"
+    },
+    {
+      "id": "",
+      "label": "adapter 4",
+      "localized": "适配器 4",
+      "hint": "适配器 4"
     },
     {
       "id": "",
       "label": "adaptive restore",
-      "localized": "自适应恢复",
-      "hint": "自适应恢复"
+      "localized": "自适应修复",
+      "hint": "自适应修复"
     },
     {
       "id": "",
@@ -1849,14 +1987,20 @@
     {
       "id": "",
       "label": "aggressive at step",
-      "localized": "在步骤处激进",
-      "hint": "在步骤处激进"
+      "localized": "在步骤上激进",
+      "hint": "在步骤上激进"
     },
     {
       "id": "",
       "label": "alias",
       "localized": "别名",
       "hint": "别名"
+    },
+    {
+      "id": "",
+      "label": "all",
+      "localized": "全部",
+      "hint": "全部"
     },
     {
       "id": "",
@@ -1896,6 +2040,12 @@
     },
     {
       "id": "",
+      "label": "alt",
+      "localized": "替换文本",
+      "hint": "替换文本"
+    },
+    {
+      "id": "",
       "label": "amplify lut",
       "localized": "放大LUT",
       "hint": "放大LUT"
@@ -1914,6 +2064,12 @@
     },
     {
       "id": "",
+      "label": "animateddiff",
+      "localized": "animateddiff",
+      "hint": "animateddiff"
+    },
+    {
+      "id": "",
       "label": "answer",
       "localized": "答案",
       "hint": "答案"
@@ -1926,9 +2082,15 @@
     },
     {
       "id": "",
+      "label": "appearance",
+      "localized": "外观",
+      "hint": "外观"
+    },
+    {
+      "id": "",
       "label": "append image info json file",
-      "localized": "追加图像信息JSON文件",
-      "hint": "追加图像信息JSON文件"
+      "localized": "追加图像信息 JSON 文件",
+      "hint": "追加图像信息 JSON 文件"
     },
     {
       "id": "",
@@ -1938,9 +2100,15 @@
     },
     {
       "id": "",
+      "label": "append to main ui",
+      "localized": "附加到主界面",
+      "hint": "附加到主界面"
+    },
+    {
+      "id": "",
       "label": "apply color correction",
-      "localized": "应用色彩校正",
-      "hint": "应用色彩校正"
+      "localized": "应用颜色校正",
+      "hint": "应用颜色校正"
     },
     {
       "id": "",
@@ -1951,26 +2119,26 @@
     {
       "id": "",
       "label": "apply linfusion distillation on load",
-      "localized": "加载时应用Linfusion蒸馏",
-      "hint": "加载时应用Linfusion蒸馏"
+      "localized": "加载时应用 Linfusion 蒸馏",
+      "hint": "加载时应用 Linfusion 蒸馏"
     },
     {
       "id": "",
       "label": "apply mask as overlay",
-      "localized": "将蒙版作为覆盖层应用",
-      "hint": "将蒙版作为覆盖层应用"
+      "localized": "将遮罩作为覆盖应用",
+      "hint": "将遮罩作为覆盖应用"
     },
     {
       "id": "",
       "label": "apply msw-msa",
-      "localized": "应用MSW-MSA",
-      "hint": "应用MSW-MSA"
+      "localized": "应用 MSW-MSA",
+      "hint": "应用 MSW-MSA"
     },
     {
       "id": "",
       "label": "apply rau-net",
-      "localized": "应用RAU-Net",
-      "hint": "应用RAU-Net"
+      "localized": "应用 RAU-Net",
+      "hint": "应用 RAU-Net"
     },
     {
       "id": "",
@@ -1986,21 +2154,27 @@
     },
     {
       "id": "",
+      "label": "as a tab",
+      "localized": "作为标签页",
+      "hint": "作为标签页"
+    },
+    {
+      "id": "",
       "label": "atiadlxx (amd only)",
-      "localized": "atiadlxx (仅限AMD)",
-      "hint": "atiadlxx (仅限AMD)"
+      "localized": "atiadlxx (仅限 AMD)",
+      "hint": "atiadlxx (仅限 AMD)"
     },
     {
       "id": "",
       "label": "attention",
-      "localized": "注意力机制",
-      "hint": "注意力机制"
+      "localized": "注意力",
+      "hint": "注意力"
     },
     {
       "id": "",
       "label": "attention adain",
-      "localized": "注意力机制AdaIN",
-      "hint": "注意力机制AdaIN"
+      "localized": "注意力自适应实例规范化",
+      "hint": "注意力自适应实例规范化"
     },
     {
       "id": "",
@@ -2017,14 +2191,14 @@
     {
       "id": "",
       "label": "attention kv chunk size",
-      "localized": "注意力KV分块大小",
-      "hint": "注意力KV分块大小"
+      "localized": "注意力 KV 分块大小",
+      "hint": "注意力 KV 分块大小"
     },
     {
       "id": "",
       "label": "attention query chunk size",
-      "localized": "注意力Query分块大小",
-      "hint": "注意力Query分块大小"
+      "localized": "注意力查询分块大小",
+      "hint": "注意力查询分块大小"
     },
     {
       "id": "",
@@ -2040,15 +2214,21 @@
     },
     {
       "id": "",
+      "label": "auto requeue failed tasks",
+      "localized": "自动重新排队失败的任务",
+      "hint": "自动重新排队失败的任务"
+    },
+    {
+      "id": "",
       "label": "auto-convert sd15 embeddings to sdxl",
-      "localized": "自动转换SD15嵌入到SDXL",
-      "hint": "自动转换SD15嵌入到SDXL"
+      "localized": "自动将 SD1.5 嵌入转换为 SDXL",
+      "hint": "自动将 SD1.5 嵌入转换为 SDXL"
     },
     {
       "id": "",
       "label": "auto-mask",
-      "localized": "自动蒙版",
-      "hint": "自动蒙版"
+      "localized": "自动遮罩",
+      "hint": "自动遮罩"
     },
     {
       "id": "",
@@ -2065,14 +2245,14 @@
     {
       "id": "",
       "label": "automatically determine rank",
-      "localized": "自动确定等级",
-      "hint": "自动确定等级"
+      "localized": "自动确定排名",
+      "hint": "自动确定排名"
     },
     {
       "id": "",
       "label": "autorank ratio",
-      "localized": "自动等级比率",
-      "hint": "自动等级比率"
+      "localized": "自动排名比率",
+      "hint": "自动排名比率"
     },
     {
       "id": "",
@@ -2085,12 +2265,6 @@
       "label": "backend",
       "localized": "后端",
       "hint": "后端"
-    },
-    {
-      "id": "",
-      "label": "backend settings",
-      "localized": "后端设置",
-      "hint": "后端设置"
     },
     {
       "id": "",
@@ -2113,68 +2287,68 @@
     {
       "id": "",
       "label": "balanced offload cpu high watermark",
-      "localized": "平衡卸载CPU高水位线",
-      "hint": "平衡卸载CPU高水位线"
+      "localized": "平衡卸载 CPU 高水位线",
+      "hint": "平衡卸载 CPU 高水位线"
     },
     {
       "id": "",
       "label": "balanced offload gpu high watermark",
-      "localized": "平衡卸载GPU高水位线",
-      "hint": "平衡卸载GPU高水位线"
+      "localized": "平衡卸载 GPU 高水位线",
+      "hint": "平衡卸载 GPU 高水位线"
     },
     {
       "id": "",
       "label": "balanced offload gpu low watermark",
-      "localized": "平衡卸载GPU低水位线",
-      "hint": "平衡卸载GPU低水位线"
+      "localized": "平衡卸载 GPU 低水位线",
+      "hint": "平衡卸载 GPU 低水位线"
     },
     {
       "id": "",
-      "label": "batch",
-      "localized": "批处理",
-      "hint": "批处理"
+      "label": "base",
+      "localized": "基础",
+      "hint": "基础"
     },
     {
       "id": "",
       "label": "batch input directory",
-      "localized": "批处理输入目录",
-      "hint": "批处理输入目录"
+      "localized": "批量输入目录",
+      "hint": "批量输入目录"
     },
     {
       "id": "",
       "label": "batch mask directory",
-      "localized": "批处理蒙版目录",
-      "hint": "批处理蒙版目录"
+      "localized": "批量遮罩目录",
+      "hint": "批量遮罩目录"
     },
     {
       "id": "",
       "label": "batch matrix-matrix",
-      "localized": "批处理矩阵-矩阵",
-      "hint": "批处理矩阵-矩阵"
+      "localized": "批量矩阵-矩阵",
+      "hint": "批量矩阵-矩阵"
     },
     {
       "id": "",
       "label": "batch mode uses sequential seeds",
-      "localized": "批处理模式使用连续种子",
-      "hint": "批处理模式使用连续种子"
+      "localized": "批量模式使用顺序种子",
+      "hint": "批量模式使用顺序种子"
     },
     {
       "id": "",
       "label": "batch output directory",
-      "localized": "批处理输出目录",
-      "hint": "批处理输出目录"
+      "localized": "批量输出目录",
+      "hint": "批量输出目录"
     },
     {
       "id": "",
       "label": "batch uses original name",
-      "localized": "批处理使用原始名称",
-      "hint": "批处理使用原始名称"
+      "localized": "批量使用原始名称",
+      "hint": "批量使用原始名称"
     },
     {
       "id": "",
       "label": "bdia ddim",
-      "localized": "BDIA DDIM",
-      "hint": "BDIA DDIM"
+      "localized": "bdia ddim",
+      "hint": "bdia ddim"
     },
     {
       "id": "",
@@ -2185,8 +2359,8 @@
     {
       "id": "",
       "label": "benchmark level",
-      "localized": "基准测试等级",
-      "hint": "基准测试等级"
+      "localized": "基准测试级别",
+      "hint": "基准测试级别"
     },
     {
       "id": "",
@@ -2203,38 +2377,44 @@
     {
       "id": "",
       "label": "beta end",
-      "localized": "Beta结束",
-      "hint": "Beta结束"
+      "localized": "Beta结束值",
+      "hint": "Beta结束值"
     },
     {
       "id": "",
       "label": "beta ratio",
-      "localized": "Beta比率",
-      "hint": "Beta比率"
+      "localized": "β比率",
+      "hint": "β比率"
     },
     {
       "id": "",
       "label": "beta schedule",
-      "localized": "Beta计划",
-      "hint": "Beta计划"
+      "localized": "β计划",
+      "hint": "β计划"
     },
     {
       "id": "",
       "label": "beta start",
-      "localized": "Beta开始",
-      "hint": "Beta开始"
+      "localized": "β开始",
+      "hint": "β开始"
+    },
+    {
+      "id": "",
+      "label": "between prompt and generate button",
+      "localized": "提示词和生成按钮之间",
+      "hint": "提示词和生成按钮之间"
     },
     {
       "id": "",
       "label": "bh1",
-      "localized": "BH1",
-      "hint": "BH1"
+      "localized": "bh1",
+      "hint": "bh1"
     },
     {
       "id": "",
       "label": "bh2",
-      "localized": "BH2",
-      "hint": "BH2"
+      "localized": "bh2",
+      "hint": "bh2"
     },
     {
       "id": "",
@@ -2245,8 +2425,8 @@
     {
       "id": "",
       "label": "block skip range",
-      "localized": "块跳跃范围",
-      "hint": "块跳跃范围"
+      "localized": "块跳过范围",
+      "hint": "块跳过范围"
     },
     {
       "id": "",
@@ -2286,9 +2466,15 @@
     },
     {
       "id": "",
+      "label": "canny",
+      "localized": "Canny边缘检测",
+      "hint": "Canny边缘检测"
+    },
+    {
+      "id": "",
       "label": "caption model",
-      "localized": "标题模型",
-      "hint": "标题模型"
+      "localized": "字幕模型",
+      "hint": "字幕模型"
     },
     {
       "id": "",
@@ -2299,8 +2485,8 @@
     {
       "id": "",
       "label": "change log",
-      "localized": "更改日志",
-      "hint": "更改日志"
+      "localized": "更新日志",
+      "hint": "更新日志"
     },
     {
       "id": "",
@@ -2311,8 +2497,8 @@
     {
       "id": "",
       "label": "change rate",
-      "localized": "更改速率",
-      "hint": "更改速率"
+      "localized": "变化率",
+      "hint": "变化率"
     },
     {
       "id": "",
@@ -2329,14 +2515,14 @@
     {
       "id": "",
       "label": "change vae",
-      "localized": "更改 VAE",
-      "hint": "更改 VAE"
+      "localized": "更改VAE",
+      "hint": "更改VAE"
     },
     {
       "id": "",
       "label": "channels last",
-      "localized": "通道优先",
-      "hint": "通道优先"
+      "localized": "通道最后",
+      "hint": "通道最后"
     },
     {
       "id": "",
@@ -2371,26 +2557,20 @@
     {
       "id": "",
       "label": "civitai model type",
-      "localized": "Civitai 模型类型",
-      "hint": "Civitai 模型类型"
+      "localized": "Civitai模型类型",
+      "hint": "Civitai模型类型"
     },
     {
       "id": "",
       "label": "civitai token",
-      "localized": "Civitai 令牌",
-      "hint": "Civitai 令牌"
+      "localized": "Civitai令牌",
+      "hint": "Civitai令牌"
     },
     {
       "id": "",
       "label": "ckpt",
-      "localized": "Ckpt",
-      "hint": "Ckpt"
-    },
-    {
-      "id": "",
-      "label": "classes",
-      "localized": "类",
-      "hint": "类"
+      "localized": "ckpt",
+      "hint": "ckpt"
     },
     {
       "id": "",
@@ -2401,68 +2581,68 @@
     {
       "id": "",
       "label": "clip batch model",
-      "localized": "Clip 批处理模型",
-      "hint": "Clip 批处理模型"
+      "localized": "CLIP批处理模型",
+      "hint": "CLIP批处理模型"
     },
     {
       "id": "",
       "label": "clip model",
-      "localized": "Clip 模型",
-      "hint": "Clip 模型"
+      "localized": "CLIP模型",
+      "hint": "CLIP模型"
     },
     {
       "id": "",
       "label": "clip: default captioner",
-      "localized": "Clip：默认字幕器",
-      "hint": "Clip：默认字幕器"
+      "localized": "CLIP：默认字幕器",
+      "hint": "CLIP：默认字幕器"
     },
     {
       "id": "",
       "label": "clip: default mode",
-      "localized": "Clip：默认模式",
-      "hint": "Clip：默认模式"
+      "localized": "CLIP：默认模式",
+      "hint": "CLIP：默认模式"
     },
     {
       "id": "",
       "label": "clip: default model",
-      "localized": "Clip：默认模型",
-      "hint": "Clip：默认模型"
+      "localized": "CLIP：默认模型",
+      "hint": "CLIP：默认模型"
     },
     {
       "id": "",
       "label": "clip: include scores in results",
-      "localized": "Clip：在结果中包含分数",
-      "hint": "Clip：在结果中包含分数"
+      "localized": "CLIP：在结果中包含分数",
+      "hint": "CLIP：在结果中包含分数"
     },
     {
       "id": "",
       "label": "clip: max flavors",
-      "localized": "Clip：最大风格数量",
-      "hint": "Clip：最大风格数量"
+      "localized": "CLIP：最大风格数量",
+      "hint": "CLIP：最大风格数量"
     },
     {
       "id": "",
       "label": "clip: max length",
-      "localized": "Clip：最大长度",
-      "hint": "Clip：最大长度"
+      "localized": "CLIP：最大长度",
+      "hint": "CLIP：最大长度"
     },
     {
       "id": "",
       "label": "clip: min flavors",
-      "localized": "Clip：最小风格数量",
-      "hint": "Clip：最小风格数量"
+      "localized": "CLIP：最小风格数量",
+      "hint": "CLIP：最小风格数量"
     },
     {
       "id": "",
       "label": "clip: min length",
-      "localized": "Clip：最小长度",
-      "hint": "Clip：最小长度"
+      "localized": "CLIP：最小长度",
+      "hint": "CLIP：最小长度"
     },
     {
       "id": "",
       "label": "clip: num beams",
-      "localized": "Clip：光束数量",
-      "hint": "Clip：光束数量"
+      "localized": "CLIP：光束数量",
+      "hint": "CLIP：光束数量"
     },
     {
       "id": "",
@@ -2473,38 +2653,38 @@
     {
       "id": "",
       "label": "cmsi",
-      "localized": "CMSI",
-      "hint": "CMSI"
+      "localized": "cmsi",
+      "hint": "cmsi"
     },
     {
       "id": "",
       "label": "cn end",
-      "localized": "CN 结束",
-      "hint": "CN 结束"
+      "localized": "CN结束",
+      "hint": "CN结束"
     },
     {
       "id": "",
       "label": "cn mode",
-      "localized": "CN 模式",
-      "hint": "CN 模式"
+      "localized": "CN模式",
+      "hint": "CN模式"
     },
     {
       "id": "",
       "label": "cn start",
-      "localized": "CN 开始",
-      "hint": "CN 开始"
+      "localized": "CN开始",
+      "hint": "CN开始"
     },
     {
       "id": "",
       "label": "cn strength",
-      "localized": "CN 强度",
-      "hint": "CN 强度"
+      "localized": "CN强度",
+      "hint": "CN强度"
     },
     {
       "id": "",
       "label": "cn tiles",
-      "localized": "CN 瓦片",
-      "hint": "CN 瓦片"
+      "localized": "CN瓦片",
+      "hint": "CN瓦片"
     },
     {
       "id": "",
@@ -2563,8 +2743,8 @@
     {
       "id": "",
       "label": "comma separated list with optional strength per lora",
-      "localized": "逗号分隔的列表，每个 Lora 可以选择性地指定强度",
-      "hint": "逗号分隔的列表，每个 Lora 可以选择性地指定强度"
+      "localized": "逗号分隔的列表，每个LoRA可以选择强度",
+      "hint": "逗号分隔的列表，每个LoRA可以选择强度"
     },
     {
       "id": "",
@@ -2587,8 +2767,8 @@
     {
       "id": "",
       "label": "compress ratio",
-      "localized": "压缩率",
-      "hint": "压缩率"
+      "localized": "压缩比",
+      "hint": "压缩比"
     },
     {
       "id": "",
@@ -2605,20 +2785,20 @@
     {
       "id": "",
       "label": "context after",
-      "localized": "后文",
-      "hint": "后文"
+      "localized": "之后上下文",
+      "hint": "之后上下文"
     },
     {
       "id": "",
       "label": "context before",
-      "localized": "前文",
-      "hint": "前文"
+      "localized": "之前上下文",
+      "hint": "之前上下文"
     },
     {
       "id": "",
       "label": "context mask",
-      "localized": "上下文遮罩",
-      "hint": "上下文遮罩"
+      "localized": "上下文蒙版",
+      "hint": "上下文蒙版"
     },
     {
       "id": "",
@@ -2635,8 +2815,8 @@
     {
       "id": "",
       "label": "control override denoise strength",
-      "localized": "控制覆盖去噪强度",
-      "hint": "控制覆盖去噪强度"
+      "localized": "控制覆盖降噪强度",
+      "hint": "控制覆盖降噪强度"
     },
     {
       "id": "",
@@ -2646,15 +2826,87 @@
     },
     {
       "id": "",
+      "label": "control-lllite unit 1",
+      "localized": "control-lllite 单元 1",
+      "hint": "control-lllite 单元 1"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 2",
+      "localized": "control-lllite 单元 2",
+      "hint": "control-lllite 单元 2"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 3",
+      "localized": "control-lllite 单元 3",
+      "hint": "control-lllite 单元 3"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 4",
+      "localized": "control-lllite 单元 4",
+      "hint": "control-lllite 单元 4"
+    },
+    {
+      "id": "",
       "label": "controlnet",
       "localized": "ControlNet",
       "hint": "ControlNet"
     },
     {
       "id": "",
+      "label": "controlnet unit 1",
+      "localized": "ControlNet 单元 1",
+      "hint": "ControlNet 单元 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 2",
+      "localized": "ControlNet 单元 2",
+      "hint": "ControlNet 单元 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 3",
+      "localized": "ControlNet 单元 3",
+      "hint": "ControlNet 单元 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 4",
+      "localized": "ControlNet 单元 4",
+      "hint": "ControlNet 单元 4"
+    },
+    {
+      "id": "",
       "label": "controlnet-xs",
       "localized": "ControlNet-XS",
       "hint": "ControlNet-XS"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 1",
+      "localized": "ControlNet-XS 单元 1",
+      "hint": "ControlNet-XS 单元 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 2",
+      "localized": "ControlNet-XS 单元 2",
+      "hint": "ControlNet-XS 单元 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 3",
+      "localized": "ControlNet-XS 单元 3",
+      "hint": "ControlNet-XS 单元 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 4",
+      "localized": "ControlNet-XS 单元 4",
+      "hint": "ControlNet-XS 单元 4"
     },
     {
       "id": "",
@@ -2671,26 +2923,26 @@
     {
       "id": "",
       "label": "cosine scale",
-      "localized": "余弦缩放",
-      "hint": "余弦缩放"
+      "localized": "余弦比例",
+      "hint": "余弦比例"
     },
     {
       "id": "",
       "label": "cosine scale 1",
-      "localized": "余弦缩放 1",
-      "hint": "余弦缩放 1"
+      "localized": "余弦比例 1",
+      "hint": "余弦比例 1"
     },
     {
       "id": "",
       "label": "cosine scale 2",
-      "localized": "余弦缩放 2",
-      "hint": "余弦缩放 2"
+      "localized": "余弦比例 2",
+      "hint": "余弦比例 2"
     },
     {
       "id": "",
       "label": "cosine scale 3",
-      "localized": "余弦缩放 3",
-      "hint": "余弦缩放 3"
+      "localized": "余弦比例 3",
+      "hint": "余弦比例 3"
     },
     {
       "id": "",
@@ -2718,15 +2970,21 @@
     },
     {
       "id": "",
+      "label": "ctrl",
+      "localized": "Ctrl",
+      "hint": "Ctrl"
+    },
+    {
+      "id": "",
       "label": "cudagraphs",
-      "localized": "CUDA 图",
-      "hint": "CUDA 图"
+      "localized": "CudaGraphs",
+      "hint": "CudaGraphs"
     },
     {
       "id": "",
       "label": "cudamallocasync",
-      "localized": "CUDAMallocAsync",
-      "hint": "CUDAMallocAsync"
+      "localized": "cudamallocasync",
+      "hint": "cudamallocasync"
     },
     {
       "id": "",
@@ -2743,14 +3001,14 @@
     {
       "id": "",
       "label": "dark",
-      "localized": "暗",
-      "hint": "暗"
+      "localized": "暗色",
+      "hint": "暗色"
     },
     {
       "id": "",
       "label": "dc solver",
-      "localized": "DC 求解器",
-      "hint": "DC 求解器"
+      "localized": "DC求解器",
+      "hint": "DC求解器"
     },
     {
       "id": "",
@@ -2791,62 +3049,56 @@
     {
       "id": "",
       "label": "deepbooru: escape brackets",
-      "localized": "DeepBooru：转义括号",
-      "hint": "DeepBooru：转义括号"
+      "localized": "DeepBooru: 转义括号",
+      "hint": "DeepBooru: 转义括号"
     },
     {
       "id": "",
       "label": "deepbooru: exclude tags",
-      "localized": "DeepBooru：排除标签",
-      "hint": "DeepBooru：排除标签"
+      "localized": "DeepBooru: 排除标签",
+      "hint": "DeepBooru: 排除标签"
     },
     {
       "id": "",
       "label": "deepbooru: include scores in results",
-      "localized": "DeepBooru：在结果中包含分数",
-      "hint": "DeepBooru：在结果中包含分数"
+      "localized": "DeepBooru: 在结果中包含分数",
+      "hint": "DeepBooru: 在结果中包含分数"
     },
     {
       "id": "",
       "label": "deepbooru: max tags",
-      "localized": "DeepBooru：最大标签数量",
-      "hint": "DeepBooru：最大标签数量"
+      "localized": "DeepBooru: 最大标签数",
+      "hint": "DeepBooru: 最大标签数"
     },
     {
       "id": "",
       "label": "deepbooru: score threshold",
-      "localized": "DeepBooru：分数阈值",
-      "hint": "DeepBooru：分数阈值"
+      "localized": "DeepBooru: 分数阈值",
+      "hint": "DeepBooru: 分数阈值"
     },
     {
       "id": "",
       "label": "deepbooru: sort alphabetically",
-      "localized": "DeepBooru：按字母顺序排序",
-      "hint": "DeepBooru：按字母顺序排序"
+      "localized": "DeepBooru: 按字母顺序排序",
+      "hint": "DeepBooru: 按字母顺序排序"
     },
     {
       "id": "",
       "label": "deepbooru: use spaces for tags",
-      "localized": "DeepBooru：为标签使用空格",
-      "hint": "DeepBooru：为标签使用空格"
+      "localized": "DeepBooru: 使用空格分隔标签",
+      "hint": "DeepBooru: 使用空格分隔标签"
     },
     {
       "id": "",
       "label": "deepcache cache interval",
-      "localized": "深度缓存缓存间隔",
-      "hint": "深度缓存缓存间隔"
+      "localized": "Deepcache 缓存间隔",
+      "hint": "Deepcache 缓存间隔"
     },
     {
       "id": "",
       "label": "default",
       "localized": "默认",
       "hint": "默认"
-    },
-    {
-      "id": "",
-      "label": "default strength",
-      "localized": "默认强度",
-      "hint": "默认强度"
     },
     {
       "id": "",
@@ -2874,6 +3126,12 @@
     },
     {
       "id": "",
+      "label": "depth anything",
+      "localized": "Depth Anything",
+      "hint": "Depth Anything"
+    },
+    {
+      "id": "",
       "label": "depth map",
       "localized": "深度图",
       "hint": "深度图"
@@ -2893,8 +3151,8 @@
     {
       "id": "",
       "label": "details",
-      "localized": "细节",
-      "hint": "细节"
+      "localized": "详情",
+      "hint": "详情"
     },
     {
       "id": "",
@@ -2910,21 +3168,33 @@
     },
     {
       "id": "",
+      "label": "diffusers",
+      "localized": "Diffusers",
+      "hint": "Diffusers"
+    },
+    {
+      "id": "",
       "label": "dilate",
-      "localized": "膨胀",
-      "hint": "膨胀"
+      "localized": "扩张",
+      "hint": "扩张"
     },
     {
       "id": "",
       "label": "dilate tau",
-      "localized": "膨胀 tau",
-      "hint": "膨胀 tau"
+      "localized": "扩张 Tau",
+      "hint": "扩张 Tau"
+    },
+    {
+      "id": "",
+      "label": "directml retry ops for nan",
+      "localized": "DirectML NaN重试操作",
+      "hint": "DirectML NaN重试操作"
     },
     {
       "id": "",
       "label": "directory for temporary images; leave empty for default",
-      "localized": "临时图像目录；留空为默认目录",
-      "hint": "临时图像目录；留空为默认目录"
+      "localized": "临时图像目录；留空为默认",
+      "hint": "临时图像目录；留空为默认"
     },
     {
       "id": "",
@@ -2937,6 +3207,18 @@
       "label": "disable conditional batching",
       "localized": "禁用条件批处理",
       "hint": "禁用条件批处理"
+    },
+    {
+      "id": "",
+      "label": "disable keyboard shortcut",
+      "localized": "禁用键盘快捷键",
+      "hint": "禁用键盘快捷键"
+    },
+    {
+      "id": "",
+      "label": "disable queue auto-processing",
+      "localized": "禁用队列自动处理",
+      "hint": "禁用队列自动处理"
     },
     {
       "id": "",
@@ -2965,8 +3247,14 @@
     {
       "id": "",
       "label": "do not display video output in ui",
-      "localized": "不在UI中显示视频输出",
-      "hint": "不在UI中显示视频输出"
+      "localized": "不在 UI 中显示视频输出",
+      "hint": "不在 UI 中显示视频输出"
+    },
+    {
+      "id": "",
+      "label": "do nothing",
+      "localized": "不执行任何操作",
+      "hint": "不执行任何操作"
     },
     {
       "id": "",
@@ -3019,50 +3307,50 @@
     {
       "id": "",
       "label": "dpm++ 1s",
-      "localized": "DPM++ 1s",
-      "hint": "DPM++ 1s"
+      "localized": "DPM++ 1S",
+      "hint": "DPM++ 1S"
     },
     {
       "id": "",
       "label": "dpm++ 1s inverse",
-      "localized": "DPM++ 1s 逆向",
-      "hint": "DPM++ 1s 逆向"
+      "localized": "DPM++ 1S 逆向",
+      "hint": "DPM++ 1S 逆向"
     },
     {
       "id": "",
       "label": "dpm++ 2m",
-      "localized": "DPM++ 2m",
-      "hint": "DPM++ 2m"
+      "localized": "DPM++ 2M",
+      "hint": "DPM++ 2M"
     },
     {
       "id": "",
       "label": "dpm++ 2m edm",
-      "localized": "DPM++ 2m EDM",
-      "hint": "DPM++ 2m EDM"
+      "localized": "DPM++ 2M EDM",
+      "hint": "DPM++ 2M EDM"
     },
     {
       "id": "",
       "label": "dpm++ 2m inverse",
-      "localized": "DPM++ 2m 逆向",
-      "hint": "DPM++ 2m 逆向"
+      "localized": "DPM++ 2M 逆向",
+      "hint": "DPM++ 2M 逆向"
     },
     {
       "id": "",
       "label": "dpm++ 2m sde",
-      "localized": "DPM++ 2m SDE",
-      "hint": "DPM++ 2m SDE"
+      "localized": "DPM++ 2M SDE",
+      "hint": "DPM++ 2M SDE"
     },
     {
       "id": "",
       "label": "dpm++ 3m",
-      "localized": "DPM++ 3m",
-      "hint": "DPM++ 3m"
+      "localized": "DPM++ 3M",
+      "hint": "DPM++ 3M"
     },
     {
       "id": "",
       "label": "dpm++ 3m inverse",
-      "localized": "DPM++ 3m 逆向",
-      "hint": "DPM++ 3m 逆向"
+      "localized": "DPM++ 3M 逆向",
+      "hint": "DPM++ 3M 逆向"
     },
     {
       "id": "",
@@ -3073,44 +3361,44 @@
     {
       "id": "",
       "label": "dpm2 flowmatch",
-      "localized": "DPM2 Flowmatch",
-      "hint": "DPM2 Flowmatch"
+      "localized": "DPM2 FlowMatch",
+      "hint": "DPM2 FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2++ 2m flowmatch",
-      "localized": "DPM2++ 2m Flowmatch",
-      "hint": "DPM2++ 2m Flowmatch"
+      "localized": "DPM2++ 2M FlowMatch",
+      "hint": "DPM2++ 2M FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2++ 2m sde flowmatch",
-      "localized": "DPM2++ 2m SDE Flowmatch",
-      "hint": "DPM2++ 2m SDE Flowmatch"
+      "localized": "DPM2++ 2M SDE FlowMatch",
+      "hint": "DPM2++ 2M SDE FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2++ 2s flowmatch",
-      "localized": "DPM2++ 2s Flowmatch",
-      "hint": "DPM2++ 2s Flowmatch"
+      "localized": "DPM2++ 2S FlowMatch",
+      "hint": "DPM2++ 2S FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2++ 3m sde flowmatch",
-      "localized": "DPM2++ 3m SDE Flowmatch",
-      "hint": "DPM2++ 3m SDE Flowmatch"
+      "localized": "DPM2++ 3M SDE FlowMatch",
+      "hint": "DPM2++ 3M SDE FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2++ sde flowmatch",
-      "localized": "DPM2++ SDE Flowmatch",
-      "hint": "DPM2++ SDE Flowmatch"
+      "localized": "DPM2++ SDE FlowMatch",
+      "hint": "DPM2++ SDE FlowMatch"
     },
     {
       "id": "",
       "label": "dpm2a flowmatch",
-      "localized": "DPM2A Flowmatch",
-      "hint": "DPM2A Flowmatch"
+      "localized": "DPM2A FlowMatch",
+      "hint": "DPM2A FlowMatch"
     },
     {
       "id": "",
@@ -3121,14 +3409,20 @@
     {
       "id": "",
       "label": "dropdown",
-      "localized": "下拉菜单",
-      "hint": "下拉菜单"
+      "localized": "下拉列表",
+      "hint": "下拉列表"
     },
     {
       "id": "",
       "label": "duration",
       "localized": "持续时间",
       "hint": "持续时间"
+    },
+    {
+      "id": "",
+      "label": "dwpose",
+      "localized": "DWPose",
+      "hint": "DWPose"
     },
     {
       "id": "",
@@ -3145,14 +3439,14 @@
     {
       "id": "",
       "label": "dynamic attention slicing rate in gb",
-      "localized": "GB 为单位的动态注意力切片速率",
-      "hint": "GB 为单位的动态注意力切片速率"
+      "localized": "动态注意力切片速率 (GB)",
+      "hint": "动态注意力切片速率 (GB)"
     },
     {
       "id": "",
       "label": "dynamic attention trigger rate in gb",
-      "localized": "GB 为单位的动态注意力触发速率",
-      "hint": "GB 为单位的动态注意力触发速率"
+      "localized": "动态注意力触发速率 (GB)",
+      "hint": "动态注意力触发速率 (GB)"
     },
     {
       "id": "",
@@ -3199,14 +3493,14 @@
     {
       "id": "",
       "label": "enable teacache",
-      "localized": "启用 Teacache",
-      "hint": "启用 Teacache"
+      "localized": "启用 TeaCache",
+      "hint": "启用 TeaCache"
     },
     {
       "id": "",
       "label": "enable tonemap",
-      "localized": "启用 Tonemap",
-      "hint": "启用 Tonemap"
+      "localized": "启用色调映射",
+      "hint": "启用色调映射"
     },
     {
       "id": "",
@@ -3240,9 +3534,15 @@
     },
     {
       "id": "",
+      "label": "enqueue keyboard shortcut",
+      "localized": "入队键盘快捷键",
+      "hint": "入队键盘快捷键"
+    },
+    {
+      "id": "",
       "label": "ensemble size",
-      "localized": "集成大小",
-      "hint": "集成大小"
+      "localized": "集合大小",
+      "hint": "集合大小"
     },
     {
       "id": "",
@@ -3284,61 +3584,67 @@
       "id": "",
       "label": "euler flowmatch",
       "localized": "Euler Flowmatch",
-      "hint": "Euler Flowmatch"
+      "hint": "euler flowmatch"
     },
     {
       "id": "",
       "label": "euler sgm",
       "localized": "Euler SGM",
-      "hint": "Euler SGM"
+      "hint": "euler sgm"
     },
     {
       "id": "",
       "label": "executionprovider.cpu",
-      "localized": "ExecutionProvider.CPU",
-      "hint": "ExecutionProvider.CPU"
+      "localized": "执行提供程序.CPU",
+      "hint": "executionprovider.cpu"
     },
     {
       "id": "",
       "label": "executionprovider.cuda",
-      "localized": "ExecutionProvider.CUDA",
-      "hint": "ExecutionProvider.CUDA"
+      "localized": "执行提供程序.CUDA",
+      "hint": "executionprovider.cuda"
     },
     {
       "id": "",
       "label": "executionprovider.directml",
-      "localized": "ExecutionProvider.DirectML",
-      "hint": "ExecutionProvider.DirectML"
+      "localized": "执行提供程序.DirectML",
+      "hint": "executionprovider.directml"
     },
     {
       "id": "",
       "label": "executionprovider.migraphx",
-      "localized": "ExecutionProvider.MIGraphX",
-      "hint": "ExecutionProvider.MIGraphX"
+      "localized": "执行提供程序.Migraphx",
+      "hint": "executionprovider.migraphx"
     },
     {
       "id": "",
       "label": "executionprovider.openvino",
-      "localized": "ExecutionProvider.OpenVINO",
-      "hint": "ExecutionProvider.OpenVINO"
+      "localized": "执行提供程序.OpenVINO",
+      "hint": "executionprovider.openvino"
     },
     {
       "id": "",
       "label": "executionprovider.rocm",
-      "localized": "ExecutionProvider.ROCm",
-      "hint": "ExecutionProvider.ROCm"
+      "localized": "执行提供程序.ROCm",
+      "hint": "executionprovider.rocm"
     },
     {
       "id": "",
       "label": "expandable segments",
-      "localized": "可展开的片段",
-      "hint": "可展开的片段"
+      "localized": "可扩展分段",
+      "hint": "可扩展分段"
     },
     {
       "id": "",
       "label": "exponential",
       "localized": "指数",
       "hint": "指数"
+    },
+    {
+      "id": "",
+      "label": "export",
+      "localized": "导出",
+      "hint": "导出"
     },
     {
       "id": "",
@@ -3349,38 +3655,38 @@
     {
       "id": "",
       "label": "extra noise multiplier for img2img",
-      "localized": "img2img 的额外噪声乘数",
-      "hint": "img2img 的额外噪声乘数"
+      "localized": "图生图的额外噪声乘数",
+      "hint": "图生图的额外噪声乘数"
     },
     {
       "id": "",
       "label": "extract lora",
-      "localized": "提取 Lora",
-      "hint": "提取 Lora"
+      "localized": "提取LoRA",
+      "hint": "提取LoRA"
     },
     {
       "id": "",
       "label": "face",
-      "localized": "人脸",
-      "hint": "人脸"
+      "localized": "面部",
+      "hint": "面部"
     },
     {
       "id": "",
       "label": "face confidence",
-      "localized": "人脸置信度",
-      "hint": "人脸置信度"
+      "localized": "面部置信度",
+      "hint": "面部置信度"
     },
     {
       "id": "",
       "label": "faceid model",
-      "localized": "FaceID 模型",
-      "hint": "FaceID 模型"
+      "localized": "FaceID模型",
+      "hint": "FaceID模型"
     },
     {
       "id": "",
       "label": "fall-off exponent (lower=higher detail)",
-      "localized": "衰减指数（越低=细节越高）",
-      "hint": "衰减指数（越低=细节越高）"
+      "localized": "衰减指数（越低细节越高）",
+      "hint": "衰减指数（越低细节越高）"
     },
     {
       "id": "",
@@ -3390,9 +3696,15 @@
     },
     {
       "id": "",
+      "label": "fast",
+      "localized": "快速",
+      "hint": "快速"
+    },
+    {
+      "id": "",
       "label": "file or folder with user-defined styles",
-      "localized": "包含用户自定义样式的文件夹或文件",
-      "hint": "包含用户自定义样式的文件夹或文件"
+      "localized": "包含用户自定义样式的 文件 或 文件夹",
+      "hint": "包含用户自定义样式的 文件 或 文件夹"
     },
     {
       "id": "",
@@ -3409,8 +3721,8 @@
     {
       "id": "",
       "label": "fixed unet precision",
-      "localized": "固定的 UNet 精度",
-      "hint": "固定的 UNet 精度"
+      "localized": "固定U-Net精度",
+      "hint": "固定U-Net精度"
     },
     {
       "id": "",
@@ -3421,14 +3733,14 @@
     {
       "id": "",
       "label": "flavors",
-      "localized": "风格",
-      "hint": "风格"
+      "localized": "风味",
+      "hint": "风味"
     },
     {
       "id": "",
       "label": "flow shift",
-      "localized": "流偏移",
-      "hint": "流偏移"
+      "localized": "流动偏移",
+      "hint": "流动偏移"
     },
     {
       "id": "",
@@ -3439,14 +3751,14 @@
     {
       "id": "",
       "label": "folder for control generate",
-      "localized": "用于控制生成的文件夹",
-      "hint": "用于控制生成的文件夹"
+      "localized": "用于ControlNet生成的文件夹",
+      "hint": "用于ControlNet生成的文件夹"
     },
     {
       "id": "",
       "label": "folder for control grids",
-      "localized": "用于控制网格的文件夹",
-      "hint": "用于控制网格的文件夹"
+      "localized": "用于ControlNet网格的文件夹",
+      "hint": "用于ControlNet网格的文件夹"
     },
     {
       "id": "",
@@ -3469,8 +3781,8 @@
     {
       "id": "",
       "label": "folder for img2img grids",
-      "localized": "用于img2img网格的文件夹",
-      "hint": "用于img2img网格的文件夹"
+      "localized": "用于图生图网格的文件夹",
+      "hint": "用于图生图网格的文件夹"
     },
     {
       "id": "",
@@ -3487,50 +3799,50 @@
     {
       "id": "",
       "label": "folder for onnx cached models",
-      "localized": "用于 ONNX 缓存模型的文件夹",
-      "hint": "用于 ONNX 缓存模型的文件夹"
+      "localized": "用于ONNX缓存模型的文件夹",
+      "hint": "用于ONNX缓存模型的文件夹"
     },
     {
       "id": "",
       "label": "folder for onnx conversion",
-      "localized": "用于 ONNX 转换的文件夹",
-      "hint": "用于 ONNX 转换的文件夹"
+      "localized": "用于ONNX转换的文件夹",
+      "hint": "用于ONNX转换的文件夹"
     },
     {
       "id": "",
       "label": "folder for openvino cache",
-      "localized": "用于 OpenVINO 缓存的文件夹",
-      "hint": "用于 OpenVINO 缓存的文件夹"
+      "localized": "用于OpenVINO缓存的文件夹",
+      "hint": "用于OpenVINO缓存的文件夹"
     },
     {
       "id": "",
       "label": "folder for processed images",
-      "localized": "已处理图像的文件夹",
-      "hint": "已处理图像的文件夹"
+      "localized": "用于处理后图像的文件夹",
+      "hint": "用于处理后图像的文件夹"
     },
     {
       "id": "",
       "label": "folder for text generate",
-      "localized": "文本生成的文件夹",
-      "hint": "文本生成的文件夹"
+      "localized": "用于文本生成的文件夹",
+      "hint": "用于文本生成的文件夹"
     },
     {
       "id": "",
       "label": "folder for tunable ops cache",
-      "localized": "可调优算子缓存的文件夹",
-      "hint": "可调优算子缓存的文件夹"
+      "localized": "用于可调算子缓存的文件夹",
+      "hint": "用于可调算子缓存的文件夹"
     },
     {
       "id": "",
       "label": "folder for txt2img grids",
-      "localized": "txt2img网格的文件夹",
-      "hint": "txt2img网格的文件夹"
+      "localized": "用于文生图网格的文件夹",
+      "hint": "用于文生图网格的文件夹"
     },
     {
       "id": "",
       "label": "folder for videos",
-      "localized": "视频的文件夹",
-      "hint": "视频的文件夹"
+      "localized": "用于视频的文件夹",
+      "hint": "用于视频的文件夹"
     },
     {
       "id": "",
@@ -3583,8 +3895,8 @@
     {
       "id": "",
       "label": "folder with hypernetwork models",
-      "localized": "包含Hypernetwork模型的文件夹",
-      "hint": "包含Hypernetwork模型的文件夹"
+      "localized": "包含超网络模型的文件夹",
+      "hint": "包含超网络模型的文件夹"
     },
     {
       "id": "",
@@ -3595,8 +3907,8 @@
     {
       "id": "",
       "label": "folder with lora network(s)",
-      "localized": "包含LoRA网络（们）的文件夹",
-      "hint": "包含LoRA网络（们）的文件夹"
+      "localized": "包含LoRA网络(们)的文件夹",
+      "hint": "包含LoRA网络(们)的文件夹"
     },
     {
       "id": "",
@@ -3692,7 +4004,7 @@
       "id": "",
       "label": "fp4",
       "localized": "FP4",
-      "hint": "FP4"
+      "hint": "fp4"
     },
     {
       "id": "",
@@ -3703,8 +4015,14 @@
     {
       "id": "",
       "label": "frames",
-      "localized": "帧数",
-      "hint": "帧数"
+      "localized": "帧",
+      "hint": "帧"
+    },
+    {
+      "id": "",
+      "label": "freeinit",
+      "localized": "FreeInit",
+      "hint": "FreeInit"
     },
     {
       "id": "",
@@ -3727,8 +4045,8 @@
     {
       "id": "",
       "label": "full-depth cudnn benchmark",
-      "localized": "全深度cuDNN基准测试",
-      "hint": "全深度cuDNN基准测试"
+      "localized": "全深度CuDNN基准测试",
+      "hint": "全深度CuDNN基准测试"
     },
     {
       "id": "",
@@ -3744,15 +4062,15 @@
     },
     {
       "id": "",
-      "label": "Gallery",
+      "label": "gallery",
       "localized": "图库",
-      "hint": "图像图库"
+      "hint": "图库"
     },
     {
       "id": "",
       "label": "gamma",
-      "localized": "伽马值",
-      "hint": "伽马值"
+      "localized": "伽马",
+      "hint": "伽马"
     },
     {
       "id": "",
@@ -3771,6 +4089,12 @@
       "label": "gc threshold",
       "localized": "GC阈值",
       "hint": "GC阈值"
+    },
+    {
+      "id": "",
+      "label": "generation info",
+      "localized": "生成信息",
+      "hint": "生成信息"
     },
     {
       "id": "",
@@ -3805,8 +4129,8 @@
     {
       "id": "",
       "label": "grid sections:",
-      "localized": "网格分段：",
-      "hint": "网格分段："
+      "localized": "网格部分:",
+      "hint": "网格部分:"
     },
     {
       "id": "",
@@ -3817,14 +4141,14 @@
     {
       "id": "",
       "label": "guidance",
-      "localized": "引导强度",
-      "hint": "引导强度"
+      "localized": "引导",
+      "hint": "引导"
     },
     {
       "id": "",
       "label": "guidance start",
-      "localized": "引导起始",
-      "hint": "引导起始"
+      "localized": "引导开始",
+      "hint": "引导开始"
     },
     {
       "id": "",
@@ -3841,8 +4165,8 @@
     {
       "id": "",
       "label": "hands",
-      "localized": "手部修复",
-      "hint": "手部修复"
+      "localized": "手",
+      "hint": "手"
     },
     {
       "id": "",
@@ -3852,33 +4176,51 @@
     },
     {
       "id": "",
+      "label": "hed",
+      "localized": "HED",
+      "hint": "HED"
+    },
+    {
+      "id": "",
       "label": "height  after",
-      "localized": "高度（后）",
-      "hint": "高度（后）"
+      "localized": "高度 后",
+      "hint": "高度 后"
     },
     {
       "id": "",
       "label": "height  before",
-      "localized": "高度（前）",
-      "hint": "高度（前）"
+      "localized": "高度 前",
+      "hint": "高度 前"
     },
     {
       "id": "",
       "label": "height  mask",
-      "localized": "高度（蒙版）",
-      "hint": "高度（蒙版）"
+      "localized": "高度 遮罩",
+      "hint": "高度 遮罩"
     },
     {
       "id": "",
       "label": "heun",
-      "localized": "Heun采样器",
-      "hint": "Heun采样器"
+      "localized": "何恩",
+      "hint": "何恩"
     },
     {
       "id": "",
       "label": "heun flowmatch",
-      "localized": "Heun Flowmatch采样器",
-      "hint": "Heun Flowmatch采样器"
+      "localized": "何恩 Flowmatch",
+      "hint": "何恩 Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "hibernate",
+      "localized": "休眠",
+      "hint": "休眠"
+    },
+    {
+      "id": "",
+      "label": "hide the custom checkpoint dropdown",
+      "localized": "隐藏自定义检查点下拉菜单",
+      "hint": "隐藏自定义检查点下拉菜单"
     },
     {
       "id": "",
@@ -3901,8 +4243,8 @@
     {
       "id": "",
       "label": "hq init latents",
-      "localized": "高品质初始潜变量",
-      "hint": "高品质初始潜变量"
+      "localized": "高质量初始潜变量",
+      "hint": "高质量初始潜变量"
     },
     {
       "id": "",
@@ -3912,33 +4254,33 @@
     },
     {
       "id": "",
-      "label": "huggingface",
-      "localized": "Hugging Face",
-      "hint": "Hugging Face"
-    },
-    {
-      "id": "",
       "label": "huggingface mirror",
-      "localized": "Hugging Face镜像",
-      "hint": "Hugging Face镜像"
+      "localized": "Hugging Face 镜像",
+      "hint": "Hugging Face 镜像"
     },
     {
       "id": "",
       "label": "huggingface token",
-      "localized": "Hugging Face令牌",
-      "hint": "Hugging Face令牌"
+      "localized": "Hugging Face Token",
+      "hint": "Hugging Face Token"
+    },
+    {
+      "id": "",
+      "label": "hunyuan",
+      "localized": "混元",
+      "hint": "混元"
+    },
+    {
+      "id": "",
+      "label": "il",
+      "localized": "IL",
+      "hint": "IL"
     },
     {
       "id": "",
       "label": "image height",
       "localized": "图像高度",
       "hint": "图像高度"
-    },
-    {
-      "id": "",
-      "label": "image paths",
-      "localized": "图像路径",
-      "hint": "图像路径"
     },
     {
       "id": "",
@@ -3972,6 +4314,12 @@
     },
     {
       "id": "",
+      "label": "import",
+      "localized": "导入",
+      "hint": "导入"
+    },
+    {
+      "id": "",
       "label": "include images",
       "localized": "包含图像",
       "hint": "包含图像"
@@ -3985,8 +4333,8 @@
     {
       "id": "",
       "label": "include mask in outputs",
-      "localized": "在输出中包含蒙版",
-      "hint": "在输出中包含蒙版"
+      "localized": "在输出中包含遮罩",
+      "hint": "在输出中包含遮罩"
     },
     {
       "id": "",
@@ -4010,7 +4358,13 @@
       "id": "",
       "label": "info",
       "localized": "信息",
-      "hint": "应用程序更新日志和文档"
+      "hint": "信息"
+    },
+    {
+      "id": "",
+      "label": "info object",
+      "localized": "信息对象",
+      "hint": "信息对象"
     },
     {
       "id": "",
@@ -4021,20 +4375,20 @@
     {
       "id": "",
       "label": "inpaint masked only",
-      "localized": "仅修复蒙版区域",
-      "hint": "仅修复蒙版区域"
+      "localized": "仅修复遮罩区域",
+      "hint": "仅修复遮罩区域"
     },
     {
       "id": "",
       "label": "inpainting include greyscale mask in results",
-      "localized": "修复结果中包含灰度蒙版",
-      "hint": "修复结果中包含灰度蒙版"
+      "localized": "图像修复结果包含灰度遮罩",
+      "hint": "图像修复结果包含灰度遮罩"
     },
     {
       "id": "",
       "label": "inpainting include masked composite in results",
-      "localized": "修复结果中包含蒙版合成图像",
-      "hint": "修复结果中包含蒙版合成图像"
+      "localized": "图像修复结果包含遮罩合成图",
+      "hint": "图像修复结果包含遮罩合成图"
     },
     {
       "id": "",
@@ -4045,8 +4399,8 @@
     {
       "id": "",
       "label": "intermediates",
-      "localized": "中间步骤",
-      "hint": "中间步骤"
+      "localized": "中间结果",
+      "hint": "中间结果"
     },
     {
       "id": "",
@@ -4063,8 +4417,8 @@
     {
       "id": "",
       "label": "interrogate batch",
-      "localized": "批量审问图像",
-      "hint": "批量审问图像"
+      "localized": "批量审问",
+      "hint": "批量审问"
     },
     {
       "id": "",
@@ -4087,8 +4441,8 @@
     {
       "id": "",
       "label": "invert mask",
-      "localized": "反转蒙版",
-      "hint": "反转蒙版"
+      "localized": "反转遮罩",
+      "hint": "反转遮罩"
     },
     {
       "id": "",
@@ -4105,8 +4459,8 @@
     {
       "id": "",
       "label": "ipndm",
-      "localized": "ipndm",
-      "hint": "ipndm"
+      "localized": "IP-NDM",
+      "hint": "IP-NDM"
     },
     {
       "id": "",
@@ -4135,26 +4489,38 @@
     {
       "id": "",
       "label": "karras",
-      "localized": "karras",
-      "hint": "karras"
+      "localized": "Karras",
+      "hint": "Karras"
     },
     {
       "id": "",
       "label": "kdpm2",
-      "localized": "kdpm2",
-      "hint": "kdpm2"
+      "localized": "KDPM2",
+      "hint": "KDPM2"
     },
     {
       "id": "",
       "label": "kdpm2 a",
-      "localized": "kdpm2 a",
-      "hint": "kdpm2 a"
+      "localized": "KDPM2 A",
+      "hint": "KDPM2 A"
+    },
+    {
+      "id": "",
+      "label": "keep forever",
+      "localized": "永久保留",
+      "hint": "永久保留"
     },
     {
       "id": "",
       "label": "keep incomplete images",
       "localized": "保留未完成的图像",
       "hint": "保留未完成的图像"
+    },
+    {
+      "id": "",
+      "label": "key",
+      "localized": "键",
+      "hint": "键"
     },
     {
       "id": "",
@@ -4165,14 +4531,14 @@
     {
       "id": "",
       "label": "latent history size",
-      "localized": "潜在历史大小",
-      "hint": "潜在历史大小"
+      "localized": "潜变量历史大小",
+      "hint": "潜变量历史大小"
     },
     {
       "id": "",
       "label": "latent mode",
-      "localized": "潜在模式",
-      "hint": "潜在模式"
+      "localized": "潜变量模式",
+      "hint": "潜变量模式"
     },
     {
       "id": "",
@@ -4195,14 +4561,14 @@
     {
       "id": "",
       "label": "lcm",
-      "localized": "lcm",
-      "hint": "lcm"
+      "localized": "LCM",
+      "hint": "LCM"
     },
     {
       "id": "",
       "label": "ldsr processing steps",
-      "localized": "ldsr 处理步骤",
-      "hint": "ldsr 处理步骤"
+      "localized": "LDSR 处理步骤",
+      "hint": "LDSR 处理步骤"
     },
     {
       "id": "",
@@ -4224,6 +4590,12 @@
     },
     {
       "id": "",
+      "label": "leres depth",
+      "localized": "LeReS 深度",
+      "hint": "LeReS 深度"
+    },
+    {
+      "id": "",
       "label": "level",
       "localized": "级别",
       "hint": "级别"
@@ -4231,14 +4603,20 @@
     {
       "id": "",
       "label": "libs",
-      "localized": "libs",
-      "hint": "libs"
+      "localized": "库",
+      "hint": "库"
     },
     {
       "id": "",
       "label": "light",
-      "localized": "光照",
-      "hint": "光照"
+      "localized": "光",
+      "hint": "光"
+    },
+    {
+      "id": "",
+      "label": "lineart",
+      "localized": "线条艺术",
+      "hint": "线条艺术"
     },
     {
       "id": "",
@@ -4255,8 +4633,8 @@
     {
       "id": "",
       "label": "lite",
-      "localized": "精简",
-      "hint": "精简"
+      "localized": "精简版",
+      "hint": "精简版"
     },
     {
       "id": "",
@@ -4267,32 +4645,32 @@
     {
       "id": "",
       "label": "lmsd",
-      "localized": "lmsd",
-      "hint": "lmsd"
+      "localized": "LMSD",
+      "hint": "LMSD"
     },
     {
       "id": "",
       "label": "load custom diffusers pipeline",
-      "localized": "加载自定义 diffusers 管道",
-      "hint": "加载自定义 diffusers 管道"
+      "localized": "加载自定义 Diffusers 管道",
+      "hint": "加载自定义 Diffusers 管道"
     },
     {
       "id": "",
       "label": "load model directly to gpu",
-      "localized": "直接加载模型到 GPU",
-      "hint": "直接加载模型到 GPU"
+      "localized": "直接将模型加载到 GPU",
+      "hint": "直接将模型加载到 GPU"
     },
     {
       "id": "",
       "label": "loaded lora",
-      "localized": "已加载的 LoRA",
-      "hint": "已加载的 LoRA"
+      "localized": "已加载 LoRA",
+      "hint": "已加载 LoRA"
     },
     {
       "id": "",
       "label": "logsnr",
-      "localized": "logsnr",
-      "hint": "logsnr"
+      "localized": "LogSNR",
+      "hint": "LogSNR"
     },
     {
       "id": "",
@@ -4314,27 +4692,15 @@
     },
     {
       "id": "",
-      "label": "lora fuse directly to model",
-      "localized": "LoRA 直接融合到模型",
-      "hint": "LoRA 直接融合到模型"
-    },
-    {
-      "id": "",
-      "label": "lora load using diffusers method",
-      "localized": "使用 diffusers 方法加载 LoRA",
-      "hint": "使用 diffusers 方法加载 LoRA"
-    },
-    {
-      "id": "",
       "label": "lora load using diffusers method for selected models",
-      "localized": "为选定模型使用 diffusers 方法加载 LoRA",
-      "hint": "为选定模型使用 diffusers 方法加载 LoRA"
+      "localized": "LoRA 为选定模型使用 Diffusers 方法加载",
+      "hint": "LoRA 为选定模型使用 Diffusers 方法加载"
     },
     {
       "id": "",
       "label": "lora load using legacy method",
-      "localized": "使用旧方法加载 LoRA",
-      "hint": "使用旧方法加载 LoRA"
+      "localized": "LoRA 使用传统方法加载",
+      "hint": "LoRA 使用传统方法加载"
     },
     {
       "id": "",
@@ -4357,8 +4723,8 @@
     {
       "id": "",
       "label": "ltx model",
-      "localized": "ltx 模型",
-      "hint": "ltx 模型"
+      "localized": "LTX 模型",
+      "hint": "LTX 模型"
     },
     {
       "id": "",
@@ -4368,9 +4734,9 @@
     },
     {
       "id": "",
-      "label": "mask",
-      "localized": "遮罩",
-      "hint": "遮罩"
+      "label": "marigold depth",
+      "localized": "万寿菊深度",
+      "hint": "万寿菊深度"
     },
     {
       "id": "",
@@ -4411,20 +4777,20 @@
     {
       "id": "",
       "label": "max faces",
-      "localized": "最大面数",
-      "hint": "最大面数"
+      "localized": "最大人脸数",
+      "hint": "最大人脸数"
     },
     {
       "id": "",
       "label": "max flavors",
-      "localized": "最大风味",
-      "hint": "最大风味"
+      "localized": "最大风味数量",
+      "hint": "最大风味数量"
     },
     {
       "id": "",
       "label": "max guidance",
-      "localized": "最大引导",
-      "hint": "最大引导"
+      "localized": "最大引导系数",
+      "hint": "最大引导系数"
     },
     {
       "id": "",
@@ -4435,8 +4801,8 @@
     {
       "id": "",
       "label": "max object size",
-      "localized": "最大对象大小",
-      "hint": "最大对象大小"
+      "localized": "最大物体尺寸",
+      "hint": "最大物体尺寸"
     },
     {
       "id": "",
@@ -4453,44 +4819,50 @@
     {
       "id": "",
       "label": "max-autotune",
-      "localized": "最大自动调优",
-      "hint": "最大自动调优"
+      "localized": "最大自动调整",
+      "hint": "最大自动调整"
     },
     {
       "id": "",
       "label": "max-autotune-no-cudagraphs",
-      "localized": "最大自动调优 - 无 CUDA 图",
-      "hint": "最大自动调优 - 无 CUDA 图"
+      "localized": "最大自动调整 (无 CUDAGraphs)",
+      "hint": "最大自动调整 (无 CUDAGraphs)"
     },
     {
       "id": "",
       "label": "maximum image size (mp)",
-      "localized": "最大图像尺寸 (MP)",
-      "hint": "最大图像尺寸 (MP)"
+      "localized": "最大图像尺寸 (百万像素)",
+      "hint": "最大图像尺寸 (百万像素)"
     },
     {
       "id": "",
       "label": "maximum number of units",
-      "localized": "最大单元数",
-      "hint": "最大单元数"
+      "localized": "最大单元数量",
+      "hint": "最大单元数量"
     },
     {
       "id": "",
       "label": "maximum rank",
-      "localized": "最大秩",
-      "hint": "最大秩"
+      "localized": "最大等级",
+      "hint": "最大等级"
+    },
+    {
+      "id": "",
+      "label": "mediapipe face",
+      "localized": "Mediapipe 人脸检测",
+      "hint": "Mediapipe 人脸检测"
     },
     {
       "id": "",
       "label": "medium",
-      "localized": "中等",
-      "hint": "中等"
+      "localized": "媒介",
+      "hint": "媒介"
     },
     {
       "id": "",
       "label": "mediums",
-      "localized": "媒介",
-      "hint": "媒介"
+      "localized": "媒介们",
+      "hint": "媒介们"
     },
     {
       "id": "",
@@ -4525,8 +4897,8 @@
     {
       "id": "",
       "label": "merge alpha",
-      "localized": "合并 Alpha",
-      "hint": "合并 Alpha"
+      "localized": "合并透明度",
+      "hint": "合并透明度"
     },
     {
       "id": "",
@@ -4543,38 +4915,56 @@
     {
       "id": "",
       "label": "method before",
-      "localized": "前处理方法",
-      "hint": "前处理方法"
+      "localized": "预处理方法",
+      "hint": "预处理方法"
     },
     {
       "id": "",
       "label": "method mask",
-      "localized": "遮罩方法",
-      "hint": "遮罩方法"
+      "localized": "方法掩码",
+      "hint": "方法掩码"
+    },
+    {
+      "id": "",
+      "label": "midas depth",
+      "localized": "Midas 深度",
+      "hint": "Midas 深度"
     },
     {
       "id": "",
       "label": "migraphx",
-      "localized": "migraphx",
-      "hint": "migraphx"
+      "localized": "Migraphx",
+      "hint": "Migraphx"
     },
     {
       "id": "",
       "label": "min flavors",
-      "localized": "最小风味",
-      "hint": "最小风味"
+      "localized": "最小风味数量",
+      "hint": "最小风味数量"
     },
     {
       "id": "",
       "label": "min guidance",
-      "localized": "最小引导",
-      "hint": "最小引导"
+      "localized": "最小引导系数",
+      "hint": "最小引导系数"
     },
     {
       "id": "",
       "label": "min object size",
-      "localized": "最小对象大小",
-      "hint": "最小对象大小"
+      "localized": "最小物体尺寸",
+      "hint": "最小物体尺寸"
+    },
+    {
+      "id": "",
+      "label": "mine",
+      "localized": "我的",
+      "hint": "我的"
+    },
+    {
+      "id": "",
+      "label": "mlsd",
+      "localized": "MLSD 线条检测",
+      "hint": "MLSD 线条检测"
     },
     {
       "id": "",
@@ -4591,14 +4981,14 @@
     {
       "id": "",
       "label": "mode before",
-      "localized": "前处理模式",
-      "hint": "前处理模式"
+      "localized": "预处理模式",
+      "hint": "预处理模式"
     },
     {
       "id": "",
       "label": "mode mask",
-      "localized": "遮罩模式",
-      "hint": "遮罩模式"
+      "localized": "模式掩码",
+      "hint": "模式掩码"
     },
     {
       "id": "",
@@ -4626,39 +5016,27 @@
     },
     {
       "id": "",
-      "label": "model compile",
-      "localized": "模型编译",
-      "hint": "模型编译"
-    },
-    {
-      "id": "",
       "label": "model compile fullgraph",
-      "localized": "模型编译 (完整图)",
-      "hint": "模型编译 (完整图)"
+      "localized": "模型编译完整图",
+      "hint": "模型编译完整图"
     },
     {
       "id": "",
       "label": "model compile suppress errors",
-      "localized": "模型编译 (抑制错误)",
-      "hint": "模型编译 (抑制错误)"
+      "localized": "模型编译抑制错误",
+      "hint": "模型编译抑制错误"
     },
     {
       "id": "",
       "label": "model compile verbose mode",
-      "localized": "模型编译 (详细模式)",
-      "hint": "模型编译 (详细模式)"
+      "localized": "模型编译详细模式",
+      "hint": "模型编译详细模式"
     },
     {
       "id": "",
       "label": "model info",
       "localized": "模型信息",
       "hint": "模型信息"
-    },
-    {
-      "id": "",
-      "label": "model load using streams",
-      "localized": "使用流加载模型",
-      "hint": "使用流加载模型"
     },
     {
       "id": "",
@@ -4671,12 +5049,6 @@
       "label": "model name",
       "localized": "模型名称",
       "hint": "模型名称"
-    },
-    {
-      "id": "",
-      "label": "model pipeline",
-      "localized": "模型管道",
-      "hint": "模型管道"
     },
     {
       "id": "",
@@ -4695,12 +5067,6 @@
       "label": "model url",
       "localized": "模型 URL",
       "hint": "模型 URL"
-    },
-    {
-      "id": "",
-      "label": "models & loading",
-      "localized": "模型 & 加载",
-      "hint": "模型 & 加载"
     },
     {
       "id": "",
@@ -4723,14 +5089,14 @@
     {
       "id": "",
       "label": "motion level",
-      "localized": "运动程度",
-      "hint": "运动程度"
+      "localized": "运动等级",
+      "hint": "运动等级"
     },
     {
       "id": "",
       "label": "move base model to cpu when using refiner",
-      "localized": "使用精炼器时将基础模型移至 CPU",
-      "hint": "使用精炼器时将基础模型移至 CPU"
+      "localized": "使用 Refiner 时将基础模型移至 CPU",
+      "hint": "使用 Refiner 时将基础模型移至 CPU"
     },
     {
       "id": "",
@@ -4741,14 +5107,14 @@
     {
       "id": "",
       "label": "move detailer model to cpu when complete",
-      "localized": "完成后将细节模型移至 CPU",
-      "hint": "完成后将细节模型移至 CPU"
+      "localized": "完成后将 Detailer 模型移至 CPU",
+      "hint": "完成后将 Detailer 模型移至 CPU"
     },
     {
       "id": "",
       "label": "move refiner model to cpu when not in use",
-      "localized": "不使用时将精炼器模型移至 CPU",
-      "hint": "不使用时将精炼器模型移至 CPU"
+      "localized": "不使用时将 Refiner 模型移至 CPU",
+      "hint": "不使用时将 Refiner 模型移至 CPU"
     },
     {
       "id": "",
@@ -4783,8 +5149,8 @@
     {
       "id": "",
       "label": "negative",
-      "localized": "负面",
-      "hint": "负面"
+      "localized": "负面提示词",
+      "hint": "负面提示词"
     },
     {
       "id": "",
@@ -4813,14 +5179,14 @@
     {
       "id": "",
       "label": "nf4",
-      "localized": "nf4",
-      "hint": "nf4"
+      "localized": "NF4 量化",
+      "hint": "NF4 量化"
     },
     {
       "id": "",
       "label": "nms",
-      "localized": "NMS",
-      "hint": "NMS"
+      "localized": "NMS (非极大值抑制)",
+      "hint": "NMS (非极大值抑制)"
     },
     {
       "id": "",
@@ -4831,14 +5197,14 @@
     {
       "id": "",
       "label": "noise multiplier (eta)",
-      "localized": "噪声倍增器 (eta)",
-      "hint": "噪声倍增器 (eta)"
+      "localized": "噪声乘数 (eta)",
+      "hint": "噪声乘数 (eta)"
     },
     {
       "id": "",
       "label": "noise multiplier for image processing",
-      "localized": "图像处理的噪声倍增器",
-      "hint": "图像处理的噪声倍增器"
+      "localized": "图像处理的噪声乘数",
+      "hint": "图像处理的噪声乘数"
     },
     {
       "id": "",
@@ -4861,8 +5227,8 @@
     {
       "id": "",
       "label": "note",
-      "localized": "注意",
-      "hint": "注意"
+      "localized": "笔记",
+      "hint": "笔记"
     },
     {
       "id": "",
@@ -4891,20 +5257,20 @@
     {
       "id": "",
       "label": "offload face module",
-      "localized": "卸载面部模块",
-      "hint": "卸载面部模块"
+      "localized": "卸载人脸模块",
+      "hint": "卸载人脸模块"
     },
     {
       "id": "",
       "label": "olive-ai",
-      "localized": "olive-ai",
-      "hint": "olive-ai"
+      "localized": "Olive-AI",
+      "hint": "Olive-AI"
     },
     {
       "id": "",
       "label": "onediff",
-      "localized": "Onediff",
-      "hint": "Onediff"
+      "localized": "OneDiff",
+      "hint": "OneDiff"
     },
     {
       "id": "",
@@ -4914,9 +5280,9 @@
     },
     {
       "id": "",
-      "label": "onnx execution provider",
-      "localized": "ONNX 执行提供程序",
-      "hint": "ONNX 执行提供程序"
+      "label": "openbody",
+      "localized": "OpenBody",
+      "hint": "OpenBody"
     },
     {
       "id": "",
@@ -4927,8 +5293,8 @@
     {
       "id": "",
       "label": "openvino disable memory cleanup after compile",
-      "localized": "OpenVINO 编译后禁用内存清理",
-      "hint": "OpenVINO 编译后禁用内存清理"
+      "localized": "OpenVINO 禁用编译后内存清理",
+      "hint": "OpenVINO 禁用编译后内存清理"
     },
     {
       "id": "",
@@ -4945,14 +5311,20 @@
     {
       "id": "",
       "label": "openvino_fx",
-      "localized": "openvino_fx",
-      "hint": "openvino_fx"
+      "localized": "OpenVINO FX",
+      "hint": "OpenVINO FX"
     },
     {
       "id": "",
       "label": "optional image description",
       "localized": "可选图像描述",
       "hint": "可选图像描述"
+    },
+    {
+      "id": "",
+      "label": "optional init image or video",
+      "localized": "可选初始图像或视频",
+      "hint": "可选初始图像或视频"
     },
     {
       "id": "",
@@ -5064,6 +5436,12 @@
     },
     {
       "id": "",
+      "label": "peft",
+      "localized": "参数高效微调",
+      "hint": "参数高效微调"
+    },
+    {
+      "id": "",
       "label": "penalty",
       "localized": "惩罚",
       "hint": "惩罚"
@@ -5071,8 +5449,8 @@
     {
       "id": "",
       "label": "perflow",
-      "localized": "perflow",
-      "hint": "perflow"
+      "localized": "逐流",
+      "hint": "逐流"
     },
     {
       "id": "",
@@ -5106,15 +5484,15 @@
     },
     {
       "id": "",
-      "label": "pipeline",
-      "localized": "管线",
-      "hint": "管线"
+      "label": "pidinet",
+      "localized": "PIDI网络",
+      "hint": "PIDI网络"
     },
     {
       "id": "",
-      "label": "pipeline modifiers",
-      "localized": "管线修改器",
-      "hint": "管线修改器"
+      "label": "pipeline",
+      "localized": "管线",
+      "hint": "管线"
     },
     {
       "id": "",
@@ -5127,6 +5505,12 @@
       "label": "platform",
       "localized": "平台",
       "hint": "平台"
+    },
+    {
+      "id": "",
+      "label": "play",
+      "localized": "播放",
+      "hint": "播放"
     },
     {
       "id": "",
@@ -5148,6 +5532,12 @@
     },
     {
       "id": "",
+      "label": "pony",
+      "localized": "小马",
+      "hint": "小马"
+    },
+    {
+      "id": "",
       "label": "pose confidence",
       "localized": "姿势置信度",
       "hint": "姿势置信度"
@@ -5155,14 +5545,20 @@
     {
       "id": "",
       "label": "positive",
-      "localized": "正面",
-      "hint": "正面"
+      "localized": "正面提示词",
+      "hint": "正面提示词"
     },
     {
       "id": "",
       "label": "postprocess mask",
       "localized": "后处理蒙版",
       "hint": "后处理蒙版"
+    },
+    {
+      "id": "",
+      "label": "postprocess upscale",
+      "localized": "后处理放大",
+      "hint": "后处理放大"
     },
     {
       "id": "",
@@ -5173,8 +5569,8 @@
     {
       "id": "",
       "label": "power",
-      "localized": "强度",
-      "hint": "强度"
+      "localized": "功率",
+      "hint": "功率"
     },
     {
       "id": "",
@@ -5232,6 +5628,12 @@
     },
     {
       "id": "",
+      "label": "processor settings",
+      "localized": "处理器设置",
+      "hint": "处理器设置"
+    },
+    {
+      "id": "",
       "label": "processor unload after use",
       "localized": "使用后卸载处理器",
       "hint": "使用后卸载处理器"
@@ -5245,8 +5647,8 @@
     {
       "id": "",
       "label": "prompt ex",
-      "localized": "提示词 EX",
-      "hint": "提示词 EX"
+      "localized": "提示词 Ex",
+      "hint": "提示词 Ex"
     },
     {
       "id": "",
@@ -5281,14 +5683,14 @@
     {
       "id": "",
       "label": "prune",
-      "localized": "裁剪",
-      "hint": "裁剪"
+      "localized": "剪枝",
+      "hint": "剪枝"
     },
     {
       "id": "",
       "label": "quad",
-      "localized": "四方",
-      "hint": "四方"
+      "localized": "四元组",
+      "hint": "四元组"
     },
     {
       "id": "",
@@ -5301,12 +5703,6 @@
       "label": "quantization mode",
       "localized": "量化模式",
       "hint": "量化模式"
-    },
-    {
-      "id": "",
-      "label": "quantization settings",
-      "localized": "量化设置",
-      "hint": "量化设置"
     },
     {
       "id": "",
@@ -5353,14 +5749,14 @@
     {
       "id": "",
       "label": "redux prompt strength",
-      "localized": "Redux提示强度",
-      "hint": "Redux提示强度"
+      "localized": "降低提示词强度",
+      "hint": "降低提示词强度"
     },
     {
       "id": "",
       "label": "reference adain weight",
-      "localized": "参考AdaIN权重",
-      "hint": "参考AdaIN权重"
+      "localized": "参考 AdaIN 权重",
+      "hint": "参考 AdaIN 权重"
     },
     {
       "id": "",
@@ -5370,15 +5766,27 @@
     },
     {
       "id": "",
+      "label": "reference unit 1",
+      "localized": "参考单元 1",
+      "hint": "参考单元 1"
+    },
+    {
+      "id": "",
       "label": "refine foreground",
       "localized": "优化前景",
       "hint": "优化前景"
     },
     {
       "id": "",
+      "label": "refresh",
+      "localized": "刷新",
+      "hint": "刷新"
+    },
+    {
+      "id": "",
       "label": "refresh bench",
-      "localized": "刷新基准测试",
-      "hint": "刷新基准测试"
+      "localized": "刷新基准",
+      "hint": "刷新基准"
     },
     {
       "id": "",
@@ -5395,14 +5803,20 @@
     {
       "id": "",
       "label": "refresh ui values",
-      "localized": "刷新用户界面值",
-      "hint": "刷新用户界面值"
+      "localized": "刷新UI值",
+      "hint": "刷新UI值"
     },
     {
       "id": "",
       "label": "reinstall",
       "localized": "重新安装",
       "hint": "重新安装"
+    },
+    {
+      "id": "",
+      "label": "remove background",
+      "localized": "移除背景",
+      "hint": "移除背景"
     },
     {
       "id": "",
@@ -5454,6 +5868,12 @@
     },
     {
       "id": "",
+      "label": "requeue failed",
+      "localized": "重新排队失败项",
+      "hint": "重新排队失败项"
+    },
+    {
+      "id": "",
       "label": "rescale",
       "localized": "重新缩放",
       "hint": "重新缩放"
@@ -5461,8 +5881,8 @@
     {
       "id": "",
       "label": "rescale betas with zero terminal snr",
-      "localized": "使用零终端信噪比重新缩放 betas",
-      "hint": "使用零终端信噪比重新缩放 betas"
+      "localized": "用零终端信噪比重新缩放 betas",
+      "hint": "用零终端信噪比重新缩放 betas"
     },
     {
       "id": "",
@@ -5479,8 +5899,14 @@
     {
       "id": "",
       "label": "resize background color",
-      "localized": "调整背景颜色大小",
-      "hint": "调整背景颜色大小"
+      "localized": "调整背景颜色",
+      "hint": "调整背景颜色"
+    },
+    {
+      "id": "",
+      "label": "resize method",
+      "localized": "调整大小方法",
+      "hint": "调整大小方法"
     },
     {
       "id": "",
@@ -5491,20 +5917,44 @@
     {
       "id": "",
       "label": "resize scale",
-      "localized": "调整比例大小",
-      "hint": "调整比例大小"
+      "localized": "调整大小比例",
+      "hint": "调整大小比例"
+    },
+    {
+      "id": "",
+      "label": "restart",
+      "localized": "重启",
+      "hint": "重启"
     },
     {
       "id": "",
       "label": "restart step",
-      "localized": "重新开始步骤",
-      "hint": "重新开始步骤"
+      "localized": "重启步骤",
+      "hint": "重启步骤"
+    },
+    {
+      "id": "",
+      "label": "restore faces: codeformer",
+      "localized": "恢复面部：CodeFormer",
+      "hint": "恢复面部：CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "restore faces: gfpgan",
+      "localized": "恢复面部：GFPGAN",
+      "hint": "恢复面部：GFPGAN"
     },
     {
       "id": "",
       "label": "restore pipe on end",
-      "localized": "结束时恢复管道",
-      "hint": "结束时恢复管道"
+      "localized": "结束时恢复管线",
+      "hint": "结束时恢复管线"
+    },
+    {
+      "id": "",
+      "label": "resume",
+      "localized": "恢复",
+      "hint": "恢复"
     },
     {
       "id": "",
@@ -5563,8 +6013,8 @@
     {
       "id": "",
       "label": "sage attention",
-      "localized": "Sage 注意力",
-      "hint": "Sage 注意力"
+      "localized": "Sage注意力",
+      "hint": "Sage注意力"
     },
     {
       "id": "",
@@ -5641,26 +6091,26 @@
     {
       "id": "",
       "label": "save image before color correction",
-      "localized": "在颜色校正之前保存图像",
-      "hint": "在颜色校正之前保存图像"
+      "localized": "保存色彩校正前的图像",
+      "hint": "保存色彩校正前的图像"
     },
     {
       "id": "",
       "label": "save image before detailer",
-      "localized": "在细节处理之前保存图像",
-      "hint": "在细节处理之前保存图像"
+      "localized": "保存细节调整前的图像",
+      "hint": "保存细节调整前的图像"
     },
     {
       "id": "",
       "label": "save image before hires",
-      "localized": "在高清修复之前保存图像",
-      "hint": "在高清修复之前保存图像"
+      "localized": "保存高清化之前的图像",
+      "hint": "保存高清化之前的图像"
     },
     {
       "id": "",
       "label": "save image before refiner",
-      "localized": "在精炼器之前保存图像",
-      "hint": "在精炼器之前保存图像"
+      "localized": "保存精炼器之前的图像",
+      "hint": "保存精炼器之前的图像"
     },
     {
       "id": "",
@@ -5754,9 +6204,63 @@
     },
     {
       "id": "",
+      "label": "sd15-attire",
+      "localized": "SD15-服装",
+      "hint": "SD15-服装"
+    },
+    {
+      "id": "",
+      "label": "sd15-likeness",
+      "localized": "SD15-相似度",
+      "hint": "SD15-相似度"
+    },
+    {
+      "id": "",
+      "label": "sd15-navimixu",
+      "localized": "SD15-Navimixu",
+      "hint": "SD15-Navimixu"
+    },
+    {
+      "id": "",
+      "label": "sd15-sexy",
+      "localized": "SD15-性感",
+      "hint": "SD15-性感"
+    },
+    {
+      "id": "",
+      "label": "sdxl-artstyle",
+      "localized": "SDXL-艺术风格",
+      "hint": "SDXL-艺术风格"
+    },
+    {
+      "id": "",
+      "label": "sdxl-negative",
+      "localized": "SDXL-负面提示词",
+      "hint": "SDXL-负面提示词"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sexy",
+      "localized": "SDXL-性感",
+      "hint": "SDXL-性感"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sliders",
+      "localized": "SDXL-滑块",
+      "hint": "SDXL-滑块"
+    },
+    {
+      "id": "",
+      "label": "sdxl-toon",
+      "localized": "SDXL-卡通",
+      "hint": "SDXL-卡通"
+    },
+    {
+      "id": "",
       "label": "search changelog",
-      "localized": "搜索变更日志",
-      "hint": "搜索变更日志"
+      "localized": "搜索更新日志",
+      "hint": "搜索更新日志"
     },
     {
       "id": "",
@@ -5767,14 +6271,20 @@
     {
       "id": "",
       "label": "search wiki pages",
-      "localized": "搜索维基页面",
-      "hint": "搜索维基页面"
+      "localized": "搜索 Wiki 页面",
+      "hint": "搜索 Wiki 页面"
     },
     {
       "id": "",
       "label": "secondary model",
       "localized": "辅助模型",
       "hint": "辅助模型"
+    },
+    {
+      "id": "",
+      "label": "segmentanything",
+      "localized": "分割一切",
+      "hint": "分割一切"
     },
     {
       "id": "",
@@ -5797,14 +6307,14 @@
     {
       "id": "",
       "label": "send seed when sending prompt or image to other interface",
-      "localized": "当向其他界面发送提示或图像时发送种子",
-      "hint": "当向其他界面发送提示或图像时发送种子"
+      "localized": "当发送提示词或图像到其他界面时发送种子",
+      "hint": "当发送提示词或图像到其他界面时发送种子"
     },
     {
       "id": "",
       "label": "send size when sending prompt or image to another interface",
-      "localized": "当向另一个界面发送提示或图像时发送大小",
-      "hint": "当向另一个界面发送提示或图像时发送大小"
+      "localized": "当发送提示词或图像到另一个界面时发送尺寸",
+      "hint": "当发送提示词或图像到另一个界面时发送尺寸"
     },
     {
       "id": "",
@@ -5821,26 +6331,20 @@
     {
       "id": "",
       "label": "set at prompt start",
-      "localized": "在提示开始时设置",
-      "hint": "在提示开始时设置"
-    },
-    {
-      "id": "",
-      "label": "set ui defaults",
-      "localized": "设置用户界面默认值",
-      "hint": "设置用户界面默认值"
+      "localized": "在提示词开始时设置",
+      "hint": "在提示词开始时设置"
     },
     {
       "id": "",
       "label": "set ui menu states",
-      "localized": "设置用户界面菜单状态",
-      "hint": "设置用户界面菜单状态"
+      "localized": "设置UI菜单状态",
+      "hint": "设置UI菜单状态"
     },
     {
       "id": "",
       "label": "share queries",
-      "localized": "共享查询",
-      "hint": "共享查询"
+      "localized": "分享查询",
+      "hint": "分享查询"
     },
     {
       "id": "",
@@ -5893,14 +6397,20 @@
     {
       "id": "",
       "label": "shuffle weights",
-      "localized": "打乱权重",
-      "hint": "打乱权重"
+      "localized": "洗牌权重",
+      "hint": "洗牌权重"
+    },
+    {
+      "id": "",
+      "label": "shut down",
+      "localized": "关闭",
+      "hint": "关闭"
     },
     {
       "id": "",
       "label": "sigma",
-      "localized": "西格玛",
-      "hint": "西格玛"
+      "localized": "Sigma",
+      "hint": "Sigma"
     },
     {
       "id": "",
@@ -5935,14 +6445,20 @@
     {
       "id": "",
       "label": "sigma tmin",
-      "localized": "Sigma tmin",
-      "hint": "Sigma tmin"
+      "localized": "Sigma t最小值",
+      "hint": "Sigma t最小值"
     },
     {
       "id": "",
       "label": "simple merge",
       "localized": "简单合并",
       "hint": "简单合并"
+    },
+    {
+      "id": "",
+      "label": "size",
+      "localized": "尺寸",
+      "hint": "尺寸"
     },
     {
       "id": "",
@@ -5953,8 +6469,8 @@
     {
       "id": "",
       "label": "skip generation if nan found in latents",
-      "localized": "如果在潜在空间中找到 NaN，则跳过生成",
-      "hint": "如果在潜在空间中找到 NaN，则跳过生成"
+      "localized": "如果在潜在变量中发现 NaN 则跳过生成",
+      "hint": "如果在潜在变量中发现 NaN 则跳过生成"
     },
     {
       "id": "",
@@ -5967,6 +6483,12 @@
       "label": "skip input frames",
       "localized": "跳过输入帧",
       "hint": "跳过输入帧"
+    },
+    {
+      "id": "",
+      "label": "sleep",
+      "localized": "睡眠",
+      "hint": "睡眠"
     },
     {
       "id": "",
@@ -6013,8 +6535,8 @@
     {
       "id": "",
       "label": "specify model revision",
-      "localized": "指定模型版本",
-      "hint": "指定模型版本"
+      "localized": "指定模型修订版本",
+      "hint": "指定模型修订版本"
     },
     {
       "id": "",
@@ -6060,6 +6582,12 @@
     },
     {
       "id": "",
+      "label": "stop webui",
+      "localized": "停止 WebUI",
+      "hint": "停止 WebUI"
+    },
+    {
+      "id": "",
       "label": "stride",
       "localized": "步幅",
       "hint": "步幅"
@@ -6079,8 +6607,8 @@
     {
       "id": "",
       "label": "subject",
-      "localized": "主体",
-      "hint": "主体"
+      "localized": "主题",
+      "hint": "主题"
     },
     {
       "id": "",
@@ -6097,20 +6625,20 @@
     {
       "id": "",
       "label": "swap x/y",
-      "localized": "交换 x/y",
-      "hint": "交换 x/y"
+      "localized": "交换 X/Y",
+      "hint": "交换 X/Y"
     },
     {
       "id": "",
       "label": "swap x/z",
-      "localized": "交换 x/z",
-      "hint": "交换 x/z"
+      "localized": "交换 X/Z",
+      "hint": "交换 X/Z"
     },
     {
       "id": "",
       "label": "swap y/z",
-      "localized": "交换 y/z",
-      "hint": "交换 y/z"
+      "localized": "交换 Y/Z",
+      "hint": "交换 Y/Z"
     },
     {
       "id": "",
@@ -6123,6 +6651,30 @@
       "label": "t2i strength",
       "localized": "T2I 强度",
       "hint": "T2I 强度"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 1",
+      "localized": "T2I 适配器单元 1",
+      "hint": "T2I 适配器单元 1"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 2",
+      "localized": "T2I 适配器单元 2",
+      "hint": "T2I 适配器单元 2"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 3",
+      "localized": "T2I 适配器单元 3",
+      "hint": "T2I 适配器单元 3"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 4",
+      "localized": "T2I 适配器单元 4",
+      "hint": "T2I 适配器单元 4"
     },
     {
       "id": "",
@@ -6145,8 +6697,26 @@
     {
       "id": "",
       "label": "target subject",
-      "localized": "目标主体",
-      "hint": "目标主体"
+      "localized": "目标主题",
+      "hint": "目标主题"
+    },
+    {
+      "id": "",
+      "label": "task history",
+      "localized": "任务历史记录",
+      "hint": "任务历史记录"
+    },
+    {
+      "id": "",
+      "label": "task list page size (0 for auto)",
+      "localized": "任务列表页面大小（0 为自动）",
+      "hint": "任务列表页面大小（0 为自动）"
+    },
+    {
+      "id": "",
+      "label": "task queue",
+      "localized": "任务队列",
+      "hint": "任务队列"
     },
     {
       "id": "",
@@ -6186,12 +6756,6 @@
     },
     {
       "id": "",
-      "label": "text encoder",
-      "localized": "文本编码器",
-      "hint": "文本编码器"
-    },
-    {
-      "id": "",
       "label": "text encoder cache size",
       "localized": "文本编码器缓存大小",
       "hint": "文本编码器缓存大小"
@@ -6223,8 +6787,8 @@
     {
       "id": "",
       "label": "thresholding",
-      "localized": "阈值处理",
-      "hint": "阈值处理"
+      "localized": "阈值化",
+      "hint": "阈值化"
     },
     {
       "id": "",
@@ -6259,26 +6823,26 @@
     {
       "id": "",
       "label": "timestep",
-      "localized": "时间步",
-      "hint": "时间步"
+      "localized": "时间步长",
+      "hint": "时间步长"
     },
     {
       "id": "",
       "label": "timestep skip end",
-      "localized": "时间步跳过结束",
-      "hint": "时间步跳过结束"
+      "localized": "时间步长跳过结束",
+      "hint": "时间步长跳过结束"
     },
     {
       "id": "",
       "label": "timestep skip start",
-      "localized": "时间步跳过开始",
-      "hint": "时间步跳过开始"
+      "localized": "时间步长跳过开始",
+      "hint": "时间步长跳过开始"
     },
     {
       "id": "",
       "label": "timestep spacing",
-      "localized": "时间步间距",
-      "hint": "时间步间距"
+      "localized": "时间步长间距",
+      "hint": "时间步长间距"
     },
     {
       "id": "",
@@ -6319,8 +6883,8 @@
     {
       "id": "",
       "label": "tome",
-      "localized": "Tome",
-      "hint": "Tome"
+      "localized": "TOME",
+      "hint": "TOME"
     },
     {
       "id": "",
@@ -6331,8 +6895,8 @@
     {
       "id": "",
       "label": "torch",
-      "localized": "Torch",
-      "hint": "Torch"
+      "localized": "PyTorch",
+      "hint": "PyTorch"
     },
     {
       "id": "",
@@ -6355,8 +6919,8 @@
     {
       "id": "",
       "label": "tunable ops limit",
-      "localized": "可调操作限制",
-      "hint": "可调操作限制"
+      "localized": "可调整算子限制",
+      "hint": "可调整算子限制"
     },
     {
       "id": "",
@@ -6367,80 +6931,92 @@
     {
       "id": "",
       "label": "ui card size (px)",
-      "localized": "UI卡片大小(像素)",
-      "hint": "UI卡片大小(像素)"
+      "localized": "UI 卡片大小（像素）",
+      "hint": "UI 卡片大小（像素）"
     },
     {
       "id": "",
       "label": "ui fetch network info on mouse-over",
-      "localized": "鼠标悬停时UI获取网络信息",
-      "hint": "鼠标悬停时UI获取网络信息"
+      "localized": "鼠标悬停时获取 UI 网络信息",
+      "hint": "鼠标悬停时获取 UI 网络信息"
     },
     {
       "id": "",
       "label": "ui height (%)",
-      "localized": "UI高度(%)",
-      "hint": "UI高度(%)"
+      "localized": "UI 高度（%）",
+      "hint": "UI 高度（%）"
+    },
+    {
+      "id": "",
+      "label": "ui locale",
+      "localized": "UI 区域设置",
+      "hint": "UI 区域设置"
     },
     {
       "id": "",
       "label": "ui show on startup",
-      "localized": "启动时显示UI",
-      "hint": "启动时显示UI"
+      "localized": "启动时显示 UI",
+      "hint": "启动时显示 UI"
     },
     {
       "id": "",
       "label": "ui sidebar width (%)",
-      "localized": "UI侧边栏宽度(%)",
-      "hint": "UI侧边栏宽度(%)"
+      "localized": "UI 侧边栏宽度（%）",
+      "hint": "UI 侧边栏宽度（%）"
     },
     {
       "id": "",
       "label": "ui theme",
-      "localized": "UI主题",
-      "hint": "UI主题"
+      "localized": "UI 主题",
+      "hint": "UI 主题"
+    },
+    {
+      "id": "",
+      "label": "under generate button",
+      "localized": "生成按钮下方",
+      "hint": "生成按钮下方"
     },
     {
       "id": "",
       "label": "unet",
-      "localized": "U-Net",
-      "hint": "U-Net"
+      "localized": "UNet",
+      "hint": "UNet"
     },
     {
       "id": "",
       "label": "unet depth",
-      "localized": "U-Net 深度",
-      "hint": "U-Net 深度"
+      "localized": "UNet 深度",
+      "hint": "UNet 深度"
     },
     {
       "id": "",
       "label": "unet enabled",
-      "localized": "启用 U-Net",
-      "hint": "启用 U-Net"
+      "localized": "启用 UNet",
+      "hint": "启用 UNet"
     },
     {
       "id": "",
       "label": "unet max tile size",
-      "localized": "U-Net 最大瓦片尺寸",
-      "hint": "U-Net 最大瓦片尺寸"
+      "localized": "UNet 最大平铺大小",
+      "hint": "UNet 最大平铺大小"
     },
     {
       "id": "",
       "label": "unet min tile size",
-      "localized": "U-Net 最小瓦片尺寸",
-      "hint": "U-Net 最小瓦片尺寸"
+      "localized": "UNet 最小平铺大小",
+      "hint": "UNet 最小平铺大小"
     },
     {
       "id": "",
       "label": "unet model",
-      "localized": "U-Net 模型",
-      "hint": "U-Net 模型"
+      "localized": "UNet 模型",
+      "hint": "UNet 模型"
     },
     {
       "id": "",
       "label": "unet swap size",
-      "localized": "U-Net 交换大小",
-      "hint": "U-Net 交换大小"
+      "localized": "UNet 交换大小",
+      "hint": "UNet 交换大小"
     },
     {
       "id": "",
@@ -6463,8 +7039,8 @@
     {
       "id": "",
       "label": "unload current model from vram",
-      "localized": "从显存卸载当前模型",
-      "hint": "从显存卸载当前模型"
+      "localized": "从 VRAM 卸载当前模型",
+      "hint": "从 VRAM 卸载当前模型"
     },
     {
       "id": "",
@@ -6487,8 +7063,8 @@
     {
       "id": "",
       "label": "upcast attention layer",
-      "localized": "向上转型注意力层",
-      "hint": "向上转型注意力层"
+      "localized": "提升注意力层精度",
+      "hint": "提升注意力层精度"
     },
     {
       "id": "",
@@ -6501,6 +7077,12 @@
       "label": "upload",
       "localized": "上传",
       "hint": "上传"
+    },
+    {
+      "id": "",
+      "label": "upscale",
+      "localized": "放大",
+      "hint": "放大"
     },
     {
       "id": "",
@@ -6529,8 +7111,8 @@
     {
       "id": "",
       "label": "use fixed width thumbnails",
-      "localized": "使用固定宽度的缩略图",
-      "hint": "使用固定宽度的缩略图"
+      "localized": "使用固定宽度缩略图",
+      "hint": "使用固定宽度缩略图"
     },
     {
       "id": "",
@@ -6541,14 +7123,14 @@
     {
       "id": "",
       "label": "use karras sigmas",
-      "localized": "使用 Karras sigma 值",
-      "hint": "使用 Karras sigma 值"
+      "localized": "使用 Karras Sigmas",
+      "hint": "使用 Karras Sigmas"
     },
     {
       "id": "",
       "label": "use line break as prompt segment marker",
-      "localized": "使用换行符作为提示语段落标记",
-      "hint": "使用换行符作为提示语段落标记"
+      "localized": "使用换行符作为提示分段标记",
+      "hint": "使用换行符作为提示分段标记"
     },
     {
       "id": "",
@@ -6577,8 +7159,8 @@
     {
       "id": "",
       "label": "use same seed",
-      "localized": "使用相同的种子",
-      "hint": "使用相同的种子"
+      "localized": "使用相同种子",
+      "hint": "使用相同种子"
     },
     {
       "id": "",
@@ -6600,12 +7182,6 @@
     },
     {
       "id": "",
-      "label": "use zeros for prompt padding",
-      "localized": "使用零进行提示填充",
-      "hint": "使用零进行提示填充"
-    },
-    {
-      "id": "",
       "label": "user",
       "localized": "用户",
       "hint": "用户"
@@ -6619,8 +7195,8 @@
     {
       "id": "",
       "label": "v_prediction",
-      "localized": "v 预测",
-      "hint": "v 预测"
+      "localized": "v_prediction",
+      "hint": "v_prediction"
     },
     {
       "id": "",
@@ -6660,12 +7236,6 @@
     },
     {
       "id": "",
-      "label": "variable auto encoder",
-      "localized": "可变自动编码器",
-      "hint": "可变自动编码器"
-    },
-    {
-      "id": "",
       "label": "vary_coeff",
       "localized": "变化系数",
       "hint": "变化系数"
@@ -6684,15 +7254,15 @@
     },
     {
       "id": "",
-      "label": "vibrance",
-      "localized": "鲜艳度",
-      "hint": "鲜艳度"
+      "label": "vgen params",
+      "localized": "VGen 参数",
+      "hint": "VGen 参数"
     },
     {
       "id": "",
-      "label": "video",
-      "localized": "视频",
-      "hint": "视频"
+      "label": "vibrance",
+      "localized": "鲜艳度",
+      "hint": "鲜艳度"
     },
     {
       "id": "",
@@ -6715,44 +7285,44 @@
     {
       "id": "",
       "label": "vlm",
-      "localized": "视觉语言模型",
-      "hint": "视觉语言模型"
+      "localized": "VLM",
+      "hint": "VLM"
     },
     {
       "id": "",
       "label": "vlm model",
-      "localized": "视觉语言模型",
-      "hint": "视觉语言模型"
+      "localized": "VLM 模型",
+      "hint": "VLM 模型"
     },
     {
       "id": "",
       "label": "vlm: default model",
-      "localized": "视觉语言模型: 默认模型",
-      "hint": "视觉语言模型: 默认模型"
+      "localized": "VLM：默认模型",
+      "hint": "VLM：默认模型"
     },
     {
       "id": "",
       "label": "vlm: default prompt",
-      "localized": "视觉语言模型: 默认提示语",
-      "hint": "视觉语言模型: 默认提示语"
+      "localized": "VLM：默认提示词",
+      "hint": "VLM：默认提示词"
     },
     {
       "id": "",
       "label": "vlm: max length",
-      "localized": "视觉语言模型: 最大长度",
-      "hint": "视觉语言模型: 最大长度"
+      "localized": "VLM：最大长度",
+      "hint": "VLM：最大长度"
     },
     {
       "id": "",
       "label": "vlm: num beams",
-      "localized": "视觉语言模型: 光束数量",
-      "hint": "视觉语言模型: 光束数量"
+      "localized": "VLM：光束数量",
+      "hint": "VLM：光束数量"
     },
     {
       "id": "",
       "label": "warmth",
-      "localized": "温暖度",
-      "hint": "温暖度"
+      "localized": "暖色调",
+      "hint": "暖色调"
     },
     {
       "id": "",
@@ -6769,8 +7339,8 @@
     {
       "id": "",
       "label": "weighted",
-      "localized": "加权的",
-      "hint": "加权的"
+      "localized": "加权",
+      "hint": "加权"
     },
     {
       "id": "",
@@ -6787,8 +7357,8 @@
     {
       "id": "",
       "label": "width  mask",
-      "localized": "宽度 (遮罩)",
-      "hint": "宽度 (遮罩)"
+      "localized": "宽度 (蒙版)",
+      "hint": "宽度 (蒙版)"
     },
     {
       "id": "",
@@ -6823,14 +7393,14 @@
     {
       "id": "",
       "label": "xhinker",
-      "localized": "Xhinker",
-      "hint": "Xhinker"
+      "localized": "xhinker",
+      "hint": "xhinker"
     },
     {
       "id": "",
       "label": "xs",
-      "localized": "XS",
-      "hint": "XS"
+      "localized": "xs",
+      "hint": "xs"
     },
     {
       "id": "",
@@ -6864,9 +7434,21 @@
     },
     {
       "id": "",
+      "label": "zoe depth",
+      "localized": "ZOE 深度",
+      "hint": "ZOE 深度"
+    },
+    {
+      "id": "",
       "label": "➠ control",
       "localized": "➠ 控制",
       "hint": "➠ 控制"
+    },
+    {
+      "id": "",
+      "label": "💾",
+      "localized": "💾",
+      "hint": "💾"
     }
   ]
 }

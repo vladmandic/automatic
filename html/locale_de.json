@@ -34,7 +34,7 @@
       "id": "",
       "label": "⇨",
       "localized": "",
-      "hint": "Voreinstellung auf den Tab \"Manuelle Block-Zusammenführung\" anwenden"
+      "hint": "Voreinstellung auf den manuellen Block-Merge-Tab anwenden"
     },
     {
       "id": "",
@@ -46,7 +46,7 @@
       "id": "",
       "label": "⇕",
       "localized": "",
-      "hint": "Sortieren nach: Name auf-/absteigend, Größe größte/kleinste, Zeit neueste/älteste"
+      "hint": "Sortieren nach: Name aufsteigend/absteigend, Größe größte/kleinste, Zeit neueste/älteste"
     },
     {
       "id": "",
@@ -70,7 +70,7 @@
       "id": "",
       "label": "⌾",
       "localized": "",
-      "hint": "Modell als Refiner-Modell laden, wenn ausgewählt, andernfalls als Basismodell laden"
+      "hint": "Modell als Refiner-Modell laden, wenn ausgewählt, ansonsten als Basismodell laden"
     },
     {
       "id": "",
@@ -112,7 +112,7 @@
       "id": "",
       "label": "♻",
       "localized": "",
-      "hint": "Bild analysieren"
+      "hint": "Bild untersuchen"
     },
     {
       "id": "",
@@ -162,7 +162,7 @@
       "id": "",
       "label": "Process",
       "localized": "Verarbeiten",
-      "hint": "Verarbeite ein bestehendes Bild"
+      "hint": "Verarbeite ein vorhandenes Bild"
     },
     {
       "id": "",
@@ -174,19 +174,19 @@
       "id": "",
       "label": "Models",
       "localized": "Modelle",
-      "hint": "Lade deine Modelle herunter, konvertiere oder merge sie und verwalte Model-Metadaten"
+      "hint": "Lade deine Modelle herunter, konvertiere oder füge sie zusammen und verwalte die Metadaten der Modelle"
     },
     {
       "id": "",
       "label": "Agent Scheduler",
       "localized": "Agentenplaner",
-      "hint": "Reihe deine Generierungsanfragen ein und führe sie im Hintergrund aus"
+      "hint": "Stelle deine Generierungsanfragen in die Warteschlange und führe sie im Hintergrund aus"
     },
     {
       "id": "",
       "label": "System",
       "localized": "System",
-      "hint": "Systemeinstellungen und Informationen"
+      "hint": "Systemeinstellungen und -informationen"
     },
     {
       "id": "",
@@ -208,12 +208,6 @@
     },
     {
       "id": "",
-      "label": "Extensions",
-      "localized": "Erweiterungen",
-      "hint": "Anwendungserweiterungen"
-    },
-    {
-      "id": "",
       "label": "Generate",
       "localized": "Generieren",
       "hint": "Starte die Verarbeitung"
@@ -221,14 +215,14 @@
     {
       "id": "",
       "label": "Enqueue",
-      "localized": "In die Warteschlange einreihen",
+      "localized": "In die Warteschlange stellen",
       "hint": "Füge eine Aufgabe zur Hintergrundwarteschlange im Agentenplaner hinzu"
     },
     {
       "id": "",
-      "label": "reprocess",
-      "localized": "erneut verarbeiten",
-      "hint": "Verarbeite vorherige Generationen mit anderen Parametern erneut"
+      "label": "Reprocess",
+      "localized": "Erneut verarbeiten",
+      "hint": "Verarbeite frühere Generationen mit anderen Parametern erneut"
     },
     {
       "id": "",
@@ -240,7 +234,7 @@
       "id": "",
       "label": "Skip",
       "localized": "Überspringen",
-      "hint": "Stoppe die Verarbeitung des aktuellen Jobs und fahre mit der Verarbeitung fort"
+      "hint": "Stoppe die Verarbeitung des aktuellen Auftrags und fahre mit der Verarbeitung fort"
     },
     {
       "id": "",
@@ -252,37 +246,19 @@
       "id": "",
       "label": "Restore",
       "localized": "Wiederherstellen",
-      "hint": "Stelle Parameter vom aktuellen Prompt oder dem zuletzt bekannten generierten Bild wieder her"
+      "hint": "Stelle Parameter aus dem aktuellen Prompt oder dem zuletzt bekannten generierten Bild wieder her"
     },
     {
       "id": "",
       "label": "Clear",
-      "localized": "Leeren",
-      "hint": "Prompts leeren"
+      "localized": "Löschen",
+      "hint": "Lösche Prompts"
     },
     {
       "id": "",
       "label": "Networks",
       "localized": "Netzwerke",
       "hint": "Benutzeroberfläche für Netzwerke"
-    },
-    {
-      "id": "",
-      "label": "cover",
-      "localized": "Abdecken",
-      "hint": "Vollständige Fläche abdecken"
-    },
-    {
-      "id": "",
-      "label": "inline",
-      "localized": "inline",
-      "hint": "Inline mit allen zusätzlichen Elementen (scrollbar)"
-    },
-    {
-      "id": "",
-      "label": "sidebar",
-      "localized": "Seitenleiste",
-      "hint": "Seitenleiste auf der rechten Seite des Bildschirms"
     },
     {
       "id": "",
@@ -300,13 +276,13 @@
       "id": "",
       "label": "Style",
       "localized": "Stil",
-      "hint": "Zusätzliche Stile, die auf ausgewählte Generierungsparameter angewendet werden sollen"
+      "hint": "Zusätzliche Stile, die auf die ausgewählten Generierungsparameter angewendet werden sollen"
     },
     {
       "id": "",
       "label": "Styles",
       "localized": "Stile",
-      "hint": "Zusätzliche Stile, die auf ausgewählte Generierungsparameter angewendet werden sollen"
+      "hint": "Zusätzliche Stile, die auf die ausgewählten Generierungsparameter angewendet werden sollen"
     },
     {
       "id": "",
@@ -317,8 +293,8 @@
     {
       "id": "",
       "label": "Embedding",
-      "localized": "Einbettung",
-      "hint": "Textuelle Inversionseinbettung ist eine trainierte eingebettete Information über das Subjekt"
+      "localized": "Embedding",
+      "hint": "Textuelle Inversion Embedding ist eine trainierte eingebettete Information über das Subjekt"
     },
     {
       "id": "",
@@ -328,63 +304,177 @@
     },
     {
       "id": "",
-      "label": "vae",
-      "localized": "vae",
+      "label": "VAE",
+      "localized": "VAE",
       "hint": "Variable Auto Encoder: Modell, das verwendet wird, um die Bilddekodierung am Ende der Generierung auszuführen"
     },
     {
       "id": "",
-      "label": "history",
+      "label": "History",
       "localized": "Verlauf",
       "hint": "Liste der vorherigen Generationen, die weiterverarbeitet werden können"
     },
     {
       "id": "",
       "label": "UI disable variable aspect ratio",
-      "localized": "UI variable Seitenverhältnisse deaktivieren",
+      "localized": "UI Variable Seitenverhältnisse deaktivieren",
       "hint": "Wenn deaktiviert, werden alle Thumbnails als quadratische Bilder angezeigt"
     },
     {
       "id": "",
       "label": "Build info on first access",
-      "localized": "Build-Informationen beim ersten Zugriff",
-      "hint": "Verhindert, dass der Server die EN-Seite beim Serverstart erstellt und stattdessen erstellt, wenn sie angefordert wird"
+      "localized": "Informationen beim ersten Zugriff erstellen",
+      "hint": "Verhindert, dass der Server die EN-Seite beim Serverstart erstellt, sondern erstellt sie stattdessen auf Anfrage"
     },
     {
       "id": "",
       "label": "Show reference styles",
       "localized": "Referenzstile anzeigen",
-      "hint": "Build-In Stile anzeigen oder ausblenden"
+      "hint": "Ein- oder ausgeblendete Stile anzeigen"
     },
     {
       "id": "",
       "label": "LoRA load using Diffusers method",
-      "localized": "LoRA mit Diffusers-Methode laden",
-      "hint": "Alternative Methode verwendet die in Diffusers integrierten LoRA-Funktionen anstelle der nativen SD.Next-Implementierung (kann die LoRA-Kompatibilität verringern)"
+      "localized": "LoRA-Ladung mit Diffusers-Methode",
+      "hint": "Die alternative Methode verwendet die integrierten LoRA-Funktionen von Diffusers anstelle der nativen SD.Next-Implementierung (kann die LoRA-Kompatibilität verringern)"
     },
     {
       "id": "",
       "label": "LoRA fuse directly to model",
       "localized": "LoRA direkt mit Modell verschmelzen",
-      "hint": "Beim Laden von LoRAs die Gewichte sofort mit dem zugrunde liegenden Modell zusammenführen, anstatt sie on-the-fly anzuwenden"
+      "hint": "Beim Laden von LoRAs werden die Gewichte sofort mit dem zugrunde liegenden Modell verschmolzen, anstatt sie spontan anzuwenden"
     },
     {
       "id": "",
       "label": "LoRA memory cache",
       "localized": "LoRA-Speichercache",
-      "hint": "Wie viele LoRAs im Netzwerk für zukünftige Verwendung behalten werden sollen, bevor ein Neuladen aus dem Speicher erforderlich ist"
+      "hint": "Wie viele LoRAs im Netzwerk für die zukünftige Verwendung aufbewahrt werden sollen, bevor ein erneutes Laden aus dem Speicher erforderlich ist"
     },
     {
       "id": "",
-      "label": "local",
-      "localized": "lokal",
-      "hint": "Modelle, die heruntergeladen wurden und bereit zur Verwendung sind"
+      "label": "Local",
+      "localized": "Lokal",
+      "hint": "Modelle, die heruntergeladen und einsatzbereit sind"
     },
     {
       "id": "",
-      "label": "reference",
+      "label": "Reference",
       "localized": "Referenz",
       "hint": "Liste der Referenzmodelle, die beim ersten Gebrauch automatisch heruntergeladen werden können"
+    },
+    {
+      "id": "",
+      "label": "Samplers",
+      "localized": "Sampler",
+      "hint": "Erweiterte Einstellungen für Sampler/Scheduler"
+    },
+    {
+      "id": "",
+      "label": "Seed",
+      "localized": "Seed",
+      "hint": "Initialer Seed und Variation"
+    },
+    {
+      "id": "",
+      "label": "Advanced",
+      "localized": "Erweitert",
+      "hint": "Erweiterte Einstellungen"
+    },
+    {
+      "id": "",
+      "label": "Corrections",
+      "localized": "Korrekturen",
+      "hint": "Steuerung der Bildfarben/Schärfe/Helligkeitskorrekturen während des Generierungsprozesses"
+    },
+    {
+      "id": "",
+      "label": "Refine",
+      "localized": "Verfeinern",
+      "hint": "Einstellungen im Zusammenhang mit Upscale, HiRes und Refine Verarbeitung"
+    },
+    {
+      "id": "",
+      "label": "Detailer",
+      "localized": "Detailierer",
+      "hint": "Detailierer Einstellungen"
+    },
+    {
+      "id": "",
+      "label": "Resize",
+      "localized": "Größe ändern",
+      "hint": "Bildgrößenänderung, die mit einer festen Auflösung basierend auf der Skala erfolgen kann"
+    },
+    {
+      "id": "",
+      "label": "Batch",
+      "localized": "Stapel",
+      "hint": "Einstellungen für die Stapelverarbeitung"
+    },
+    {
+      "id": "",
+      "label": "Denoise",
+      "localized": "Entrauschen",
+      "hint": "Entrauschungseinstellungen. Eine höhere Entrauschung bedeutet, dass sich mehr von den vorhandenen Bildinhalten während der Generierung ändern dürfen"
+    },
+    {
+      "id": "",
+      "label": "Mask",
+      "localized": "Maske",
+      "hint": "Bildmaskierung und Maskenoptionen"
+    },
+    {
+      "id": "",
+      "label": "Input",
+      "localized": "Eingabe",
+      "hint": "Auswahl des Eingabemediums"
+    },
+    {
+      "id": "",
+      "label": "Video",
+      "localized": "Video",
+      "hint": "Einstellungen im Zusammenhang mit der Videogenerierung"
+    },
+    {
+      "id": "",
+      "label": "Control elements",
+      "localized": "Steuerelemente",
+      "hint": "Steuerelemente sind fortschrittliche Modelle, die die Generierung in Richtung des gewünschten Ergebnisses lenken können"
+    },
+    {
+      "id": "",
+      "label": "IP adapters",
+      "localized": "IP-Adapter",
+      "hint": "IP-Adapter sind Plugin-Modelle, die die Generierung in Richtung des gewünschten Ergebnisses lenken können"
+    },
+    {
+      "id": "",
+      "label": "Extensions",
+      "localized": "Erweiterungen",
+      "hint": "Anwendungserweiterungen"
+    },
+    {
+      "id": "",
+      "label": "XYZ Grid",
+      "localized": "XYZ-Gitter",
+      "hint": "Das XYZ-Gitter ist ein leistungsstarkes Modul, das ein Bildraster basierend auf variierenden mehreren Generierungsparametern erstellt"
+    },
+    {
+      "id": "",
+      "label": "cover",
+      "localized": "Abdeckung",
+      "hint": "Vollständige Fläche abdecken"
+    },
+    {
+      "id": "",
+      "label": "inline",
+      "localized": "Inline",
+      "hint": "Inline mit allen zusätzlichen Elementen (scrollbar)"
+    },
+    {
+      "id": "",
+      "label": "sidebar",
+      "localized": "Seitenleiste",
+      "hint": "Seitenleiste auf der rechten Seite des Bildschirms"
     },
     {
       "id": "",
@@ -450,37 +540,37 @@
       "id": "",
       "label": "➠ text",
       "localized": "➠ Text",
-      "hint": "Bild in die Textoberfläche übertragen"
+      "hint": "Bild zur Textschnittstelle übertragen"
     },
     {
       "id": "",
       "label": "➠ image",
       "localized": "➠ Bild",
-      "hint": "Bild in die Bildoberfläche übertragen"
+      "hint": "Bild zur Bildschnittstelle übertragen"
     },
     {
       "id": "",
       "label": "➠ inpaint",
       "localized": "➠ Inpaint",
-      "hint": "Bild in die Inpaint-Oberfläche übertragen"
+      "hint": "Bild zur Inpaint-Schnittstelle übertragen"
     },
     {
       "id": "",
       "label": "➠ sketch",
       "localized": "➠ Skizze",
-      "hint": "Bild in die Skizzenoberfläche übertragen"
+      "hint": "Bild zur Skizzenschnittstelle übertragen"
     },
     {
       "id": "",
       "label": "➠ composite",
-      "localized": "➠ Komposition",
-      "hint": "Bild in die Inpaint-Skizzenoberfläche übertragen"
+      "localized": "➠ Zusammensetzen",
+      "hint": "Bild zur Inpaint-Skizzenschnittstelle übertragen"
     },
     {
       "id": "",
       "label": "➠ process",
       "localized": "➠ Verarbeiten",
-      "hint": "Bild in die Verarbeitungsoberfläche übertragen"
+      "hint": "Bild zur Verarbeitungsschnittstelle übertragen"
     }
   ],
   "generate": [
@@ -488,127 +578,127 @@
       "id": "",
       "label": "Sampling method",
       "localized": "Sampling-Methode",
-      "hint": "Welcher Algorithmus soll verwendet werden, um das Bild zu erzeugen?"
+      "hint": "Welchen Algorithmus soll verwendet werden, um das Bild zu erzeugen?"
     },
     {
       "id": "",
       "label": "Steps",
       "localized": "Schritte",
-      "hint": "Wie oft das generierte Bild iterativ verbessert werden soll; höhere Werte dauern länger; sehr niedrige Werte können zu schlechten Ergebnissen führen"
+      "hint": "Wie oft soll das generierte Bild iterativ verbessert werden; höhere Werte dauern länger; sehr niedrige Werte können zu schlechten Ergebnissen führen."
     },
     {
       "id": "",
       "label": "Tiling",
       "localized": "Kachelung",
-      "hint": "Erzeugt ein Bild, das gekachelt werden kann"
+      "hint": "Ein Bild erzeugen, das gekachelt werden kann."
     },
     {
       "id": "",
       "label": "full quality",
       "localized": "Volle Qualität",
-      "hint": "Verwendet VAE in voller Qualität, um latente Samples zu dekodieren"
+      "hint": "Verwenden Sie VAE in voller Qualität, um latente Samples zu decodieren"
     },
     {
       "id": "",
       "label": "hidiffusion",
       "localized": "HiDiffusion",
-      "hint": "HiDiffusion ermöglicht die Erstellung hochauflösender Bilder mit Ihren Standardmodellen ohne Duplikate/Verzerrungen und verbesserter Leistung"
+      "hint": "HiDiffusion ermöglicht die Erstellung hochauflösender Bilder mit Ihren Standardmodellen ohne Duplikate/Verzerrungen und verbesserter Leistung."
     },
     {
       "id": "",
       "label": "HDR Clamp",
-      "localized": "HDR-Begrenzung",
-      "hint": "Passt den Grad unsinniger Details an, indem Werte reduziert werden, die erheblich vom Verteilungsdurchschnitt abweichen. Es ist besonders nützlich für die Verbesserung der Generierung bei höheren Guidance-Skalen, das frühzeitige Erkennen von Ausreißern im Prozess und das Anwenden mathematischer Anpassungen basierend auf den Range- (Boundary-) und Threshold-Einstellungen. Stellen Sie sich dies als das Festlegen des Bereichs vor, innerhalb dessen sich Ihre Bildwerte befinden sollen, und das Anpassen des Schwellenwerts bestimmt, welche Werte wieder in diesen Bereich gebracht werden sollen"
+      "localized": "HDR-Beschränkung",
+      "hint": "Passt den Grad unsinniger Details an, indem Werte reduziert werden, die signifikant vom Verteilungsdurchschnitt abweichen. Dies ist besonders nützlich, um die Generierung bei höheren Leitfäden zu verbessern, Ausreißer frühzeitig im Prozess zu erkennen und mathematische Anpassungen basierend auf den Bereichs- (Grenze) und Schwellenwerteinstellungen vorzunehmen. Stellen Sie sich vor, Sie legen den Bereich fest, innerhalb dessen Ihre Bildwerte liegen sollen, und passen Sie den Schwellenwert an, um zu bestimmen, welche Werte in diesen Bereich zurückgeführt werden sollen."
     },
     {
       "id": "",
       "label": "HDR Maximize",
       "localized": "HDR-Maximierung",
-      "hint": "Berechnet einen 'Normalisierungsfaktor', indem der maximale Tensorwert durch den angegebenen Bereich multipliziert mit 4 dividiert wird. Dieser Faktor wird dann verwendet, um die Kanäle innerhalb der gegebenen Grenze zu verschieben, wodurch ein maximaler Dynamikbereich für die nachfolgende Verarbeitung gewährleistet wird. Ziel ist es, den Dynamikbereich für externe Anwendungen wie Photoshop zu optimieren, insbesondere zum Anpassen von Pegeln, Kontrast und Helligkeit"
+      "hint": "Berechnet einen 'Normalisierungsfaktor', indem der maximale Tensorwert durch den angegebenen Bereich multipliziert mit 4 dividiert wird. Dieser Faktor wird dann verwendet, um die Kanäle innerhalb der angegebenen Grenze zu verschieben und so einen maximalen Dynamikbereich für die nachfolgende Verarbeitung zu gewährleisten. Ziel ist es, den Dynamikbereich für externe Anwendungen wie Photoshop zu optimieren, insbesondere zum Anpassen von Ebenen, Kontrast und Helligkeit."
     },
     {
       "id": "",
       "label": "Enable refine pass",
       "localized": "Verfeinerungsdurchgang aktivieren",
-      "hint": "Verwendet einen ähnlichen Prozess wie Bild zu Bild, um das endgültige Bild hochzuskalieren und/oder Details hinzuzufügen. Optional wird das Refiner-Modell verwendet, um Bilddetails zu verbessern."
+      "hint": "Verwenden Sie einen ähnlichen Prozess wie bei Bild zu Bild, um das endgültige Bild hochzuskalieren und/oder Details hinzuzufügen. Optional wird ein Refiner-Modell verwendet, um Bilddetails zu verbessern."
     },
     {
       "id": "",
       "label": "enable detailer pass",
       "localized": "Detailer-Durchgang aktivieren",
-      "hint": "Erkennt Zielobjekte wie Gesichter und verarbeitet sie mit höherer Auflösung erneut"
+      "hint": "Zielobjekte wie Gesichter erkennen und in höherer Auflösung erneut verarbeiten."
     },
     {
       "id": "",
       "label": "Denoising strength",
       "localized": "Entrauschungsstärke",
-      "hint": "Bestimmt, wie wenig Respekt der Algorithmus für den Inhalt des Bildes haben sollte. Bei 0 ändert sich nichts, und bei 1 erhalten Sie ein nicht verwandtes Bild. Bei Werten unter 1.0 benötigt die Verarbeitung weniger Schritte als der Schieberegler für die Sampling-Schritte angibt"
+      "hint": "Bestimmt, wie wenig Respekt der Algorithmus vor dem Bildinhalt haben sollte. Bei 0 ändert sich nichts, und bei 1 erhalten Sie ein unabhängiges Bild. Bei Werten unter 1,0 benötigt die Verarbeitung weniger Schritte als im Schieberegler 'Sampling-Schritte' angegeben."
     },
     {
       "id": "",
       "label": "Denoise start",
       "localized": "Entrauschungsstart",
-      "hint": "Überschreibt die Entrauschungsstärke, indem angegeben wird, wie früh das Basismodell beendet sein soll und wann das Refiner-Modell starten soll. Gilt nur für die Refiner-Nutzung. Wenn auf 0 oder 1 gesetzt, wird die Entrauschungsstärke verwendet"
+      "hint": "Überschreiben Sie die Entrauschungsstärke, indem Sie angeben, wie früh das Basismodell fertig sein soll und wann der Refiner starten soll. Nur auf Refiner-Nutzung anwendbar. Wenn auf 0 oder 1 gesetzt, wird die Entrauschungsstärke verwendet."
     },
     {
       "id": "",
       "label": "Hires steps",
       "localized": "Hires-Schritte",
-      "hint": "Anzahl der Sampling-Schritte für das hochskalierte Bild. Wenn 0, wird derselbe Wert wie für das Original verwendet"
+      "hint": "Anzahl der Sampling-Schritte für das hochskalierte Bild. Wenn 0, wird der gleiche Wert wie für das Original verwendet."
     },
     {
       "id": "",
       "label": "strength",
       "localized": "Stärke",
-      "hint": "Die Entrauschungsstärke während des Bildvorgangs steuert, wie viel des Originalbilds während der Generierung geändert werden darf"
+      "hint": "Die Entrauschungsstärke während des Bildvorgangs steuert, wie viel des Originalbilds während der Generierung verändert werden darf."
     },
     {
       "id": "",
       "label": "Upscaler",
       "localized": "Upscaler",
-      "hint": "Welches vortrainierte Modell für den Hochskalierungsprozess verwendet werden soll"
+      "hint": "Welches vortrainierte Modell soll für den Hochskalierungsprozess verwendet werden?"
     },
     {
       "id": "",
       "label": "Force Hires",
       "localized": "Hires erzwingen",
-      "hint": "Hires wird automatisch ausgeführt, wenn Latent Upscale ausgewählt ist, wird jedoch übersprungen, wenn Nicht-Latent-Upscaler verwendet werden. Aktivieren Sie Force Hires, um Hires mit Nicht-Latent-Upscalern auszuführen"
+      "hint": "Hires wird automatisch ausgeführt, wenn Latent Upscale ausgewählt ist, wird aber übersprungen, wenn nicht-latente Upscaler verwendet werden. Aktivieren Sie Hires erzwingen, um Hires mit nicht-latenten Upscalern auszuführen."
     },
     {
       "id": "",
       "label": "Resize width",
       "localized": "Breite ändern",
-      "hint": "Ändert die Bildbreite auf diesen Wert. Wenn 0, wird die Breite von einem der beiden nahegelegenen Schieberegler abgeleitet"
+      "hint": "Ändert die Bildbreite auf diesen Wert. Wenn 0, wird die Breite von einem der beiden nahegelegenen Schieberegler abgeleitet."
     },
     {
       "id": "",
       "label": "Resize height",
       "localized": "Höhe ändern",
-      "hint": "Ändert die Bildhöhe auf diesen Wert. Wenn 0, wird die Höhe von einem der beiden nahegelegenen Schieberegler abgeleitet"
+      "hint": "Ändert die Bildhöhe auf diesen Wert. Wenn 0, wird die Höhe von einem der beiden nahegelegenen Schieberegler abgeleitet."
     },
     {
       "id": "",
       "label": "Refine sampler",
       "localized": "Refine Sampler",
-      "hint": "Verwendet einen bestimmten Sampler als Fallback-Sampler, wenn der primäre Sampler für einen bestimmten Vorgang nicht unterstützt wird"
+      "hint": "Verwenden Sie einen bestimmten Sampler als Fallback-Sampler, wenn der primäre Sampler für eine bestimmte Operation nicht unterstützt wird."
     },
     {
       "id": "",
       "label": "Refiner start",
       "localized": "Refiner Start",
-      "hint": "Der Refiner-Durchgang beginnt, wenn das Basismodell so weit abgeschlossen ist (auf größer als 0 und kleiner als 1 gesetzt, um nach dem vollständigen Durchlauf des Basismodells zu laufen)"
+      "hint": "Der Refiner-Durchgang beginnt, wenn das Basismodell so weit abgeschlossen ist (auf größer als 0 und kleiner als 1 setzen, um nach dem vollständigen Basismodelllauf zu laufen)."
     },
     {
       "id": "",
       "label": "Refiner steps",
-      "localized": "Refiner Schritte",
-      "hint": "Anzahl der Schritte, die für den Refiner-Durchgang verwendet werden sollen"
+      "localized": "Refiner-Schritte",
+      "hint": "Anzahl der Schritte, die für den Refiner-Durchgang verwendet werden sollen."
     },
     {
       "id": "",
       "label": "Refine guidance",
       "localized": "Refine Guidance",
-      "hint": "CFG-Skala, die für den Refiner-Durchgang verwendet wird"
+      "hint": "CFG-Skala, die für den Refiner-Durchgang verwendet wird."
     },
     {
       "id": "",
@@ -620,25 +710,25 @@
       "id": "",
       "label": "Adaptive scaling",
       "localized": "Adaptive Skalierung",
-      "hint": "Adaptiver Modifikator für die Attention-Guidance-Skala"
+      "hint": "Adaptiver Modifikator für die Attention Guidance-Skala"
     },
     {
       "id": "",
       "label": "Rescale guidance",
-      "localized": "Guidance Reskalieren",
-      "hint": "Reskaliert das von CFG generierte Rauschen, um überbelichtete Bilder zu vermeiden"
+      "localized": "Rescale Guidance",
+      "hint": "Reskalieren Sie das von CFG erzeugte Rauschen, um überbelichtete Bilder zu vermeiden"
     },
     {
       "id": "",
       "label": "Refine Prompt",
       "localized": "Refine Prompt",
-      "hint": "Prompt, das sowohl für den zweiten Encoder im Basismodell (falls vorhanden) als auch für den Refiner-Durchgang (falls aktiviert) verwendet wird"
+      "hint": "Prompt für den zweiten Encoder im Basismodell (falls vorhanden) und für den Refiner-Durchgang (falls aktiviert)"
     },
     {
       "id": "",
       "label": "Refine negative prompt",
       "localized": "Refine Negativ-Prompt",
-      "hint": "Negativ-Prompt, das sowohl für den zweiten Encoder im Basismodell (falls vorhanden) als auch für den Refiner-Durchgang (falls aktiviert) verwendet wird"
+      "hint": "Negativer Prompt für den zweiten Encoder im Basismodell (falls vorhanden) und für den Refiner-Durchgang (falls aktiviert)"
     },
     {
       "id": "",
@@ -656,127 +746,127 @@
       "id": "",
       "label": "Batch count",
       "localized": "Batch-Anzahl",
-      "hint": "Wie viele Batches von Bildern erstellt werden sollen (hat keinen Einfluss auf die Generierungsleistung oder die VRAM-Nutzung)"
+      "hint": "Wie viele Batches von Bildern erstellt werden sollen (hat keinen Einfluss auf die Generierungsleistung oder die VRAM-Nutzung)."
     },
     {
       "id": "",
       "label": "Batch size",
       "localized": "Batch-Größe",
-      "hint": "Wie viele Bilder in einem einzelnen Batch erstellt werden sollen (erhöht die Generierungsleistung auf Kosten einer höheren VRAM-Nutzung)"
+      "hint": "Wie viele Bilder in einem einzelnen Batch erstellt werden sollen (erhöht die Generierungsleistung auf Kosten einer höheren VRAM-Nutzung)."
     },
     {
       "id": "",
       "label": "guidance scale",
-      "localized": "Guidance-Skala",
-      "hint": "Classifier Free Guidance Scale: Wie stark das Bild mit dem Prompt übereinstimmen soll. Niedrigere Werte erzeugen kreativere Ergebnisse, höhere Werte lassen es dem Prompt strenger folgen; empfohlene Werte zwischen 5-10"
+      "localized": "Guidance Scale",
+      "hint": "Classifier Free Guidance Scale: wie stark das Bild dem Prompt entsprechen soll. Niedrigere Werte erzeugen kreativere Ergebnisse, höhere Werte lassen es dem Prompt strikter folgen; empfohlene Werte zwischen 5-10."
     },
     {
       "id": "",
       "label": "Guidance End",
       "localized": "Guidance Ende",
-      "hint": "Beendet den Effekt von CFG und PAG frühzeitig: Ein Wert von 1 wirkt normal, 0.5 stoppt die Guidance bei 50% der Schritte"
+      "hint": "Beendet die Wirkung von CFG und PAG frühzeitig: Ein Wert von 1 wirkt normal, 0,5 stoppt die Guidance bei 50% der Schritte."
     },
     {
       "id": "",
       "label": "Initial seed",
       "localized": "Initialer Seed",
-      "hint": "Ein Wert, der die Ausgabe des Zufallszahlengenerators bestimmt - wenn Sie ein Bild mit denselben Parametern und demselben Seed wie ein anderes Bild erstellen, erhalten Sie dasselbe Ergebnis"
+      "hint": "Ein Wert, der die Ausgabe des Zufallszahlengenerators bestimmt - wenn Sie ein Bild mit den gleichen Parametern und dem gleichen Seed wie ein anderes Bild erstellen, erhalten Sie das gleiche Ergebnis."
     },
     {
       "id": "",
       "label": "Variation",
       "localized": "Variation",
-      "hint": "Zweiter Seed, der mit dem primären Seed gemischt werden soll"
+      "hint": "Zweiter Seed, der mit dem primären Seed gemischt werden soll."
     },
     {
       "id": "",
       "label": "Variation strength",
       "localized": "Variationsstärke",
-      "hint": "Wie stark eine Variation erzeugt werden soll. Bei 0 gibt es keinen Effekt. Bei 1 erhalten Sie das vollständige Bild mit dem Variations-Seed (außer bei ancestralen Samplern, wo Sie nur etwas erhalten)"
+      "hint": "Wie stark eine Variation erzeugt werden soll. Bei 0 gibt es keine Wirkung. Bei 1 erhalten Sie das vollständige Bild mit Variations-Seed (außer bei Ancestral Samplern, wo Sie nur etwas erhalten)."
     },
     {
       "id": "",
       "label": "Resize seed from width",
       "localized": "Seed-Größe von Breite ändern",
-      "hint": "Versucht, ein Bild zu erzeugen, das demjenigen ähnlich ist, das mit demselben Seed bei der angegebenen Auflösung erzeugt worden wäre"
+      "hint": "Versuchen Sie, ein Bild zu erzeugen, das dem ähnelt, das mit demselben Seed bei der angegebenen Auflösung erzeugt worden wäre."
     },
     {
       "id": "",
       "label": "Resize seed from height",
       "localized": "Seed-Größe von Höhe ändern",
-      "hint": "Versucht, ein Bild zu erzeugen, das demjenigen ähnlich ist, das mit demselben Seed bei der angegebenen Auflösung erzeugt worden wäre"
+      "hint": "Versuchen Sie, ein Bild zu erzeugen, das dem ähnelt, das mit demselben Seed bei der angegebenen Auflösung erzeugt worden wäre."
     },
     {
       "id": "",
       "label": "Fixed",
       "localized": "Fest",
-      "hint": "Ändert die Bildgröße auf die Zielauflösung. Sofern Höhe und Breite nicht übereinstimmen, erhalten Sie ein falsches Seitenverhältnis"
+      "hint": "Ändern Sie die Größe des Bildes auf die Zielauflösung. Wenn Höhe und Breite nicht übereinstimmen, erhalten Sie ein falsches Seitenverhältnis."
     },
     {
       "id": "",
       "label": "scale",
-      "localized": "Skala",
-      "hint": "Ändert die Bildgröße auf die Zielskala. Wenn Resize Fixed Width/Height festgelegt ist, wird diese Option ignoriert"
+      "localized": "Skalieren",
+      "hint": "Ändern Sie die Größe des Bildes auf die Zielskalierung. Wenn die feste Breite/Höhe zum Ändern der Größe festgelegt ist, wird diese Option ignoriert."
     },
     {
       "id": "",
       "label": "Crop",
-      "localized": "Zuschneiden",
-      "hint": "Ändert die Bildgröße so, dass die gesamte Zielauflösung mit dem Bild gefüllt wird. Schneidet Teile ab, die herausragen"
+      "localized": "Beschneiden",
+      "hint": "Ändern Sie die Größe des Bildes so, dass die gesamte Zielauflösung mit dem Bild gefüllt ist. Beschneiden Sie Teile, die herausragen."
     },
     {
       "id": "",
       "label": "Fill",
       "localized": "Füllen",
-      "hint": "Ändert die Bildgröße so, dass sich das gesamte Bild innerhalb der Zielauflösung befindet. Füllt leeren Raum mit den Farben des Bildes"
+      "hint": "Ändern Sie die Größe des Bildes so, dass sich das gesamte Bild innerhalb der Zielauflösung befindet. Füllen Sie den leeren Raum mit den Farben des Bildes."
     },
     {
       "id": "",
       "label": "Mask blur",
       "localized": "Maskenunschärfe",
-      "hint": "Wie stark die Maske vor der Verarbeitung in Pixeln verwischt werden soll"
+      "hint": "Wie stark die Maske vor der Verarbeitung unscharf gemacht werden soll, in Pixeln."
     },
     {
       "id": "",
       "label": "latent noise",
       "localized": "Latentes Rauschen",
-      "hint": "Füllt es mit latentem Rauschen"
+      "hint": "Füllen Sie es mit Rauschen im latenten Raum."
     },
     {
       "id": "",
       "label": "latent nothing",
       "localized": "Latentes Nichts",
-      "hint": "Füllt es mit latenten Nullen"
+      "hint": "Füllen Sie es mit latenten Nullen."
     },
     {
       "id": "",
       "label": "Guess Mode",
       "localized": "Schätzmodus",
-      "hint": "Entfernt die Notwendigkeit, ein Prompt für ein ControlNet bereitzustellen. Es zwingt den Controlnet-Encoder, seine 'beste Schätzung' basierend auf dem Inhalt der Eingabe-Kontrollkarte abzugeben"
+      "hint": "Entfernt die Anforderung, einen Prompt an ein ControlNet zu liefern. Es zwingt den Controlnet-Encoder, seine 'beste Schätzung' basierend auf dem Inhalt der eingegebenen Kontrollkarte vorzunehmen."
     },
     {
       "id": "",
       "label": "Control Only",
       "localized": "Nur Steuerung",
-      "hint": "Dies verwendet nur die Steuerungseingabe unten als Quelle für alle ControlNet- oder IP-Adapter-Typ-Aufgaben, basierend auf unseren verschiedenen Optionen"
+      "hint": "Dies verwendet nur die unten stehende Steuereingabe als Quelle für alle ControlNet- oder IP Adapter-Aufgaben, die auf einer unserer verschiedenen Optionen basieren."
     },
     {
       "id": "",
       "label": "Init Image Same As Control",
-      "localized": "Init-Bild ist gleich Steuerung",
-      "hint": "Behandelt zusätzlich jedes Bild, das in das Steuerungseingabefenster platziert wird, als Quelle für img2img-Typ-Aufgaben, z. B. ein zu änderndes Bild"
+      "localized": "Init-Bild wie Steuerung",
+      "hint": "Behandelt jedes in das Control-Eingabefenster eingefügte Bild zusätzlich als Quelle für Aufgaben vom Typ img2img, z. B. ein zu änderndes Bild."
     },
     {
       "id": "",
       "label": "Separate Init Image",
       "localized": "Getrenntes Init-Bild",
-      "hint": "Erstellt ein zusätzliches Fenster neben der Steuerungseingabe mit der Bezeichnung Init-Eingabe, sodass Sie ein separates Bild sowohl für Steuerungsoperationen als auch für eine Init-Quelle haben können"
+      "hint": "Erstellt ein zusätzliches Fenster neben der Control-Eingabe mit der Bezeichnung Init-Eingabe, sodass Sie ein separates Bild sowohl für Control-Operationen als auch für eine Init-Quelle haben können."
     },
     {
       "id": "",
       "label": "Override settings",
       "localized": "Einstellungen überschreiben",
-      "hint": "Wenn die Generierungsparameter von Ihren Systemeinstellungen abweichen, werden die mit diesen Einstellungen gefüllten Überschreibungseinstellungen verwendet, um Ihre Systemkonfiguration für diesen Workflow zu überschreiben"
+      "hint": "Wenn die Generierungsparameter von Ihren Systemeinstellungen abweichen, überschreiben die mit diesen Einstellungen gefüllten Einstellungen Ihre Systemkonfiguration für diesen Workflow"
     }
   ],
   "other": [
@@ -789,7 +879,7 @@
     {
       "id": "",
       "label": "Search",
-      "localized": "Suchen",
+      "localized": "Suche",
       "hint": "Suchen"
     },
     {
@@ -813,14 +903,14 @@
     {
       "id": "",
       "label": "Extension GIT repository URL",
-      "localized": "GIT-Repository-URL der Erweiterung",
+      "localized": "URL des Erweiterungs-GIT-Repositorys",
       "hint": "URL des Erweiterungs-Repositorys auf GitHub angeben"
     },
     {
       "id": "",
       "label": "Specific branch name",
-      "localized": "Spezifischer Branch-Name",
-      "hint": "Namen des Erweiterungs-Branch angeben, für Standardeinstellung leer lassen"
+      "localized": "Spezifischer Zweigname",
+      "hint": "Namen des Erweiterungszweigs angeben, für Standardeinstellung leer lassen"
     },
     {
       "id": "",
@@ -856,7 +946,7 @@
       "id": "",
       "label": "User interface",
       "localized": "Benutzeroberfläche",
-      "hint": "Überprüfen und Festlegen der Einstellungen für die Benutzeroberfläche"
+      "hint": "Überprüfen und Festlegen der Benutzeroberflächeneinstellungen"
     },
     {
       "id": "",
@@ -884,12 +974,6 @@
     },
     {
       "id": "",
-      "label": "detailer",
-      "localized": "Detailer",
-      "hint": "Verarbeites Bild durch zusätzliches Detailer-Modell laufen lassen"
-    },
-    {
-      "id": "",
       "label": "detailer classes",
       "localized": "Detailer-Klassen",
       "hint": "Spezifische zu verwendende Klassen angeben, wenn das ausgewählte Detailer-Modell ein Multi-Klassen-Modell ist"
@@ -898,19 +982,19 @@
       "id": "",
       "label": "detailer models",
       "localized": "Detailer-Modelle",
-      "hint": "Zu verwendende Erkennungsmodelle für die Detaillierung auswählen"
+      "hint": "Erkennungsmodelle für die Detaillierung auswählen"
     },
     {
       "id": "",
       "label": "detailer negative prompt",
-      "localized": "Detailer Negative Prompt",
-      "hint": "Verwenden Sie einen separaten negativen Prompt für den Detailer. Wenn nicht vorhanden, wird der primäre negative Prompt verwendet"
+      "localized": "Detailer Negativ-Prompt",
+      "hint": "Verwende einen separaten negativen Prompt für den Detailer. Wenn nicht vorhanden, wird der primäre negative Prompt verwendet"
     },
     {
       "id": "",
       "label": "detailer prompt",
-      "localized": "Detailer Prompt",
-      "hint": "Verwenden Sie einen separaten Prompt für den Detailer. Wenn nicht vorhanden, wird der primäre Prompt verwendet"
+      "localized": "Detailer-Prompt",
+      "hint": "Verwende einen separaten Prompt für den Detailer. Wenn nicht vorhanden, wird der primäre Prompt verwendet"
     },
     {
       "id": "",
@@ -964,13 +1048,13 @@
       "id": "",
       "label": "min size",
       "localized": "Mindestgröße",
-      "hint": "Mindestgröße des erkannten Objekts als Prozentsatz des Gesamtbilds"
+      "hint": "Mindestgröße des erkannten Objekts als Prozentsatz des Gesamtbildes"
     },
     {
       "id": "",
       "label": "max size",
       "localized": "Maximale Größe",
-      "hint": "Maximale Größe des erkannten Objekts als Prozentsatz des Gesamtbilds"
+      "hint": "Maximale Größe des erkannten Objekts als Prozentsatz des Gesamtbildes"
     },
     {
       "id": "",
@@ -981,8 +1065,8 @@
     {
       "id": "",
       "label": "Process Batch",
-      "localized": "Batch verarbeiten",
-      "hint": "Batch von Bildern verarbeiten"
+      "localized": "Stapelverarbeitung",
+      "hint": "Stapel von Bildern verarbeiten"
     },
     {
       "id": "",
@@ -994,13 +1078,13 @@
       "id": "",
       "label": "Scale by",
       "localized": "Skalieren um",
-      "hint": "Verwenden Sie diese Registerkarte, um die Quellbilder um einen gewählten Faktor zu skalieren"
+      "hint": "Verwenden Sie diesen Tab, um die Quellbilder um einen gewählten Faktor zu vergrößern"
     },
     {
       "id": "",
       "label": "Scale to",
       "localized": "Skalieren auf",
-      "hint": "Verwenden Sie diese Registerkarte, um die Quellbilder auf eine gewählte Zielgröße zu skalieren"
+      "hint": "Verwenden Sie diesen Tab, um die Quellbilder auf eine gewählte Zielgröße zu vergrößern"
     },
     {
       "id": "",
@@ -1022,21 +1106,15 @@
     },
     {
       "id": "",
-      "label": "Resize",
-      "localized": "Größe ändern",
-      "hint": "Details zur Größenänderung. Höhere Auflösungen erfordern zusätzlichen Verarbeitungsspeicher."
-    },
-    {
-      "id": "",
       "label": "Crop to fit",
       "localized": "Zuschneiden, um anzupassen",
-      "hint": "Wenn die Abmessungen Ihres Quellbildes (z. B. 512 x 510) von Ihren Zielabmessungen (z. B. 1024 x 768) abweichen, passt diese Funktion Ihr hochskaliertes Bild in Ihr Zielgrößenbild ein. Überschuss wird zugeschnitten"
+      "hint": "Wenn die Abmessungen Ihres Quellbildes (z. B. 512x510) von Ihren Zielabmessungen (z. B. 1024x768) abweichen, passt diese Funktion Ihr hochskaliertes Bild in Ihr Zielgrößenbild ein. Überschuss wird abgeschnitten"
     },
     {
       "id": "",
       "label": "Refine Upscaler",
       "localized": "Upscaler verfeinern",
-      "hint": "Sekundären Upscaler auswählen, der nach dem ersten Upscaler ausgeführt werden soll"
+      "hint": "Wählen Sie einen sekundären Upscaler aus, der nach dem anfänglichen Upscaler ausgeführt werden soll"
     },
     {
       "id": "",
@@ -1053,32 +1131,32 @@
     {
       "id": "",
       "label": "Weights Clip",
-      "localized": "Gewichte beschneiden",
-      "hint": "Erzwingt, dass fusionierte Gewichte nicht schwerer sind als das ursprüngliche Modell, wodurch Burn-In und übersättigte Modelle verhindert werden"
+      "localized": "Gewichte Beschneiden",
+      "hint": "Erzwungene Zusammenführung von Gewichten, die nicht schwerer als das Originalmodell sein dürfen, wodurch Einbrennen und übersättigte Modelle verhindert werden"
     },
     {
       "id": "",
       "label": "ReBasin",
       "localized": "ReBasin",
-      "hint": "Führt mehrere Merges mit Permutationen durch, um mehr Funktionen aus beiden Modellen beizubehalten"
+      "hint": "Führt mehrere Zusammenführungen mit Permutationen durch, um mehr Funktionen aus beiden Modellen zu erhalten"
     },
     {
       "id": "",
       "label": "Number of ReBasin Iterations",
       "localized": "Anzahl der ReBasin-Iterationen",
-      "hint": "Anzahl der Male, die das Modell gemergt und permutiert wird, bevor es gespeichert wird"
+      "hint": "Anzahl der Male, die das Modell vor dem Speichern zusammengeführt und permutiert werden soll"
     },
     {
       "id": "",
       "label": "cpu",
-      "localized": "CPU",
+      "localized": "cpu",
       "hint": "Verwendet nur CPU und RAM: am langsamsten, aber am wenigsten wahrscheinlich, dass OOM auftritt"
     },
     {
       "id": "",
       "label": "shuffle",
       "localized": "Mischen",
-      "hint": "Lädt das vollständige Modell in den RAM und berechnet es auf dem VRAM: Weniger Beschleunigung, empfohlen für SDXL-Merges"
+      "hint": "Lädt das vollständige Modell in den RAM und berechnet es auf dem VRAM: Weniger Beschleunigung, empfohlen für SDXL-Zusammenführungen"
     },
     {
       "id": "",
@@ -1095,100 +1173,100 @@
     {
       "id": "",
       "label": "Out Block",
-      "localized": "Ausgabe-Block",
+      "localized": "Ausgangsblock",
       "hint": "Upsampling-Blöcke des UNet (12 Werte für SD1.5, 9 Werte für SDXL)"
     },
     {
       "id": "",
       "label": "Preset Interpolation Ratio",
       "localized": "Voreingestelltes Interpolationsverhältnis",
-      "hint": "Wenn zwei Voreinstellungen ausgewählt sind, interpolieren Sie zwischen ihnen"
+      "hint": "Wenn zwei Voreinstellungen ausgewählt sind, interpolieren Sie zwischen diesen"
     },
     {
       "id": "",
       "label": "adapter",
       "localized": "Adapter",
-      "hint": "IP-Adapter-Modell"
+      "hint": "IP-Adaptermodell"
     },
     {
       "id": "",
       "label": "active ip adapters",
       "localized": "Aktive IP-Adapter",
-      "hint": "Anzahl der aktiven IP-Adapter"
+      "hint": "Anzahl aktiver IP-Adapter"
     },
     {
       "id": "",
       "label": "unload adapter",
       "localized": "Adapter entladen",
-      "hint": "IP-Adapter sofort nach der Generierung entladen. Andernfalls bleibt der IP-Adapter für eine schnellere Verwendung im nächsten Generierungsprozess geladen"
+      "hint": "IP-Adapter sofort nach der Generierung entladen. Andernfalls bleibt der IP-Adapter für die schnellere Verwendung im nächsten Generierungsprozess geladen"
     },
     {
       "id": "",
       "label": "crop to portrait",
-      "localized": "Auf Porträt zuschneiden",
-      "hint": "Eingabebild nur auf Porträt zuschneiden, bevor es als IP-Adapter-Eingabe verwendet wird"
+      "localized": "Auf Hochformat zuschneiden",
+      "hint": "Eingabebild nur auf Hochformat zuschneiden, bevor es als IP-Adaptereingabe verwendet wird"
     },
     {
       "id": "",
       "label": "layer options",
-      "localized": "Layer-Optionen",
-      "hint": "IP-Adapter erweiterte Layer-Optionen manuell angeben"
+      "localized": "Layereinstellungen",
+      "hint": "IP-Adapter erweiterte Layereinstellungen manuell angeben"
     },
     {
       "id": "",
       "label": "X values",
       "localized": "X-Werte",
-      "hint": "Separate Werte für die X-Achse mit Kommas trennen"
+      "hint": "Separate Werte für die X-Achse mit Kommas"
     },
     {
       "id": "",
       "label": "Y values",
       "localized": "Y-Werte",
-      "hint": "Separate Werte für die Y-Achse mit Kommas trennen"
+      "hint": "Separate Werte für die Y-Achse mit Kommas"
     },
     {
       "id": "",
       "label": "Z values",
       "localized": "Z-Werte",
-      "hint": "Separate Werte für die Z-Achse mit Kommas trennen"
+      "hint": "Separate Werte für die Z-Achse mit Kommas"
     },
     {
       "id": "",
       "label": "Loops",
       "localized": "Schleifen",
-      "hint": "Wie oft ein Bild verarbeitet werden soll. Jede Ausgabe wird als Eingabe der nächsten Schleife verwendet. Wenn auf 1 gesetzt, verhält es sich so, als ob dieses Skript nicht verwendet würde"
+      "hint": "Wie oft ein Bild verarbeitet werden soll. Jede Ausgabe wird als Eingabe der nächsten Schleife verwendet. Wenn auf 1 gesetzt, verhält sich der Code, als ob dieses Skript nicht verwendet würde"
     },
     {
       "id": "",
       "label": "Final denoising strength",
       "localized": "Finale Entrauschungsstärke",
-      "hint": "Die Entrauschungsstärke für die letzte Schleife jedes Bildes im Batch"
+      "hint": "Die Entrauschungsstärke für die letzte Schleife jedes Bildes im Stapel"
     },
     {
       "id": "",
       "label": "Denoising strength curve",
       "localized": "Entrauschungsstärkekurve",
-      "hint": "Die Entrauschungskurve steuert die Änderungsrate der Entrauschungsstärke in jeder Schleife. Aggressiv: Der größte Teil der Änderung erfolgt zu Beginn der Schleifen. Linear: Die Änderung ist in allen Schleifen konstant. Träge: Der größte Teil der Änderung erfolgt gegen Ende der Schleifen"
+      "hint": "Die Entrauschungskurve steuert die Änderungsrate der Entrauschungsstärke in jeder Schleife. Aggressiv: Die meisten Änderungen finden zu Beginn der Schleifen statt. Linear: Die Änderungen sind in allen Schleifen konstant. Träge: Die meisten Änderungen finden gegen Ende der Schleifen statt"
     },
     {
       "id": "",
       "label": "Tile overlap",
       "localized": "Kachelüberlappung",
-      "hint": "Für SD-Upscaling, wie viel Überlappung in Pixeln sollte zwischen den Kacheln bestehen. Kacheln überlappen sich, so dass beim Zusammenführen zu einem Bild keine deutlich sichtbare Naht vorhanden ist"
+      "hint": "Für SD-Upscale: wie viel Pixelüberlappung sollte zwischen Kacheln bestehen. Die Kacheln überlappen sich, sodass beim Zusammenführen zu einem Bild keine deutlich sichtbare Naht entsteht"
     }
   ],
   "settings": [
     {
       "id": "settings_submit",
       "label": "Apply settings",
-      "localized": "Einstellungen übernehmen",
+      "localized": "Einstellungen anwenden",
       "hint": "Aktuelle Einstellungen speichern, ein Neustart des Servers wird empfohlen"
     },
     {
       "id": "restart_submit",
       "label": "Restart server",
-      "localized": "Server neu starten",
-      "hint": "Server neu starten"
+      "localized": "Server neustarten",
+      "hint": "Server neustarten"
     },
     {
       "id": "shutdown_submit",
@@ -1199,14 +1277,14 @@
     {
       "id": "settings_preview_theme",
       "label": "Preview theme",
-      "localized": "Vorschau des Designs",
+      "localized": "Designvorschau",
       "hint": "Designvorschau anzeigen"
     },
     {
       "id": "defaults_submit",
       "label": "Restore defaults",
-      "localized": "Standardwerte wiederherstellen",
-      "hint": "Standardservereinstellungen wiederherstellen"
+      "localized": "Standardeinstellungen wiederherstellen",
+      "hint": "Standardeinstellungen des Servers wiederherstellen"
     },
     {
       "id": "sett_unload_sd_model",
@@ -1224,97 +1302,97 @@
       "id": "",
       "label": "Models & Loading",
       "localized": "Modelle & Laden",
-      "hint": "Einstellungen im Zusammenhang mit Basismodellen, primärem Backend und Modellladeverhalten"
+      "hint": "Einstellungen bezüglich Basismodellen, primärem Backend und Modellladeverhalten"
     },
     {
       "id": "",
       "label": "Variable Auto Encoder",
       "localized": "Variabler Autoencoder",
-      "hint": "Einstellungen im Zusammenhang mit variablem Autoencoder und Bilddekodierungsprozess während der Generierung"
+      "hint": "Einstellungen bezüglich variablem Autoencoder und Bilddekodierungsprozess während der Generierung"
     },
     {
       "id": "",
       "label": "Text encoder",
       "localized": "Textencoder",
-      "hint": "Einstellungen im Zusammenhang mit Textencoder und Prompt-Encoding-Verarbeitung während der Generierung"
+      "hint": "Einstellungen bezüglich Textencoder und Prompt-Codierungsverarbeitung während der Generierung"
     },
     {
       "id": "",
       "label": "Compute Settings",
       "localized": "Berechnungseinstellungen",
-      "hint": "Einstellungen im Zusammenhang mit Berechnungsgenauigkeit, Cross-Attention und Optimierungen für Berechnungsplattformen"
+      "hint": "Einstellungen bezüglich Rechengenauigkeit, Cross-Attention und Optimierungen für Rechenplattformen"
     },
     {
       "id": "",
       "label": "Backend Settings",
       "localized": "Backend-Einstellungen",
-      "hint": "Einstellungen im Zusammenhang mit Compute-Backends: torch, onnx und olive"
+      "hint": "Einstellungen bezüglich Compute-Backends: Torch, ONNX und Olive"
     },
     {
       "id": "",
       "label": "Quantization Settings",
       "localized": "Quantisierungseinstellungen",
-      "hint": "Einstellungen im Zusammenhang mit Modellquantisierung"
+      "hint": "Einstellungen bezüglich Modellquantisierung"
     },
     {
       "id": "",
       "label": "Pipeline modifiers",
       "localized": "Pipeline-Modifikatoren",
-      "hint": "Zusätzliche Funktionalität, die während der Generierung aktiviert werden kann"
+      "hint": "Zusätzliche Funktionen, die während der Generierung aktiviert werden können"
     },
     {
       "id": "",
       "label": "Model compile",
       "localized": "Modellkompilierung",
-      "hint": "Einstellungen im Zusammenhang mit verschiedenen Modellkompilierungsmethoden"
+      "hint": "Einstellungen zu verschiedenen Modellkompilierungsmethoden"
     },
     {
       "id": "",
       "label": "System Paths",
       "localized": "Systempfade",
-      "hint": "Einstellungen im Zusammenhang mit dem Speicherort verschiedener Modellverzeichnisse"
+      "hint": "Einstellungen bezüglich des Speicherorts verschiedener Modellverzeichnisse"
     },
     {
       "id": "",
       "label": "Image Options",
       "localized": "Bildoptionen",
-      "hint": "Einstellungen im Zusammenhang mit Bildformat, Metadaten und Bildrastern"
+      "hint": "Einstellungen bezüglich Bildformat, Metadaten und Bildraster"
     },
     {
       "id": "",
       "label": "image Paths",
       "localized": "Bildpfade",
-      "hint": "Einstellungen im Zusammenhang mit Bilddateinamen und Ausgabeverzeichnissen"
+      "hint": "Einstellungen bezüglich Bilddateinamen und Ausgabeverzeichnissen"
     },
     {
       "id": "",
       "label": "Live Previews",
       "localized": "Live-Vorschauen",
-      "hint": "Einstellungen im Zusammenhang mit Live-Vorschauen, Audiobenachrichtigungen"
+      "hint": "Einstellungen bezüglich Live-Vorschauen, Audio-Benachrichtigung"
     },
     {
       "id": "",
       "label": "Sampler Settings",
       "localized": "Sampler-Einstellungen",
-      "hint": "Einstellungen im Zusammenhang mit Sampler-Auswahl und -Konfiguration sowie Diffuser-spezifischer Sampler-Konfiguration"
+      "hint": "Einstellungen bezüglich Sampler-Auswahl und -Konfiguration sowie diffuser-spezifische Sampler-Konfiguration"
     },
     {
       "id": "",
       "label": "Postprocessing",
       "localized": "Nachbearbeitung",
-      "hint": "Einstellungen im Zusammenhang mit der Nachbearbeitung der Bilderzeugung, Gesichtswiederherstellung und Hochskalierung"
+      "hint": "Einstellungen bezüglich der Nachbearbeitung der Bilderzeugung, der Wiederherstellung von Gesichtern und des Hochskalierens"
     },
     {
       "id": "",
       "label": "Control Options",
-      "localized": "Kontrolloptionen",
-      "hint": "Einstellungen im Zusammenhang mit der Registerkarte 'Control'"
+      "localized": "Steuerungsoptionen",
+      "hint": "Einstellungen bezüglich des Control-Tabs"
     },
     {
       "id": "",
       "label": "Huggingface",
       "localized": "Huggingface",
-      "hint": "Einstellungen im Zusammenhang mit dem Huggingface-Zugriff"
+      "hint": "Einstellungen bezüglich Huggingface-Zugriff"
     },
     {
       "id": "",
@@ -1326,19 +1404,19 @@
       "id": "",
       "label": "base model",
       "localized": "Basismodell",
-      "hint": "Hauptmodell, das für alle Operationen verwendet wird"
+      "hint": "Hauptmodell für alle Operationen"
     },
     {
       "id": "",
       "label": "refiner model",
       "localized": "Refiner-Modell",
-      "hint": "Refiner-Modell, das für Second-Pass-Operationen verwendet wird"
+      "hint": "Refiner-Modell für Second-Pass-Operationen"
     },
     {
       "id": "",
       "label": "Cached models",
       "localized": "Zwischengespeicherte Modelle",
-      "hint": "Die Anzahl der Modelle, die im RAM für den schnellen Zugriff gespeichert werden sollen"
+      "hint": "Die Anzahl der Modelle, die zur schnellen Verwendung im RAM gespeichert werden sollen"
     },
     {
       "id": "",
@@ -1349,26 +1427,26 @@
     {
       "id": "",
       "label": "Model load using streams",
-      "localized": "Modell laden über Streams",
+      "localized": "Modellladen mit Streams",
       "hint": "Beim Laden von Modellen wird versucht, das Stream-Laden für langsamen oder Netzwerkspeicher zu optimieren"
     },
     {
       "id": "",
       "label": "xFormers",
       "localized": "xFormers",
-      "hint": "Speicheroptimierung. Nicht-deterministisch (jedes Mal unterschiedliche Ergebnisse)"
+      "hint": "Speicheroptimierung. Nicht deterministisch (jedes Mal andere Ergebnisse)"
     },
     {
       "id": "",
       "label": "Scaled-Dot-Product",
-      "localized": "Scaled-Dot-Product",
-      "hint": "Speicheroptimierung. Nicht-deterministisch, es sei denn, die SDP-Speicher-Attention ist deaktiviert."
+      "localized": "Skaliertes Punktprodukt",
+      "hint": "Speicheroptimierung. Nicht deterministisch, es sei denn, SDP-Speicher-Attention ist deaktiviert."
     },
     {
       "id": "",
       "label": "Prompt padding",
       "localized": "Prompt-Padding",
-      "hint": "Erhöht die Kohärenz durch Padding vom letzten Komma innerhalb von n Token, wenn mehr als 75 Token verwendet werden"
+      "hint": "Erhöht die Kohärenz durch Auffüllen ab dem letzten Komma innerhalb von n Token, wenn mehr als 75 Token verwendet werden"
     },
     {
       "id": "",
@@ -1380,7 +1458,7 @@
       "id": "",
       "label": "Autocast",
       "localized": "Autocast",
-      "hint": "Bestimmt die Genauigkeit automatisch während der Laufzeit"
+      "hint": "Präzision während der Laufzeit automatisch bestimmen"
     },
     {
       "id": "",
@@ -1392,67 +1470,67 @@
       "id": "",
       "label": "FP32",
       "localized": "FP32",
-      "hint": "Verwende 32-Bit-Gleitkomma-Genauigkeit für Berechnungen"
+      "hint": "Verwenden Sie 32-Bit-Gleitkomma-Genauigkeit für Berechnungen"
     },
     {
       "id": "",
       "label": "FP16",
       "localized": "FP16",
-      "hint": "Verwende 16-Bit-Gleitkomma-Genauigkeit für Berechnungen"
+      "hint": "Verwenden Sie 16-Bit-Gleitkomma-Genauigkeit für Berechnungen"
     },
     {
       "id": "",
       "label": "BF16",
       "localized": "BF16",
-      "hint": "Verwende modifizierte 16-Bit-Gleitkomma-Genauigkeit für Berechnungen"
+      "hint": "Verwenden Sie modifizierte 16-Bit-Gleitkomma-Genauigkeit für Berechnungen"
     },
     {
       "id": "",
       "label": "Full precision (--no-half-vae)",
       "localized": "Volle Präzision (--no-half-vae)",
-      "hint": "Verwendet FP32 für den VAE. Kann bessere Ergebnisse liefern, verbraucht aber mehr VRAM und die Generierung dauert länger"
+      "hint": "Verwendet FP32 für den VAE. Kann zu besseren Ergebnissen führen, während mehr VRAM und langsamere Generierung verwendet werden"
     },
     {
       "id": "",
       "label": "Force full precision (--no-half)",
       "localized": "Volle Präzision erzwingen (--no-half)",
-      "hint": "Verwendet FP32 für das Modell. Kann bessere Ergebnisse liefern, verbraucht aber mehr VRAM und die Generierung dauert länger"
+      "hint": "Verwendet FP32 für das Modell. Kann zu besseren Ergebnissen führen, während mehr VRAM und langsamere Generierung verwendet werden"
     },
     {
       "id": "",
       "label": "Upcast sampling",
-      "localized": "Upcast Sampling",
-      "hint": "Erzeugt normalerweise ähnliche Ergebnisse wie --no-half mit besserer Leistung bei geringerem Speicherverbrauch"
+      "localized": "Upcast-Sampling",
+      "hint": "Erzeugt normalerweise ähnliche Ergebnisse wie --no-half mit besserer Leistung und weniger Speicherverbrauch"
     },
     {
       "id": "",
       "label": "Attempt VAE roll back for NaN values",
-      "localized": "Versuche VAE Rollback für NaN-Werte",
-      "hint": "Erfordert Torch 2.1 und NaN-Prüfung aktiviert"
+      "localized": "VAE-Rollback für NaN-Werte versuchen",
+      "hint": "Erfordert Torch 2.1 und aktivierte NaN-Prüfung"
     },
     {
       "id": "",
       "label": "Olive use FP16 on optimization",
-      "localized": "Olive verwende FP16 bei der Optimierung",
-      "hint": "Verwenden Sie 16-Bit-Gleitkomma-Genauigkeit für das Ausgabemodell des Olive-Optimierungsprozesses. Verwenden Sie 32-Bit-Gleitkomma-Genauigkeit, wenn diese Option deaktiviert ist"
+      "localized": "Olive verwendet FP16 bei der Optimierung",
+      "hint": "Verwenden Sie 16-Bit-Gleitkomma-Genauigkeit für das Ausgabemodell des Olive-Optimierungsprozesses. Verwenden Sie 32-Bit-Gleitkomma-Genauigkeit, wenn deaktiviert"
     },
     {
       "id": "",
       "label": "Olive force FP32 for VAE Encoder",
-      "localized": "Olive erzwingt FP32 für VAE-Encoder",
-      "hint": "Verwenden Sie 32-Bit-Gleitkomma-Genauigkeit für den VAE-Encoder des Ausgabemodells. Dies überschreibt die Option 'FP16 bei der Optimierung verwenden'. Wenn Sie NaN- oder schwarze leere Bilder von Img2Img erhalten, aktivieren Sie diese Option und entfernen Sie den Cache"
+      "localized": "Olive erzwingt FP32 für VAE Encoder",
+      "hint": "Verwenden Sie 32-Bit-Gleitkomma-Genauigkeit für den VAE Encoder des Ausgabemodells. Dies überschreibt die Option 'FP16 bei der Optimierung verwenden'. Wenn Sie NaN- oder schwarze leere Bilder von Img2Img erhalten, aktivieren Sie diese Option und entfernen Sie den Cache"
     },
     {
       "id": "",
       "label": "Olive use static dimensions",
-      "localized": "Olive verwende statische Dimensionen",
-      "hint": "Die Inferenz mit Olive-optimierten Modellen wird viel schneller. (OrtTransformersOptimization)"
+      "localized": "Olive verwendet statische Dimensionen",
+      "hint": "Beschleunigt die Inferenz mit Olive-optimierten Modellen erheblich. (OrtTransformersOptimization)"
     },
     {
       "id": "",
       "label": "Olive cache optimized models",
       "localized": "Olive speichert optimierte Modelle zwischen",
-      "hint": "Speichern Sie von Olive verarbeitete Modelle als Cache. Sie können sie auf der Registerkarte ONNX verwalten"
+      "hint": "Speichert Olive-verarbeitete Modelle als Cache. Sie können sie im ONNX-Tab verwalten"
     },
     {
       "id": "",
@@ -1463,86 +1541,86 @@
     {
       "id": "",
       "label": "Include metadata",
-      "localized": "Metadaten einfügen",
-      "hint": "Speichern Sie Bildparameter als Metadaten-Tags in der Bilddatei"
+      "localized": "Metadaten einschließen",
+      "hint": "Bildparameter als Metadaten-Tags in der Bilddatei speichern"
     },
     {
       "id": "",
       "label": "Images filename pattern",
-      "localized": "Dateinamenmuster für Bilder",
-      "hint": "Verwenden Sie die folgenden Tags, um festzulegen, wie Dateinamen für Bilder ausgewählt werden:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
+      "localized": "Dateinamensmuster für Bilder",
+      "hint": "Verwenden Sie die folgenden Tags, um die Dateinamen für Bilder zu definieren:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
     },
     {
       "id": "",
       "label": "Row count",
       "localized": "Zeilenanzahl",
-      "hint": "Verwenden Sie -1 für die automatische Erkennung und 0, damit sie mit der Batchgröße übereinstimmt"
+      "hint": "Verwenden Sie -1 für automatische Erkennung und 0, damit es der Batch-Größe entspricht"
     },
     {
       "id": "",
       "label": "Directory name pattern",
-      "localized": "Verzeichnisnamenmuster",
-      "hint": "Verwenden Sie die folgenden Tags, um festzulegen, wie Unterverzeichnisse für Bilder und Raster ausgewählt werden: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; leer lassen für Standard"
+      "localized": "Verzeichnisnamensmuster",
+      "hint": "Verwenden Sie die folgenden Tags, um zu definieren, wie Unterverzeichnisse für Bilder und Raster ausgewählt werden: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; leer lassen für Standard"
     },
     {
       "id": "",
       "label": "Inpainting conditioning mask strength",
       "localized": "Stärke der Inpainting-Konditionierungsmaske",
-      "hint": "Bestimmt, wie stark das Originalbild für Inpainting und img2img maskiert werden soll. 1.0 bedeutet vollständig maskiert (Standard). 0.0 bedeutet eine vollständig unmaskierte Konditionierung. Niedrigere Werte helfen dabei, die Gesamtkomposition des Bildes beizubehalten, haben aber Schwierigkeiten bei großen Änderungen"
+      "hint": "Bestimmt, wie stark das Originalbild für Inpainting und Img2Img maskiert werden soll. 1.0 bedeutet vollständig maskiert (Standard). 0.0 bedeutet eine vollständig unmaskierte Konditionierung. Niedrigere Werte tragen dazu bei, die Gesamtkomposition des Bildes beizubehalten, haben aber bei großen Veränderungen Schwierigkeiten"
     },
     {
       "id": "",
       "label": "Clip skip",
-      "localized": "Clip Skip",
-      "hint": "Parameter für das frühe Stoppen für das CLIP-Modell; 1 ist das Stoppen an der letzten Schicht wie üblich, 2 ist das Stoppen an der vorletzten Schicht usw."
+      "localized": "Clip-Überspringen",
+      "hint": "Parameter für frühes Stoppen für das CLIP-Modell; 1 ist das Stoppen bei der letzten Ebene wie üblich, 2 ist das Stoppen bei der vorletzten Ebene usw"
     },
     {
       "id": "",
       "label": "Images folder",
       "localized": "Bilderordner",
-      "hint": "Wenn leer, werden standardmäßig drei Verzeichnisse darunter verwendet"
+      "hint": "Wenn leer, Standardwert drei Verzeichnisse darunter"
     },
     {
       "id": "",
       "label": "Grids folder",
       "localized": "Rasterordner",
-      "hint": "Wenn leer, werden standardmäßig zwei Verzeichnisse darunter verwendet"
+      "hint": "Wenn leer, Standardwert zwei Verzeichnisse darunter"
     },
     {
       "id": "",
       "label": "Quicksettings list",
       "localized": "Liste der Schnelleinstellungen",
-      "hint": "Liste der Einstellungsnamen, getrennt durch Kommas, für Einstellungen, die stattdessen in die Schnellzugriffsleiste oben auf der Registerkarte \"Einstellung\" aufgenommen werden sollen"
+      "hint": "Liste der Einstellungsnamen, getrennt durch Kommas, für Einstellungen, die stattdessen in die Schnellzugriffsleiste oben im Einstellungs-Tab gehören sollen"
     },
     {
       "id": "",
       "label": "Live preview display period",
-      "localized": "Anzeigezeitraum für Live-Vorschau",
-      "hint": "Vorschaubild alle n Schritte anfordern, auf 0 setzen, um es zu deaktivieren"
+      "localized": "Anzeigeperiode der Live-Vorschau",
+      "hint": "Fordern Sie alle n Schritte ein Vorschaubild an, setzen Sie es auf 0, um es zu deaktivieren"
     },
     {
       "id": "",
       "label": "Approximate",
       "localized": "Annähernd",
-      "hint": "Billige Approximation des neuronalen Netzes. Sehr schnell im Vergleich zu VAE, erzeugt aber Bilder mit 4-fach kleinerer horizontaler/vertikaler Auflösung und geringerer Qualität"
+      "hint": "Billige neuronale Netznäherung. Sehr schnell im Vergleich zu VAE, erzeugt aber Bilder mit 4-mal kleinerer horizontaler/vertikaler Auflösung und geringerer Qualität"
     },
     {
       "id": "",
       "label": "Simple",
       "localized": "Einfach",
-      "hint": "Sehr billige Approximation. Sehr schnell im Vergleich zu VAE, erzeugt aber Bilder mit 8-fach kleinerer horizontaler/vertikaler Auflösung und extrem niedriger Qualität"
+      "hint": "Sehr billige Näherung. Sehr schnell im Vergleich zu VAE, erzeugt aber Bilder mit 8-mal kleinerer horizontaler/vertikaler Auflösung und extrem niedriger Qualität"
     },
     {
       "id": "",
       "label": "Progress update period",
-      "localized": "Aktualisierungszeitraum für Fortschritt",
-      "hint": "Aktualisierungszeitraum für UI-Fortschrittsbalken und Vorschauprüfungen in Millisekunden"
+      "localized": "Aktualisierungsperiode des Fortschritts",
+      "hint": "Aktualisierungsperiode für UI-Fortschrittsbalken und Vorschaubilder, in Millisekunden"
     },
     {
       "id": "",
       "label": "Euler a",
       "localized": "Euler a",
-      "hint": "Euler Ancestral - sehr kreativ, jedes kann je nach Schrittzahl ein völlig anderes Bild erhalten, das Einstellen von Schritten über 30-40 hilft nicht"
+      "hint": "Euler Ancestral - sehr kreativ, jedes kann je nach Schrittanzahl ein völlig anderes Bild erhalten, das Einstellen von Schritten über 30-40 hilft nicht"
     },
     {
       "id": "",
@@ -1554,13 +1632,13 @@
       "id": "",
       "label": "UniPC",
       "localized": "UniPC",
-      "hint": "Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models"
+      "hint": "Unified Predictor-Corrector Framework für schnelles Sampling von Diffusionsmodellen"
     },
     {
       "id": "",
       "label": "sigma negative guidance minimum",
-      "localized": "Sigma Negative Guidance Minimum",
-      "hint": "Überspringen Sie negative Prompts für einige Schritte, wenn das Bild fast fertig ist, 0 = deaktivieren"
+      "localized": "Sigma negative guidance Minimum",
+      "hint": "Negativen Prompt für einige Schritte überspringen, wenn das Bild fast fertig ist, 0=deaktivieren"
     },
     {
       "id": "",
@@ -1578,7 +1656,7 @@
       "id": "",
       "label": "GFPGAN",
       "localized": "GFPGAN",
-      "hint": "Wiederherstellung von Gesichtern niedriger Qualität mithilfe des neuronalen Netzes GFPGAN"
+      "hint": "Wiederherstellung von Gesichtern geringer Qualität mit dem neuronalen Netzwerk GFPGAN"
     },
     {
       "id": "",
@@ -1590,13 +1668,13 @@
       "id": "",
       "label": "ToMe token merging ratio",
       "localized": "ToMe Token-Merging-Verhältnis",
-      "hint": "Aktivieren Sie die redundante Token-Zusammenführung über tomesd für Geschwindigkeits- und Speicherverbesserungen, 0 = deaktiviert"
+      "hint": "Aktivieren Sie redundantes Token-Merging über tomesd für Geschwindigkeits- und Speicherverbesserungen, 0=deaktiviert"
     },
     {
       "id": "",
       "label": "Todo token merging ratio",
       "localized": "Todo Token-Merging-Verhältnis",
-      "hint": "Aktivieren Sie die redundante Token-Zusammenführung über todo für Geschwindigkeits- und Speicherverbesserungen, 0 = deaktiviert"
+      "hint": "Aktivieren Sie redundantes Token-Merging über todo für Geschwindigkeits- und Speicherverbesserungen, 0=deaktiviert"
     },
     {
       "id": "",
@@ -1608,43 +1686,43 @@
       "id": "",
       "label": "VAE slicing",
       "localized": "VAE-Slicing",
-      "hint": "Dekodiert Batch-Latents ein Bild nach dem anderen mit begrenztem VRAM. Kleine Leistungssteigerung bei der VAE-Dekodierung bei Multi-Image-Batches"
+      "hint": "Dekodiert Batch-Latents mit begrenztem VRAM jeweils ein Bild. Geringe Leistungssteigerung bei der VAE-Dekodierung auf Multi-Image-Batches"
     },
     {
       "id": "",
       "label": "VAE tiling",
       "localized": "VAE-Kachelung",
-      "hint": "Teilen Sie große Bilder mit begrenztem VRAM in überlappende Kacheln auf. Führt zu einer geringfügigen Erhöhung der Verarbeitungszeit"
+      "hint": "Teilen Sie große Bilder in überlappende Kacheln mit begrenztem VRAM auf. Führt zu einer geringfügigen Erhöhung der Verarbeitungszeit"
     },
     {
       "id": "",
       "label": "Dynamic attention BMM",
       "localized": "Dynamische Attention BMM",
-      "hint": "Führt die Attention-Berechnung schrittweise anstelle von einmal aus. Langsamere Inferenzzeiten, aber stark reduzierte Speichernutzung"
+      "hint": "Führt die Attention-Berechnung schrittweise anstelle von alles auf einmal durch. Langsamere Inferenzzeiten, aber stark reduzierter Speicherverbrauch"
     },
     {
       "id": "",
       "label": "ONNX Execution Provider",
-      "localized": "ONNX-Ausführungsanbieter",
-      "hint": "ONNX-Ausführungsanbieter"
+      "localized": "ONNX Execution Provider",
+      "hint": "ONNX Execution Provider"
     },
     {
       "id": "",
       "label": "ONNX allow fallback to CPU",
-      "localized": "ONNX erlaube Fallback auf CPU",
-      "hint": "Ermöglichen Sie den Fallback auf die CPU, wenn der ausgewählte Ausführungsanbieter fehlgeschlagen ist"
+      "localized": "ONNX Fallback auf CPU zulassen",
+      "hint": "Fallback auf CPU zulassen, wenn der ausgewählte Execution Provider fehlschlägt"
     },
     {
       "id": "",
       "label": "ONNX cache converted models",
       "localized": "ONNX speichert konvertierte Modelle zwischen",
-      "hint": "Speichern Sie die Modelle, die in das ONNX-Format konvertiert wurden, als Cache. Sie können sie auf der Registerkarte ONNX verwalten"
+      "hint": "Speichern Sie die Modelle, die in das ONNX-Format konvertiert wurden, als Cache. Sie können sie im ONNX-Tab verwalten"
     },
     {
       "id": "",
       "label": "ONNX unload base model when processing refiner",
-      "localized": "ONNX entlädt das Basismodell, wenn der Refiner verarbeitet wird",
-      "hint": "Entladen Sie das Basismodell, wenn der Refiner konvertiert/optimiert/verarbeitet wird"
+      "localized": "ONNX entlädt das Basismodell bei der Verarbeitung des Refiners",
+      "hint": "Basismodell entladen, wenn der Refiner konvertiert/optimiert/verarbeitet wird"
     },
     {
       "id": "",
@@ -1655,7 +1733,7 @@
     {
       "id": "",
       "label": "no-grad",
-      "localized": "no-grad",
+      "localized": "No-Grad",
       "hint": "torch.no_grad verwenden"
     },
     {
@@ -1668,19 +1746,19 @@
       "id": "",
       "label": "Use zeros for prompt padding",
       "localized": "Nullen für Prompt-Padding verwenden",
-      "hint": "Erzwingen Sie einen vollständigen Nulltensor, wenn der Prompt leer ist, um jegliches Restrauschen zu entfernen"
+      "hint": "Erzwingen Sie einen vollständigen Nulltensor, wenn der Prompt leer ist, um Restrauschen zu entfernen"
     },
     {
       "id": "",
       "label": "Include invisible watermark",
-      "localized": "Unsichtbares Wasserzeichen einfügen",
+      "localized": "Unsichtbares Wasserzeichen hinzufügen",
       "hint": "Fügen Sie dem Bild ein unsichtbares Wasserzeichen hinzu, indem Sie einige Pixelwerte ändern"
     },
     {
       "id": "",
       "label": "invisible watermark string",
-      "localized": "Zeichenfolge für unsichtbares Wasserzeichen",
-      "hint": "Wasserzeichen-String, der dem Bild hinzugefügt werden soll. Halten Sie es sehr kurz, um eine Beschädigung des Bildes zu vermeiden."
+      "localized": "Zeichenkette für unsichtbares Wasserzeichen",
+      "hint": "Wasserzeichen-Zeichenkette zum Bild hinzufügen. Halten Sie sie sehr kurz, um Bildbeschädigungen zu vermeiden."
     },
     {
       "id": "",
@@ -1691,8 +1769,8 @@
     {
       "id": "",
       "label": "Log view update period",
-      "localized": "Aktualisierungszeitraum der Logansicht",
-      "hint": "Aktualisierungszeitraum der Logansicht in Millisekunden"
+      "localized": "Aktualisierungsperiode der Logansicht",
+      "hint": "Aktualisierungsperiode der Logansicht, in Millisekunden"
     },
     {
       "id": "",
@@ -1704,6 +1782,18 @@
   "missing": [
     {
       "id": "",
+      "label": "1 day",
+      "localized": "1 Tag",
+      "hint": "1 Tag"
+    },
+    {
+      "id": "",
+      "label": "14 days",
+      "localized": "14 Tage",
+      "hint": "14 Tage"
+    },
+    {
+      "id": "",
       "label": "1st stage",
       "localized": "1. Stufe",
       "hint": "1. Stufe"
@@ -1711,26 +1801,26 @@
     {
       "id": "",
       "label": "1st stage backbone",
-      "localized": "1. Stufe Backbone",
-      "hint": "1. Stufe Backbone"
+      "localized": "Backbone der 1. Stufe",
+      "hint": "Backbone der 1. Stufe"
     },
     {
       "id": "",
       "label": "1st stage skip",
-      "localized": "1. Stufe Skip",
-      "hint": "1. Stufe Skip"
+      "localized": "Überspringen der 1. Stufe",
+      "hint": "Überspringen der 1. Stufe"
     },
     {
       "id": "",
       "label": "2nd restart step",
-      "localized": "2. Neustart-Schritt",
-      "hint": "2. Neustart-Schritt"
+      "localized": "2. Neustartschritt",
+      "hint": "2. Neustartschritt"
     },
     {
       "id": "",
       "label": "2nd scale",
-      "localized": "2. Skalierung",
-      "hint": "2. Skalierung"
+      "localized": "2. Skala",
+      "hint": "2. Skala"
     },
     {
       "id": "",
@@ -1741,26 +1831,38 @@
     {
       "id": "",
       "label": "2nd stage backbone",
-      "localized": "2. Stufe Backbone",
-      "hint": "2. Stufe Backbone"
+      "localized": "Backbone der 2. Stufe",
+      "hint": "Backbone der 2. Stufe"
     },
     {
       "id": "",
       "label": "2nd stage skip",
-      "localized": "2. Stufe Skip",
-      "hint": "2. Stufe Skip"
+      "localized": "Überspringen der 2. Stufe",
+      "hint": "Überspringen der 2. Stufe"
+    },
+    {
+      "id": "",
+      "label": "3 days",
+      "localized": "3 Tage",
+      "hint": "3 Tage"
+    },
+    {
+      "id": "",
+      "label": "30 days",
+      "localized": "30 Tage",
+      "hint": "30 Tage"
     },
     {
       "id": "",
       "label": "3rd restart step",
-      "localized": "3. Neustart-Schritt",
-      "hint": "3. Neustart-Schritt"
+      "localized": "3. Neustartschritt",
+      "hint": "3. Neustartschritt"
     },
     {
       "id": "",
       "label": "3rd scale",
-      "localized": "3. Skalierung",
-      "hint": "3. Skalierung"
+      "localized": "3. Skala",
+      "hint": "3. Skala"
     },
     {
       "id": "",
@@ -1771,20 +1873,32 @@
     {
       "id": "",
       "label": "4th restart step",
-      "localized": "4. Neustart-Schritt",
-      "hint": "4. Neustart-Schritt"
+      "localized": "4. Neustartschritt",
+      "hint": "4. Neustartschritt"
     },
     {
       "id": "",
       "label": "4th scale",
-      "localized": "4. Skalierung",
-      "hint": "4. Skalierung"
+      "localized": "4. Skala",
+      "hint": "4. Skala"
     },
     {
       "id": "",
       "label": "4th stage",
       "localized": "4. Stufe",
       "hint": "4. Stufe"
+    },
+    {
+      "id": "",
+      "label": "7 days",
+      "localized": "7 Tage",
+      "hint": "7 Tage"
+    },
+    {
+      "id": "",
+      "label": "90 days",
+      "localized": "90 Tage",
+      "hint": "90 Tage"
     },
     {
       "id": "",
@@ -1812,6 +1926,30 @@
     },
     {
       "id": "",
+      "label": "adapter 1",
+      "localized": "Adapter 1",
+      "hint": "Adapter 1"
+    },
+    {
+      "id": "",
+      "label": "adapter 2",
+      "localized": "Adapter 2",
+      "hint": "Adapter 2"
+    },
+    {
+      "id": "",
+      "label": "adapter 3",
+      "localized": "Adapter 3",
+      "hint": "Adapter 3"
+    },
+    {
+      "id": "",
+      "label": "adapter 4",
+      "localized": "Adapter 4",
+      "hint": "Adapter 4"
+    },
+    {
+      "id": "",
       "label": "adaptive restore",
       "localized": "Adaptive Wiederherstellung",
       "hint": "Adaptive Wiederherstellung"
@@ -1831,8 +1969,8 @@
     {
       "id": "",
       "label": "additional image browser folders",
-      "localized": "Zusätzliche Bildbrowser-Ordner",
-      "hint": "Zusätzliche Bildbrowser-Ordner"
+      "localized": "Zusätzliche Ordner für den Bildbrowser",
+      "hint": "Zusätzliche Ordner für den Bildbrowser"
     },
     {
       "id": "",
@@ -1860,9 +1998,15 @@
     },
     {
       "id": "",
+      "label": "all",
+      "localized": "Alle",
+      "hint": "Alle"
+    },
+    {
+      "id": "",
       "label": "allowed aspect ratios",
-      "localized": "Erlaubte Seitenverhältnisse",
-      "hint": "Erlaubte Seitenverhältnisse"
+      "localized": "Zulässige Seitenverhältnisse",
+      "hint": "Zulässige Seitenverhältnisse"
     },
     {
       "id": "",
@@ -1873,8 +2017,8 @@
     {
       "id": "",
       "label": "alpha block weight preset",
-      "localized": "Voreinstellung für Alpha-Blockgewichtung",
-      "hint": "Voreinstellung für Alpha-Blockgewichtung"
+      "localized": "Voreinstellung für die Alpha-Blockgewichtung",
+      "hint": "Voreinstellung für die Alpha-Blockgewichtung"
     },
     {
       "id": "",
@@ -1896,6 +2040,12 @@
     },
     {
       "id": "",
+      "label": "alt",
+      "localized": "Alt",
+      "hint": "Alt"
+    },
+    {
+      "id": "",
       "label": "amplify lut",
       "localized": "LUT verstärken",
       "hint": "LUT verstärken"
@@ -1914,6 +2064,12 @@
     },
     {
       "id": "",
+      "label": "animateddiff",
+      "localized": "Animateddiff",
+      "hint": "Animateddiff"
+    },
+    {
+      "id": "",
       "label": "answer",
       "localized": "Antwort",
       "hint": "Antwort"
@@ -1926,6 +2082,12 @@
     },
     {
       "id": "",
+      "label": "appearance",
+      "localized": "Aussehen",
+      "hint": "Aussehen"
+    },
+    {
+      "id": "",
       "label": "append image info json file",
       "localized": "JSON-Datei mit Bildinformationen anhängen",
       "hint": "JSON-Datei mit Bildinformationen anhängen"
@@ -1933,8 +2095,14 @@
     {
       "id": "",
       "label": "append interrogated prompt at each iteration",
-      "localized": "Abgefragten Prompt bei jeder Iteration anhängen",
-      "hint": "Abgefragten Prompt bei jeder Iteration anhängen"
+      "localized": "Interrogierte Eingabeaufforderung bei jeder Iteration anhängen",
+      "hint": "Interrogierte Eingabeaufforderung bei jeder Iteration anhängen"
+    },
+    {
+      "id": "",
+      "label": "append to main ui",
+      "localized": "An die Hauptbenutzeroberfläche anhängen",
+      "hint": "An die Hauptbenutzeroberfläche anhängen"
     },
     {
       "id": "",
@@ -1986,6 +2154,12 @@
     },
     {
       "id": "",
+      "label": "as a tab",
+      "localized": "Als Tab",
+      "hint": "Als Tab"
+    },
+    {
+      "id": "",
       "label": "atiadlxx (amd only)",
       "localized": "atiadlxx (nur AMD)",
       "hint": "atiadlxx (nur AMD)"
@@ -1999,38 +2173,38 @@
     {
       "id": "",
       "label": "attention adain",
-      "localized": "Attention Adain",
-      "hint": "Attention Adain"
+      "localized": "Aufmerksamkeits-Adain",
+      "hint": "Aufmerksamkeits-Adain"
     },
     {
       "id": "",
       "label": "attention cache enabled",
-      "localized": "Attention-Cache aktiviert",
-      "hint": "Attention-Cache aktiviert"
+      "localized": "Aufmerksamkeits-Cache aktiviert",
+      "hint": "Aufmerksamkeits-Cache aktiviert"
     },
     {
       "id": "",
       "label": "attention chunking threshold",
-      "localized": "Schwellenwert für Attention-Chunking",
-      "hint": "Schwellenwert für Attention-Chunking"
+      "localized": "Schwellenwert für die Aufmerksamkeits-Chunking",
+      "hint": "Schwellenwert für die Aufmerksamkeits-Chunking"
     },
     {
       "id": "",
       "label": "attention kv chunk size",
-      "localized": "Größe des Attention-KV-Chunks",
-      "hint": "Größe des Attention-KV-Chunks"
+      "localized": "Aufmerksamkeit KV Chunk Größe",
+      "hint": "Aufmerksamkeit KV Chunk Größe"
     },
     {
       "id": "",
       "label": "attention query chunk size",
-      "localized": "Größe des Attention-Query-Chunks",
-      "hint": "Größe des Attention-Query-Chunks"
+      "localized": "Aufmerksamkeit Query Chunk Größe",
+      "hint": "Aufmerksamkeit Query Chunk Größe"
     },
     {
       "id": "",
       "label": "auto",
-      "localized": "Auto",
-      "hint": "Auto"
+      "localized": "Automatisch",
+      "hint": "Automatisch"
     },
     {
       "id": "",
@@ -2040,9 +2214,15 @@
     },
     {
       "id": "",
+      "label": "auto requeue failed tasks",
+      "localized": "Fehlgeschlagene Aufgaben automatisch wieder in die Warteschlange einreihen",
+      "hint": "Fehlgeschlagene Aufgaben automatisch wieder in die Warteschlange einreihen"
+    },
+    {
+      "id": "",
       "label": "auto-convert sd15 embeddings to sdxl",
-      "localized": "SD15-Embeddings automatisch in SDXL konvertieren",
-      "hint": "SD15-Embeddings automatisch in SDXL konvertieren"
+      "localized": "SD15-Einbettungen automatisch in SDXL konvertieren",
+      "hint": "SD15-Einbettungen automatisch in SDXL konvertieren"
     },
     {
       "id": "",
@@ -2059,8 +2239,8 @@
     {
       "id": "",
       "label": "autolaunch browser upon startup",
-      "localized": "Browser beim Start automatisch öffnen",
-      "hint": "Browser beim Start automatisch öffnen"
+      "localized": "Browser beim Start automatisch starten",
+      "hint": "Browser beim Start automatisch starten"
     },
     {
       "id": "",
@@ -2088,12 +2268,6 @@
     },
     {
       "id": "",
-      "label": "backend settings",
-      "localized": "Backend-Einstellungen",
-      "hint": "Backend-Einstellungen"
-    },
-    {
-      "id": "",
       "label": "backend storage",
       "localized": "Backend-Speicher",
       "hint": "Backend-Speicher"
@@ -2107,74 +2281,74 @@
     {
       "id": "",
       "label": "balanced",
-      "localized": "Ausgewogen",
-      "hint": "Ausgewogen"
+      "localized": "Ausgeglichen",
+      "hint": "Ausgeglichen"
     },
     {
       "id": "",
       "label": "balanced offload cpu high watermark",
-      "localized": "Ausgewogene Auslagerung CPU Hohe Auslastung",
-      "hint": "Ausgewogene Auslagerung CPU Hohe Auslastung"
+      "localized": "Ausgeglichene Auslagerung CPU Hoher Wasserstand",
+      "hint": "Ausgeglichene Auslagerung CPU Hoher Wasserstand"
     },
     {
       "id": "",
       "label": "balanced offload gpu high watermark",
-      "localized": "Ausgewogene Auslagerung GPU Hohe Auslastung",
-      "hint": "Ausgewogene Auslagerung GPU Hohe Auslastung"
+      "localized": "Ausgeglichene Auslagerung GPU Hoher Wasserstand",
+      "hint": "Ausgeglichene Auslagerung GPU Hoher Wasserstand"
     },
     {
       "id": "",
       "label": "balanced offload gpu low watermark",
-      "localized": "Ausgewogene Auslagerung GPU Niedrige Auslastung",
-      "hint": "Ausgewogene Auslagerung GPU Niedrige Auslastung"
+      "localized": "Ausgeglichene Auslagerung GPU Niedriger Wasserstand",
+      "hint": "Ausgeglichene Auslagerung GPU Niedriger Wasserstand"
     },
     {
       "id": "",
-      "label": "batch",
-      "localized": "Stapel",
-      "hint": "Stapel"
+      "label": "base",
+      "localized": "Basis",
+      "hint": "Basis"
     },
     {
       "id": "",
       "label": "batch input directory",
-      "localized": "Stapel-Eingabeverzeichnis",
-      "hint": "Stapel-Eingabeverzeichnis"
+      "localized": "Batch-Eingabeverzeichnis",
+      "hint": "Batch-Eingabeverzeichnis"
     },
     {
       "id": "",
       "label": "batch mask directory",
-      "localized": "Stapel-Maskenverzeichnis",
-      "hint": "Stapel-Maskenverzeichnis"
+      "localized": "Batch-Maskenverzeichnis",
+      "hint": "Batch-Maskenverzeichnis"
     },
     {
       "id": "",
       "label": "batch matrix-matrix",
-      "localized": "Stapel Matrix-Matrix",
-      "hint": "Stapel Matrix-Matrix"
+      "localized": "Batch-Matrix-Matrix",
+      "hint": "Batch-Matrix-Matrix"
     },
     {
       "id": "",
       "label": "batch mode uses sequential seeds",
-      "localized": "Stapelmodus verwendet sequentielle Seeds",
-      "hint": "Stapelmodus verwendet sequentielle Seeds"
+      "localized": "Batch-Modus verwendet fortlaufende Seeds",
+      "hint": "Batch-Modus verwendet fortlaufende Seeds"
     },
     {
       "id": "",
       "label": "batch output directory",
-      "localized": "Stapel-Ausgabeverzeichnis",
-      "hint": "Stapel-Ausgabeverzeichnis"
+      "localized": "Batch-Ausgabeverzeichnis",
+      "hint": "Batch-Ausgabeverzeichnis"
     },
     {
       "id": "",
       "label": "batch uses original name",
-      "localized": "Stapel verwendet Originalnamen",
-      "hint": "Stapel verwendet Originalnamen"
+      "localized": "Batch verwendet Originalnamen",
+      "hint": "Batch verwendet Originalnamen"
     },
     {
       "id": "",
       "label": "bdia ddim",
-      "localized": "BDIA DDIM",
-      "hint": "BDIA DDIM"
+      "localized": "bdia ddim",
+      "hint": "bdia ddim"
     },
     {
       "id": "",
@@ -2197,14 +2371,14 @@
     {
       "id": "",
       "label": "beta block weight preset",
-      "localized": "Voreinstellung für Beta-Blockgewichtung",
-      "hint": "Voreinstellung für Beta-Blockgewichtung"
+      "localized": "Voreinstellung für die Beta-Blockgewichtung",
+      "hint": "Voreinstellung für die Beta-Blockgewichtung"
     },
     {
       "id": "",
       "label": "beta end",
-      "localized": "Beta Ende",
-      "hint": "Beta Ende"
+      "localized": "Beta-Ende",
+      "hint": "Beta-Ende"
     },
     {
       "id": "",
@@ -2221,20 +2395,26 @@
     {
       "id": "",
       "label": "beta start",
-      "localized": "Beta Start",
-      "hint": "Beta Start"
+      "localized": "Beta-Start",
+      "hint": "Beta-Start"
+    },
+    {
+      "id": "",
+      "label": "between prompt and generate button",
+      "localized": "Zwischen Prompt und Generieren-Button",
+      "hint": "Zwischen Prompt und Generieren-Button"
     },
     {
       "id": "",
       "label": "bh1",
-      "localized": "BH1",
-      "hint": "BH1"
+      "localized": "bh1",
+      "hint": "bh1"
     },
     {
       "id": "",
       "label": "bh2",
-      "localized": "BH2",
-      "hint": "BH2"
+      "localized": "bh2",
+      "hint": "bh2"
     },
     {
       "id": "",
@@ -2245,8 +2425,8 @@
     {
       "id": "",
       "label": "block skip range",
-      "localized": "Block-Überspringbereich",
-      "hint": "Block-Überspringbereich"
+      "localized": "Block-Überspringungsbereich",
+      "hint": "Block-Überspringungsbereich"
     },
     {
       "id": "",
@@ -2263,8 +2443,8 @@
     {
       "id": "",
       "label": "boost",
-      "localized": "Verstärken",
-      "hint": "Verstärken"
+      "localized": "Verstärkung",
+      "hint": "Verstärkung"
     },
     {
       "id": "",
@@ -2281,20 +2461,26 @@
     {
       "id": "",
       "label": "cache text encoder results",
-      "localized": "Textergebnis-Encoder-Ergebnisse zwischenspeichern",
-      "hint": "Textergebnis-Encoder-Ergebnisse zwischenspeichern"
+      "localized": "Text-Encoder-Ergebnisse zwischenspeichern",
+      "hint": "Text-Encoder-Ergebnisse zwischenspeichern"
+    },
+    {
+      "id": "",
+      "label": "canny",
+      "localized": "Canny",
+      "hint": "Canny"
     },
     {
       "id": "",
       "label": "caption model",
-      "localized": "Bildunterschriften-Modell",
-      "hint": "Bildunterschriften-Modell"
+      "localized": "Bildbeschreibungsmodell",
+      "hint": "Bildbeschreibungsmodell"
     },
     {
       "id": "",
       "label": "center",
-      "localized": "Zentriert",
-      "hint": "Zentriert"
+      "localized": "Zentrum",
+      "hint": "Zentrum"
     },
     {
       "id": "",
@@ -2341,20 +2527,20 @@
     {
       "id": "",
       "label": "check alternative hash",
-      "localized": "Alternativen Hash prüfen",
-      "hint": "Alternativen Hash prüfen"
+      "localized": "Alternativen Hash überprüfen",
+      "hint": "Alternativen Hash überprüfen"
     },
     {
       "id": "",
       "label": "check for updates",
-      "localized": "Auf Updates prüfen",
-      "hint": "Auf Updates prüfen"
+      "localized": "Nach Updates suchen",
+      "hint": "Nach Updates suchen"
     },
     {
       "id": "",
       "label": "check status",
-      "localized": "Status prüfen",
-      "hint": "Status prüfen"
+      "localized": "Status überprüfen",
+      "hint": "Status überprüfen"
     },
     {
       "id": "",
@@ -2385,12 +2571,6 @@
       "label": "ckpt",
       "localized": "CKPT",
       "hint": "CKPT"
-    },
-    {
-      "id": "",
-      "label": "classes",
-      "localized": "Klassen",
-      "hint": "Klassen"
     },
     {
       "id": "",
@@ -2431,14 +2611,14 @@
     {
       "id": "",
       "label": "clip: include scores in results",
-      "localized": "CLIP: Scores in Ergebnissen einschließen",
-      "hint": "CLIP: Scores in Ergebnissen einschließen"
+      "localized": "CLIP: Ergebnisse mit Bewertungen anzeigen",
+      "hint": "CLIP: Ergebnisse mit Bewertungen anzeigen"
     },
     {
       "id": "",
       "label": "clip: max flavors",
-      "localized": "CLIP: Max. Anzahl an Beschreibungen",
-      "hint": "CLIP: Max. Anzahl an Beschreibungen"
+      "localized": "CLIP: Maximale Anzahl an Varianten",
+      "hint": "CLIP: Maximale Anzahl an Varianten"
     },
     {
       "id": "",
@@ -2449,8 +2629,8 @@
     {
       "id": "",
       "label": "clip: min flavors",
-      "localized": "CLIP: Min. Anzahl an Beschreibungen",
-      "hint": "CLIP: Min. Anzahl an Beschreibungen"
+      "localized": "CLIP: Minimale Anzahl an Varianten",
+      "hint": "CLIP: Minimale Anzahl an Varianten"
     },
     {
       "id": "",
@@ -2461,8 +2641,8 @@
     {
       "id": "",
       "label": "clip: num beams",
-      "localized": "CLIP: Anzahl Strahlen",
-      "hint": "CLIP: Anzahl Strahlen"
+      "localized": "CLIP: Anzahl der Strahlen",
+      "hint": "CLIP: Anzahl der Strahlen"
     },
     {
       "id": "",
@@ -2581,14 +2761,14 @@
     {
       "id": "",
       "label": "composite",
-      "localized": "Komposit",
-      "hint": "Komposit"
+      "localized": "Komposition",
+      "hint": "Komposition"
     },
     {
       "id": "",
       "label": "compress ratio",
-      "localized": "Komprimierungsverhältnis",
-      "hint": "Komprimierungsverhältnis"
+      "localized": "Komprimierungsrate",
+      "hint": "Komprimierungsrate"
     },
     {
       "id": "",
@@ -2635,14 +2815,38 @@
     {
       "id": "",
       "label": "control override denoise strength",
-      "localized": "Kontrolle Überschreibt Denoise-Stärke",
-      "hint": "Kontrolle Überschreibt Denoise-Stärke"
+      "localized": "Kontrolliere Überschreibung der Entrauschungsstärke",
+      "hint": "Kontrolliere Überschreibung der Entrauschungsstärke"
     },
     {
       "id": "",
       "label": "control preprocess input images",
-      "localized": "Steuerung Vorverarbeitung Eingabebilder",
-      "hint": "Steuerung Vorverarbeitung Eingabebilder"
+      "localized": "Kontrolliere Vorverarbeitung der Eingabebilder",
+      "hint": "Kontrolliere Vorverarbeitung der Eingabebilder"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 1",
+      "localized": "Control-lllite Einheit 1",
+      "hint": "Control-lllite Einheit 1"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 2",
+      "localized": "Control-lllite Einheit 2",
+      "hint": "Control-lllite Einheit 2"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 3",
+      "localized": "Control-lllite Einheit 3",
+      "hint": "Control-lllite Einheit 3"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 4",
+      "localized": "Control-lllite Einheit 4",
+      "hint": "Control-lllite Einheit 4"
     },
     {
       "id": "",
@@ -2652,9 +2856,57 @@
     },
     {
       "id": "",
+      "label": "controlnet unit 1",
+      "localized": "ControlNet Einheit 1",
+      "hint": "ControlNet Einheit 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 2",
+      "localized": "ControlNet Einheit 2",
+      "hint": "ControlNet Einheit 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 3",
+      "localized": "ControlNet Einheit 3",
+      "hint": "ControlNet Einheit 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 4",
+      "localized": "ControlNet Einheit 4",
+      "hint": "ControlNet Einheit 4"
+    },
+    {
+      "id": "",
       "label": "controlnet-xs",
       "localized": "ControlNet-XS",
       "hint": "ControlNet-XS"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 1",
+      "localized": "ControlNet-XS Einheit 1",
+      "hint": "ControlNet-XS Einheit 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 2",
+      "localized": "ControlNet-XS Einheit 2",
+      "hint": "ControlNet-XS Einheit 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 3",
+      "localized": "ControlNet-XS Einheit 3",
+      "hint": "ControlNet-XS Einheit 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 4",
+      "localized": "ControlNet-XS Einheit 4",
+      "hint": "ControlNet-XS Einheit 4"
     },
     {
       "id": "",
@@ -2695,8 +2947,8 @@
     {
       "id": "",
       "label": "create image info text file",
-      "localized": "Bildinfo-Textdatei erstellen",
-      "hint": "Bildinfo-Textdatei erstellen"
+      "localized": "Textdatei mit Bildinformationen erstellen",
+      "hint": "Textdatei mit Bildinformationen erstellen"
     },
     {
       "id": "",
@@ -2718,9 +2970,15 @@
     },
     {
       "id": "",
+      "label": "ctrl",
+      "localized": "Strg",
+      "hint": "Strg"
+    },
+    {
+      "id": "",
       "label": "cudagraphs",
-      "localized": "CUDA-Graphen",
-      "hint": "CUDA-Graphen"
+      "localized": "Cudagraphs",
+      "hint": "Cudagraphs"
     },
     {
       "id": "",
@@ -2731,26 +2989,26 @@
     {
       "id": "",
       "label": "current",
-      "localized": "Aktuell",
-      "hint": "Aktuell"
+      "localized": "aktuell",
+      "hint": "aktuell"
     },
     {
       "id": "",
       "label": "custom pipeline",
-      "localized": "Benutzerdefinierte Pipeline",
-      "hint": "Benutzerdefinierte Pipeline"
+      "localized": "benutzerdefinierte Pipeline",
+      "hint": "benutzerdefinierte Pipeline"
     },
     {
       "id": "",
       "label": "dark",
-      "localized": "Dunkel",
-      "hint": "Dunkel"
+      "localized": "dunkel",
+      "hint": "dunkel"
     },
     {
       "id": "",
       "label": "dc solver",
-      "localized": "DC-Solver",
-      "hint": "DC-Solver"
+      "localized": "DC-Löser",
+      "hint": "DC-Löser"
     },
     {
       "id": "",
@@ -2761,8 +3019,8 @@
     {
       "id": "",
       "label": "debug info",
-      "localized": "Debug-Informationen",
-      "hint": "Debug-Informationen"
+      "localized": "Debug-Info",
+      "hint": "Debug-Info"
     },
     {
       "id": "",
@@ -2773,14 +3031,14 @@
     {
       "id": "",
       "label": "decode chunks",
-      "localized": "Chunks dekodieren",
-      "hint": "Chunks dekodieren"
+      "localized": "Dekodierungs-Chunks",
+      "hint": "Dekodierungs-Chunks"
     },
     {
       "id": "",
       "label": "deep-cache",
-      "localized": "DeepCache",
-      "hint": "DeepCache"
+      "localized": "Deep-Cache",
+      "hint": "Deep-Cache"
     },
     {
       "id": "",
@@ -2803,14 +3061,14 @@
     {
       "id": "",
       "label": "deepbooru: include scores in results",
-      "localized": "DeepBooru: Scores in Ergebnissen einschließen",
-      "hint": "DeepBooru: Scores in Ergebnissen einschließen"
+      "localized": "DeepBooru: Scores in Ergebnisse einbeziehen",
+      "hint": "DeepBooru: Scores in Ergebnisse einbeziehen"
     },
     {
       "id": "",
       "label": "deepbooru: max tags",
-      "localized": "DeepBooru: Max. Anzahl Tags",
-      "hint": "DeepBooru: Max. Anzahl Tags"
+      "localized": "DeepBooru: Maximale Anzahl Tags",
+      "hint": "DeepBooru: Maximale Anzahl Tags"
     },
     {
       "id": "",
@@ -2844,15 +3102,9 @@
     },
     {
       "id": "",
-      "label": "default strength",
-      "localized": "Standardstärke",
-      "hint": "Standardstärke"
-    },
-    {
-      "id": "",
       "label": "deis",
-      "localized": "Deis",
-      "hint": "Deis"
+      "localized": "DEIS",
+      "hint": "DEIS"
     },
     {
       "id": "",
@@ -2863,14 +3115,20 @@
     {
       "id": "",
       "label": "denoising steps",
-      "localized": "Denoising-Schritte",
-      "hint": "Denoising-Schritte"
+      "localized": "Denoising Schritte",
+      "hint": "Denoising Schritte"
     },
     {
       "id": "",
       "label": "depth and normal",
       "localized": "Tiefe und Normale",
       "hint": "Tiefe und Normale"
+    },
+    {
+      "id": "",
+      "label": "depth anything",
+      "localized": "Depth Anything",
+      "hint": "Depth Anything"
     },
     {
       "id": "",
@@ -2881,8 +3139,8 @@
     {
       "id": "",
       "label": "depth threshold",
-      "localized": "Tiefenschwellenwert",
-      "hint": "Tiefenschwellenwert"
+      "localized": "Tiefen-Schwellenwert",
+      "hint": "Tiefen-Schwellenwert"
     },
     {
       "id": "",
@@ -2910,6 +3168,12 @@
     },
     {
       "id": "",
+      "label": "diffusers",
+      "localized": "Diffusoren",
+      "hint": "Diffusoren"
+    },
+    {
+      "id": "",
       "label": "dilate",
       "localized": "Erweitern",
       "hint": "Erweitern"
@@ -2917,8 +3181,14 @@
     {
       "id": "",
       "label": "dilate tau",
-      "localized": "Erweitern Tau",
-      "hint": "Erweitern Tau"
+      "localized": "Dilate Tau",
+      "hint": "Dilate Tau"
+    },
+    {
+      "id": "",
+      "label": "directml retry ops for nan",
+      "localized": "DirectML Retry Ops für NaN",
+      "hint": "DirectML Retry Ops für NaN"
     },
     {
       "id": "",
@@ -2929,14 +3199,26 @@
     {
       "id": "",
       "label": "disable accelerate",
-      "localized": "Beschleunigung deaktivieren",
-      "hint": "Beschleunigung deaktivieren"
+      "localized": "Accelerate deaktivieren",
+      "hint": "Accelerate deaktivieren"
     },
     {
       "id": "",
       "label": "disable conditional batching",
       "localized": "Bedingte Batchverarbeitung deaktivieren",
       "hint": "Bedingte Batchverarbeitung deaktivieren"
+    },
+    {
+      "id": "",
+      "label": "disable keyboard shortcut",
+      "localized": "Tastenkombination deaktivieren",
+      "hint": "Tastenkombination deaktivieren"
+    },
+    {
+      "id": "",
+      "label": "disable queue auto-processing",
+      "localized": "Automatische Verarbeitung der Warteschlange deaktivieren",
+      "hint": "Automatische Verarbeitung der Warteschlange deaktivieren"
     },
     {
       "id": "",
@@ -2965,14 +3247,20 @@
     {
       "id": "",
       "label": "do not display video output in ui",
-      "localized": "Videoausgabe nicht in der Benutzeroberfläche anzeigen",
-      "hint": "Videoausgabe nicht in der Benutzeroberfläche anzeigen"
+      "localized": "Videoausgabe nicht in der UI anzeigen",
+      "hint": "Videoausgabe nicht in der UI anzeigen"
+    },
+    {
+      "id": "",
+      "label": "do nothing",
+      "localized": "Nichts tun",
+      "hint": "Nichts tun"
     },
     {
       "id": "",
       "label": "down",
-      "localized": "Herunter",
-      "hint": "Herunter"
+      "localized": "Runter",
+      "hint": "Runter"
     },
     {
       "id": "",
@@ -3019,50 +3307,50 @@
     {
       "id": "",
       "label": "dpm++ 1s",
-      "localized": "DPM++ 1s",
-      "hint": "DPM++ 1s"
+      "localized": "DPM++ 1S",
+      "hint": "DPM++ 1S"
     },
     {
       "id": "",
       "label": "dpm++ 1s inverse",
-      "localized": "DPM++ 1s Invers",
-      "hint": "DPM++ 1s Invers"
+      "localized": "DPM++ 1S Invers",
+      "hint": "DPM++ 1S Invers"
     },
     {
       "id": "",
       "label": "dpm++ 2m",
-      "localized": "DPM++ 2m",
-      "hint": "DPM++ 2m"
+      "localized": "DPM++ 2M",
+      "hint": "DPM++ 2M"
     },
     {
       "id": "",
       "label": "dpm++ 2m edm",
-      "localized": "DPM++ 2m EDM",
-      "hint": "DPM++ 2m EDM"
+      "localized": "DPM++ 2M EDM",
+      "hint": "DPM++ 2M EDM"
     },
     {
       "id": "",
       "label": "dpm++ 2m inverse",
-      "localized": "DPM++ 2m Invers",
-      "hint": "DPM++ 2m Invers"
+      "localized": "DPM++ 2M Invers",
+      "hint": "DPM++ 2M Invers"
     },
     {
       "id": "",
       "label": "dpm++ 2m sde",
-      "localized": "DPM++ 2m SDE",
-      "hint": "DPM++ 2m SDE"
+      "localized": "DPM++ 2M SDE",
+      "hint": "DPM++ 2M SDE"
     },
     {
       "id": "",
       "label": "dpm++ 3m",
-      "localized": "DPM++ 3m",
-      "hint": "DPM++ 3m"
+      "localized": "DPM++ 3M",
+      "hint": "DPM++ 3M"
     },
     {
       "id": "",
       "label": "dpm++ 3m inverse",
-      "localized": "DPM++ 3m Invers",
-      "hint": "DPM++ 3m Invers"
+      "localized": "DPM++ 3M Invers",
+      "hint": "DPM++ 3M Invers"
     },
     {
       "id": "",
@@ -3079,26 +3367,26 @@
     {
       "id": "",
       "label": "dpm2++ 2m flowmatch",
-      "localized": "DPM2++ 2m Flowmatch",
-      "hint": "DPM2++ 2m Flowmatch"
+      "localized": "DPM2++ 2M Flowmatch",
+      "hint": "DPM2++ 2M Flowmatch"
     },
     {
       "id": "",
       "label": "dpm2++ 2m sde flowmatch",
-      "localized": "DPM2++ 2m SDE Flowmatch",
-      "hint": "DPM2++ 2m SDE Flowmatch"
+      "localized": "DPM2++ 2M SDE Flowmatch",
+      "hint": "DPM2++ 2M SDE Flowmatch"
     },
     {
       "id": "",
       "label": "dpm2++ 2s flowmatch",
-      "localized": "DPM2++ 2s Flowmatch",
-      "hint": "DPM2++ 2s Flowmatch"
+      "localized": "DPM2++ 2S Flowmatch",
+      "hint": "DPM2++ 2S Flowmatch"
     },
     {
       "id": "",
       "label": "dpm2++ 3m sde flowmatch",
-      "localized": "DPM2++ 3m SDE Flowmatch",
-      "hint": "DPM2++ 3m SDE Flowmatch"
+      "localized": "DPM2++ 3M SDE Flowmatch",
+      "hint": "DPM2++ 3M SDE Flowmatch"
     },
     {
       "id": "",
@@ -3129,6 +3417,12 @@
       "label": "duration",
       "localized": "Dauer",
       "hint": "Dauer"
+    },
+    {
+      "id": "",
+      "label": "dwpose",
+      "localized": "DWPose",
+      "hint": "DWPose"
     },
     {
       "id": "",
@@ -3181,8 +3475,8 @@
     {
       "id": "",
       "label": "enable embeddings support",
-      "localized": "Unterstützung für Einbettungen aktivieren",
-      "hint": "Unterstützung für Einbettungen aktivieren"
+      "localized": "Unterstützung für Embeddings aktivieren",
+      "hint": "Unterstützung für Embeddings aktivieren"
     },
     {
       "id": "",
@@ -3240,6 +3534,12 @@
     },
     {
       "id": "",
+      "label": "enqueue keyboard shortcut",
+      "localized": "Tastenkombination für die Warteschlange",
+      "hint": "Tastenkombination für die Warteschlange"
+    },
+    {
+      "id": "",
       "label": "ensemble size",
       "localized": "Ensemble-Größe",
       "hint": "Ensemble-Größe"
@@ -3259,8 +3559,8 @@
     {
       "id": "",
       "label": "erode size",
-      "localized": "Erosionsgröße",
-      "hint": "Erosionsgröße"
+      "localized": "Erodiergröße",
+      "hint": "Erodiergröße"
     },
     {
       "id": "",
@@ -3284,109 +3584,121 @@
       "id": "",
       "label": "euler flowmatch",
       "localized": "Euler Flowmatch",
-      "hint": "Euler Flowmatch"
+      "hint": "euler flowmatch"
     },
     {
       "id": "",
       "label": "euler sgm",
       "localized": "Euler SGM",
-      "hint": "Euler SGM"
+      "hint": "euler sgm"
     },
     {
       "id": "",
       "label": "executionprovider.cpu",
-      "localized": "ExecutionProvider.CPU",
-      "hint": "ExecutionProvider.CPU"
+      "localized": "Executionprovider.cpu",
+      "hint": "executionprovider.cpu"
     },
     {
       "id": "",
       "label": "executionprovider.cuda",
-      "localized": "ExecutionProvider.CUDA",
-      "hint": "ExecutionProvider.CUDA"
+      "localized": "Executionprovider.cuda",
+      "hint": "executionprovider.cuda"
     },
     {
       "id": "",
       "label": "executionprovider.directml",
-      "localized": "ExecutionProvider.DirectML",
-      "hint": "ExecutionProvider.DirectML"
+      "localized": "Executionprovider.directml",
+      "hint": "executionprovider.directml"
     },
     {
       "id": "",
       "label": "executionprovider.migraphx",
-      "localized": "ExecutionProvider.MIGraphX",
-      "hint": "ExecutionProvider.MIGraphX"
+      "localized": "Executionprovider.migraphx",
+      "hint": "executionprovider.migraphx"
     },
     {
       "id": "",
       "label": "executionprovider.openvino",
-      "localized": "ExecutionProvider.OpenVINO",
-      "hint": "ExecutionProvider.OpenVINO"
+      "localized": "Executionprovider.openvino",
+      "hint": "executionprovider.openvino"
     },
     {
       "id": "",
       "label": "executionprovider.rocm",
-      "localized": "ExecutionProvider.ROCm",
-      "hint": "ExecutionProvider.ROCm"
+      "localized": "Executionprovider.rocm",
+      "hint": "executionprovider.rocm"
     },
     {
       "id": "",
       "label": "expandable segments",
       "localized": "Erweiterbare Segmente",
-      "hint": "Erweiterbare Segmente"
+      "hint": "erweiterbare Segmente"
     },
     {
       "id": "",
       "label": "exponential",
       "localized": "Exponentiell",
-      "hint": "Exponentiell"
+      "hint": "exponentiell"
+    },
+    {
+      "id": "",
+      "label": "export",
+      "localized": "Exportieren",
+      "hint": "exportieren"
     },
     {
       "id": "",
       "label": "exposure",
       "localized": "Belichtung",
-      "hint": "Belichtung"
+      "hint": "belichtung"
     },
     {
       "id": "",
       "label": "extra noise multiplier for img2img",
-      "localized": "Zusätzlicher Rauschmultiplikator für Img2Img",
-      "hint": "Zusätzlicher Rauschmultiplikator für Img2Img"
+      "localized": "Zusätzlicher Rauschmultiplikator für img2img",
+      "hint": "zusätzlicher Rauschmultiplikator für img2img"
     },
     {
       "id": "",
       "label": "extract lora",
-      "localized": "LoRA extrahieren",
-      "hint": "LoRA extrahieren"
+      "localized": "Lora extrahieren",
+      "hint": "lora extrahieren"
     },
     {
       "id": "",
       "label": "face",
       "localized": "Gesicht",
-      "hint": "Gesicht"
+      "hint": "gesicht"
     },
     {
       "id": "",
       "label": "face confidence",
-      "localized": "Gesichts-Konfidenz",
-      "hint": "Gesichts-Konfidenz"
+      "localized": "Gesichtserkennungssicherheit",
+      "hint": "gesichtserkennungssicherheit"
     },
     {
       "id": "",
       "label": "faceid model",
-      "localized": "FaceID-Modell",
-      "hint": "FaceID-Modell"
+      "localized": "FaceID Modell",
+      "hint": "FaceID Modell"
     },
     {
       "id": "",
       "label": "fall-off exponent (lower=higher detail)",
-      "localized": "Abfall-Exponent (niedriger=höhere Details)",
-      "hint": "Abfall-Exponent (niedriger=höhere Details)"
+      "localized": "Abfall-Exponent (niedriger = höhere Details)",
+      "hint": "Abfall-Exponent (niedriger = höhere Details)"
     },
     {
       "id": "",
       "label": "false",
       "localized": "Falsch",
-      "hint": "Falsch"
+      "hint": "falsch"
+    },
+    {
+      "id": "",
+      "label": "fast",
+      "localized": "Schnell",
+      "hint": "schnell"
     },
     {
       "id": "",
@@ -3398,61 +3710,61 @@
       "id": "",
       "label": "filename",
       "localized": "Dateiname",
-      "hint": "Dateiname"
+      "hint": "dateiname"
     },
     {
       "id": "",
       "label": "first-block cache enabled",
-      "localized": "First-Block-Cache aktiviert",
-      "hint": "First-Block-Cache aktiviert"
+      "localized": "First-Block Cache aktiviert",
+      "hint": "First-Block Cache aktiviert"
     },
     {
       "id": "",
       "label": "fixed unet precision",
       "localized": "Feste UNet-Präzision",
-      "hint": "Feste UNet-Präzision"
+      "hint": "feste UNet-Präzision"
     },
     {
       "id": "",
       "label": "flash attention",
-      "localized": "Flash-Aufmerksamkeit",
-      "hint": "Flash-Aufmerksamkeit"
+      "localized": "Flash Attention",
+      "hint": "Flash Attention"
     },
     {
       "id": "",
       "label": "flavors",
       "localized": "Varianten",
-      "hint": "Varianten"
+      "hint": "varianten"
     },
     {
       "id": "",
       "label": "flow shift",
-      "localized": "Flow-Verschiebung",
-      "hint": "Flow-Verschiebung"
+      "localized": "Flussverschiebung",
+      "hint": "flussverschiebung"
     },
     {
       "id": "",
       "label": "folder",
       "localized": "Ordner",
-      "hint": "Ordner"
+      "hint": "ordner"
     },
     {
       "id": "",
       "label": "folder for control generate",
-      "localized": "Ordner für Control Generate",
-      "hint": "Ordner für Control Generate"
+      "localized": "Ordner für ControlNet-Generierung",
+      "hint": "Ordner für ControlNet-Generierung"
     },
     {
       "id": "",
       "label": "folder for control grids",
-      "localized": "Ordner für Control Grids",
-      "hint": "Ordner für Control Grids"
+      "localized": "Ordner für ControlNet-Gitter",
+      "hint": "Ordner für ControlNet-Gitter"
     },
     {
       "id": "",
       "label": "folder for disk offload",
-      "localized": "Ordner für Disk Offload",
-      "hint": "Ordner für Disk Offload"
+      "localized": "Ordner für Festplattenauslagerung",
+      "hint": "Ordner für Festplattenauslagerung"
     },
     {
       "id": "",
@@ -3463,20 +3775,20 @@
     {
       "id": "",
       "label": "folder for image generate",
-      "localized": "Ordner für Bildgenerierung",
-      "hint": "Ordner für Bildgenerierung"
+      "localized": "Ordner für Bilderzeugung",
+      "hint": "Ordner für Bilderzeugung"
     },
     {
       "id": "",
       "label": "folder for img2img grids",
-      "localized": "Ordner für Img2Img-Grids",
-      "hint": "Ordner für Img2Img-Grids"
+      "localized": "Ordner für img2img-Gitter",
+      "hint": "Ordner für img2img-Gitter"
     },
     {
       "id": "",
       "label": "folder for init images",
-      "localized": "Ordner für Init-Bilder",
-      "hint": "Ordner für Init-Bilder"
+      "localized": "Ordner für Initialisierungsbilder",
+      "hint": "Ordner für Initialisierungsbilder"
     },
     {
       "id": "",
@@ -3487,8 +3799,8 @@
     {
       "id": "",
       "label": "folder for onnx cached models",
-      "localized": "Ordner für ONNX-Zwischenspeichermodelle",
-      "hint": "Ordner für ONNX-Zwischenspeichermodelle"
+      "localized": "Ordner für zwischengespeicherte ONNX-Modelle",
+      "hint": "Ordner für zwischengespeicherte ONNX-Modelle"
     },
     {
       "id": "",
@@ -3505,8 +3817,8 @@
     {
       "id": "",
       "label": "folder for processed images",
-      "localized": "Ordner für bearbeitete Bilder",
-      "hint": "Ordner für bearbeitete Bilder"
+      "localized": "Ordner für verarbeitete Bilder",
+      "hint": "Ordner für verarbeitete Bilder"
     },
     {
       "id": "",
@@ -3523,8 +3835,8 @@
     {
       "id": "",
       "label": "folder for txt2img grids",
-      "localized": "Ordner für txt2img-Raster",
-      "hint": "Ordner für txt2img-Raster"
+      "localized": "Ordner für txt2img-Gitter",
+      "hint": "Ordner für txt2img-Gitter"
     },
     {
       "id": "",
@@ -3577,8 +3889,8 @@
     {
       "id": "",
       "label": "folder with huggingface models",
-      "localized": "Ordner mit Hugging Face-Modellen",
-      "hint": "Ordner mit Hugging Face-Modellen"
+      "localized": "Ordner mit HuggingFace-Modellen",
+      "hint": "Ordner mit HuggingFace-Modellen"
     },
     {
       "id": "",
@@ -3631,8 +3943,8 @@
     {
       "id": "",
       "label": "folder with textual inversion embeddings",
-      "localized": "Ordner mit Textual Inversion Embeddings",
-      "hint": "Ordner mit Textual Inversion Embeddings"
+      "localized": "Ordner mit Textual-Inversion-Embeddings",
+      "hint": "Ordner mit Textual-Inversion-Embeddings"
     },
     {
       "id": "",
@@ -3662,19 +3974,19 @@
       "id": "",
       "label": "font color",
       "localized": "Schriftfarbe",
-      "hint": "Schriftfarbe"
+      "hint": "schriftfarbe"
     },
     {
       "id": "",
       "label": "font file",
       "localized": "Schriftartdatei",
-      "hint": "Schriftartdatei"
+      "hint": "schriftartdatei"
     },
     {
       "id": "",
       "label": "font size",
       "localized": "Schriftgröße",
-      "hint": "Schriftgröße"
+      "hint": "schriftgröße"
     },
     {
       "id": "",
@@ -3691,7 +4003,7 @@
     {
       "id": "",
       "label": "fp4",
-      "localized": "fp4",
+      "localized": "FP4",
       "hint": "fp4"
     },
     {
@@ -3704,7 +4016,13 @@
       "id": "",
       "label": "frames",
       "localized": "Frames",
-      "hint": "Frames"
+      "hint": "frames"
+    },
+    {
+      "id": "",
+      "label": "freeinit",
+      "localized": "FreeInit",
+      "hint": "FreeInit"
     },
     {
       "id": "",
@@ -3721,8 +4039,8 @@
     {
       "id": "",
       "label": "full vae",
-      "localized": "Vollständiges VAE",
-      "hint": "Vollständiges VAE"
+      "localized": "Volles VAE",
+      "hint": "Volles VAE"
     },
     {
       "id": "",
@@ -3733,32 +4051,32 @@
     {
       "id": "",
       "label": "fuse strength",
-      "localized": "Stärke der Fusionierung",
-      "hint": "Stärke der Fusionierung"
+      "localized": "Fusionsstärke",
+      "hint": "Fusionsstärke"
     },
     {
       "id": "",
       "label": "fused projections",
-      "localized": "Fusionierte Projektionen",
-      "hint": "Fusionierte Projektionen"
+      "localized": "Verschmolzene Projektionen",
+      "hint": "Verschmolzene Projektionen"
     },
     {
       "id": "",
-      "label": "Gallery",
+      "label": "gallery",
       "localized": "Galerie",
-      "hint": "Bildergalerie"
+      "hint": "galerie"
     },
     {
       "id": "",
       "label": "gamma",
       "localized": "Gamma",
-      "hint": "Gamma"
+      "hint": "gamma"
     },
     {
       "id": "",
       "label": "gamma corrected",
-      "localized": "Gamma-korrigiert",
-      "hint": "Gamma-korrigiert"
+      "localized": "Gamma korrigiert",
+      "hint": "Gamma korrigiert"
     },
     {
       "id": "",
@@ -3774,6 +4092,12 @@
     },
     {
       "id": "",
+      "label": "generation info",
+      "localized": "Generierungsinformationen",
+      "hint": "Generierungsinformationen"
+    },
+    {
+      "id": "",
       "label": "get changelog",
       "localized": "Änderungsprotokoll abrufen",
       "hint": "Änderungsprotokoll abrufen"
@@ -3782,31 +4106,31 @@
       "id": "",
       "label": "gpu",
       "localized": "GPU",
-      "hint": "GPU"
+      "hint": "gpu"
     },
     {
       "id": "",
       "label": "gradient",
       "localized": "Gradient",
-      "hint": "Gradient"
+      "hint": "gradient"
     },
     {
       "id": "",
       "label": "grid background color",
-      "localized": "Hintergrundfarbe des Rasters",
-      "hint": "Hintergrundfarbe des Rasters"
+      "localized": "Hintergrundfarbe des Gitters",
+      "hint": "Hintergrundfarbe des Gitters"
     },
     {
       "id": "",
       "label": "grid margins",
-      "localized": "Rasterränder",
-      "hint": "Rasterränder"
+      "localized": "Gitterränder",
+      "hint": "Gitterränder"
     },
     {
       "id": "",
       "label": "grid sections:",
-      "localized": "Rasterabschnitte:",
-      "hint": "Rasterabschnitte:"
+      "localized": "Gitterabschnitte:",
+      "hint": "Gitterabschnitte:"
     },
     {
       "id": "",
@@ -3818,37 +4142,43 @@
       "id": "",
       "label": "guidance",
       "localized": "Führung",
-      "hint": "Führung"
+      "hint": "führung"
     },
     {
       "id": "",
       "label": "guidance start",
-      "localized": "Start der Führung",
-      "hint": "Start der Führung"
+      "localized": "Führungsbeginn",
+      "hint": "Führungsbeginn"
     },
     {
       "id": "",
       "label": "guidance stop",
-      "localized": "Ende der Führung",
-      "hint": "Ende der Führung"
+      "localized": "Führungsende",
+      "hint": "Führungsende"
     },
     {
       "id": "",
       "label": "guidance strength",
-      "localized": "Stärke der Führung",
-      "hint": "Stärke der Führung"
+      "localized": "Führungsstärke",
+      "hint": "Führungsstärke"
     },
     {
       "id": "",
       "label": "hands",
       "localized": "Hände",
-      "hint": "Hände"
+      "hint": "hände"
     },
     {
       "id": "",
       "label": "hdr range",
       "localized": "HDR-Bereich",
       "hint": "HDR-Bereich"
+    },
+    {
+      "id": "",
+      "label": "hed",
+      "localized": "HED",
+      "hint": "HED"
     },
     {
       "id": "",
@@ -3859,20 +4189,20 @@
     {
       "id": "",
       "label": "height  before",
-      "localized": "Höhe vorher",
-      "hint": "Höhe vorher"
+      "localized": "Höhe davor",
+      "hint": "Höhe davor"
     },
     {
       "id": "",
       "label": "height  mask",
-      "localized": "Höhe Maske",
-      "hint": "Höhe Maske"
+      "localized": "Höhenmaske",
+      "hint": "Höhenmaske"
     },
     {
       "id": "",
       "label": "heun",
-      "localized": "Heun",
-      "hint": "Heun"
+      "localized": "heun",
+      "hint": "heun"
     },
     {
       "id": "",
@@ -3882,9 +4212,21 @@
     },
     {
       "id": "",
+      "label": "hibernate",
+      "localized": "Ruhezustand",
+      "hint": "Ruhezustand"
+    },
+    {
+      "id": "",
+      "label": "hide the custom checkpoint dropdown",
+      "localized": "Benutzerdefiniertes Checkpoint-Dropdown ausblenden",
+      "hint": "Benutzerdefiniertes Checkpoint-Dropdown ausblenden"
+    },
+    {
+      "id": "",
       "label": "hidet",
-      "localized": "Hidet",
-      "hint": "Hidet"
+      "localized": "hidet",
+      "hint": "hidet"
     },
     {
       "id": "",
@@ -3895,8 +4237,8 @@
     {
       "id": "",
       "label": "hires pass only",
-      "localized": "Nur Hi-Res-Durchgang",
-      "hint": "Nur Hi-Res-Durchgang"
+      "localized": "Nur Hi-Res-Pass",
+      "hint": "Nur Hi-Res-Pass"
     },
     {
       "id": "",
@@ -3912,33 +4254,33 @@
     },
     {
       "id": "",
-      "label": "huggingface",
-      "localized": "Hugging Face",
-      "hint": "Hugging Face"
-    },
-    {
-      "id": "",
       "label": "huggingface mirror",
-      "localized": "Hugging Face Mirror",
-      "hint": "Hugging Face Mirror"
+      "localized": "Huggingface-Mirror",
+      "hint": "Huggingface-Mirror"
     },
     {
       "id": "",
       "label": "huggingface token",
-      "localized": "Hugging Face Token",
-      "hint": "Hugging Face Token"
+      "localized": "Huggingface-Token",
+      "hint": "Huggingface-Token"
+    },
+    {
+      "id": "",
+      "label": "hunyuan",
+      "localized": "Hunyuan",
+      "hint": "Hunyuan"
+    },
+    {
+      "id": "",
+      "label": "il",
+      "localized": "il",
+      "hint": "il"
     },
     {
       "id": "",
       "label": "image height",
       "localized": "Bildhöhe",
       "hint": "Bildhöhe"
-    },
-    {
-      "id": "",
-      "label": "image paths",
-      "localized": "Bildpfade",
-      "hint": "Bildpfade"
     },
     {
       "id": "",
@@ -3949,20 +4291,20 @@
     {
       "id": "",
       "label": "image transparent color fill",
-      "localized": "Transparente Farbfüllung des Bildes",
-      "hint": "Transparente Farbfüllung des Bildes"
+      "localized": "Bild Transparente Farbfüllung",
+      "hint": "Bild Transparente Farbfüllung"
     },
     {
       "id": "",
       "label": "image watermark file",
-      "localized": "Bild-Wasserzeichen-Datei",
-      "hint": "Bild-Wasserzeichen-Datei"
+      "localized": "Bild Wasserzeichen Datei",
+      "hint": "Bild Wasserzeichen Datei"
     },
     {
       "id": "",
       "label": "image watermark position",
-      "localized": "Position des Bild-Wasserzeichens",
-      "hint": "Position des Bild-Wasserzeichens"
+      "localized": "Bild Wasserzeichen Position",
+      "hint": "Bild Wasserzeichen Position"
     },
     {
       "id": "",
@@ -3972,33 +4314,39 @@
     },
     {
       "id": "",
+      "label": "import",
+      "localized": "Importieren",
+      "hint": "Importieren"
+    },
+    {
+      "id": "",
       "label": "include images",
-      "localized": "Bilder einschließen",
-      "hint": "Bilder einschließen"
+      "localized": "Bilder einbeziehen",
+      "hint": "Bilder einbeziehen"
     },
     {
       "id": "",
       "label": "include main grid",
-      "localized": "Hauptraster einschließen",
-      "hint": "Hauptraster einschließen"
+      "localized": "Hauptgitter einbeziehen",
+      "hint": "Hauptgitter einbeziehen"
     },
     {
       "id": "",
       "label": "include mask in outputs",
-      "localized": "Maske in Ausgaben einschließen",
-      "hint": "Maske in Ausgaben einschließen"
+      "localized": "Maske in Ausgaben einbeziehen",
+      "hint": "Maske in Ausgaben einbeziehen"
     },
     {
       "id": "",
       "label": "include original image",
-      "localized": "Originalbild einschließen",
-      "hint": "Originalbild einschließen"
+      "localized": "Originalbild einbeziehen",
+      "hint": "Originalbild einbeziehen"
     },
     {
       "id": "",
       "label": "include sub grids",
-      "localized": "Unterraster einschließen",
-      "hint": "Unterraster einschließen"
+      "localized": "Untergitter einbeziehen",
+      "hint": "Untergitter einbeziehen"
     },
     {
       "id": "",
@@ -4009,8 +4357,14 @@
     {
       "id": "",
       "label": "info",
-      "localized": "Informationen",
-      "hint": "Anwendungsprotokoll und Dokumentation"
+      "localized": "Info",
+      "hint": "Info"
+    },
+    {
+      "id": "",
+      "label": "info object",
+      "localized": "Info-Objekt",
+      "hint": "Info-Objekt"
     },
     {
       "id": "",
@@ -4027,14 +4381,14 @@
     {
       "id": "",
       "label": "inpainting include greyscale mask in results",
-      "localized": "Graustufenmaske in Inpainting-Ergebnissen einschließen",
-      "hint": "Graustufenmaske in Inpainting-Ergebnissen einschließen"
+      "localized": "Inpainting: Graustufenmaske in Ergebnissen einbeziehen",
+      "hint": "Inpainting: Graustufenmaske in Ergebnissen einbeziehen"
     },
     {
       "id": "",
       "label": "inpainting include masked composite in results",
-      "localized": "Maskiertes Komposit in Inpainting-Ergebnissen einschließen",
-      "hint": "Maskiertes Komposit in Inpainting-Ergebnissen einschließen"
+      "localized": "Inpainting: Maskierte Komposition in Ergebnissen einbeziehen",
+      "hint": "Inpainting: Maskierte Komposition in Ergebnissen einbeziehen"
     },
     {
       "id": "",
@@ -4045,8 +4399,8 @@
     {
       "id": "",
       "label": "intermediates",
-      "localized": "Zwischenschritte",
-      "hint": "Zwischenschritte"
+      "localized": "Zwischenprodukte",
+      "hint": "Zwischenprodukte"
     },
     {
       "id": "",
@@ -4105,8 +4459,8 @@
     {
       "id": "",
       "label": "ipndm",
-      "localized": "ipndm",
-      "hint": "ipndm"
+      "localized": "IPNDM",
+      "hint": "IPNDM"
     },
     {
       "id": "",
@@ -4117,8 +4471,8 @@
     {
       "id": "",
       "label": "item padding",
-      "localized": "Elementauffüllung",
-      "hint": "Elementauffüllung"
+      "localized": "Elementabstand",
+      "hint": "Elementabstand"
     },
     {
       "id": "",
@@ -4135,26 +4489,38 @@
     {
       "id": "",
       "label": "karras",
-      "localized": "karras",
-      "hint": "karras"
+      "localized": "Karras",
+      "hint": "Karras"
     },
     {
       "id": "",
       "label": "kdpm2",
-      "localized": "kdpm2",
-      "hint": "kdpm2"
+      "localized": "KDPM2",
+      "hint": "KDPM2"
     },
     {
       "id": "",
       "label": "kdpm2 a",
-      "localized": "kdpm2 a",
-      "hint": "kdpm2 a"
+      "localized": "KDPM2 A",
+      "hint": "KDPM2 A"
+    },
+    {
+      "id": "",
+      "label": "keep forever",
+      "localized": "Für immer behalten",
+      "hint": "Für immer behalten"
     },
     {
       "id": "",
       "label": "keep incomplete images",
       "localized": "Unvollständige Bilder behalten",
       "hint": "Unvollständige Bilder behalten"
+    },
+    {
+      "id": "",
+      "label": "key",
+      "localized": "Schlüssel",
+      "hint": "Schlüssel"
     },
     {
       "id": "",
@@ -4165,38 +4531,38 @@
     {
       "id": "",
       "label": "latent history size",
-      "localized": "Größe des latenten Verlaufs",
-      "hint": "Größe des latenten Verlaufs"
+      "localized": "Latent-Verlaufsgröße",
+      "hint": "Latent-Verlaufsgröße"
     },
     {
       "id": "",
       "label": "latent mode",
-      "localized": "Latenter Modus",
-      "hint": "Latenter Modus"
+      "localized": "Latent-Modus",
+      "hint": "Latent-Modus"
     },
     {
       "id": "",
       "label": "layer scales",
-      "localized": "Layerskala",
-      "hint": "Layerskala"
+      "localized": "Layer-Skalen",
+      "hint": "Layer-Skalen"
     },
     {
       "id": "",
       "label": "layerwise casting storage",
-      "localized": "Schichtweise Casting-Speicherung",
-      "hint": "Schichtweise Casting-Speicherung"
+      "localized": "Layerweise Casting-Speicherung",
+      "hint": "Layerweise Casting-Speicherung"
     },
     {
       "id": "",
       "label": "layerwise non-blocking operations",
-      "localized": "Schichtweise nicht-blockierende Operationen",
-      "hint": "Schichtweise nicht-blockierende Operationen"
+      "localized": "Layerweise nicht-blockierende Operationen",
+      "hint": "Layerweise nicht-blockierende Operationen"
     },
     {
       "id": "",
       "label": "lcm",
-      "localized": "lcm",
-      "hint": "lcm"
+      "localized": "LCM",
+      "hint": "LCM"
     },
     {
       "id": "",
@@ -4224,6 +4590,12 @@
     },
     {
       "id": "",
+      "label": "leres depth",
+      "localized": "LeReS Tiefe",
+      "hint": "LeReS Tiefe"
+    },
+    {
+      "id": "",
       "label": "level",
       "localized": "Level",
       "hint": "Level"
@@ -4237,8 +4609,14 @@
     {
       "id": "",
       "label": "light",
-      "localized": "Leicht",
-      "hint": "Leicht"
+      "localized": "Licht",
+      "hint": "Licht"
+    },
+    {
+      "id": "",
+      "label": "lineart",
+      "localized": "LineArt",
+      "hint": "LineArt"
     },
     {
       "id": "",
@@ -4267,8 +4645,8 @@
     {
       "id": "",
       "label": "lmsd",
-      "localized": "lmsd",
-      "hint": "lmsd"
+      "localized": "LMSD",
+      "hint": "LMSD"
     },
     {
       "id": "",
@@ -4279,20 +4657,20 @@
     {
       "id": "",
       "label": "load model directly to gpu",
-      "localized": "Modell direkt in die GPU laden",
-      "hint": "Modell direkt in die GPU laden"
+      "localized": "Modell direkt auf die GPU laden",
+      "hint": "Modell direkt auf die GPU laden"
     },
     {
       "id": "",
       "label": "loaded lora",
-      "localized": "Geladene Lora",
-      "hint": "Geladene Lora"
+      "localized": "Geladene LoRA",
+      "hint": "Geladene LoRA"
     },
     {
       "id": "",
       "label": "logsnr",
-      "localized": "logsnr",
-      "hint": "logsnr"
+      "localized": "LogSNR",
+      "hint": "LogSNR"
     },
     {
       "id": "",
@@ -4303,44 +4681,32 @@
     {
       "id": "",
       "label": "lora add hash info to metadata",
-      "localized": "Lora Hash-Info zu Metadaten hinzufügen",
-      "hint": "Lora Hash-Info zu Metadaten hinzufügen"
+      "localized": "LoRA: Hash-Informationen zu Metadaten hinzufügen",
+      "hint": "LoRA: Hash-Informationen zu Metadaten hinzufügen"
     },
     {
       "id": "",
       "label": "lora auto-apply tags",
-      "localized": "Lora-Tags automatisch anwenden",
-      "hint": "Lora-Tags automatisch anwenden"
-    },
-    {
-      "id": "",
-      "label": "lora fuse directly to model",
-      "localized": "Lora direkt in das Modell integrieren",
-      "hint": "Lora direkt in das Modell integrieren"
-    },
-    {
-      "id": "",
-      "label": "lora load using diffusers method",
-      "localized": "Lora mit der Diffusers-Methode laden",
-      "hint": "Lora mit der Diffusers-Methode laden"
+      "localized": "LoRA: Tags automatisch anwenden",
+      "hint": "LoRA: Tags automatisch anwenden"
     },
     {
       "id": "",
       "label": "lora load using diffusers method for selected models",
-      "localized": "Lora mit der Diffusers-Methode für ausgewählte Modelle laden",
-      "hint": "Lora mit der Diffusers-Methode für ausgewählte Modelle laden"
+      "localized": "LoRA: Laden mit der Diffusers-Methode für ausgewählte Modelle",
+      "hint": "LoRA: Laden mit der Diffusers-Methode für ausgewählte Modelle"
     },
     {
       "id": "",
       "label": "lora load using legacy method",
-      "localized": "Lora mit der Legacy-Methode laden",
-      "hint": "Lora mit der Legacy-Methode laden"
+      "localized": "LoRA: Laden mit der Legacy-Methode",
+      "hint": "LoRA: Laden mit der Legacy-Methode"
     },
     {
       "id": "",
       "label": "lora target filename",
-      "localized": "Lora-Zieldateiname",
-      "hint": "Lora-Zieldateiname"
+      "localized": "LoRA-Zieldateiname",
+      "hint": "LoRA-Zieldateiname"
     },
     {
       "id": "",
@@ -4357,8 +4723,8 @@
     {
       "id": "",
       "label": "ltx model",
-      "localized": "ltx-Modell",
-      "hint": "ltx-Modell"
+      "localized": "LTX-Modell",
+      "hint": "LTX-Modell"
     },
     {
       "id": "",
@@ -4368,9 +4734,9 @@
     },
     {
       "id": "",
-      "label": "mask",
-      "localized": "Maske",
-      "hint": "Maske"
+      "label": "marigold depth",
+      "localized": "Ringelblumen-Tiefe",
+      "hint": "Ringelblumen-Tiefe"
     },
     {
       "id": "",
@@ -4417,74 +4783,80 @@
     {
       "id": "",
       "label": "max flavors",
-      "localized": "Maximale Anzahl Varianten",
-      "hint": "Maximale Anzahl Varianten"
+      "localized": "Maximale Varianten",
+      "hint": "maximale Varianten"
     },
     {
       "id": "",
       "label": "max guidance",
       "localized": "Maximale Führung",
-      "hint": "Maximale Führung"
+      "hint": "maximale Führung"
     },
     {
       "id": "",
       "label": "max length",
       "localized": "Maximale Länge",
-      "hint": "Maximale Länge"
+      "hint": "maximale Länge"
     },
     {
       "id": "",
       "label": "max object size",
       "localized": "Maximale Objektgröße",
-      "hint": "Maximale Objektgröße"
+      "hint": "maximale Objektgröße"
     },
     {
       "id": "",
       "label": "max range",
       "localized": "Maximaler Bereich",
-      "hint": "Maximaler Bereich"
+      "hint": "maximaler Bereich"
     },
     {
       "id": "",
       "label": "max words",
-      "localized": "Maximale Anzahl Wörter",
-      "hint": "Maximale Anzahl Wörter"
+      "localized": "Maximale Wörter",
+      "hint": "maximale Wörter"
     },
     {
       "id": "",
       "label": "max-autotune",
-      "localized": "max-autotune",
-      "hint": "max-autotune"
+      "localized": "Max-Autotuning",
+      "hint": "Max-Autotuning"
     },
     {
       "id": "",
       "label": "max-autotune-no-cudagraphs",
-      "localized": "max-autotune-no-cudagraphs",
-      "hint": "max-autotune-no-cudagraphs"
+      "localized": "Max-Autotuning ohne CUDA-Graphen",
+      "hint": "Max-Autotuning ohne CUDA-Graphen"
     },
     {
       "id": "",
       "label": "maximum image size (mp)",
       "localized": "Maximale Bildgröße (MP)",
-      "hint": "Maximale Bildgröße (MP)"
+      "hint": "maximale Bildgröße (MP)"
     },
     {
       "id": "",
       "label": "maximum number of units",
       "localized": "Maximale Anzahl an Einheiten",
-      "hint": "Maximale Anzahl an Einheiten"
+      "hint": "maximale Anzahl an Einheiten"
     },
     {
       "id": "",
       "label": "maximum rank",
       "localized": "Maximaler Rang",
-      "hint": "Maximaler Rang"
+      "hint": "maximaler Rang"
+    },
+    {
+      "id": "",
+      "label": "mediapipe face",
+      "localized": "Mediapipe Gesicht",
+      "hint": "Mediapipe Gesicht"
     },
     {
       "id": "",
       "label": "medium",
-      "localized": "Mittel",
-      "hint": "Mittel"
+      "localized": "Medium",
+      "hint": "Medium"
     },
     {
       "id": "",
@@ -4501,8 +4873,8 @@
     {
       "id": "",
       "label": "memory attention",
-      "localized": "Speicheraufmerksamkeit",
-      "hint": "Speicheraufmerksamkeit"
+      "localized": "Speicher-Aufmerksamkeit",
+      "hint": "Speicher-Aufmerksamkeit"
     },
     {
       "id": "",
@@ -4519,14 +4891,14 @@
     {
       "id": "",
       "label": "merge",
-      "localized": "Zusammenführen",
-      "hint": "Zusammenführen"
+      "localized": "Verschmelzen",
+      "hint": "Verschmelzen"
     },
     {
       "id": "",
       "label": "merge alpha",
-      "localized": "Alpha zusammenführen",
-      "hint": "Alpha zusammenführen"
+      "localized": "Alpha verschmelzen",
+      "hint": "Alpha verschmelzen"
     },
     {
       "id": "",
@@ -4549,32 +4921,50 @@
     {
       "id": "",
       "label": "method mask",
-      "localized": "Maskenmethode",
-      "hint": "Maskenmethode"
+      "localized": "Methodenmaske",
+      "hint": "Methodenmaske"
+    },
+    {
+      "id": "",
+      "label": "midas depth",
+      "localized": "Midas Tiefe",
+      "hint": "Midas Tiefe"
     },
     {
       "id": "",
       "label": "migraphx",
-      "localized": "migraphx",
-      "hint": "migraphx"
+      "localized": "Migraphx",
+      "hint": "Migraphx"
     },
     {
       "id": "",
       "label": "min flavors",
-      "localized": "Minimale Anzahl Varianten",
-      "hint": "Minimale Anzahl Varianten"
+      "localized": "Minimale Varianten",
+      "hint": "minimale Varianten"
     },
     {
       "id": "",
       "label": "min guidance",
       "localized": "Minimale Führung",
-      "hint": "Minimale Führung"
+      "hint": "minimale Führung"
     },
     {
       "id": "",
       "label": "min object size",
       "localized": "Minimale Objektgröße",
-      "hint": "Minimale Objektgröße"
+      "hint": "minimale Objektgröße"
+    },
+    {
+      "id": "",
+      "label": "mine",
+      "localized": "Meine",
+      "hint": "Meine"
+    },
+    {
+      "id": "",
+      "label": "mlsd",
+      "localized": "MLSD",
+      "hint": "MLSD"
     },
     {
       "id": "",
@@ -4597,8 +4987,8 @@
     {
       "id": "",
       "label": "mode mask",
-      "localized": "Maskenmodus",
-      "hint": "Maskenmodus"
+      "localized": "Modusmaske",
+      "hint": "Modusmaske"
     },
     {
       "id": "",
@@ -4626,39 +5016,27 @@
     },
     {
       "id": "",
-      "label": "model compile",
-      "localized": "Modell kompilieren",
-      "hint": "Modell kompilieren"
-    },
-    {
-      "id": "",
       "label": "model compile fullgraph",
-      "localized": "Modell vollständigen Graphen kompilieren",
-      "hint": "Modell vollständigen Graphen kompilieren"
+      "localized": "Modell-Kompilierung vollständiger Graph",
+      "hint": "Modell-Kompilierung vollständiger Graph"
     },
     {
       "id": "",
       "label": "model compile suppress errors",
-      "localized": "Fehler bei der Modellkompilierung unterdrücken",
-      "hint": "Fehler bei der Modellkompilierung unterdrücken"
+      "localized": "Modell-Kompilierung Fehler unterdrücken",
+      "hint": "Modell-Kompilierung Fehler unterdrücken"
     },
     {
       "id": "",
       "label": "model compile verbose mode",
-      "localized": "Modellkompilierung im ausführlichen Modus",
-      "hint": "Modellkompilierung im ausführlichen Modus"
+      "localized": "Modell-Kompilierung ausführlicher Modus",
+      "hint": "Modell-Kompilierung ausführlicher Modus"
     },
     {
       "id": "",
       "label": "model info",
-      "localized": "Modellinfo",
-      "hint": "Modellinfo"
-    },
-    {
-      "id": "",
-      "label": "model load using streams",
-      "localized": "Modell mit Streams laden",
-      "hint": "Modell mit Streams laden"
+      "localized": "Modellinformationen",
+      "hint": "Modellinformationen"
     },
     {
       "id": "",
@@ -4671,12 +5049,6 @@
       "label": "model name",
       "localized": "Modellname",
       "hint": "Modellname"
-    },
-    {
-      "id": "",
-      "label": "model pipeline",
-      "localized": "Modellpipeline",
-      "hint": "Modellpipeline"
     },
     {
       "id": "",
@@ -4698,15 +5070,9 @@
     },
     {
       "id": "",
-      "label": "models & loading",
-      "localized": "Modelle & Laden",
-      "hint": "Modelle & Laden"
-    },
-    {
-      "id": "",
       "label": "modern",
       "localized": "Modern",
-      "hint": "modern"
+      "hint": "Modern"
     },
     {
       "id": "",
@@ -4723,32 +5089,32 @@
     {
       "id": "",
       "label": "motion level",
-      "localized": "Bewegungslevel",
-      "hint": "Bewegungslevel"
+      "localized": "Bewegungsgrad",
+      "hint": "Bewegungsgrad"
     },
     {
       "id": "",
       "label": "move base model to cpu when using refiner",
-      "localized": "Verschiebe Basismodell zur CPU, wenn Refiner verwendet wird",
-      "hint": "Verschiebe Basismodell zur CPU, wenn Refiner verwendet wird"
+      "localized": "Basismodell zur CPU verschieben, wenn Refiner verwendet wird",
+      "hint": "Basismodell zur CPU verschieben, wenn Refiner verwendet wird"
     },
     {
       "id": "",
       "label": "move base model to cpu when using vae",
-      "localized": "Verschiebe Basismodell zur CPU, wenn VAE verwendet wird",
-      "hint": "Verschiebe Basismodell zur CPU, wenn VAE verwendet wird"
+      "localized": "Basismodell zur CPU verschieben, wenn VAE verwendet wird",
+      "hint": "Basismodell zur CPU verschieben, wenn VAE verwendet wird"
     },
     {
       "id": "",
       "label": "move detailer model to cpu when complete",
-      "localized": "Verschiebe Detaillierungsmodell zur CPU nach Abschluss",
-      "hint": "Verschiebe Detaillierungsmodell zur CPU nach Abschluss"
+      "localized": "Detailer-Modell nach Abschluss zur CPU verschieben",
+      "hint": "Detailer-Modell nach Abschluss zur CPU verschieben"
     },
     {
       "id": "",
       "label": "move refiner model to cpu when not in use",
-      "localized": "Verschiebe Refiner-Modell zur CPU, wenn es nicht verwendet wird",
-      "hint": "Verschiebe Refiner-Modell zur CPU, wenn es nicht verwendet wird"
+      "localized": "Refiner-Modell zur CPU verschieben, wenn es nicht verwendet wird",
+      "hint": "Refiner-Modell zur CPU verschieben, wenn es nicht verwendet wird"
     },
     {
       "id": "",
@@ -4765,8 +5131,8 @@
     {
       "id": "",
       "label": "multistep restore",
-      "localized": "Mehrschrittige Wiederherstellung",
-      "hint": "Mehrschrittige Wiederherstellung"
+      "localized": "Mehrstufige Wiederherstellung",
+      "hint": "Mehrstufige Wiederherstellung"
     },
     {
       "id": "",
@@ -4837,8 +5203,8 @@
     {
       "id": "",
       "label": "noise multiplier for image processing",
-      "localized": "Rauschmultiplikator für die Bildbearbeitung",
-      "hint": "Rauschmultiplikator für die Bildbearbeitung"
+      "localized": "Rauschmultiplikator für die Bildverarbeitung",
+      "hint": "Rauschmultiplikator für die Bildverarbeitung"
     },
     {
       "id": "",
@@ -4914,9 +5280,9 @@
     },
     {
       "id": "",
-      "label": "onnx execution provider",
-      "localized": "ONNX Execution Provider",
-      "hint": "ONNX Execution Provider"
+      "label": "openbody",
+      "localized": "OpenBody",
+      "hint": "OpenBody"
     },
     {
       "id": "",
@@ -4927,14 +5293,14 @@
     {
       "id": "",
       "label": "openvino disable memory cleanup after compile",
-      "localized": "OpenVINO Deaktiviert Speicherbereinigung nach dem Kompilieren",
-      "hint": "OpenVINO Deaktiviert Speicherbereinigung nach dem Kompilieren"
+      "localized": "OpenVINO Deaktiviert Speicherbereinigung nach Kompilierung",
+      "hint": "OpenVINO Deaktiviert Speicherbereinigung nach Kompilierung"
     },
     {
       "id": "",
       "label": "openvino disable model caching",
-      "localized": "OpenVINO Deaktiviert Modell-Caching",
-      "hint": "OpenVINO Deaktiviert Modell-Caching"
+      "localized": "OpenVINO Deaktiviert Modellzwischenspeicherung",
+      "hint": "OpenVINO Deaktiviert Modellzwischenspeicherung"
     },
     {
       "id": "",
@@ -4953,6 +5319,12 @@
       "label": "optional image description",
       "localized": "Optionale Bildbeschreibung",
       "hint": "Optionale Bildbeschreibung"
+    },
+    {
+      "id": "",
+      "label": "optional init image or video",
+      "localized": "Optionales Initialisierungsbild oder -video",
+      "hint": "Optionales Initialisierungsbild oder -video"
     },
     {
       "id": "",
@@ -5035,8 +5407,8 @@
     {
       "id": "",
       "label": "padding",
-      "localized": "Padding",
-      "hint": "Padding"
+      "localized": "Auffüllung",
+      "hint": "Auffüllung"
     },
     {
       "id": "",
@@ -5061,6 +5433,12 @@
       "label": "path to notification sound",
       "localized": "Pfad zum Benachrichtigungston",
       "hint": "Pfad zum Benachrichtigungston"
+    },
+    {
+      "id": "",
+      "label": "peft",
+      "localized": "PEFT",
+      "hint": "PEFT"
     },
     {
       "id": "",
@@ -5089,8 +5467,8 @@
     {
       "id": "",
       "label": "perform warmup",
-      "localized": "Warmup durchführen",
-      "hint": "Warmup durchführen"
+      "localized": "Warm-up durchführen",
+      "hint": "Warm-up durchführen"
     },
     {
       "id": "",
@@ -5106,15 +5484,15 @@
     },
     {
       "id": "",
-      "label": "pipeline",
-      "localized": "Pipeline",
-      "hint": "Pipeline"
+      "label": "pidinet",
+      "localized": "PIDINet",
+      "hint": "PIDINet"
     },
     {
       "id": "",
-      "label": "pipeline modifiers",
-      "localized": "Pipeline-Modifikatoren",
-      "hint": "Pipeline-Modifikatoren"
+      "label": "pipeline",
+      "localized": "Pipeline",
+      "hint": "Pipeline"
     },
     {
       "id": "",
@@ -5130,9 +5508,15 @@
     },
     {
       "id": "",
+      "label": "play",
+      "localized": "Abspielen",
+      "hint": "Abspielen"
+    },
+    {
+      "id": "",
       "label": "play a notification upon completion",
-      "localized": "Spiele eine Benachrichtigung ab, wenn der Vorgang abgeschlossen ist",
-      "hint": "Spiele eine Benachrichtigung ab, wenn der Vorgang abgeschlossen ist"
+      "localized": "Benachrichtigung bei Abschluss abspielen",
+      "hint": "Benachrichtigung bei Abschluss abspielen"
     },
     {
       "id": "",
@@ -5148,9 +5532,15 @@
     },
     {
       "id": "",
+      "label": "pony",
+      "localized": "Pony",
+      "hint": "Pony"
+    },
+    {
+      "id": "",
       "label": "pose confidence",
-      "localized": "Pose-Konfidenz",
-      "hint": "Pose-Konfidenz"
+      "localized": "Posen-Konfidenz",
+      "hint": "Posen-Konfidenz"
     },
     {
       "id": "",
@@ -5166,9 +5556,15 @@
     },
     {
       "id": "",
+      "label": "postprocess upscale",
+      "localized": "Nachbearbeitung Hochskalieren",
+      "hint": "Nachbearbeitung Hochskalieren"
+    },
+    {
+      "id": "",
       "label": "postprocessing operation order",
-      "localized": "Reihenfolge der Nachbearbeitungsschritte",
-      "hint": "Reihenfolge der Nachbearbeitungsschritte"
+      "localized": "Reihenfolge der Nachbearbeitungsoperationen",
+      "hint": "Reihenfolge der Nachbearbeitungsoperationen"
     },
     {
       "id": "",
@@ -5215,8 +5611,8 @@
     {
       "id": "",
       "label": "primary model",
-      "localized": "Primäres Modell",
-      "hint": "Primäres Modell"
+      "localized": "Primärmodell",
+      "hint": "Primärmodell"
     },
     {
       "id": "",
@@ -5227,8 +5623,14 @@
     {
       "id": "",
       "label": "processor move to cpu after use",
-      "localized": "Prozessor nach Gebrauch zur CPU verschieben",
-      "hint": "Prozessor nach Gebrauch zur CPU verschieben"
+      "localized": "Prozessor nach Verwendung auf CPU verschieben",
+      "hint": "Prozessor nach Verwendung auf CPU verschieben"
+    },
+    {
+      "id": "",
+      "label": "processor settings",
+      "localized": "Prozessoreinstellungen",
+      "hint": "Prozessoreinstellungen"
     },
     {
       "id": "",
@@ -5245,8 +5647,8 @@
     {
       "id": "",
       "label": "prompt ex",
-      "localized": "Prompt EX",
-      "hint": "Prompt EX"
+      "localized": "Prompt Ex",
+      "hint": "Prompt Ex"
     },
     {
       "id": "",
@@ -5287,8 +5689,8 @@
     {
       "id": "",
       "label": "quad",
-      "localized": "Quadrat",
-      "hint": "Quadrat"
+      "localized": "Quad",
+      "hint": "Quad"
     },
     {
       "id": "",
@@ -5301,12 +5703,6 @@
       "label": "quantization mode",
       "localized": "Quantisierungsmodus",
       "hint": "Quantisierungsmodus"
-    },
-    {
-      "id": "",
-      "label": "quantization settings",
-      "localized": "Quantisierungseinstellungen",
-      "hint": "Quantisierungseinstellungen"
     },
     {
       "id": "",
@@ -5329,8 +5725,8 @@
     {
       "id": "",
       "label": "random seeds",
-      "localized": "Zufallssamen",
-      "hint": "Zufallssamen"
+      "localized": "Zufällige Seeds",
+      "hint": "Zufällige Seeds"
     },
     {
       "id": "",
@@ -5341,8 +5737,8 @@
     {
       "id": "",
       "label": "rebase",
-      "localized": "Neubasisierung",
-      "hint": "Neubasisierung"
+      "localized": "Rebase",
+      "hint": "Rebase"
     },
     {
       "id": "",
@@ -5353,20 +5749,26 @@
     {
       "id": "",
       "label": "redux prompt strength",
-      "localized": "Redux Prompt Stärke",
-      "hint": "Redux Prompt Stärke"
+      "localized": "Redux Prompt-Stärke",
+      "hint": "Redux Prompt-Stärke"
     },
     {
       "id": "",
       "label": "reference adain weight",
-      "localized": "Referenz AdaIN Gewichtung",
-      "hint": "Referenz AdaIN Gewichtung"
+      "localized": "Referenz-Adain-Gewicht",
+      "hint": "Referenz-Adain-Gewicht"
     },
     {
       "id": "",
       "label": "reference query weight",
-      "localized": "Referenzabfragegewichtung",
-      "hint": "Referenzabfragegewichtung"
+      "localized": "Referenz-Query-Gewicht",
+      "hint": "Referenz-Query-Gewicht"
+    },
+    {
+      "id": "",
+      "label": "reference unit 1",
+      "localized": "Referenzeinheit 1",
+      "hint": "Referenzeinheit 1"
     },
     {
       "id": "",
@@ -5376,9 +5778,15 @@
     },
     {
       "id": "",
+      "label": "refresh",
+      "localized": "Aktualisieren",
+      "hint": "Aktualisieren"
+    },
+    {
+      "id": "",
       "label": "refresh bench",
-      "localized": "Benchmark aktualisieren",
-      "hint": "Benchmark aktualisieren"
+      "localized": "Bench aktualisieren",
+      "hint": "Bench aktualisieren"
     },
     {
       "id": "",
@@ -5403,6 +5811,12 @@
       "label": "reinstall",
       "localized": "Neu installieren",
       "hint": "Neu installieren"
+    },
+    {
+      "id": "",
+      "label": "remove background",
+      "localized": "Hintergrund entfernen",
+      "hint": "Hintergrund entfernen"
     },
     {
       "id": "",
@@ -5454,15 +5868,21 @@
     },
     {
       "id": "",
+      "label": "requeue failed",
+      "localized": "Fehlgeschlagene neu einreihen",
+      "hint": "Fehlgeschlagene neu einreihen"
+    },
+    {
+      "id": "",
       "label": "rescale",
-      "localized": "Reskalieren",
-      "hint": "Reskalieren"
+      "localized": "Neu skalieren",
+      "hint": "Neu skalieren"
     },
     {
       "id": "",
       "label": "rescale betas with zero terminal snr",
-      "localized": "Betas mit terminalem Null-SNR reskalieren",
-      "hint": "Betas mit terminalem Null-SNR reskalieren"
+      "localized": "Betas mit terminalem SNR von Null neu skalieren",
+      "hint": "Betas mit terminalem SNR von Null neu skalieren"
     },
     {
       "id": "",
@@ -5473,8 +5893,8 @@
     {
       "id": "",
       "label": "residual diff threshold",
-      "localized": "Schwellenwert für Residualdifferenz",
-      "hint": "Schwellenwert für Residualdifferenz"
+      "localized": "Schwellenwert für Restdifferenz",
+      "hint": "Schwellenwert für Restdifferenz"
     },
     {
       "id": "",
@@ -5484,15 +5904,27 @@
     },
     {
       "id": "",
+      "label": "resize method",
+      "localized": "Methode zur Größenänderung",
+      "hint": "Methode zur Größenänderung"
+    },
+    {
+      "id": "",
       "label": "resize mode",
-      "localized": "Modus für die Größenänderung",
-      "hint": "Modus für die Größenänderung"
+      "localized": "Modus zur Größenänderung",
+      "hint": "Modus zur Größenänderung"
     },
     {
       "id": "",
       "label": "resize scale",
-      "localized": "Skalierung für die Größenänderung",
-      "hint": "Skalierung für die Größenänderung"
+      "localized": "Skalierung der Größenänderung",
+      "hint": "Skalierung der Größenänderung"
+    },
+    {
+      "id": "",
+      "label": "restart",
+      "localized": "Neustart",
+      "hint": "Neustart"
     },
     {
       "id": "",
@@ -5502,9 +5934,27 @@
     },
     {
       "id": "",
+      "label": "restore faces: codeformer",
+      "localized": "Gesichter wiederherstellen: CodeFormer",
+      "hint": "Gesichter wiederherstellen: CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "restore faces: gfpgan",
+      "localized": "Gesichter wiederherstellen: GFPGAN",
+      "hint": "Gesichter wiederherstellen: GFPGAN"
+    },
+    {
+      "id": "",
       "label": "restore pipe on end",
       "localized": "Pipeline am Ende wiederherstellen",
       "hint": "Pipeline am Ende wiederherstellen"
+    },
+    {
+      "id": "",
+      "label": "resume",
+      "localized": "Fortsetzen",
+      "hint": "Fortsetzen"
     },
     {
       "id": "",
@@ -5527,8 +5977,8 @@
     {
       "id": "",
       "label": "root model folder",
-      "localized": "Stammordner für Modelle",
-      "hint": "Stammordner für Modelle"
+      "localized": "Stammmodellordner",
+      "hint": "Stammmodellordner"
     },
     {
       "id": "",
@@ -5569,14 +6019,14 @@
     {
       "id": "",
       "label": "same as primary",
-      "localized": "Gleich wie primär",
-      "hint": "Gleich wie primär"
+      "localized": "Wie primär",
+      "hint": "Wie primär"
     },
     {
       "id": "",
       "label": "same latent",
-      "localized": "Gleiches Latent",
-      "hint": "Gleiches Latent"
+      "localized": "Gleicher latenter Raum",
+      "hint": "Gleicher latenter Raum"
     },
     {
       "id": "",
@@ -5653,8 +6103,8 @@
     {
       "id": "",
       "label": "save image before hires",
-      "localized": "Bild vor Hires Fix speichern",
-      "hint": "Bild vor Hires Fix speichern"
+      "localized": "Bild vor Hires-Fix speichern",
+      "hint": "Bild vor Hires-Fix speichern"
     },
     {
       "id": "",
@@ -5683,8 +6133,8 @@
     {
       "id": "",
       "label": "save inpainting masked composite",
-      "localized": "Inpainting Masked Composite speichern",
-      "hint": "Inpainting Masked Composite speichern"
+      "localized": "Inpainting Masken-Komposit speichern",
+      "hint": "Inpainting Masken-Komposit speichern"
     },
     {
       "id": "",
@@ -5713,14 +6163,14 @@
     {
       "id": "",
       "label": "scale  after",
-      "localized": "Skalieren nach",
-      "hint": "Skalieren nach"
+      "localized": "Skalierung nach",
+      "hint": "Skalierung nach"
     },
     {
       "id": "",
       "label": "scale  before",
-      "localized": "Skalieren vorher",
-      "hint": "Skalieren vorher"
+      "localized": "Skalierung vor",
+      "hint": "Skalierung vor"
     },
     {
       "id": "",
@@ -5737,20 +6187,74 @@
     {
       "id": "",
       "label": "score",
-      "localized": "Punktzahl",
-      "hint": "Punktzahl"
+      "localized": "Score",
+      "hint": "Score"
     },
     {
       "id": "",
       "label": "score threshold",
-      "localized": "Punktzahlschwelle",
-      "hint": "Punktzahlschwelle"
+      "localized": "Score-Schwellenwert",
+      "hint": "Score-Schwellenwert"
     },
     {
       "id": "",
       "label": "scribble",
       "localized": "Gekritzel",
       "hint": "Gekritzel"
+    },
+    {
+      "id": "",
+      "label": "sd15-attire",
+      "localized": "SD15-Kleidung",
+      "hint": "SD15-Kleidung"
+    },
+    {
+      "id": "",
+      "label": "sd15-likeness",
+      "localized": "SD15-Ähnlichkeit",
+      "hint": "SD15-Ähnlichkeit"
+    },
+    {
+      "id": "",
+      "label": "sd15-navimixu",
+      "localized": "SD15-Navimixu",
+      "hint": "SD15-Navimixu"
+    },
+    {
+      "id": "",
+      "label": "sd15-sexy",
+      "localized": "SD15-Sexy",
+      "hint": "SD15-Sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-artstyle",
+      "localized": "SDXL-Kunststil",
+      "hint": "SDXL-Kunststil"
+    },
+    {
+      "id": "",
+      "label": "sdxl-negative",
+      "localized": "SDXL-Negativ",
+      "hint": "SDXL-Negativ"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sexy",
+      "localized": "SDXL-Sexy",
+      "hint": "SDXL-Sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sliders",
+      "localized": "SDXL-Schieberegler",
+      "hint": "SDXL-Schieberegler"
+    },
+    {
+      "id": "",
+      "label": "sdxl-toon",
+      "localized": "SDXL-Toon",
+      "hint": "SDXL-Toon"
     },
     {
       "id": "",
@@ -5778,6 +6282,12 @@
     },
     {
       "id": "",
+      "label": "segmentanything",
+      "localized": "SegmentAnything",
+      "hint": "SegmentAnything"
+    },
+    {
+      "id": "",
       "label": "select",
       "localized": "Auswählen",
       "hint": "Auswählen"
@@ -5797,8 +6307,8 @@
     {
       "id": "",
       "label": "send seed when sending prompt or image to other interface",
-      "localized": "Seed senden, wenn Prompt oder Bild an andere Schnittstelle gesendet wird",
-      "hint": "Seed senden, wenn Prompt oder Bild an andere Schnittstelle gesendet wird"
+      "localized": "Seed senden, wenn Prompt oder Bild an eine andere Schnittstelle gesendet wird",
+      "hint": "Seed senden, wenn Prompt oder Bild an eine andere Schnittstelle gesendet wird"
     },
     {
       "id": "",
@@ -5815,26 +6325,20 @@
     {
       "id": "",
       "label": "server start time",
-      "localized": "Serverstartzeit",
-      "hint": "Serverstartzeit"
+      "localized": "Server-Startzeit",
+      "hint": "Server-Startzeit"
     },
     {
       "id": "",
       "label": "set at prompt start",
-      "localized": "Bei Prompt-Start festlegen",
-      "hint": "Bei Prompt-Start festlegen"
-    },
-    {
-      "id": "",
-      "label": "set ui defaults",
-      "localized": "UI-Standardwerte festlegen",
-      "hint": "UI-Standardwerte festlegen"
+      "localized": "Beim Prompt-Start setzen",
+      "hint": "Beim Prompt-Start setzen"
     },
     {
       "id": "",
       "label": "set ui menu states",
-      "localized": "UI-Menüzustände festlegen",
-      "hint": "UI-Menüzustände festlegen"
+      "localized": "UI-Menüzustände setzen",
+      "hint": "UI-Menüzustände setzen"
     },
     {
       "id": "",
@@ -5893,8 +6397,14 @@
     {
       "id": "",
       "label": "shuffle weights",
-      "localized": "Gewichtungen mischen",
-      "hint": "Gewichtungen mischen"
+      "localized": "Gewichte mischen",
+      "hint": "Gewichte mischen"
+    },
+    {
+      "id": "",
+      "label": "shut down",
+      "localized": "Herunterfahren",
+      "hint": "Herunterfahren"
     },
     {
       "id": "",
@@ -5917,8 +6427,8 @@
     {
       "id": "",
       "label": "sigma method",
-      "localized": "Sigma Methode",
-      "hint": "Sigma Methode"
+      "localized": "Sigma-Methode",
+      "hint": "Sigma-Methode"
     },
     {
       "id": "",
@@ -5929,20 +6439,26 @@
     {
       "id": "",
       "label": "sigma noise",
-      "localized": "Sigma Rauschen",
-      "hint": "Sigma Rauschen"
+      "localized": "Sigma-Rauschen",
+      "hint": "Sigma-Rauschen"
     },
     {
       "id": "",
       "label": "sigma tmin",
-      "localized": "Sigma Tmin",
-      "hint": "Sigma Tmin"
+      "localized": "Sigma TMin",
+      "hint": "Sigma TMin"
     },
     {
       "id": "",
       "label": "simple merge",
       "localized": "Einfaches Zusammenführen",
       "hint": "Einfaches Zusammenführen"
+    },
+    {
+      "id": "",
+      "label": "size",
+      "localized": "Größe",
+      "hint": "Größe"
     },
     {
       "id": "",
@@ -5953,8 +6469,8 @@
     {
       "id": "",
       "label": "skip generation if nan found in latents",
-      "localized": "Generierung überspringen, wenn NaN in Latents gefunden wurde",
-      "hint": "Generierung überspringen, wenn NaN in Latents gefunden wurde"
+      "localized": "Generierung überspringen, wenn NaN in latenten Daten gefunden wird",
+      "hint": "Generierung überspringen, wenn NaN in latenten Daten gefunden wird"
     },
     {
       "id": "",
@@ -5970,6 +6486,12 @@
     },
     {
       "id": "",
+      "label": "sleep",
+      "localized": "Schlaf",
+      "hint": "Schlaf"
+    },
+    {
+      "id": "",
       "label": "slider",
       "localized": "Schieberegler",
       "hint": "Schieberegler"
@@ -5977,14 +6499,14 @@
     {
       "id": "",
       "label": "smooth mask",
-      "localized": "Glatte Maske",
-      "hint": "Glatte Maske"
+      "localized": "Maske glätten",
+      "hint": "Maske glätten"
     },
     {
       "id": "",
       "label": "solver order (where",
-      "localized": "Solver-Reihenfolge (wo",
-      "hint": "Solver-Reihenfolge (wo"
+      "localized": "Solver-Ordnung (wo",
+      "hint": "Solver-Ordnung (wo"
     },
     {
       "id": "",
@@ -5995,8 +6517,8 @@
     {
       "id": "",
       "label": "source subject",
-      "localized": "Quell-Subjekt",
-      "hint": "Quell-Subjekt"
+      "localized": "Quellsubjekt",
+      "hint": "Quellsubjekt"
     },
     {
       "id": "",
@@ -6025,8 +6547,8 @@
     {
       "id": "",
       "label": "split attention",
-      "localized": "Split Attention",
-      "hint": "Split Attention"
+      "localized": "Split-Attention",
+      "hint": "Split-Attention"
     },
     {
       "id": "",
@@ -6060,6 +6582,12 @@
     },
     {
       "id": "",
+      "label": "stop webui",
+      "localized": "Webui stoppen",
+      "hint": "Webui stoppen"
+    },
+    {
+      "id": "",
       "label": "stride",
       "localized": "Schrittweite",
       "hint": "Schrittweite"
@@ -6079,14 +6607,14 @@
     {
       "id": "",
       "label": "subject",
-      "localized": "Subjekt",
-      "hint": "Subjekt"
+      "localized": "Motiv",
+      "hint": "Motiv"
     },
     {
       "id": "",
       "label": "submit results",
-      "localized": "Ergebnisse übermitteln",
-      "hint": "Ergebnisse übermitteln"
+      "localized": "Ergebnisse einreichen",
+      "hint": "Ergebnisse einreichen"
     },
     {
       "id": "",
@@ -6115,14 +6643,38 @@
     {
       "id": "",
       "label": "t2i adapter",
-      "localized": "T2I-Adapter",
-      "hint": "T2I-Adapter"
+      "localized": "T2I Adapter",
+      "hint": "T2I Adapter"
     },
     {
       "id": "",
       "label": "t2i strength",
-      "localized": "T2I-Stärke",
-      "hint": "T2I-Stärke"
+      "localized": "T2I Stärke",
+      "hint": "T2I Stärke"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 1",
+      "localized": "T2I-Adapter Einheit 1",
+      "hint": "T2I-Adapter Einheit 1"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 2",
+      "localized": "T2I-Adapter Einheit 2",
+      "hint": "T2I-Adapter Einheit 2"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 3",
+      "localized": "T2I-Adapter Einheit 3",
+      "hint": "T2I-Adapter Einheit 3"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 4",
+      "localized": "T2I-Adapter Einheit 4",
+      "hint": "T2I-Adapter Einheit 4"
     },
     {
       "id": "",
@@ -6133,20 +6685,38 @@
     {
       "id": "",
       "label": "taesd decode layers",
-      "localized": "TAESD-Decodierungsebenen",
-      "hint": "TAESD-Decodierungsebenen"
+      "localized": "TAESD Dekodierschichten",
+      "hint": "TAESD Dekodierschichten"
     },
     {
       "id": "",
       "label": "taesd variant",
-      "localized": "TAESD-Variante",
-      "hint": "TAESD-Variante"
+      "localized": "TAESD Variante",
+      "hint": "TAESD Variante"
     },
     {
       "id": "",
       "label": "target subject",
-      "localized": "Ziel-Subjekt",
-      "hint": "Ziel-Subjekt"
+      "localized": "Zielmotiv",
+      "hint": "Zielmotiv"
+    },
+    {
+      "id": "",
+      "label": "task history",
+      "localized": "Aufgabenverlauf",
+      "hint": "Aufgabenverlauf"
+    },
+    {
+      "id": "",
+      "label": "task list page size (0 for auto)",
+      "localized": "Seitengröße der Aufgabenliste (0 für Auto)",
+      "hint": "Seitengröße der Aufgabenliste (0 für Auto)"
+    },
+    {
+      "id": "",
+      "label": "task queue",
+      "localized": "Aufgabenwarteschlange",
+      "hint": "Aufgabenwarteschlange"
     },
     {
       "id": "",
@@ -6186,21 +6756,15 @@
     },
     {
       "id": "",
-      "label": "text encoder",
-      "localized": "Text-Encoder",
-      "hint": "Text-Encoder"
-    },
-    {
-      "id": "",
       "label": "text encoder cache size",
-      "localized": "Cache-Größe des Text-Encoders",
-      "hint": "Cache-Größe des Text-Encoders"
+      "localized": "Text Encoder Cache Größe",
+      "hint": "Text Encoder Cache Größe"
     },
     {
       "id": "",
       "label": "text encoder model",
-      "localized": "Text-Encoder-Modell",
-      "hint": "Text-Encoder-Modell"
+      "localized": "Text Encoder Modell",
+      "hint": "Text Encoder Modell"
     },
     {
       "id": "",
@@ -6223,14 +6787,14 @@
     {
       "id": "",
       "label": "thresholding",
-      "localized": "Schwellwertbildung",
-      "hint": "Schwellwertbildung"
+      "localized": "Schwellenwertbildung",
+      "hint": "Schwellenwertbildung"
     },
     {
       "id": "",
       "label": "tile frames",
-      "localized": "Frames kacheln",
-      "hint": "Frames kacheln"
+      "localized": "Kachel-Frames",
+      "hint": "Kachel-Frames"
     },
     {
       "id": "",
@@ -6247,14 +6811,14 @@
     {
       "id": "",
       "label": "time_quadratic",
-      "localized": "time_quadratic",
-      "hint": "time_quadratic"
+      "localized": "Zeit_quadratisch",
+      "hint": "Zeit_quadratisch"
     },
     {
       "id": "",
       "label": "time_uniform",
-      "localized": "time_uniform",
-      "hint": "time_uniform"
+      "localized": "Zeit_gleichmäßig",
+      "hint": "Zeit_gleichmäßig"
     },
     {
       "id": "",
@@ -6265,20 +6829,20 @@
     {
       "id": "",
       "label": "timestep skip end",
-      "localized": "Zeitschritt-Überspringen Ende",
-      "hint": "Zeitschritt-Überspringen Ende"
+      "localized": "Zeitschritt-Überspringungsende",
+      "hint": "Zeitschritt-Überspringungsende"
     },
     {
       "id": "",
       "label": "timestep skip start",
-      "localized": "Zeitschritt-Überspringen Start",
-      "hint": "Zeitschritt-Überspringen Start"
+      "localized": "Zeitschritt-Überspringungsstart",
+      "hint": "Zeitschritt-Überspringungsstart"
     },
     {
       "id": "",
       "label": "timestep spacing",
-      "localized": "Zeitschrittabstand",
-      "hint": "Zeitschrittabstand"
+      "localized": "Zeitschritt-Abstand",
+      "hint": "Zeitschritt-Abstand"
     },
     {
       "id": "",
@@ -6289,8 +6853,8 @@
     {
       "id": "",
       "label": "timesteps override",
-      "localized": "Zeitschritte überschreiben",
-      "hint": "Zeitschritte überschreiben"
+      "localized": "Zeitschritt-Überschreibung",
+      "hint": "Zeitschritt-Überschreibung"
     },
     {
       "id": "",
@@ -6301,8 +6865,8 @@
     {
       "id": "",
       "label": "timesteps range",
-      "localized": "Zeitschrittbereich",
-      "hint": "Zeitschrittbereich"
+      "localized": "Zeitschritt-Bereich",
+      "hint": "Zeitschritt-Bereich"
     },
     {
       "id": "",
@@ -6313,14 +6877,14 @@
     {
       "id": "",
       "label": "todo",
-      "localized": "Zu erledigen",
-      "hint": "Zu erledigen"
+      "localized": "Aufgabe",
+      "hint": "Aufgabe"
     },
     {
       "id": "",
       "label": "tome",
-      "localized": "ToMe",
-      "hint": "ToMe"
+      "localized": "TOME",
+      "hint": "TOME"
     },
     {
       "id": "",
@@ -6367,8 +6931,8 @@
     {
       "id": "",
       "label": "ui card size (px)",
-      "localized": "UI-Kartengröße (px)",
-      "hint": "UI-Kartengröße (px)"
+      "localized": "UI-Karten Größe (px)",
+      "hint": "UI-Karten Größe (px)"
     },
     {
       "id": "",
@@ -6379,8 +6943,14 @@
     {
       "id": "",
       "label": "ui height (%)",
-      "localized": "UI-Höhe (%)",
-      "hint": "UI-Höhe (%)"
+      "localized": "UI Höhe (%)",
+      "hint": "UI Höhe (%)"
+    },
+    {
+      "id": "",
+      "label": "ui locale",
+      "localized": "UI Sprache",
+      "hint": "UI Sprache"
     },
     {
       "id": "",
@@ -6391,56 +6961,62 @@
     {
       "id": "",
       "label": "ui sidebar width (%)",
-      "localized": "UI-Seitenleistenbreite (%)",
-      "hint": "UI-Seitenleistenbreite (%)"
+      "localized": "UI Seitenleistenbreite (%)",
+      "hint": "UI Seitenleistenbreite (%)"
     },
     {
       "id": "",
       "label": "ui theme",
-      "localized": "UI-Thema",
-      "hint": "UI-Thema"
+      "localized": "UI Thema",
+      "hint": "UI Thema"
+    },
+    {
+      "id": "",
+      "label": "under generate button",
+      "localized": "Unterhalb des Generieren-Buttons",
+      "hint": "Unterhalb des Generieren-Buttons"
     },
     {
       "id": "",
       "label": "unet",
-      "localized": "U-Net",
-      "hint": "U-Net"
+      "localized": "UNet",
+      "hint": "UNet"
     },
     {
       "id": "",
       "label": "unet depth",
-      "localized": "U-Net-Tiefe",
-      "hint": "U-Net-Tiefe"
+      "localized": "UNet Tiefe",
+      "hint": "UNet Tiefe"
     },
     {
       "id": "",
       "label": "unet enabled",
-      "localized": "U-Net aktiviert",
-      "hint": "U-Net aktiviert"
+      "localized": "UNet aktiviert",
+      "hint": "UNet aktiviert"
     },
     {
       "id": "",
       "label": "unet max tile size",
-      "localized": "Maximale U-Net-Kachelgröße",
-      "hint": "Maximale U-Net-Kachelgröße"
+      "localized": "UNet maximale Kachelgröße",
+      "hint": "UNet maximale Kachelgröße"
     },
     {
       "id": "",
       "label": "unet min tile size",
-      "localized": "Minimale U-Net-Kachelgröße",
-      "hint": "Minimale U-Net-Kachelgröße"
+      "localized": "UNet minimale Kachelgröße",
+      "hint": "UNet minimale Kachelgröße"
     },
     {
       "id": "",
       "label": "unet model",
-      "localized": "U-Net-Modell",
-      "hint": "U-Net-Modell"
+      "localized": "UNet Modell",
+      "hint": "UNet Modell"
     },
     {
       "id": "",
       "label": "unet swap size",
-      "localized": "U-Net Swap-Größe",
-      "hint": "U-Net Swap-Größe"
+      "localized": "UNet Swap-Größe",
+      "hint": "UNet Swap-Größe"
     },
     {
       "id": "",
@@ -6487,8 +7063,8 @@
     {
       "id": "",
       "label": "upcast attention layer",
-      "localized": "Attention-Layer hochcasten",
-      "hint": "Attention-Layer hochcasten"
+      "localized": "Attention Layer hochstufen",
+      "hint": "Attention Layer hochstufen"
     },
     {
       "id": "",
@@ -6501,6 +7077,12 @@
       "label": "upload",
       "localized": "Hochladen",
       "hint": "Hochladen"
+    },
+    {
+      "id": "",
+      "label": "upscale",
+      "localized": "Hochskalieren",
+      "hint": "Hochskalieren"
     },
     {
       "id": "",
@@ -6553,8 +7135,8 @@
     {
       "id": "",
       "label": "use model ema weights when possible",
-      "localized": "Modell-EMA-Gewichte verwenden, wenn möglich",
-      "hint": "Modell-EMA-Gewichte verwenden, wenn möglich"
+      "localized": "Modell EMA Gewichte verwenden, wenn möglich",
+      "hint": "Modell EMA Gewichte verwenden, wenn möglich"
     },
     {
       "id": "",
@@ -6577,14 +7159,14 @@
     {
       "id": "",
       "label": "use same seed",
-      "localized": "Gleichen Seed verwenden",
-      "hint": "Gleichen Seed verwenden"
+      "localized": "Denselben Seed verwenden",
+      "hint": "Denselben Seed verwenden"
     },
     {
       "id": "",
       "label": "use separate base dict",
-      "localized": "Separate Basis-Dict verwenden",
-      "hint": "Separate Basis-Dict verwenden"
+      "localized": "Separate Basis-Dictionary verwenden",
+      "hint": "Separate Basis-Dictionary verwenden"
     },
     {
       "id": "",
@@ -6597,12 +7179,6 @@
       "label": "use text inputs",
       "localized": "Texteingaben verwenden",
       "hint": "Texteingaben verwenden"
-    },
-    {
-      "id": "",
-      "label": "use zeros for prompt padding",
-      "localized": "Nullen für Prompt-Padding verwenden",
-      "hint": "Nullen für Prompt-Padding verwenden"
     },
     {
       "id": "",
@@ -6619,8 +7195,8 @@
     {
       "id": "",
       "label": "v_prediction",
-      "localized": "V-Vorhersage",
-      "hint": "V-Vorhersage"
+      "localized": "v_Vorhersage",
+      "hint": "v_Vorhersage"
     },
     {
       "id": "",
@@ -6631,14 +7207,14 @@
     {
       "id": "",
       "label": "vae sliced encode",
-      "localized": "VAE Sliced Encoding",
-      "hint": "VAE Sliced Encoding"
+      "localized": "VAE Sliced Encode",
+      "hint": "VAE Sliced Encode"
     },
     {
       "id": "",
       "label": "vae swap size",
-      "localized": "VAE Swap-Größe",
-      "hint": "VAE Swap-Größe"
+      "localized": "VAE Swap Größe",
+      "hint": "VAE Swap Größe"
     },
     {
       "id": "",
@@ -6660,12 +7236,6 @@
     },
     {
       "id": "",
-      "label": "variable auto encoder",
-      "localized": "Variabler Autoencoder",
-      "hint": "Variabler Autoencoder"
-    },
-    {
-      "id": "",
       "label": "vary_coeff",
       "localized": "vary_coeff",
       "hint": "vary_coeff"
@@ -6673,8 +7243,8 @@
     {
       "id": "",
       "label": "vdm solver",
-      "localized": "VDM-Solver",
-      "hint": "VDM-Solver"
+      "localized": "VDM Solver",
+      "hint": "VDM Solver"
     },
     {
       "id": "",
@@ -6684,15 +7254,15 @@
     },
     {
       "id": "",
-      "label": "vibrance",
-      "localized": "Leuchtkraft",
-      "hint": "Leuchtkraft"
+      "label": "vgen params",
+      "localized": "VGen Parameter",
+      "hint": "VGen Parameter"
     },
     {
       "id": "",
-      "label": "video",
-      "localized": "Video",
-      "hint": "Video"
+      "label": "vibrance",
+      "localized": "Lebendigkeit",
+      "hint": "Lebendigkeit"
     },
     {
       "id": "",
@@ -6721,8 +7291,8 @@
     {
       "id": "",
       "label": "vlm model",
-      "localized": "VLM-Modell",
-      "hint": "VLM-Modell"
+      "localized": "VLM Modell",
+      "hint": "VLM Modell"
     },
     {
       "id": "",
@@ -6733,8 +7303,8 @@
     {
       "id": "",
       "label": "vlm: default prompt",
-      "localized": "VLM: Standard-Prompt",
-      "hint": "VLM: Standard-Prompt"
+      "localized": "VLM: Standard Prompt",
+      "hint": "VLM: Standard Prompt"
     },
     {
       "id": "",
@@ -6757,8 +7327,8 @@
     {
       "id": "",
       "label": "webp lossless compression",
-      "localized": "WebP verlustfreie Kompression",
-      "hint": "WebP verlustfreie Kompression"
+      "localized": "WebP verlustfreie Komprimierung",
+      "hint": "WebP verlustfreie Komprimierung"
     },
     {
       "id": "",
@@ -6829,8 +7399,8 @@
     {
       "id": "",
       "label": "xs",
-      "localized": "XS",
-      "hint": "XS"
+      "localized": "xs",
+      "hint": "xs"
     },
     {
       "id": "",
@@ -6864,9 +7434,21 @@
     },
     {
       "id": "",
+      "label": "zoe depth",
+      "localized": "Zoe Tiefe",
+      "hint": "Zoe Tiefe"
+    },
+    {
+      "id": "",
       "label": "➠ control",
       "localized": "➠ Steuerung",
       "hint": "➠ Steuerung"
+    },
+    {
+      "id": "",
+      "label": "💾",
+      "localized": "💾",
+      "hint": "💾"
     }
   ]
 }
