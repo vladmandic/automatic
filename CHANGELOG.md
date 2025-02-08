@@ -12,7 +12,12 @@
   - [localization](https://github.com/vladmandic/wiki/Locale) documentation  
 - **Torch**:  
   - for **zluda** set default to `torch==2.6.0+cu118`  
-  - for **openvino** set default to `torch==2.6.0+cpu` and `openvino==2025.0.0`  
+  - for **openvino** set default to `torch==2.6.0+cpu`  
+- **OpenVINO**:
+  - update to `openvino==2025.0.0`  
+  - improve upscaler compatibility  
+  - enable upscaler compile by default  
+  - fix shape mismatch errors on too many resolution changes  
 - **Other**:  
   - asymmetric tiling  
     allows for configurable image tiling for x/y axis separately  

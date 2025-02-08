@@ -23,6 +23,7 @@ import functools
 from modules import shared, devices, sd_models
 
 
+torch._dynamo.config.cache_size_limit = 64 # pylint: disable=protected-access
 torch._dynamo.eval_frame.check_if_dynamo_supported = lambda: True # pylint: disable=protected-access
 if hasattr(torch._dynamo.config, "inline_inbuilt_nn_modules"):
     torch._dynamo.config.inline_inbuilt_nn_modules = False # pylint: disable=protected-access
