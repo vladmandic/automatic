@@ -719,23 +719,22 @@ def install_ipex(torch_command):
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
-    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino', ignore=True)
-    install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     ts('ipex', t_start)
     return torch_command
 
 
 def install_openvino(torch_command):
     t_start = time.time()
-    check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires a Python version between 3.9 and 3.12')
+    # Python 3.12: RuntimeError: Dynamo is not supported on Python 3.12+
+    check_python(supported_minors=[9, 10, 11], reason='OpenVINO backend requires a Python version from 3.9, 3.10 or 3.11')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1')
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
 
-    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino')
-    install('nncf==2.14.1', 'nncf')
+    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2025.0.0'), 'openvino')
+    install(os.environ.get('NNCF_COMMAND', 'nncf==2.15.0'), 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
