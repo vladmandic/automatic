@@ -11,7 +11,7 @@ const localeData = {
 };
 
 async function cycleLocale() {
-  console.log('cycleLocale', localeData.prev, localeData.locale);
+  log('cycleLocale', localeData.prev, localeData.locale);
   const index = allLocales.indexOf(localeData.prev);
   localeData.locale = allLocales[(index + 1) % allLocales.length];
   localeData.btn.innerText = localeData.locale;
@@ -129,12 +129,22 @@ async function getLocaleData(desiredLocale = null) {
     localeData.prev = localeData.locale;
   }
   log('getLocale', desiredLocale, localeData.locale);
-  let res = await fetch(`/file=html/locale_${localeData.locale}.json`);
-  if (!res || !res.ok) {
-    localeData.locale = 'en';
-    res = await fetch(`/file=html/locale_${localeData.locale}.json`);
-  }
-  const json = await res.json();
+  // primary
+  let json = {};
+  try {
+    let res = await fetch(`/file=html/locale_${localeData.locale}.json`);
+    if (!res || !res.ok) {
+      localeData.locale = 'en';
+      res = await fetch(`/file=html/locale_${localeData.locale}.json`);
+    }
+    json = await res.json();
+  } catch { /**/ }
+
+  try {
+    const res = await fetch(`/file=html/override_${localeData.locale}.json`);
+    if (res && res.ok) json.override = await res.json();
+  } catch { /**/ }
+
   return json;
 }
 
@@ -150,7 +160,10 @@ async function setHints(analyze = false) {
   if (elements.length === 0) return;
   if (localeData.data.length === 0) {
     json = await getLocaleData(window.opts.ui_locale);
+    let overrideData = json.override || {};
+    overrideData = Object.values(overrideData).flat().filter((e) => e.hint.length > 0);
     localeData.data = Object.values(json).flat().filter((e) => e.hint.length > 0);
+    Object.assign(localeData.data, overrideData);
     for (const e of localeData.data) e.label = e.label.toLowerCase().trim();
   }
   if (!localeData.hint) tooltipCreate();

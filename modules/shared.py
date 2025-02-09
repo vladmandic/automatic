@@ -363,6 +363,8 @@ def temp_disable_extensions():
         theme_name = modules.shared.cmd_opts.theme
     else:
         theme_name = f'{modules.shared.opts.theme_type.lower()}/{modules.shared.opts.gradio_theme}'
+    if modules.shared.cmd_opts.locale is not None:
+        modules.shared.opts.ui_locale = modules.shared.cmd_opts.locale
 
     if theme_name == 'lobe':
         disable_themes.remove('sd-webui-lobe-theme')
