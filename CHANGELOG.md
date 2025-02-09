@@ -4,12 +4,12 @@
 
 - **Hints**  
   - added/updated 100+ ui hints!  
-  - [hints](https://github.com/vladmandic/wiki/Hints) documentation and contribution guide  
+  - [hints](https://github.com/vladmandic/sdnext/wiki/Hints) documentation and contribution guide  
 - **Localization**  
   - full ui localization!  
     english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian  
   - set in *settings -> user interface -> language*  
-  - [localization](https://github.com/vladmandic/wiki/Locale) documentation  
+  - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
 - **Torch**:  
   - for **zluda** set default to `torch==2.6.0+cu118`  
   - for **openvino** set default to `torch==2.6.0+cpu`  
