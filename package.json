@@ -28,6 +28,7 @@
     "esbuild": "^0.18.15"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "argparse": "^2.0.1",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",

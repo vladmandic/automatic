@@ -1,5 +1,9 @@
 # TODO
 
+- Check wiki links
+- Update hints wiki
+- Update changelog with docs and hints
+
 Main ToDo list can be found at [GitHub projects](https://github.com/users/vladmandic/projects)
 
 ## Pending

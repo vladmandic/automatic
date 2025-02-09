@@ -1,23 +1,37 @@
 const timeout = 30000;
 
+const scrollBottom = async (el) => {
+  const lastChild = el.lastElementChild;
+  if (lastChild) lastChild.scrollIntoView({ behavior: 'smooth' });
+};
+
 const log = async (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
-  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
+  if (window.logger) {
+    window.logger.innerHTML += window.logPrettyPrint(...msg);
+    scrollBottom(window.logger);
+  }
   console.log(ts, ...msg); // eslint-disable-line no-console
 };
 
 const debug = async (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
-  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
+  if (window.logger) {
+    window.logger.innerHTML += window.logPrettyPrint(...msg);
+    scrollBottom(window.logger);
+  }
   console.debug(ts, ...msg); // eslint-disable-line no-console
 };
 
 const error = async (...msg) => {
   const dt = new Date();
   const ts = `${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}.${dt.getMilliseconds().toString().padStart(3, '0')}`;
-  if (window.logger) window.logger.innerHTML += window.logPrettyPrint(...msg);
+  if (window.logger) {
+    window.logger.innerHTML += window.logPrettyPrint(...msg);
+    scrollBottom(window.logger);
+  }
   console.error(ts, ...msg); // eslint-disable-line no-console
   // const txt = msg.join(' ');
   // if (!txt.includes('asctime') && !txt.includes('xhr.')) xhrPost('/sdapi/v1/log', { error: txt }); // eslint-disable-line no-use-before-define

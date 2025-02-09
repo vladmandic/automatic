@@ -5,7 +5,7 @@ import ctypes
 import shutil
 import zipfile
 import urllib.request
-from typing import Optional, Union
+from typing import Union
 from modules import rocm
 
 
@@ -94,8 +94,11 @@ def load() -> None:
         ctypes.windll.LoadLibrary(os.path.join(path, v))
 
     if hipBLASLt_enabled:
+        os.environ.setdefault("DISABLE_ADDMM_CUDA_LT", "0")
         ctypes.windll.LoadLibrary(os.path.join(rocm.path, 'bin', 'hipblaslt.dll'))
         ctypes.windll.LoadLibrary(os.path.join(path, 'cublasLt64_11.dll'))
+    else:
+        os.environ["DISABLE_ADDMM_CUDA_LT"] = "1"
 
     def conceal():
         import torch # pylint: disable=unused-import
@@ -110,12 +113,3 @@ def load() -> None:
             return os.path.join(cpp_extension.ROCM_HOME, *paths)
         cpp_extension._join_rocm_home = _join_rocm_home # pylint: disable=protected-access
     rocm.conceal = conceal
-
-
-def get_default_torch_version(agent: Optional[rocm.Agent]) -> str:
-    if agent is not None:
-        if agent.arch in (rocm.MicroArchitecture.RDNA, rocm.MicroArchitecture.CDNA,):
-            return "2.4.1" if hipBLASLt_enabled else "2.3.1"
-        elif agent.arch == rocm.MicroArchitecture.GCN:
-            return "2.2.1"
-    return "2.4.1" if hipBLASLt_enabled else "2.3.1"

@@ -338,15 +338,33 @@ def list_samplers():
 
 
 def temp_disable_extensions():
-    disable_safe = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-agent-scheduler', 'clip-interrogator-ext', 'stable-diffusion-webui-images-browser']
-    disable_diffusers = ['sd-webui-controlnet', 'multidiffusion-upscaler-for-automatic1111', 'a1111-sd-webui-lycoris', 'sd-webui-animatediff']
-    disable_themes = ['sd-webui-lobe-theme', 'cozy-nest', 'sdnext-modernui']
+    disable_safe = [
+        'sd-webui-controlnet',
+        'multidiffusion-upscaler-for-automatic1111',
+        'a1111-sd-webui-lycoris',
+        'sd-webui-agent-scheduler',
+        'clip-interrogator-ext',
+        'stable-diffusion-webui-images-browser',
+    ]
+    disable_diffusers = [
+        'sd-webui-controlnet',
+        'multidiffusion-upscaler-for-automatic1111',
+        'a1111-sd-webui-lycoris',
+        'sd-webui-animatediff',
+    ]
+    disable_themes = [
+        'sd-webui-lobe-theme',
+        'cozy-nest',
+        'sdnext-modernui',
+    ]
     disable_original = []
     disabled = []
     if modules.shared.cmd_opts.theme is not None:
         theme_name = modules.shared.cmd_opts.theme
     else:
         theme_name = f'{modules.shared.opts.theme_type.lower()}/{modules.shared.opts.gradio_theme}'
+    if modules.shared.cmd_opts.locale is not None:
+        modules.shared.opts.ui_locale = modules.shared.cmd_opts.locale
 
     if theme_name == 'lobe':
         disable_themes.remove('sd-webui-lobe-theme')
@@ -520,8 +538,8 @@ options_templates.update(options_section(('cuda', "Compute Settings"), {
     "cross_attention_optimization": OptionInfo(startup_cross_attention, "Attention optimization method", gr.Radio, lambda: {"choices": shared_items.list_crossattention(native)}),
     "sdp_options": OptionInfo(startup_sdp_options, "SDP options", gr.CheckboxGroup, {"choices": ['Flash attention', 'Memory attention', 'Math attention', 'Dynamic attention', 'Sage attention'], "visible": native}),
     "xformers_options": OptionInfo(['Flash attention'], "xFormers options", gr.CheckboxGroup, {"choices": ['Flash attention'] }),
-    "dynamic_attention_slice_rate": OptionInfo(0.5, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.01, "maximum": gpu_memory, "step": 0.01, "visible": native}),
-    "dynamic_attention_trigger_rate": OptionInfo(1, "Dynamic Attention trigger rate in GB", gr.Slider, {"minimum": 0.01, "maximum": gpu_memory*2, "step": 0.01, "visible": native}),
+    "dynamic_attention_slice_rate": OptionInfo(0.5, "Dynamic Attention slicing rate in GB", gr.Slider, {"minimum": 0.01, "maximum": max(gpu_memory,4), "step": 0.01, "visible": native}),
+    "dynamic_attention_trigger_rate": OptionInfo(1, "Dynamic Attention trigger rate in GB", gr.Slider, {"minimum": 0.01, "maximum": max(gpu_memory,4)*2, "step": 0.01, "visible": native}),
     "sub_quad_sep": OptionInfo("<h3>Sub-quadratic options</h3>", "", gr.HTML, {"visible": not native}),
     "sub_quad_q_chunk_size": OptionInfo(512, "Attention query chunk size", gr.Slider, {"minimum": 16, "maximum": 8192, "step": 8, "visible": not native}),
     "sub_quad_kv_chunk_size": OptionInfo(512, "Attention kv chunk size", gr.Slider, {"minimum": 0, "maximum": 8192, "step": 8, "visible": not native}),
@@ -654,7 +672,7 @@ options_templates.update(options_section(('advanced', "Pipeline Modifiers"), {
 
 options_templates.update(options_section(('compile', "Model Compile"), {
     "cuda_compile_sep": OptionInfo("<h2>Model Compile</h2>", "", gr.HTML),
-    "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
+    "cuda_compile": OptionInfo([] if not cmd_opts.use_openvino else ["Model", "VAE", "Upscaler"], "Compile Model", gr.CheckboxGroup, {"choices": ["Model", "VAE", "Text Encoder", "Upscaler"]}),
     "cuda_compile_backend": OptionInfo("none" if not cmd_opts.use_openvino else "openvino_fx", "Model compile backend", gr.Radio, {"choices": ['none', 'inductor', 'cudagraphs', 'aot_ts_nvfuser', 'hidet', 'migraphx', 'ipex', 'onediff', 'stable-fast', 'deep-cache', 'olive-ai', 'openvino_fx']}),
     "cuda_compile_mode": OptionInfo("default", "Model compile mode", gr.Radio, {"choices": ['default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs']}),
     "cuda_compile_fullgraph": OptionInfo(True if not cmd_opts.use_openvino else False, "Model compile fullgraph"),
@@ -777,6 +795,7 @@ options_templates.update(options_section(('ui', "User Interface"), {
     "theme_type": OptionInfo("Standard", "Theme type", gr.Radio, {"choices": ["Modern", "Standard", "None"]}),
     "theme_style": OptionInfo("Auto", "Theme mode", gr.Radio, {"choices": ["Auto", "Dark", "Light"]}),
     "gradio_theme": OptionInfo("black-teal", "UI theme", gr.Dropdown, lambda: {"choices": theme.list_themes()}, refresh=theme.refresh_themes),
+    "ui_locale": OptionInfo("Auto", "UI locale", gr.Dropdown, lambda: {"choices": theme.list_locales()}),
     "autolaunch": OptionInfo(False, "Autolaunch browser upon startup"),
     "font_size": OptionInfo(14, "Font size", gr.Slider, {"minimum": 8, "maximum": 32, "step": 1, "visible": True}),
     "aspect_ratios": OptionInfo("1:1, 4:3, 3:2, 16:9, 16:10, 21:9, 2:3, 3:4, 9:16, 10:16, 9:21", "Allowed aspect ratios"),
@@ -925,7 +944,7 @@ options_templates.update(options_section(('interrogate', "Interrogate"), {
 options_templates.update(options_section(('huggingface', "Huggingface"), {
     "huggingface_sep": OptionInfo("<h2>Huggingface</h2>", "", gr.HTML),
     "diffuser_cache_config": OptionInfo(True, "Use cached model config when available"),
-    "huggingface_token": OptionInfo('', 'HuggingFace token'),
+    "huggingface_token": OptionInfo('', 'HuggingFace token', gr.Textbox, {"lines": 2}),
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),

@@ -42,7 +42,7 @@ def load_model(device, model_path, model_type="dpt_large_384", optimize=True, he
         network input
     """
     if "openvino" in model_type:
-        from openvino.runtime import Core
+        from openvino import Core
 
     keep_aspect_ratio = not square
 

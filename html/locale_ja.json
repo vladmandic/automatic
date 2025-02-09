@@ -1,0 +1,7454 @@
+{
+  "icons": [
+    {
+      "id": "",
+      "label": "🎲️",
+      "localized": "🎲️",
+      "hint": "ランダムシードを使用"
+    },
+    {
+      "id": "",
+      "label": "🔄",
+      "localized": "🔄",
+      "hint": "値をリセット"
+    },
+    {
+      "id": "",
+      "label": "⬆️",
+      "localized": "⬆️",
+      "hint": "画像をアップロード"
+    },
+    {
+      "id": "",
+      "label": "⬅️",
+      "localized": "⬅️",
+      "hint": "画像を再利用"
+    },
+    {
+      "id": "",
+      "label": "⇅",
+      "localized": "⇅",
+      "hint": "値を入れ替え"
+    },
+    {
+      "id": "",
+      "label": "⇨",
+      "localized": "⇨",
+      "hint": "プリセットを手動ブロックマージタブに適用"
+    },
+    {
+      "id": "",
+      "label": "🕮",
+      "localized": "🕮",
+      "hint": "最後に生成された画像のパラメータをスタイルテンプレートとして保存"
+    },
+    {
+      "id": "",
+      "label": "⇕",
+      "localized": "⇕",
+      "hint": "ソート: 名前 昇順/降順, サイズ 最大/最小, 時刻 最新/最古"
+    },
+    {
+      "id": "",
+      "label": "⟲",
+      "localized": "⟲",
+      "hint": "更新"
+    },
+    {
+      "id": "",
+      "label": "✕",
+      "localized": "✕",
+      "hint": "閉じる"
+    },
+    {
+      "id": "",
+      "label": "⊜",
+      "localized": "⊜",
+      "hint": "塗りつぶし"
+    },
+    {
+      "id": "",
+      "label": "⌾",
+      "localized": "⌾",
+      "hint": "選択時リファイナーモデルとしてロード、それ以外はベースモデルとしてロード"
+    },
+    {
+      "id": "",
+      "label": "🔎︎",
+      "localized": "🔎︎",
+      "hint": "不足しているメタデータとプレビューをCivitAIでスキャン"
+    },
+    {
+      "id": "",
+      "label": "☲",
+      "localized": "☲",
+      "hint": "表示タイプを変更"
+    },
+    {
+      "id": "",
+      "label": "📐",
+      "localized": "📐",
+      "hint": "計測"
+    },
+    {
+      "id": "",
+      "label": "🔍",
+      "localized": "🔍",
+      "hint": "検索"
+    },
+    {
+      "id": "",
+      "label": "🖌️",
+      "localized": "🖌️",
+      "hint": "LaMaを使用して選択されたオブジェクトを画像から削除"
+    },
+    {
+      "id": "",
+      "label": "🖼️",
+      "localized": "🖼️",
+      "hint": "プレビューを表示"
+    },
+    {
+      "id": "",
+      "label": "♻",
+      "localized": "♻",
+      "hint": "画像を解析"
+    },
+    {
+      "id": "",
+      "label": "↶",
+      "localized": "↶",
+      "hint": "選択したスタイルをプロンプトに適用"
+    },
+    {
+      "id": "",
+      "label": "↷",
+      "localized": "↷",
+      "hint": "現在のプロンプトをスタイルとして保存"
+    }
+  ],
+  "main": [
+    {
+      "id": "",
+      "label": "Prompt",
+      "localized": "プロンプト",
+      "hint": "生成したい画像を説明してください"
+    },
+    {
+      "id": "",
+      "label": "Negative prompt",
+      "localized": "ネガティブプロンプト",
+      "hint": "生成された画像に表示したくないものを説明してください"
+    },
+    {
+      "id": "",
+      "label": "Text",
+      "localized": "テキスト",
+      "hint": "テキストから画像を生成"
+    },
+    {
+      "id": "",
+      "label": "Image",
+      "localized": "画像",
+      "hint": "画像から画像を生成"
+    },
+    {
+      "id": "",
+      "label": "Control",
+      "localized": "コントロール",
+      "hint": "追加のコントロールで画像を生成"
+    },
+    {
+      "id": "",
+      "label": "Process",
+      "localized": "処理",
+      "hint": "既存の画像を処理"
+    },
+    {
+      "id": "",
+      "label": "Interrogate",
+      "localized": "調査",
+      "hint": "あなたの画像の説明を取得するために調査を実行"
+    },
+    {
+      "id": "",
+      "label": "Models",
+      "localized": "モデル",
+      "hint": "モデルをダウンロード、変換、または結合し、モデルのメタデータを管理します"
+    },
+    {
+      "id": "",
+      "label": "Agent Scheduler",
+      "localized": "エージェントスケジューラ",
+      "hint": "生成リクエストをエンキューして、バックグラウンドで実行します"
+    },
+    {
+      "id": "",
+      "label": "System",
+      "localized": "システム",
+      "hint": "システム設定と情報"
+    },
+    {
+      "id": "",
+      "label": "System Info",
+      "localized": "システム情報",
+      "hint": "システム情報"
+    },
+    {
+      "id": "",
+      "label": "Settings",
+      "localized": "設定",
+      "hint": "アプリケーション設定"
+    },
+    {
+      "id": "",
+      "label": "Script",
+      "localized": "スクリプト",
+      "hint": "使用される追加のスクリプト"
+    },
+    {
+      "id": "",
+      "label": "Generate",
+      "localized": "生成",
+      "hint": "処理を開始"
+    },
+    {
+      "id": "",
+      "label": "Enqueue",
+      "localized": "エンキュー",
+      "hint": "タスクをエージェントスケジューラのバックグラウンドキューに追加"
+    },
+    {
+      "id": "",
+      "label": "Reprocess",
+      "localized": "再処理",
+      "hint": "異なるパラメータを使用して以前の生成を再処理"
+    },
+    {
+      "id": "",
+      "label": "Stop",
+      "localized": "停止",
+      "hint": "処理を停止"
+    },
+    {
+      "id": "",
+      "label": "Skip",
+      "localized": "スキップ",
+      "hint": "現在のジョブの処理を停止して、処理を続行"
+    },
+    {
+      "id": "",
+      "label": "Pause",
+      "localized": "一時停止",
+      "hint": "処理を一時停止"
+    },
+    {
+      "id": "",
+      "label": "Restore",
+      "localized": "復元",
+      "hint": "現在のプロンプトまたは最後に知られている生成された画像からパラメータを復元"
+    },
+    {
+      "id": "",
+      "label": "Clear",
+      "localized": "クリア",
+      "hint": "プロンプトをクリア"
+    },
+    {
+      "id": "",
+      "label": "Networks",
+      "localized": "ネットワーク",
+      "hint": "ネットワークユーザーインターフェース"
+    },
+    {
+      "id": "",
+      "label": "Default strength",
+      "localized": "デフォルトの強度",
+      "hint": "Loraなどの追加のネットワークをプロンプトに追加するときに、この乗数を使用します"
+    },
+    {
+      "id": "",
+      "label": "Model",
+      "localized": "モデル",
+      "hint": "ベースモデル"
+    },
+    {
+      "id": "",
+      "label": "Style",
+      "localized": "スタイル",
+      "hint": "選択した生成パラメータに適用される追加のスタイル"
+    },
+    {
+      "id": "",
+      "label": "Styles",
+      "localized": "スタイル",
+      "hint": "選択した生成パラメータに適用される追加のスタイル"
+    },
+    {
+      "id": "",
+      "label": "Lora",
+      "localized": "LoRA",
+      "hint": "LoRA：Low-Rank Adaptation。ロードされたモデルの上に適用される微調整されたモデル"
+    },
+    {
+      "id": "",
+      "label": "Embedding",
+      "localized": "埋め込み",
+      "hint": "テキスト反転埋め込みは、被写体に関するトレーニングされた埋め込み情報です"
+    },
+    {
+      "id": "",
+      "label": "Hypernetwork",
+      "localized": "ハイパーネットワーク",
+      "hint": "ロードされたモデルの動作を変更する小さなトレーニング済みニューラルネットワーク"
+    },
+    {
+      "id": "",
+      "label": "VAE",
+      "localized": "VAE",
+      "hint": "Variable Auto Encoder：生成の最後に画像デコードを実行するために使用されるモデル"
+    },
+    {
+      "id": "",
+      "label": "History",
+      "localized": "履歴",
+      "hint": "さらに再処理できる以前の生成のリスト"
+    },
+    {
+      "id": "",
+      "label": "UI disable variable aspect ratio",
+      "localized": "UIで可変アスペクト比を無効にする",
+      "hint": "無効にすると、すべてのサムネイルが正方形の画像として表示されます"
+    },
+    {
+      "id": "",
+      "label": "Build info on first access",
+      "localized": "初回アクセス時にビルド情報を構築",
+      "hint": "サーバーの起動時にENページを構築せず、要求されたときに構築します"
+    },
+    {
+      "id": "",
+      "label": "Show reference styles",
+      "localized": "参照スタイルを表示",
+      "hint": "組み込みスタイルを表示または非表示にします"
+    },
+    {
+      "id": "",
+      "label": "LoRA load using Diffusers method",
+      "localized": "Diffusersメソッドを使用してLoRAをロード",
+      "hint": "ネイティブSD.Next実装の代わりにdiffusers組み込みのLoRA機能を使用する代替メソッド（LoRAの互換性が低下する場合があります）"
+    },
+    {
+      "id": "",
+      "label": "LoRA fuse directly to model",
+      "localized": "LoRAをモデルに直接融合",
+      "hint": "LoRAのロード時に、オンザフライで適用する代わりに、すぐに重みを基になるモデルとマージします"
+    },
+    {
+      "id": "",
+      "label": "LoRA memory cache",
+      "localized": "LoRAメモリーキャッシュ",
+      "hint": "ストレージから再ロードする必要があるまで、将来の使用のためにネットワークに保持するLoRAの数"
+    },
+    {
+      "id": "",
+      "label": "Local",
+      "localized": "ローカル",
+      "hint": "ダウンロードされて使用できるモデル"
+    },
+    {
+      "id": "",
+      "label": "Reference",
+      "localized": "参照",
+      "hint": "最初の使用時に自動的にダウンロードできる参照モデルのリスト"
+    },
+    {
+      "id": "",
+      "label": "Samplers",
+      "localized": "サンプラー",
+      "hint": "サンプラー/スケジューラの詳細設定"
+    },
+    {
+      "id": "",
+      "label": "Seed",
+      "localized": "シード",
+      "hint": "初期シードとバリエーション"
+    },
+    {
+      "id": "",
+      "label": "Advanced",
+      "localized": "高度な設定",
+      "hint": "高度な設定"
+    },
+    {
+      "id": "",
+      "label": "Corrections",
+      "localized": "補正",
+      "hint": "生成プロセス中の画像の色/シャープ/明るさの補正を制御"
+    },
+    {
+      "id": "",
+      "label": "Refine",
+      "localized": "リファイン",
+      "hint": "アップスケール、HiRes、およびリファイン処理に関連する設定"
+    },
+    {
+      "id": "",
+      "label": "Detailer",
+      "localized": "デテーラー",
+      "hint": "デテーラー設定"
+    },
+    {
+      "id": "",
+      "label": "Resize",
+      "localized": "リサイズ",
+      "hint": "画像のリサイズ。スケールに基づいて固定解像度を使用できます"
+    },
+    {
+      "id": "",
+      "label": "Batch",
+      "localized": "バッチ",
+      "hint": "バッチ処理設定"
+    },
+    {
+      "id": "",
+      "label": "Denoise",
+      "localized": "ノイズ除去",
+      "hint": "ノイズ除去設定。ノイズ除去が高いほど、既存の画像コンテンツが生成中に変更される可能性が高くなります"
+    },
+    {
+      "id": "",
+      "label": "Mask",
+      "localized": "マスク",
+      "hint": "画像マスキングとマスクオプション"
+    },
+    {
+      "id": "",
+      "label": "Input",
+      "localized": "入力",
+      "hint": "入力メディアの選択"
+    },
+    {
+      "id": "",
+      "label": "Video",
+      "localized": "ビデオ",
+      "hint": "ビデオ生成に関連する設定"
+    },
+    {
+      "id": "",
+      "label": "Control elements",
+      "localized": "コントロール要素",
+      "hint": "コントロール要素は、望ましい結果に向けて生成をガイドできる高度なモデルです"
+    },
+    {
+      "id": "",
+      "label": "IP adapters",
+      "localized": "IPアダプター",
+      "hint": "IPアダプターは、望ましい結果に向けて生成をガイドできるプラグインモデルです"
+    },
+    {
+      "id": "",
+      "label": "Extensions",
+      "localized": "拡張機能",
+      "hint": "アプリケーション拡張機能"
+    },
+    {
+      "id": "",
+      "label": "XYZ Grid",
+      "localized": "XYZグリッド",
+      "hint": "XYZグリッドは、複数の生成パラメータを変化させて画像グリッドを作成する強力なモジュールです"
+    },
+    {
+      "id": "",
+      "label": "cover",
+      "localized": "カバー",
+      "hint": "全領域をカバー"
+    },
+    {
+      "id": "",
+      "label": "inline",
+      "localized": "インライン",
+      "hint": "すべての追加要素（スクロール可能）とのインライン"
+    },
+    {
+      "id": "",
+      "label": "sidebar",
+      "localized": "サイドバー",
+      "hint": "画面の右側のサイドバー"
+    },
+    {
+      "id": "",
+      "label": "sd15",
+      "localized": "sd15",
+      "hint": "StableDiffusion 1.5"
+    },
+    {
+      "id": "",
+      "label": "sd21",
+      "localized": "sd21",
+      "hint": "StableDiffusion 2.1"
+    },
+    {
+      "id": "",
+      "label": "sd35",
+      "localized": "sd35",
+      "hint": "StableDiffusion 3.5"
+    },
+    {
+      "id": "",
+      "label": "sdxl",
+      "localized": "sdxl",
+      "hint": "StableDiffusion XL"
+    },
+    {
+      "id": "",
+      "label": "sc",
+      "localized": "sc",
+      "hint": "StableCascade"
+    },
+    {
+      "id": "",
+      "label": "flux",
+      "localized": "flux",
+      "hint": "FLUX.1"
+    },
+    {
+      "id": "",
+      "label": "show",
+      "localized": "表示",
+      "hint": "画像の場所を表示"
+    },
+    {
+      "id": "",
+      "label": "save",
+      "localized": "保存",
+      "hint": "画像を保存"
+    },
+    {
+      "id": "",
+      "label": "delete",
+      "localized": "削除",
+      "hint": "画像を削除"
+    },
+    {
+      "id": "",
+      "label": "replace",
+      "localized": "置換",
+      "hint": "画像を置き換える"
+    },
+    {
+      "id": "",
+      "label": "➠ text",
+      "localized": "➠ テキスト",
+      "hint": "画像をテキストインターフェースに転送"
+    },
+    {
+      "id": "",
+      "label": "➠ image",
+      "localized": "➠ 画像",
+      "hint": "画像を画像インターフェースに転送"
+    },
+    {
+      "id": "",
+      "label": "➠ inpaint",
+      "localized": "➠ インペイント",
+      "hint": "画像をインペイントインターフェースに転送"
+    },
+    {
+      "id": "",
+      "label": "➠ sketch",
+      "localized": "➠ スケッチ",
+      "hint": "画像をスケッチインターフェースに転送"
+    },
+    {
+      "id": "",
+      "label": "➠ composite",
+      "localized": "➠ 合成",
+      "hint": "画像をインペイントスケッチインターフェースに転送"
+    },
+    {
+      "id": "",
+      "label": "➠ process",
+      "localized": "➠ 処理",
+      "hint": "画像を処理インターフェースに転送"
+    }
+  ],
+  "generate": [
+    {
+      "id": "",
+      "label": "Sampling method",
+      "localized": "サンプリング方法",
+      "hint": "画像を生成するために使用するアルゴリズム"
+    },
+    {
+      "id": "",
+      "label": "Steps",
+      "localized": "ステップ数",
+      "hint": "生成された画像を反復的に改善する回数。値が大きいほど時間がかかります。値が非常に低いと、結果が悪くなる可能性があります。"
+    },
+    {
+      "id": "",
+      "label": "Tiling",
+      "localized": "タイリング",
+      "hint": "タイル化可能な画像を生成します"
+    },
+    {
+      "id": "",
+      "label": "full quality",
+      "localized": "フル品質",
+      "hint": "潜在サンプルをデコードするためにフル品質の VAE を使用します"
+    },
+    {
+      "id": "",
+      "label": "hidiffusion",
+      "localized": "HiDiffusion",
+      "hint": "HiDiffusionを使用すると、重複/歪みがなく、パフォーマンスが向上した標準モデルを使用して、高解像度の画像を作成できます。"
+    },
+    {
+      "id": "",
+      "label": "HDR Clamp",
+      "localized": "HDR クランプ",
+      "hint": "分布平均から大きく逸脱する値をプルーニングすることにより、無意味なディテールのレベルを調整します。 これは、より高いガイダンス スケールでの生成を強化し、プロセスの初期段階で外れ値を特定し、範囲 (境界) としきい値の設定に基づいて数学的な調整を適用する場合に特に役立ちます。 イメージ値を設定する範囲を設定し、しきい値を調整して、どの値をその範囲に戻すかを決定すると考えてください。"
+    },
+    {
+      "id": "",
+      "label": "HDR Maximize",
+      "localized": "HDR 最大化",
+      "hint": "最大テンソル値を指定された範囲に 4 を掛けたもので割ることにより、「正規化係数」を計算します。 次に、この係数を使用して、指定された境界内のチャネルをシフトし、後続の処理のために最大のダイナミック レンジを確保します。 目的は、Photoshop などの外部アプリケーションでダイナミック レンジを最適化することです。特に、レベル、コントラスト、明るさを調整する場合に有効です。"
+    },
+    {
+      "id": "",
+      "label": "Enable refine pass",
+      "localized": "リファインパスを有効にする",
+      "hint": "画像から画像へと同様のプロセスを使用して、最終画像をアップスケールしたり、詳細を追加したりします。必要に応じて、リファイナーモデルを使用して画像の細部を強調します。"
+    },
+    {
+      "id": "",
+      "label": "enable detailer pass",
+      "localized": "ディテーラーパスを有効にする",
+      "hint": "顔などのターゲットオブジェクトを検出し、より高い解像度で再処理します。"
+    },
+    {
+      "id": "",
+      "label": "Denoising strength",
+      "localized": "ノイズ除去強度",
+      "hint": "アルゴリズムが画像のコンテンツをどれだけ無視するかを決定します。 0の場合、何も変更されず、1の場合、無関係な画像が表示されます。 1.0未満の値を使用すると、処理にかかるステップ数が[Sampling Steps]スライダーで指定された値よりも少なくなります。"
+    },
+    {
+      "id": "",
+      "label": "Denoise start",
+      "localized": "ノイズ除去開始",
+      "hint": "ベースモデルがいつ終了し、リファイナーがいつ開始するかを指定して、ノイズ除去強度を上書きします。 リファイナーの使用にのみ適用できます。 0または1に設定すると、ノイズ除去強度が使用されます。"
+    },
+    {
+      "id": "",
+      "label": "Hires steps",
+      "localized": "高解像度ステップ",
+      "hint": "アップスケールされた画像のサンプリングステップ数。 0の場合、オリジナルと同じ値を使用します。"
+    },
+    {
+      "id": "",
+      "label": "strength",
+      "localized": "強度",
+      "hint": "画像操作中のノイズ除去強度は、生成中に元の画像をどれだけ変更できるかを制御します。"
+    },
+    {
+      "id": "",
+      "label": "Upscaler",
+      "localized": "アップスケーラー",
+      "hint": "アップスケーリングプロセスに使用する事前学習済みモデル。"
+    },
+    {
+      "id": "",
+      "label": "Force Hires",
+      "localized": "高解像度を強制",
+      "hint": "潜在的なアップスケールが選択されている場合、高解像度は自動的に実行されますが、非潜在的なアップスケーラーを使用する場合はスキップされます。 高解像度を有効にすると、非潜在的なアップスケーラーで高解像度を実行できます。"
+    },
+    {
+      "id": "",
+      "label": "Resize width",
+      "localized": "幅をリサイズ",
+      "hint": "画像の幅をこのサイズに変更します。 0 の場合、幅は近くの 2 つのスライダーから推測されます。"
+    },
+    {
+      "id": "",
+      "label": "Resize height",
+      "localized": "高さをリサイズ",
+      "hint": "画像の高さをこのサイズに変更します。 0 の場合、高さは近くの 2 つのスライダーから推測されます。"
+    },
+    {
+      "id": "",
+      "label": "Refine sampler",
+      "localized": "リファインサンプラー",
+      "hint": "特定の操作でプライマリがサポートされていない場合、特定のサンプラーをフォールバックサンプラーとして使用します。"
+    },
+    {
+      "id": "",
+      "label": "Refiner start",
+      "localized": "リファイナー開始",
+      "hint": "ベースモデルがこれだけ完了すると、リファイナーパスが開始されます（0より大きく1より小さく設定すると、フルベースモデルの実行後に実行されます）。"
+    },
+    {
+      "id": "",
+      "label": "Refiner steps",
+      "localized": "リファイナーステップ",
+      "hint": "リファイナーパスに使用するステップ数"
+    },
+    {
+      "id": "",
+      "label": "Refine guidance",
+      "localized": "リファインガイダンス",
+      "hint": "リファイナーパスに使用されるCFGスケール"
+    },
+    {
+      "id": "",
+      "label": "Attention guidance",
+      "localized": "注意ガイダンス",
+      "hint": "PAG: Perturbed-Attention Guidance で使用される CFG スケール"
+    },
+    {
+      "id": "",
+      "label": "Adaptive scaling",
+      "localized": "適応スケーリング",
+      "hint": "注意ガイダンススケールの適応モディファイア"
+    },
+    {
+      "id": "",
+      "label": "Rescale guidance",
+      "localized": "リスケールガイダンス",
+      "hint": "露出過多の画像を回避するためにCFGで生成されたノイズをリスケールします"
+    },
+    {
+      "id": "",
+      "label": "Refine Prompt",
+      "localized": "リファインプロンプト",
+      "hint": "ベースモデルの2番目のエンコーダー（存在する場合）とリファイナーパス（有効な場合）の両方で使用されるプロンプト"
+    },
+    {
+      "id": "",
+      "label": "Refine negative prompt",
+      "localized": "リファイン否定プロンプト",
+      "hint": "ベースモデルの2番目のエンコーダー（存在する場合）とリファイナーパス（有効な場合）の両方で使用される否定プロンプト"
+    },
+    {
+      "id": "",
+      "label": "Width",
+      "localized": "幅",
+      "hint": "画像の幅"
+    },
+    {
+      "id": "",
+      "label": "Height",
+      "localized": "高さ",
+      "hint": "画像の高さ"
+    },
+    {
+      "id": "",
+      "label": "Batch count",
+      "localized": "バッチ数",
+      "hint": "作成する画像のバッチ数（生成パフォーマンスまたはVRAM使用量には影響しません）"
+    },
+    {
+      "id": "",
+      "label": "Batch size",
+      "localized": "バッチサイズ",
+      "hint": "1つのバッチで作成する画像の数（VRAM使用量が増加する代わりに生成パフォーマンスが向上します）"
+    },
+    {
+      "id": "",
+      "label": "guidance scale",
+      "localized": "ガイダンススケール",
+      "hint": "Classifier Free Guidanceスケール：画像がプロンプトにどれだけ強く準拠する必要があるか。 値が低いほどクリエイティブな結果が得られ、値が高いほどプロンプトに厳密に従います。 5〜10の値をお勧めします"
+    },
+    {
+      "id": "",
+      "label": "Guidance End",
+      "localized": "ガイダンス終了",
+      "hint": "CFGとPAGの効果を早期に終了します。値1は通常どおりに機能し、0.5はステップの50％でガイダンスを停止します"
+    },
+    {
+      "id": "",
+      "label": "Initial seed",
+      "localized": "初期シード",
+      "hint": "乱数ジェネレーターの出力を決定する値 - 別の画像と同じパラメーターとシードを使用して画像を作成すると、同じ結果が得られます"
+    },
+    {
+      "id": "",
+      "label": "Variation",
+      "localized": "バリエーション",
+      "hint": "プライマリシードと混合する2番目のシード"
+    },
+    {
+      "id": "",
+      "label": "Variation strength",
+      "localized": "バリエーション強度",
+      "hint": "作成するバリエーションの強度。 0の場合、効果はありません。 1の場合、バリエーションシードを使用して完全な画像が得られます（祖先のサンプラーを除く、何かを得るだけです）"
+    },
+    {
+      "id": "",
+      "label": "Resize seed from width",
+      "localized": "幅からシードをリサイズ",
+      "hint": "指定された解像度で同じシードで生成された画像と同様の画像を生成しようとします"
+    },
+    {
+      "id": "",
+      "label": "Resize seed from height",
+      "localized": "高さからシードをリサイズ",
+      "hint": "指定された解像度で同じシードで生成された画像と同様の画像を生成しようとします"
+    },
+    {
+      "id": "",
+      "label": "Fixed",
+      "localized": "固定",
+      "hint": "画像をターゲット解像度に変更します。 高さや幅が一致しない場合、アスペクト比が間違っているでしょう"
+    },
+    {
+      "id": "",
+      "label": "scale",
+      "localized": "スケール",
+      "hint": "画像をターゲットスケールに変更します。 リサイズの固定幅/高さが設定されている場合、このオプションは無視されます"
+    },
+    {
+      "id": "",
+      "label": "Crop",
+      "localized": "クロップ",
+      "hint": "ターゲット解像度全体が画像で埋められるように画像をリサイズします。 突き出ている部分を切り抜きます"
+    },
+    {
+      "id": "",
+      "label": "Fill",
+      "localized": "フィル",
+      "hint": "画像全体がターゲット解像度内になるように画像をリサイズします。 空のスペースを画像の色で埋めます"
+    },
+    {
+      "id": "",
+      "label": "Mask blur",
+      "localized": "マスクぼかし",
+      "hint": "処理前にマスクをぼかす量（ピクセル単位）"
+    },
+    {
+      "id": "",
+      "label": "latent noise",
+      "localized": "潜在ノイズ",
+      "hint": "潜在空間ノイズで埋めます"
+    },
+    {
+      "id": "",
+      "label": "latent nothing",
+      "localized": "潜在ナッシング",
+      "hint": "潜在空間のゼロで埋めます"
+    },
+    {
+      "id": "",
+      "label": "Guess Mode",
+      "localized": "推測モード",
+      "hint": "ControlNetにプロンプトを提供する必要がなくなります。 Controlnetエンコーダーに、入力コントロールマップの内容に基づいて「最善の推測」を強制します。"
+    },
+    {
+      "id": "",
+      "label": "Control Only",
+      "localized": "コントロールのみ",
+      "hint": "これは、以下の Control 入力のみを、さまざまなオプションに基づいて ControlNet または IP アダプタータイプのタスクのソースとして使用します。"
+    },
+    {
+      "id": "",
+      "label": "Init Image Same As Control",
+      "localized": "初期画像をコントロールと同じにする",
+      "hint": "Control入力ウィンドウに配置された画像を、img2imgタイプのタスクのソースとしても扱います。たとえば、変更する画像などです。"
+    },
+    {
+      "id": "",
+      "label": "Separate Init Image",
+      "localized": "初期画像を分離する",
+      "hint": "Control入力の横に追加のウィンドウを作成し、初期入力というラベルを付けます。これにより、Control操作と初期ソースの両方に別々の画像を使用できます。"
+    },
+    {
+      "id": "",
+      "label": "Override settings",
+      "localized": "設定の上書き",
+      "hint": "生成パラメータがシステム設定から逸脱している場合、それらの設定が入力されたオーバーライド設定を使用して、このワークフローのシステム構成を上書きします"
+    }
+  ],
+  "other": [
+    {
+      "id": "",
+      "label": "Install",
+      "localized": "インストール",
+      "hint": "インストール"
+    },
+    {
+      "id": "",
+      "label": "Search",
+      "localized": "検索",
+      "hint": "検索"
+    },
+    {
+      "id": "",
+      "label": "Sort by",
+      "localized": "並べ替え",
+      "hint": "並べ替え"
+    },
+    {
+      "id": "",
+      "label": "Manage extensions",
+      "localized": "拡張機能の管理",
+      "hint": "拡張機能を管理"
+    },
+    {
+      "id": "",
+      "label": "Manual install",
+      "localized": "手動インストール",
+      "hint": "手動で拡張機能をインストール"
+    },
+    {
+      "id": "",
+      "label": "Extension GIT repository URL",
+      "localized": "拡張機能のGITリポジトリURL",
+      "hint": "GitHub上の拡張機能リポジトリURLを指定"
+    },
+    {
+      "id": "",
+      "label": "Specific branch name",
+      "localized": "特定のブランチ名",
+      "hint": "拡張機能のブランチ名を指定（デフォルトを使用する場合は空白）"
+    },
+    {
+      "id": "",
+      "label": "Local directory name",
+      "localized": "ローカルディレクトリ名",
+      "hint": "拡張機能のインストール先ディレクトリ（デフォルトを使用する場合は空白）"
+    },
+    {
+      "id": "",
+      "label": "Refresh extension list",
+      "localized": "拡張機能リストの更新",
+      "hint": "利用可能な拡張機能のリストを更新"
+    },
+    {
+      "id": "",
+      "label": "Update all installed",
+      "localized": "インストール済みのものをすべて更新",
+      "hint": "インストールされている拡張機能を最新バージョンに更新"
+    },
+    {
+      "id": "",
+      "label": "Apply changes",
+      "localized": "変更を適用",
+      "hint": "すべての変更を適用してサーバーを再起動"
+    },
+    {
+      "id": "",
+      "label": "uninstall",
+      "localized": "アンインストール",
+      "hint": "この拡張機能をアンインストール"
+    },
+    {
+      "id": "",
+      "label": "User interface",
+      "localized": "ユーザーインターフェース",
+      "hint": "ユーザーインターフェースの設定を確認および変更"
+    },
+    {
+      "id": "",
+      "label": "Set ui defaults",
+      "localized": "UIのデフォルトを設定",
+      "hint": "現在の値をユーザーインターフェースのデフォルト値として設定"
+    },
+    {
+      "id": "",
+      "label": "Benchmark",
+      "localized": "ベンチマーク",
+      "hint": "ベンチマークを実行"
+    },
+    {
+      "id": "",
+      "label": "Models & Networks",
+      "localized": "モデルとネットワーク",
+      "hint": "利用可能なすべてのモデルとネットワークのリストを表示"
+    },
+    {
+      "id": "",
+      "label": "Restore UI defaults",
+      "localized": "UIのデフォルトを復元",
+      "hint": "ユーザーインターフェースのデフォルト値を復元"
+    },
+    {
+      "id": "",
+      "label": "detailer classes",
+      "localized": "detailer クラス",
+      "hint": "選択したdetailerモデルがマルチクラスモデルの場合に使用する特定のクラスを指定"
+    },
+    {
+      "id": "",
+      "label": "detailer models",
+      "localized": "detailer モデル",
+      "hint": "ディテールに使用する検出モデルを選択"
+    },
+    {
+      "id": "",
+      "label": "detailer negative prompt",
+      "localized": "detailer ネガティブプロンプト",
+      "hint": "detailerに個別のネガティブプロンプトを使用。存在しない場合、プライマリネガティブプロンプトを使用"
+    },
+    {
+      "id": "",
+      "label": "detailer prompt",
+      "localized": "detailer プロンプト",
+      "hint": "detailerに個別のプロンプトを使用。存在しない場合、プライマリプロンプトを使用"
+    },
+    {
+      "id": "",
+      "label": "detailer steps",
+      "localized": "detailer ステップ数",
+      "hint": "detailer処理を実行するステップ数"
+    },
+    {
+      "id": "",
+      "label": "detailer strength",
+      "localized": "detailer 強度",
+      "hint": "detailer処理のノイズ除去強度"
+    },
+    {
+      "id": "",
+      "label": "detailer use model augment",
+      "localized": "detailer モデル拡張を使用",
+      "hint": "detailer検出モデルを高精度で実行"
+    },
+    {
+      "id": "",
+      "label": "max detected",
+      "localized": "最大検出数",
+      "hint": "detailerを実行する検出されたオブジェクトの最大数"
+    },
+    {
+      "id": "",
+      "label": "edge blur",
+      "localized": "エッジぼかし",
+      "hint": "マスクされた領域のエッジをこのパーセンテージでぼかす"
+    },
+    {
+      "id": "",
+      "label": "edge padding",
+      "localized": "エッジパディング",
+      "hint": "マスクされた領域のエッジをこのパーセンテージで拡張"
+    },
+    {
+      "id": "",
+      "label": "min confidence",
+      "localized": "最小信頼度",
+      "hint": "検出されたアイテムの最小信頼度"
+    },
+    {
+      "id": "",
+      "label": "max overlap",
+      "localized": "最大オーバーラップ",
+      "hint": "2つの検出されたアイテム間の最大オーバーラップ。これを超えると片方が破棄される"
+    },
+    {
+      "id": "",
+      "label": "min size",
+      "localized": "最小サイズ",
+      "hint": "検出されたオブジェクトの最小サイズ（画像全体のパーセンテージ）"
+    },
+    {
+      "id": "",
+      "label": "max size",
+      "localized": "最大サイズ",
+      "hint": "検出されたオブジェクトの最大サイズ（画像全体のパーセンテージ）"
+    },
+    {
+      "id": "",
+      "label": "Process Image",
+      "localized": "画像を処理",
+      "hint": "単一の画像を処理"
+    },
+    {
+      "id": "",
+      "label": "Process Batch",
+      "localized": "バッチ処理",
+      "hint": "画像のバッチを処理"
+    },
+    {
+      "id": "",
+      "label": "Process Folder",
+      "localized": "フォルダを処理",
+      "hint": "フォルダ内のすべての画像を処理"
+    },
+    {
+      "id": "",
+      "label": "Scale by",
+      "localized": "スケール",
+      "hint": "ソース画像を特定の倍率でリサイズするために使用"
+    },
+    {
+      "id": "",
+      "label": "Scale to",
+      "localized": "スケール先",
+      "hint": "ソース画像を特定のターゲットサイズにリサイズするために使用"
+    },
+    {
+      "id": "",
+      "label": "Input directory",
+      "localized": "入力ディレクトリ",
+      "hint": "処理する画像が格納されているフォルダ"
+    },
+    {
+      "id": "",
+      "label": "Output directory",
+      "localized": "出力ディレクトリ",
+      "hint": "処理された画像の保存先フォルダ"
+    },
+    {
+      "id": "",
+      "label": "Show result images",
+      "localized": "結果の画像を表示",
+      "hint": "処理された画像を画像ペインに表示するかどうか"
+    },
+    {
+      "id": "",
+      "label": "Crop to fit",
+      "localized": "合わせてクロップ",
+      "hint": "ソース画像（例：512x510）の寸法がターゲット寸法（例：1024x768）と異なる場合、アップスケールされた画像をターゲットサイズに合わせます。余分な部分は切り取られます"
+    },
+    {
+      "id": "",
+      "label": "Refine Upscaler",
+      "localized": "アップスケーラーを精緻化",
+      "hint": "初期アップスケーラーの後に実行する二次アップスケーラーを選択"
+    },
+    {
+      "id": "",
+      "label": "Upscaler 2 visibility",
+      "localized": "アップスケーラー2の可視性",
+      "hint": "二次アップスケーラーの強度"
+    },
+    {
+      "id": "",
+      "label": "Calculate hash for all models",
+      "localized": "すべてのモデルのハッシュを計算",
+      "hint": "利用可能なすべてのモデルのハッシュを計算します。これには非常に時間がかかる場合があります。"
+    },
+    {
+      "id": "",
+      "label": "Weights Clip",
+      "localized": "重みのクリップ",
+      "hint": "強制的にマージされた重みを元のモデルよりも重くしないようにし、焼き付きや過度に彩度の高いモデルを防ぎます。"
+    },
+    {
+      "id": "",
+      "label": "ReBasin",
+      "localized": "ReBasin",
+      "hint": "両方のモデルからより多くの機能を維持するために、順列を使用して複数のマージを実行します。"
+    },
+    {
+      "id": "",
+      "label": "Number of ReBasin Iterations",
+      "localized": "ReBasinの反復回数",
+      "hint": "保存する前にモデルをマージおよび順列する回数"
+    },
+    {
+      "id": "",
+      "label": "cpu",
+      "localized": "CPU",
+      "hint": "CPUとRAMのみを使用: 最も遅いが、OOMが発生する可能性が最も低い"
+    },
+    {
+      "id": "",
+      "label": "shuffle",
+      "localized": "シャッフル",
+      "hint": "RAMにフルモデルをロードし、VRAMで計算: スピードアップは少ない。SDXLマージに推奨"
+    },
+    {
+      "id": "",
+      "label": "In Blocks",
+      "localized": "入力ブロック",
+      "hint": "UNetのダウンサンプリングブロック (SD1.5の場合は12個の値、SDXLの場合は9個の値)"
+    },
+    {
+      "id": "",
+      "label": "Mid Block",
+      "localized": "中間ブロック",
+      "hint": "UNetの中央ブロック (1つの値)"
+    },
+    {
+      "id": "",
+      "label": "Out Block",
+      "localized": "出力ブロック",
+      "hint": "UNetのアップサンプリングブロック (SD1.5の場合は12個の値、SDXLの場合は9個の値)"
+    },
+    {
+      "id": "",
+      "label": "Preset Interpolation Ratio",
+      "localized": "プリセットの補間率",
+      "hint": "2つのプリセットが選択されている場合、それらの間で補間します。"
+    },
+    {
+      "id": "",
+      "label": "adapter",
+      "localized": "アダプター",
+      "hint": "IPアダプターモデル"
+    },
+    {
+      "id": "",
+      "label": "active ip adapters",
+      "localized": "アクティブなIPアダプター",
+      "hint": "アクティブなIPアダプターの数"
+    },
+    {
+      "id": "",
+      "label": "unload adapter",
+      "localized": "アダプターのアンロード",
+      "hint": "生成後すぐにIPアダプターをアンロードします。それ以外の場合、IPアダプターはロードされたままになり、次の生成プロセスで高速に使用できます"
+    },
+    {
+      "id": "",
+      "label": "crop to portrait",
+      "localized": "ポートレートにクロップ",
+      "hint": "IPアダプター入力として使用する前に、入力画像をポートレートのみにクロップします"
+    },
+    {
+      "id": "",
+      "label": "layer options",
+      "localized": "レイヤーオプション",
+      "hint": "IPアダプターの詳細レイヤーオプションを手動で指定します"
+    },
+    {
+      "id": "",
+      "label": "X values",
+      "localized": "X値",
+      "hint": "コンマを使用してX軸の値を区切ります"
+    },
+    {
+      "id": "",
+      "label": "Y values",
+      "localized": "Y値",
+      "hint": "コンマを使用してY軸の値を区切ります"
+    },
+    {
+      "id": "",
+      "label": "Z values",
+      "localized": "Z値",
+      "hint": "コンマを使用してZ軸の値を区切ります"
+    },
+    {
+      "id": "",
+      "label": "Loops",
+      "localized": "ループ",
+      "hint": "画像を処理する回数。 各出力は、次のループの入力として使用されます。 1に設定すると、このスクリプトを使用していないかのように動作します"
+    },
+    {
+      "id": "",
+      "label": "Final denoising strength",
+      "localized": "最終的なノイズ除去強度",
+      "hint": "バッチ内の各画像の最後のループのノイズ除去強度"
+    },
+    {
+      "id": "",
+      "label": "Denoising strength curve",
+      "localized": "ノイズ除去強度曲線",
+      "hint": "ノイズ除去曲線は、各ループのノイズ除去強度の変化率を制御します。 アグレッシブ: ほとんどの変化はループの開始時に発生します。 リニア: 変更はすべてのループで一定になります。 レイジー: ほとんどの変化はループの最後に発生します"
+    },
+    {
+      "id": "",
+      "label": "Tile overlap",
+      "localized": "タイルのオーバーラップ",
+      "hint": "SDアップスケールの場合、タイル間にどのくらいのピクセルのオーバーラップがある必要がありますか。 タイルはオーバーラップしているので、1つの画像に戻すときに、明確な継ぎ目が見えません。"
+    }
+  ],
+  "settings": [
+    {
+      "id": "settings_submit",
+      "label": "Apply settings",
+      "localized": "設定を適用",
+      "hint": "現在の設定を保存します。サーバーの再起動を推奨します。"
+    },
+    {
+      "id": "restart_submit",
+      "label": "Restart server",
+      "localized": "サーバーを再起動",
+      "hint": "サーバーを再起動します。"
+    },
+    {
+      "id": "shutdown_submit",
+      "label": "Shutdown server",
+      "localized": "サーバーをシャットダウン",
+      "hint": "サーバーをシャットダウンします。"
+    },
+    {
+      "id": "settings_preview_theme",
+      "label": "Preview theme",
+      "localized": "テーマをプレビュー",
+      "hint": "テーマのプレビューを表示します。"
+    },
+    {
+      "id": "defaults_submit",
+      "label": "Restore defaults",
+      "localized": "デフォルトを復元",
+      "hint": "サーバー設定をデフォルトに戻します。"
+    },
+    {
+      "id": "sett_unload_sd_model",
+      "label": "Unload model",
+      "localized": "モデルをアンロード",
+      "hint": "現在ロードされているモデルをアンロードします。"
+    },
+    {
+      "id": "sett_reload_sd_model",
+      "label": "Reload model",
+      "localized": "モデルを再ロード",
+      "hint": "現在選択されているモデルを再ロードします。"
+    },
+    {
+      "id": "",
+      "label": "Models & Loading",
+      "localized": "モデルとロード",
+      "hint": "ベースモデル、プライマリバックエンド、モデルのロード動作に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Variable Auto Encoder",
+      "localized": "可変オートエンコーダー",
+      "hint": "生成時の可変オートエンコーダーと画像のデコード処理に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Text encoder",
+      "localized": "テキストエンコーダー",
+      "hint": "生成時のテキストエンコーダーとプロンプトエンコード処理に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Compute Settings",
+      "localized": "計算設定",
+      "hint": "計算精度、クロスアテンション、コンピューティングプラットフォームの最適化に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Backend Settings",
+      "localized": "バックエンド設定",
+      "hint": "計算バックエンド（torch、onnx、olive）に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Quantization Settings",
+      "localized": "量子化設定",
+      "hint": "モデルの量子化に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Pipeline modifiers",
+      "localized": "パイプライン修飾子",
+      "hint": "生成中に有効にできる追加機能です。"
+    },
+    {
+      "id": "",
+      "label": "Model compile",
+      "localized": "モデルコンパイル",
+      "hint": "さまざまなモデルコンパイル方法に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "System Paths",
+      "localized": "システムパス",
+      "hint": "さまざまなモデルディレクトリの場所に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Image Options",
+      "localized": "画像オプション",
+      "hint": "画像形式、メタデータ、画像グリッドに関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "image Paths",
+      "localized": "画像パス",
+      "hint": "画像のファイル名と出力ディレクトリに関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Live Previews",
+      "localized": "ライブプレビュー",
+      "hint": "ライブプレビュー、オーディオ通知に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Sampler Settings",
+      "localized": "サンプラー設定",
+      "hint": "サンプラーの選択と構成、および Diffuser 固有のサンプラー構成に関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Postprocessing",
+      "localized": "ポストプロセッシング",
+      "hint": "画像生成後の処理、顔の復元、アップスケーリングに関する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Control Options",
+      "localized": "コントロールオプション",
+      "hint": "Controlタブに関連する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Huggingface",
+      "localized": "Huggingface",
+      "hint": "Huggingfaceへのアクセスに関連する設定です。"
+    },
+    {
+      "id": "",
+      "label": "Show all pages",
+      "localized": "すべてのページを表示",
+      "hint": "すべての設定ページを表示します。"
+    },
+    {
+      "id": "",
+      "label": "base model",
+      "localized": "ベースモデル",
+      "hint": "すべての操作に使用されるメインモデル。"
+    },
+    {
+      "id": "",
+      "label": "refiner model",
+      "localized": "リファイナーモデル",
+      "hint": "2回目の処理に使用されるリファイナーモデル。"
+    },
+    {
+      "id": "",
+      "label": "Cached models",
+      "localized": "キャッシュされたモデル",
+      "hint": "RAMに保存して迅速にアクセスできるモデルの数。"
+    },
+    {
+      "id": "",
+      "label": "VAE model",
+      "localized": "VAEモデル",
+      "hint": "VAEは最終的な画像の微細なディテールを向上させ、色を変更する可能性もあります。"
+    },
+    {
+      "id": "",
+      "label": "Model load using streams",
+      "localized": "ストリームを使用したモデルロード",
+      "hint": "モデルのロード時に、低速またはネットワークストレージ用に最適化されたストリームロードを試みます。"
+    },
+    {
+      "id": "",
+      "label": "xFormers",
+      "localized": "xFormers",
+      "hint": "メモリの最適化。非決定的（毎回異なる結果）。"
+    },
+    {
+      "id": "",
+      "label": "Scaled-Dot-Product",
+      "localized": "Scaled-Dot-Product",
+      "hint": "メモリの最適化。SDPメモリアテンションが無効になっていない限り、非決定的です。"
+    },
+    {
+      "id": "",
+      "label": "Prompt padding",
+      "localized": "プロンプトパディング",
+      "hint": "75トークンを超える使用時に、最後のカンマからnトークン以内でパディングすることにより一貫性を高めます。"
+    },
+    {
+      "id": "",
+      "label": "Original",
+      "localized": "オリジナル",
+      "hint": "オリジナルのLDMバックエンド。"
+    },
+    {
+      "id": "",
+      "label": "Autocast",
+      "localized": "オートキャスト",
+      "hint": "実行中に精度を自動的に決定します。"
+    },
+    {
+      "id": "",
+      "label": "Full",
+      "localized": "フル",
+      "hint": "常にフル精度を使用します。"
+    },
+    {
+      "id": "",
+      "label": "FP32",
+      "localized": "FP32",
+      "hint": "計算に32ビット浮動小数点精度を使用します。"
+    },
+    {
+      "id": "",
+      "label": "FP16",
+      "localized": "FP16",
+      "hint": "計算に16ビット浮動小数点精度を使用します。"
+    },
+    {
+      "id": "",
+      "label": "BF16",
+      "localized": "BF16",
+      "hint": "計算に修正された16ビット浮動小数点精度を使用します。"
+    },
+    {
+      "id": "",
+      "label": "Full precision (--no-half-vae)",
+      "localized": "フル精度 (--no-half-vae)",
+      "hint": "VAEにFP32を使用します。VRAMをより多く使用し、生成が遅くなりますが、より良い結果が得られる場合があります。"
+    },
+    {
+      "id": "",
+      "label": "Force full precision (--no-half)",
+      "localized": "フル精度を強制 (--no-half)",
+      "hint": "モデルにFP32を使用します。VRAMをより多く使用し、生成が遅くなりますが、より良い結果が得られる場合があります。"
+    },
+    {
+      "id": "",
+      "label": "Upcast sampling",
+      "localized": "アップキャストサンプリング",
+      "hint": "通常、メモリの使用量を減らしながら、より優れたパフォーマンスで--no-halfと同様の結果が得られます。"
+    },
+    {
+      "id": "",
+      "label": "Attempt VAE roll back for NaN values",
+      "localized": "NaN値に対してVAEロールバックを試行",
+      "hint": "Torch 2.1とNaNチェックが有効になっている必要があります。"
+    },
+    {
+      "id": "",
+      "label": "Olive use FP16 on optimization",
+      "localized": "Oliveは最適化でFP16を使用",
+      "hint": "Olive最適化プロセスの出力モデルに16ビット浮動小数点精度を使用します。無効にした場合は32ビット浮動小数点精度を使用します。"
+    },
+    {
+      "id": "",
+      "label": "Olive force FP32 for VAE Encoder",
+      "localized": "OliveはVAEエンコーダーにFP32を強制",
+      "hint": "出力モデルのVAEエンコーダーに32ビット浮動小数点精度を使用します。これにより、「最適化でFP16を使用」オプションが上書きされます。Img2ImgからNaNまたは黒いブランク画像が表示される場合は、このオプションを有効にしてキャッシュを削除してください。"
+    },
+    {
+      "id": "",
+      "label": "Olive use static dimensions",
+      "localized": "Oliveは静的ディメンションを使用",
+      "hint": "Olive最適化モデルによる推論を大幅に高速化します。（OrtTransformersOptimization）"
+    },
+    {
+      "id": "",
+      "label": "Olive cache optimized models",
+      "localized": "Oliveは最適化されたモデルをキャッシュ",
+      "hint": "Olive処理されたモデルをキャッシュとして保存します。ONNXタブで管理できます。"
+    },
+    {
+      "id": "",
+      "label": "File format",
+      "localized": "ファイル形式",
+      "hint": "画像のファイル形式を選択します。"
+    },
+    {
+      "id": "",
+      "label": "Include metadata",
+      "localized": "メタデータを含める",
+      "hint": "画像作成パラメータをメタデータタグとして画像ファイル内に保存します。"
+    },
+    {
+      "id": "",
+      "label": "Images filename pattern",
+      "localized": "画像ファイル名パターン",
+      "hint": "画像のファイル名を選択する方法を定義するには、次のタグを使用します:<br><pre>seq, uuid<br>date, datetime, job_timestamp<br>generation_number, batch_number<br>model, model_shortname<br>model_hash, model_name<br>sampler, seed, steps, cfg<br>clip_skip, denoising<br>hasprompt, prompt, styles<br>prompt_hash, prompt_no_styles<br>prompt_spaces, prompt_words<br>height, width, image_hash<br></pre>"
+    },
+    {
+      "id": "",
+      "label": "Row count",
+      "localized": "行数",
+      "hint": "自動検出には -1 を使用し、バッチサイズと同じにするには 0 を使用します。"
+    },
+    {
+      "id": "",
+      "label": "Directory name pattern",
+      "localized": "ディレクトリ名パターン",
+      "hint": "画像とグリッドのサブディレクトリを選択する方法を定義するには、次のタグを使用します: [steps], [cfg],[prompt_hash], [prompt], [prompt_no_styles], [prompt_spaces], [width], [height], [styles], [sampler], [seed], [model_hash], [model_name], [prompt_words], [date], [datetime], [datetime<Format>], [datetime<Format><Time Zone>], [job_timestamp]; デフォルトの場合は空のままにします。"
+    },
+    {
+      "id": "",
+      "label": "Inpainting conditioning mask strength",
+      "localized": "インペインティングの条件マスクの強度",
+      "hint": "インペインティングおよびimg2imgのために、元の画像をどの程度強くマスクするかを決定します。1.0は完全にマスクされた状態（デフォルト）を意味します。0.0は完全にマスクされていない状態を意味します。値を小さくすると、画像の全体的な構成を維持するのに役立ちますが、大きな変更には苦労します。"
+    },
+    {
+      "id": "",
+      "label": "Clip skip",
+      "localized": "クリップスキップ",
+      "hint": "CLIPモデルの早期停止パラメータ。1は通常どおり最後のレイヤーで停止、2は最後から2番目のレイヤーで停止など。"
+    },
+    {
+      "id": "",
+      "label": "Images folder",
+      "localized": "画像フォルダー",
+      "hint": "空の場合、デフォルトで以下の3つのディレクトリになります。"
+    },
+    {
+      "id": "",
+      "label": "Grids folder",
+      "localized": "グリッドフォルダー",
+      "hint": "空の場合、デフォルトで以下の2つのディレクトリになります。"
+    },
+    {
+      "id": "",
+      "label": "Quicksettings list",
+      "localized": "クイック設定リスト",
+      "hint": "設定タブではなく、上部のクイックアクセスバーに表示する設定の名前をカンマで区切ったリスト。"
+    },
+    {
+      "id": "",
+      "label": "Live preview display period",
+      "localized": "ライブプレビュー表示期間",
+      "hint": "nステップごとにプレビュー画像を要求します。無効にするには0に設定します。"
+    },
+    {
+      "id": "",
+      "label": "Approximate",
+      "localized": "概算",
+      "hint": "安価なニューラルネットワーク近似。VAEと比較して非常に高速ですが、水平/垂直解像度が4分の1小さく、品質が低い画像が生成されます。"
+    },
+    {
+      "id": "",
+      "label": "Simple",
+      "localized": "シンプル",
+      "hint": "非常に安価な近似。VAEと比較して非常に高速ですが、水平/垂直解像度が8分の1小さく、品質が極端に低い画像が生成されます。"
+    },
+    {
+      "id": "",
+      "label": "Progress update period",
+      "localized": "進捗状況の更新期間",
+      "hint": "UIプログレスバーとプレビューチェックの更新期間（ミリ秒）。"
+    },
+    {
+      "id": "",
+      "label": "Euler a",
+      "localized": "Euler a",
+      "hint": "Euler Ancestral - 非常にクリエイティブで、ステップ数に応じて完全に異なる画像が得られる可能性があります。ステップ数を30〜40以上に設定しても効果はありません。"
+    },
+    {
+      "id": "",
+      "label": "DDIM",
+      "localized": "DDIM",
+      "hint": "Denoising Diffusion Implicit Models - インペインティングに最適です。"
+    },
+    {
+      "id": "",
+      "label": "UniPC",
+      "localized": "UniPC",
+      "hint": "拡散モデルの高速サンプリングのための統合予測子修正フレームワーク。"
+    },
+    {
+      "id": "",
+      "label": "sigma negative guidance minimum",
+      "localized": "シグマネガティブガイダンスの最小値",
+      "hint": "画像がほぼ完成しているときに、一部のステップでネガティブプロンプトをスキップします。0 = 無効。"
+    },
+    {
+      "id": "",
+      "label": "Upscaler tile size",
+      "localized": "アップスケーラータイルサイズ",
+      "hint": "0 = タイリングなし。"
+    },
+    {
+      "id": "",
+      "label": "Upscaler tile overlap",
+      "localized": "アップスケーラータイルのオーバーラップ",
+      "hint": "値が小さいほど、目に見える継ぎ目ができます。"
+    },
+    {
+      "id": "",
+      "label": "GFPGAN",
+      "localized": "GFPGAN",
+      "hint": "GFPGANニューラルネットワークを使用して低品質の顔を復元します。"
+    },
+    {
+      "id": "",
+      "label": "CodeFormer weight parameter",
+      "localized": "CodeFormerの重みパラメータ",
+      "hint": "0 = 最大効果、1 = 最小効果。"
+    },
+    {
+      "id": "",
+      "label": "ToMe token merging ratio",
+      "localized": "ToMeトークン結合比",
+      "hint": "速度とメモリを改善するために、tomesdを介して冗長なトークン結合を有効にします。0=無効。"
+    },
+    {
+      "id": "",
+      "label": "Todo token merging ratio",
+      "localized": "Todoトークン結合比",
+      "hint": "速度とメモリを改善するために、todoを介して冗長なトークン結合を有効にします。0=無効。"
+    },
+    {
+      "id": "",
+      "label": "Model pipeline",
+      "localized": "モデルパイプライン",
+      "hint": "自動検出でモデルが自動的に検出されない場合は、モデルをロードする前にモデルタイプを選択してください。"
+    },
+    {
+      "id": "",
+      "label": "VAE slicing",
+      "localized": "VAEスライシング",
+      "hint": "制限されたVRAMで、バッチ潜在空間を一度に1つの画像としてデコードします。マルチイメージバッチでのVAEデコードのパフォーマンスがわずかに向上します。"
+    },
+    {
+      "id": "",
+      "label": "VAE tiling",
+      "localized": "VAEタイリング",
+      "hint": "制限されたVRAMで大きな画像をオーバーラップタイルに分割します。処理時間がわずかに増加します。"
+    },
+    {
+      "id": "",
+      "label": "Dynamic attention BMM",
+      "localized": "動的アテンションBMM",
+      "hint": "アテンション計算を一度に実行するのではなく、段階的に実行します。推論時間が遅くなりますが、メモリ使用量が大幅に削減されます。"
+    },
+    {
+      "id": "",
+      "label": "ONNX Execution Provider",
+      "localized": "ONNX実行プロバイダー",
+      "hint": "ONNX実行プロバイダー。"
+    },
+    {
+      "id": "",
+      "label": "ONNX allow fallback to CPU",
+      "localized": "ONNXはCPUへのフォールバックを許可",
+      "hint": "選択した実行プロバイダーが失敗した場合に、CPUへのフォールバックを許可します。"
+    },
+    {
+      "id": "",
+      "label": "ONNX cache converted models",
+      "localized": "ONNXは変換されたモデルをキャッシュ",
+      "hint": "ONNX形式に変換されたモデルをキャッシュとして保存します。ONNXタブで管理できます。"
+    },
+    {
+      "id": "",
+      "label": "ONNX unload base model when processing refiner",
+      "localized": "リファイナーの処理時にONNXはベースモデルをアンロード",
+      "hint": "リファイナーの変換/最適化/処理時にベースモデルをアンロードします。"
+    },
+    {
+      "id": "",
+      "label": "inference-mode",
+      "localized": "推論モード",
+      "hint": "torch.inference_modeを使用します。"
+    },
+    {
+      "id": "",
+      "label": "no-grad",
+      "localized": "no-grad",
+      "hint": "torch.no_gradを使用します。"
+    },
+    {
+      "id": "",
+      "label": "model compile precompile",
+      "localized": "モデルコンパイルのプリコンパイル",
+      "hint": "最初の使用時ではなく、モデルのロード時にすぐにモデルコンパイルを実行します。"
+    },
+    {
+      "id": "",
+      "label": "Use zeros for prompt padding",
+      "localized": "プロンプトパディングにゼロを使用",
+      "hint": "プロンプトが空の場合に、残留ノイズを除去するために、完全なゼロテンソルを強制的に使用します。"
+    },
+    {
+      "id": "",
+      "label": "Include invisible watermark",
+      "localized": "不可視の透かしを含める",
+      "hint": "一部のピクセル値を変更することにより、不可視の透かしを画像に追加します。"
+    },
+    {
+      "id": "",
+      "label": "invisible watermark string",
+      "localized": "不可視の透かし文字列",
+      "hint": "画像に追加する透かし文字列。画像の破損を避けるために、非常に短くしてください。"
+    },
+    {
+      "id": "",
+      "label": "show log view",
+      "localized": "ログビューを表示",
+      "hint": "メインウィンドウの下部にログビューを表示します。"
+    },
+    {
+      "id": "",
+      "label": "Log view update period",
+      "localized": "ログビューの更新期間",
+      "hint": "ログビューの更新期間（ミリ秒）。"
+    },
+    {
+      "id": "",
+      "label": "PAG layer names",
+      "localized": "PAGレイヤー名",
+      "hint": "スペースで区切られたレイヤーのリスト<br>利用可能: d[0-5], m[0], u[0-8]<br>デフォルト: m0"
+    }
+  ],
+  "missing": [
+    {
+      "id": "",
+      "label": "1 day",
+      "localized": "1日",
+      "hint": "1日"
+    },
+    {
+      "id": "",
+      "label": "14 days",
+      "localized": "14日間",
+      "hint": "14日間"
+    },
+    {
+      "id": "",
+      "label": "1st stage",
+      "localized": "第1段階",
+      "hint": "第1段階"
+    },
+    {
+      "id": "",
+      "label": "1st stage backbone",
+      "localized": "第1段階バックボーン",
+      "hint": "第1段階バックボーン"
+    },
+    {
+      "id": "",
+      "label": "1st stage skip",
+      "localized": "第1段階スキップ",
+      "hint": "第1段階スキップ"
+    },
+    {
+      "id": "",
+      "label": "2nd restart step",
+      "localized": "2回目の再起動ステップ",
+      "hint": "2回目の再起動ステップ"
+    },
+    {
+      "id": "",
+      "label": "2nd scale",
+      "localized": "2回目のスケール",
+      "hint": "2回目のスケール"
+    },
+    {
+      "id": "",
+      "label": "2nd stage",
+      "localized": "第2段階",
+      "hint": "第2段階"
+    },
+    {
+      "id": "",
+      "label": "2nd stage backbone",
+      "localized": "第2段階バックボーン",
+      "hint": "第2段階バックボーン"
+    },
+    {
+      "id": "",
+      "label": "2nd stage skip",
+      "localized": "第2段階スキップ",
+      "hint": "第2段階スキップ"
+    },
+    {
+      "id": "",
+      "label": "3 days",
+      "localized": "3日間",
+      "hint": "3日間"
+    },
+    {
+      "id": "",
+      "label": "30 days",
+      "localized": "30日間",
+      "hint": "30日間"
+    },
+    {
+      "id": "",
+      "label": "3rd restart step",
+      "localized": "3回目の再起動ステップ",
+      "hint": "3回目の再起動ステップ"
+    },
+    {
+      "id": "",
+      "label": "3rd scale",
+      "localized": "3回目のスケール",
+      "hint": "3回目のスケール"
+    },
+    {
+      "id": "",
+      "label": "3rd stage",
+      "localized": "第3段階",
+      "hint": "第3段階"
+    },
+    {
+      "id": "",
+      "label": "4th restart step",
+      "localized": "4回目の再起動ステップ",
+      "hint": "4回目の再起動ステップ"
+    },
+    {
+      "id": "",
+      "label": "4th scale",
+      "localized": "4回目のスケール",
+      "hint": "4回目のスケール"
+    },
+    {
+      "id": "",
+      "label": "4th stage",
+      "localized": "第4段階",
+      "hint": "第4段階"
+    },
+    {
+      "id": "",
+      "label": "7 days",
+      "localized": "7日間",
+      "hint": "7日間"
+    },
+    {
+      "id": "",
+      "label": "90 days",
+      "localized": "90日間",
+      "hint": "90日間"
+    },
+    {
+      "id": "",
+      "label": "a1111",
+      "localized": "a1111",
+      "hint": "a1111"
+    },
+    {
+      "id": "",
+      "label": "accuracy",
+      "localized": "精度",
+      "hint": "精度"
+    },
+    {
+      "id": "",
+      "label": "active",
+      "localized": "アクティブ",
+      "hint": "アクティブ"
+    },
+    {
+      "id": "",
+      "label": "adain",
+      "localized": "AdaIN",
+      "hint": "AdaIN"
+    },
+    {
+      "id": "",
+      "label": "adapter 1",
+      "localized": "アダプター1",
+      "hint": "アダプター1"
+    },
+    {
+      "id": "",
+      "label": "adapter 2",
+      "localized": "アダプター2",
+      "hint": "アダプター2"
+    },
+    {
+      "id": "",
+      "label": "adapter 3",
+      "localized": "アダプター3",
+      "hint": "アダプター3"
+    },
+    {
+      "id": "",
+      "label": "adapter 4",
+      "localized": "アダプター4",
+      "hint": "アダプター4"
+    },
+    {
+      "id": "",
+      "label": "adaptive restore",
+      "localized": "適応復元",
+      "hint": "適応復元"
+    },
+    {
+      "id": "",
+      "label": "add text info",
+      "localized": "テキスト情報を追加",
+      "hint": "テキスト情報を追加"
+    },
+    {
+      "id": "",
+      "label": "add time info",
+      "localized": "時間情報を追加",
+      "hint": "時間情報を追加"
+    },
+    {
+      "id": "",
+      "label": "additional image browser folders",
+      "localized": "追加の画像ブラウザフォルダ",
+      "hint": "追加の画像ブラウザフォルダ"
+    },
+    {
+      "id": "",
+      "label": "additional postprocessing operations",
+      "localized": "追加の後処理操作",
+      "hint": "追加の後処理操作"
+    },
+    {
+      "id": "",
+      "label": "after",
+      "localized": "後",
+      "hint": "後"
+    },
+    {
+      "id": "",
+      "label": "aggressive at step",
+      "localized": "ステップ{X}でアグレッシブに",
+      "hint": "ステップ{X}でアグレッシブに"
+    },
+    {
+      "id": "",
+      "label": "alias",
+      "localized": "エイリアス",
+      "hint": "エイリアス"
+    },
+    {
+      "id": "",
+      "label": "all",
+      "localized": "すべて",
+      "hint": "すべて"
+    },
+    {
+      "id": "",
+      "label": "allowed aspect ratios",
+      "localized": "許可されているアスペクト比",
+      "hint": "許可されているアスペクト比"
+    },
+    {
+      "id": "",
+      "label": "alpha",
+      "localized": "アルファ",
+      "hint": "アルファ"
+    },
+    {
+      "id": "",
+      "label": "alpha block weight preset",
+      "localized": "アルファブロックの重みプリセット",
+      "hint": "アルファブロックの重みプリセット"
+    },
+    {
+      "id": "",
+      "label": "alpha matting",
+      "localized": "アルファマット",
+      "hint": "アルファマット"
+    },
+    {
+      "id": "",
+      "label": "alpha preset",
+      "localized": "アルファプリセット",
+      "hint": "アルファプリセット"
+    },
+    {
+      "id": "",
+      "label": "alpha ratio",
+      "localized": "アルファ比率",
+      "hint": "アルファ比率"
+    },
+    {
+      "id": "",
+      "label": "alt",
+      "localized": "代替",
+      "hint": "代替"
+    },
+    {
+      "id": "",
+      "label": "amplify lut",
+      "localized": "LUTを増幅",
+      "hint": "LUTを増幅"
+    },
+    {
+      "id": "",
+      "label": "analyze",
+      "localized": "分析",
+      "hint": "分析"
+    },
+    {
+      "id": "",
+      "label": "anchor settings",
+      "localized": "アンカー設定",
+      "hint": "アンカー設定"
+    },
+    {
+      "id": "",
+      "label": "animateddiff",
+      "localized": "AnimatedDiff",
+      "hint": "AnimatedDiff"
+    },
+    {
+      "id": "",
+      "label": "answer",
+      "localized": "答え",
+      "hint": "答え"
+    },
+    {
+      "id": "",
+      "label": "aot_ts_nvfuser",
+      "localized": "aot_ts_nvfuser",
+      "hint": "aot_ts_nvfuser"
+    },
+    {
+      "id": "",
+      "label": "appearance",
+      "localized": "外観",
+      "hint": "外観"
+    },
+    {
+      "id": "",
+      "label": "append image info json file",
+      "localized": "画像情報JSONファイルを追加",
+      "hint": "画像情報JSONファイルを追加"
+    },
+    {
+      "id": "",
+      "label": "append interrogated prompt at each iteration",
+      "localized": "各イテレーションで尋問されたプロンプトを追加",
+      "hint": "各イテレーションで尋問されたプロンプトを追加"
+    },
+    {
+      "id": "",
+      "label": "append to main ui",
+      "localized": "メインUIに追加",
+      "hint": "メインUIに追加"
+    },
+    {
+      "id": "",
+      "label": "apply color correction",
+      "localized": "カラーコレクションを適用",
+      "hint": "カラーコレクションを適用"
+    },
+    {
+      "id": "",
+      "label": "apply filter",
+      "localized": "フィルターを適用",
+      "hint": "フィルターを適用"
+    },
+    {
+      "id": "",
+      "label": "apply linfusion distillation on load",
+      "localized": "ロード時にLinFusion蒸留を適用",
+      "hint": "ロード時にLinFusion蒸留を適用"
+    },
+    {
+      "id": "",
+      "label": "apply mask as overlay",
+      "localized": "マスクをオーバーレイとして適用",
+      "hint": "マスクをオーバーレイとして適用"
+    },
+    {
+      "id": "",
+      "label": "apply msw-msa",
+      "localized": "MSW-MSAを適用",
+      "hint": "MSW-MSAを適用"
+    },
+    {
+      "id": "",
+      "label": "apply rau-net",
+      "localized": "RAU-Netを適用",
+      "hint": "RAU-Netを適用"
+    },
+    {
+      "id": "",
+      "label": "apply to model",
+      "localized": "モデルに適用",
+      "hint": "モデルに適用"
+    },
+    {
+      "id": "",
+      "label": "artists",
+      "localized": "アーティスト",
+      "hint": "アーティスト"
+    },
+    {
+      "id": "",
+      "label": "as a tab",
+      "localized": "タブとして",
+      "hint": "タブとして"
+    },
+    {
+      "id": "",
+      "label": "atiadlxx (amd only)",
+      "localized": "atiadlxx（AMDのみ）",
+      "hint": "atiadlxx（AMDのみ）"
+    },
+    {
+      "id": "",
+      "label": "attention",
+      "localized": "注意",
+      "hint": "注意"
+    },
+    {
+      "id": "",
+      "label": "attention adain",
+      "localized": "注意AdaIN",
+      "hint": "注意AdaIN"
+    },
+    {
+      "id": "",
+      "label": "attention cache enabled",
+      "localized": "注意キャッシュを有効にする",
+      "hint": "注意キャッシュを有効にする"
+    },
+    {
+      "id": "",
+      "label": "attention chunking threshold",
+      "localized": "注意チャンク化の閾値",
+      "hint": "注意チャンク化の閾値"
+    },
+    {
+      "id": "",
+      "label": "attention kv chunk size",
+      "localized": "注意 KV チャンクサイズ",
+      "hint": "注意 KV チャンクサイズ"
+    },
+    {
+      "id": "",
+      "label": "attention query chunk size",
+      "localized": "注意クエリチャンクサイズ",
+      "hint": "注意クエリチャンクサイズ"
+    },
+    {
+      "id": "",
+      "label": "auto",
+      "localized": "自動",
+      "hint": "自動"
+    },
+    {
+      "id": "",
+      "label": "auto apply",
+      "localized": "自動適用",
+      "hint": "自動適用"
+    },
+    {
+      "id": "",
+      "label": "auto requeue failed tasks",
+      "localized": "失敗したタスクを自動的に再キュー",
+      "hint": "失敗したタスクを自動的に再キュー"
+    },
+    {
+      "id": "",
+      "label": "auto-convert sd15 embeddings to sdxl",
+      "localized": "SD15埋め込みをSDXLに自動変換",
+      "hint": "SD15埋め込みをSDXLに自動変換"
+    },
+    {
+      "id": "",
+      "label": "auto-mask",
+      "localized": "自動マスク",
+      "hint": "自動マスク"
+    },
+    {
+      "id": "",
+      "label": "auto-segment",
+      "localized": "自動セグメント",
+      "hint": "自動セグメント"
+    },
+    {
+      "id": "",
+      "label": "autolaunch browser upon startup",
+      "localized": "起動時にブラウザを自動起動",
+      "hint": "起動時にブラウザを自動起動"
+    },
+    {
+      "id": "",
+      "label": "automatically determine rank",
+      "localized": "ランクを自動的に決定",
+      "hint": "ランクを自動的に決定"
+    },
+    {
+      "id": "",
+      "label": "autorank ratio",
+      "localized": "自動ランク比率",
+      "hint": "自動ランク比率"
+    },
+    {
+      "id": "",
+      "label": "available networks",
+      "localized": "利用可能なネットワーク",
+      "hint": "利用可能なネットワーク"
+    },
+    {
+      "id": "",
+      "label": "backend",
+      "localized": "バックエンド",
+      "hint": "バックエンド"
+    },
+    {
+      "id": "",
+      "label": "backend storage",
+      "localized": "バックエンドストレージ",
+      "hint": "バックエンドストレージ"
+    },
+    {
+      "id": "",
+      "label": "background threshold",
+      "localized": "背景の閾値",
+      "hint": "背景の閾値"
+    },
+    {
+      "id": "",
+      "label": "balanced",
+      "localized": "バランス",
+      "hint": "バランス"
+    },
+    {
+      "id": "",
+      "label": "balanced offload cpu high watermark",
+      "localized": "バランスの取れたオフロードCPU高水位標",
+      "hint": "バランスの取れたオフロードCPU高水位標"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu high watermark",
+      "localized": "バランスの取れたオフロードGPU高水位標",
+      "hint": "バランスの取れたオフロードGPU高水位標"
+    },
+    {
+      "id": "",
+      "label": "balanced offload gpu low watermark",
+      "localized": "バランスの取れたオフロードGPU低水位標",
+      "hint": "バランスの取れたオフロードGPU低水位標"
+    },
+    {
+      "id": "",
+      "label": "base",
+      "localized": "ベース",
+      "hint": "ベース"
+    },
+    {
+      "id": "",
+      "label": "batch input directory",
+      "localized": "バッチ入力ディレクトリ",
+      "hint": "バッチ入力ディレクトリ"
+    },
+    {
+      "id": "",
+      "label": "batch mask directory",
+      "localized": "バッチマスクディレクトリ",
+      "hint": "バッチマスクディレクトリ"
+    },
+    {
+      "id": "",
+      "label": "batch matrix-matrix",
+      "localized": "バッチ行列-行列",
+      "hint": "バッチ行列-行列"
+    },
+    {
+      "id": "",
+      "label": "batch mode uses sequential seeds",
+      "localized": "バッチモードはシーケンシャルシードを使用します",
+      "hint": "バッチモードはシーケンシャルシードを使用します"
+    },
+    {
+      "id": "",
+      "label": "batch output directory",
+      "localized": "バッチ出力ディレクトリ",
+      "hint": "バッチ出力ディレクトリ"
+    },
+    {
+      "id": "",
+      "label": "batch uses original name",
+      "localized": "バッチは元の名前を使用します",
+      "hint": "バッチは元の名前を使用します"
+    },
+    {
+      "id": "",
+      "label": "bdia ddim",
+      "localized": "BDIA DDIM",
+      "hint": "BDIA DDIM"
+    },
+    {
+      "id": "",
+      "label": "before",
+      "localized": "前",
+      "hint": "前"
+    },
+    {
+      "id": "",
+      "label": "benchmark level",
+      "localized": "ベンチマークレベル",
+      "hint": "ベンチマークレベル"
+    },
+    {
+      "id": "",
+      "label": "benchmark steps",
+      "localized": "ベンチマークステップ",
+      "hint": "ベンチマークステップ"
+    },
+    {
+      "id": "",
+      "label": "beta block weight preset",
+      "localized": "ベータブロックの重みプリセット",
+      "hint": "ベータブロックの重みプリセット"
+    },
+    {
+      "id": "",
+      "label": "beta end",
+      "localized": "ベータ終了",
+      "hint": "ベータ終了"
+    },
+    {
+      "id": "",
+      "label": "beta ratio",
+      "localized": "ベータ比率",
+      "hint": "ベータ比率"
+    },
+    {
+      "id": "",
+      "label": "beta schedule",
+      "localized": "ベータスケジュール",
+      "hint": "ベータスケジュール"
+    },
+    {
+      "id": "",
+      "label": "beta start",
+      "localized": "ベータ開始",
+      "hint": "ベータ開始"
+    },
+    {
+      "id": "",
+      "label": "between prompt and generate button",
+      "localized": "プロンプトと生成ボタンの間隔",
+      "hint": "プロンプトと生成ボタンの間隔"
+    },
+    {
+      "id": "",
+      "label": "bh1",
+      "localized": "bh1",
+      "hint": "bh1"
+    },
+    {
+      "id": "",
+      "label": "bh2",
+      "localized": "bh2",
+      "hint": "bh2"
+    },
+    {
+      "id": "",
+      "label": "block",
+      "localized": "ブロック",
+      "hint": "ブロック"
+    },
+    {
+      "id": "",
+      "label": "block skip range",
+      "localized": "ブロックスキップ範囲",
+      "hint": "ブロックスキップ範囲"
+    },
+    {
+      "id": "",
+      "label": "blur",
+      "localized": "ぼかし",
+      "hint": "ぼかし"
+    },
+    {
+      "id": "",
+      "label": "body",
+      "localized": "ボディ",
+      "hint": "ボディ"
+    },
+    {
+      "id": "",
+      "label": "boost",
+      "localized": "ブースト",
+      "hint": "ブースト"
+    },
+    {
+      "id": "",
+      "label": "brightness",
+      "localized": "明るさ",
+      "hint": "明るさ"
+    },
+    {
+      "id": "",
+      "label": "cache model",
+      "localized": "モデルをキャッシュ",
+      "hint": "モデルをキャッシュ"
+    },
+    {
+      "id": "",
+      "label": "cache text encoder results",
+      "localized": "テキストエンコーダの結果をキャッシュ",
+      "hint": "テキストエンコーダの結果をキャッシュ"
+    },
+    {
+      "id": "",
+      "label": "canny",
+      "localized": "Canny",
+      "hint": "Canny"
+    },
+    {
+      "id": "",
+      "label": "caption model",
+      "localized": "キャプションモデル",
+      "hint": "キャプションモデル"
+    },
+    {
+      "id": "",
+      "label": "center",
+      "localized": "中央",
+      "hint": "中央"
+    },
+    {
+      "id": "",
+      "label": "change log",
+      "localized": "変更履歴",
+      "hint": "変更履歴"
+    },
+    {
+      "id": "",
+      "label": "change model",
+      "localized": "モデル変更",
+      "hint": "モデル変更"
+    },
+    {
+      "id": "",
+      "label": "change rate",
+      "localized": "変更率",
+      "hint": "変更率"
+    },
+    {
+      "id": "",
+      "label": "change reference",
+      "localized": "参照変更",
+      "hint": "参照変更"
+    },
+    {
+      "id": "",
+      "label": "change refiner",
+      "localized": "リファイナー変更",
+      "hint": "リファイナー変更"
+    },
+    {
+      "id": "",
+      "label": "change vae",
+      "localized": "VAE変更",
+      "hint": "VAE変更"
+    },
+    {
+      "id": "",
+      "label": "channels last",
+      "localized": "チャネルラスト",
+      "hint": "チャネルラスト"
+    },
+    {
+      "id": "",
+      "label": "check alternative hash",
+      "localized": "代替ハッシュを確認",
+      "hint": "代替ハッシュを確認"
+    },
+    {
+      "id": "",
+      "label": "check for updates",
+      "localized": "アップデートを確認",
+      "hint": "アップデートを確認"
+    },
+    {
+      "id": "",
+      "label": "check status",
+      "localized": "ステータス確認",
+      "hint": "ステータス確認"
+    },
+    {
+      "id": "",
+      "label": "chunk size",
+      "localized": "チャンクサイズ",
+      "hint": "チャンクサイズ"
+    },
+    {
+      "id": "",
+      "label": "civitai",
+      "localized": "Civitai",
+      "hint": "Civitai"
+    },
+    {
+      "id": "",
+      "label": "civitai model type",
+      "localized": "Civitaiモデルタイプ",
+      "hint": "Civitaiモデルタイプ"
+    },
+    {
+      "id": "",
+      "label": "civitai token",
+      "localized": "Civitaiトークン",
+      "hint": "Civitaiトークン"
+    },
+    {
+      "id": "",
+      "label": "ckpt",
+      "localized": "ckpt",
+      "hint": "ckpt"
+    },
+    {
+      "id": "",
+      "label": "cleanup temporary folder on startup",
+      "localized": "起動時に一時フォルダをクリーンアップ",
+      "hint": "起動時に一時フォルダをクリーンアップ"
+    },
+    {
+      "id": "",
+      "label": "clip batch model",
+      "localized": "CLIPバッチモデル",
+      "hint": "CLIPバッチモデル"
+    },
+    {
+      "id": "",
+      "label": "clip model",
+      "localized": "CLIPモデル",
+      "hint": "CLIPモデル"
+    },
+    {
+      "id": "",
+      "label": "clip: default captioner",
+      "localized": "CLIP: デフォルトキャプションツール",
+      "hint": "CLIP: デフォルトキャプションツール"
+    },
+    {
+      "id": "",
+      "label": "clip: default mode",
+      "localized": "CLIP: デフォルトモード",
+      "hint": "CLIP: デフォルトモード"
+    },
+    {
+      "id": "",
+      "label": "clip: default model",
+      "localized": "CLIP: デフォルトモデル",
+      "hint": "CLIP: デフォルトモデル"
+    },
+    {
+      "id": "",
+      "label": "clip: include scores in results",
+      "localized": "CLIP: 結果にスコアを含める",
+      "hint": "CLIP: 結果にスコアを含める"
+    },
+    {
+      "id": "",
+      "label": "clip: max flavors",
+      "localized": "CLIP: 最大フレーバー数",
+      "hint": "CLIP: 最大フレーバー数"
+    },
+    {
+      "id": "",
+      "label": "clip: max length",
+      "localized": "CLIP: 最大長",
+      "hint": "CLIP: 最大長"
+    },
+    {
+      "id": "",
+      "label": "clip: min flavors",
+      "localized": "CLIP: 最小フレーバー数",
+      "hint": "CLIP: 最小フレーバー数"
+    },
+    {
+      "id": "",
+      "label": "clip: min length",
+      "localized": "CLIP: 最小長",
+      "hint": "CLIP: 最小長"
+    },
+    {
+      "id": "",
+      "label": "clip: num beams",
+      "localized": "CLIP: ビーム数",
+      "hint": "CLIP: ビーム数"
+    },
+    {
+      "id": "",
+      "label": "close",
+      "localized": "閉じる",
+      "hint": "閉じる"
+    },
+    {
+      "id": "",
+      "label": "cmsi",
+      "localized": "cmsi",
+      "hint": "cmsi"
+    },
+    {
+      "id": "",
+      "label": "cn end",
+      "localized": "CN終了",
+      "hint": "CN終了"
+    },
+    {
+      "id": "",
+      "label": "cn mode",
+      "localized": "CNモード",
+      "hint": "CNモード"
+    },
+    {
+      "id": "",
+      "label": "cn start",
+      "localized": "CN開始",
+      "hint": "CN開始"
+    },
+    {
+      "id": "",
+      "label": "cn strength",
+      "localized": "CN強度",
+      "hint": "CN強度"
+    },
+    {
+      "id": "",
+      "label": "cn tiles",
+      "localized": "CNタイル",
+      "hint": "CNタイル"
+    },
+    {
+      "id": "",
+      "label": "coarse",
+      "localized": "粗い",
+      "hint": "粗い"
+    },
+    {
+      "id": "",
+      "label": "codeformer",
+      "localized": "CodeFormer",
+      "hint": "CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "color",
+      "localized": "色",
+      "hint": "色"
+    },
+    {
+      "id": "",
+      "label": "color grading",
+      "localized": "カラーグレーディング",
+      "hint": "カラーグレーディング"
+    },
+    {
+      "id": "",
+      "label": "color map",
+      "localized": "カラーマップ",
+      "hint": "カラーマップ"
+    },
+    {
+      "id": "",
+      "label": "color variation",
+      "localized": "色のバリエーション",
+      "hint": "色のバリエーション"
+    },
+    {
+      "id": "",
+      "label": "colormap",
+      "localized": "カラーマップ",
+      "hint": "カラーマップ"
+    },
+    {
+      "id": "",
+      "label": "columns",
+      "localized": "列",
+      "hint": "列"
+    },
+    {
+      "id": "",
+      "label": "comma",
+      "localized": "コンマ",
+      "hint": "コンマ"
+    },
+    {
+      "id": "",
+      "label": "comma separated list with optional strength per lora",
+      "localized": "コンマ区切りリスト (LoRAごとにオプションで強度を指定)",
+      "hint": "コンマ区切りリスト (LoRAごとにオプションで強度を指定)"
+    },
+    {
+      "id": "",
+      "label": "compact view",
+      "localized": "コンパクト表示",
+      "hint": "コンパクト表示"
+    },
+    {
+      "id": "",
+      "label": "compel",
+      "localized": "Compel",
+      "hint": "Compel"
+    },
+    {
+      "id": "",
+      "label": "composite",
+      "localized": "合成",
+      "hint": "合成"
+    },
+    {
+      "id": "",
+      "label": "compress ratio",
+      "localized": "圧縮率",
+      "hint": "圧縮率"
+    },
+    {
+      "id": "",
+      "label": "concept tokens",
+      "localized": "コンセプトトークン",
+      "hint": "コンセプトトークン"
+    },
+    {
+      "id": "",
+      "label": "context",
+      "localized": "コンテキスト",
+      "hint": "コンテキスト"
+    },
+    {
+      "id": "",
+      "label": "context after",
+      "localized": "後のコンテキスト",
+      "hint": "後のコンテキスト"
+    },
+    {
+      "id": "",
+      "label": "context before",
+      "localized": "前のコンテキスト",
+      "hint": "前のコンテキスト"
+    },
+    {
+      "id": "",
+      "label": "context mask",
+      "localized": "コンテキストマスク",
+      "hint": "コンテキストマスク"
+    },
+    {
+      "id": "",
+      "label": "contrast",
+      "localized": "コントラスト",
+      "hint": "コントラスト"
+    },
+    {
+      "id": "",
+      "label": "control factor",
+      "localized": "コントロールファクター",
+      "hint": "コントロールファクター"
+    },
+    {
+      "id": "",
+      "label": "control override denoise strength",
+      "localized": "コントロール上書き デノイズ強度",
+      "hint": "コントロール上書き デノイズ強度"
+    },
+    {
+      "id": "",
+      "label": "control preprocess input images",
+      "localized": "コントロール 入力画像をプリプロセス",
+      "hint": "コントロール 入力画像をプリプロセス"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 1",
+      "localized": "control-lllite ユニット1",
+      "hint": "control-lllite ユニット1"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 2",
+      "localized": "control-lllite ユニット2",
+      "hint": "control-lllite ユニット2"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 3",
+      "localized": "control-lllite ユニット3",
+      "hint": "control-lllite ユニット3"
+    },
+    {
+      "id": "",
+      "label": "control-lllite unit 4",
+      "localized": "control-lllite ユニット4",
+      "hint": "control-lllite ユニット4"
+    },
+    {
+      "id": "",
+      "label": "controlnet",
+      "localized": "ControlNet",
+      "hint": "ControlNet"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 1",
+      "localized": "ControlNet ユニット 1",
+      "hint": "ControlNet ユニット 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 2",
+      "localized": "ControlNet ユニット 2",
+      "hint": "ControlNet ユニット 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 3",
+      "localized": "ControlNet ユニット 3",
+      "hint": "ControlNet ユニット 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet unit 4",
+      "localized": "ControlNet ユニット 4",
+      "hint": "ControlNet ユニット 4"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs",
+      "localized": "ControlNet-XS",
+      "hint": "ControlNet-XS"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 1",
+      "localized": "ControlNet-XS ユニット 1",
+      "hint": "ControlNet-XS ユニット 1"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 2",
+      "localized": "ControlNet-XS ユニット 2",
+      "hint": "ControlNet-XS ユニット 2"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 3",
+      "localized": "ControlNet-XS ユニット 3",
+      "hint": "ControlNet-XS ユニット 3"
+    },
+    {
+      "id": "",
+      "label": "controlnet-xs unit 4",
+      "localized": "ControlNet-XS ユニット 4",
+      "hint": "ControlNet-XS ユニット 4"
+    },
+    {
+      "id": "",
+      "label": "correction mode",
+      "localized": "補正モード",
+      "hint": "補正モード"
+    },
+    {
+      "id": "",
+      "label": "cosine background",
+      "localized": "コサイン背景",
+      "hint": "コサイン背景"
+    },
+    {
+      "id": "",
+      "label": "cosine scale",
+      "localized": "コサインスケール",
+      "hint": "コサインスケール"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 1",
+      "localized": "コサインスケール 1",
+      "hint": "コサインスケール 1"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 2",
+      "localized": "コサインスケール 2",
+      "hint": "コサインスケール 2"
+    },
+    {
+      "id": "",
+      "label": "cosine scale 3",
+      "localized": "コサインスケール 3",
+      "hint": "コサインスケール 3"
+    },
+    {
+      "id": "",
+      "label": "create image info text file",
+      "localized": "画像情報テキストファイルを作成",
+      "hint": "画像情報テキストファイルを作成"
+    },
+    {
+      "id": "",
+      "label": "create video",
+      "localized": "ビデオを作成",
+      "hint": "ビデオを作成"
+    },
+    {
+      "id": "",
+      "label": "create zip archive",
+      "localized": "ZIPアーカイブを作成",
+      "hint": "ZIPアーカイブを作成"
+    },
+    {
+      "id": "",
+      "label": "cross-attention",
+      "localized": "クロスアテンション",
+      "hint": "クロスアテンション"
+    },
+    {
+      "id": "",
+      "label": "ctrl",
+      "localized": "ctrl",
+      "hint": "ctrl"
+    },
+    {
+      "id": "",
+      "label": "cudagraphs",
+      "localized": "Cudaグラフ",
+      "hint": "Cudaグラフ"
+    },
+    {
+      "id": "",
+      "label": "cudamallocasync",
+      "localized": "cudamallocasync",
+      "hint": "cudamallocasync"
+    },
+    {
+      "id": "",
+      "label": "current",
+      "localized": "現在",
+      "hint": "現在"
+    },
+    {
+      "id": "",
+      "label": "custom pipeline",
+      "localized": "カスタムパイプライン",
+      "hint": "カスタムパイプライン"
+    },
+    {
+      "id": "",
+      "label": "dark",
+      "localized": "ダーク",
+      "hint": "ダーク"
+    },
+    {
+      "id": "",
+      "label": "dc solver",
+      "localized": "DCソルバー",
+      "hint": "DCソルバー"
+    },
+    {
+      "id": "",
+      "label": "ddpm",
+      "localized": "DDPM",
+      "hint": "DDPM"
+    },
+    {
+      "id": "",
+      "label": "debug info",
+      "localized": "デバッグ情報",
+      "hint": "デバッグ情報"
+    },
+    {
+      "id": "",
+      "label": "decode",
+      "localized": "デコード",
+      "hint": "デコード"
+    },
+    {
+      "id": "",
+      "label": "decode chunks",
+      "localized": "チャンクのデコード",
+      "hint": "チャンクのデコード"
+    },
+    {
+      "id": "",
+      "label": "deep-cache",
+      "localized": "Deep-Cache",
+      "hint": "Deep-Cache"
+    },
+    {
+      "id": "",
+      "label": "deepbooru",
+      "localized": "Deepbooru",
+      "hint": "Deepbooru"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: escape brackets",
+      "localized": "Deepbooru: ブラケットのエスケープ",
+      "hint": "Deepbooru: ブラケットのエスケープ"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: exclude tags",
+      "localized": "Deepbooru: 除外タグ",
+      "hint": "Deepbooru: 除外タグ"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: include scores in results",
+      "localized": "Deepbooru: 結果にスコアを含める",
+      "hint": "Deepbooru: 結果にスコアを含める"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: max tags",
+      "localized": "Deepbooru: 最大タグ数",
+      "hint": "Deepbooru: 最大タグ数"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: score threshold",
+      "localized": "Deepbooru: スコア閾値",
+      "hint": "Deepbooru: スコア閾値"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: sort alphabetically",
+      "localized": "Deepbooru: アルファベット順にソート",
+      "hint": "Deepbooru: アルファベット順にソート"
+    },
+    {
+      "id": "",
+      "label": "deepbooru: use spaces for tags",
+      "localized": "Deepbooru: タグにスペースを使用",
+      "hint": "Deepbooru: タグにスペースを使用"
+    },
+    {
+      "id": "",
+      "label": "deepcache cache interval",
+      "localized": "Deepcache キャッシュ間隔",
+      "hint": "Deepcache キャッシュ間隔"
+    },
+    {
+      "id": "",
+      "label": "default",
+      "localized": "デフォルト",
+      "hint": "デフォルト"
+    },
+    {
+      "id": "",
+      "label": "deis",
+      "localized": "DEIS",
+      "hint": "DEIS"
+    },
+    {
+      "id": "",
+      "label": "denoising batch size",
+      "localized": "ノイズ除去バッチサイズ",
+      "hint": "ノイズ除去バッチサイズ"
+    },
+    {
+      "id": "",
+      "label": "denoising steps",
+      "localized": "ノイズ除去ステップ",
+      "hint": "ノイズ除去ステップ"
+    },
+    {
+      "id": "",
+      "label": "depth and normal",
+      "localized": "深度と法線",
+      "hint": "深度と法線"
+    },
+    {
+      "id": "",
+      "label": "depth anything",
+      "localized": "Depth Anything",
+      "hint": "Depth Anything"
+    },
+    {
+      "id": "",
+      "label": "depth map",
+      "localized": "深度マップ",
+      "hint": "深度マップ"
+    },
+    {
+      "id": "",
+      "label": "depth threshold",
+      "localized": "深度閾値",
+      "hint": "深度閾値"
+    },
+    {
+      "id": "",
+      "label": "description",
+      "localized": "説明",
+      "hint": "説明"
+    },
+    {
+      "id": "",
+      "label": "details",
+      "localized": "詳細",
+      "hint": "詳細"
+    },
+    {
+      "id": "",
+      "label": "deterministic mode",
+      "localized": "決定論的モード",
+      "hint": "決定論的モード"
+    },
+    {
+      "id": "",
+      "label": "device info",
+      "localized": "デバイス情報",
+      "hint": "デバイス情報"
+    },
+    {
+      "id": "",
+      "label": "diffusers",
+      "localized": "Diffusers",
+      "hint": "Diffusers"
+    },
+    {
+      "id": "",
+      "label": "dilate",
+      "localized": "膨張",
+      "hint": "膨張"
+    },
+    {
+      "id": "",
+      "label": "dilate tau",
+      "localized": "膨張 Tau",
+      "hint": "膨張 Tau"
+    },
+    {
+      "id": "",
+      "label": "directml retry ops for nan",
+      "localized": "NaNに対するDirectMLリトライオペレーション",
+      "hint": "NaNに対するDirectMLリトライオペレーション"
+    },
+    {
+      "id": "",
+      "label": "directory for temporary images; leave empty for default",
+      "localized": "一時画像のディレクトリ; デフォルトを使用する場合は空のままにしてください",
+      "hint": "一時画像のディレクトリ; デフォルトを使用する場合は空のままにしてください"
+    },
+    {
+      "id": "",
+      "label": "disable accelerate",
+      "localized": "Accelerateを無効化",
+      "hint": "Accelerateを無効化"
+    },
+    {
+      "id": "",
+      "label": "disable conditional batching",
+      "localized": "条件付きバッチ処理を無効化",
+      "hint": "条件付きバッチ処理を無効化"
+    },
+    {
+      "id": "",
+      "label": "disable keyboard shortcut",
+      "localized": "キーボードショートカットを無効化",
+      "hint": "キーボードショートカットを無効化"
+    },
+    {
+      "id": "",
+      "label": "disable queue auto-processing",
+      "localized": "キューの自動処理を無効化",
+      "hint": "キューの自動処理を無効化"
+    },
+    {
+      "id": "",
+      "label": "disabled",
+      "localized": "無効",
+      "hint": "無効"
+    },
+    {
+      "id": "",
+      "label": "discard penultimate sigma",
+      "localized": "最後から2番目のシグマを破棄",
+      "hint": "最後から2番目のシグマを破棄"
+    },
+    {
+      "id": "",
+      "label": "distance threshold",
+      "localized": "距離閾値",
+      "hint": "距離閾値"
+    },
+    {
+      "id": "",
+      "label": "do not change selected model when reading generation parameters",
+      "localized": "生成パラメータの読み込み時に選択されたモデルを変更しない",
+      "hint": "生成パラメータの読み込み時に選択されたモデルを変更しない"
+    },
+    {
+      "id": "",
+      "label": "do not display video output in ui",
+      "localized": "UIにビデオ出力を表示しない",
+      "hint": "UIにビデオ出力を表示しない"
+    },
+    {
+      "id": "",
+      "label": "do nothing",
+      "localized": "何もしない",
+      "hint": "何もしない"
+    },
+    {
+      "id": "",
+      "label": "down",
+      "localized": "下",
+      "hint": "下"
+    },
+    {
+      "id": "",
+      "label": "download",
+      "localized": "ダウンロード",
+      "hint": "ダウンロード"
+    },
+    {
+      "id": "",
+      "label": "download model",
+      "localized": "モデルをダウンロード",
+      "hint": "モデルをダウンロード"
+    },
+    {
+      "id": "",
+      "label": "download path",
+      "localized": "ダウンロードパス",
+      "hint": "ダウンロードパス"
+    },
+    {
+      "id": "",
+      "label": "download updates",
+      "localized": "アップデートをダウンロード",
+      "hint": "アップデートをダウンロード"
+    },
+    {
+      "id": "",
+      "label": "downscale high resolution live previews",
+      "localized": "高解像度ライブプレビューを縮小",
+      "hint": "高解像度ライブプレビューを縮小"
+    },
+    {
+      "id": "",
+      "label": "dpm sde",
+      "localized": "DPM SDE",
+      "hint": "DPM SDE"
+    },
+    {
+      "id": "",
+      "label": "dpm++",
+      "localized": "DPM++",
+      "hint": "DPM++"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s",
+      "localized": "DPM++ 1S",
+      "hint": "DPM++ 1S"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 1s inverse",
+      "localized": "DPM++ 1S Inverse",
+      "hint": "DPM++ 1S Inverse"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m",
+      "localized": "DPM++ 2M",
+      "hint": "DPM++ 2M"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m edm",
+      "localized": "DPM++ 2M EDM",
+      "hint": "DPM++ 2M EDM"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m inverse",
+      "localized": "DPM++ 2M Inverse",
+      "hint": "DPM++ 2M Inverse"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 2m sde",
+      "localized": "DPM++ 2M SDE",
+      "hint": "DPM++ 2M SDE"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m",
+      "localized": "DPM++ 3M",
+      "hint": "DPM++ 3M"
+    },
+    {
+      "id": "",
+      "label": "dpm++ 3m inverse",
+      "localized": "DPM++ 3M Inverse",
+      "hint": "DPM++ 3M Inverse"
+    },
+    {
+      "id": "",
+      "label": "dpm++ cosine",
+      "localized": "DPM++ Cosine",
+      "hint": "DPM++ Cosine"
+    },
+    {
+      "id": "",
+      "label": "dpm2 flowmatch",
+      "localized": "DPM2 Flowmatch",
+      "hint": "DPM2 Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m flowmatch",
+      "localized": "DPM2++ 2M Flowmatch",
+      "hint": "DPM2++ 2M Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2m sde flowmatch",
+      "localized": "DPM2++ 2M SDE Flowmatch",
+      "hint": "DPM2++ 2M SDE Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 2s flowmatch",
+      "localized": "DPM2++ 2S Flowmatch",
+      "hint": "DPM2++ 2S Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ 3m sde flowmatch",
+      "localized": "DPM2++ 3M SDE Flowmatch",
+      "hint": "DPM2++ 3M SDE Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2++ sde flowmatch",
+      "localized": "DPM2++ SDE Flowmatch",
+      "hint": "DPM2++ SDE Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "dpm2a flowmatch",
+      "localized": "DPM2A Flowmatch",
+      "hint": "DPM2A Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "draw legend",
+      "localized": "凡例を描画",
+      "hint": "凡例を描画"
+    },
+    {
+      "id": "",
+      "label": "dropdown",
+      "localized": "ドロップダウン",
+      "hint": "ドロップダウン"
+    },
+    {
+      "id": "",
+      "label": "duration",
+      "localized": "継続時間",
+      "hint": "継続時間"
+    },
+    {
+      "id": "",
+      "label": "dwpose",
+      "localized": "DWPose",
+      "hint": "DWPose"
+    },
+    {
+      "id": "",
+      "label": "dynamic",
+      "localized": "動的",
+      "hint": "動的"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention",
+      "localized": "動的注意機構",
+      "hint": "動的注意機構"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention slicing rate in gb",
+      "localized": "動的注意機構のスライシングレート (GB)",
+      "hint": "動的注意機構のスライシングレート (GB)"
+    },
+    {
+      "id": "",
+      "label": "dynamic attention trigger rate in gb",
+      "localized": "動的注意機構のトリガーレート (GB)",
+      "hint": "動的注意機構のトリガーレート (GB)"
+    },
+    {
+      "id": "",
+      "label": "edge",
+      "localized": "エッジ",
+      "hint": "エッジ"
+    },
+    {
+      "id": "",
+      "label": "edit start",
+      "localized": "編集開始",
+      "hint": "編集開始"
+    },
+    {
+      "id": "",
+      "label": "edit stop",
+      "localized": "編集停止",
+      "hint": "編集停止"
+    },
+    {
+      "id": "",
+      "label": "embedded metadata",
+      "localized": "埋め込みメタデータ",
+      "hint": "埋め込みメタデータ"
+    },
+    {
+      "id": "",
+      "label": "enable embeddings support",
+      "localized": "埋め込みサポートを有効にする",
+      "hint": "埋め込みサポートを有効にする"
+    },
+    {
+      "id": "",
+      "label": "enable file wildcards support",
+      "localized": "ファイルワイルドカードのサポートを有効にする",
+      "hint": "ファイルワイルドカードのサポートを有効にする"
+    },
+    {
+      "id": "",
+      "label": "enable freeu",
+      "localized": "FreeUを有効にする",
+      "hint": "FreeUを有効にする"
+    },
+    {
+      "id": "",
+      "label": "enable teacache",
+      "localized": "TeaCacheを有効にする",
+      "hint": "TeaCacheを有効にする"
+    },
+    {
+      "id": "",
+      "label": "enable tonemap",
+      "localized": "トーンマップを有効にする",
+      "hint": "トーンマップを有効にする"
+    },
+    {
+      "id": "",
+      "label": "enable use of reference models",
+      "localized": "参照モデルの使用を有効にする",
+      "hint": "参照モデルの使用を有効にする"
+    },
+    {
+      "id": "",
+      "label": "enabled",
+      "localized": "有効",
+      "hint": "有効"
+    },
+    {
+      "id": "",
+      "label": "encoder",
+      "localized": "エンコーダー",
+      "hint": "エンコーダー"
+    },
+    {
+      "id": "",
+      "label": "end",
+      "localized": "終了",
+      "hint": "終了"
+    },
+    {
+      "id": "",
+      "label": "enhance prompt",
+      "localized": "プロンプトを強調",
+      "hint": "プロンプトを強調"
+    },
+    {
+      "id": "",
+      "label": "enqueue keyboard shortcut",
+      "localized": "キューへの追加キーボードショートカット",
+      "hint": "キューへの追加キーボードショートカット"
+    },
+    {
+      "id": "",
+      "label": "ensemble size",
+      "localized": "アンサンブルサイズ",
+      "hint": "アンサンブルサイズ"
+    },
+    {
+      "id": "",
+      "label": "epsilon",
+      "localized": "イプシロン",
+      "hint": "イプシロン"
+    },
+    {
+      "id": "",
+      "label": "erode",
+      "localized": "浸食",
+      "hint": "浸食"
+    },
+    {
+      "id": "",
+      "label": "erode size",
+      "localized": "浸食サイズ",
+      "hint": "浸食サイズ"
+    },
+    {
+      "id": "",
+      "label": "eta",
+      "localized": "Eta",
+      "hint": "Eta"
+    },
+    {
+      "id": "",
+      "label": "euler",
+      "localized": "オイラー",
+      "hint": "オイラー"
+    },
+    {
+      "id": "",
+      "label": "euler edm",
+      "localized": "オイラー EDM",
+      "hint": "オイラー EDM"
+    },
+    {
+      "id": "",
+      "label": "euler flowmatch",
+      "localized": "オイラーFlowmatch",
+      "hint": "オイラーFlowmatch"
+    },
+    {
+      "id": "",
+      "label": "euler sgm",
+      "localized": "オイラーSGM",
+      "hint": "オイラーSGM"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cpu",
+      "localized": "実行プロバイダー.CPU",
+      "hint": "実行プロバイダー.CPU"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.cuda",
+      "localized": "実行プロバイダー.CUDA",
+      "hint": "実行プロバイダー.CUDA"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.directml",
+      "localized": "実行プロバイダー.DirectML",
+      "hint": "実行プロバイダー.DirectML"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.migraphx",
+      "localized": "実行プロバイダー.Migraphx",
+      "hint": "実行プロバイダー.Migraphx"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.openvino",
+      "localized": "実行プロバイダー.OpenVINO",
+      "hint": "実行プロバイダー.OpenVINO"
+    },
+    {
+      "id": "",
+      "label": "executionprovider.rocm",
+      "localized": "実行プロバイダー.ROCm",
+      "hint": "実行プロバイダー.ROCm"
+    },
+    {
+      "id": "",
+      "label": "expandable segments",
+      "localized": "拡張可能なセグメント",
+      "hint": "拡張可能なセグメント"
+    },
+    {
+      "id": "",
+      "label": "exponential",
+      "localized": "指数関数的",
+      "hint": "指数関数的"
+    },
+    {
+      "id": "",
+      "label": "export",
+      "localized": "エクスポート",
+      "hint": "エクスポート"
+    },
+    {
+      "id": "",
+      "label": "exposure",
+      "localized": "露出",
+      "hint": "露出"
+    },
+    {
+      "id": "",
+      "label": "extra noise multiplier for img2img",
+      "localized": "img2img用の追加ノイズ倍率",
+      "hint": "img2img用の追加ノイズ倍率"
+    },
+    {
+      "id": "",
+      "label": "extract lora",
+      "localized": "LoRAを抽出",
+      "hint": "LoRAを抽出"
+    },
+    {
+      "id": "",
+      "label": "face",
+      "localized": "顔",
+      "hint": "顔"
+    },
+    {
+      "id": "",
+      "label": "face confidence",
+      "localized": "顔の信頼度",
+      "hint": "顔の信頼度"
+    },
+    {
+      "id": "",
+      "label": "faceid model",
+      "localized": "FaceIDモデル",
+      "hint": "FaceIDモデル"
+    },
+    {
+      "id": "",
+      "label": "fall-off exponent (lower=higher detail)",
+      "localized": "フォールオフ指数 (小さいほど詳細)",
+      "hint": "フォールオフ指数 (小さいほど詳細)"
+    },
+    {
+      "id": "",
+      "label": "false",
+      "localized": "偽",
+      "hint": "偽"
+    },
+    {
+      "id": "",
+      "label": "fast",
+      "localized": "高速",
+      "hint": "高速"
+    },
+    {
+      "id": "",
+      "label": "file or folder with user-defined styles",
+      "localized": "ユーザー定義スタイルを持つファイルまたはフォルダ",
+      "hint": "ユーザー定義スタイルを持つファイルまたはフォルダ"
+    },
+    {
+      "id": "",
+      "label": "filename",
+      "localized": "ファイル名",
+      "hint": "ファイル名"
+    },
+    {
+      "id": "",
+      "label": "first-block cache enabled",
+      "localized": "ファーストブロックキャッシュ有効",
+      "hint": "ファーストブロックキャッシュ有効"
+    },
+    {
+      "id": "",
+      "label": "fixed unet precision",
+      "localized": "固定UNet精度",
+      "hint": "固定UNet精度"
+    },
+    {
+      "id": "",
+      "label": "flash attention",
+      "localized": "Flash Attention",
+      "hint": "Flash Attention"
+    },
+    {
+      "id": "",
+      "label": "flavors",
+      "localized": "フレーバー",
+      "hint": "フレーバー"
+    },
+    {
+      "id": "",
+      "label": "flow shift",
+      "localized": "フローシフト",
+      "hint": "フローシフト"
+    },
+    {
+      "id": "",
+      "label": "folder",
+      "localized": "フォルダ",
+      "hint": "フォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for control generate",
+      "localized": "control generate用のフォルダ",
+      "hint": "control generate用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for control grids",
+      "localized": "control grids用のフォルダ",
+      "hint": "control grids用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for disk offload",
+      "localized": "ディスクオフロード用のフォルダ",
+      "hint": "ディスクオフロード用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for huggingface cache",
+      "localized": "Hugging Faceキャッシュ用のフォルダ",
+      "hint": "Hugging Faceキャッシュ用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for image generate",
+      "localized": "画像生成用のフォルダ",
+      "hint": "画像生成用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for img2img grids",
+      "localized": "img2img grids用のフォルダ",
+      "hint": "img2img grids用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for init images",
+      "localized": "初期画像用のフォルダ",
+      "hint": "初期画像用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for manually saved images",
+      "localized": "手動で保存された画像用のフォルダ",
+      "hint": "手動で保存された画像用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx cached models",
+      "localized": "ONNXキャッシュされたモデル用のフォルダ",
+      "hint": "ONNXキャッシュされたモデル用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for onnx conversion",
+      "localized": "ONNX変換用のフォルダ",
+      "hint": "ONNX変換用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for openvino cache",
+      "localized": "OpenVINOキャッシュ用のフォルダ",
+      "hint": "OpenVINOキャッシュ用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for processed images",
+      "localized": "処理済み画像用のフォルダ",
+      "hint": "処理済み画像用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for text generate",
+      "localized": "テキスト生成用のフォルダ",
+      "hint": "テキスト生成用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for tunable ops cache",
+      "localized": "調整可能なOpsキャッシュ用のフォルダ",
+      "hint": "調整可能なOpsキャッシュ用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for txt2img grids",
+      "localized": "txt2img grids用のフォルダ",
+      "hint": "txt2img grids用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder for videos",
+      "localized": "ビデオ用のフォルダ",
+      "hint": "ビデオ用のフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with bsrgan models",
+      "localized": "BSRGANモデルのフォルダ",
+      "hint": "BSRGANモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with chainner models",
+      "localized": "Chainnerモデルのフォルダ",
+      "hint": "Chainnerモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with clip models",
+      "localized": "CLIPモデルのフォルダ",
+      "hint": "CLIPモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with codeformer models",
+      "localized": "CodeFormerモデルのフォルダ",
+      "hint": "CodeFormerモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with control models",
+      "localized": "Controlモデルのフォルダ",
+      "hint": "Controlモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with esrgan models",
+      "localized": "ESRGANモデルのフォルダ",
+      "hint": "ESRGANモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with gfpgan models",
+      "localized": "GFPGANモデルのフォルダ",
+      "hint": "GFPGANモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with huggingface models",
+      "localized": "Hugging Faceモデルのフォルダ",
+      "hint": "Hugging Faceモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with hypernetwork models",
+      "localized": "ハイパーネットワークモデルのフォルダ",
+      "hint": "ハイパーネットワークモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with ldsr models",
+      "localized": "LDSRモデルのフォルダ",
+      "hint": "LDSRモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with lora network(s)",
+      "localized": "LoRAネットワークのフォルダ",
+      "hint": "LoRAネットワークのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with realesrgan models",
+      "localized": "RealESRGANモデルのフォルダ",
+      "hint": "RealESRGANモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with scunet models",
+      "localized": "SCUNetモデルのフォルダ",
+      "hint": "SCUNetモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with stable diffusion models",
+      "localized": "Stable Diffusionモデルのフォルダ",
+      "hint": "Stable Diffusionモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with swinir models",
+      "localized": "SwinIRモデルのフォルダ",
+      "hint": "SwinIRモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with text encoder files",
+      "localized": "テキストエンコーダファイルのフォルダ",
+      "hint": "テキストエンコーダファイルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with textual inversion embeddings",
+      "localized": "Textual Inversion埋め込みのフォルダ",
+      "hint": "Textual Inversion埋め込みのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with unet files",
+      "localized": "UNetファイルのフォルダ",
+      "hint": "UNetファイルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with user-defined wildcards",
+      "localized": "ユーザー定義のワイルドカードのフォルダ",
+      "hint": "ユーザー定義のワイルドカードのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with vae files",
+      "localized": "VAEファイルのフォルダ",
+      "hint": "VAEファイルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "folder with yolo models",
+      "localized": "YOLOモデルのフォルダ",
+      "hint": "YOLOモデルのフォルダ"
+    },
+    {
+      "id": "",
+      "label": "font color",
+      "localized": "フォントの色",
+      "hint": "フォントの色"
+    },
+    {
+      "id": "",
+      "label": "font file",
+      "localized": "フォントファイル",
+      "hint": "フォントファイル"
+    },
+    {
+      "id": "",
+      "label": "font size",
+      "localized": "フォントサイズ",
+      "hint": "フォントサイズ"
+    },
+    {
+      "id": "",
+      "label": "force model eval",
+      "localized": "モデル評価を強制",
+      "hint": "モデル評価を強制"
+    },
+    {
+      "id": "",
+      "label": "foreground threshold",
+      "localized": "前景の閾値",
+      "hint": "前景の閾値"
+    },
+    {
+      "id": "",
+      "label": "fp4",
+      "localized": "FP4",
+      "hint": "FP4"
+    },
+    {
+      "id": "",
+      "label": "frame change sensitivity",
+      "localized": "フレーム変化の感度",
+      "hint": "フレーム変化の感度"
+    },
+    {
+      "id": "",
+      "label": "frames",
+      "localized": "フレーム",
+      "hint": "フレーム"
+    },
+    {
+      "id": "",
+      "label": "freeinit",
+      "localized": "FreeInit",
+      "hint": "FreeInit"
+    },
+    {
+      "id": "",
+      "label": "freeu enabled",
+      "localized": "FreeU有効",
+      "hint": "FreeU有効"
+    },
+    {
+      "id": "",
+      "label": "freeu preset",
+      "localized": "FreeUプリセット",
+      "hint": "FreeUプリセット"
+    },
+    {
+      "id": "",
+      "label": "full vae",
+      "localized": "フルVAE",
+      "hint": "フルVAE"
+    },
+    {
+      "id": "",
+      "label": "full-depth cudnn benchmark",
+      "localized": "全深度cuDNNベンチマーク",
+      "hint": "全深度cuDNNベンチマーク"
+    },
+    {
+      "id": "",
+      "label": "fuse strength",
+      "localized": "融合強度",
+      "hint": "融合強度"
+    },
+    {
+      "id": "",
+      "label": "fused projections",
+      "localized": "融合投影",
+      "hint": "融合投影"
+    },
+    {
+      "id": "",
+      "label": "gallery",
+      "localized": "ギャラリー",
+      "hint": "ギャラリー"
+    },
+    {
+      "id": "",
+      "label": "gamma",
+      "localized": "ガンマ",
+      "hint": "ガンマ"
+    },
+    {
+      "id": "",
+      "label": "gamma corrected",
+      "localized": "ガンマ補正済み",
+      "hint": "ガンマ補正済み"
+    },
+    {
+      "id": "",
+      "label": "gate step",
+      "localized": "ゲートステップ",
+      "hint": "ゲートステップ"
+    },
+    {
+      "id": "",
+      "label": "gc threshold",
+      "localized": "GC閾値",
+      "hint": "GC閾値"
+    },
+    {
+      "id": "",
+      "label": "generation info",
+      "localized": "生成情報",
+      "hint": "生成情報"
+    },
+    {
+      "id": "",
+      "label": "get changelog",
+      "localized": "変更履歴を取得",
+      "hint": "変更履歴を取得"
+    },
+    {
+      "id": "",
+      "label": "gpu",
+      "localized": "GPU",
+      "hint": "GPU"
+    },
+    {
+      "id": "",
+      "label": "gradient",
+      "localized": "グラデーション",
+      "hint": "グラデーション"
+    },
+    {
+      "id": "",
+      "label": "grid background color",
+      "localized": "グリッドの背景色",
+      "hint": "グリッドの背景色"
+    },
+    {
+      "id": "",
+      "label": "grid margins",
+      "localized": "グリッドのマージン",
+      "hint": "グリッドのマージン"
+    },
+    {
+      "id": "",
+      "label": "grid sections:",
+      "localized": "グリッドセクション:",
+      "hint": "グリッドセクション:"
+    },
+    {
+      "id": "",
+      "label": "group size",
+      "localized": "グループサイズ",
+      "hint": "グループサイズ"
+    },
+    {
+      "id": "",
+      "label": "guidance",
+      "localized": "ガイダンス",
+      "hint": "ガイダンス"
+    },
+    {
+      "id": "",
+      "label": "guidance start",
+      "localized": "ガイダンス開始",
+      "hint": "ガイダンス開始"
+    },
+    {
+      "id": "",
+      "label": "guidance stop",
+      "localized": "ガイダンス停止",
+      "hint": "ガイダンス停止"
+    },
+    {
+      "id": "",
+      "label": "guidance strength",
+      "localized": "ガイダンス強度",
+      "hint": "ガイダンス強度"
+    },
+    {
+      "id": "",
+      "label": "hands",
+      "localized": "手",
+      "hint": "手"
+    },
+    {
+      "id": "",
+      "label": "hdr range",
+      "localized": "HDR範囲",
+      "hint": "HDR範囲"
+    },
+    {
+      "id": "",
+      "label": "hed",
+      "localized": "HED",
+      "hint": "HED"
+    },
+    {
+      "id": "",
+      "label": "height  after",
+      "localized": "高さ（後）",
+      "hint": "高さ（後）"
+    },
+    {
+      "id": "",
+      "label": "height  before",
+      "localized": "高さ（前）",
+      "hint": "高さ（前）"
+    },
+    {
+      "id": "",
+      "label": "height  mask",
+      "localized": "高さマスク",
+      "hint": "高さマスク"
+    },
+    {
+      "id": "",
+      "label": "heun",
+      "localized": "ホイン法",
+      "hint": "ホイン法"
+    },
+    {
+      "id": "",
+      "label": "heun flowmatch",
+      "localized": "ホイン法 Flowmatch",
+      "hint": "ホイン法 Flowmatch"
+    },
+    {
+      "id": "",
+      "label": "hibernate",
+      "localized": "ハイバネート",
+      "hint": "ハイバネート"
+    },
+    {
+      "id": "",
+      "label": "hide the custom checkpoint dropdown",
+      "localized": "カスタムチェックポイントのドロップダウンを非表示にする",
+      "hint": "カスタムチェックポイントのドロップダウンを非表示にする"
+    },
+    {
+      "id": "",
+      "label": "hidet",
+      "localized": "Hidet",
+      "hint": "Hidet"
+    },
+    {
+      "id": "",
+      "label": "high threshold",
+      "localized": "高い閾値",
+      "hint": "高い閾値"
+    },
+    {
+      "id": "",
+      "label": "hires pass only",
+      "localized": "高解像度パスのみ",
+      "hint": "高解像度パスのみ"
+    },
+    {
+      "id": "",
+      "label": "hq init latents",
+      "localized": "HQ初期潜在変数",
+      "hint": "HQ初期潜在変数"
+    },
+    {
+      "id": "",
+      "label": "hue",
+      "localized": "色相",
+      "hint": "色相"
+    },
+    {
+      "id": "",
+      "label": "huggingface mirror",
+      "localized": "Hugging Faceミラー",
+      "hint": "Hugging Faceミラー"
+    },
+    {
+      "id": "",
+      "label": "huggingface token",
+      "localized": "Hugging Faceトークン",
+      "hint": "Hugging Faceトークン"
+    },
+    {
+      "id": "",
+      "label": "hunyuan",
+      "localized": "Hunyuan",
+      "hint": "Hunyuan"
+    },
+    {
+      "id": "",
+      "label": "il",
+      "localized": "IL",
+      "hint": "IL"
+    },
+    {
+      "id": "",
+      "label": "image height",
+      "localized": "画像の高さ",
+      "hint": "画像の高さ"
+    },
+    {
+      "id": "",
+      "label": "image quality",
+      "localized": "画質",
+      "hint": "画質"
+    },
+    {
+      "id": "",
+      "label": "image transparent color fill",
+      "localized": "画像の透明色塗りつぶし",
+      "hint": "画像の透明色塗りつぶし"
+    },
+    {
+      "id": "",
+      "label": "image watermark file",
+      "localized": "画像ウォーターマークファイル",
+      "hint": "画像ウォーターマークファイル"
+    },
+    {
+      "id": "",
+      "label": "image watermark position",
+      "localized": "画像ウォーターマークの位置",
+      "hint": "画像ウォーターマークの位置"
+    },
+    {
+      "id": "",
+      "label": "image width",
+      "localized": "画像の幅",
+      "hint": "画像の幅"
+    },
+    {
+      "id": "",
+      "label": "import",
+      "localized": "インポート",
+      "hint": "インポート"
+    },
+    {
+      "id": "",
+      "label": "include images",
+      "localized": "画像を含める",
+      "hint": "画像を含める"
+    },
+    {
+      "id": "",
+      "label": "include main grid",
+      "localized": "メイングリッドを含める",
+      "hint": "メイングリッドを含める"
+    },
+    {
+      "id": "",
+      "label": "include mask in outputs",
+      "localized": "出力にマスクを含める",
+      "hint": "出力にマスクを含める"
+    },
+    {
+      "id": "",
+      "label": "include original image",
+      "localized": "元の画像を含める",
+      "hint": "元の画像を含める"
+    },
+    {
+      "id": "",
+      "label": "include sub grids",
+      "localized": "サブグリッドを含める",
+      "hint": "サブグリッドを含める"
+    },
+    {
+      "id": "",
+      "label": "inductor",
+      "localized": "Inductor",
+      "hint": "Inductor"
+    },
+    {
+      "id": "",
+      "label": "info",
+      "localized": "情報",
+      "hint": "情報"
+    },
+    {
+      "id": "",
+      "label": "info object",
+      "localized": "情報オブジェクト",
+      "hint": "情報オブジェクト"
+    },
+    {
+      "id": "",
+      "label": "inpaint",
+      "localized": "インペイント",
+      "hint": "インペイント"
+    },
+    {
+      "id": "",
+      "label": "inpaint masked only",
+      "localized": "マスクされた部分のみインペイント",
+      "hint": "マスクされた部分のみインペイント"
+    },
+    {
+      "id": "",
+      "label": "inpainting include greyscale mask in results",
+      "localized": "インペイント結果にグレースケールマスクを含める",
+      "hint": "インペイント結果にグレースケールマスクを含める"
+    },
+    {
+      "id": "",
+      "label": "inpainting include masked composite in results",
+      "localized": "インペイント結果にマスクされた合成画像を含める",
+      "hint": "インペイント結果にマスクされた合成画像を含める"
+    },
+    {
+      "id": "",
+      "label": "input model",
+      "localized": "入力モデル",
+      "hint": "入力モデル"
+    },
+    {
+      "id": "",
+      "label": "intermediates",
+      "localized": "中間生成物",
+      "hint": "中間生成物"
+    },
+    {
+      "id": "",
+      "label": "interpolate frames",
+      "localized": "フレームを補間",
+      "hint": "フレームを補間"
+    },
+    {
+      "id": "",
+      "label": "interpolation method",
+      "localized": "補間方法",
+      "hint": "補間方法"
+    },
+    {
+      "id": "",
+      "label": "interrogate batch",
+      "localized": "バッチでInterrogate",
+      "hint": "バッチでInterrogate"
+    },
+    {
+      "id": "",
+      "label": "interrogate image",
+      "localized": "画像をInterrogate",
+      "hint": "画像をInterrogate"
+    },
+    {
+      "id": "",
+      "label": "interrogate: offload models",
+      "localized": "Interrogate: モデルをオフロード",
+      "hint": "Interrogate: モデルをオフロード"
+    },
+    {
+      "id": "",
+      "label": "invert",
+      "localized": "反転",
+      "hint": "反転"
+    },
+    {
+      "id": "",
+      "label": "invert mask",
+      "localized": "マスクを反転",
+      "hint": "マスクを反転"
+    },
+    {
+      "id": "",
+      "label": "iou",
+      "localized": "IoU",
+      "hint": "IoU"
+    },
+    {
+      "id": "",
+      "label": "ipex",
+      "localized": "IPEX",
+      "hint": "IPEX"
+    },
+    {
+      "id": "",
+      "label": "ipndm",
+      "localized": "IP-NDM",
+      "hint": "IP-NDM"
+    },
+    {
+      "id": "",
+      "label": "item edge blur",
+      "localized": "アイテムのエッジぼかし",
+      "hint": "アイテムのエッジぼかし"
+    },
+    {
+      "id": "",
+      "label": "item padding",
+      "localized": "アイテムのパディング",
+      "hint": "アイテムのパディング"
+    },
+    {
+      "id": "",
+      "label": "iterate seed per line",
+      "localized": "行ごとにシードを反復処理",
+      "hint": "行ごとにシードを反復処理"
+    },
+    {
+      "id": "",
+      "label": "iterations",
+      "localized": "反復回数",
+      "hint": "反復回数"
+    },
+    {
+      "id": "",
+      "label": "karras",
+      "localized": "Karras",
+      "hint": "Karras"
+    },
+    {
+      "id": "",
+      "label": "kdpm2",
+      "localized": "KDPM2",
+      "hint": "KDPM2"
+    },
+    {
+      "id": "",
+      "label": "kdpm2 a",
+      "localized": "KDPM2 a",
+      "hint": "KDPM2 a"
+    },
+    {
+      "id": "",
+      "label": "keep forever",
+      "localized": "永久に保持",
+      "hint": "永久に保持"
+    },
+    {
+      "id": "",
+      "label": "keep incomplete images",
+      "localized": "不完全な画像を保持",
+      "hint": "不完全な画像を保持"
+    },
+    {
+      "id": "",
+      "label": "key",
+      "localized": "キー",
+      "hint": "キー"
+    },
+    {
+      "id": "",
+      "label": "large",
+      "localized": "大",
+      "hint": "大"
+    },
+    {
+      "id": "",
+      "label": "latent history size",
+      "localized": "潜在変数履歴サイズ",
+      "hint": "潜在変数履歴サイズ"
+    },
+    {
+      "id": "",
+      "label": "latent mode",
+      "localized": "潜在変数モード",
+      "hint": "潜在変数モード"
+    },
+    {
+      "id": "",
+      "label": "layer scales",
+      "localized": "レイヤースケール",
+      "hint": "レイヤースケール"
+    },
+    {
+      "id": "",
+      "label": "layerwise casting storage",
+      "localized": "レイヤーごとのキャスティングストレージ",
+      "hint": "レイヤーごとのキャスティングストレージ"
+    },
+    {
+      "id": "",
+      "label": "layerwise non-blocking operations",
+      "localized": "レイヤーごとの非ブロッキング処理",
+      "hint": "レイヤーごとの非ブロッキング処理"
+    },
+    {
+      "id": "",
+      "label": "lcm",
+      "localized": "LCM",
+      "hint": "LCM"
+    },
+    {
+      "id": "",
+      "label": "ldsr processing steps",
+      "localized": "LDSR処理ステップ",
+      "hint": "LDSR処理ステップ"
+    },
+    {
+      "id": "",
+      "label": "left",
+      "localized": "左",
+      "hint": "左"
+    },
+    {
+      "id": "",
+      "label": "legend",
+      "localized": "凡例",
+      "hint": "凡例"
+    },
+    {
+      "id": "",
+      "label": "length",
+      "localized": "長さ",
+      "hint": "長さ"
+    },
+    {
+      "id": "",
+      "label": "leres depth",
+      "localized": "LeReS Depth",
+      "hint": "LeReS Depth"
+    },
+    {
+      "id": "",
+      "label": "level",
+      "localized": "レベル",
+      "hint": "レベル"
+    },
+    {
+      "id": "",
+      "label": "libs",
+      "localized": "ライブラリ",
+      "hint": "ライブラリ"
+    },
+    {
+      "id": "",
+      "label": "light",
+      "localized": "ライト",
+      "hint": "ライト"
+    },
+    {
+      "id": "",
+      "label": "lineart",
+      "localized": "Lineart",
+      "hint": "Lineart"
+    },
+    {
+      "id": "",
+      "label": "list",
+      "localized": "リスト",
+      "hint": "リスト"
+    },
+    {
+      "id": "",
+      "label": "list model details",
+      "localized": "モデルの詳細をリスト表示",
+      "hint": "モデルの詳細をリスト表示"
+    },
+    {
+      "id": "",
+      "label": "lite",
+      "localized": "Lite",
+      "hint": "Lite"
+    },
+    {
+      "id": "",
+      "label": "live update",
+      "localized": "ライブアップデート",
+      "hint": "ライブアップデート"
+    },
+    {
+      "id": "",
+      "label": "lmsd",
+      "localized": "LMSD",
+      "hint": "LMSD"
+    },
+    {
+      "id": "",
+      "label": "load custom diffusers pipeline",
+      "localized": "カスタムDiffusersパイプラインをロード",
+      "hint": "カスタムDiffusersパイプラインをロード"
+    },
+    {
+      "id": "",
+      "label": "load model directly to gpu",
+      "localized": "モデルをGPUに直接ロード",
+      "hint": "モデルをGPUに直接ロード"
+    },
+    {
+      "id": "",
+      "label": "loaded lora",
+      "localized": "ロードされたLoRA",
+      "hint": "ロードされたLoRA"
+    },
+    {
+      "id": "",
+      "label": "logsnr",
+      "localized": "LogSNR",
+      "hint": "LogSNR"
+    },
+    {
+      "id": "",
+      "label": "loop",
+      "localized": "ループ",
+      "hint": "ループ"
+    },
+    {
+      "id": "",
+      "label": "lora add hash info to metadata",
+      "localized": "LoRAのハッシュ情報をメタデータに追加",
+      "hint": "LoRAのハッシュ情報をメタデータに追加"
+    },
+    {
+      "id": "",
+      "label": "lora auto-apply tags",
+      "localized": "LoRA自動適用タグ",
+      "hint": "LoRA自動適用タグ"
+    },
+    {
+      "id": "",
+      "label": "lora load using diffusers method for selected models",
+      "localized": "選択されたモデルに対してDiffusersメソッドを使用してLoRAをロード",
+      "hint": "選択されたモデルに対してDiffusersメソッドを使用してLoRAをロード"
+    },
+    {
+      "id": "",
+      "label": "lora load using legacy method",
+      "localized": "レガシーメソッドを使用してLoRAをロード",
+      "hint": "レガシーメソッドを使用してLoRAをロード"
+    },
+    {
+      "id": "",
+      "label": "lora target filename",
+      "localized": "LoRAターゲットファイル名",
+      "hint": "LoRAターゲットファイル名"
+    },
+    {
+      "id": "",
+      "label": "low order",
+      "localized": "低次",
+      "hint": "低次"
+    },
+    {
+      "id": "",
+      "label": "low threshold",
+      "localized": "低い閾値",
+      "hint": "低い閾値"
+    },
+    {
+      "id": "",
+      "label": "ltx model",
+      "localized": "LTXモデル",
+      "hint": "LTXモデル"
+    },
+    {
+      "id": "",
+      "label": "manual block merge",
+      "localized": "手動ブロック結合",
+      "hint": "手動ブロック結合"
+    },
+    {
+      "id": "",
+      "label": "marigold depth",
+      "localized": "Marigold Depth",
+      "hint": "Marigold Depth"
+    },
+    {
+      "id": "",
+      "label": "mask dropout",
+      "localized": "マスクドロップアウト",
+      "hint": "マスクドロップアウト"
+    },
+    {
+      "id": "",
+      "label": "mask invert",
+      "localized": "マスク反転",
+      "hint": "マスク反転"
+    },
+    {
+      "id": "",
+      "label": "mask only",
+      "localized": "マスクのみ",
+      "hint": "マスクのみ"
+    },
+    {
+      "id": "",
+      "label": "mask strength",
+      "localized": "マスク強度",
+      "hint": "マスク強度"
+    },
+    {
+      "id": "",
+      "label": "masked",
+      "localized": "マスク済み",
+      "hint": "マスク済み"
+    },
+    {
+      "id": "",
+      "label": "math attention",
+      "localized": "数式アテンション",
+      "hint": "数式アテンション"
+    },
+    {
+      "id": "",
+      "label": "max faces",
+      "localized": "最大顔数",
+      "hint": "最大顔数"
+    },
+    {
+      "id": "",
+      "label": "max flavors",
+      "localized": "最大フレーバー数",
+      "hint": "最大フレーバー数"
+    },
+    {
+      "id": "",
+      "label": "max guidance",
+      "localized": "最大ガイダンススケール",
+      "hint": "最大ガイダンススケール"
+    },
+    {
+      "id": "",
+      "label": "max length",
+      "localized": "最大長",
+      "hint": "最大長"
+    },
+    {
+      "id": "",
+      "label": "max object size",
+      "localized": "最大オブジェクトサイズ",
+      "hint": "最大オブジェクトサイズ"
+    },
+    {
+      "id": "",
+      "label": "max range",
+      "localized": "最大範囲",
+      "hint": "最大範囲"
+    },
+    {
+      "id": "",
+      "label": "max words",
+      "localized": "最大単語数",
+      "hint": "最大単語数"
+    },
+    {
+      "id": "",
+      "label": "max-autotune",
+      "localized": "最大自動調整",
+      "hint": "最大自動調整"
+    },
+    {
+      "id": "",
+      "label": "max-autotune-no-cudagraphs",
+      "localized": "最大自動調整（Cudaグラフなし）",
+      "hint": "最大自動調整（Cudaグラフなし）"
+    },
+    {
+      "id": "",
+      "label": "maximum image size (mp)",
+      "localized": "最大画像サイズ (MP)",
+      "hint": "最大画像サイズ (MP)"
+    },
+    {
+      "id": "",
+      "label": "maximum number of units",
+      "localized": "最大ユニット数",
+      "hint": "最大ユニット数"
+    },
+    {
+      "id": "",
+      "label": "maximum rank",
+      "localized": "最大ランク",
+      "hint": "最大ランク"
+    },
+    {
+      "id": "",
+      "label": "mediapipe face",
+      "localized": "Mediapipe 顔検出",
+      "hint": "Mediapipe 顔検出"
+    },
+    {
+      "id": "",
+      "label": "medium",
+      "localized": "媒体",
+      "hint": "媒体"
+    },
+    {
+      "id": "",
+      "label": "mediums",
+      "localized": "媒体",
+      "hint": "媒体"
+    },
+    {
+      "id": "",
+      "label": "memory",
+      "localized": "メモリ",
+      "hint": "メモリ"
+    },
+    {
+      "id": "",
+      "label": "memory attention",
+      "localized": "メモリアテンション",
+      "hint": "メモリアテンション"
+    },
+    {
+      "id": "",
+      "label": "memory limit",
+      "localized": "メモリ制限",
+      "hint": "メモリ制限"
+    },
+    {
+      "id": "",
+      "label": "memory optimization",
+      "localized": "メモリ最適化",
+      "hint": "メモリ最適化"
+    },
+    {
+      "id": "",
+      "label": "merge",
+      "localized": "マージ",
+      "hint": "マージ"
+    },
+    {
+      "id": "",
+      "label": "merge alpha",
+      "localized": "アルファをマージ",
+      "hint": "アルファをマージ"
+    },
+    {
+      "id": "",
+      "label": "method",
+      "localized": "メソッド",
+      "hint": "メソッド"
+    },
+    {
+      "id": "",
+      "label": "method after",
+      "localized": "後処理メソッド",
+      "hint": "後処理メソッド"
+    },
+    {
+      "id": "",
+      "label": "method before",
+      "localized": "前処理メソッド",
+      "hint": "前処理メソッド"
+    },
+    {
+      "id": "",
+      "label": "method mask",
+      "localized": "マスクメソッド",
+      "hint": "マスクメソッド"
+    },
+    {
+      "id": "",
+      "label": "midas depth",
+      "localized": "Midas 深度",
+      "hint": "Midas 深度"
+    },
+    {
+      "id": "",
+      "label": "migraphx",
+      "localized": "Migraphx",
+      "hint": "Migraphx"
+    },
+    {
+      "id": "",
+      "label": "min flavors",
+      "localized": "最小フレーバー数",
+      "hint": "最小フレーバー数"
+    },
+    {
+      "id": "",
+      "label": "min guidance",
+      "localized": "最小ガイダンススケール",
+      "hint": "最小ガイダンススケール"
+    },
+    {
+      "id": "",
+      "label": "min object size",
+      "localized": "最小オブジェクトサイズ",
+      "hint": "最小オブジェクトサイズ"
+    },
+    {
+      "id": "",
+      "label": "mine",
+      "localized": "鉱山",
+      "hint": "鉱山"
+    },
+    {
+      "id": "",
+      "label": "mlsd",
+      "localized": "MLSD",
+      "hint": "MLSD"
+    },
+    {
+      "id": "",
+      "label": "mode",
+      "localized": "モード",
+      "hint": "モード"
+    },
+    {
+      "id": "",
+      "label": "mode after",
+      "localized": "後処理モード",
+      "hint": "後処理モード"
+    },
+    {
+      "id": "",
+      "label": "mode before",
+      "localized": "前処理モード",
+      "hint": "前処理モード"
+    },
+    {
+      "id": "",
+      "label": "mode mask",
+      "localized": "マスクモード",
+      "hint": "マスクモード"
+    },
+    {
+      "id": "",
+      "label": "mode x-axis",
+      "localized": "X軸モード",
+      "hint": "X軸モード"
+    },
+    {
+      "id": "",
+      "label": "mode y-axis",
+      "localized": "Y軸モード",
+      "hint": "Y軸モード"
+    },
+    {
+      "id": "",
+      "label": "model auto-download on demand",
+      "localized": "モデルのオンデマンド自動ダウンロード",
+      "hint": "モデルのオンデマンド自動ダウンロード"
+    },
+    {
+      "id": "",
+      "label": "model autoload on start",
+      "localized": "起動時にモデルを自動ロード",
+      "hint": "起動時にモデルを自動ロード"
+    },
+    {
+      "id": "",
+      "label": "model compile fullgraph",
+      "localized": "モデルコンパイル フルグラフ",
+      "hint": "モデルコンパイル フルグラフ"
+    },
+    {
+      "id": "",
+      "label": "model compile suppress errors",
+      "localized": "モデルコンパイル エラー抑制",
+      "hint": "モデルコンパイル エラー抑制"
+    },
+    {
+      "id": "",
+      "label": "model compile verbose mode",
+      "localized": "モデルコンパイル 詳細モード",
+      "hint": "モデルコンパイル 詳細モード"
+    },
+    {
+      "id": "",
+      "label": "model info",
+      "localized": "モデル情報",
+      "hint": "モデル情報"
+    },
+    {
+      "id": "",
+      "label": "model metadata",
+      "localized": "モデルメタデータ",
+      "hint": "モデルメタデータ"
+    },
+    {
+      "id": "",
+      "label": "model name",
+      "localized": "モデル名",
+      "hint": "モデル名"
+    },
+    {
+      "id": "",
+      "label": "model precision",
+      "localized": "モデル精度",
+      "hint": "モデル精度"
+    },
+    {
+      "id": "",
+      "label": "model type",
+      "localized": "モデルタイプ",
+      "hint": "モデルタイプ"
+    },
+    {
+      "id": "",
+      "label": "model url",
+      "localized": "モデルURL",
+      "hint": "モデルURL"
+    },
+    {
+      "id": "",
+      "label": "modern",
+      "localized": "モダン",
+      "hint": "モダン"
+    },
+    {
+      "id": "",
+      "label": "modules",
+      "localized": "モジュール",
+      "hint": "モジュール"
+    },
+    {
+      "id": "",
+      "label": "momentum",
+      "localized": "モメンタム",
+      "hint": "モメンタム"
+    },
+    {
+      "id": "",
+      "label": "motion level",
+      "localized": "モーションレベル",
+      "hint": "モーションレベル"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using refiner",
+      "localized": "リファイナー使用時にベースモデルをCPUに移動",
+      "hint": "リファイナー使用時にベースモデルをCPUに移動"
+    },
+    {
+      "id": "",
+      "label": "move base model to cpu when using vae",
+      "localized": "VAE使用時にベースモデルをCPUに移動",
+      "hint": "VAE使用時にベースモデルをCPUに移動"
+    },
+    {
+      "id": "",
+      "label": "move detailer model to cpu when complete",
+      "localized": "Detailerモデル完了時にCPUに移動",
+      "hint": "Detailerモデル完了時にCPUに移動"
+    },
+    {
+      "id": "",
+      "label": "move refiner model to cpu when not in use",
+      "localized": "リファイナーモデル未使用時にCPUに移動",
+      "hint": "リファイナーモデル未使用時にCPUに移動"
+    },
+    {
+      "id": "",
+      "label": "movements",
+      "localized": "動き",
+      "hint": "動き"
+    },
+    {
+      "id": "",
+      "label": "multi decoder",
+      "localized": "マルチデコーダー",
+      "hint": "マルチデコーダー"
+    },
+    {
+      "id": "",
+      "label": "multistep restore",
+      "localized": "マルチステップ復元",
+      "hint": "マルチステップ復元"
+    },
+    {
+      "id": "",
+      "label": "native",
+      "localized": "ネイティブ",
+      "hint": "ネイティブ"
+    },
+    {
+      "id": "",
+      "label": "near threshold",
+      "localized": "近傍閾値",
+      "hint": "近傍閾値"
+    },
+    {
+      "id": "",
+      "label": "negative",
+      "localized": "ネガティブプロンプト",
+      "hint": "ネガティブプロンプト"
+    },
+    {
+      "id": "",
+      "label": "network negative prompt",
+      "localized": "ネットワークネガティブプロンプト",
+      "hint": "ネットワークネガティブプロンプト"
+    },
+    {
+      "id": "",
+      "label": "network parameters",
+      "localized": "ネットワークパラメータ",
+      "hint": "ネットワークパラメータ"
+    },
+    {
+      "id": "",
+      "label": "network prompt",
+      "localized": "ネットワークプロンプト",
+      "hint": "ネットワークプロンプト"
+    },
+    {
+      "id": "",
+      "label": "new model name",
+      "localized": "新しいモデル名",
+      "hint": "新しいモデル名"
+    },
+    {
+      "id": "",
+      "label": "nf4",
+      "localized": "NF4",
+      "hint": "NF4"
+    },
+    {
+      "id": "",
+      "label": "nms",
+      "localized": "NMS",
+      "hint": "NMS"
+    },
+    {
+      "id": "",
+      "label": "noise",
+      "localized": "ノイズ",
+      "hint": "ノイズ"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier (eta)",
+      "localized": "ノイズ乗数（eta）",
+      "hint": "ノイズ乗数（eta）"
+    },
+    {
+      "id": "",
+      "label": "noise multiplier for image processing",
+      "localized": "画像処理のノイズ乗数",
+      "hint": "画像処理のノイズ乗数"
+    },
+    {
+      "id": "",
+      "label": "noise seed delta (eta)",
+      "localized": "ノイズシードデルタ (eta)",
+      "hint": "ノイズシードデルタ (eta)"
+    },
+    {
+      "id": "",
+      "label": "noise strength",
+      "localized": "ノイズ強度",
+      "hint": "ノイズ強度"
+    },
+    {
+      "id": "",
+      "label": "none",
+      "localized": "なし",
+      "hint": "なし"
+    },
+    {
+      "id": "",
+      "label": "note",
+      "localized": "ノート",
+      "hint": "ノート"
+    },
+    {
+      "id": "",
+      "label": "nothing",
+      "localized": "なし",
+      "hint": "なし"
+    },
+    {
+      "id": "",
+      "label": "number",
+      "localized": "数値",
+      "hint": "数値"
+    },
+    {
+      "id": "",
+      "label": "numbered filenames",
+      "localized": "連番ファイル名",
+      "hint": "連番ファイル名"
+    },
+    {
+      "id": "",
+      "label": "offload",
+      "localized": "オフロード",
+      "hint": "オフロード"
+    },
+    {
+      "id": "",
+      "label": "offload face module",
+      "localized": "顔モジュールをオフロード",
+      "hint": "顔モジュールをオフロード"
+    },
+    {
+      "id": "",
+      "label": "olive-ai",
+      "localized": "Olive-AI",
+      "hint": "Olive-AI"
+    },
+    {
+      "id": "",
+      "label": "onediff",
+      "localized": "OneDiff",
+      "hint": "OneDiff"
+    },
+    {
+      "id": "",
+      "label": "onnx",
+      "localized": "ONNX",
+      "hint": "ONNX"
+    },
+    {
+      "id": "",
+      "label": "openbody",
+      "localized": "OpenBody",
+      "hint": "OpenBody"
+    },
+    {
+      "id": "",
+      "label": "openclip",
+      "localized": "OpenCLIP",
+      "hint": "OpenCLIP"
+    },
+    {
+      "id": "",
+      "label": "openvino disable memory cleanup after compile",
+      "localized": "コンパイル後のOpenVINOメモリクリーンアップを無効化",
+      "hint": "コンパイル後のOpenVINOメモリクリーンアップを無効化"
+    },
+    {
+      "id": "",
+      "label": "openvino disable model caching",
+      "localized": "OpenVINOモデルキャッシュを無効化",
+      "hint": "OpenVINOモデルキャッシュを無効化"
+    },
+    {
+      "id": "",
+      "label": "openvino mode",
+      "localized": "OpenVINOモード",
+      "hint": "OpenVINOモード"
+    },
+    {
+      "id": "",
+      "label": "openvino_fx",
+      "localized": "OpenVINO_FX",
+      "hint": "OpenVINO_FX"
+    },
+    {
+      "id": "",
+      "label": "optional image description",
+      "localized": "オプションの画像説明",
+      "hint": "オプションの画像説明"
+    },
+    {
+      "id": "",
+      "label": "optional init image or video",
+      "localized": "オプションの初期画像または動画",
+      "hint": "オプションの初期画像または動画"
+    },
+    {
+      "id": "",
+      "label": "order",
+      "localized": "順序",
+      "hint": "順序"
+    },
+    {
+      "id": "",
+      "label": "ortho",
+      "localized": "直交",
+      "hint": "直交"
+    },
+    {
+      "id": "",
+      "label": "outpaint",
+      "localized": "アウトペイント",
+      "hint": "アウトペイント"
+    },
+    {
+      "id": "",
+      "label": "output model",
+      "localized": "出力モデル",
+      "hint": "出力モデル"
+    },
+    {
+      "id": "",
+      "label": "override resolution",
+      "localized": "解像度を上書き",
+      "hint": "解像度を上書き"
+    },
+    {
+      "id": "",
+      "label": "override sampler",
+      "localized": "サンプラーを上書き",
+      "hint": "サンプラーを上書き"
+    },
+    {
+      "id": "",
+      "label": "override scheduler",
+      "localized": "スケジューラを上書き",
+      "hint": "スケジューラを上書き"
+    },
+    {
+      "id": "",
+      "label": "override steps",
+      "localized": "ステップ数を上書き",
+      "hint": "ステップ数を上書き"
+    },
+    {
+      "id": "",
+      "label": "override t1 ratio",
+      "localized": "T1比率を上書き",
+      "hint": "T1比率を上書き"
+    },
+    {
+      "id": "",
+      "label": "override t2 ratio",
+      "localized": "t2比率を上書き",
+      "hint": "t2比率を上書き"
+    },
+    {
+      "id": "",
+      "label": "overwrite existing file",
+      "localized": "既存のファイルを上書き",
+      "hint": "既存のファイルを上書き"
+    },
+    {
+      "id": "",
+      "label": "overwrite model",
+      "localized": "モデルを上書き",
+      "hint": "モデルを上書き"
+    },
+    {
+      "id": "",
+      "label": "pad frames",
+      "localized": "フレームをパディング",
+      "hint": "フレームをパディング"
+    },
+    {
+      "id": "",
+      "label": "padding",
+      "localized": "パディング",
+      "hint": "パディング"
+    },
+    {
+      "id": "",
+      "label": "parallel process images in batch",
+      "localized": "画像をバッチで並列処理",
+      "hint": "画像をバッチで並列処理"
+    },
+    {
+      "id": "",
+      "label": "parameter free",
+      "localized": "パラメータフリー",
+      "hint": "パラメータフリー"
+    },
+    {
+      "id": "",
+      "label": "path to model file",
+      "localized": "モデルファイルへのパス",
+      "hint": "モデルファイルへのパス"
+    },
+    {
+      "id": "",
+      "label": "path to notification sound",
+      "localized": "通知音へのパス",
+      "hint": "通知音へのパス"
+    },
+    {
+      "id": "",
+      "label": "peft",
+      "localized": "PEFT",
+      "hint": "PEFT"
+    },
+    {
+      "id": "",
+      "label": "penalty",
+      "localized": "ペナルティ",
+      "hint": "ペナルティ"
+    },
+    {
+      "id": "",
+      "label": "perflow",
+      "localized": "Perflow",
+      "hint": "Perflow"
+    },
+    {
+      "id": "",
+      "label": "perform injection",
+      "localized": "インジェクションを実行",
+      "hint": "インジェクションを実行"
+    },
+    {
+      "id": "",
+      "label": "perform sdsa",
+      "localized": "SDSAを実行",
+      "hint": "SDSAを実行"
+    },
+    {
+      "id": "",
+      "label": "perform warmup",
+      "localized": "ウォームアップを実行",
+      "hint": "ウォームアップを実行"
+    },
+    {
+      "id": "",
+      "label": "performance",
+      "localized": "パフォーマンス",
+      "hint": "パフォーマンス"
+    },
+    {
+      "id": "",
+      "label": "photomaker model",
+      "localized": "Photomakerモデル",
+      "hint": "Photomakerモデル"
+    },
+    {
+      "id": "",
+      "label": "pidinet",
+      "localized": "PIDI NET",
+      "hint": "PIDI NET"
+    },
+    {
+      "id": "",
+      "label": "pipeline",
+      "localized": "パイプライン",
+      "hint": "パイプライン"
+    },
+    {
+      "id": "",
+      "label": "pixels to expand",
+      "localized": "拡張するピクセル数",
+      "hint": "拡張するピクセル数"
+    },
+    {
+      "id": "",
+      "label": "platform",
+      "localized": "プラットフォーム",
+      "hint": "プラットフォーム"
+    },
+    {
+      "id": "",
+      "label": "play",
+      "localized": "再生",
+      "hint": "再生"
+    },
+    {
+      "id": "",
+      "label": "play a notification upon completion",
+      "localized": "完了時に通知を再生",
+      "hint": "完了時に通知を再生"
+    },
+    {
+      "id": "",
+      "label": "pndm",
+      "localized": "PNDM",
+      "hint": "PNDM"
+    },
+    {
+      "id": "",
+      "label": "polyexponential",
+      "localized": "多項指数関数",
+      "hint": "多項指数関数"
+    },
+    {
+      "id": "",
+      "label": "pony",
+      "localized": "Pony",
+      "hint": "Pony"
+    },
+    {
+      "id": "",
+      "label": "pose confidence",
+      "localized": "ポーズの信頼度",
+      "hint": "ポーズの信頼度"
+    },
+    {
+      "id": "",
+      "label": "positive",
+      "localized": "ポジティブ",
+      "hint": "ポジティブ"
+    },
+    {
+      "id": "",
+      "label": "postprocess mask",
+      "localized": "マスクを後処理",
+      "hint": "マスクを後処理"
+    },
+    {
+      "id": "",
+      "label": "postprocess upscale",
+      "localized": "アップスケールを後処理",
+      "hint": "アップスケールを後処理"
+    },
+    {
+      "id": "",
+      "label": "postprocessing operation order",
+      "localized": "後処理操作の順序",
+      "hint": "後処理操作の順序"
+    },
+    {
+      "id": "",
+      "label": "power",
+      "localized": "パワー",
+      "hint": "パワー"
+    },
+    {
+      "id": "",
+      "label": "prediction method",
+      "localized": "予測方法",
+      "hint": "予測方法"
+    },
+    {
+      "id": "",
+      "label": "preset",
+      "localized": "プリセット",
+      "hint": "プリセット"
+    },
+    {
+      "id": "",
+      "label": "preset block merge",
+      "localized": "プリセットブロックのマージ",
+      "hint": "プリセットブロックのマージ"
+    },
+    {
+      "id": "",
+      "label": "preview",
+      "localized": "プレビュー",
+      "hint": "プレビュー"
+    },
+    {
+      "id": "",
+      "label": "preview end",
+      "localized": "プレビュー終了",
+      "hint": "プレビュー終了"
+    },
+    {
+      "id": "",
+      "label": "preview start",
+      "localized": "プレビュー開始",
+      "hint": "プレビュー開始"
+    },
+    {
+      "id": "",
+      "label": "primary model",
+      "localized": "プライマリモデル",
+      "hint": "プライマリモデル"
+    },
+    {
+      "id": "",
+      "label": "processor",
+      "localized": "プロセッサ",
+      "hint": "プロセッサ"
+    },
+    {
+      "id": "",
+      "label": "processor move to cpu after use",
+      "localized": "使用後、プロセッサをCPUに移動",
+      "hint": "使用後、プロセッサをCPUに移動"
+    },
+    {
+      "id": "",
+      "label": "processor settings",
+      "localized": "プロセッサの設定",
+      "hint": "プロセッサの設定"
+    },
+    {
+      "id": "",
+      "label": "processor unload after use",
+      "localized": "使用後、プロセッサをアンロード",
+      "hint": "使用後、プロセッサをアンロード"
+    },
+    {
+      "id": "",
+      "label": "prompt attention normalization",
+      "localized": "プロンプト注意の正規化",
+      "hint": "プロンプト注意の正規化"
+    },
+    {
+      "id": "",
+      "label": "prompt ex",
+      "localized": "プロンプトEX",
+      "hint": "プロンプトEX"
+    },
+    {
+      "id": "",
+      "label": "prompt processor",
+      "localized": "プロンプトプロセッサ",
+      "hint": "プロンプトプロセッサ"
+    },
+    {
+      "id": "",
+      "label": "prompt strength",
+      "localized": "プロンプトの強度",
+      "hint": "プロンプトの強度"
+    },
+    {
+      "id": "",
+      "label": "prompt thresholds:",
+      "localized": "プロンプトの閾値:",
+      "hint": "プロンプトの閾値:"
+    },
+    {
+      "id": "",
+      "label": "prompts",
+      "localized": "プロンプト",
+      "hint": "プロンプト"
+    },
+    {
+      "id": "",
+      "label": "provider",
+      "localized": "プロバイダ",
+      "hint": "プロバイダ"
+    },
+    {
+      "id": "",
+      "label": "prune",
+      "localized": "剪定",
+      "hint": "剪定"
+    },
+    {
+      "id": "",
+      "label": "quad",
+      "localized": "クアッド",
+      "hint": "クアッド"
+    },
+    {
+      "id": "",
+      "label": "quantization activations type",
+      "localized": "量子化アクティベーションのタイプ",
+      "hint": "量子化アクティベーションのタイプ"
+    },
+    {
+      "id": "",
+      "label": "quantization mode",
+      "localized": "量子化モード",
+      "hint": "量子化モード"
+    },
+    {
+      "id": "",
+      "label": "quantization type",
+      "localized": "量子化タイプ",
+      "hint": "量子化タイプ"
+    },
+    {
+      "id": "",
+      "label": "quantization weights type",
+      "localized": "量子化重みのタイプ",
+      "hint": "量子化重みのタイプ"
+    },
+    {
+      "id": "",
+      "label": "question",
+      "localized": "質問",
+      "hint": "質問"
+    },
+    {
+      "id": "",
+      "label": "random seeds",
+      "localized": "ランダムシード",
+      "hint": "ランダムシード"
+    },
+    {
+      "id": "",
+      "label": "range",
+      "localized": "範囲",
+      "hint": "範囲"
+    },
+    {
+      "id": "",
+      "label": "rebase",
+      "localized": "リベース",
+      "hint": "リベース"
+    },
+    {
+      "id": "",
+      "label": "reduce-overhead",
+      "localized": "オーバーヘッド削減",
+      "hint": "オーバーヘッド削減"
+    },
+    {
+      "id": "",
+      "label": "redux prompt strength",
+      "localized": "Reduxプロンプト強度",
+      "hint": "Reduxプロンプト強度"
+    },
+    {
+      "id": "",
+      "label": "reference adain weight",
+      "localized": "参照ADAINウェイト",
+      "hint": "参照ADAINウェイト"
+    },
+    {
+      "id": "",
+      "label": "reference query weight",
+      "localized": "参照クエリウェイト",
+      "hint": "参照クエリウェイト"
+    },
+    {
+      "id": "",
+      "label": "reference unit 1",
+      "localized": "参照ユニット1",
+      "hint": "参照ユニット1"
+    },
+    {
+      "id": "",
+      "label": "refine foreground",
+      "localized": "前景をリファイン",
+      "hint": "前景をリファイン"
+    },
+    {
+      "id": "",
+      "label": "refresh",
+      "localized": "更新",
+      "hint": "更新"
+    },
+    {
+      "id": "",
+      "label": "refresh bench",
+      "localized": "ベンチマークを更新",
+      "hint": "ベンチマークを更新"
+    },
+    {
+      "id": "",
+      "label": "refresh data",
+      "localized": "データを更新",
+      "hint": "データを更新"
+    },
+    {
+      "id": "",
+      "label": "refresh state",
+      "localized": "状態を更新",
+      "hint": "状態を更新"
+    },
+    {
+      "id": "",
+      "label": "refresh ui values",
+      "localized": "UIの値を更新",
+      "hint": "UIの値を更新"
+    },
+    {
+      "id": "",
+      "label": "reinstall",
+      "localized": "再インストール",
+      "hint": "再インストール"
+    },
+    {
+      "id": "",
+      "label": "remove background",
+      "localized": "背景を削除",
+      "hint": "背景を削除"
+    },
+    {
+      "id": "",
+      "label": "repeat x-axis",
+      "localized": "X軸を繰り返す",
+      "hint": "X軸を繰り返す"
+    },
+    {
+      "id": "",
+      "label": "repeat y-axis",
+      "localized": "Y軸を繰り返す",
+      "hint": "Y軸を繰り返す"
+    },
+    {
+      "id": "",
+      "label": "replace vae",
+      "localized": "VAEを置き換える",
+      "hint": "VAEを置き換える"
+    },
+    {
+      "id": "",
+      "label": "repos",
+      "localized": "リポジトリ",
+      "hint": "リポジトリ"
+    },
+    {
+      "id": "",
+      "label": "reprocess decode",
+      "localized": "デコードを再処理",
+      "hint": "デコードを再処理"
+    },
+    {
+      "id": "",
+      "label": "reprocess face",
+      "localized": "顔を再処理",
+      "hint": "顔を再処理"
+    },
+    {
+      "id": "",
+      "label": "reprocess refine",
+      "localized": "リファインを再処理",
+      "hint": "リファインを再処理"
+    },
+    {
+      "id": "",
+      "label": "request browser notifications",
+      "localized": "ブラウザの通知をリクエスト",
+      "hint": "ブラウザの通知をリクエスト"
+    },
+    {
+      "id": "",
+      "label": "requeue failed",
+      "localized": "失敗したものを再キュー",
+      "hint": "失敗したものを再キュー"
+    },
+    {
+      "id": "",
+      "label": "rescale",
+      "localized": "リスケール",
+      "hint": "リスケール"
+    },
+    {
+      "id": "",
+      "label": "rescale betas with zero terminal snr",
+      "localized": "終端SNRがゼロのベータをリスケール",
+      "hint": "終端SNRがゼロのベータをリスケール"
+    },
+    {
+      "id": "",
+      "label": "reset anchors",
+      "localized": "アンカーをリセット",
+      "hint": "アンカーをリセット"
+    },
+    {
+      "id": "",
+      "label": "residual diff threshold",
+      "localized": "残差差分閾値",
+      "hint": "残差差分閾値"
+    },
+    {
+      "id": "",
+      "label": "resize background color",
+      "localized": "背景色をリサイズ",
+      "hint": "背景色をリサイズ"
+    },
+    {
+      "id": "",
+      "label": "resize method",
+      "localized": "リサイズ方法",
+      "hint": "リサイズ方法"
+    },
+    {
+      "id": "",
+      "label": "resize mode",
+      "localized": "リサイズモード",
+      "hint": "リサイズモード"
+    },
+    {
+      "id": "",
+      "label": "resize scale",
+      "localized": "リサイズスケール",
+      "hint": "リサイズスケール"
+    },
+    {
+      "id": "",
+      "label": "restart",
+      "localized": "再起動",
+      "hint": "再起動"
+    },
+    {
+      "id": "",
+      "label": "restart step",
+      "localized": "ステップを再開",
+      "hint": "ステップを再開"
+    },
+    {
+      "id": "",
+      "label": "restore faces: codeformer",
+      "localized": "顔を復元: CodeFormer",
+      "hint": "顔を復元: CodeFormer"
+    },
+    {
+      "id": "",
+      "label": "restore faces: gfpgan",
+      "localized": "顔を復元: GFPGAN",
+      "hint": "顔を復元: GFPGAN"
+    },
+    {
+      "id": "",
+      "label": "restore pipe on end",
+      "localized": "終了時にパイプを復元",
+      "hint": "終了時にパイプを復元"
+    },
+    {
+      "id": "",
+      "label": "resume",
+      "localized": "再開",
+      "hint": "再開"
+    },
+    {
+      "id": "",
+      "label": "reswapper model",
+      "localized": "Reswapperモデル",
+      "hint": "Reswapperモデル"
+    },
+    {
+      "id": "",
+      "label": "return original images",
+      "localized": "元の画像を返す",
+      "hint": "元の画像を返す"
+    },
+    {
+      "id": "",
+      "label": "right",
+      "localized": "右",
+      "hint": "右"
+    },
+    {
+      "id": "",
+      "label": "root model folder",
+      "localized": "ルートモデルフォルダ",
+      "hint": "ルートモデルフォルダ"
+    },
+    {
+      "id": "",
+      "label": "rows",
+      "localized": "行",
+      "hint": "行"
+    },
+    {
+      "id": "",
+      "label": "run",
+      "localized": "実行",
+      "hint": "実行"
+    },
+    {
+      "id": "",
+      "label": "run benchmark",
+      "localized": "ベンチマークを実行",
+      "hint": "ベンチマークを実行"
+    },
+    {
+      "id": "",
+      "label": "sa solver",
+      "localized": "SAソルバー",
+      "hint": "SAソルバー"
+    },
+    {
+      "id": "",
+      "label": "safetensors",
+      "localized": "safetensors",
+      "hint": "safetensors"
+    },
+    {
+      "id": "",
+      "label": "sage attention",
+      "localized": "sage attention",
+      "hint": "sage attention"
+    },
+    {
+      "id": "",
+      "label": "same as primary",
+      "localized": "プライマリと同じ",
+      "hint": "プライマリと同じ"
+    },
+    {
+      "id": "",
+      "label": "same latent",
+      "localized": "同じ潜在変数",
+      "hint": "同じ潜在変数"
+    },
+    {
+      "id": "",
+      "label": "sample",
+      "localized": "サンプル",
+      "hint": "サンプル"
+    },
+    {
+      "id": "",
+      "label": "sampler",
+      "localized": "サンプラー",
+      "hint": "サンプラー"
+    },
+    {
+      "id": "",
+      "label": "sampler dynamic shift",
+      "localized": "サンプラーのダイナミックシフト",
+      "hint": "サンプラーのダイナミックシフト"
+    },
+    {
+      "id": "",
+      "label": "sampler order",
+      "localized": "サンプラーの順序",
+      "hint": "サンプラーの順序"
+    },
+    {
+      "id": "",
+      "label": "sampler shift",
+      "localized": "サンプラーのシフト",
+      "hint": "サンプラーのシフト"
+    },
+    {
+      "id": "",
+      "label": "saturation",
+      "localized": "彩度",
+      "hint": "彩度"
+    },
+    {
+      "id": "",
+      "label": "save all generated image grids",
+      "localized": "生成されたすべての画像グリッドを保存",
+      "hint": "生成されたすべての画像グリッドを保存"
+    },
+    {
+      "id": "",
+      "label": "save all generated images",
+      "localized": "生成されたすべての画像を保存",
+      "hint": "生成されたすべての画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save diffusers",
+      "localized": "Diffusersを保存",
+      "hint": "Diffusersを保存"
+    },
+    {
+      "id": "",
+      "label": "save hdr image",
+      "localized": "HDR画像を保存",
+      "hint": "HDR画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save image before color correction",
+      "localized": "色補正前の画像を保存",
+      "hint": "色補正前の画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save image before detailer",
+      "localized": "Detailer前の画像を保存",
+      "hint": "Detailer前の画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save image before hires",
+      "localized": "高解像度化前の画像を保存",
+      "hint": "高解像度化前の画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save image before refiner",
+      "localized": "Refiner前の画像を保存",
+      "hint": "Refiner前の画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save images to a subdirectory",
+      "localized": "画像をサブディレクトリに保存",
+      "hint": "画像をサブディレクトリに保存"
+    },
+    {
+      "id": "",
+      "label": "save init images",
+      "localized": "初期画像を保存",
+      "hint": "初期画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save inpainting mask",
+      "localized": "インペイントマスクを保存",
+      "hint": "インペイントマスクを保存"
+    },
+    {
+      "id": "",
+      "label": "save inpainting masked composite",
+      "localized": "インペイントマスクされた合成画像を保存",
+      "hint": "インペイントマスクされた合成画像を保存"
+    },
+    {
+      "id": "",
+      "label": "save metadata",
+      "localized": "メタデータを保存",
+      "hint": "メタデータを保存"
+    },
+    {
+      "id": "",
+      "label": "save only saves selected image",
+      "localized": "選択された画像のみを保存",
+      "hint": "選択された画像のみを保存"
+    },
+    {
+      "id": "",
+      "label": "save output",
+      "localized": "出力を保存",
+      "hint": "出力を保存"
+    },
+    {
+      "id": "",
+      "label": "save safetensors",
+      "localized": "Safetensorsを保存",
+      "hint": "Safetensorsを保存"
+    },
+    {
+      "id": "",
+      "label": "scale  after",
+      "localized": "スケール後",
+      "hint": "スケール後"
+    },
+    {
+      "id": "",
+      "label": "scale  before",
+      "localized": "スケール前",
+      "hint": "スケール前"
+    },
+    {
+      "id": "",
+      "label": "scale  mask",
+      "localized": "マスクをスケール",
+      "hint": "マスクをスケール"
+    },
+    {
+      "id": "",
+      "label": "scale factor",
+      "localized": "スケールファクター",
+      "hint": "スケールファクター"
+    },
+    {
+      "id": "",
+      "label": "score",
+      "localized": "スコア",
+      "hint": "スコア"
+    },
+    {
+      "id": "",
+      "label": "score threshold",
+      "localized": "スコア閾値",
+      "hint": "スコア閾値"
+    },
+    {
+      "id": "",
+      "label": "scribble",
+      "localized": "スクリブル",
+      "hint": "スクリブル"
+    },
+    {
+      "id": "",
+      "label": "sd15-attire",
+      "localized": "sd15-attire",
+      "hint": "sd15-attire"
+    },
+    {
+      "id": "",
+      "label": "sd15-likeness",
+      "localized": "sd15-likeness",
+      "hint": "sd15-likeness"
+    },
+    {
+      "id": "",
+      "label": "sd15-navimixu",
+      "localized": "sd15-navimixu",
+      "hint": "sd15-navimixu"
+    },
+    {
+      "id": "",
+      "label": "sd15-sexy",
+      "localized": "sd15-sexy",
+      "hint": "sd15-sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-artstyle",
+      "localized": "sdxl-artstyle",
+      "hint": "sdxl-artstyle"
+    },
+    {
+      "id": "",
+      "label": "sdxl-negative",
+      "localized": "sdxl-negative",
+      "hint": "sdxl-negative"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sexy",
+      "localized": "sdxl-sexy",
+      "hint": "sdxl-sexy"
+    },
+    {
+      "id": "",
+      "label": "sdxl-sliders",
+      "localized": "sdxl-sliders",
+      "hint": "sdxl-sliders"
+    },
+    {
+      "id": "",
+      "label": "sdxl-toon",
+      "localized": "sdxl-toon",
+      "hint": "sdxl-toon"
+    },
+    {
+      "id": "",
+      "label": "search changelog",
+      "localized": "変更履歴を検索",
+      "hint": "変更履歴を検索"
+    },
+    {
+      "id": "",
+      "label": "search models",
+      "localized": "モデルを検索",
+      "hint": "モデルを検索"
+    },
+    {
+      "id": "",
+      "label": "search wiki pages",
+      "localized": "Wikiページを検索",
+      "hint": "Wikiページを検索"
+    },
+    {
+      "id": "",
+      "label": "secondary model",
+      "localized": "セカンダリモデル",
+      "hint": "セカンダリモデル"
+    },
+    {
+      "id": "",
+      "label": "segmentanything",
+      "localized": "segmentanything",
+      "hint": "segmentanything"
+    },
+    {
+      "id": "",
+      "label": "select",
+      "localized": "選択",
+      "hint": "選択"
+    },
+    {
+      "id": "",
+      "label": "select model",
+      "localized": "モデルを選択",
+      "hint": "モデルを選択"
+    },
+    {
+      "id": "",
+      "label": "send interrupt",
+      "localized": "割り込みを送信",
+      "hint": "割り込みを送信"
+    },
+    {
+      "id": "",
+      "label": "send seed when sending prompt or image to other interface",
+      "localized": "プロンプトまたは画像を別のインターフェースに送信する際にシードを送信",
+      "hint": "プロンプトまたは画像を別のインターフェースに送信する際にシードを送信"
+    },
+    {
+      "id": "",
+      "label": "send size when sending prompt or image to another interface",
+      "localized": "プロンプトまたは画像を別のインターフェースに送信する際にサイズを送信",
+      "hint": "プロンプトまたは画像を別のインターフェースに送信する際にサイズを送信"
+    },
+    {
+      "id": "",
+      "label": "sequential",
+      "localized": "シーケンシャル",
+      "hint": "シーケンシャル"
+    },
+    {
+      "id": "",
+      "label": "server start time",
+      "localized": "サーバー起動時間",
+      "hint": "サーバー起動時間"
+    },
+    {
+      "id": "",
+      "label": "set at prompt start",
+      "localized": "プロンプト開始時に設定",
+      "hint": "プロンプト開始時に設定"
+    },
+    {
+      "id": "",
+      "label": "set ui menu states",
+      "localized": "UIメニューの状態を設定",
+      "hint": "UIメニューの状態を設定"
+    },
+    {
+      "id": "",
+      "label": "share queries",
+      "localized": "クエリを共有",
+      "hint": "クエリを共有"
+    },
+    {
+      "id": "",
+      "label": "shared options",
+      "localized": "共有オプション",
+      "hint": "共有オプション"
+    },
+    {
+      "id": "",
+      "label": "sharpen",
+      "localized": "シャープ",
+      "hint": "シャープ"
+    },
+    {
+      "id": "",
+      "label": "shift",
+      "localized": "シフト",
+      "hint": "シフト"
+    },
+    {
+      "id": "",
+      "label": "show grid in results",
+      "localized": "結果にグリッドを表示",
+      "hint": "結果にグリッドを表示"
+    },
+    {
+      "id": "",
+      "label": "show input",
+      "localized": "入力を表示",
+      "hint": "入力を表示"
+    },
+    {
+      "id": "",
+      "label": "show metadata in full screen image browser",
+      "localized": "フルスクリーン画像ブラウザでメタデータを表示",
+      "hint": "フルスクリーン画像ブラウザでメタデータを表示"
+    },
+    {
+      "id": "",
+      "label": "show motd",
+      "localized": "MOTDを表示",
+      "hint": "MOTDを表示"
+    },
+    {
+      "id": "",
+      "label": "show preview",
+      "localized": "プレビューを表示",
+      "hint": "プレビューを表示"
+    },
+    {
+      "id": "",
+      "label": "shuffle weights",
+      "localized": "重みをシャッフル",
+      "hint": "重みをシャッフル"
+    },
+    {
+      "id": "",
+      "label": "shut down",
+      "localized": "シャットダウン",
+      "hint": "シャットダウン"
+    },
+    {
+      "id": "",
+      "label": "sigma",
+      "localized": "シグマ",
+      "hint": "シグマ"
+    },
+    {
+      "id": "",
+      "label": "sigma churn",
+      "localized": "シグマチャーン",
+      "hint": "シグマチャーン"
+    },
+    {
+      "id": "",
+      "label": "sigma max",
+      "localized": "シグマ最大値",
+      "hint": "シグマ最大値"
+    },
+    {
+      "id": "",
+      "label": "sigma method",
+      "localized": "シグマメソッド",
+      "hint": "シグマメソッド"
+    },
+    {
+      "id": "",
+      "label": "sigma min",
+      "localized": "シグマ最小値",
+      "hint": "シグマ最小値"
+    },
+    {
+      "id": "",
+      "label": "sigma noise",
+      "localized": "シグマノイズ",
+      "hint": "シグマノイズ"
+    },
+    {
+      "id": "",
+      "label": "sigma tmin",
+      "localized": "シグマtmin",
+      "hint": "シグマtmin"
+    },
+    {
+      "id": "",
+      "label": "simple merge",
+      "localized": "単純マージ",
+      "hint": "単純マージ"
+    },
+    {
+      "id": "",
+      "label": "size",
+      "localized": "サイズ",
+      "hint": "サイズ"
+    },
+    {
+      "id": "",
+      "label": "sketch",
+      "localized": "スケッチ",
+      "hint": "スケッチ"
+    },
+    {
+      "id": "",
+      "label": "skip generation if nan found in latents",
+      "localized": "潜在変数にNaNが見つかった場合、生成をスキップ",
+      "hint": "潜在変数にNaNが見つかった場合、生成をスキップ"
+    },
+    {
+      "id": "",
+      "label": "skip guidance layers",
+      "localized": "ガイダンスレイヤーをスキップ",
+      "hint": "ガイダンスレイヤーをスキップ"
+    },
+    {
+      "id": "",
+      "label": "skip input frames",
+      "localized": "入力フレームをスキップ",
+      "hint": "入力フレームをスキップ"
+    },
+    {
+      "id": "",
+      "label": "sleep",
+      "localized": "スリープ",
+      "hint": "スリープ"
+    },
+    {
+      "id": "",
+      "label": "slider",
+      "localized": "スライダー",
+      "hint": "スライダー"
+    },
+    {
+      "id": "",
+      "label": "smooth mask",
+      "localized": "マスクを滑らかに",
+      "hint": "マスクを滑らかに"
+    },
+    {
+      "id": "",
+      "label": "solver order (where",
+      "localized": "ソルバーの次数（ここで",
+      "hint": "ソルバーの次数（ここで"
+    },
+    {
+      "id": "",
+      "label": "sort order",
+      "localized": "ソート順",
+      "hint": "ソート順"
+    },
+    {
+      "id": "",
+      "label": "source subject",
+      "localized": "ソース対象",
+      "hint": "ソース対象"
+    },
+    {
+      "id": "",
+      "label": "space",
+      "localized": "スペース",
+      "hint": "スペース"
+    },
+    {
+      "id": "",
+      "label": "spatial frequency",
+      "localized": "空間周波数",
+      "hint": "空間周波数"
+    },
+    {
+      "id": "",
+      "label": "specify model revision",
+      "localized": "モデルリビジョンを指定",
+      "hint": "モデルリビジョンを指定"
+    },
+    {
+      "id": "",
+      "label": "specify model variant",
+      "localized": "モデルバリアントを指定",
+      "hint": "モデルバリアントを指定"
+    },
+    {
+      "id": "",
+      "label": "split attention",
+      "localized": "分割注意",
+      "hint": "分割注意"
+    },
+    {
+      "id": "",
+      "label": "stable-fast",
+      "localized": "stable-fast",
+      "hint": "stable-fast"
+    },
+    {
+      "id": "",
+      "label": "standard",
+      "localized": "標準",
+      "hint": "標準"
+    },
+    {
+      "id": "",
+      "label": "start",
+      "localized": "開始",
+      "hint": "開始"
+    },
+    {
+      "id": "",
+      "label": "start profiling",
+      "localized": "プロファイリングを開始",
+      "hint": "プロファイリングを開始"
+    },
+    {
+      "id": "",
+      "label": "state",
+      "localized": "状態",
+      "hint": "状態"
+    },
+    {
+      "id": "",
+      "label": "stop webui",
+      "localized": "webuiを停止",
+      "hint": "webuiを停止"
+    },
+    {
+      "id": "",
+      "label": "stride",
+      "localized": "ストライド",
+      "hint": "ストライド"
+    },
+    {
+      "id": "",
+      "label": "structure",
+      "localized": "構造",
+      "hint": "構造"
+    },
+    {
+      "id": "",
+      "label": "style fidelity",
+      "localized": "スタイルの忠実度",
+      "hint": "スタイルの忠実度"
+    },
+    {
+      "id": "",
+      "label": "subject",
+      "localized": "被写体",
+      "hint": "被写体"
+    },
+    {
+      "id": "",
+      "label": "submit results",
+      "localized": "結果を送信",
+      "hint": "結果を送信"
+    },
+    {
+      "id": "",
+      "label": "submodules",
+      "localized": "サブモジュール",
+      "hint": "サブモジュール"
+    },
+    {
+      "id": "",
+      "label": "swap x/y",
+      "localized": "x/yを入れ替え",
+      "hint": "x/yを入れ替え"
+    },
+    {
+      "id": "",
+      "label": "swap x/z",
+      "localized": "x/zを入れ替え",
+      "hint": "x/zを入れ替え"
+    },
+    {
+      "id": "",
+      "label": "swap y/z",
+      "localized": "y/zを入れ替え",
+      "hint": "y/zを入れ替え"
+    },
+    {
+      "id": "",
+      "label": "t2i adapter",
+      "localized": "T2Iアダプター",
+      "hint": "T2Iアダプター"
+    },
+    {
+      "id": "",
+      "label": "t2i strength",
+      "localized": "T2Iの強度",
+      "hint": "T2Iの強度"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 1",
+      "localized": "T2Iアダプターユニット1",
+      "hint": "T2Iアダプターユニット1"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 2",
+      "localized": "T2Iアダプターユニット2",
+      "hint": "T2Iアダプターユニット2"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 3",
+      "localized": "T2Iアダプターユニット3",
+      "hint": "T2Iアダプターユニット3"
+    },
+    {
+      "id": "",
+      "label": "t2i-adapter unit 4",
+      "localized": "T2Iアダプターユニット4",
+      "hint": "T2Iアダプターユニット4"
+    },
+    {
+      "id": "",
+      "label": "taesd",
+      "localized": "TAESD",
+      "hint": "TAESD"
+    },
+    {
+      "id": "",
+      "label": "taesd decode layers",
+      "localized": "TAESDデコードレイヤー",
+      "hint": "TAESDデコードレイヤー"
+    },
+    {
+      "id": "",
+      "label": "taesd variant",
+      "localized": "TAESDバリアント",
+      "hint": "TAESDバリアント"
+    },
+    {
+      "id": "",
+      "label": "target subject",
+      "localized": "ターゲット被写体",
+      "hint": "ターゲット被写体"
+    },
+    {
+      "id": "",
+      "label": "task history",
+      "localized": "タスク履歴",
+      "hint": "タスク履歴"
+    },
+    {
+      "id": "",
+      "label": "task list page size (0 for auto)",
+      "localized": "タスクリストのページサイズ (0で自動)",
+      "hint": "タスクリストのページサイズ (0で自動)"
+    },
+    {
+      "id": "",
+      "label": "task queue",
+      "localized": "タスクキュー",
+      "hint": "タスクキュー"
+    },
+    {
+      "id": "",
+      "label": "tcd",
+      "localized": "TCD",
+      "hint": "TCD"
+    },
+    {
+      "id": "",
+      "label": "tdd",
+      "localized": "TDD",
+      "hint": "TDD"
+    },
+    {
+      "id": "",
+      "label": "te",
+      "localized": "TE",
+      "hint": "TE"
+    },
+    {
+      "id": "",
+      "label": "temperature",
+      "localized": "温度",
+      "hint": "温度"
+    },
+    {
+      "id": "",
+      "label": "temporal frequency",
+      "localized": "時間周波数",
+      "hint": "時間周波数"
+    },
+    {
+      "id": "",
+      "label": "tertiary model",
+      "localized": "三次モデル",
+      "hint": "三次モデル"
+    },
+    {
+      "id": "",
+      "label": "text encoder cache size",
+      "localized": "テキストエンコーダーのキャッシュサイズ",
+      "hint": "テキストエンコーダーのキャッシュサイズ"
+    },
+    {
+      "id": "",
+      "label": "text encoder model",
+      "localized": "テキストエンコーダーモデル",
+      "hint": "テキストエンコーダーモデル"
+    },
+    {
+      "id": "",
+      "label": "text inputs",
+      "localized": "テキスト入力",
+      "hint": "テキスト入力"
+    },
+    {
+      "id": "",
+      "label": "textbox",
+      "localized": "テキストボックス",
+      "hint": "テキストボックス"
+    },
+    {
+      "id": "",
+      "label": "threshold",
+      "localized": "閾値",
+      "hint": "閾値"
+    },
+    {
+      "id": "",
+      "label": "thresholding",
+      "localized": "閾値処理",
+      "hint": "閾値処理"
+    },
+    {
+      "id": "",
+      "label": "tile frames",
+      "localized": "タイルフレーム",
+      "hint": "タイルフレーム"
+    },
+    {
+      "id": "",
+      "label": "tiling options",
+      "localized": "タイリングオプション",
+      "hint": "タイリングオプション"
+    },
+    {
+      "id": "",
+      "label": "time embedding mix",
+      "localized": "時間埋め込みの混合",
+      "hint": "時間埋め込みの混合"
+    },
+    {
+      "id": "",
+      "label": "time_quadratic",
+      "localized": "時間二次",
+      "hint": "時間二次"
+    },
+    {
+      "id": "",
+      "label": "time_uniform",
+      "localized": "時間均一",
+      "hint": "時間均一"
+    },
+    {
+      "id": "",
+      "label": "timestep",
+      "localized": "タイムステップ",
+      "hint": "タイムステップ"
+    },
+    {
+      "id": "",
+      "label": "timestep skip end",
+      "localized": "タイムステップスキップ終了",
+      "hint": "タイムステップスキップ終了"
+    },
+    {
+      "id": "",
+      "label": "timestep skip start",
+      "localized": "タイムステップスキップ開始",
+      "hint": "タイムステップスキップ開始"
+    },
+    {
+      "id": "",
+      "label": "timestep spacing",
+      "localized": "タイムステップの間隔",
+      "hint": "タイムステップの間隔"
+    },
+    {
+      "id": "",
+      "label": "timesteps",
+      "localized": "タイムステップ数",
+      "hint": "タイムステップ数"
+    },
+    {
+      "id": "",
+      "label": "timesteps override",
+      "localized": "タイムステップのオーバーライド",
+      "hint": "タイムステップのオーバーライド"
+    },
+    {
+      "id": "",
+      "label": "timesteps presets",
+      "localized": "タイムステップのプリセット",
+      "hint": "タイムステップのプリセット"
+    },
+    {
+      "id": "",
+      "label": "timesteps range",
+      "localized": "タイムステップの範囲",
+      "hint": "タイムステップの範囲"
+    },
+    {
+      "id": "",
+      "label": "tiny",
+      "localized": "極小",
+      "hint": "極小"
+    },
+    {
+      "id": "",
+      "label": "todo",
+      "localized": "未完了",
+      "hint": "未完了"
+    },
+    {
+      "id": "",
+      "label": "tome",
+      "localized": "Tome",
+      "hint": "Tome"
+    },
+    {
+      "id": "",
+      "label": "tool",
+      "localized": "ツール",
+      "hint": "ツール"
+    },
+    {
+      "id": "",
+      "label": "torch",
+      "localized": "Torch",
+      "hint": "Torch"
+    },
+    {
+      "id": "",
+      "label": "transformer",
+      "localized": "トランスフォーマー",
+      "hint": "トランスフォーマー"
+    },
+    {
+      "id": "",
+      "label": "trigger word",
+      "localized": "トリガーワード",
+      "hint": "トリガーワード"
+    },
+    {
+      "id": "",
+      "label": "true",
+      "localized": "真",
+      "hint": "真"
+    },
+    {
+      "id": "",
+      "label": "tunable ops limit",
+      "localized": "調整可能なオペレーション制限",
+      "hint": "調整可能なオペレーション制限"
+    },
+    {
+      "id": "",
+      "label": "ufogen",
+      "localized": "UFOGen",
+      "hint": "UFOGen"
+    },
+    {
+      "id": "",
+      "label": "ui card size (px)",
+      "localized": "UIカードのサイズ (px)",
+      "hint": "UIカードのサイズ (px)"
+    },
+    {
+      "id": "",
+      "label": "ui fetch network info on mouse-over",
+      "localized": "マウスオーバー時にUIでネットワーク情報を取得",
+      "hint": "マウスオーバー時にUIでネットワーク情報を取得"
+    },
+    {
+      "id": "",
+      "label": "ui height (%)",
+      "localized": "UIの高さ (%)",
+      "hint": "UIの高さ (%)"
+    },
+    {
+      "id": "",
+      "label": "ui locale",
+      "localized": "UIロケール",
+      "hint": "UIロケール"
+    },
+    {
+      "id": "",
+      "label": "ui show on startup",
+      "localized": "起動時にUIを表示",
+      "hint": "起動時にUIを表示"
+    },
+    {
+      "id": "",
+      "label": "ui sidebar width (%)",
+      "localized": "UIサイドバーの幅 (%)",
+      "hint": "UIサイドバーの幅 (%)"
+    },
+    {
+      "id": "",
+      "label": "ui theme",
+      "localized": "UIテーマ",
+      "hint": "UIテーマ"
+    },
+    {
+      "id": "",
+      "label": "under generate button",
+      "localized": "生成ボタンの下",
+      "hint": "生成ボタンの下"
+    },
+    {
+      "id": "",
+      "label": "unet",
+      "localized": "UNet",
+      "hint": "UNet"
+    },
+    {
+      "id": "",
+      "label": "unet depth",
+      "localized": "UNetの深さ",
+      "hint": "UNetの深さ"
+    },
+    {
+      "id": "",
+      "label": "unet enabled",
+      "localized": "UNetを有効化",
+      "hint": "UNetを有効化"
+    },
+    {
+      "id": "",
+      "label": "unet max tile size",
+      "localized": "UNetの最大タイルサイズ",
+      "hint": "UNetの最大タイルサイズ"
+    },
+    {
+      "id": "",
+      "label": "unet min tile size",
+      "localized": "UNetの最小タイルサイズ",
+      "hint": "UNetの最小タイルサイズ"
+    },
+    {
+      "id": "",
+      "label": "unet model",
+      "localized": "UNetモデル",
+      "hint": "UNetモデル"
+    },
+    {
+      "id": "",
+      "label": "unet swap size",
+      "localized": "UNetスワップサイズ",
+      "hint": "UNetスワップサイズ"
+    },
+    {
+      "id": "",
+      "label": "uniform",
+      "localized": "均一",
+      "hint": "均一"
+    },
+    {
+      "id": "",
+      "label": "units",
+      "localized": "ユニット",
+      "hint": "ユニット"
+    },
+    {
+      "id": "",
+      "label": "unload",
+      "localized": "アンロード",
+      "hint": "アンロード"
+    },
+    {
+      "id": "",
+      "label": "unload current model from vram",
+      "localized": "VRAMから現在のモデルをアンロード",
+      "hint": "VRAMから現在のモデルをアンロード"
+    },
+    {
+      "id": "",
+      "label": "unload upscaler after processing",
+      "localized": "処理後にアップスケーラーをアンロード",
+      "hint": "処理後にアップスケーラーをアンロード"
+    },
+    {
+      "id": "",
+      "label": "unset",
+      "localized": "未設定",
+      "hint": "未設定"
+    },
+    {
+      "id": "",
+      "label": "up",
+      "localized": "上",
+      "hint": "上"
+    },
+    {
+      "id": "",
+      "label": "upcast attention layer",
+      "localized": "注意層をアップキャスト",
+      "hint": "注意層をアップキャスト"
+    },
+    {
+      "id": "",
+      "label": "update",
+      "localized": "更新",
+      "hint": "更新"
+    },
+    {
+      "id": "",
+      "label": "upload",
+      "localized": "アップロード",
+      "hint": "アップロード"
+    },
+    {
+      "id": "",
+      "label": "upscale",
+      "localized": "アップスケール",
+      "hint": "アップスケール"
+    },
+    {
+      "id": "",
+      "label": "use brownian noise",
+      "localized": "ブラウンノイズを使用",
+      "hint": "ブラウンノイズを使用"
+    },
+    {
+      "id": "",
+      "label": "use cached model config when available",
+      "localized": "利用可能な場合はキャッシュされたモデル設定を使用",
+      "hint": "利用可能な場合はキャッシュされたモデル設定を使用"
+    },
+    {
+      "id": "",
+      "label": "use defaults",
+      "localized": "デフォルトを使用",
+      "hint": "デフォルトを使用"
+    },
+    {
+      "id": "",
+      "label": "use dynamic thresholding",
+      "localized": "ダイナミック閾値処理を使用",
+      "hint": "ダイナミック閾値処理を使用"
+    },
+    {
+      "id": "",
+      "label": "use fixed width thumbnails",
+      "localized": "固定幅のサムネイルを使用",
+      "hint": "固定幅のサムネイルを使用"
+    },
+    {
+      "id": "",
+      "label": "use image gallery cache",
+      "localized": "画像ギャラリーのキャッシュを使用",
+      "hint": "画像ギャラリーのキャッシュを使用"
+    },
+    {
+      "id": "",
+      "label": "use karras sigmas",
+      "localized": "Karrasシグマを使用",
+      "hint": "Karrasシグマを使用"
+    },
+    {
+      "id": "",
+      "label": "use line break as prompt segment marker",
+      "localized": "改行をプロンプトセグメントマーカーとして使用",
+      "hint": "改行をプロンプトセグメントマーカーとして使用"
+    },
+    {
+      "id": "",
+      "label": "use model ema weights when possible",
+      "localized": "可能な場合はモデルのEMA重みを使用",
+      "hint": "可能な場合はモデルのEMA重みを使用"
+    },
+    {
+      "id": "",
+      "label": "use quantization",
+      "localized": "量子化を使用",
+      "hint": "量子化を使用"
+    },
+    {
+      "id": "",
+      "label": "use random seeds",
+      "localized": "ランダムシードを使用",
+      "hint": "ランダムシードを使用"
+    },
+    {
+      "id": "",
+      "label": "use reference values when available",
+      "localized": "利用可能な場合は基準値を使用",
+      "hint": "利用可能な場合は基準値を使用"
+    },
+    {
+      "id": "",
+      "label": "use same seed",
+      "localized": "同じシードを使用",
+      "hint": "同じシードを使用"
+    },
+    {
+      "id": "",
+      "label": "use separate base dict",
+      "localized": "別のベース辞書を使用",
+      "hint": "別のベース辞書を使用"
+    },
+    {
+      "id": "",
+      "label": "use simplified solvers in final steps",
+      "localized": "最終ステップで簡略化されたソルバーを使用",
+      "hint": "最終ステップで簡略化されたソルバーを使用"
+    },
+    {
+      "id": "",
+      "label": "use text inputs",
+      "localized": "テキスト入力を使用",
+      "hint": "テキスト入力を使用"
+    },
+    {
+      "id": "",
+      "label": "user",
+      "localized": "ユーザー",
+      "hint": "ユーザー"
+    },
+    {
+      "id": "",
+      "label": "username",
+      "localized": "ユーザー名",
+      "hint": "ユーザー名"
+    },
+    {
+      "id": "",
+      "label": "v_prediction",
+      "localized": "v_prediction",
+      "hint": "v_prediction"
+    },
+    {
+      "id": "",
+      "label": "vae enabled",
+      "localized": "VAE有効",
+      "hint": "VAEを有効にする"
+    },
+    {
+      "id": "",
+      "label": "vae sliced encode",
+      "localized": "VAEスライスエンコード",
+      "hint": "VAEスライスエンコード"
+    },
+    {
+      "id": "",
+      "label": "vae swap size",
+      "localized": "VAEスワップサイズ",
+      "hint": "VAEスワップサイズ"
+    },
+    {
+      "id": "",
+      "label": "vae tile overlap",
+      "localized": "VAEタイルオーバーラップ",
+      "hint": "VAEタイルオーバーラップ"
+    },
+    {
+      "id": "",
+      "label": "vae tile size",
+      "localized": "VAEタイルサイズ",
+      "hint": "VAEタイルサイズ"
+    },
+    {
+      "id": "",
+      "label": "validate",
+      "localized": "検証",
+      "hint": "検証"
+    },
+    {
+      "id": "",
+      "label": "vary_coeff",
+      "localized": "変化係数",
+      "hint": "変化係数"
+    },
+    {
+      "id": "",
+      "label": "vdm solver",
+      "localized": "VDMソルバー",
+      "hint": "VDMソルバー"
+    },
+    {
+      "id": "",
+      "label": "version",
+      "localized": "バージョン",
+      "hint": "バージョン"
+    },
+    {
+      "id": "",
+      "label": "vgen params",
+      "localized": "VGenパラメータ",
+      "hint": "VGenパラメータ"
+    },
+    {
+      "id": "",
+      "label": "vibrance",
+      "localized": "鮮やかさ",
+      "hint": "鮮やかさ"
+    },
+    {
+      "id": "",
+      "label": "video file",
+      "localized": "ビデオファイル",
+      "hint": "ビデオファイル"
+    },
+    {
+      "id": "",
+      "label": "video type",
+      "localized": "ビデオタイプ",
+      "hint": "ビデオタイプ"
+    },
+    {
+      "id": "",
+      "label": "visual query",
+      "localized": "ビジュアルクエリ",
+      "hint": "ビジュアルクエリ"
+    },
+    {
+      "id": "",
+      "label": "vlm",
+      "localized": "VLM",
+      "hint": "VLM"
+    },
+    {
+      "id": "",
+      "label": "vlm model",
+      "localized": "VLMモデル",
+      "hint": "VLMモデル"
+    },
+    {
+      "id": "",
+      "label": "vlm: default model",
+      "localized": "VLM：デフォルトモデル",
+      "hint": "VLM：デフォルトモデル"
+    },
+    {
+      "id": "",
+      "label": "vlm: default prompt",
+      "localized": "VLM：デフォルトプロンプト",
+      "hint": "VLM：デフォルトプロンプト"
+    },
+    {
+      "id": "",
+      "label": "vlm: max length",
+      "localized": "VLM：最大長",
+      "hint": "VLM：最大長"
+    },
+    {
+      "id": "",
+      "label": "vlm: num beams",
+      "localized": "VLM：ビーム数",
+      "hint": "VLM：ビーム数"
+    },
+    {
+      "id": "",
+      "label": "warmth",
+      "localized": "暖かさ",
+      "hint": "暖かさ"
+    },
+    {
+      "id": "",
+      "label": "webp lossless compression",
+      "localized": "WebP可逆圧縮",
+      "hint": "WebP可逆圧縮"
+    },
+    {
+      "id": "",
+      "label": "weight",
+      "localized": "重み",
+      "hint": "重み"
+    },
+    {
+      "id": "",
+      "label": "weighted",
+      "localized": "重み付け",
+      "hint": "重み付け"
+    },
+    {
+      "id": "",
+      "label": "width  after",
+      "localized": "幅（後）",
+      "hint": "幅（後）"
+    },
+    {
+      "id": "",
+      "label": "width  before",
+      "localized": "幅（前）",
+      "hint": "幅（前）"
+    },
+    {
+      "id": "",
+      "label": "width  mask",
+      "localized": "幅（マスク）",
+      "hint": "幅（マスク）"
+    },
+    {
+      "id": "",
+      "label": "wiki",
+      "localized": "Wiki",
+      "hint": "Wiki"
+    },
+    {
+      "id": "",
+      "label": "wildcards",
+      "localized": "ワイルドカード",
+      "hint": "ワイルドカード"
+    },
+    {
+      "id": "",
+      "label": "x components",
+      "localized": "X成分",
+      "hint": "X成分"
+    },
+    {
+      "id": "",
+      "label": "x overlap",
+      "localized": "Xオーバーラップ",
+      "hint": "Xオーバーラップ"
+    },
+    {
+      "id": "",
+      "label": "x type",
+      "localized": "Xタイプ",
+      "hint": "Xタイプ"
+    },
+    {
+      "id": "",
+      "label": "xhinker",
+      "localized": "Xhinker",
+      "hint": "Xhinker"
+    },
+    {
+      "id": "",
+      "label": "xs",
+      "localized": "xs",
+      "hint": "xs"
+    },
+    {
+      "id": "",
+      "label": "y components",
+      "localized": "Y成分",
+      "hint": "Y成分"
+    },
+    {
+      "id": "",
+      "label": "y overlap",
+      "localized": "Yオーバーラップ",
+      "hint": "Yオーバーラップ"
+    },
+    {
+      "id": "",
+      "label": "y type",
+      "localized": "Yタイプ",
+      "hint": "Yタイプ"
+    },
+    {
+      "id": "",
+      "label": "z type",
+      "localized": "Zタイプ",
+      "hint": "Zタイプ"
+    },
+    {
+      "id": "",
+      "label": "zero",
+      "localized": "ゼロ",
+      "hint": "ゼロ"
+    },
+    {
+      "id": "",
+      "label": "zoe depth",
+      "localized": "Zoe深度",
+      "hint": "Zoe深度"
+    },
+    {
+      "id": "",
+      "label": "➠ control",
+      "localized": "➠ コントロール",
+      "hint": "➠ コントロール"
+    },
+    {
+      "id": "",
+      "label": "💾",
+      "localized": "💾",
+      "hint": "💾"
+    }
+  ]
+}

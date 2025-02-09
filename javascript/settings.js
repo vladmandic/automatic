@@ -117,8 +117,10 @@ onAfterUiUpdate(async () => {
   });
 
   const settingsSearch = gradioApp().querySelectorAll('#settings_search > label > textarea')[0];
+  let settingsTimer;
   settingsSearch.oninput = (e) => {
-    setTimeout(() => {
+    if (settingsTimer) clearTimeout(settingsTimer);
+    settingsTimer = setTimeout(() => {
       log('settingsSearch', e.target.value);
       showAllSettings();
       getSettingsTabs().forEach((section) => {
@@ -128,7 +130,7 @@ onAfterUiUpdate(async () => {
           else setting.style.removeProperty('display');
         });
       });
-    }, 50);
+    }, 250);
   };
 });
 

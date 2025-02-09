@@ -4,6 +4,7 @@ import sys
 import json
 import time
 import shutil
+import locale
 import logging
 import platform
 import subprocess
@@ -366,9 +367,8 @@ def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = Fal
     t_start = time.time()
     if args.skip_git:
         return ''
-    if optional:
-        if 'google.colab' in sys.modules:
-            return ''
+    if 'google.colab' in sys.modules:
+        return ''
     git_cmd = os.environ.get('GIT', "git")
     if git_cmd != "git":
         git_cmd = os.path.abspath(git_cmd)
@@ -481,6 +481,7 @@ def get_platform():
             'system': platform.system(),
             'release': release,
             'python': platform.python_version(),
+            'locale': locale.getlocale(),
             'docker': os.environ.get('SD_DOCKER', None) is not None,
             # 'host': platform.node(),
             # 'version': platform.version(),
@@ -560,9 +561,10 @@ def install_cuda():
 
 
 def install_rocm_zluda():
+    torch_command = ''
     t_start = time.time()
     if args.skip_all or args.skip_requirements:
-        return None
+        return torch_command
     from modules import rocm
     if not rocm.is_installed:
         log.warning('ROCm: could not find ROCm toolkit installed')
@@ -604,7 +606,6 @@ def install_rocm_zluda():
     if device is not None:
         msg += f', using agent {device.name}'
     log.info(msg)
-    torch_command = ''
 
     if sys.platform == "win32": # TODO install: enable ROCm for windows when available
         check_python(supported_minors=[10, 11], reason='ZLUDA backend requires Python 3.10 or 3.11')
@@ -633,7 +634,7 @@ def install_rocm_zluda():
                     zluda_installer.set_blaslt_enabled(device.blaslt_supported)
                 zluda_installer.make_copy()
                 zluda_installer.load()
-                torch_command = os.environ.get('TORCH_COMMAND', f'torch=={zluda_installer.get_default_torch_version(device)} torchvision --index-url https://download.pytorch.org/whl/cu118')
+                torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0 torchvision --index-url https://download.pytorch.org/whl/cu118')
                 log.info(f'Using ZLUDA in {zluda_installer.path}')
             except Exception as e:
                 error = e
@@ -719,8 +720,6 @@ def install_ipex(torch_command):
     else:
         torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+xpu torchvision==0.21.0+xpu --index-url https://download.pytorch.org/whl/xpu')
 
-    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino', ignore=True)
-    install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     ts('ipex', t_start)
     return torch_command
 
@@ -730,12 +729,12 @@ def install_openvino(torch_command):
     check_python(supported_minors=[9, 10, 11, 12], reason='OpenVINO backend requires a Python version between 3.9 and 3.12')
     log.info('OpenVINO: selected')
     if sys.platform == 'darwin':
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1 torchvision==0.18.1')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0 torchvision==0.21.0')
     else:
-        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.3.1+cpu torchvision==0.18.1+cpu --index-url https://download.pytorch.org/whl/cpu')
+        torch_command = os.environ.get('TORCH_COMMAND', 'torch==2.6.0+cpu torchvision==0.21.0+cpu --index-url https://download.pytorch.org/whl/cpu')
 
-    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2024.6.0'), 'openvino')
-    install('nncf==2.14.1', 'nncf')
+    install(os.environ.get('OPENVINO_COMMAND', 'openvino==2025.0.0'), 'openvino')
+    install(os.environ.get('NNCF_COMMAND', 'nncf==2.15.0'), 'nncf')
     os.environ.setdefault('PYTORCH_TRACING_MODE', 'TORCHFX')
     if os.environ.get("NEOReadDebugKeys", None) is None:
         os.environ.setdefault('NEOReadDebugKeys', '1')
@@ -824,14 +823,12 @@ def check_torch():
             torch_command = install_ipex(torch_command)
         elif allow_openvino and args.use_openvino: # prioritize openvino
             torch_command = install_openvino(torch_command)
-
         elif is_cuda_available:
             torch_command = install_cuda()
         elif is_rocm_available:
             torch_command = install_rocm_zluda()
         elif is_ipex_available:
             torch_command = install_ipex(torch_command)
-
         else:
             machine = platform.machine()
             if sys.platform == 'darwin':
@@ -1308,7 +1305,7 @@ def check_venv():
     t_start = time.time()
     import site
     pkg_path = [try_relpath(p) for p in site.getsitepackages() if os.path.exists(p)]
-    log.debug(f'Packages: venv={try_relpath(sys.prefix)} site={pkg_path}')
+    log.debug(f'Packages: prefix={try_relpath(sys.prefix)} site={pkg_path}')
     for p in pkg_path:
         invalid = []
         for f in os.listdir(p):
