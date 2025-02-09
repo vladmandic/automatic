@@ -308,6 +308,16 @@ def uninstall(package, quiet = False):
     return res
 
 
+def run(cmd: str, arg: str):
+    result = subprocess.run(f'"{cmd}" {arg}', shell=True, check=False, env=os.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    txt = result.stdout.decode(encoding="utf8", errors="ignore")
+    if len(result.stderr) > 0:
+        txt += ('\n' if len(txt) > 0 else '') + result.stderr.decode(encoding="utf8", errors="ignore")
+    txt = txt.strip()
+    debug(f'Exec {cmd}: {txt}')
+    return txt
+
+
 @lru_cache()
 def pip(arg: str, ignore: bool = False, quiet: bool = True, uv = True):
     t_start = time.time()
@@ -363,7 +373,7 @@ def install(package, friendly: str = None, ignore: bool = False, reinstall: bool
 
 # execute git command
 @lru_cache()
-def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = False):
+def git(arg: str, folder: str = None, ignore: bool = False, optional: bool = False): # pylint: disable=unused-argument
     t_start = time.time()
     if args.skip_git:
         return ''
