@@ -2,32 +2,39 @@
 
 ## Update for 2025-02-09  
 
-- **Hints**  
-  - added/updated 100+ ui hints!  
-  - [hints](https://github.com/vladmandic/sdnext/wiki/Hints) documentation and contribution guide  
-- **Localization**  
-  - full ui localization!  
-    english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian  
-  - set in *settings -> user interface -> language*  
-  - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
-- **Torch**:  
-  - for **zluda** set default to `torch==2.6.0+cu118`  
-  - for **openvino** set default to `torch==2.6.0+cpu`  
-- **OpenVINO**:
-  - update to `openvino==2025.0.0`  
-  - improve upscaler compatibility  
-  - enable upscaler compile by default  
-  - fix shape mismatch errors on too many resolution changes  
-- **Other**:  
+- **User Interface**  
+  - **Hints**  
+    - added/updated 100+ ui hints!  
+    - [hints](https://github.com/vladmandic/sdnext/wiki/Hints) documentation and contribution guide  
+  - **Localization**  
+    - full ui localization!  
+      english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian  
+    - set in *settings -> user interface -> language*  
+    - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
+  - **UI**:  
+    - force browser cache-invalidate on page load  
+- **Docs**
+  - New [outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
+- **Backend**  
+  - **Torch**  
+    - for **zluda** set default to `torch==2.6.0+cu118`  
+    - for **openvino** set default to `torch==2.6.0+cpu`  
+  - **OpenVINO**  
+    - update to `openvino==2025.0.0`  
+    - improve upscaler compatibility  
+    - enable upscaler compile by default  
+    - fix shape mismatch errors on too many resolution changes  
+- **Other**  
   - asymmetric tiling  
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
-- **UI**:  
-  - force browser cache-invalidate on page load  
-  - use correct timezone for log display  
-  - improve settings search behavior  
-  - log scroll to bottom  
+- **Fixes**  
+  - docs/wiki always use relative links  
+  - ui use correct timezone for log display  
+  - ui improve settings search behavior  
+  - ui log scroll to bottom  
+  - outpaint fixes  
 
 ## Update for 2025-02-05
 
