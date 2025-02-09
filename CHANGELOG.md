@@ -34,6 +34,7 @@
   - ui use correct timezone for log display  
   - ui improve settings search behavior  
   - ui log scroll to bottom  
+  - ui fix send to inpaint/sketch  
   - modernui add control init image toggle  
   - outpaint fixes  
 

@@ -127,13 +127,13 @@ function switch_to_img2img(...args) {
   return Array.from(arguments);
 }
 
-function switch_to_sketch(...args) {
+function switch_to_inpaint(...args) {
   switchToTab('Image');
   switch_to_img2img_tab(1);
   return Array.from(arguments);
 }
 
-function switch_to_inpaint(...args) {
+function switch_to_sketch(...args) {
   switchToTab('Image');
   switch_to_img2img_tab(2);
   return Array.from(arguments);
