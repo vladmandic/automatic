@@ -32,6 +32,7 @@
   - persist *models -> hugginface -> token*
   - persist *models -> civitai -> token*
 - **Fixes**  
+  - update torch nightly urls  
   - docs/wiki always use relative links  
   - ui use correct timezone for log display  
   - ui improve settings search behavior  
