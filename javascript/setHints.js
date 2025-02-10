@@ -150,6 +150,7 @@ async function getLocaleData(desiredLocale = null) {
 
 async function setHints(analyze = false) {
   let json = {};
+  let overrideData = [];
   if (localeData.finished) return;
   if (Object.keys(opts).length === 0) return;
   const elements = [
@@ -160,10 +161,9 @@ async function setHints(analyze = false) {
   if (elements.length === 0) return;
   if (localeData.data.length === 0) {
     json = await getLocaleData(window.opts.ui_locale);
-    let overrideData = json.override || {};
-    overrideData = Object.values(overrideData).flat().filter((e) => e.hint.length > 0);
-    localeData.data = Object.values(json).flat().filter((e) => e.hint.length > 0);
-    Object.assign(localeData.data, overrideData);
+    overrideData = Object.values(json.override || {}).flat().filter((e) => e.hint.length > 0);
+    const jsonData = Object.values(json).flat().filter((e) => e.hint.length > 0);
+    localeData.data = [...overrideData, ...jsonData];
     for (const e of localeData.data) e.label = e.label.toLowerCase().trim();
   }
   if (!localeData.hint) tooltipCreate();
@@ -196,7 +196,7 @@ async function setHints(analyze = false) {
   }
   const t1 = performance.now();
   localeData.btn.style.backgroundColor = localeData.locale !== 'en' ? 'var(--primary-500)' : '';
-  log('setHints', { type: localeData.type, locale: localeData.locale, elements: elements.length, localized, hints, data: localeData.data.length, time: t1 - t0 });
+  log('setHints', { type: localeData.type, locale: localeData.locale, elements: elements.length, localized, hints, data: localeData.data.length, override: overrideData.length, time: Math.round(t1 - t0) });
   // sortUIElements();
   if (analyze) {
     const [missingHints, orphanedHints] = await validateHints(json, elements);
