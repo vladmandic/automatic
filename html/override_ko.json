@@ -1,4 +1,1266 @@
 [
   { "id": "", "label": "🎲️", "localized": "", "hint": "무작위 시드 사용" },
-  { "id": "", "label": "🔄", "localized": "", "hint": "초기화" }
+  { "id": "", "label": "🔄", "localized": "", "hint": "초기화" },
+  {
+    "id": "",
+    "label": "🔎︎",
+    "localized": "",
+    "hint": "누락된 메타데이터 및 미리보기를 CivitAI에서 검색"
+  },
+  {
+    "id": "",
+    "label": "Prompt",
+    "localized": "프롬프트",
+    "hint": "생성하고 싶은 이미지에 대해 설명하세요"
+  },
+  {
+    "id": "",
+    "label": "Negative prompt",
+    "localized": "네거티브 프롬프트",
+    "hint": "생성된 이미지에서 보고 싶지 않은 것에 대해 설명하세요"
+  },
+  {
+    "id": "",
+    "label": "Interrogate",
+    "localized": "",
+    "hint": "이미지 설명을 얻기 위해 Interrogate 실행"
+  },
+  {
+    "id": "",
+    "label": "Agent Scheduler",
+    "localized": "작업 스케줄러",
+    "hint": "생성 요청을 대기열에 넣고 백그라운드에서 실행"
+  },
+  {
+    "id": "",
+    "label": "System",
+    "localized": "시스템 설정",
+    "hint": "시스템 설정 및 정보"
+  },
+  { "id": "", "label": "Generate", "localized": "생성", "hint": "작업 시작" },
+  { "id": "", "label": "Stop", "localized": "중지", "hint": "작업 중지" },
+  {
+    "id": "",
+    "label": "Skip",
+    "localized": "건너뛰기",
+    "hint": "현재 작업을 건너뛰고 다음 작업 시작"
+  },
+  {
+    "id": "",
+    "label": "Pause",
+    "localized": "일시 중지",
+    "hint": "작업 일시 중지"
+  },
+  {
+    "id": "",
+    "label": "Restore",
+    "localized": "복원",
+    "hint": "현재 프롬프트 또는 마지막으로 생성된 이미지에서 매개변수 복원"
+  },
+  {
+    "id": "",
+    "label": "Default strength",
+    "localized": "기본 강도",
+    "hint": "LoRA와 같은 추가 네트워크를 프롬프트에 추가할 때 사용될 기본 강도"
+  },
+  {
+    "id": "",
+    "label": "Embedding",
+    "localized": "임베딩",
+    "hint": "Textual inversion embedding. 특정 주제에 대해 훈련된 보조 모델"
+  },
+  {
+    "id": "",
+    "label": "Hypernetwork",
+    "localized": "하이퍼 네트워크",
+    "hint": "로드된 모델의 동작을 수정하는 보조 모델"
+  },
+  {
+    "id": "",
+    "label": "VAE",
+    "localized": "VAE",
+    "hint": "Variable Auto Encoder. 생성 마지막에 이미지 디코드를 실행하는 데 사용되는 모델"
+  },
+  {
+    "id": "",
+    "label": "Corrections",
+    "localized": "보정",
+    "hint": "생성 프로세스 동안 이미지 색상/선명도/밝기를 보정합니다."
+  },
+  {
+    "id": "",
+    "label": "Refine",
+    "localized": "리파이너",
+    "hint": "업스케일, HiRes 및 리파이너와 관련된 설정"
+  },
+  {
+    "id": "",
+    "label": "➠ text",
+    "localized": "➠ 텍스트",
+    "hint": "이미지를 텍스트 탭으로 전송"
+  },
+  {
+    "id": "",
+    "label": "➠ image",
+    "localized": "➠ 이미지",
+    "hint": "이미지를 이미지 탭으로 전송"
+  },
+  {
+    "id": "",
+    "label": "➠ inpaint",
+    "localized": "➠ 인페인트",
+    "hint": "이미지를 인페인트 탭으로 전송"
+  },
+  {
+    "id": "",
+    "label": "➠ sketch",
+    "localized": "➠ 스케치",
+    "hint": "이미지를 스케치 탭으로 전송"
+  },
+  {
+    "id": "",
+    "label": "➠ composite",
+    "localized": "➠ 합성",
+    "hint": "이미지를 합성 탭으로 전송"
+  },
+  {
+    "id": "",
+    "label": "Sampling method",
+    "localized": "샘플링 알고리즘",
+    "hint": "이미지를 생성하는 데 사용할 알고리즘입니다."
+  },
+  {
+    "id": "",
+    "label": "Steps",
+    "localized": "샘플링 스탭 수",
+    "hint": "초기 이미지를 반복적으로 개선하는 횟수입니다. 스탭 수를 높일 수록 생성 시간이 더 오래 걸립니다. 모델에 따라 다르지만, 스탭 수가 너무 낮으면 결과물의 품질이 좋지 않을 수 있습니다."
+  },
+  {
+    "id": "",
+    "label": "full quality",
+    "localized": "최고 품질 VAE 사용",
+    "hint": "최고 품질 VAE를 사용합니다. 이 옵션을 끄면 VAE 처리 단계에서 처리 속도가 빨라지고 VRAM 사용량이 낮아지지만 결과물의 품질이 떨어집니다."
+  },
+  {
+    "id": "",
+    "label": "HDR Clamp",
+    "localized": "HDR 클램프",
+    "hint": "평균에서 크게 벗어나는 값을 제거합니다. 특히, 가이던스 스케일 값을 높게 설정했을 때 생성을 향상시킵니다. 생성 초기에 잘못된 값을 찾고, 범위(경계) 및 임계값 설정을 기반으로 수학적 조정을 적용하는 데 유용합니다. 이미지 값에 원하는 범위를 설정하고 임계값을 조정하여 잘못된 값을 해당 범위로 다시 조정한다고 생각하면 됩니다."
+  },
+  {
+    "id": "",
+    "label": "Enable refine pass",
+    "localized": "리파이너 활성화",
+    "hint": "이미지-이미지와 유사한 프로세스를 사용하여 최종 이미지를 업스케일하거나 디테일을 추가합니다. 기본 모델과는 별개의 리파이너 모델을 사용하여 이미지 디테일을 향상시킬 수도 있습니다."
+  },
+  {
+    "id": "",
+    "label": "enable detailer pass",
+    "localized": "디테일러 활성화",
+    "hint": "얼굴과 같은 특정 부위를 감지하고 별도의 모델을 사용하여 해당 부위만을 더 높은 해상도로 다시 처리합니다."
+  },
+  {
+    "id": "",
+    "label": "Force Hires",
+    "localized": "Hires 강제 활성화",
+    "hint": "Latent 업스케일러가 선택되면 Hires가 자동으로 활성화되지만, 그 외의 업스케일러를 사용할 때는 건너뜁니다. 이 옵션을 활성화하면 업스케일러 종류와 무관하게 항상 Hires를 실행합니다."
+  },
+  {
+    "id": "",
+    "label": "Refine sampler",
+    "localized": "리파이너 샘플링 알고리즘",
+    "hint": "리파이너 작업 시, 기본 샘플링 알고리즘을 사용할 수 없는 경우 이 샘플링 알고리즘을 대신 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Refiner start",
+    "localized": "리파이너 시작",
+    "hint": "기본 모델이 이만큼 완료되면 리파이너 패스가 시작됩니다. (0보다 크고 1보다 작게 설정하여 전체 기본 모델 실행 후에 실행)"
+  },
+  {
+    "id": "",
+    "label": "Refiner steps",
+    "localized": "리파이너 샘플링 스탭 수",
+    "hint": "리파이너 작업에 사용할 샘플링 스탭 수입니다."
+  },
+  {
+    "id": "",
+    "label": "Refine guidance",
+    "localized": "리파이너 가이던스 스케일",
+    "hint": "리파이너 작업에 사용되는 가이던스 스케일입니다."
+  },
+  {
+    "id": "",
+    "label": "Attention guidance",
+    "localized": "어텐션 가이던스 스케일",
+    "hint": "PAG(Perturbed-Attention Guidance)와 함께 사용되는 가이던스 스케일입니다."
+  },
+  {
+    "id": "",
+    "label": "Adaptive scaling",
+    "localized": "적응형 스케일링",
+    "hint": "어텐션 가이던스 스케일에 대한 적응형 수정자입니다."
+  },
+  {
+    "id": "",
+    "label": "Rescale guidance",
+    "localized": "가이던스 재조정",
+    "hint": "노출 과다된 이미지를 피하기 위해 CFG 생성 노이즈를 재조정합니다."
+  },
+  {
+    "id": "",
+    "label": "Refine Prompt",
+    "localized": "리파이너 프롬프트",
+    "hint": "기본 모델의 두 번째 인코더(있는 경우)와 리파이너 패스(활성화된 경우) 모두에 사용되는 프롬프트입니다."
+  },
+  {
+    "id": "",
+    "label": "Refine negative prompt",
+    "localized": "리파이너 네거티브 프롬프트",
+    "hint": "기본 모델의 두 번째 인코더(있는 경우)와 리파이너 패스(활성화된 경우) 모두에 사용되는 네거티브 프롬프트입니다."
+  },
+  {
+    "id": "",
+    "label": "Batch count",
+    "localized": "배치 수",
+    "hint": "생성할 이미지 배치 수입니다. (생성 성능 또는 VRAM 사용량에 영향을 미치지 않음)"
+  },
+  {
+    "id": "",
+    "label": "Batch size",
+    "localized": "배치 크기",
+    "hint": "단일 배치에서 생성할 이미지 수입니다. (VRAM 사용량이 높아지는 대신 생성 성능이 향상됨)"
+  },
+  {
+    "id": "",
+    "label": "guidance scale",
+    "localized": "가이던스 스케일",
+    "hint": "Classifier Free Guidance 스케일:이미지가 프롬프트에 얼마나 강하게 부합해야 하는지입니다. 값이 낮을수록 더 창의적인 결과를 생성하고, 값이 높을수록 프롬프트를 더 엄격하게 따릅니다. 5-10 사이의 값을 권장합니다."
+  },
+  {
+    "id": "",
+    "label": "Guidance End",
+    "localized": "가이던스 종료 시점",
+    "hint": "CFG 및 PAG 효과가 끝나는 시점입니다. 이 값을 1로 설정하면 마지막까지 가이던스 효과를 유지하고, 0.5로 설정하면 이미지 생성 단계의 50% 시점에서 가이던스 효과를 끝냅니다."
+  },
+  {
+    "id": "",
+    "label": "Variation strength",
+    "localized": "변형 강도",
+    "hint": "생성할 변형의 강도입니다. 0에서는 아무런 효과가 없습니다. 1에서는 변형 시드가 있는 완전한 사진을 얻을 수 있습니다. (a로 끝나는 ancestral 샘플링 알고리즘에는 적용되지 않음)"
+  },
+  {
+    "id": "",
+    "label": "Extension GIT repository URL",
+    "localized": "확장 Git 레포지토리 URL",
+    "hint": "GitHub의 확장 레포지토리 URL을 지정합니다."
+  },
+  {
+    "id": "",
+    "label": "Specific branch name",
+    "localized": "특정 브랜치 이름",
+    "hint": "확장 레포지토리의 브랜치 이름을 지정합니다. 공백인 경우 기본값을 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Local directory name",
+    "localized": "로컬 디렉토리 이름",
+    "hint": "확장을 설치할 디렉토리의 이름입니다. 공백인 경우 기본값을 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Refresh extension list",
+    "localized": "확장 목록 새로고침",
+    "hint": "사용 가능한 확장의 목록을 다시 불러옵니다."
+  },
+  {
+    "id": "",
+    "label": "Update all installed",
+    "localized": "설치된 모든 확장 업데이트",
+    "hint": "설치된 모든 확장을 사용 가능한 최신 버전으로 업데이트합니다."
+  },
+  {
+    "id": "",
+    "label": "Apply changes",
+    "localized": "변경 사항 적용",
+    "hint": "모든 변경 사항을 적용하고 서버를 다시 시작합니다."
+  },
+  {
+    "id": "",
+    "label": "uninstall",
+    "localized": "제거",
+    "hint": "이 확장을 제거합니다."
+  },
+  {
+    "id": "",
+    "label": "User interface",
+    "localized": "사용자 인터페이스",
+    "hint": "사용자 인터페이스 기본 설정을 검토하고 설정합니다."
+  },
+  {
+    "id": "",
+    "label": "Set ui defaults",
+    "localized": "UI 기본값 설정",
+    "hint": "현재 값을 사용자 인터페이스의 기본값으로 설정합니다."
+  },
+  {
+    "id": "",
+    "label": "Models & Networks",
+    "localized": "모델 및 네트워크",
+    "hint": "사용 가능한 모든 모델 및 네트워크 목록을 봅니다."
+  },
+  {
+    "id": "",
+    "label": "Restore UI defaults",
+    "localized": "UI 기본값 복원",
+    "hint": "기본 사용자 인터페이스 값을 복원합니다."
+  },
+  {
+    "id": "",
+    "label": "detailer classes",
+    "localized": "디테일러 클래스",
+    "hint": "선택한 디테일러 모델이 다중 클래스 모델인 경우 사용할 특정 클래스를 지정합니다."
+  },
+  {
+    "id": "",
+    "label": "detailer models",
+    "localized": "디테일러 모델",
+    "hint": "사용할 디테일러 모델을 선택합니다."
+  },
+  {
+    "id": "",
+    "label": "detailer negative prompt",
+    "localized": "디테일러 네거티브 프롬프트",
+    "hint": "디테일러에 대한 별도의 네거티브 프롬프트를 사용합니다. 이 란이 공백인 경우 기본 네거티브 프롬프트를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "detailer prompt",
+    "localized": "디테일러 프롬프트",
+    "hint": "디테일러에 대하여 별도의 프롬프트를 사용합니다. 이 란이 공백인 경우 기본 프롬프트를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "detailer steps",
+    "localized": "디테일러 스탭 수",
+    "hint": "디테일러 작업을 실행할 스탭 수"
+  },
+  {
+    "id": "",
+    "label": "detailer use model augment",
+    "localized": "디테일러 모델 augment 사용",
+    "hint": "디테일러 감지 모델을 더 높은 정밀도로 실행합니다."
+  },
+  {
+    "id": "",
+    "label": "edge blur",
+    "localized": "가장자리 흐림",
+    "hint": "마스크된 영역의 가장자리를 흐리게 합니다. 단위는 %이고 최댓값은 100%입니다."
+  },
+  {
+    "id": "",
+    "label": "edge padding",
+    "localized": "가장자리 패딩",
+    "hint": "마스크된 영역의 가장자리를 확장합니다. 단위는 %이고 최댓값은 100%입니다."
+  },
+  {
+    "id": "",
+    "label": "min confidence",
+    "localized": "최소 신뢰도",
+    "hint": "디테일러에 의해 감지된 항목의 최소 신뢰도"
+  },
+  {
+    "id": "",
+    "label": "ReBasin",
+    "localized": "",
+    "hint": "두 모델에서 더 많은 기능을 유지하기 위해 순열과 함께 여러 번 병합을 수행합니다."
+  },
+  {
+    "id": "",
+    "label": "Number of ReBasin Iterations",
+    "localized": "ReBasin 반복 횟수",
+    "hint": "저장하기 전에 모델을 병합하고 순열하는 횟수"
+  },
+  {
+    "id": "",
+    "label": "cpu",
+    "localized": "CPU",
+    "hint": "CPU와 RAM만 사용합니다. 가장 느리지만 메모리 부족 오류가 발생할 가능성이 가장 적습니다."
+  },
+  {
+    "id": "",
+    "label": "shuffle",
+    "localized": "셔플",
+    "hint": "전체 모델은 RAM에 로드하고 필요한 값만 VRAM으로 옮긴 후 연산합니다. CPU와 RAM만 사용했을 때에 비해 조금 더 빠릅니다. SDXL 병합에 권장합니다."
+  },
+  {
+    "id": "",
+    "label": "Preset Interpolation Ratio",
+    "localized": "사전 설정 보간 비율",
+    "hint": "두 개의 사전 설정이 선택된 경우 그 사이를 보간합니다."
+  },
+  {
+    "id": "",
+    "label": "active ip adapters",
+    "localized": "활성 IP 어댑터 개수",
+    "hint": "활성 IP 어댑터 개수"
+  },
+  {
+    "id": "",
+    "label": "unload adapter",
+    "localized": "어댑터 언로드",
+    "hint": "생성이 끝나면 즉시 IP 어댑터를 언로드합니다. 이 옵션을 비활성화하면 다음 생성에서 IP 어댑터를 더 빠르게 사용하기 위해 로드된 상태를 유지합니다."
+  },
+  {
+    "id": "",
+    "label": "crop to portrait",
+    "localized": "세로로 자르기",
+    "hint": "IP 어댑터 입력으로 사용하기 전에 입력 이미지를 세로 전용으로 자릅니다."
+  },
+  {
+    "id": "",
+    "label": "layer options",
+    "localized": "레이어 옵션",
+    "hint": "IP 어댑터 고급 레이어 옵션을 수동으로 지정합니다."
+  },
+  {
+    "id": "",
+    "label": "X values",
+    "localized": "X 값",
+    "hint": "쉼표를 사용하여 X축에 대한 값을 분리합니다."
+  },
+  {
+    "id": "",
+    "label": "Y values",
+    "localized": "Y 값",
+    "hint": "쉼표를 사용하여 Y축에 대한 값을 분리합니다."
+  },
+  {
+    "id": "",
+    "label": "Z values",
+    "localized": "Z 값",
+    "hint": "쉼표를 사용하여 Z축에 대한 값을 분리합니다."
+  },
+  {
+    "id": "",
+    "label": "Tile overlap",
+    "localized": "타일 중복",
+    "hint": "업스케일을 할 때 각 타일 사이에 겹치게 할 픽셀 수입니다. 겹치는 픽셀의 수가 많을 수록 모든 타일이 하나의 그림으로 다시 병합된 이후 타일 간 이음새가 눈에 덜 띕니다."
+  },
+  {
+    "id": "sett_reload_sd_model",
+    "label": "Reload model",
+    "localized": "모델 다시 로드",
+    "hint": "현재 선택된 모델을 다시 로드합니다."
+  },
+  {
+    "id": "",
+    "label": "Variable Auto Encoder",
+    "localized": "Variable Auto Encoder",
+    "hint": "VAE 및 이미지 디코드 작업과 관련된 설정"
+  },
+  {
+    "id": "",
+    "label": "Text encoder",
+    "localized": "텍스트 인코더",
+    "hint": "텍스트 인코더 및 프롬프트 인코드 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Compute Settings",
+    "localized": "연산 설정",
+    "hint": "연산 정밀도, cross-attention 및 최적화 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Backend Settings",
+    "localized": "백엔드 설정",
+    "hint": "torch, onnx 및 olive와 같은 연산 백엔드 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Pipeline modifiers",
+    "localized": "파이프라인 고급 기능",
+    "hint": "생성 중에 활성화할 수 있는 추가 기능"
+  },
+  {
+    "id": "",
+    "label": "Sampler Settings",
+    "localized": "샘플러 설정",
+    "hint": "샘플러 선택 및 구성, Diffusers 샘플러 구성 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Postprocessing",
+    "localized": "후처리",
+    "hint": "이미지 생성 후 처리, 얼굴 복원 및 업스케일 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Huggingface",
+    "localized": "Huggingface",
+    "hint": "Huggingface 관련 설정"
+  },
+  {
+    "id": "",
+    "label": "Show all pages",
+    "localized": "모든 페이지 표시",
+    "hint": "모든 설정 페이지를 표시합니다."
+  },
+  {
+    "id": "",
+    "label": "VAE model",
+    "localized": "VAE 모델",
+    "hint": "VAE는 최종 이미지의 미세한 디테일을 보정합니다. 색감을 변경할 수도 있습니다."
+  },
+  {
+    "id": "",
+    "label": "Model load using streams",
+    "localized": "스트림을 사용하여 모델 로드",
+    "hint": "모델을 로드할 때 느린 저장 장치와 네트워크 스토리지에 최적화된 스트리밍 로드를 시도합니다."
+  },
+  {
+    "id": "",
+    "label": "Full",
+    "localized": "",
+    "hint": "항상 최대 정밀도를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "FP32",
+    "localized": "FP32",
+    "hint": "32비트 부동 소수점을 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "FP16",
+    "localized": "FP16",
+    "hint": "16비트 부동 소수점을 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "BF16",
+    "localized": "BF16",
+    "hint": "수정된 16비트 부동 소수점을 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Full precision (--no-half-vae)",
+    "localized": "VAE 최대 정밀도 (--no-half-vae)",
+    "hint": "VAE에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느리지만 더 나은 결과를 얻을 수 있습니다."
+  },
+  {
+    "id": "",
+    "label": "Force full precision (--no-half)",
+    "localized": "모델 최대 정밀도 (--no-half)",
+    "hint": "모델에 FP32를 사용합니다. 더 많은 VRAM을 사용하고 생성 속도가 느리지만 더 나은 결과를 얻을 수 있습니다."
+  },
+  {
+    "id": "",
+    "label": "Upcast sampling",
+    "localized": "업캐스트 샘플링",
+    "hint": "--no-half를 사용했을 때와 유사한 결과를 얻을 수 있지만 생성 속도가 더 빠르고 메모리도 덜 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Attempt VAE roll back for NaN values",
+    "localized": "NaN 값 발생 시 VAE 롤백 시도",
+    "hint": "Torch 2.1 및 NaN 검사가 활성화되어 있어야 합니다."
+  },
+  {
+    "id": "",
+    "label": "Olive use FP16 on optimization",
+    "localized": "Olive:최적화 시 FP16 사용",
+    "hint": "Olive 최적화 프로세스의 출력 모델에 16비트 부동 소수점 정밀도를 사용합니다. 비활성화된 경우 32비트 부동 소수점 정밀도를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "Olive force FP32 for VAE Encoder",
+    "localized": "Olive:VAE 인코더에 대해 FP32 강제",
+    "hint": "출력 모델의 VAE 인코더에 32비트 부동 소수점 정밀도를 사용합니다. 이는 '최적화 시 FP16 사용' 옵션을 무시합니다. Img2Img에서 NaN 또는 검은색 빈 이미지가 발생하는 경우 이 옵션을 활성화하고 캐시된 모델을 제거하세요."
+  },
+  {
+    "id": "",
+    "label": "Olive use static dimensions",
+    "localized": "Olive:정적 차원 사용",
+    "hint": "Olive 최적화 모델의 이미지 생성 속도를 매우 빠르게 만듭니다. (OrtTransformersOptimization)"
+  },
+  {
+    "id": "",
+    "label": "Olive cache optimized models",
+    "localized": "Olive:최적화 모델 캐시",
+    "hint": "Olive 처리된 모델을 저장합니다. ONNX 탭에서 관리할 수 있습니다."
+  },
+  {
+    "id": "",
+    "label": "Inpainting conditioning mask strength",
+    "localized": "인페인트 conditioning mask 강도",
+    "hint": "인페인트 및 img2img에 대해 원본 이미지를 얼마나 강하게 마스킹할지 결정합니다. 1.0은 완전히 마스킹(기본값)을 의미합니다. 0.0은 완전히 마스킹되지 않은 컨디셔닝을 의미합니다. 값이 낮을수록 이미지의 전체 구성을 보존하는 데 도움이 되지만 큰 변경에는 어려움을 겪습니다."
+  },
+  {
+    "id": "",
+    "label": "Clip skip",
+    "localized": "Clip skip",
+    "hint": "CLIP 모델의 중단 시점. 이 값을 1로 설정하면 평소와 같이 마지막 레이어에서 중단하고, 2로 설정하면 끝에서 두 번째 레이어에서 중단합니다."
+  },
+  {
+    "id": "",
+    "label": "Approximate",
+    "localized": "",
+    "hint": "빠르고 가벼운 근사 방식입니다. VAE에 비해 매우 빠르지만 가로/세로 해상도가 4배 작고 품질이 낮은 사진을 생성합니다."
+  },
+  {
+    "id": "",
+    "label": "Simple",
+    "localized": "",
+    "hint": "매우 빠르고 가벼운 근사 방식입니다. VAE에 비해 매우 빠르지만 가로/세로 해상도가 8배 작고 품질이 매우 낮은 사진을 생성합니다."
+  },
+  {
+    "id": "",
+    "label": "Progress update period",
+    "localized": "진행률 업데이트 주기",
+    "hint": "UI 프로그레스 바 및 미리보기를 위한 업데이트 주기입니다. (밀리초 단위)"
+  },
+  {
+    "id": "",
+    "label": "Euler a",
+    "localized": "Euler a",
+    "hint": "Euler Ancestral - 매우 창의적이며 스탭 수에 따라 완전히 다른 그림을 얻을 수 있습니다. 스탭 수를 30-40단계보다 높게 설정하는 것은 의미가 없습니다."
+  },
+  {
+    "id": "",
+    "label": "DDIM",
+    "localized": "DDIM",
+    "hint": "Denoising Diffusion Implicit Models - 인페인트에 가장 적합합니다."
+  },
+  {
+    "id": "",
+    "label": "UniPC",
+    "localized": "UniPC",
+    "hint": "Diffusion 모델의 빠른 샘플링을 위한 통합 예측기"
+  },
+  {
+    "id": "",
+    "label": "sigma negative guidance minimum",
+    "localized": "시그마 음수 지침 최솟값",
+    "hint": "이미지가 거의 준비되었을 때 일부 단계에 대한 음수 프롬프트를 건너뜁니다. 0=비활성화"
+  },
+  {
+    "id": "",
+    "label": "Upscaler tile overlap",
+    "localized": "업스케일러 타일 중복",
+    "hint": "이 값이 낮을 수록 타일 간 이음새 부분이 더 잘 보입니다."
+  },
+  {
+    "id": "",
+    "label": "VAE slicing",
+    "localized": "VAE 슬라이싱",
+    "hint": "VRAM 사용량을 줄이기 위해 한 번에 하나의 이미지를 디코드합니다. 다중 이미지 배치에서 VAE 디코드 작업이 약간 빨라집니다."
+  },
+  {
+    "id": "",
+    "label": "VAE tiling",
+    "localized": "VAE 타일링",
+    "hint": "VRAM 사용량을 줄이기 위해 큰 이미지를 여러 개의 타일로 나눕니다. 생성 시간이 약간 증가합니다."
+  },
+  {
+    "id": "",
+    "label": "Dynamic attention BMM",
+    "localized": "다이나믹 어텐션 BMM",
+    "hint": "어텐션 계산을 한 번에 모두 수행하지 않고 단계별로 수행합니다. 생성 속도가 느려지지만 메모리 사용량이 크게 줄어듭니다."
+  },
+  {
+    "id": "",
+    "label": "ONNX Execution Provider",
+    "localized": "ONNX Execution Provider",
+    "hint": "ONNX Runtime에서 사용할 장치 종류 (Execution Provider)"
+  },
+  {
+    "id": "",
+    "label": "ONNX allow fallback to CPU",
+    "localized": "ONNX:CPU fallback 허용",
+    "hint": "선택한 Execution Provider를 사용할 수 없을 때 CPU를 대신 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "ONNX cache converted models",
+    "localized": "ONNX:변환된 모델 저장",
+    "hint": "ONNX 형식으로 변환된 모델을 저장합니다. ONNX 탭에서 관리할 수 있습니다."
+  },
+  {
+    "id": "",
+    "label": "ONNX unload base model when processing refiner",
+    "localized": "ONNX:리파이너 단계에서 기본 모델 언로드",
+    "hint": "리파이너가 변환/최적화/처리될 때 기본 모델을 언로드합니다."
+  },
+  {
+    "id": "",
+    "label": "model compile precompile",
+    "localized": "모델 컴파일 사전 컴파일",
+    "hint": "모델을 로드할 때 모델 컴파일을 실행합니다. 이 옵션을 비활성화하면 새로 작업을 시작할 때 모델을 컴파일합니다."
+  },
+  {
+    "id": "",
+    "label": "Use zeros for prompt padding",
+    "localized": "프롬프트 패딩에 0 사용",
+    "hint": "프롬프트가 비어 있을 때 노이즈를 제거하기 위해 나머지를 0으로 채웁니다."
+  },
+  {
+    "id": "",
+    "label": "invisible watermark string",
+    "localized": "보이지 않는 워터마크 문자열",
+    "hint": "이미지에 추가할 보이지 않는 워터마크 문자열입니다. 이미지 손상을 방지하기 위해 매우 짧게 설정해야 합니다."
+  },
+  {
+    "id": "",
+    "label": "1st stage backbone",
+    "localized": "1단계 backbone",
+    "hint": "1단계 backbone"
+  },
+  {
+    "id": "",
+    "label": "1st stage skip",
+    "localized": "1단계 skip",
+    "hint": "1단계 skip"
+  },
+  {
+    "id": "",
+    "label": "2nd stage backbone",
+    "localized": "2단계 backbone",
+    "hint": "2단계 backbone"
+  },
+  {
+    "id": "",
+    "label": "2nd stage skip",
+    "localized": "2단계 skip",
+    "hint": "2단계 skip"
+  },
+  {
+    "id": "",
+    "label": "aggressive at step",
+    "localized": "",
+    "hint": "aggressive at step"
+  },
+  { "id": "", "label": "alt", "localized": "", "hint": "Alt" },
+  {
+    "id": "",
+    "label": "apply linfusion distillation on load",
+    "localized": "로드 시 Linfusion distillation 적용",
+    "hint": "로드 시 Linfusion distillation 적용"
+  },
+  { "id": "", "label": "as a tab", "localized": "탭", "hint": "탭" },
+  {
+    "id": "",
+    "label": "auto requeue failed tasks",
+    "localized": "실패한 작업 대기열에 다시 추가",
+    "hint": "실패한 작업을 자동으로 대기열에 다시 추가합니다."
+  },
+  {
+    "id": "",
+    "label": "backend storage",
+    "localized": "연산 데이터 타입",
+    "hint": "연산 데이터 타입"
+  },
+  {
+    "id": "",
+    "label": "batch matrix-matrix",
+    "localized": "",
+    "hint": "batch matrix-matrix"
+  },
+  {
+    "id": "",
+    "label": "batch mode uses sequential seeds",
+    "localized": "연속적 시드 사용",
+    "hint": "연속적 시드 사용"
+  },
+  { "id": "", "label": "beta end", "localized": "", "hint": "beta end" },
+  { "id": "", "label": "beta start", "localized": "", "hint": "beta start" },
+  {
+    "id": "",
+    "label": "change log",
+    "localized": "체인지로그",
+    "hint": "체인지로그"
+  },
+  {
+    "id": "",
+    "label": "channels last",
+    "localized": "",
+    "hint": "channels last"
+  },
+  { "id": "", "label": "civitai", "localized": "", "hint": "CivitAI" },
+  {
+    "id": "",
+    "label": "civitai model type",
+    "localized": "CivitAI 모델 유형",
+    "hint": "CivitAI 모델 유형"
+  },
+  {
+    "id": "",
+    "label": "civitai token",
+    "localized": "CivitAI 토큰",
+    "hint": "CivitAI 토큰"
+  },
+  {
+    "id": "",
+    "label": "cross-attention",
+    "localized": "",
+    "hint": "cross-attention"
+  },
+  { "id": "", "label": "ctrl", "localized": "", "hint": "Ctrl" },
+  {
+    "id": "",
+    "label": "cudamallocasync",
+    "localized": "cudaMallocAsync",
+    "hint": "cudaMallocAsync"
+  },
+  {
+    "id": "",
+    "label": "current",
+    "localized": "현재 로드된 모델",
+    "hint": "현재 로드된 모델"
+  },
+  { "id": "", "label": "deep-cache", "localized": "", "hint": "deep-cache" },
+  {
+    "id": "",
+    "label": "deterministic mode",
+    "localized": "",
+    "hint": "deterministic mode"
+  },
+  {
+    "id": "",
+    "label": "disabled",
+    "localized": "비활성화",
+    "hint": "비활성화"
+  },
+  {
+    "id": "",
+    "label": "downscale high resolution live previews",
+    "localized": "고해상도 실시간 미리보기 축소",
+    "hint": "고해상도 실시간 미리보기 축소"
+  },
+  { "id": "", "label": "dynamic", "localized": "", "hint": "dynamic" },
+  {
+    "id": "",
+    "label": "dynamic attention",
+    "localized": "",
+    "hint": "dynamic attention"
+  },
+  {
+    "id": "",
+    "label": "dynamic attention slicing rate in gb",
+    "localized": "다이나믹 어텐션 슬라이싱 비율 (GB 단위)",
+    "hint": "다이나믹 어텐션 슬라이싱 비율 (GB 단위)"
+  },
+  {
+    "id": "",
+    "label": "dynamic attention trigger rate in gb",
+    "localized": "다이나믹 어텐션 트리거 비율 (GB 단위)",
+    "hint": "다이나믹 어텐션 트리거 비율 (GB 단위)"
+  },
+  {
+    "id": "",
+    "label": "expandable segments",
+    "localized": "",
+    "hint": "expandable segments"
+  },
+  { "id": "", "label": "false", "localized": "비활성화", "hint": "비활성화" },
+  {
+    "id": "",
+    "label": "first-block cache enabled",
+    "localized": "First-block 캐시 활성화",
+    "hint": "First-block 캐시 활성화"
+  },
+  {
+    "id": "",
+    "label": "flash attention",
+    "localized": "",
+    "hint": "flash attention"
+  },
+  {
+    "id": "",
+    "label": "folder for onnx conversion",
+    "localized": "ONNX 변환을 위한 임시 폴더",
+    "hint": "ONNX 변환을 위한 임시 폴더"
+  },
+  {
+    "id": "",
+    "label": "full vae",
+    "localized": "VAE",
+    "hint": "근사를 사용하지 않고 VAE를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "full-depth cudnn benchmark",
+    "localized": "Full-depth cuDNN 벤치마크",
+    "hint": "Full-depth cuDNN 벤치마크"
+  },
+  {
+    "id": "",
+    "label": "fused projections",
+    "localized": "",
+    "hint": "fused projections"
+  },
+  {
+    "id": "",
+    "label": "gc threshold",
+    "localized": "가비지 컬렉션 임계값",
+    "hint": "가비지 컬렉션 임계값"
+  },
+  {
+    "id": "",
+    "label": "get changelog",
+    "localized": "체인지로그 가져오기",
+    "hint": "체인지로그 가져오기"
+  },
+  {
+    "id": "",
+    "label": "hide the custom checkpoint dropdown",
+    "localized": "커스텀 모델 드롭다운 숨기기",
+    "hint": "커스텀 모델 드롭다운 숨기기"
+  },
+  { "id": "", "label": "hidet", "localized": "", "hint": "hidet" },
+  { "id": "", "label": "inductor", "localized": "", "hint": "inductor" },
+  {
+    "id": "",
+    "label": "layerwise casting storage",
+    "localized": "Layerwise casting 스토리지 타입",
+    "hint": "Layerwise casting 스토리지 타입"
+  },
+  {
+    "id": "",
+    "label": "layerwise non-blocking operations",
+    "localized": "Layerwise 작업 블로킹 안 함",
+    "hint": "Layerwise 작업 블로킹 안 함"
+  },
+  {
+    "id": "",
+    "label": "ldsr processing steps",
+    "localized": "LDSR 처리 스탭 수",
+    "hint": "LDSR 처리 스탭 수"
+  },
+  {
+    "id": "",
+    "label": "load model directly to gpu",
+    "localized": "모델을 GPU로 직접 로드",
+    "hint": "모델을 GPU로 바로 로드합니다."
+  },
+  { "id": "", "label": "low order", "localized": "", "hint": "low order" },
+  {
+    "id": "",
+    "label": "math attention",
+    "localized": "",
+    "hint": "math attention"
+  },
+  {
+    "id": "",
+    "label": "max-autotune",
+    "localized": "",
+    "hint": "max-autotune"
+  },
+  {
+    "id": "",
+    "label": "max-autotune-no-cudagraphs",
+    "localized": "",
+    "hint": "max-autotune-no-cudagraphs"
+  },
+  {
+    "id": "",
+    "label": "memory attention",
+    "localized": "",
+    "hint": "memory attention"
+  },
+  { "id": "", "label": "migraphx", "localized": "", "hint": "MIGraphX" },
+  {
+    "id": "",
+    "label": "model auto-download on demand",
+    "localized": "필요한 경우 모델 자동 다운로드",
+    "hint": "필요한 경우 모델을 자동으로 다운로드합니다."
+  },
+  {
+    "id": "",
+    "label": "model autoload on start",
+    "localized": "시작 시 모델 자동 로드",
+    "hint": "시작 시 모델을 자동으로 로드합니다."
+  },
+  {
+    "id": "",
+    "label": "model compile fullgraph",
+    "localized": "모델 컴파일 fullgraph",
+    "hint": "모델 컴파일 fullgraph"
+  },
+  {
+    "id": "",
+    "label": "model compile suppress errors",
+    "localized": "모델 컴파일 오류 숨기기",
+    "hint": "모델 컴파일 오류를 숨깁니다."
+  },
+  { "id": "", "label": "modern", "localized": "모던", "hint": "모던" },
+  { "id": "", "label": "native", "localized": "기본", "hint": "기본" },
+  {
+    "id": "",
+    "label": "noise multiplier (eta)",
+    "localized": "노이즈 배수 (eta)",
+    "hint": "노이즈 배수 (eta)"
+  },
+  {
+    "id": "",
+    "label": "noise multiplier for image processing",
+    "localized": "이미지 처리를 위한 노이즈 배수",
+    "hint": "이미지 처리를 위한 노이즈 배수"
+  },
+  {
+    "id": "",
+    "label": "noise seed delta (eta)",
+    "localized": "",
+    "hint": "noise seed delta (eta)"
+  },
+  {
+    "id": "",
+    "label": "override t1 ratio",
+    "localized": "",
+    "hint": "override t1 ratio"
+  },
+  {
+    "id": "",
+    "label": "override t2 ratio",
+    "localized": "",
+    "hint": "override t1 ratio"
+  },
+  {
+    "id": "",
+    "label": "parallel process images in batch",
+    "localized": "이미지 병렬 처리",
+    "hint": "이미지를 배치에서 병렬 처리합니다."
+  },
+  {
+    "id": "",
+    "label": "prediction method",
+    "localized": "Prediction 종류",
+    "hint": "Prediction 모델을 사용하는 경우 Prediction 종류를 올바른 값으로 변경해야 합니다."
+  },
+  {
+    "id": "",
+    "label": "quantization activations type",
+    "localized": "양자화 Activation 데이터 타입",
+    "hint": "양자화 Activation 데이터 타입"
+  },
+  {
+    "id": "",
+    "label": "quantization type",
+    "localized": "양자화 데이터 타입",
+    "hint": "양자화 데이터 타입"
+  },
+  {
+    "id": "",
+    "label": "quantization weights type",
+    "localized": "양자화 데이터 타입",
+    "hint": "양자화 데이터 타입"
+  },
+  {
+    "id": "",
+    "label": "reduce-overhead",
+    "localized": "",
+    "hint": "reduce-overhead"
+  },
+  { "id": "", "label": "rescale", "localized": "", "hint": "rescale" },
+  {
+    "id": "",
+    "label": "residual diff threshold",
+    "localized": "",
+    "hint": "residual diff threshold"
+  },
+  {
+    "id": "",
+    "label": "sage attention",
+    "localized": "",
+    "hint": "sage attention"
+  },
+  {
+    "id": "",
+    "label": "search changelog",
+    "localized": "체인지로그 검색",
+    "hint": "체인지로그 검색"
+  },
+  { "id": "", "label": "sharpen", "localized": "선명도", "hint": "선명도" },
+  { "id": "", "label": "shift", "localized": "", "hint": "Shift" },
+  {
+    "id": "",
+    "label": "shuffle weights",
+    "localized": "가중치 셔플",
+    "hint": "가중치 셔플"
+  },
+  {
+    "id": "",
+    "label": "sigma max",
+    "localized": "시그마 최댓값",
+    "hint": "시그마 최댓값"
+  },
+  {
+    "id": "",
+    "label": "sigma min",
+    "localized": "시그마 최솟값",
+    "hint": "시그마 최솟값"
+  },
+  {
+    "id": "",
+    "label": "skip generation if nan found in latents",
+    "localized": "생성 중 NaN이 발견되면 건너뛰기",
+    "hint": "생성 중 NaN이 발견되면 진행 중인 작업을 건너뜁니다."
+  },
+  {
+    "id": "",
+    "label": "skip guidance layers",
+    "localized": "가이던스 레이어 건너뛰기",
+    "hint": "가이던스 레이어 건너뛰기"
+  },
+  {
+    "id": "",
+    "label": "split attention",
+    "localized": "",
+    "hint": "split attention"
+  },
+  { "id": "", "label": "taesd", "localized": "", "hint": "taesd" },
+  {
+    "id": "",
+    "label": "taesd decode layers",
+    "localized": "TAESD 디코드 레이어",
+    "hint": "TAESD 디코드 레이어"
+  },
+  {
+    "id": "",
+    "label": "taesd variant",
+    "localized": "TAESD 변형",
+    "hint": "TAESD 변형"
+  },
+  {
+    "id": "",
+    "label": "task list page size (0 for auto)",
+    "localized": "작업 목록 페이지 크기",
+    "hint": "작업 목록 페이지 크기. 0으로 설정하면 자동으로 결정합니다."
+  },
+  {
+    "id": "",
+    "label": "thresholding",
+    "localized": "",
+    "hint": "thresholding"
+  },
+  {
+    "id": "",
+    "label": "timestep",
+    "localized": "타임스탭",
+    "hint": "타임스탭"
+  },
+  {
+    "id": "",
+    "label": "timestep skip end",
+    "localized": "타임스탭 스킵 끝",
+    "hint": "타임스탭 스킵 끝"
+  },
+  {
+    "id": "",
+    "label": "timestep skip start",
+    "localized": "타임스탭 스킵 시작",
+    "hint": "타임스탭 스킵 시작"
+  },
+  {
+    "id": "",
+    "label": "timestep spacing",
+    "localized": "타임스탭 간격",
+    "hint": "타임스탭 간격"
+  },
+  {
+    "id": "",
+    "label": "timesteps",
+    "localized": "타임스탭 수",
+    "hint": "타임스탭 수"
+  },
+  {
+    "id": "",
+    "label": "timesteps override",
+    "localized": "타임스탭 수 덮어쓰기",
+    "hint": "타임스탭 수 덮어쓰기"
+  },
+  {
+    "id": "",
+    "label": "timesteps presets",
+    "localized": "타임스탭 수 프리셋",
+    "hint": "타임스탭 수 프리셋"
+  },
+  {
+    "id": "",
+    "label": "timesteps range",
+    "localized": "타임스탭 수 범위",
+    "hint": "타임스탭 수 범위"
+  },
+  { "id": "", "label": "todo", "localized": "ToDo", "hint": "ToDo" },
+  { "id": "", "label": "tome", "localized": "ToMe", "hint": "Token Merging" },
+  { "id": "", "label": "true", "localized": "활성화", "hint": "활성화" },
+  {
+    "id": "",
+    "label": "tunable ops limit",
+    "localized": "Tunable ops 제한",
+    "hint": "Tunable ops 제한"
+  },
+  { "id": "", "label": "unet", "localized": "UNet", "hint": "UNet" },
+  {
+    "id": "",
+    "label": "unet depth",
+    "localized": "UNet 깊이",
+    "hint": "UNet 깊이"
+  },
+  {
+    "id": "",
+    "label": "unet enabled",
+    "localized": "UNet에 적용",
+    "hint": "UNet에 HyperTile 적용"
+  },
+  {
+    "id": "",
+    "label": "unet max tile size",
+    "localized": "UNet 최대 타일 크기",
+    "hint": "UNet 최대 타일 크기"
+  },
+  {
+    "id": "",
+    "label": "unet min tile size",
+    "localized": "UNet 최소 타일 크기",
+    "hint": "UNet 최소 타일 크기"
+  },
+  {
+    "id": "",
+    "label": "unet model",
+    "localized": "UNet 모델",
+    "hint": "UNet 모델"
+  },
+  {
+    "id": "",
+    "label": "unet swap size",
+    "localized": "UNet 스왑 크기",
+    "hint": "UNet 스왑 크기"
+  },
+  { "id": "", "label": "unset", "localized": "기본값", "hint": "기본값" },
+  {
+    "id": "",
+    "label": "use separate base dict",
+    "localized": "별도의 모델 딕셔너리 사용",
+    "hint": "별도의 모델 딕셔너리를 사용합니다."
+  },
+  {
+    "id": "",
+    "label": "vae enabled",
+    "localized": "VAE에 적용",
+    "hint": "VAE에 HyperTile 적용"
+  },
+  {
+    "id": "",
+    "label": "visual query",
+    "localized": "비주얼 쿼리",
+    "hint": "비주얼 쿼리"
+  },
+  {
+    "id": "",
+    "label": "weighted",
+    "localized": "가중치 적용",
+    "hint": "가중치 적용"
+  }
 ]
