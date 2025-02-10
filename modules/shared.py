@@ -359,13 +359,10 @@ def temp_disable_extensions():
     ]
     disable_original = []
     disabled = []
-    if modules.shared.cmd_opts.theme is not None:
-        theme_name = modules.shared.cmd_opts.theme
+    if cmd_opts.theme is not None:
+        theme_name = cmd_opts.theme
     else:
-        theme_name = f'{modules.shared.opts.theme_type.lower()}/{modules.shared.opts.gradio_theme}'
-    if modules.shared.cmd_opts.locale is not None:
-        modules.shared.opts.ui_locale = modules.shared.cmd_opts.locale
-
+        theme_name = f'{opts.theme_type.lower()}/{opts.gradio_theme}'
     if theme_name == 'lobe':
         disable_themes.remove('sd-webui-lobe-theme')
     elif theme_name == 'cozy-nest' or theme_name == 'cozy':
@@ -948,6 +945,7 @@ options_templates.update(options_section(('huggingface', "Huggingface"), {
     "diffusers_model_load_variant": OptionInfo("default", "Preferred Model variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "diffusers_vae_load_variant": OptionInfo("default", "Preferred VAE variant", gr.Radio, {"choices": ['default', 'fp32', 'fp16']}),
     "custom_diffusers_pipeline": OptionInfo('', 'Load custom Diffusers pipeline'),
+    "civitai_token": OptionInfo('', 'HuggingFace token', gr.Textbox, {"lines": 2, "visible": False}),
 }))
 
 options_templates.update(options_section(('extra_networks', "Networks"), {
@@ -1114,6 +1112,8 @@ class Options:
         return data_label.default if data_label is not None else None
 
     def save_atomic(self, filename=None, silent=False):
+        if self.filename is None:
+            self.filename = config_filename
         if filename is None:
             filename = self.filename
         if cmd_opts.freeze:
@@ -1234,6 +1234,8 @@ opts = Options()
 config_filename = cmd_opts.config
 opts.load(config_filename)
 cmd_opts = cmd_args.settings_args(opts, cmd_opts)
+if cmd_opts.locale is not None:
+    opts.data['ui_locale'] = cmd_opts.locale
 if cmd_opts.use_xformers:
     opts.data['cross_attention_optimization'] = 'xFormers'
 opts.data['uni_pc_lower_order_final'] = opts.schedulers_use_loworder # compatibility

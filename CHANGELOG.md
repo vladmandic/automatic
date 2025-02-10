@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-09  
+## Update for 2025-02-10  
 
 - **User Interface**  
   - **Hints**  
@@ -29,6 +29,8 @@
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
+  - persist *models -> hugginface -> token*
+  - persist *models -> civitai -> token*
 - **Fixes**  
   - docs/wiki always use relative links  
   - ui use correct timezone for log display  
