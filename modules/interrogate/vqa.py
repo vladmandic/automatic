@@ -315,6 +315,8 @@ def interrogate(question, image, model_name):
         image.thumbnail((768, 768), Image.Resampling.HAMMING)
     if image.mode != 'RGB':
         image = image.convert('RGB')
+    from modules import modelloader
+    modelloader.hf_login()
     try:
         if model_name is None:
             shared.log.error(f'Interrogate: type=vlm model="{model_name}" no model selected')

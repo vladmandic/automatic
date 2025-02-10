@@ -29,8 +29,9 @@
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
-  - persist *models -> hugginface -> token*
-  - persist *models -> civitai -> token*
+  - persist *models -> hugginface -> token*  
+  - persist *models -> civitai -> token*  
+  - global switch to lancosz method for all interal resize ops and bicubic for interpolation ops  
 - **Fixes**  
   - update torch nightly urls  
   - docs/wiki always use relative links  

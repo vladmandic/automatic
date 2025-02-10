@@ -119,3 +119,25 @@ class UpscalerAsymmetricVAE(Upscaler):
         upscaled = F.to_pil_image(tensor.squeeze().clamp(0.0, 1.0).float().cpu())
         self.vae = self.vae.to(device=devices.cpu)
         return upscaled
+
+
+class UpscalerDCC(Upscaler):
+    def __init__(self, dirname=None): # pylint: disable=unused-argument
+        super().__init__(False)
+        self.name = "DCC Interpolation"
+        self.vae = None
+        self.scalers = [
+            UpscalerData("DCC Interpolation", None, self),
+        ]
+
+    def do_upscale(self, img: Image, selected_model=None):
+        import math
+        import numpy as np
+        from modules.postprocess.dcc import DCC
+        normalized = np.array(img).astype(np.float32) / 255.0
+        scale = math.ceil(self.scale)
+        upscaled = DCC(normalized, scale)
+        upscaled = (upscaled - upscaled.min()) / (upscaled.max() - upscaled.min())
+        upscaled = (255.0 * upscaled).astype(np.uint8)
+        upscaled = Image.fromarray(upscaled)
+        return upscaled

@@ -238,7 +238,7 @@ def run_segment(input_image: gr.Image, input_mask: np.ndarray):
         overlap = 0
         if input_mask_size > 0:
             if mask.shape != input_mask.shape:
-                mask = cv2.resize(mask, (input_mask.shape[1], input_mask.shape[0]), interpolation=cv2.INTER_CUBIC)
+                mask = cv2.resize(mask, (input_mask.shape[1], input_mask.shape[0]), interpolation=cv2.INTER_LANCZOS4)
             overlap = cv2.bitwise_and(mask, input_mask)
             overlap = np.count_nonzero(overlap)
             if overlap == 0:
@@ -278,7 +278,7 @@ def run_rembg(input_image: Image, input_mask: np.ndarray):
     binary_input = cv2.threshold(input_mask, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     binary_output = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
     if binary_input.shape != binary_output.shape:
-        binary_output = cv2.resize(binary_output, binary_input.shape[:2], interpolation=cv2.INTER_LINEAR)
+        binary_output = cv2.resize(binary_output, binary_input.shape[:2], interpolation=cv2.INTER_LANCZOS4)
     binary_overlap = cv2.bitwise_and(binary_input, binary_output)
     input_size = np.count_nonzero(binary_input)
     overlap_size = np.count_nonzero(binary_overlap)
@@ -419,7 +419,7 @@ def run_mask(input_image: Image.Image, input_mask: Image.Image = None, return_ty
         mask = run_rembg(input_image, input_mask)
     else:
         mask = run_segment(input_image, input_mask)
-    mask = cv2.resize(mask, (input_image.width, input_image.height), interpolation=cv2.INTER_LINEAR)
+    mask = cv2.resize(mask, (input_image.width, input_image.height), interpolation=cv2.INTER_LANCZOS4)
 
     debug(f'Mask shape={mask.shape} opts={opts}')
     if opts.mask_erode > 0:

@@ -103,7 +103,7 @@ def setup_model(dirname):
                 restored_img = self.face_helper.paste_faces_to_input_image()
                 restored_img = restored_img[:, :, ::-1]
                 if original_resolution != restored_img.shape[0:2]:
-                    restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LINEAR)
+                    restored_img = cv2.resize(restored_img, (0, 0), fx=original_resolution[1]/restored_img.shape[1], fy=original_resolution[0]/restored_img.shape[0], interpolation=cv2.INTER_LANCZOS4)
                 self.face_helper.clean_all()
                 if shared.opts.detailer_unload:
                     self.send_model_to(devices.cpu)
