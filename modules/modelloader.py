@@ -111,7 +111,7 @@ def download_civit_model_thread(model_name: str, model_url: str, model_path: str
         starting_pos = os.path.getsize(temp_file)
         headers['Range'] = f'bytes={starting_pos}-'
     if token is None:
-        token = shared.opts.civit_token
+        token = shared.opts.civitai_token
     if token is not None and len(token) > 0:
         headers['Authorization'] = f'Bearer {token}'
 
@@ -398,7 +398,7 @@ def load_civitai(model: str, url: str):
         return name # already downloaded
     else:
         shared.log.debug(f'Reference download start: model="{name}"')
-        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', token=shared.opts.civit_token)
+        download_civit_model_thread(model_name=model, model_url=url, model_path='', model_type='safetensors', token=shared.opts.civitai_token)
         shared.log.debug(f'Reference download complete: model="{name}"')
         sd_models.list_models()
         info = sd_models.get_closet_checkpoint_match(name)

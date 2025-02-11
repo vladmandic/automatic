@@ -14,7 +14,9 @@
   - **UI**:  
     - force browser cache-invalidate on page load  
 - **Docs**
-  - New [outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
+  - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
+  - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
+    includes build and publish and both local and cloud examples  
 - **Backend**  
   - **Torch**  
     - for **zluda** set default to `torch==2.6.0+cu118`  
