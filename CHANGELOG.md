@@ -18,6 +18,8 @@
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
     includes build and publish and both local and cloud examples  
 - **Backend**  
+  - **Docker** 
+    - updated CUDA image to `torch==2.6.0` with `cuda==12.6`  
   - **Torch**  
     - for **zluda** set default to `torch==2.6.0+cu118`  
     - for **openvino** set default to `torch==2.6.0+cpu`  
