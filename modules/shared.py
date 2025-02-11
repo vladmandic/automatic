@@ -106,7 +106,8 @@ def readfile(filename, silent=False, lock=False):
             fn = f'{sys._getframe(2).f_code.co_name}:{sys._getframe(1).f_code.co_name}' # pylint: disable=protected-access
             log.debug(f'Read: file="{filename}" json={len(data)} bytes={os.path.getsize(filename)} time={t1-t0:.3f} fn={fn}')
     except FileNotFoundError as err:
-        log.debug(f'Reading failed: {filename} {err}')
+        if not silent:
+            log.debug(f'Reading failed: {filename} {err}')
     except Exception as err:
         if not silent:
             log.error(f'Reading failed: {filename} {err}')
@@ -980,6 +981,8 @@ options_templates.update(options_section(('extra_networks', "Networks"), {
 
     "extra_networks_styles_sep": OptionInfo("<h2>Styles</h2>", "", gr.HTML),
     "extra_networks_styles": OptionInfo(True, "Show reference styles"),
+    "extra_networks_save_unparsed": OptionInfo(True, "Save unparsed prompt"),
+    "extra_networks_apply_unparsed": OptionInfo(True, "Restore unparsed prompt"),
 
     "extra_networks_embed_sep": OptionInfo("<h2>Embeddings</h2>", "", gr.HTML),
     "diffusers_enable_embed": OptionInfo(True, "Enable embeddings support", gr.Checkbox, {"visible": native}),

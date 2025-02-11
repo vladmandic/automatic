@@ -6,7 +6,7 @@ import numpy as np
 from torch.hub import download_url_to_file, get_dir
 from PIL import Image
 from modules import devices
-from modules.shared import log
+from installer import log
 
 
 LAMA_MODEL_URL = "https://github.com/enesmsahin/simple-lama-inpainting/releases/download/v0.1.0/big-lama.pt"

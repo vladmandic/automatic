@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-10  
+## Update for 2025-02-11  
 
 - **User Interface**  
   - **Hints**  
@@ -25,12 +25,16 @@
     - enable upscaler compile by default  
     - fix shape mismatch errors on too many resolution changes  
 - **Other**  
-  - asymmetric tiling  
+  - **Asymmetric tiling**  
     allows for configurable image tiling for x/y axis separately  
     enable in *scripts -> asymmetric tiling*  
     *note*: traditional symmetric tiling is achieved by setting circular mode for both x and y  
-  - persist *models -> hugginface -> token*  
-  - persist *models -> civitai -> token*  
+  - **Styles**  
+    ability to save and/or restore prompts before or after parsing of wildcards  
+    set in *settings -> networks -> styles*  
+  - **Access tokens**
+    persist *models -> hugginface -> token*  
+    persist *models -> civitai -> token*  
   - global switch to lancosz method for all interal resize ops and bicubic for interpolation ops  
 - **Fixes**  
   - update torch nightly urls  

@@ -148,6 +148,11 @@ def apply_styles_to_extra(p, style: Style):
     reference_style = get_reference_style()
     extra = infotext.parse(reference_style) if shared.opts.extra_network_reference_values else {}
 
+    if not hasattr(p, 'original_prompt'):
+        p.original_prompt = p.prompt
+    if not hasattr(p, 'original_negative'):
+        p.original_negative = p.negative_prompt
+
     style_extra = apply_wildcards_to_prompt(style.extra, [style.wildcards], silent=True)
     extra.update(infotext.parse(style_extra))
     extra.pop('Prompt', None)
@@ -304,24 +309,26 @@ class StyleDatabase:
             parsed_negative.append(prompt)
         return parsed_positive, parsed_negative
 
-    def apply_styles_to_prompt(self, prompt, styles):
+    def apply_styles_to_prompt(self, prompt, styles, wildcards:bool=True):
         if styles is None:
             return prompt
         if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
-        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        if wildcards:
+            prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
         return prompt
 
-    def apply_negative_styles_to_prompt(self, prompt, styles):
+    def apply_negative_styles_to_prompt(self, prompt, styles, wildcards:bool=True):
         if styles is None:
             return prompt
         if not isinstance(styles, list):
             shared.log.error(f'Styles invalid: {styles}')
             return prompt
         prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
-        prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
+        if wildcards:
+            prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles])
         return prompt
 
     def apply_styles_to_extra(self, p):

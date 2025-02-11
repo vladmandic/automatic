@@ -10,7 +10,7 @@ import math
 import torch
 import torch.nn as nn
 from einops import rearrange
-from modules.shared import log
+from installer import log
 
 
 # global variables to keep track of changing image size in multiple passes

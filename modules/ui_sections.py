@@ -6,8 +6,8 @@ from modules.interrogate import interrogate
 
 def create_toprow(is_img2img: bool = False, id_part: str = None):
     def apply_styles(prompt, prompt_neg, styles):
-        prompt = shared.prompt_styles.apply_styles_to_prompt(prompt, styles)
-        prompt_neg = shared.prompt_styles.apply_negative_styles_to_prompt(prompt_neg, styles)
+        prompt = shared.prompt_styles.apply_styles_to_prompt(prompt, styles, wildcards=not shared.opts.extra_networks_apply_unparsed)
+        prompt_neg = shared.prompt_styles.apply_negative_styles_to_prompt(prompt_neg, styles, wildcards=not shared.opts.extra_networks_apply_unparsed)
         return [gr.Textbox.update(value=prompt), gr.Textbox.update(value=prompt_neg), gr.Dropdown.update(value=[])]
 
 
