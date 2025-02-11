@@ -150,6 +150,8 @@ def process_base(p: processing.StableDiffusionProcessing):
 
 def process_hires(p: processing.StableDiffusionProcessing, output):
     # optional second pass
+    if (output is None) or (output.images is None):
+        return output
     if p.enable_hr:
         p.is_hr_pass = True
         if hasattr(p, 'init_hr'):
@@ -175,7 +177,7 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
             if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_highres_fix and hasattr(shared.sd_model, 'vae'):
                 save_intermediate(p, latents=output.images, suffix="-before-hires")
             shared.state.update('Upscale', 0, 1)
-            output.images = resize_hires(p, latents=output.images) if output is not None else []
+            output.images = resize_hires(p, latents=output.images)
             sd_hijack_hypertile.hypertile_set(p, hr=True)
 
         strength = p.hr_denoising_strength if p.hr_denoising_strength > 0 else p.denoising_strength
@@ -256,6 +258,8 @@ def process_hires(p: processing.StableDiffusionProcessing, output):
 
 def process_refine(p: processing.StableDiffusionProcessing, output):
     # optional refiner pass or decode
+    if (output is None) or (output.images is None):
+        return output
     if is_refiner_enabled(p):
         prev_job = shared.state.job
         if shared.opts.samples_save and not p.do_not_save_samples and shared.opts.save_images_before_refiner and hasattr(shared.sd_model, 'vae'):

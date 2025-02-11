@@ -45,6 +45,7 @@
   - ui fix send to inpaint/sketch  
   - modernui add control init image toggle  
   - outpaint fixes  
+  - validate output before hires/refine  
 
 ## Update for 2025-02-05
 
