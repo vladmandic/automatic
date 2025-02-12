@@ -69,7 +69,7 @@ def apply_file_wildcards(prompt, replaced = [], not_found = [], recursion=0, see
         return check_wildcard_files(prompt, wildcard, files, file_only=False)
 
     recursion += 1
-    if not shared.opts.wildcards_enabled or recursion >= 10:
+    if not shared.opts.wildcards_enabled or recursion >= 10 or not isinstance(prompt, str) or len(prompt) == 0:
         return prompt, replaced, not_found
     matches = re.findall(r'__(.*?)__', prompt, re.DOTALL)
     matches = [m for m in matches if m not in not_found]
@@ -303,6 +303,7 @@ class StyleDatabase:
             prompt = apply_styles_to_prompt(prompt, [self.find_style(x).prompt for x in styles])
             prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles], seeds[i])
             parsed_positive.append(prompt)
+        for i in range(len(negatives)):
             prompt = negatives[i]
             prompt = apply_styles_to_prompt(prompt, [self.find_style(x).negative_prompt for x in styles])
             prompt = apply_wildcards_to_prompt(prompt, [self.find_style(x).wildcards for x in styles], seeds[i])

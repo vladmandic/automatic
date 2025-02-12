@@ -16,11 +16,17 @@
 - **Models**
   - [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0)  
     new foundation model for image generation based o Gemma-2-2B text encoder and a flow-based diffusion transformer  
+    fully supports offloading and on-the-fly quantization  
     simply select from *networks -> models -> reference*  
   - [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
     originally based on *Flux.1-Schnell*, but retrained and with different architecture  
     result is model smaller than *Flux.1-Dev*, but with similar capabilities  
+    fully supports offloading and on-the-fly quantization  
     simply select from *networks -> models -> reference*  
+- **Pipelines**
+  - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
+    Regional tiling type of a solution for SDXL models  
+    select from *scripts -> mixture of diffusers*  
 - **Docs**
   - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  

@@ -31,6 +31,7 @@ exclude = [
     "modules/todo",
     "modules/unipc",
     "modules/xadapter",
+    "modules/mod",
     "repositories",
     "extensions-builtin/Lora",
     "extensions-builtin/sd-extension-chainner/nodes",
