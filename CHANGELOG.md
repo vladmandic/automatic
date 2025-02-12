@@ -73,6 +73,7 @@
   - outpaint fixes  
   - validate output before hires/refine  
   - scheduler fix sigma index out of bounds  
+  - force pydantic version reinstall/reload  
 
 ## Update for 2025-02-05
 

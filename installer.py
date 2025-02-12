@@ -354,15 +354,16 @@ def pip(arg: str, ignore: bool = False, quiet: bool = True, uv = True):
 
 # install package using pip if not already installed
 @lru_cache()
-def install(package, friendly: str = None, ignore: bool = False, reinstall: bool = False, no_deps: bool = False, quiet: bool = False):
+def install(package, friendly: str = None, ignore: bool = False, reinstall: bool = False, no_deps: bool = False, quiet: bool = False, force: bool = False):
     t_start = time.time()
     res = ''
     if args.reinstall or args.upgrade:
         global quick_allowed # pylint: disable=global-statement
         quick_allowed = False
-    if args.reinstall or reinstall or not installed(package, friendly, quiet=quiet):
+    if (args.reinstall) or (reinstall) or (not installed(package, friendly, quiet=quiet)):
         deps = '' if not no_deps else '--no-deps '
-        res = pip(f"install{' --upgrade' if not args.uv else ''} {deps}{package}", ignore=ignore, uv=package != "uv" and not package.startswith('git+'))
+        cmd = f"install{' --upgrade' if not args.uv else ''}{' --force' if force else ''} {deps}{package}"
+        res = pip(cmd, ignore=ignore, uv=package != "uv" and not package.startswith('git+'))
         try:
             importlib.reload(pkg_resources)
         except Exception:
@@ -1081,6 +1082,14 @@ def install_submodules(force=True):
     return '\n'.join(res)
 
 
+def reload(package):
+    modules = [m for m in sys.modules if m.startswith(package)]
+    for m in modules:
+        del sys.modules[m]
+    sys.modules[package] = importlib.import_module(package)
+    log.debug(f'Reload: package={package} version={sys.modules[package].__version__ if hasattr(sys.modules[package], "__version__") else "N/A"}')
+
+
 def ensure_base_requirements():
     t_start = time.time()
     setuptools_version = '69.5.1'
@@ -1128,7 +1137,10 @@ def install_optional():
     install('pynvml', ignore=True)
     install('ultralytics==8.3.40', ignore=True)
     install('Cython', ignore=True)
-    install('insightface', ignore=True) # problematic build
+    install('insightface==0.7.3', ignore=True) # problematic build
+    install('albumentations==1.4.3', ignore=True)
+    install('pydantic==1.10.21', ignore=True)
+    reload('pydantic')
     install('nncf==2.7.0', ignore=True, no_deps=True) # requires older pandas
     # install('flash-attn', ignore=True) # requires cuda and nvcc to be installed
     install('gguf', ignore=True)
