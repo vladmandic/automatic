@@ -13,13 +13,20 @@
     - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
   - **UI**:  
     - force browser cache-invalidate on page load  
+- **Models**
+  - [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
+    originally based on Flux.1-Schnell, but retrained and with different architecture  
+    result is model smaller than Flux.1-Dev, but with similar capabilities  
 - **Docs**
   - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
     includes build and publish and both local and cloud examples  
+- **Docker** 
+  - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6`  
+  - added **ROCm** receipe
+  - added **IPEX** receipe
+  - added **OpenVINO** receipe
 - **Backend**  
-  - **Docker** 
-    - updated CUDA image to `torch==2.6.0` with `cuda==12.6`  
   - **Torch**  
     - for **zluda** set default to `torch==2.6.0+cu118`  
     - for **openvino** set default to `torch==2.6.0+cpu`  

@@ -68,6 +68,8 @@ SD.Next supports broad range of models: [supported models](https://vladmandic.gi
 - *ONNX/Olive*  
 - *AMD* GPUs on Windows using **ZLUDA** libraries  
 
+Plus Docker container receipes for: [CUDA, ROCm, Intel IPEX and OpenVINO](https://vladmandic.github.io/sdnext-docs/Docker/)
+
 ## Getting started
 
 - Get started with **SD.Next** by following the [installation instructions](https://vladmandic.github.io/sdnext-docs/Installation/)  
