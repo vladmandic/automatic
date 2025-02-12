@@ -104,7 +104,7 @@ class Script(scripts.Script):
         p.extra_generation_params["MoD Y"] = f'{y_tiles}/{p.task_args["tile_height"]}/{p.task_args["tile_row_overlap"]}'
         p.keep_prompts = True
         shared.opts.prompt_attention = 'fixed'
-        shared.log.info(f'MoD: xtiles={x_tiles} ytiles={y_tiles} xoverlap={p.task_args['tile_col_overlap']} yoverlap={p.task_args['tile_row_overlap']} xsize={p.task_args["tile_width"]} ysize={p.task_args["tile_height"]}')
+        shared.log.info(f'MoD: xtiles={x_tiles} ytiles={y_tiles} xoverlap={p.task_args["tile_col_overlap"]} yoverlap={p.task_args["tile_row_overlap"]} xsize={p.task_args["tile_width"]} ysize={p.task_args["tile_height"]}')
 
         shared.sd_model = sd_models.switch_pipe(StableDiffusionXLTilingPipeline, shared.sd_model)
         sd_models.set_diffuser_options(shared.sd_model)

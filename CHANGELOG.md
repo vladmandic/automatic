@@ -67,6 +67,7 @@
   - modernui add control init image toggle  
   - outpaint fixes  
   - validate output before hires/refine  
+  - scheduler fix sigma index out of bounds  
 
 ## Update for 2025-02-05
 
