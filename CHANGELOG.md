@@ -13,6 +13,10 @@
     - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
   - **UI**:  
     - force browser cache-invalidate on page load  
+- **Docs**
+  - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
+  - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
+    includes build and publish and both local and cloud examples  
 - **Models**
   - [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0)  
     new foundation model for image generation based o Gemma-2-2B text encoder and a flow-based diffusion transformer  
@@ -27,10 +31,6 @@
   - [Mixture-of-Diffusers](https://huggingface.co/posts/elismasilva/251775641926329)  
     Regional tiling type of a solution for SDXL models  
     select from *scripts -> mixture of diffusers*  
-- **Docs**
-  - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
-  - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
-    includes build and publish and both local and cloud examples  
 - **Docker** 
   - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6`  
   - added **ROCm** receipe
