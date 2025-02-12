@@ -343,7 +343,7 @@ class ControlNetPipeline():
                 if len(controlnets) > 1:
                     # TODO controlnet-union multi-unit
                     log.warning(f'Control {what}: units={classes} supports single unit only')
-                controlnets = controlnets[0]
+                # controlnets = controlnets[0]
             else:
                 cls = StableDiffusionXLControlNetPipeline
             self.pipeline = cls(

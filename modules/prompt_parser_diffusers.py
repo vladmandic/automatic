@@ -534,7 +534,7 @@ def get_weighted_text_embeddings(pipe, prompt: str = "", neg_prompt: str = "", c
         debug(f'Prompt: pooled={pooled_prompt_embeds[0].shape} time={(time.time() - t0):.3f}')
     elif prompt_embeds[-1].shape[-1] > 768:
         t0 = time.time()
-        if shared.opts.diffusers_pooled == "weighted":
+        if shared.opts.te_pooled_embeds:
             pooled_prompt_embeds = embedding_providers[-1].text_encoder.text_projection(prompt_embeds[-1][
                 torch.arange(prompt_embeds[-1].shape[0], device=device),
                 (ptokens.to(dtype=torch.int, device=device) == 49407)

@@ -57,6 +57,9 @@
     persist *models -> hugginface -> token*  
     persist *models -> civitai -> token*  
   - global switch to lancosz method for all interal resize ops and bicubic for interpolation ops  
+  - **Text encoder**  
+    add advanced per-model options for text encoder  
+    set in *settings -> text encoder -> Optional*  
 - **Fixes**  
   - update torch nightly urls  
   - docs/wiki always use relative links  
@@ -65,6 +68,7 @@
   - ui log scroll to bottom  
   - ui fix send to inpaint/sketch  
   - modernui add control init image toggle  
+  - modernui fix sampler advanced options  
   - outpaint fixes  
   - validate output before hires/refine  
   - scheduler fix sigma index out of bounds  
