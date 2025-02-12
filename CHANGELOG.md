@@ -36,7 +36,8 @@
   - added **ROCm** receipe
   - added **IPEX** receipe
   - added **OpenVINO** receipe
-- **Backend**  
+- **System**  
+  - improve **python==3.12** compatibility  
   - **Torch**  
     - for **zluda** set default to `torch==2.6.0+cu118`  
     - for **openvino** set default to `torch==2.6.0+cpu`  
