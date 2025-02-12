@@ -31,6 +31,8 @@ def get_model_type(pipe):
         model_type = 'f1'
     elif "Mochi" in name:
         model_type = 'mochi'
+    elif "Lumina2" in name:
+        model_type = 'lumina2'
     elif "Lumina" in name:
         model_type = 'lumina'
     elif "OmniGen" in name:

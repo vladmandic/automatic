@@ -1,6 +1,6 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-11  
+## Update for 2025-02-12  
 
 - **User Interface**  
   - **Hints**  
@@ -14,9 +14,13 @@
   - **UI**:  
     - force browser cache-invalidate on page load  
 - **Models**
+  - [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0)  
+    new foundation model for image generation based o Gemma-2-2B text encoder and a flow-based diffusion transformer  
+    simply select from *networks -> models -> reference*  
   - [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
-    originally based on Flux.1-Schnell, but retrained and with different architecture  
-    result is model smaller than Flux.1-Dev, but with similar capabilities  
+    originally based on *Flux.1-Schnell*, but retrained and with different architecture  
+    result is model smaller than *Flux.1-Dev*, but with similar capabilities  
+    simply select from *networks -> models -> reference*  
 - **Docs**
   - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  

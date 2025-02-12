@@ -306,6 +306,5 @@ class DiffusionSampler:
         if name == 'DC Solver':
             if not hasattr(self.sampler, 'dc_ratios'):
                 pass
-                # self.sampler.dc_ratios = self.sampler.cascade_polynomial_regression(test_CFG=6.0, test_NFE=10, cpr_path='tmp/sd2.1.npy')
         # shared.log.debug_log(f'Sampler: class="{self.sampler.__class__.__name__}" config={self.sampler.config}')
         self.sampler.name = name

@@ -69,6 +69,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                 guess = 'Sana'
             if 'lumina-next' in f.lower():
                 guess = 'Lumina-Next'
+            if 'lumina-image-2' in f.lower():
+                guess = 'Lumina2'
             if 'kolors' in f.lower():
                 guess = 'Kolors'
             if 'auraflow' in f.lower():
@@ -101,6 +103,8 @@ def detect_pipeline(f: str, op: str = 'model', warning=True, quiet=False):
                     guess = 'FLUX'
                 if 'StableDiffusion3' in pipeline.__name__:
                     guess = 'Stable Diffusion 3'
+                if 'Lumina2' in pipeline.__name__:
+                    guess = 'Lumina 2'
             # switch for specific variant
             if guess == 'Stable Diffusion' and 'inpaint' in f.lower():
                 guess = 'Stable Diffusion Inpaint'

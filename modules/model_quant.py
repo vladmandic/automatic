@@ -30,8 +30,6 @@ def get_quant(name):
     return 'none'
 
 
-
-
 def create_bnb_config(kwargs = None, allow_bnb: bool = True):
     from modules import shared, devices
     if len(shared.opts.bnb_quantization) > 0 and allow_bnb:

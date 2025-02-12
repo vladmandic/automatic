@@ -24,6 +24,8 @@
 ## SD.Next Features
 
 All individual features are not listed here, instead check [ChangeLog](CHANGELOG.md) for full list of changes
+- Fully localized:
+  ▹ **English | Chinese | Russian | Spanish | German | French | Italian | Portuguese | Japanese | Korean**  
 - Multiple UIs!  
   ▹ **Standard | Modern**  
 - Multiple [diffusion models](https://vladmandic.github.io/sdnext-docs/Model-Support/)!  

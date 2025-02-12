@@ -309,6 +309,13 @@
     "skip": true,
     "extras": "sampler: Default"
   }, 
+  "AlphaVLLM Lumina 2": {
+    "path": "Alpha-VLLM/Lumina-Image-2.0",
+    "desc": "A Unified and Efficient Image Generative Model. Lumina-Image-2.0 is a 2 billion parameter flow-based diffusion transformer capable of generating images from text descriptions.",
+    "preview": "Alpha-VLLM--Lumina-Image-2.0.jpg",
+    "skip": true,
+    "extras": "sampler: Default"
+  }, 
 
   "Kwai Kolors": {
     "path": "Kwai-Kolors/Kolors-diffusers",
