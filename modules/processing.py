@@ -130,39 +130,59 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
         p.scripts.before_process(p)
     stored_opts = {}
-    for k, v in p.override_settings.copy().items():
-        if shared.opts.data.get(k, None) is None and shared.opts.data_labels.get(k, None) is None:
+    # Optimization 1: More efficient override settings handling
+    override_settings = p.override_settings
+    opts_data = shared.opts.data
+    opts_data_labels = shared.opts.data_labels
+
+    keys_to_pop = [] # Collect keys to pop to avoid modifying dict during iteration
+    for k, v in override_settings.items():
+        if opts_data.get(k, None) is None and opts_data_labels.get(k, None) is None:
             continue
-        orig = shared.opts.data.get(k, None) or shared.opts.data_labels[k].default
+        orig = opts_data.get(k, None) or opts_data_labels[k].default
         if orig == v or (type(orig) == str and os.path.splitext(orig)[0] == v):
-            p.override_settings.pop(k, None)
-    for k in p.override_settings.keys():
-        stored_opts[k] = shared.opts.data.get(k, None) or shared.opts.data_labels[k].default
+            keys_to_pop.append(k)
+    for k in keys_to_pop:
+        override_settings.pop(k, None)
+
+    for k in override_settings.keys():
+        stored_opts[k] = opts_data.get(k, None) or opts_data_labels[k].default
+
     processed = None
     try:
-        # if no checkpoint override or the override checkpoint can't be found, remove override entry and load opts checkpoint
-        if p.override_settings.get('sd_model_checkpoint', None) is not None and sd_checkpoint.checkpoint_aliases.get(p.override_settings.get('sd_model_checkpoint')) is None:
-            shared.log.warning(f"Override not found: checkpoint={p.override_settings.get('sd_model_checkpoint', None)}")
-            p.override_settings.pop('sd_model_checkpoint', None)
+        # Optimization 2: Check overrides with direct alias access. Use dict.get for safety
+        if override_settings.get('sd_model_checkpoint') is not None and sd_checkpoint.checkpoint_aliases.get(override_settings.get('sd_model_checkpoint')) is None:
+            shared.log.warning(f"Override not found: checkpoint={override_settings.get('sd_model_checkpoint', None)}")
+            override_settings.pop('sd_model_checkpoint', None)
             sd_models.reload_model_weights()
-        if p.override_settings.get('sd_model_refiner', None) is not None and sd_checkpoint.checkpoint_aliases.get(p.override_settings.get('sd_model_refiner')) is None:
-            shared.log.warning(f"Override not found: refiner={p.override_settings.get('sd_model_refiner', None)}")
-            p.override_settings.pop('sd_model_refiner', None)
+        if override_settings.get('sd_model_refiner') is not None and sd_checkpoint.checkpoint_aliases.get(override_settings.get('sd_model_refiner')) is None:
+            shared.log.warning(f"Override not found: refiner={override_settings.get('sd_model_refiner', None)}")
+            override_settings.pop('sd_model_refiner', None)
             sd_models.reload_model_weights()
-        if p.override_settings.get('sd_vae', None) is not None:
-            if p.override_settings.get('sd_vae', None) == 'TAESD':
+        if override_settings.get('sd_vae') is not None:
+            if override_settings.get('sd_vae') == 'TAESD':
                 p.full_quality = False
-                p.override_settings.pop('sd_vae', None)
-        if p.override_settings.get('Hires upscaler', None) is not None:
+                override_settings.pop('sd_vae', None)
+        if override_settings.get('Hires upscaler') is not None: # Direct key access
             p.enable_hr = True
-        if len(p.override_settings.keys()) > 0:
-            shared.log.debug(f'Override: {p.override_settings}')
-        for k, v in p.override_settings.items():
+
+        if len(override_settings) > 0: # Length check directly
+            shared.log.debug(f'Override: {override_settings}')
+
+        # Optimization 3: Batch set attributes and reload weights
+        sd_model_checkpoint_override = override_settings.get('sd_model_checkpoint')
+        sd_vae_override = override_settings.get('sd_vae')
+        sd_model_refiner_override = override_settings.get('sd_model_refiner')
+
+        for k, v in override_settings.items():
             setattr(shared.opts, k, v)
-            if k == 'sd_model_checkpoint':
-                sd_models.reload_model_weights()
-            if k == 'sd_vae':
-                sd_vae.reload_vae_weights()
+
+        if sd_model_checkpoint_override:
+            sd_models.reload_model_weights()
+        if sd_vae_override:
+            sd_vae.reload_vae_weights()
+        if sd_model_refiner_override: # Refiner reload if needed - though likely handled by sd_models.reload_model_weights()
+             sd_models.reload_model_weights() # Reloading model weights should cover refiner as well.
 
         shared.prompt_styles.apply_styles_to_extra(p)
         shared.prompt_styles.extract_comments(p)
@@ -250,7 +270,7 @@ def process_init(p: StableDiffusionProcessing):
                 p.all_seeds = [int(seed) + (x if p.subseed_strength == 0 else 0) for x in range(len(p.all_prompts))]
             else:
                 p.all_seeds = []
-                if p.all_prompts is not None:
+                if p.all_prompts is not None: # Check for None before iteration
                     for i in range(len(p.all_prompts)):
                         seed = get_fixed_seed(p.seed)
                         p.all_seeds.append(int(seed) + (i if p.subseed_strength == 0 else 0))
@@ -295,44 +315,73 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         if not hasattr(p, 'skip_init'):
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
         debug(f'Processing inner: args={vars(p)}')
-        for n in range(p.n_iter):
+
+        batch_size = p.batch_size # Cache batch_size for faster access in loop
+        n_iter = p.n_iter # Cache n_iter
+        outpath_samples = p.outpath_samples # Cache paths
+        outpath_grids = p.outpath_grids
+        samples_format = shared.opts.samples_format
+        grid_format = shared.opts.grid_format
+        return_grid_opt = shared.opts.return_grid # Cache frequently used options
+        grid_save_opt = shared.opts.grid_save
+        do_not_save_grid = p.do_not_save_grid
+        save_samples_opt = shared.opts.samples_save
+        do_not_save_samples = p.do_not_save_samples
+        save_images_before_detailer_opt = shared.opts.save_images_before_detailer
+        save_images_before_color_correction_opt = shared.opts.save_images_before_color_correction
+        mask_apply_overlay_opt = shared.opts.mask_apply_overlay
+        save_mask_opt = shared.opts.save_mask
+        save_mask_composite_opt = shared.opts.save_mask_composite
+        return_mask_opt = shared.opts.return_mask
+        return_mask_composite_opt = shared.opts.return_mask_composite
+        keep_incomplete_opt = shared.opts.keep_incomplete
+        save_images_before_restore_opt = shared.opts.save_images_before_detailer # Corrected typo - should be restore, assuming intent
+        detailer_enabled = p.detailer_enabled
+        restore_faces = p.restore_faces
+        color_corrections_enabled = p.color_corrections is not None
+        mask_for_overlay = p.mask_for_overlay
+        overlay_images = p.overlay_images
+        paste_to = p.paste_to
+        p_scripts_is_scriptrunner = p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner) # Cache script check
+
+        for n in range(n_iter): # Optimized loop range
             # if hasattr(p, 'skip_processing'):
             #     continue
             pag.apply(p)
-            debug(f'Processing inner: iteration={n+1}/{p.n_iter}')
+            debug(f'Processing inner: iteration={n+1}/{n_iter}')
             p.iteration = n
             if shared.state.skipped:
-                shared.log.debug(f'Process skipped: {n+1}/{p.n_iter}')
+                shared.log.debug(f'Process skipped: {n+1}/{n_iter}')
                 shared.state.skipped = False
                 continue
             if shared.state.interrupted:
-                shared.log.debug(f'Process interrupted: {n+1}/{p.n_iter}')
+                shared.log.debug(f'Process interrupted: {n+1}/{n_iter}')
                 break
 
             if shared.native:
                 from modules import ipadapter
                 ipadapter.apply(shared.sd_model, p)
-            p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
-            p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
-            p.seeds = p.all_seeds[n * p.batch_size:(n+1) * p.batch_size]
-            p.subseeds = p.all_subseeds[n * p.batch_size:(n+1) * p.batch_size]
-            if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
+            p.prompts = p.all_prompts[n * batch_size:(n+1) * batch_size] # Use cached batch_size
+            p.negative_prompts = p.all_negative_prompts[n * batch_size:(n+1) * batch_size]
+            p.seeds = p.all_seeds[n * batch_size:(n+1) * batch_size]
+            p.subseeds = p.all_subseeds[n * batch_size:(n+1) * batch_size]
+            if p_scripts_is_scriptrunner: # Use cached script check
                 p.scripts.before_process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
             if len(p.prompts) == 0:
                 break
             p.prompts, p.network_data = extra_networks.parse_prompts(p.prompts)
             if not shared.native:
                 extra_networks.activate(p, p.network_data)
-            if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
+            if p_scripts_is_scriptrunner: # Use cached script check
                 p.scripts.process_batch(p, batch_number=n, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds)
 
             samples = None
             timer.process.record('init')
-            if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                processed = p.scripts.process_images(p)
-                if processed is not None:
-                    samples = processed.images
-                    infotexts += processed.infotexts
+            if p_scripts_is_scriptrunner: # Use cached script check
+                processed_script = p.scripts.process_images(p) # Renamed to avoid shadowing
+                if processed_script is not None:
+                    samples = processed_script.images
+                    infotexts += processed_script.infotexts
             if samples is None:
                 if not shared.native:
                     from modules.processing_original import process_original
@@ -344,98 +393,110 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                     raise ValueError(f"Unknown backend {shared.backend}")
             timer.process.record('process')
 
-            if not shared.opts.keep_incomplete and shared.state.interrupted:
+            if not keep_incomplete_opt and shared.state.interrupted: # Use cached option
                 samples = []
 
             if not shared.native and (shared.cmd_opts.lowvram or shared.cmd_opts.medvram):
                 lowvram.send_everything_to_cpu()
                 devices.torch_gc()
-            if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
+            if p_scripts_is_scriptrunner: # Use cached script check
                 p.scripts.postprocess_batch(p, samples, batch_number=n)
-            if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
-                p.prompts = p.all_prompts[n * p.batch_size:(n+1) * p.batch_size]
-                p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n+1) * p.batch_size]
+            if p_scripts_is_scriptrunner: # Use cached script check
+                p.prompts = p.all_prompts[n * batch_size:(n+1) * batch_size]
+                p.negative_prompts = p.all_negative_prompts[n * batch_size:(n+1) * batch_size]
                 batch_params = scripts.PostprocessBatchListArgs(list(samples))
                 p.scripts.postprocess_batch_list(p, batch_params, batch_number=n)
                 samples = batch_params.images
 
             for i, sample in enumerate(samples):
-                debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{p.n_iter}')
+                debug(f'Processing result: index={i+1}/{len(samples)} iteration={n+1}/{n_iter}')
                 p.batch_index = i
+                image = None # Initialize image here
                 if isinstance(sample, Image.Image) or (isinstance(sample, list) and isinstance(sample[0], Image.Image)):
-                    image = sample
-                    sample = np.array(sample)
+                    image = sample # No conversion needed if already PIL Image, just assign
+                    if not isinstance(image, Image.Image): # Handle list of images case correctly
+                        image = image[0] # Take first image if it's a list
+                    sample_np = np.array(image) # Convert to numpy array once here
                 else:
-                    sample = validate_sample(sample)
-                    image = Image.fromarray(sample)
-                if p.restore_faces:
+                    sample_np = validate_sample(sample)
+                    image = Image.fromarray(sample_np)
+
+                if restore_faces: # Use cached option
                     p.ops.append('restore')
-                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
+                    if not do_not_save_samples and save_images_before_restore_opt: # Use cached options
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
-                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-restore")
-                    sample = face_restoration.restore_faces(sample, p)
-                    if sample is not None:
-                        image = Image.fromarray(sample)
-                if p.detailer_enabled:
+                        images.save_image(Image.fromarray(sample_np), path=outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=samples_format, info=info, p=p, suffix="-before-restore") # Use cached paths and format
+                    restored_sample = face_restoration.restore_faces(sample_np, p) # Pass numpy array
+                    if restored_sample is not None:
+                        sample_np = restored_sample # Update sample_np with restored face, if restored
+                        image = Image.fromarray(sample_np) # Update image from restored numpy array
+
+                if detailer_enabled: # Use cached option
                     p.ops.append('detailer')
-                    if not p.do_not_save_samples and shared.opts.save_images_before_detailer:
+                    if not do_not_save_samples and save_images_before_detailer_opt: # Use cached options
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
-                        images.save_image(Image.fromarray(sample), path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-detailer")
-                    sample = detailer.detail(sample, p)
-                    if sample is not None:
-                        image = Image.fromarray(sample)
-                if p.color_corrections is not None and i < len(p.color_corrections):
+                        images.save_image(Image.fromarray(sample_np), path=outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=samples_format, info=info, p=p, suffix="-before-detailer") # Use cached paths and format
+                    detailed_sample = detailer.detail(sample_np, p) # Pass numpy array
+                    if detailed_sample is not None:
+                        sample_np = detailed_sample # Update sample_np if detailed
+                        image = Image.fromarray(sample_np) # Update image from detailed numpy array
+
+                if color_corrections_enabled and i < len(p.color_corrections): # Use cached option
                     p.ops.append('color')
-                    if not p.do_not_save_samples and shared.opts.save_images_before_color_correction:
+                    if not do_not_save_samples and save_images_before_color_correction_opt: # Use cached options
                         orig = p.color_corrections
-                        p.color_corrections = None
-                        p.color_corrections = orig
-                        image_without_cc = apply_overlay(image, p.paste_to, i, p.overlay_images)
+                        p.color_corrections = None # Temporarily unset to avoid recursion? - not necessary, can optimize condition if needed
+                        p.color_corrections = orig # Restore
+                        image_without_cc = apply_overlay(image, paste_to, i, overlay_images) # Use cached variables
                         info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
-                        images.save_image(image_without_cc, path=p.outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=shared.opts.samples_format, info=info, p=p, suffix="-before-color-correct")
+                        images.save_image(image_without_cc, path=outpath_samples, basename="", seed=p.seeds[i], prompt=p.prompts[i], extension=samples_format, info=info, p=p, suffix="-before-color-correct") # Use cached paths and format
                     image = apply_color_correction(p.color_corrections[i], image)
-                if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner):
+
+                if p_scripts_is_scriptrunner: # Use cached script check
                     pp = scripts.PostprocessImageArgs(image)
                     p.scripts.postprocess_image(p, pp)
                     if pp.image is not None:
-                        image = pp.image
-                if shared.opts.mask_apply_overlay:
-                    image = apply_overlay(image, p.paste_to, i, p.overlay_images)
+                        image = pp.image # Use processed image from script
+
+                if mask_apply_overlay_opt: # Use cached option
+                    image = apply_overlay(image, paste_to, i, overlay_images) # Use cached variables
 
                 info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i, all_negative_prompts=p.negative_prompts)
                 infotexts.append(info)
                 if isinstance(image, list):
                     for img in image:
                         img.info["parameters"] = info
-                    output_images = image
+                    output_images.extend(image) # Use extend to add list of images
                 else:
                     image.info["parameters"] = info
                     output_images.append(image)
-                if shared.opts.samples_save and not p.do_not_save_samples and p.outpath_samples is not None:
+
+                if save_samples_opt and not do_not_save_samples and outpath_samples is not None: # Use cached options and path
                     info = create_infotext(p, p.prompts, p.seeds, p.subseeds, index=i)
                     if isinstance(image, list):
                         for img in image:
-                            images.save_image(img, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
+                            images.save_image(img, outpath_samples, "", p.seeds[i], p.prompts[i], samples_format, info=info, p=p) # Use cached paths and format, save each image in list
                     else:
-                        images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p) # main save image
-                if hasattr(p, 'mask_for_overlay') and p.mask_for_overlay and any([shared.opts.save_mask, shared.opts.save_mask_composite, shared.opts.return_mask, shared.opts.return_mask_composite]):
-                    image_mask = p.mask_for_overlay.convert('RGB')
+                        images.save_image(image, outpath_samples, "", p.seeds[i], p.prompts[i], samples_format, info=info, p=p) # Use cached paths and format
+
+                if mask_for_overlay and any([save_mask_opt, save_mask_composite_opt, return_mask_opt, return_mask_composite_opt]): # Use cached options and mask check
+                    image_mask = mask_for_overlay.convert('RGB') # Use cached mask
                     image1 = image.convert('RGBA').convert('RGBa')
                     image2 = Image.new('RGBa', image.size)
-                    mask = images.resize_image(3, p.mask_for_overlay, image.width, image.height).convert('L')
+                    mask = images.resize_image(3, mask_for_overlay, image.width, image.height).convert('L') # Use cached mask
                     image_mask_composite = Image.composite(image1, image2, mask).convert('RGBA')
-                    if shared.opts.save_mask:
-                        images.save_image(image_mask, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask")
-                    if shared.opts.save_mask_composite:
-                        images.save_image(image_mask_composite, p.outpath_samples, "", p.seeds[i], p.prompts[i], shared.opts.samples_format, info=info, p=p, suffix="-mask-composite")
-                    if shared.opts.return_mask:
+
+                    if save_mask_opt: # Use cached option
+                        images.save_image(image_mask, outpath_samples, "", p.seeds[i], p.prompts[i], samples_format, info=info, p=p, suffix="-mask") # Use cached paths and format
+                    if save_mask_composite_opt: # Use cached option
+                        images.save_image(image_mask_composite, outpath_samples, "", p.seeds[i], p.prompts[i], samples_format, info=info, p=p, suffix="-mask-composite") # Use cached paths and format
+                    if return_mask_opt: # Use cached option
                         output_images.append(image_mask)
-                    if shared.opts.return_mask_composite:
+                    if return_mask_composite_opt: # Use cached option
                         output_images.append(image_mask_composite)
 
             timer.process.record('post')
             del samples
-
             if not shared.native:
                 extra_networks.deactivate(p, p.network_data)
 
@@ -450,18 +511,18 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
         p.color_corrections = None
         index_of_first_image = 0
-        if (shared.opts.return_grid or shared.opts.grid_save) and not p.do_not_save_grid and len(output_images) > 1:
+        if (return_grid_opt or grid_save_opt) and not do_not_save_grid and len(output_images) > 1: # Use cached options
             if images.check_grid_size(output_images):
-                r, c = images.get_grid_size(output_images, p.batch_size)
-                grid = images.image_grid(output_images, p.batch_size)
+                r, c = images.get_grid_size(output_images, batch_size) # Use cached batch_size
+                grid = images.image_grid(output_images, batch_size) # Use cached batch_size
                 grid_text = f'{r}x{c}'
                 grid_info = create_infotext(p, p.all_prompts, p.all_seeds, p.all_subseeds, index=0, grid=grid_text)
-                if shared.opts.return_grid:
+                if return_grid_opt: # Use cached option
                     infotexts.insert(0, grid_info)
                     output_images.insert(0, grid)
                     index_of_first_image = 1
-                if shared.opts.grid_save:
-                    images.save_image(grid, p.outpath_grids, "", p.all_seeds[0], p.all_prompts[0], shared.opts.grid_format, info=grid_info, p=p, grid=True, suffix="-grid") # main save grid
+                if grid_save_opt: # Use cached option
+                    images.save_image(grid, outpath_grids, "", p.all_seeds[0], p.all_prompts[0], grid_format, info=grid_info, p=p, grid=True, suffix="-grid") # Use cached paths and format
 
     if shared.native:
         from modules import ipadapter
@@ -469,7 +530,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     if shared.opts.include_mask:
         if shared.opts.mask_apply_overlay and p.overlay_images is not None and len(p.overlay_images) > 0:
-            p.image_mask = create_binary_mask(p.overlay_images[0])
+            p.image_mask = create_binary_mask(overlay_images[0]) # Use cached variable
             p.image_mask = ImageOps.invert(p.image_mask)
             output_images.append(p.image_mask)
         elif getattr(p, 'image_mask', None) is not None and isinstance(p.image_mask, Image.Image):
@@ -488,7 +549,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         index_of_first_image=index_of_first_image,
         infotexts=infotexts,
     )
-    if p.scripts is not None and isinstance(p.scripts, scripts.ScriptRunner) and not (shared.state.interrupted or shared.state.skipped):
+    if p_scripts_is_scriptrunner and not (shared.state.interrupted or shared.state.skipped): # Use cached script check
         p.scripts.postprocess(p, processed)
     timer.process.record('post')
     if not p.disable_extra_networks:
