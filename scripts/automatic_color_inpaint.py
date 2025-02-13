@@ -97,7 +97,7 @@ class Script(scripts.Script):
             p.image_mask = mask_image
 
         # override inpaint parameters
-        p.task_args['inpaint_full_res'] = True
+        p.inpaint_full_res = True
         p.task_args['mask_blur'] = 0
 
         # Process the image using SD.Next’s inpainting
