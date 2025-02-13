@@ -6,7 +6,7 @@ from functools import wraps
 import torch
 from modules import rocm
 from modules.errors import log, display, install as install_traceback
-from installer import install
+from installer import install, installed
 
 
 debug = os.environ.get('SD_DEVICE_DEBUG', None) is not None
@@ -417,22 +417,7 @@ def set_sdpa_params():
                 sdpa_original = torch.nn.functional.scaled_dot_product_attention
         except Exception as err:
             log.warning(f'Torch attention: type="sdpa" {err}')
-        if backend == "rocm":
-            if 'Flash attention' in opts.sdp_options:
-                try:
-                    # https://github.com/huggingface/diffusers/discussions/7172
-                    from flash_attn import flash_attn_func
-                    sdpa_pre_flash_atten = torch.nn.functional.scaled_dot_product_attention
-                    @wraps(sdpa_pre_flash_atten)
-                    def sdpa_flash_atten(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-                        if query.shape[-1] <= 128 and attn_mask is None and query.dtype != torch.float32:
-                            return flash_attn_func(q=query.transpose(1, 2), k=key.transpose(1, 2), v=value.transpose(1, 2), dropout_p=dropout_p, causal=is_causal, softmax_scale=scale).transpose(1, 2)
-                        else:
-                            return sdpa_pre_flash_atten(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
-                    torch.nn.functional.scaled_dot_product_attention = sdpa_flash_atten
-                    log.debug('Torch attention: type="rocm flash attention"')
-                except Exception as err:
-                    log.error(f'Torch attention: type="rocm flash attention" {err}')
+
         try:
             torch.backends.cuda.enable_flash_sdp('Flash attention' in opts.sdp_options)
             torch.backends.cuda.enable_mem_efficient_sdp('Memory attention' in opts.sdp_options)
@@ -440,6 +425,10 @@ def set_sdpa_params():
             log.debug(f'Torch attention: type="sdpa" flash={"Flash attention" in opts.sdp_options} memory={"Memory attention" in opts.sdp_options} math={"Math attention" in opts.sdp_options}')
         except Exception as err:
             log.warning(f'Torch attention: type="sdpa" {err}')
+
+        # stack hijcaks with order: Sage -> CK Flash -> Dynamic
+        # if the first is not compatible, uses the second and so on
+
         if 'Sage attention' in opts.sdp_options:
             try:
                 install('sageattention')
@@ -455,7 +444,29 @@ def set_sdpa_params():
                 log.debug('Torch attention: type="sage attention"')
             except Exception as err:
                 log.error(f'Torch attention: type="sage attention" {err}')
-        elif 'Dynamic attention' in opts.sdp_options:
+
+        if 'CK Flash attention' in opts.sdp_options:
+            try:
+                if backend == "rocm":
+                    if not installed('flash-attn'):
+                        agent = rocm.Agent(getattr(torch.cuda.get_device_properties(device), "gcnArchName", "gfx0000"))
+                        install(rocm.get_flash_attention_command(agent), reinstall=True)
+                else:
+                    install('flash-attn')
+                from flash_attn import flash_attn_func
+                sdpa_pre_flash_atten = torch.nn.functional.scaled_dot_product_attention
+                @wraps(sdpa_pre_flash_atten)
+                def sdpa_flash_atten(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
+                    if query.shape[-1] <= 128 and attn_mask is None and query.dtype != torch.float32:
+                        return flash_attn_func(q=query.transpose(1, 2), k=key.transpose(1, 2), v=value.transpose(1, 2), dropout_p=dropout_p, causal=is_causal, softmax_scale=scale).transpose(1, 2)
+                    else:
+                        return sdpa_pre_flash_atten(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
+                torch.nn.functional.scaled_dot_product_attention = sdpa_flash_atten
+                log.debug('Torch attention: type="ck flash attention"')
+            except Exception as err:
+                log.error(f'Torch attention: type="ck flash attention" {err}')
+
+        if 'Dynamic attention' in opts.sdp_options:
             try:
                 global sdpa_pre_dyanmic_atten # pylint: disable=global-statement
                 sdpa_pre_dyanmic_atten = torch.nn.functional.scaled_dot_product_attention
@@ -464,24 +475,6 @@ def set_sdpa_params():
                 log.debug('Torch attention: type="dynamic attention"')
             except Exception as err:
                 log.error(f'Torch attention: type="dynamic attention" {err}')
-        """
-        elif 'Flash2 attention' in opts.sdp_options:
-            try:
-                install('flash-attn')
-                from flash_attn import flash_attn_func
-                sdpa_pre_flash2_atten = torch.nn.functional.scaled_dot_product_attention
-                @wraps(sdpa_pre_flash2_atten)
-                def sdpa_flash2_atten(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, scale=None):
-                    if (query.shape[-1] in {128, 96, 64}) and (attn_mask is None) and (query.dtype != torch.float32) and (query.shape[-1] % key.shape[-1] == 0) and (query.shape[-1] % value.shape[-1] == 0):
-                        print('HERE', query.shape, key.shape, value.shape)
-                        return flash_attn_func(q=query, k=key, v=value, causal=is_causal)
-                    else:
-                        return sdpa_pre_flash2_atten(query=query, key=key, value=value, attn_mask=attn_mask, dropout_p=dropout_p, is_causal=is_causal, scale=scale)
-                torch.nn.functional.scaled_dot_product_attention = sdpa_flash2_atten
-                log.debug('Torch attention: type="flash2 attention"')
-            except Exception as err:
-                log.error(f'Torch attention: type="flash2 attention" {err}')
-        """
     except Exception as e:
         log.warning(f'Torch SDPA: {e}')
 

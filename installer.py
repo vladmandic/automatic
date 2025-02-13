@@ -655,6 +655,10 @@ def install_rocm_zluda():
             torch_command = os.environ.get('TORCH_COMMAND', 'torch torchvision')
     else:
         check_python(supported_minors=[9, 10, 11, 12], reason='ROCm backend requires a Python version between 3.9 and 3.12')
+
+        if os.environ.get("TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL", None) is None:
+            os.environ.setdefault('TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL', '1')
+
         if args.use_nightly:
             if rocm.version is None or float(rocm.version) >= 6.3: # assume the latest if version check fails
                 torch_command = os.environ.get('TORCH_COMMAND', '--pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/rocm6.3')
@@ -678,13 +682,6 @@ def install_rocm_zluda():
             else:
                 # older rocm (5.7) uses torch 2.3 or older
                 torch_command = os.environ.get('TORCH_COMMAND', f'torch torchvision --index-url https://download.pytorch.org/whl/rocm{rocm.version}')
-
-        if installed("torch") and device is not None:
-            if 'Flash attention' in opts.get('sdp_options', ''):
-                if not installed('flash-attn'):
-                    install(rocm.get_flash_attention_command(device), reinstall=True)
-            #elif not args.experimental:
-            #    uninstall('flash-attn')
 
         if device is not None and rocm.version != "6.2" and rocm.get_blaslt_enabled():
             log.debug(f'ROCm hipBLASLt: arch={device.name} available={device.blaslt_supported}')
