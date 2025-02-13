@@ -4,8 +4,9 @@
 
 ### Highlight for 2025-02-13
 
-We're back with another update!  
-- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages and 100+ new [hints](https://vladmandic.github.io/sdnext-docs/Hints/)  
+We're back with another update with over 50 commits!  
+- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages 
+  and 100+ new [hints](https://vladmandic.github.io/sdnext-docs/Hints/)  
 - Big update to [Docker](https://vladmandic.github.io/sdnext-docs/Docker/) containers with support for all major compute platforms  
 - A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
 - Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
