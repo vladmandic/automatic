@@ -1,20 +1,33 @@
 # Change Log for SD.Next
 
-## Update for 2025-02-13  
+## Update for 2025-02-13
+
+### Highlight for 2025-02-13
+
+We're back with another update!  
+- Starting with massive UI update with full [localization](https://vladmandic.github.io/sdnext-docs/Locale/) for 8 languages and 100+ new [hints](https://vladmandic.github.io/sdnext-docs/Hints/)  
+- Big update to [Docker](https://vladmandic.github.io/sdnext-docs/Docker/) containers with support for all major compute platforms  
+- A lot of [outpainting](https://vladmandic.github.io/sdnext-docs/Outpaint/) goodies  
+- Support for new models: [AlphaVLLM Lumina 2](https://github.com/Alpha-VLLM/Lumina-Image-2.0) and [Ostris Flex.1-Alpha](https://huggingface.co/ostris/Flex.1-alpha)  
+- And new **Mixture-of-Diffusers** regional tiling pipeline  
+
+*...and more* - see [changelog](https://github.com/vladmandic/sdnext/blob/dev/CHANGELOG.md) for full details!  
+
+### Details for 2025-02-13
 
 - **User Interface**  
   - **Hints**  
     - added/updated 100+ ui hints!  
-    - [hints](https://github.com/vladmandic/sdnext/wiki/Hints) documentation and contribution guide  
+    - [hints](https://vladmandic.github.io/sdnext-docs/Hints/) documentation and contribution guide  
   - **Localization**  
     - full ui localization!  
-      english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian  
+      *english, croatian, spanish, french, italian, portuguese, chinese, japanese, korean, russian*  
     - set in *settings -> user interface -> language*  
-    - [localization](https://github.com/vladmandic/sdnext/wiki/Locale) documentation  
+    - [localization](https://vladmandic.github.io/sdnext-docs/Locale/) documentation  
   - **UI**:  
     - force browser cache-invalidate on page load  
 - **Docs**
-  - New [Outpaint](https://github.com/vladmandic/sdnext/wiki/Outpaint) step-by-step guide  
+  - New [Outpaint](https://vladmandic.github.io/sdnext-docs/Outpaint/) step-by-step guide  
   - Updated [Docker](https://github.com/vladmandic/sdnext/wiki/Docker) guide  
     includes build and publish and both local and cloud examples  
 - **Models**
@@ -32,10 +45,10 @@
     Regional tiling type of a solution for SDXL models  
     select from *scripts -> mixture of diffusers*  
 - **Docker** 
-  - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6`  
-  - added **ROCm** receipe
-  - added **IPEX** receipe
-  - added **OpenVINO** receipe
+  - updated **CUDA** receipe to `torch==2.6.0` with `cuda==12.6` and add prebuilt image  
+  - added **ROCm** receipe and prebuilt image  
+  - added **IPEX** receipe and add prebuilt image  
+  - added **OpenVINO** receipe and prebuilt image   
 - **System**  
   - improve **python==3.12** compatibility  
   - **Torch**  

@@ -251,7 +251,7 @@ def package_spec(package):
 
 # check if package is installed
 @lru_cache()
-def installed(package, friendly: str = None, reload = False, quiet = False):
+def installed(package, friendly: str = None, reload = False, quiet = False): # pylint: disable=redefined-outer-name
     t_start = time.time()
     ok = True
     try:

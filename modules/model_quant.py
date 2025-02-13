@@ -75,7 +75,7 @@ def load_torchao(msg='', silent=False):
     global ao # pylint: disable=global-statement
     if ao is not None:
         return ao
-    install('torchao==0.7.0', quiet=True)
+    install('torchao==0.8.0', quiet=True)
     try:
         import torchao
         ao = torchao
