@@ -4,7 +4,7 @@ import time
 from contextlib import nullcontext
 import numpy as np
 from PIL import Image, ImageOps
-from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, sd_hijack_freeu, sd_models, sd_checkpoint, sd_vae, processing_helpers, timer, face_restoration, token_merge
+from modules import shared, devices, errors, images, scripts, memstats, lowvram, script_callbacks, extra_networks, detailer, para_attention, sd_hijack_freeu, sd_models, sd_checkpoint, sd_vae, processing_helpers, timer, face_restoration, token_merge
 from modules.sd_hijack_hypertile import context_hypertile_vae, context_hypertile_unet
 from modules.processing_class import StableDiffusionProcessing, StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessingControl # pylint: disable=unused-import
 from modules.processing_info import create_infotext
@@ -117,7 +117,9 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
-
+    
+    def __str___(self):
+        return f'{self.__class__.__name__}: {self.__dict__}'
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
     timer.process.reset()
@@ -166,6 +168,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         if shared.opts.cuda_compile_backend == 'none':
             token_merge.apply_token_merging(p.sd_model)
             sd_hijack_freeu.apply_freeu(p, not shared.native)
+            para_attention.apply_first_block_cache(p)
 
         if p.width is not None:
             p.width = 8 * int(p.width / 8)
@@ -176,6 +179,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         timer.process.record('pre')
 
         if shared.cmd_opts.profile:
+            timer.startup.profile = True
+            timer.process.profile = True
             with context_hypertile_vae(p), context_hypertile_unet(p):
                 import torch.profiler # pylint: disable=redefined-outer-name
                 activities=[torch.profiler.ProfilerActivity.CPU]
